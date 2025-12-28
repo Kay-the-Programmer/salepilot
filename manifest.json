@@ -1,0 +1,25 @@
+{
+  "short_name": "SalePilot",
+  "name": "SalePilot - POS & Inventory Management",
+  "description": "A comprehensive, installable PWA (Progressive Web App) for POS and inventory management with full offline capabilities. Designed for reliability and a native app-like experience on any device, it allows for efficient product management, stock control, and leverages AI for content generation.",
+  "id": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/images/salepilot.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/salepilot.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#ffffff",
+  "background_color": "#f9fafb"
+}

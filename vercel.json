@@ -1,0 +1,17 @@
+{
+  "framework": "vite",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
+  "routes": [
+    { "src": "/sw\\.js", "dest": "/sw.js" },
+    { "src": "/assets/(.*)", "dest": "/assets/$1" },
+    { "src": "/favicon\\.ico", "dest": "/favicon.ico" },
+    { "src": "/manifest\\.json", "dest": "/manifest.json" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}

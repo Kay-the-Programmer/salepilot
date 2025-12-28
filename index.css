@@ -1,0 +1,88 @@
+/* Minimal global styles to ensure consistent layout and icon sizing even if Tailwind CDN is slow or offline. */
+
+/* Box sizing and base reset */
+*, *::before, *::after { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body { margin: 0; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+/* Images and SVGs behave nicely by default */
+img, svg { display: inline-block; vertical-align: middle; }
+img { max-width: 100%; height: auto; }
+
+/* Make SVGs scale with font-size by default (Tailwind classes will override with width/height utilities) */
+svg { width: 1em; height: 1em; }
+
+/* Safe defaults for tables and buttons */
+table { border-collapse: collapse; }
+button { cursor: pointer; }
+
+/* Prevent textarea resize from breaking layouts in modals */
+textarea { resize: vertical; }
+
+/* Hide scrollbars but keep scroll functionality (used for sidebar nav) */
+.sidebar-scroll {
+  /* Firefox */
+  scrollbar-width: none; /* hides scrollbar */
+  /* IE 10+ / Edge Legacy */
+  -ms-overflow-style: none;
+}
+.sidebar-scroll::-webkit-scrollbar {
+  /* Chrome, Safari and Opera */
+  display: none;
+}
+
+/* Desktop app feel for Reports dashboard */
+.app-window {
+  /* on desktop, give subtle window look */
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.app-titlebar {
+  height: 36px;
+  background: linear-gradient(180deg, #f8fafc, #eef2f7);
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+.app-titlebar .title-controls {
+  display: flex;
+  gap: 6px;
+  margin-right: 12px;
+}
+.app-titlebar .title-controls .ctrl {
+  width: 10px; height: 10px; border-radius: 50%; display: inline-block;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06);
+}
+.app-titlebar .title-controls .ctrl.red { background: #ff5f56; }
+.app-titlebar .title-controls .ctrl.yellow { background: #ffbd2e; }
+.app-titlebar .title-controls .ctrl.green { background: #27c93f; }
+.app-titlebar .title {
+  font-weight: 600; color: #111827; flex: 1; opacity: 0.9;
+}
+.app-titlebar .title-actions {
+  display: flex; align-items: center; gap: 8px;
+}
+.kbd-hint {
+  font-size: 12px; color: #6b7280; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 6px; background: #fff;
+}
+
+/* Command palette */
+.cmd-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: flex; align-items: flex-start; justify-content: center; padding-top: 10vh; z-index: 50; }
+.cmd-modal { width: 640px; max-width: calc(100% - 32px); background: #ffffff; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); overflow: hidden; }
+.cmd-input { width: 100%; border: none; outline: none; padding: 14px 16px; font-size: 16px; border-bottom: 1px solid #e5e7eb; }
+.cmd-list { max-height: 320px; overflow-y: auto; }
+.cmd-item { width: 100%; text-align: left; padding: 10px 14px; border: none; background: transparent; font-size: 14px; }
+.cmd-item:hover { background: #f3f4f6; }
+.cmd-empty { padding: 12px 14px; color: #6b7280; font-size: 14px; }
+
+
+/* Fallbacks for essential Tailwind background utilities to prevent inconsistent colors when CDN/SW caching delays styles */
+.bg-gray-50 { background-color: #f9fafb; }
+.bg-gray-100 { background-color: #f3f4f6; }
+.bg-gray-200 { background-color: #e5e7eb; }

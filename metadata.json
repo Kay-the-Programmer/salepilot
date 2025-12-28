@@ -1,0 +1,8 @@
+{
+  "name": "SalePilot - POS & Inventory Management",
+  "description": "A comprehensive cloud-based Point-of-Sale (POS) and inventory management system designed for small to medium-sized businesses. This application allows for efficient product management, stock control, and leverages AI for content generation.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "prompt": ""
+}

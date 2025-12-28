@@ -1,0 +1,19 @@
+# Optional Render blueprint for deploying the frontend as a Static Site
+# Use via Render Dashboard (YAML) or as a reference. If you already deployed the backend,
+# keep it as-is; this defines only the static frontend.
+
+services:
+  - type: static_site
+    name: salepilot-frontend
+    env: static
+    buildCommand: npm ci && npm run build
+    publishPath: dist
+    # Set your API URL here or in the dashboard UI
+    envVars:
+      - key: VITE_API_URL
+        value: https://your-backend.onrender.com/api
+    # SPA routing fallback
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
