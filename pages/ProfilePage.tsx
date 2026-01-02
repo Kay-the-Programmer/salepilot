@@ -93,17 +93,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                 <div className="bg-white rounded-2xl shadow-md border border-gray-200 p-6 lg:p-8 sticky top-8 transition-all duration-300 hover:shadow-xl">
                                     <div className="flex flex-col items-center text-center">
                                         <div className="relative group/avatar">
-                                            <div className="p-5 bg-gradient-to-br from-blue-100 via-blue-50 to-indigo-100 rounded-2xl transition-all duration-500 group-hover/avatar:scale-105 group-hover/avatar:rotate-2 shadow-sm group-hover/avatar:shadow-md">
+                                            <div className="p-5 bg-transparent rounded-2xl transition-all duration-500 group-hover/avatar:scale-105 group-hover/avatar:rotate-2 shadow-sm group-hover/avatar:shadow-md">
                                                 <UserCircleIcon className="w-24 h-24 text-blue-600 transition-transform duration-300" />
                                             </div>
-                                            {!isStandalone && (
-                                                <div className="absolute -top-2 -right-2 animate-bounce">
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-yellow-100 to-amber-100 text-yellow-800 border border-yellow-200 shadow-sm">
-                                                        <DevicePhoneMobileIcon className="w-3 h-3" />
-                                                        Web
-                                                    </span>
-                                                </div>
-                                            )}
+                                            
                                         </div>
 
                                         <div className="mt-6 space-y-2">
