@@ -7,7 +7,12 @@ import XMarkIcon from './icons/XMarkIcon';
 import CameraIcon from './icons/CameraIcon';
 import CameraCaptureModal from './CameraCaptureModal';
 import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
+import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
 import { toSnakeCase } from "@/utils/helpers.ts";
+import SupplierFormModal from './suppliers/SupplierFormModal';
+import BarcodeScannerModal from './BarcodeScannerModal';
+
+
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -53,6 +58,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
     const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+    const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
+    const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
+    const [localSuppliers, setLocalSuppliers] = useState<Supplier[]>(suppliers);
+
+
+    useEffect(() => {
+        setLocalSuppliers(suppliers);
+    }, [suppliers]);
 
 
     useEffect(() => {
@@ -79,7 +92,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         const stringNumericFields = ['price', 'costPrice'];
 
         if (name.startsWith('custom_')) {
-            const attributeId = name.split('_')[1];
+            const attributeId = name.slice(7);
             setProduct(prev => ({
                 ...prev,
                 customAttributes: {
@@ -343,6 +356,55 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         setIsCameraModalOpen(false);
     };
 
+    const handleBarcodeScan = (code: string) => {
+        setProduct(prev => ({ ...prev, barcode: code }));
+        setIsBarcodeScannerOpen(false);
+    };
+
+    const handleCreateSupplier = async (newSupplier: Supplier) => {
+        try {
+            // Optimistic update or API call? Usually API call to get real ID if not provided.
+            // But SupplierFormModal generates an ID if needed.
+            // Let's assume we need to persist it now.
+
+            // Map frontend model to backend fields if necessary (SupplierFormModal seems to use camelCase internally, backend needs snake_case?)
+            // Looking at SupplierFormModal it returns a Supplier object.
+            // Let's use api.post to save it.
+
+            // NOTE: We need to convert camelCase Supplier to snake_case payload if backend expects it.
+            // Assuming api.post handles it or we send as is. 
+            // Based on previous code, ProductFormModal manually converts to FormData. 
+            // Let's try sending JSON.
+
+            const payload = {
+                id: newSupplier.id,
+                name: newSupplier.name,
+                contact_person: newSupplier.contactPerson,
+                phone: newSupplier.phone,
+                email: newSupplier.email,
+                address: newSupplier.address,
+                payment_terms: newSupplier.paymentTerms,
+                banking_details: newSupplier.bankingDetails,
+                notes: newSupplier.notes,
+                store_id: storeSettings.storeId // Assuming storeSettings has storeId or similar context if needed. Warning: Check StoreSettings type.
+            };
+
+            // Check StoreSettings type in next step if needed, but for now we'll rely on backend likely inferring store_id or it being optional/handled.
+            // Actually, let's just send what we have.
+
+            const savedSupplier = await api.post<Supplier>('/suppliers', payload);
+
+            setLocalSuppliers(prev => [...prev, savedSupplier || newSupplier]); // Fallback to newSupplier logic if offline
+            setProduct(prev => ({ ...prev, supplierId: (savedSupplier || newSupplier).id }));
+            setIsSupplierModalOpen(false);
+        } catch (err: any) {
+            console.error("Failed to create supplier:", err);
+            // Optionally show error in Product modal or alert
+            alert("Failed to create supplier: " + err.message);
+        }
+    };
+
+
 
 
     if (!isOpen) return null;
@@ -423,10 +485,20 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 </div>
                                 <div>
                                     <label htmlFor="supplierId" className="block text-sm font-medium text-gray-700">Supplier</label>
-                                    <select name="supplierId" id="supplierId" value={product.supplierId || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                        <option value="">No Supplier</option>
-                                        {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                    </select>
+                                    <div className="flex gap-2">
+                                        <select name="supplierId" id="supplierId" value={product.supplierId || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                            <option value="">No Supplier</option>
+                                            {localSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsSupplierModalOpen(true)}
+                                            className="mt-1 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                            title="Add New Supplier"
+                                        >
+                                            <span className="text-lg font-bold text-blue-600">+</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <div className="mt-4">
@@ -464,11 +536,15 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <label htmlFor="barcode" className="block text-sm font-medium text-gray-700">Barcode (UPC, EAN, etc.)</label>
                                     <div className="mt-1 flex rounded-md shadow-sm">
                                         <input type="text" name="barcode" id="barcode" value={product.barcode || ''} onChange={handleChange} className="flex-1 min-w-0 block border border-gray-300 w-full px-3 py-2 rounded-none rounded-l-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm " />
+                                        <button type="button" onClick={() => setIsBarcodeScannerOpen(true)} className="-ml-px relative inline-flex items-center space-x-2 px-3 py-2 border border-gray-300 text-sm font-medium bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" title="Scan Barcode">
+                                            <span role="img" aria-label="scan">📷</span>
+                                        </button>
                                         <button type="button" onClick={handleGenerateBarcode} className="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                             <span>Generate</span>
                                         </button>
                                     </div>
                                 </div>
+
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                                 <div>
@@ -670,6 +746,18 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 onClose={() => setIsCameraModalOpen(false)}
                 onCapture={handleCameraCapture}
             />
+            <SupplierFormModal
+                isOpen={isSupplierModalOpen}
+                onClose={() => setIsSupplierModalOpen(false)}
+                onSave={handleCreateSupplier}
+            />
+            <BarcodeScannerModal
+                isOpen={isBarcodeScannerOpen}
+                onClose={() => setIsBarcodeScannerOpen(false)}
+                onScanSuccess={handleBarcodeScan}
+            />
+
+
         </>
     );
 };

@@ -356,7 +356,10 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                 payments: [{
                     amount: total,
                     method: selectedPaymentMethod,
-                }]
+                    id: Date.now().toString(), // Temporary ID
+                    date: new Date().toISOString()
+                } as Payment]
+
             };
         }
 
@@ -477,7 +480,7 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                             <div className="text-center p-10">Loading...</div>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3 pr-2 flex-1 min-h-0">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3 pr-2 flex-1 min-h-0 content-start">
                             {filteredProducts.map(p => {
                                 const numericStock = typeof (p as any).stock === 'number' ? (p as any).stock : (parseFloat(String((p as any).stock)) || 0);
                                 const isSoldOut = numericStock === 0;
