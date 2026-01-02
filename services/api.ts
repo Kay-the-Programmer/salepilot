@@ -1,7 +1,11 @@
 import { dbService } from './dbService';
 
 // Determine API base URL
-const DEFAULT_BASE_URL = 'http://localhost:5000/api';
+const PROD_BACKEND = 'https://salepilot-backend-ai8h.onrender.com/api';
+const LOCAL_BACKEND = 'http://localhost:5000/api';
+
+const DEFAULT_BASE_URL = import.meta.env.PROD ? PROD_BACKEND : LOCAL_BACKEND;
+
 // Optional runtime override: window.__API_URL or <meta name="app:apiUrl" content="...">
 const RUNTIME_BASE = (typeof window !== 'undefined' && (window as any).__API_URL) ||
   (typeof document !== 'undefined' ? document.querySelector('meta[name="app:apiUrl"]')?.getAttribute('content') || undefined : undefined);
@@ -34,7 +38,7 @@ const getAuthHeaders = (): Record<string, string> => {
     if (user && user.token) {
       return { Authorization: `Bearer ${user.token}` };
     }
-  } catch (_) {}
+  } catch (_) { }
   return {};
 };
 
@@ -72,7 +76,7 @@ async function request<T>(endpoint: string, init: RequestInit = {}): Promise<T> 
       if (body && typeof body === 'object' && body.message) {
         message = body.message;
       }
-    } catch (_) {}
+    } catch (_) { }
     throw new HttpError(resp.status, message, body);
   }
   // Try parse JSON, allow empty
@@ -114,8 +118,7 @@ function serializeOptionsForQueue(options: RequestInit): any {
   return out;
 }
 
-async function queueAndReturn<T>(endpoint: string, options: RequestInit, bodyEcho?: any): Promise<T & { offline: true }>
-{
+async function queueAndReturn<T>(endpoint: string, options: RequestInit, bodyEcho?: any): Promise<T & { offline: true }> {
   const serialized = serializeOptionsForQueue(options);
   await dbService.addMutationToQueue(endpoint, serialized);
   const echo: any = bodyEcho && typeof bodyEcho === 'object' ? { ...bodyEcho } : {};
