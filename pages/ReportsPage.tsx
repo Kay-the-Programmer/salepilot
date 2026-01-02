@@ -92,20 +92,20 @@ const SalesTrendChart: React.FC<{ data: { date: string; revenue: number; profit:
             });
         }
     };
-    
+
     return (
         <div className="relative">
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)} className="w-full h-auto">
                 {/* Y-axis labels */}
                 {[0, 0.25, 0.5, 0.75, 1].map(tick => {
-                     const y = padding.top + tick * (height - padding.top - padding.bottom);
-                     const value = maxRevenue * (1-tick);
-                     return (
-                         <g key={tick} className="text-xs text-gray-400">
-                             <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="currentColor" strokeDasharray="2,3" />
-                             <text x={padding.left - 8} y={y + 4} textAnchor="end">{formatCurrency(value, storeSettings)}</text>
-                         </g>
-                     )
+                    const y = padding.top + tick * (height - padding.top - padding.bottom);
+                    const value = maxRevenue * (1 - tick);
+                    return (
+                        <g key={tick} className="text-xs text-gray-400">
+                            <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="currentColor" strokeDasharray="2,3" />
+                            <text x={padding.left - 8} y={y + 4} textAnchor="end">{formatCurrency(value, storeSettings)}</text>
+                        </g>
+                    )
                 })}
                 {/* X-axis labels */}
                 {data.map((d, i) => {
@@ -124,7 +124,7 @@ const SalesTrendChart: React.FC<{ data: { date: string; revenue: number; profit:
 
                 {tooltip && (
                     <g>
-                        <line x1={tooltip.x} y1={padding.top} x2={tooltip.x} y2={height - padding.bottom} stroke="rgba(0,0,0,0.2)" strokeDasharray="4,2"/>
+                        <line x1={tooltip.x} y1={padding.top} x2={tooltip.x} y2={height - padding.bottom} stroke="rgba(0,0,0,0.2)" strokeDasharray="4,2" />
                         <circle cx={tooltip.x} cy={yScale(tooltip.revenue)} r="4" fill="#3b82f6" stroke="white" strokeWidth="2" />
                         <circle cx={tooltip.x} cy={yScale(tooltip.profit)} r="4" fill="#10b981" stroke="white" strokeWidth="2" />
                     </g>
@@ -183,19 +183,19 @@ const CashflowChart: React.FC<{ data: { date: string; inflow: number; outflow: n
             });
         }
     };
-    
+
     return (
         <div className="relative">
             <svg ref={svgRef} viewBox={`0 0 ${width} ${height}`} onMouseMove={handleMouseMove} onMouseLeave={() => setTooltip(null)} className="w-full h-auto">
                 {[0, 0.25, 0.5, 0.75, 1].map(tick => {
-                     const y = padding.top + tick * (height - padding.top - padding.bottom);
-                     const value = maxVal * (1-tick);
-                     return (
-                         <g key={tick} className="text-xs text-gray-400">
-                             <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="currentColor" strokeDasharray="2,3" />
-                             <text x={padding.left - 8} y={y + 4} textAnchor="end">{formatCurrency(value, storeSettings)}</text>
-                         </g>
-                     )
+                    const y = padding.top + tick * (height - padding.top - padding.bottom);
+                    const value = maxVal * (1 - tick);
+                    return (
+                        <g key={tick} className="text-xs text-gray-400">
+                            <line x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="currentColor" strokeDasharray="2,3" />
+                            <text x={padding.left - 8} y={y + 4} textAnchor="end">{formatCurrency(value, storeSettings)}</text>
+                        </g>
+                    )
                 })}
                 {data.map((d, i) => {
                     if (data.length > 1 && i % Math.ceil(data.length / 10) === 0) {
@@ -213,7 +213,7 @@ const CashflowChart: React.FC<{ data: { date: string; inflow: number; outflow: n
 
                 {tooltip && (
                     <g>
-                        <line x1={tooltip.x} y1={padding.top} x2={tooltip.x} y2={height - padding.bottom} stroke="rgba(0,0,0,0.2)" strokeDasharray="4,2"/>
+                        <line x1={tooltip.x} y1={padding.top} x2={tooltip.x} y2={height - padding.bottom} stroke="rgba(0,0,0,0.2)" strokeDasharray="4,2" />
                         <circle cx={tooltip.x} cy={yScale(tooltip.inflow)} r="4" fill="#22c55e" stroke="white" strokeWidth="2" />
                         <circle cx={tooltip.x} cy={yScale(tooltip.outflow)} r="4" fill="#ef4444" stroke="white" strokeWidth="2" />
                     </g>
@@ -272,7 +272,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
 
     const filteredCommands = useMemo(() => {
         const q = cmdQuery.toLowerCase();
-        return (commands as {label:string; tab:string}[]).filter(c => c.label.toLowerCase().includes(q));
+        return (commands as { label: string; tab: string }[]).filter(c => c.label.toLowerCase().includes(q));
     }, [commands, cmdQuery]);
 
     useEffect(() => {
@@ -340,20 +340,20 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
         setStartDate(toDateInputString(start));
         setEndDate(toDateInputString(end));
     };
-    
+
     const setThisMonth = () => {
         const end = new Date();
         const start = new Date(end.getFullYear(), end.getMonth(), 1);
         setStartDate(toDateInputString(start));
         setEndDate(toDateInputString(end));
     }
-    
+
     const salesTrend = useMemo(() => {
         if (!reportData?.sales?.salesTrend) return [];
         const trend = [];
         const start = new Date(startDate);
         const end = new Date(endDate);
-         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             const dateStr = toDateInputString(d);
             trend.push({
                 date: dateStr,
@@ -369,7 +369,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
         const trend = [];
         const start = new Date(startDate);
         const end = new Date(endDate);
-         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
             const dateStr = toDateInputString(d);
             trend.push({
                 date: dateStr,
@@ -406,9 +406,9 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
             return cellStr;
         };
 
-        const csvContent = "data:text/csv;charset=utf-8," 
+        const csvContent = "data:text/csv;charset=utf-8,"
             + [headers, ...rows].map(e => e.map(escapeCsvCell).join(",")).join("\n");
-        
+
         const link = document.createElement("a");
         link.setAttribute("href", encodeURI(csvContent));
         link.setAttribute("download", `${activeTab}_report_${dateString}.csv`);
@@ -416,11 +416,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
         link.click();
         document.body.removeChild(link);
     };
-    
+
     const handleExportPDF = () => {
-         const doc = new jsPDF();
+        const doc = new jsPDF();
         const dateString = `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
-        
+
         doc.setFontSize(18);
         doc.text(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`, 14, 22);
         doc.setFontSize(11);
@@ -436,7 +436,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
                 ],
                 theme: 'plain',
             });
-             (doc as any).autoTable({
+            (doc as any).autoTable({
                 head: [['Top Products by Revenue', 'Revenue']],
                 body: reportData.sales.topProductsByRevenue.map((p: any) => [p.name, formatCurrency(p.revenue, storeSettings)]),
                 startY: (doc as any).lastAutoTable.finalY + 10,
@@ -459,15 +459,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
         <button
             onClick={() => setActiveTab(tabName)}
             className={`px-4 py-2 md-2 text-sm font-medium rounded-lg  
-                ${activeTab === tabName 
-                    ? 'border-gray-600 font-extrabold  text-gray-600 bg-gray-200' 
+                ${activeTab === tabName
+                    ? 'border-gray-600 font-extrabold  text-gray-600 bg-gray-200'
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`
             }
         >
             {label}
         </button>
     );
-    
+
     const renderContent = () => {
         if (isLoading) {
             return <div className="text-center p-10">Loading report data...</div>;
@@ -478,19 +478,19 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
         if (!reportData) {
             return <div className="text-center p-10 text-gray-500">No data available for the selected period.</div>;
         }
-        
+
         switch (activeTab) {
             case 'sales':
                 const sales = reportData.sales;
                 return (
                     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                           <StatCard title="Revenue" value={formatCurrency(sales.totalRevenue, storeSettings)} icon={<CurrencyDollarIcon className="h-6 w-6 text-green-600"/>} color="bg-green-100" />
-                           <StatCard title="Gross Profit" value={formatCurrency(sales.totalProfit, storeSettings)} icon={<TrendingUpIcon className="h-6 w-6 text-blue-600"/>} color="bg-blue-100" />
-                           <StatCard title="Gross Margin" value={`${sales.grossMargin.toFixed(1)}%`} icon={<ReceiptPercentIcon className="h-6 w-6 text-yellow-600"/>} color="bg-yellow-100" />
-                           <StatCard title="Transactions" value={`${sales.totalTransactions}`} icon={<ReceiptTaxIcon className="h-6 w-6 text-indigo-600"/>} color="bg-indigo-100" />
-                           <StatCard title="Avg. Sale" value={formatCurrency(sales.avgSaleValue, storeSettings)} icon={<ScaleIcon className="h-6 w-6 text-purple-600"/>} color="bg-purple-100" />
-                           <StatCard title="COGS" value={formatCurrency(sales.totalCogs, storeSettings)} icon={<MinusCircleIcon className="h-6 w-6 text-red-600"/>} color="bg-red-100" />
+                            <StatCard title="Revenue" value={formatCurrency(sales.totalRevenue, storeSettings)} icon={<CurrencyDollarIcon className="h-6 w-6 text-green-600" />} color="bg-green-100" />
+                            <StatCard title="Gross Profit" value={formatCurrency(sales.totalProfit, storeSettings)} icon={<TrendingUpIcon className="h-6 w-6 text-blue-600" />} color="bg-blue-100" />
+                            <StatCard title="Gross Margin" value={`${sales.grossMargin.toFixed(1)}%`} icon={<ReceiptPercentIcon className="h-6 w-6 text-yellow-600" />} color="bg-yellow-100" />
+                            <StatCard title="Transactions" value={`${sales.totalTransactions}`} icon={<ReceiptTaxIcon className="h-6 w-6 text-indigo-600" />} color="bg-indigo-100" />
+                            <StatCard title="Avg. Sale" value={formatCurrency(sales.avgSaleValue, storeSettings)} icon={<ScaleIcon className="h-6 w-6 text-purple-600" />} color="bg-purple-100" />
+                            <StatCard title="COGS" value={formatCurrency(sales.totalCogs, storeSettings)} icon={<MinusCircleIcon className="h-6 w-6 text-red-600" />} color="bg-red-100" />
                         </div>
                         <ReportBlock title="Sales Trend">
                             <div className="flex items-center space-x-4 pl-6 pb-2 text-sm">
@@ -604,49 +604,49 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
                                 })()}
                             </ReportBlock>
                         )}
-                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <ReportBlock title="Top Selling Products by Revenue"><table className="w-full"><tbody>{sales.topProductsByRevenue.map((p: any, i: number) => <TableRow key={p.name} rank={i+1} label={p.name} value={formatCurrency(p.revenue, storeSettings)} />)}</tbody></table></ReportBlock>
-                            <ReportBlock title="Top Selling Products by Units"><table className="w-full"><tbody>{sales.topProductsByQuantity.map((p: any, i: number) => <TableRow key={p.name} rank={i+1} label={p.name} value={`${p.quantity} units`} />)}</tbody></table></ReportBlock>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <ReportBlock title="Top Selling Products by Revenue"><table className="w-full"><tbody>{sales.topProductsByRevenue.map((p: any, i: number) => <TableRow key={p.name} rank={i + 1} label={p.name} value={formatCurrency(p.revenue, storeSettings)} />)}</tbody></table></ReportBlock>
+                            <ReportBlock title="Top Selling Products by Units"><table className="w-full"><tbody>{sales.topProductsByQuantity.map((p: any, i: number) => <TableRow key={p.name} rank={i + 1} label={p.name} value={`${p.quantity} units`} />)}</tbody></table></ReportBlock>
                         </div>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                            <ReportBlock title="Sales by Category"><table className="w-full"><tbody>{sales.salesByCategory.map((c: any, i: number) => <TableRow key={c.name} rank={i+1} label={c.name} value={formatCurrency(c.revenue, storeSettings)} />)}</tbody></table></ReportBlock>
+                            <ReportBlock title="Sales by Category"><table className="w-full"><tbody>{sales.salesByCategory.map((c: any, i: number) => <TableRow key={c.name} rank={i + 1} label={c.name} value={formatCurrency(c.revenue, storeSettings)} />)}</tbody></table></ReportBlock>
                         </div>
                     </div>
                 );
             case 'inventory':
-                 const inventory = reportData.inventory;
-                 return (
-                     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
+                const inventory = reportData.inventory;
+                return (
+                    <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-2">
-                            <StatCard noWrap title="Inventory Retail Value" value={formatCurrency(inventory.totalRetailValue, storeSettings)} icon={<CurrencyDollarIcon className="h-6 w-6 text-blue-600"/>} color="bg-blue-100" />
-                            <StatCard noWrap title="Inventory Cost Value" value={formatCurrency(inventory.totalCostValue, storeSettings)} icon={<MinusCircleIcon className="h-6 w-6 text-yellow-600"/>} color="bg-yellow-100" />
-                            <StatCard noWrap title="Potential Profit" value={formatCurrency(inventory.potentialProfit, storeSettings)} icon={<TrendingUpIcon className="h-6 w-6 text-green-600"/>} color="bg-green-100" />
-                            <StatCard noWrap title="Total Units on Hand" value={inventory.totalUnits.toLocaleString()} icon={<ArchiveBoxIcon className="h-6 w-6 text-purple-600"/>} color="bg-purple-100" />
+                            <StatCard noWrap title="Inventory Retail Value" value={formatCurrency(inventory.totalRetailValue, storeSettings)} icon={<CurrencyDollarIcon className="h-6 w-6 text-blue-600" />} color="bg-blue-100" />
+                            <StatCard noWrap title="Inventory Cost Value" value={formatCurrency(inventory.totalCostValue, storeSettings)} icon={<MinusCircleIcon className="h-6 w-6 text-yellow-600" />} color="bg-yellow-100" />
+                            <StatCard noWrap title="Potential Profit" value={formatCurrency(inventory.potentialProfit, storeSettings)} icon={<TrendingUpIcon className="h-6 w-6 text-green-600" />} color="bg-green-100" />
+                            <StatCard noWrap title="Total Units on Hand" value={inventory.totalUnits.toLocaleString()} icon={<ArchiveBoxIcon className="h-6 w-6 text-purple-600" />} color="bg-purple-100" />
                         </div>
                     </div>
-                 );
+                );
             case 'customers':
                 const customers = reportData.customers;
                 return (
                     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                            <StatCard title="Total Customers" value={customers.totalCustomers.toLocaleString()} icon={<UsersIcon className="h-6 w-6 text-blue-600"/>} color="bg-blue-100" />
-                            <StatCard title="Active Customers" value={customers.activeCustomersInPeriod.toLocaleString()} icon={<TrendingUpIcon className="h-6 w-6 text-green-600"/>} color="bg-green-100" />
-                            <StatCard title="New Customers" value={customers.newCustomersInPeriod.toLocaleString()} icon={<PlusIcon className="h-6 w-6 text-indigo-600"/>} color="bg-indigo-100" />
-                            <StatCard title="Store Credit Owed" value={formatCurrency(customers.totalStoreCreditOwed, storeSettings)} icon={<CurrencyDollarIcon className="h-6 w-6 text-yellow-600"/>} color="bg-yellow-100" />
+                            <StatCard title="Total Customers" value={customers.totalCustomers.toLocaleString()} icon={<UsersIcon className="h-6 w-6 text-blue-600" />} color="bg-blue-100" />
+                            <StatCard title="Active Customers" value={customers.activeCustomersInPeriod.toLocaleString()} icon={<TrendingUpIcon className="h-6 w-6 text-green-600" />} color="bg-green-100" />
+                            <StatCard title="New Customers" value={customers.newCustomersInPeriod.toLocaleString()} icon={<PlusIcon className="h-6 w-6 text-indigo-600" />} color="bg-indigo-100" />
+                            <StatCard title="Store Credit Owed" value={formatCurrency(customers.totalStoreCreditOwed, storeSettings)} icon={<CurrencyDollarIcon className="h-6 w-6 text-yellow-600" />} color="bg-yellow-100" />
                         </div>
                     </div>
                 );
             case 'cashflow':
-                 const cashflow = reportData.cashflow;
-                 return (
+                const cashflow = reportData.cashflow;
+                return (
                     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
                         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                           <StatCard title="Total Inflow" value={formatCurrency(cashflow.totalInflow, storeSettings)} icon={<TrendingUpIcon className="h-6 w-6 text-green-600"/>} color="bg-green-100" />
-                           <StatCard title="Total Outflow" value={formatCurrency(cashflow.totalOutflow, storeSettings)} icon={<TrendingDownIcon className="h-6 w-6 text-red-600"/>} color="bg-red-100" />
-                           <StatCard title="Net Cashflow" value={formatCurrency(cashflow.netCashflow, storeSettings)} icon={<ScaleIcon className={`h-6 w-6 ${cashflow.netCashflow >= 0 ? 'text-blue-600' : 'text-red-600'}`}/>} color={`${cashflow.netCashflow >= 0 ? 'bg-blue-100' : 'bg-red-100'}`} />
+                            <StatCard title="Total Inflow" value={formatCurrency(cashflow.totalInflow, storeSettings)} icon={<TrendingUpIcon className="h-6 w-6 text-green-600" />} color="bg-green-100" />
+                            <StatCard title="Total Outflow" value={formatCurrency(cashflow.totalOutflow, storeSettings)} icon={<TrendingDownIcon className="h-6 w-6 text-red-600" />} color="bg-red-100" />
+                            <StatCard title="Net Cashflow" value={formatCurrency(cashflow.netCashflow, storeSettings)} icon={<ScaleIcon className={`h-6 w-6 ${cashflow.netCashflow >= 0 ? 'text-blue-600' : 'text-red-600'}`} />} color={`${cashflow.netCashflow >= 0 ? 'bg-blue-100' : 'bg-red-100'}`} />
                         </div>
-                         <ReportBlock title="Cashflow Trend">
+                        <ReportBlock title="Cashflow Trend">
                             <div className="flex items-center space-x-4 pl-6 pb-2 text-sm">
                                 <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-green-500 mr-2"></div>Inflow</div>
                                 <div className="flex items-center"><div className="w-3 h-3 rounded-full bg-red-500 mr-2"></div>Outflow</div>
@@ -654,9 +654,9 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
                             <CashflowChart data={cashflowTrend} storeSettings={storeSettings} />
                         </ReportBlock>
                     </div>
-                 );
+                );
             case 'personal-use':
-                 return (
+                return (
                     <div className="max-w-7xl mx-auto space-y-8 animate-fade-in">
                         <ReportBlock title="Personal Use Adjustments">
                             {!personalUse || personalUse.length === 0 ? (
@@ -691,7 +691,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
                             )}
                         </ReportBlock>
                     </div>
-                 );
+                );
             default:
                 return null;
         }
@@ -761,49 +761,49 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings }) => {
                 </div>
             </header>
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-                 <div className="max-w-7xl mx-auto">
-                   <div className=" mb-6">
-                      <div className="overflow-x-auto overflow-y-hidden">
-                          <nav className="-mb-px flex space-x-4 sm:space-x-6 whitespace-nowrap" aria-label="Tabs">
-                              <TabButton tabName="sales" label="Sales Reports" />
-                              <TabButton tabName="inventory" label="Inventory Reports" />
-                              <TabButton tabName="customers" label="Customer Reports" />
-                              <TabButton tabName="cashflow" label="Cashflow" />
-                              <TabButton tabName="personal-use" label="Personal Use" />
-                          </nav>
-                      </div>
-                   </div>
+                <div className="max-w-7xl mx-auto">
+                    <div className=" mb-6">
+                        <div className="overflow-x-auto overflow-y-hidden">
+                            <nav className="-mb-px flex space-x-4 sm:space-x-6 whitespace-nowrap" aria-label="Tabs">
+                                <TabButton tabName="sales" label="Sales Reports" />
+                                <TabButton tabName="inventory" label="Inventory Reports" />
+                                <TabButton tabName="customers" label="Customer Reports" />
+                                <TabButton tabName="cashflow" label="Cashflow" />
+                                <TabButton tabName="personal-use" label="Personal Use" />
+                            </nav>
+                        </div>
+                    </div>
 
-                   {renderContent()}
-                 </div>
+                    {renderContent()}
+                </div>
             </main>
 
             {/* Mobile Filters Bottom Sheet */}
             {showFiltersMobile && (
-              <div className="fixed inset-0 z-30 md:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-filters-title">
-                <div className="absolute inset-0 bg-black/40" onClick={() => setShowFiltersMobile(false)}></div>
-                <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-2xl p-4 pt-3 max-h-[80vh] overflow-y-auto" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
-                  <div className="mx-auto w-full max-w-lg">
-                    <div className="flex items-center justify-between mb-2">
-                      <h2 id="mobile-filters-title" className="text-base font-semibold text-gray-900">Filters</h2>
-                      <button className="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50" onClick={() => setShowFiltersMobile(false)} aria-label="Close filters">Close</button>
-                    </div>
-                    <div className="grid grid-cols-1 gap-3">
-                        <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="p-2 border rounded-md text-sm w-full bg-white" />
-                        <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="p-2 border rounded-md text-sm w-full bg-white" />
-                        <div className="grid grid-cols-3 gap-2">
-                            <button onClick={() => { setDatePreset(7); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50">7 Days</button>
-                            <button onClick={() => { setDatePreset(30); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50">30 Days</button>
-                            <button onClick={() => { setThisMonth(); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50">This Month</button>
+                <div className="fixed inset-0 z-30 md:hidden" role="dialog" aria-modal="true" aria-labelledby="mobile-filters-title">
+                    <div className="absolute inset-0 bg-black/40" onClick={() => setShowFiltersMobile(false)}></div>
+                    <div className="absolute inset-x-0 bottom-0 bg-white rounded-t-2xl shadow-2xl p-4 pt-3 max-h-[80vh] overflow-y-auto" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)' }}>
+                        <div className="mx-auto w-full max-w-lg">
+                            <div className="flex items-center justify-between mb-2">
+                                <h2 id="mobile-filters-title" className="text-base font-semibold text-gray-900">Filters</h2>
+                                <button className="px-3 py-1.5 text-sm rounded-md border hover:bg-gray-50" onClick={() => setShowFiltersMobile(false)} aria-label="Close filters">Close</button>
+                            </div>
+                            <div className="grid grid-cols-1 gap-3">
+                                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="p-2 border rounded-md text-sm w-full bg-white" />
+                                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="p-2 border rounded-md text-sm w-full bg-white" />
+                                <div className="grid grid-cols-3 gap-2">
+                                    <button onClick={() => { setDatePreset(7); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50">7 Days</button>
+                                    <button onClick={() => { setDatePreset(30); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50">30 Days</button>
+                                    <button onClick={() => { setThisMonth(); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50">This Month</button>
+                                </div>
+                                <div className="grid grid-cols-1">
+                                    <button onClick={() => { handleExportPDF(); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50 flex items-center gap-2 justify-center"><ArrowDownTrayIcon className="w-5 h-5" />Download PDF</button>
+                                    <button onClick={() => { handleExportCSV(); }} className="mt-2 px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50 flex items-center gap-2 justify-center"><ArrowDownTrayIcon className="w-5 h-5" />Download CSV</button>
+                                </div>
+                            </div>
                         </div>
-                        <div className="grid grid-cols-1">
-                            <button onClick={() => { handleExportPDF(); }} className="px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50 flex items-center gap-2 justify-center"><ArrowDownTrayIcon className="w-5 h-5"/>Download PDF</button>
-                            <button onClick={() => { handleExportCSV(); }} className="mt-2 px-3 py-2 text-sm rounded-md bg-white border hover:bg-gray-50 flex items-center gap-2 justify-center"><ArrowDownTrayIcon className="w-5 h-5"/>Download CSV</button>
-                        </div>
                     </div>
-                  </div>
                 </div>
-              </div>
             )}
 
             {isCmdOpen && (

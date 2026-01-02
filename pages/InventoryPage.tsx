@@ -1,8 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, Category, Supplier, StoreSettings, User } from '../types';
+import { Product, Category, Supplier, StoreSettings, User, Account } from '../types';
 import Header from '../components/Header';
 import ProductList from '../components/ProductList';
 import ProductFormModal from '../components/ProductFormModal';
+import CategoryList from '../components/CategoryList';
+import CategoryFormModal from '../components/CategoryFormModal';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
@@ -14,11 +16,14 @@ interface InventoryPageProps {
     products: Product[];
     categories: Category[];
     suppliers: Supplier[];
+    accounts?: Account[];
     onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
     onDeleteProduct: (productId: string) => void;
     onArchiveProduct: (productId: string) => void;
     onStockChange: (productId: string, newStock: number) => void;
     onAdjustStock: (productId: string, newQuantity: number, reason: string) => void;
+    onSaveCategory?: (category: Category) => void;
+    onDeleteCategory?: (categoryId: string) => void;
     isLoading: boolean;
     error: string | null;
     storeSettings: StoreSettings;
@@ -26,19 +31,22 @@ interface InventoryPageProps {
 }
 
 const InventoryPage: React.FC<InventoryPageProps> = ({
-                                                         products,
-                                                         categories,
-                                                         suppliers,
-                                                         onSaveProduct,
-                                                         onDeleteProduct,
-                                                         onArchiveProduct,
-                                                         onStockChange,
-                                                         onAdjustStock,
-                                                         isLoading,
-                                                         error,
-                                                         storeSettings,
-                                                         currentUser
-                                                     }) => {
+    products,
+    categories,
+    suppliers,
+    accounts = [],
+    onSaveProduct,
+    onDeleteProduct,
+    onArchiveProduct,
+    onStockChange,
+    onAdjustStock,
+    onSaveCategory,
+    onDeleteCategory,
+    isLoading,
+    error,
+    storeSettings,
+    currentUser
+}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +58,13 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [productToPrint, setProductToPrint] = useState<Product | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+    // Category Management State
+    const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products');
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [detailedProduct, setDetailedProduct] = useState<Product | null>(null);
@@ -170,6 +185,29 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             });
         }
         handleCloseStockModal();
+    };
+
+    // Category Handlers
+    const handleOpenAddCategoryModal = () => {
+        setEditingCategory(null);
+        setIsCategoryModalOpen(true);
+    };
+
+    const handleOpenEditCategoryModal = (category: Category) => {
+        setEditingCategory(category);
+        setIsCategoryModalOpen(true);
+    };
+
+    const handleCloseCategoryModal = () => {
+        setIsCategoryModalOpen(false);
+        setEditingCategory(null);
+    };
+
+    const handleSaveCategoryInternal = (category: Category) => {
+        if (onSaveCategory) {
+            onSaveCategory(category);
+        }
+        handleCloseCategoryModal();
     };
 
     const handleOpenPrintModal = (product: Product) => {
@@ -412,115 +450,154 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         <>
             <Header
                 title="Product Inventory"
-                buttonText={canManageProducts ? "Add Product" : undefined}
-                onButtonClick={canManageProducts ? handleOpenAddModal : undefined}
+                buttonText={canManageProducts ? (activeTab === 'products' ? "Add Product" : "Add Category") : undefined}
+                onButtonClick={canManageProducts ? (activeTab === 'products' ? handleOpenAddModal : handleOpenAddCategoryModal) : undefined}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                showArchivedToggle={true}
+                showArchivedToggle={false}
                 showArchived={showArchived}
                 setShowArchived={setShowArchived}
             />
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                {/* Sorting controls */}
-                <div className="px-4 pt-4">
-                    <div className="bg-white rounded-md border p-3 flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-2">
-                            <label htmlFor="sortBy" className="text-sm text-gray-700">Sort by</label>
-                            <select
-                                id="sortBy"
-                                className="border rounded px-2 py-1 text-sm"
-                                value={sortBy}
-                                onChange={(e) => setSortBy(e.target.value as any)}
-                            >
-                                <option value="name">Name</option>
-                                <option value="sku">SKU</option>
-                                <option value="price">Price</option>
-                                <option value="stock">Stock</option>
-                                <option value="category">Category</option>
-                            </select>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <label htmlFor="sortOrder" className="text-sm text-gray-700">Order</label>
-                            <select
-                                id="sortOrder"
-                                className="border rounded px-2 py-1 text-sm"
-                                value={sortOrder}
-                                onChange={(e) => setSortOrder(e.target.value as any)}
-                            >
-                                <option value="asc">Ascending</option>
-                                <option value="desc">Descending</option>
-                            </select>
-                        </div>
-                    </div>
+                {/* Tabs */}
+                <div className="bg-white border-b px-4">
+                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                        <button
+                            onClick={() => setActiveTab('products')}
+                            className={`${activeTab === 'products'
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                        >
+                            Products
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('categories')}
+                            className={`${activeTab === 'categories'
+                                ? 'border-blue-500 text-blue-600'
+                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                        >
+                            Categories
+                        </button>
+                    </nav>
                 </div>
-                <ProductList
-                    products={paginatedProducts}
-                    categories={categories}
-                    onSelectProduct={handleSelectProduct}
-                    onStockChange={onStockChange}
-                    onAdjustStock={handleOpenStockModal}
-                    isLoading={isLoading}
-                    error={error}
-                    storeSettings={storeSettings}
-                    userRole={currentUser.role}
-                />
-                {/* Pagination controls */}
-                <div className="px-4 pb-6">
-                    <div className="bg-white rounded-md border p-3 flex flex-wrap items-center justify-between gap-3">
-                        <div className="text-sm text-gray-700">
-                            Showing {(sortedProducts.length === 0 ? 0 : (page - 1) * pageSize + 1)}–{Math.min(sortedProducts.length, page * pageSize)} of {sortedProducts.length}
+
+                {activeTab === 'products' ? (
+                    <>
+
+                        {/* Sorting controls */}
+                        <div className="px-4 pt-4">
+                            <div className="bg-white rounded-md border p-3 flex flex-wrap items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="sortBy" className="text-sm text-gray-700">Sort by</label>
+                                    <select
+                                        id="sortBy"
+                                        className="border rounded px-2 py-1 text-sm"
+                                        value={sortBy}
+                                        onChange={(e) => setSortBy(e.target.value as any)}
+                                    >
+                                        <option value="name">Name</option>
+                                        <option value="sku">SKU</option>
+                                        <option value="price">Price</option>
+                                        <option value="stock">Stock</option>
+                                        <option value="category">Category</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="sortOrder" className="text-sm text-gray-700">Order</label>
+                                    <select
+                                        id="sortOrder"
+                                        className="border rounded px-2 py-1 text-sm"
+                                        value={sortOrder}
+                                        onChange={(e) => setSortOrder(e.target.value as any)}
+                                    >
+                                        <option value="asc">Ascending</option>
+                                        <option value="desc">Descending</option>
+                                    </select>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <label htmlFor="pageSize" className="text-sm text-gray-700">Per page</label>
-                            <select
-                                id="pageSize"
-                                className="border rounded px-2 py-1 text-sm"
-                                value={pageSize}
-                                onChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(1); }}
-                            >
-                                <option value={12}>12</option>
-                                <option value={24}>24</option>
-                                <option value={48}>48</option>
-                            </select>
+                        <ProductList
+                            products={paginatedProducts}
+                            categories={categories}
+                            onSelectProduct={handleSelectProduct}
+                            onStockChange={onStockChange}
+                            onAdjustStock={handleOpenStockModal}
+                            isLoading={isLoading}
+                            error={error}
+                            storeSettings={storeSettings}
+                            userRole={currentUser.role}
+                        />
+                        {/* Pagination controls */}
+                        <div className="px-4 pb-6">
+                            <div className="bg-white rounded-md border p-3 flex flex-wrap items-center justify-between gap-3">
+                                <div className="text-sm text-gray-700">
+                                    Showing {(sortedProducts.length === 0 ? 0 : (page - 1) * pageSize + 1)}–{Math.min(sortedProducts.length, page * pageSize)} of {sortedProducts.length}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="pageSize" className="text-sm text-gray-700">Per page</label>
+                                    <select
+                                        id="pageSize"
+                                        className="border rounded px-2 py-1 text-sm"
+                                        value={pageSize}
+                                        onChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(1); }}
+                                    >
+                                        <option value={12}>12</option>
+                                        <option value={24}>24</option>
+                                        <option value={48}>48</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                                        onClick={() => setPage(1)}
+                                        disabled={page <= 1}
+                                        aria-label="First page"
+                                    >
+                                        « First
+                                    </button>
+                                    <button
+                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                        disabled={page <= 1}
+                                        aria-label="Previous page"
+                                    >
+                                        ‹ Prev
+                                    </button>
+                                    <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
+                                    <button
+                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={page >= totalPages}
+                                        aria-label="Next page"
+                                    >
+                                        Next ›
+                                    </button>
+                                    <button
+                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
+                                        onClick={() => setPage(totalPages)}
+                                        disabled={page >= totalPages}
+                                        aria-label="Last page"
+                                    >
+                                        Last »
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                onClick={() => setPage(1)}
-                                disabled={page <= 1}
-                                aria-label="First page"
-                            >
-                                « First
-                            </button>
-                            <button
-                                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                onClick={() => setPage(p => Math.max(1, p - 1))}
-                                disabled={page <= 1}
-                                aria-label="Previous page"
-                            >
-                                ‹ Prev
-                            </button>
-                            <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
-                            <button
-                                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                disabled={page >= totalPages}
-                                aria-label="Next page"
-                            >
-                                Next ›
-                            </button>
-                            <button
-                                className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                onClick={() => setPage(totalPages)}
-                                disabled={page >= totalPages}
-                                aria-label="Last page"
-                            >
-                                Last »
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                    </>
+                ) : (
+                    <CategoryList
+                        categories={categories}
+                        searchTerm={searchTerm}
+                        onEdit={handleOpenEditCategoryModal}
+                        onDelete={onDeleteCategory || (() => { })}
+                        isLoading={isLoading}
+                        error={error}
+                    />
+                )}
             </main>
+
             {canManageProducts && isModalOpen && (
                 <ProductFormModal
                     isOpen={isModalOpen}
@@ -530,8 +607,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     categories={categories}
                     suppliers={suppliers}
                     storeSettings={storeSettings}
+                    onAddCategory={handleOpenAddCategoryModal}
                 />
             )}
+
             {canManageProducts && isStockModalOpen && (
                 <StockAdjustmentModal
                     isOpen={isStockModalOpen}
@@ -539,6 +618,17 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     onSave={handleSaveStockAdjustment}
                     product={stockAdjustProduct}
                     initialReason={stockAdjustInitialReason}
+                />
+            )}
+
+            {canManageProducts && (
+                <CategoryFormModal
+                    isOpen={isCategoryModalOpen}
+                    onClose={handleCloseCategoryModal}
+                    onSave={handleSaveCategoryInternal}
+                    categoryToEdit={editingCategory}
+                    allCategories={categories}
+                    accounts={accounts}
                 />
             )}
             <LabelPrintModal

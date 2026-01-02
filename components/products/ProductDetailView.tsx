@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Product, Category, Supplier, StoreSettings, User } from '@/types.ts';
 import { formatCurrency } from '@/utils/currency.ts';
 import PencilIcon from '../icons/PencilIcon';
@@ -30,7 +30,7 @@ const ProductDetailView: React.FC<{
     product: Product;
     category?: Category;
     supplier?: Supplier;
-    attributes: {name: string, value: string}[];
+    attributes: { name: string, value: string }[];
     storeSettings: StoreSettings;
     user: User;
     onEdit: (product: Product) => void;
@@ -45,17 +45,17 @@ const ProductDetailView: React.FC<{
     const canManage = user.role === 'admin' || user.role === 'inventory_manager';
 
     // Ensure image_urls is always an array and clean up the curly braces
-    const rawImageUrls = (product.imageUrls || []).map((url: string) => url.replace(/[{}]/g, ''));
+    const rawImageUrls = useMemo(() => (product.imageUrls || []).map((url: string) => url.replace(/[{}]/g, '')), [product.imageUrls]);
     // Normalize to absolute URLs for backend-served assets
-    const imageUrls = rawImageUrls.map((url: string) => url && !url.startsWith('data:') && !/^https?:\/\//i.test(url)
+    const imageUrls = useMemo(() => rawImageUrls.map((url: string) => url && !url.startsWith('data:') && !/^https?:\/\//i.test(url)
         ? buildAssetUrl(url)
         : url
-    );
+    ), [rawImageUrls]);
 
     React.useEffect(() => {
         const firstImageUrl = imageUrls[0] || '';
         setMainImage(firstImageUrl);
-    }, [product, imageUrls]);
+    }, [product.id, imageUrls]);
 
     // Convert string prices to numbers for calculations
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
@@ -88,13 +88,13 @@ const ProductDetailView: React.FC<{
                     <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
                         <div className="mt-2 flex items-center text-sm text-gray-500">{category?.name || 'Uncategorized'}</div>
                         <div className="mt-2 flex items-center text-sm text-gray-500">{product.brand || 'No Brand'}</div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500"><StatusBadge status={product.status}/></div>
+                        <div className="mt-2 flex items-center text-sm text-gray-500"><StatusBadge status={product.status} /></div>
                     </div>
                 </div>
                 {canManage && (
                     <div className="mt-5 flex lg:ml-4 lg:mt-0 gap-x-2">
                         <button onClick={() => onEdit(product)} type="button"
-                                className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                            className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
                             <PencilIcon className="-ml-0.5 h-5 w-5 text-gray-400" /> Edit
                         </button>
                         <button onClick={() => onAdjustStock(product)} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
@@ -116,7 +116,7 @@ const ProductDetailView: React.FC<{
                         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                             <div className="md:col-span-3">
                                 {mainImage ? (
-                                    <img src={mainImage} alt={product.name} className="w-full h-auto object-cover rounded-lg shadow-sm aspect-square"/>
+                                    <img src={mainImage} alt={product.name} className="w-full h-auto object-cover rounded-lg shadow-sm aspect-square" />
                                 ) : (
                                     <div className="w-full aspect-square flex items-center justify-center rounded-lg bg-gray-50 border border-dashed border-gray-300">
                                         <div className="text-center text-gray-400">
@@ -127,12 +127,14 @@ const ProductDetailView: React.FC<{
                                 )}
                             </div>
                             {imageUrls.length > 0 && (
-                                <div className="md:col-span-2 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-y-auto md:max-h-[26rem]">
-                                    {imageUrls.map((url: string, idx: number) => (
-                                        <img key={idx} src={url} alt={`${product.name} thumbnail ${idx+1}`}
-                                             onClick={() => setMainImage(url)}
-                                             className={`w-20 h-20 md:w-full md:h-auto flex-shrink-0 object-cover rounded-md cursor-pointer aspect-square ${url === mainImage ? 'ring-2 ring-offset-2 ring-blue-500' : 'hover:opacity-80'}`} />
-                                    ))}
+                                <div className="md:col-span-2 md:relative">
+                                    <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:absolute md:inset-0 md:overflow-y-auto pb-2 md:pb-0">
+                                        {imageUrls.map((url: string, idx: number) => (
+                                            <img key={idx} src={url} alt={`${product.name} thumbnail ${idx + 1}`}
+                                                onClick={() => setMainImage(url)}
+                                                className={`w-20 h-20 md:w-full md:h-auto flex-shrink-0 object-cover rounded-md cursor-pointer aspect-square ${url === mainImage ? 'ring-2 ring-offset-2 ring-blue-500' : 'hover:opacity-80'}`} />
+                                        ))}
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -222,13 +224,13 @@ const ProductDetailView: React.FC<{
                     {canManage && (
                         <InfoCard title="Actions">
                             <div className="space-y-3">
-                                <button onClick={() => onPrintLabel(product)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Print Label</span><PrinterIcon className="w-5 h-5"/></button>
+                                <button onClick={() => onPrintLabel(product)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Print Label</span><PrinterIcon className="w-5 h-5" /></button>
                                 {product.status === 'active' ? (
-                                    <button onClick={() => onArchive(product.id)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Archive Product</span><ArchiveBoxIcon className="w-5 h-5"/></button>
+                                    <button onClick={() => onArchive(product.id)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Archive Product</span><ArchiveBoxIcon className="w-5 h-5" /></button>
                                 ) : (
-                                    <button onClick={() => onArchive(product.id)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Restore Product</span><RestoreIcon className="w-5 h-5"/></button>
+                                    <button onClick={() => onArchive(product.id)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Restore Product</span><RestoreIcon className="w-5 h-5" /></button>
                                 )}
-                                <button onClick={() => onDelete(product)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Delete Product</span><TrashIcon className="w-5 h-5"/></button>
+                                <button onClick={() => onDelete(product)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Delete Product</span><TrashIcon className="w-5 h-5" /></button>
                             </div>
                         </InfoCard>
                     )}

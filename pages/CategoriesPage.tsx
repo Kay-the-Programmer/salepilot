@@ -13,7 +13,7 @@ interface CategoriesPageProps {
     isLoading: boolean;
     error: string | null;
 }
-
+ 
 const CategoriesPage: React.FC<CategoriesPageProps> = ({
     categories,
     accounts,

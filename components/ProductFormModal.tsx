@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, Category, CustomAttribute, Supplier, StoreSettings } from '../types';
 import { generateDescription as fetchAIDescription } from '../services/geminiService';
-import { api } from '../services/api';
+import { api, buildAssetUrl } from '../services/api';
 import SparklesIcon from './icons/SparklesIcon';
 import XMarkIcon from './icons/XMarkIcon';
 import CameraIcon from './icons/CameraIcon';
 import CameraCaptureModal from './CameraCaptureModal';
 import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
-import {toSnakeCase} from "@/utils/helpers.ts";
+import { toSnakeCase } from "@/utils/helpers.ts";
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -17,9 +17,10 @@ interface ProductFormModalProps {
     categories: Category[];
     suppliers: Supplier[];
     storeSettings: StoreSettings;
+    onAddCategory?: () => void;
 }
 
-const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, onSave, productToEdit, categories, suppliers, storeSettings }) => {
+const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, onSave, productToEdit, categories, suppliers, storeSettings, onAddCategory }) => {
 
     const getInitialProductState = (): Omit<Product, 'id'> => ({
         name: '',
@@ -189,7 +190,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
             // Add existing server images (those we want to keep)
             const imagesToKeep = productToEdit
-                ? productToEdit.imageUrls.filter(url => 
+                ? productToEdit.imageUrls.filter(url =>
                     !imagesToDelete.includes(url) && !url.startsWith('data:'))
                 : [];
             formData.append('existing_images', JSON.stringify(imagesToKeep));
@@ -308,7 +309,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         // If it's a newly added image (has a corresponding File object)
         if (indexToRemove < imageFiles.length) {
             setImageFiles(prev => prev.filter((_, index) => index !== indexToRemove));
-        } 
+        }
         // If it's an existing image from the server (for product edit)
         else if (productToEdit && productToEdit.imageUrls) {
             const imageToRemove = productToEdit.imageUrls[indexToRemove - imageFiles.length];
@@ -369,21 +370,31 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">Product Name *</label>
-                                    <input type="text" name="name" id="name" value={product.name} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
+                                    <input type="text" name="name" id="name" value={product.name} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                                 </div>
                                 <div>
                                     <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700">Category *</label>
-                                    <select name="categoryId" id="categoryId" value={product.categoryId || ''} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                        <option value="" disabled>Select a category</option>
-                                        {categories.filter(c => c.parentId === null).map(c => (
-                                            <React.Fragment key={c.id}>
-                                                <option value={c.id} className="font-bold">{c.name}</option>
-                                                {categories.filter(sub => sub.parentId === c.id).map(sub => (
-                                                    <option key={sub.id} value={sub.id}>&nbsp;&nbsp;{sub.name}</option>
-                                                ))}
-                                            </React.Fragment>
-                                        ))}
-                                    </select>
+                                    <div className="flex gap-2">
+                                        <select name="categoryId" id="categoryId" value={product.categoryId || ''} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                                            <option value="" disabled>Select a category</option>
+                                            {categories.filter(c => c.parentId === null).map(c => (
+                                                <React.Fragment key={c.id}>
+                                                    <option value={c.id} className="font-bold">{c.name}</option>
+                                                    {categories.filter(sub => sub.parentId === c.id).map(sub => (
+                                                        <option key={sub.id} value={sub.id}>&nbsp;&nbsp;{sub.name}</option>
+                                                    ))}
+                                                </React.Fragment>
+                                            ))}
+                                        </select>
+                                        <button
+                                            type="button"
+                                            onClick={onAddCategory}
+                                            className="mt-1 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                            title="Add New Category"
+                                        >
+                                            <span className="text-lg font-bold text-blue-600">+</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -408,7 +419,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                                 <div>
                                     <label htmlFor="brand" className="block text-sm font-medium text-gray-700">Brand</label>
-                                    <input type="text" name="brand" id="brand" value={product.brand || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
+                                    <input type="text" name="brand" id="brand" value={product.brand || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                                 </div>
                                 <div>
                                     <label htmlFor="supplierId" className="block text-sm font-medium text-gray-700">Supplier</label>
@@ -421,9 +432,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="mt-4">
                                 <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description</label>
                                 <div className="mt-1 relative">
-                                    <textarea name="description" id="description" rows={3} value={product.description} onChange={handleChange} className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-28"/>
+                                    <textarea name="description" id="description" rows={3} value={product.description} onChange={handleChange} className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm pr-28" />
                                     <button type="button" onClick={handleGenerateDescription} disabled={isGenerating || !product.name || !product.categoryId} className="absolute top-2 right-2 inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
-                                        {isGenerating ? 'Generating...' : <> <SparklesIcon className="w-4 h-4 mr-1.5" /> Generate </> }
+                                        {isGenerating ? 'Generating...' : <> <SparklesIcon className="w-4 h-4 mr-1.5" /> Generate </>}
                                     </button>
                                 </div>
                             </div>
@@ -432,14 +443,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="price" className="block text-sm font-medium text-gray-700">Retail Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''} *</label>
-                                    <input type="number" name="price" id="price" value={product.price} onChange={handleChange} required min="0.01" step="0.01" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
+                                    <input type="number" name="price" id="price" value={product.price} onChange={handleChange} required min="0.01" step="0.01" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                                     {product.unitOfMeasure === 'kg' && (
                                         <p className="mt-1 text-xs text-gray-500">Enter the price for each kilogram (kg). The POS will multiply by the weight sold.</p>
                                     )}
                                 </div>
                                 <div>
                                     <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700">Cost Price</label>
-                                    <input type="number" name="costPrice" id="costPrice" value={product.costPrice || ''} onChange={handleChange} min="0" step="0.01" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
+                                    <input type="number" name="costPrice" id="costPrice" value={product.costPrice || ''} onChange={handleChange} min="0" step="0.01" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                                 </div>
                             </div>
 
@@ -447,12 +458,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <label htmlFor="sku" className="block text-sm font-medium text-gray-700">SKU</label>
-                                    <input type="text" name="sku" id="sku" value={product.sku} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
+                                    <input type="text" name="sku" id="sku" value={product.sku} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                                 </div>
                                 <div>
                                     <label htmlFor="barcode" className="block text-sm font-medium text-gray-700">Barcode (UPC, EAN, etc.)</label>
                                     <div className="mt-1 flex rounded-md shadow-sm">
-                                        <input type="text" name="barcode" id="barcode" value={product.barcode || ''} onChange={handleChange} className="flex-1 min-w-0 block border border-gray-300 w-full px-3 py-2 rounded-none rounded-l-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm "/>
+                                        <input type="text" name="barcode" id="barcode" value={product.barcode || ''} onChange={handleChange} className="flex-1 min-w-0 block border border-gray-300 w-full px-3 py-2 rounded-none rounded-l-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm " />
                                         <button type="button" onClick={handleGenerateBarcode} className="-ml-px relative inline-flex items-center space-x-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-r-md text-gray-700 bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
                                             <span>Generate</span>
                                         </button>
@@ -462,7 +473,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
                                 <div>
                                     <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Stock Quantity{product.unitOfMeasure === 'kg' ? ' (kg)' : ''} *</label>
-                                    <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" step={product.unitOfMeasure === 'kg' ? "0.001" : "1"} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
+                                    <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" step={product.unitOfMeasure === 'kg' ? "0.001" : "1"} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
                                 </div>
                                 <div>
                                     <label htmlFor="unitOfMeasure" className="block text-sm font-medium text-gray-700">Unit of Measure</label>
@@ -473,7 +484,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 </div>
                                 <div>
                                     <label htmlFor="reorderPoint" className="block text-sm font-medium text-gray-700">Reorder Point</label>
-                                    <input type="number" name="reorderPoint" id="reorderPoint" value={product.reorderPoint || ''} onChange={handleChange} min="0" step="1" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder={`Default: ${storeSettings.lowStockThreshold}`}/>
+                                    <input type="number" name="reorderPoint" id="reorderPoint" value={product.reorderPoint || ''} onChange={handleChange} min="0" step="1" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder={`Default: ${storeSettings.lowStockThreshold}`} />
                                 </div>
                             </div>
 
@@ -564,7 +575,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             </select>
                                         </div>
                                         <div className="flex gap-2">
-                                            <button type="button" onClick={() => setProduct(prev => ({...prev, variants: (prev.variants || []).filter((_, i) => i !== idx)}))} className="px-3 py-2 rounded-md border text-sm bg-white">Remove</button>
+                                            <button type="button" onClick={() => setProduct(prev => ({ ...prev, variants: (prev.variants || []).filter((_, i) => i !== idx) }))} className="px-3 py-2 rounded-md border text-sm bg-white">Remove</button>
                                         </div>
                                     </div>
                                 ))}
@@ -572,7 +583,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     type="button"
                                     onClick={() => setProduct(prev => ({
                                         ...prev,
-                                        variants: [...(prev.variants || []), { name: '', sku: `${product.sku}-${(prev.variants?.length || 0)+1}`, price: product.price, stock: 0, unitOfMeasure: product.unitOfMeasure }]
+                                        variants: [...(prev.variants || []), { name: '', sku: `${product.sku}-${(prev.variants?.length || 0) + 1}`, price: product.price, stock: 0, unitOfMeasure: product.unitOfMeasure }]
                                     }))}
                                     className="mt-2 inline-flex items-center px-3 py-1.5 rounded-md border text-sm bg-white"
                                 >
@@ -586,7 +597,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4">
                                     {images.map((imgSrc, index) => (
                                         <div key={index} className="relative group aspect-square">
-                                            <img src={imgSrc} alt={`Product image ${index + 1}`} className="w-full h-full object-cover rounded-md shadow-sm border border-gray-200" />
+                                            <img src={buildAssetUrl(imgSrc)} alt={`Product image ${index + 1}`} className="w-full h-full object-cover rounded-md shadow-sm border border-gray-200" />
                                             <button
                                                 type="button"
                                                 onClick={() => removeImage(index)}
@@ -603,14 +614,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             onClick={() => fileInputRef.current?.click()}
                                             className="w-full text-xs inline-flex items-center justify-center gap-1.5 rounded-md bg-white px-2 py-1.5 font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                                         >
-                                            <ArrowUpTrayIcon className="w-4 h-4 text-gray-500"/> Upload
+                                            <ArrowUpTrayIcon className="w-4 h-4 text-gray-500" /> Upload
                                         </button>
                                         <button
                                             type="button"
                                             onClick={() => setIsCameraModalOpen(true)}
                                             className="w-full text-xs inline-flex items-center justify-center gap-1.5 rounded-md bg-white px-2 py-1.5 font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
                                         >
-                                            <CameraIcon className="w-4 h-4 text-gray-500"/> Camera
+                                            <CameraIcon className="w-4 h-4 text-gray-500" /> Camera
                                         </button>
                                     </div>
                                 </div>

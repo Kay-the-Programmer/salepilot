@@ -31,13 +31,13 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
             }
         }
     };
-    
+
     const handleFinalize = () => {
         const uncountedItems = session?.items.filter(i => i.counted === null).length || 0;
         if (uncountedItems > 0) {
-             if (!window.confirm(`There are still ${uncountedItems} uncounted item(s). Are you sure you want to finalize the count? Uncounted items will not be adjusted.`)) {
+            if (!window.confirm(`There are still ${uncountedItems} uncounted item(s). Are you sure you want to finalize the count? Uncounted items will not be adjusted.`)) {
                 return;
-             }
+            }
         }
         if (window.confirm('Are you sure you want to complete this stock take? This will update your inventory levels.')) {
             onFinalize();
@@ -62,7 +62,7 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
 
     const { totalItems, countedItems, itemsWithDiscrepancy } = useMemo(() => {
         if (!session) return { totalItems: 0, countedItems: 0, itemsWithDiscrepancy: 0 };
-        
+
         const total = session.items.length;
         const counted = session.items.filter(i => i.counted !== null).length;
         const discrepancy = session.items.filter(i => i.counted !== null && i.counted !== i.expected).length;
@@ -106,7 +106,7 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
             </div>
         );
     }
-    
+
     const FilterButton: React.FC<{
         filterType: string;
         label: string;
@@ -131,11 +131,11 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-2">
                         <button onClick={handleCancel} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                           <XMarkIcon className="-ml-0.5 h-5 w-5 text-gray-500" />
-                           Cancel
+                            <XMarkIcon className="-ml-0.5 h-5 w-5 text-gray-500" />
+                            Cancel
                         </button>
                         <button onClick={handleFinalize} type="button" className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                           Complete Count
+                            Complete Count
                         </button>
                     </div>
                 </div>
@@ -147,7 +147,7 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                                 </svg>
                             </span>
-                           <input
+                            <input
                                 type="text"
                                 placeholder="Search products by name or SKU..."
                                 value={searchTerm}
@@ -165,12 +165,12 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                     </div>
                 </div>
             </header>
-            <main className="flex-1 overflow-y-auto">
-                <div className="px-4 sm:px-4 lg:px-4 py-4">
-                    <div className="flow-root">
-                        <div className="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+            <main className="flex-1 flex flex-col overflow-hidden">
+                <div className="px-4 sm:px-4 lg:px-4 py-4 flex-1 flex flex-col min-h-0">
+                    <div className="flex-1 flex flex-col min-h-0">
+                        <div className="overflow-auto flex-1 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                             <table className="min-w-full divide-y divide-gray-300">
-                                <thead className="bg-gray-50">
+                                <thead className="bg-gray-50 sticky top-0 z-10">
                                     <tr>
                                         <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-2/5">Product</th>
                                         <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/5">SKU</th>
@@ -183,26 +183,27 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                                     {filteredAndSortedItems.length > 0 ? filteredAndSortedItems.map((item) => {
                                         const discrepancy = item.counted !== null ? item.counted - item.expected : null;
                                         return (
-                                        <tr key={item.productId} className={item.counted !== null ? (discrepancy === 0 ? 'bg-green-50' : 'bg-red-50') : ''}>
-                                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{item.name}</td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{item.sku || '-'}</td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-center text-sm text-gray-700">{item.expected}</td>
-                                            <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                                <input
-                                                    ref={el => { inputRefs.current[item.productId] = el; }}
-                                                    type="number"
-                                                    value={item.counted ?? ''}
-                                                    onChange={e => handleCountChange(item.productId, e.target.value)}
-                                                    min="0"
-                                                    step="any"
-                                                    className="block w-24 mx-auto p-1 border rounded-md text-center focus:ring-blue-500 focus:border-blue-500"
-                                                />
-                                            </td>
-                                            <td className={`whitespace-nowrap px-3 py-4 text-center text-sm font-bold ${discrepancy === null ? 'text-gray-500' : discrepancy > 0 ? 'text-blue-600' : discrepancy < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                               {discrepancy === null ? '—' : (discrepancy > 0 ? `+${discrepancy}` : discrepancy)}
-                                            </td>
-                                        </tr>
-                                    )}) : (
+                                            <tr key={item.productId} className={item.counted !== null ? (discrepancy === 0 ? 'bg-green-50' : 'bg-red-50') : ''}>
+                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{item.name}</td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{item.sku || '-'}</td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-center text-sm text-gray-700">{item.expected}</td>
+                                                <td className="whitespace-nowrap px-3 py-4 text-sm">
+                                                    <input
+                                                        ref={el => { inputRefs.current[item.productId] = el; }}
+                                                        type="number"
+                                                        value={item.counted ?? ''}
+                                                        onChange={e => handleCountChange(item.productId, e.target.value)}
+                                                        min="0"
+                                                        step="any"
+                                                        className="block w-24 mx-auto p-1 border rounded-md text-center focus:ring-blue-500 focus:border-blue-500"
+                                                    />
+                                                </td>
+                                                <td className={`whitespace-nowrap px-3 py-4 text-center text-sm font-bold ${discrepancy === null ? 'text-gray-500' : discrepancy > 0 ? 'text-blue-600' : discrepancy < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                                    {discrepancy === null ? '—' : (discrepancy > 0 ? `+${discrepancy}` : discrepancy)}
+                                                </td>
+                                            </tr>
+                                        )
+                                    }) : (
                                         <tr>
                                             <td colSpan={5} className="text-center py-10 text-gray-500">
                                                 No products match your search or filter.

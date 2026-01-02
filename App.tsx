@@ -38,10 +38,10 @@ type SnackbarState = {
 };
 
 const PERMISSIONS: Record<User['role'], string[]> = {
-  superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile'],
-  admin: ['reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile'],
-  staff: ['sales', 'sales-history', 'inventory', 'returns', 'customers', 'profile'],
-  inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile']
+    superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile'],
+    admin: ['reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile'],
+    staff: ['sales', 'sales-history', 'inventory', 'returns', 'customers', 'profile'],
+    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
@@ -51,7 +51,7 @@ const DEFAULT_PAGES: Record<User['role'], string> = {
     inventory_manager: 'inventory'
 };
 
-const App: React.FC = () => { 
+const App: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -104,7 +104,7 @@ const App: React.FC = () => {
         };
         const onInstalled = () => {
             setInstallPrompt(null);
-            try { console.log('App installed'); } catch {}
+            try { console.log('App installed'); } catch { }
         };
         window.addEventListener('beforeinstallprompt', handler as any);
         window.addEventListener('appinstalled', onInstalled);
@@ -251,7 +251,7 @@ const App: React.FC = () => {
         }
     }, [showSnackbar]);
 
-     const handleSync = useCallback(async () => {
+    const handleSync = useCallback(async () => {
         if (isSyncing || !getOnlineStatus()) return;
         setIsSyncing(true);
         showSnackbar('Syncing offline changes...', 'sync');
@@ -289,7 +289,7 @@ const App: React.FC = () => {
                     const resp = await api.get<{ stores: { id: string; name: string }[] }>("/superadmin/stores");
                     setSystemStores(resp.stores || []);
                 }
-            } catch {}
+            } catch { }
             const localUser = getCurrentUser();
             if (localUser && localUser.token) {
                 try {
@@ -356,7 +356,7 @@ const App: React.FC = () => {
             } else {
                 // For non-superadmin users, no super mode applies
             }
-        } catch {}
+        } catch { }
         setCurrentUser(user);
         // Explicitly redirect superadmin to the superadmin page after login
         const desired = user.role === 'superadmin' ? 'superadmin' : DEFAULT_PAGES[user.role];
@@ -370,6 +370,7 @@ const App: React.FC = () => {
     };
 
     const handleLogout = () => setIsLogoutModalOpen(true);
+
     const handleConfirmLogout = () => {
         logout();
         setCurrentUser(null);
@@ -446,7 +447,7 @@ const App: React.FC = () => {
                     setProducts(prev => [tempProduct, ...prev]);
                 }
                 // Persist to IndexedDB so details remain available after reload while offline
-                try { await dbService.put('products', tempProduct); } catch (_) {}
+                try { await dbService.put('products', tempProduct); } catch (_) { }
                 return tempProduct;
             } else {
                 showSnackbar(`Product ${isUpdating ? 'updated' : 'added'} successfully!`, 'success');
@@ -484,7 +485,7 @@ const App: React.FC = () => {
     const handleArchiveProduct = async (productId: string) => {
         try {
             const result = await api.patch<Product & { offline?: boolean }>(`/products/${productId}/archive`, {});
-             if (result.offline) {
+            if (result.offline) {
                 showSnackbar('Offline: Product status change queued.', 'info');
             } else {
                 showSnackbar(`Product ${result.status === 'archived' ? 'archived' : 'restored'}.`, 'info');
@@ -504,7 +505,7 @@ const App: React.FC = () => {
             const result = await api.patch(`/products/${productId}/stock`, { newQuantity: newStock, reason: 'Quick adjustment' });
 
             if (result.offline) {
-                 showSnackbar('Offline: Stock change queued.', 'info');
+                showSnackbar('Offline: Stock change queued.', 'info');
             } else {
                 fetchData(); // Sync with server state
             }
@@ -518,7 +519,7 @@ const App: React.FC = () => {
         try {
             const result = await api.patch(`/products/${productId}/stock`, { newQuantity, reason });
             if (result.offline) {
-                 showSnackbar('Offline: Stock adjustment queued.', 'info');
+                showSnackbar('Offline: Stock adjustment queued.', 'info');
             } else {
                 setProducts(await api.get('/products'));
                 showSnackbar('Stock adjusted successfully.', 'success');
@@ -550,7 +551,7 @@ const App: React.FC = () => {
                 setSales(prev => [tempSale, ...prev]);
 
                 tempSale.cart.forEach(item => {
-                    setProducts(prevProducts => prevProducts.map(p => 
+                    setProducts(prevProducts => prevProducts.map(p =>
                         p.id === item.productId ? { ...p, stock: p.stock - item.quantity } : p
                     ));
                 });
@@ -571,8 +572,8 @@ const App: React.FC = () => {
                 return tempSale;
             } else {
                 showSnackbar('Sale completed successfully!', 'success');
-                fetchData(); 
-                return result; 
+                fetchData();
+                return result;
             }
         } catch (err: any) {
             showSnackbar(err.message, 'error');
@@ -623,7 +624,7 @@ const App: React.FC = () => {
     const handleProcessReturn = async (returnInfo: Return) => {
         try {
             const result = await api.post<Return>('/returns', returnInfo);
-             if (result.offline) {
+            if (result.offline) {
                 showSnackbar('Offline: Return queued for sync.', 'info');
             } else {
                 showSnackbar('Return processed successfully!', 'success');
@@ -635,7 +636,7 @@ const App: React.FC = () => {
     };
 
     // Generic save handler to reduce boilerplate for simple entities
-    const createSaveHandler = <T extends {id?: any, name?: string}>(
+    const createSaveHandler = <T extends { id?: any, name?: string }>(
         entityName: string,
         endpoint: string,
         stateSetter: React.Dispatch<React.SetStateAction<T[]>>,
@@ -673,7 +674,7 @@ const App: React.FC = () => {
 
     const handleDeleteCustomer = async (customerId: string) => {
         if (window.confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
-             try {
+            try {
                 const result = await api.delete(`/customers/${customerId}`);
                 if (result.offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
             } catch (err: any) { showSnackbar(err.message, 'error'); }
@@ -682,7 +683,7 @@ const App: React.FC = () => {
 
     const handleDeleteSupplier = async (supplierId: string) => {
         if (window.confirm('Are you sure you want to delete this supplier? This may affect linked products.')) {
-             try {
+            try {
                 const result = await api.delete(`/suppliers/${supplierId}`);
                 if (result.offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
             } catch (err: any) { showSnackbar(err.message, 'error'); }
@@ -797,13 +798,13 @@ const App: React.FC = () => {
             await saveUser(userData, id);
             setUsers(await getUsers());
             showSnackbar(`User ${id ? 'updated' : 'created'} successfully!`, 'success');
-        } catch(err: any) {
+        } catch (err: any) {
             showSnackbar(err.message, 'error');
         }
     };
 
     const handleDeleteUser = async (userId: string) => {
-        if(userId === currentUser?.id) {
+        if (userId === currentUser?.id) {
             showSnackbar("You cannot delete your own account.", "error");
             return;
         }
@@ -878,7 +879,7 @@ const App: React.FC = () => {
         const handleCompleted = (user: User) => {
             const merged = token ? ({ ...user, token } as User) : user;
             // Persist merged user (we already set it in StoreSetupPage but ensure token merge)
-            try { localStorage.setItem('salePilotUser', JSON.stringify(merged)); } catch {}
+            try { localStorage.setItem('salePilotUser', JSON.stringify(merged)); } catch { }
             setCurrentUser(merged);
             setCurrentPage(DEFAULT_PAGES[merged.role]);
         };
@@ -900,7 +901,7 @@ const App: React.FC = () => {
 
     const renderPage = () => {
         if (!hasAccess(currentPage, currentUser.role)) {
-             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
+            return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
         }
 
         switch (currentPage) {
@@ -911,16 +912,16 @@ const App: React.FC = () => {
             case 'returns':
                 return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
             case 'customers':
-                 return <CustomersPage customers={customers} sales={sales} onSaveCustomer={handleSaveCustomer} onDeleteCustomer={handleDeleteCustomer} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
+                return <CustomersPage customers={customers} sales={sales} onSaveCustomer={handleSaveCustomer} onDeleteCustomer={handleDeleteCustomer} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
             case 'suppliers':
-                 return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} />;
+                return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} />;
             case 'purchase-orders':
                 return <PurchaseOrdersPage purchaseOrders={purchaseOrders} suppliers={suppliers} products={products} onSave={handleSavePurchaseOrder} onDelete={handleDeletePurchaseOrder} onReceiveItems={handleReceivePOItems} showSnackbar={showSnackbar} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
             case 'categories':
-                 return <CategoriesPage categories={categories} accounts={accounts} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} />;
+                return <CategoriesPage categories={categories} accounts={accounts} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} />;
             case 'stock-takes':
                 return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
-             case 'reports':
+            case 'reports':
                 return <ReportsPage storeSettings={storeSettings!} />;
             case 'accounting':
                 return <AccountingPage accounts={accounts} journalEntries={journalEntries} sales={sales} customers={customers} suppliers={suppliers} supplierInvoices={supplierInvoices} purchaseOrders={purchaseOrders} onSaveAccount={handleSaveAccount} onDeleteAccount={handleDeleteAccount} onAddManualJournalEntry={handleAddManualJournalEntry} onRecordPayment={handleRecordPayment} onSaveSupplierInvoice={handleSaveSupplierInvoice} onRecordSupplierPayment={handleRecordSupplierPayment} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
@@ -936,7 +937,23 @@ const App: React.FC = () => {
                 return <SuperAdminPage />;
             case 'inventory':
             default:
-                return <InventoryPage products={products} categories={categories} suppliers={suppliers} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
+                return <InventoryPage
+                    products={products}
+                    categories={categories}
+                    suppliers={suppliers}
+                    accounts={accounts}
+                    onSaveProduct={handleSaveProduct}
+                    onDeleteProduct={handleDeleteProduct}
+                    onArchiveProduct={handleArchiveProduct}
+                    onStockChange={handleStockChange}
+                    onAdjustStock={handleStockAdjustment}
+                    onSaveCategory={handleSaveCategory}
+                    onDeleteCategory={handleDeleteCategory}
+                    isLoading={isLoading}
+                    error={error}
+                    storeSettings={storeSettings!}
+                    currentUser={currentUser}
+                />;
         }
     };
 
@@ -963,14 +980,14 @@ const App: React.FC = () => {
                     superMode={currentUser.role === 'superadmin' ? superMode : undefined}
                     onChangeSuperMode={(mode) => {
                         setSuperMode(mode);
-                        try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch {}
+                        try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
                         // Redirect to appropriate default page if current is no longer permitted
                         const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
                         const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin'] : PERMISSIONS[effectiveRole];
                         if (!allowed.includes(currentPage)) {
                             const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
                             setCurrentPage(next);
-                            try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch {}
+                            try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
                         }
                     }}
                     storesForSelect={currentUser.role === 'superadmin' ? systemStores : undefined}
@@ -994,7 +1011,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Main content */}
-            <div className="flex-1 flex flex-col overflow-hidden">
+            <div className="flex-1 flex flex-col overflow-y-auto md:overflow-hidden">
                 {/* Mobile top bar with menu button */}
                 <div className="md:hidden h-12 bg-gray-100 border-b border-gray-200 flex items-center px-3">
                     <button
