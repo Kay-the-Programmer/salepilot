@@ -1,16 +1,20 @@
 import { dbService } from './dbService';
 
 // Determine API base URL
-const PROD_BACKEND = 'https://salepilot-backend-ai8h.onrender.com/api';
+// Priority:
+// 1. Runtime override (window.__API_URL) - useful for containerized builds
+// 2. Build-time environment variable (VITE_API_URL) - standard for Vercel/CI
+// 3. Dev fallback (localhost)
 const LOCAL_BACKEND = 'http://localhost:5000/api';
-
-const DEFAULT_BASE_URL = import.meta.env.PROD ? PROD_BACKEND : LOCAL_BACKEND;
+const ENV_BASE = import.meta.env.VITE_API_URL;
 
 // Optional runtime override: window.__API_URL or <meta name="app:apiUrl" content="...">
 const RUNTIME_BASE = (typeof window !== 'undefined' && (window as any).__API_URL) ||
   (typeof document !== 'undefined' ? document.querySelector('meta[name="app:apiUrl"]')?.getAttribute('content') || undefined : undefined);
-const ENV_BASE = (typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.VITE_API_URL) || undefined;
-const BASE_URL = (RUNTIME_BASE || ENV_BASE || DEFAULT_BASE_URL).replace(/\/+$/, '');
+
+// Ensure BASE_URL is set. If VITE_API_URL is provided, use it; otherwise fallback to localhost (dev).
+// NOTE: VITE_API_URL should define the full path to api, e.g. "https://backend.com/api"
+const BASE_URL = (RUNTIME_BASE || ENV_BASE || LOCAL_BACKEND).replace(/\/+$/, '');
 
 // Storage key used by authService
 const CURRENT_USER_KEY = 'salePilotUser';
