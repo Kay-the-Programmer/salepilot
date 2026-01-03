@@ -452,7 +452,6 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                     }
                 />
             </div>
-
             {/* Main Content Area */}
             <div className="flex-grow bg-gray-100 md:rounded-2xl flex flex-col md:flex-row p-4 gap-4 md:overflow-hidden min-w-0 pb-20 md:pb-4">
                 {/* Product Selection - Mobile tab */}
