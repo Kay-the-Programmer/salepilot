@@ -376,32 +376,35 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
         }
     }
 
-    // Mobile-optimized tabbed interface
-    const MobileTabBar = () => (
-        <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-50">
-            <div className="flex">
-                <button
-                    onClick={() => setActiveTab('products')}
-                    className={`flex-1 py-3 px-4 text-center font-medium ${activeTab === 'products' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500'}`}
-                >
-                    <ShoppingCartIcon className={`w-5 h-5 mx-auto mb-1 ${activeTab === 'products' ? 'text-blue-600' : 'text-slate-400'}`} />
-                    <span className="text-xs">Products</span>
-                </button>
-                <button
-                    onClick={() => setActiveTab('cart')}
-                    className={`flex-1 py-3 px-4 text-center font-medium relative ${activeTab === 'cart' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-slate-500'}`}
-                >
-                    <div className="relative">
-                        <ShoppingCartIcon className={`w-5 h-5 mx-auto mb-1 ${activeTab === 'cart' ? 'text-blue-600' : 'text-slate-400'}`} />
-                        {cart.length > 0 && (
-                            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                                {cart.length}
-                            </span>
-                        )}
-                    </div>
-                    <span className="text-xs">Cart</span>
-                </button>
-            </div>
+    // Floating Action Buttons
+    const FloatingActionButtons = () => (
+        <div className="md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-6 p-2 rounded-full bg-slate-900/10 backdrop-blur-md border border-white/20 shadow-xl">
+            {/* Products Button */}
+            <button
+                onClick={() => setActiveTab('products')}
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${activeTab === 'products'
+                        ? 'bg-blue-600 text-white shadow-lg scale-110'
+                        : 'bg-white/50 text-slate-600 hover:bg-white/80'
+                    }`}
+            >
+                <ShoppingCartIcon className="w-5 h-5" />
+            </button>
+
+            {/* Cart Button */}
+            <button
+                onClick={() => setActiveTab('cart')}
+                className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all ${activeTab === 'cart'
+                        ? 'bg-blue-600 text-white shadow-lg scale-110'
+                        : 'bg-white/50 text-slate-600 hover:bg-white/80'
+                    }`}
+            >
+                <ShoppingCartIcon className="w-5 h-5" />
+                {cart.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border border-white shadow-sm">
+                        {cart.length}
+                    </span>
+                )}
+            </button>
         </div>
     );
 
@@ -453,11 +456,11 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                 />
             </div>
             {/* Main Content Area */}
-            <div className="flex-grow bg-gray-100 md:rounded-2xl flex flex-col md:flex-row p-4 gap-4 md:overflow-hidden min-w-0 pb-20 md:pb-4">
+            <div className="flex-grow bg-gray-100 md:rounded-2xl flex flex-col md:flex-row p-2 md:p-4 gap-4 md:overflow-hidden min-w-0 pb-20 md:pb-4">
                 {/* Product Selection - Mobile tab */}
                 <div className={`${activeTab === 'products' ? 'block' : 'hidden'} md:block flex-grow flex flex-col md:overflow-y-auto min-w-0 min-h-0 h-auto md:h-full`}>
                     {/* Quick Actions Bar for Mobile */}
-                    <div className="md:hidden sticky top-0 z-20 flex gap-2 mb-4 p-2 -mx-4 px-4 bg-gray-100 backdrop-blur-2xm shadow-xl border-b border-gray-200 transition-all duration-300">
+                    <div className="md:hidden sticky top-0 z-20 flex gap-2 mb-2 p-2 -mx-2 px-2 bg-gray-100 backdrop-blur-2xm shadow-xl border-b border-gray-200 transition-all duration-300">
                         <button
                             onClick={() => setIsScannerOpen(true)}
                             className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 flex items-center justify-center gap-2"
@@ -821,8 +824,8 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                 </div>
             </div>
 
-            {/* Mobile Bottom Tab Bar */}
-            <MobileTabBar />
+            {/* Floating Action Buttons */}
+            <FloatingActionButtons />
 
             {/* Modals */}
             <QrScannerModal
