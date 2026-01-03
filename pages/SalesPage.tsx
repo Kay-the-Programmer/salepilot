@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Product, CartItem, Sale, Customer, StoreSettings, Payment } from '../types';
 import { SnackbarType } from '../App';
+import PlusIcon from '../components/icons/PlusIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import ShoppingCartIcon from '../components/icons/ShoppingCartIcon';
 import BackspaceIcon from '../components/icons/BackspaceIcon';
@@ -410,38 +411,46 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
     // Floating Action Buttons
     const FloatingActionButtons = () => (
         <div
-            className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 rounded-full bg-slate-900/10 backdrop-blur-md border border-white/20 shadow-xl transition-transform duration-300 ease-in-out ${isFabVisible ? 'translate-y-0' : 'translate-y-[200%]'}`}
+            className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 rounded-full bg-slate-900/10 backdrop-blur-md border border-white/20 shadow-xl transition-all duration-300 ease-spring ${isFabVisible ? 'translate-y-0 opacity-100 scale-100' : 'translate-y-[200%] opacity-0 scale-95'}`}
         >
             {/* Scan Button */}
             <button
                 onClick={() => setIsScannerOpen(true)}
-                className="w-12 h-12 rounded-full flex items-center justify-center transition-all bg-white/50 text-slate-600 hover:bg-white/80 active:scale-95"
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all bg-white/50 text-slate-600 hover:bg-white/80 active:scale-90 hover:scale-105"
             >
-                <QrCodeIcon className="w-5 h-5" />
+                <QrCodeIcon className="w-5 h-5 transition-transform duration-300" />
+            </button>
+
+            {/* Enter Code Button */}
+            <button
+                onClick={() => setIsManualOpen(true)}
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all bg-white/50 text-slate-600 hover:bg-white/80 active:scale-90 hover:scale-105"
+            >
+                <PlusIcon className="w-5 h-5 transition-transform duration-300" />
             </button>
 
             {/* Products Button */}
             <button
                 onClick={() => setActiveTab('products')}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 ${activeTab === 'products'
-                    ? 'bg-blue-600 text-white shadow-lg scale-110'
-                    : 'bg-white/50 text-slate-600 hover:bg-white/80'
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90 hover:scale-105 ${activeTab === 'products'
+                        ? 'bg-blue-600 text-white shadow-lg scale-110'
+                        : 'bg-white/50 text-slate-600 hover:bg-white/80'
                     }`}
             >
-                <ShoppingCartIcon className="w-5 h-5" />
+                <ShoppingCartIcon className="w-5 h-5 transition-transform duration-300" />
             </button>
 
             {/* Cart Button */}
             <button
                 onClick={() => setActiveTab('cart')}
-                className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 ${activeTab === 'cart'
-                    ? 'bg-blue-600 text-white shadow-lg scale-110'
-                    : 'bg-white/50 text-slate-600 hover:bg-white/80'
+                className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-90 hover:scale-105 ${activeTab === 'cart'
+                        ? 'bg-blue-600 text-white shadow-lg scale-110'
+                        : 'bg-white/50 text-slate-600 hover:bg-white/80'
                     }`}
             >
-                <ShoppingCartIcon className="w-5 h-5" />
+                <ShoppingCartIcon className="w-5 h-5 transition-transform duration-300" />
                 {cart.length > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border border-white shadow-sm">
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center border border-white shadow-sm animate-pulse">
                         {cart.length}
                     </span>
                 )}
@@ -452,7 +461,7 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
     return (
         <div className="flex flex-col min-h-[100dvh] md:h-full md:min-h-0 bg-gray-100 md:rounded-2xl md:overflow-hidden">
             {/* Header - Hidden on mobile when cart is active */}
-            <div className={`${activeTab === 'cart' ? 'hidden md:block' : ''}`}>
+            <div className={`sticky top-0 z-40 bg-gray-100/95 backdrop-blur-sm transition-all duration-300 ${activeTab === 'cart' ? 'hidden md:block' : ''}`}>
                 <Header
                     title={"Point of Sale"}
                     searchTerm={searchTerm}
@@ -472,6 +481,7 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                         if (filtered.length === 1) {
                             const product = filtered[0];
                             const availableStock = typeof (product as any).stock === 'number' ? (product as any).stock : (parseFloat(String((product as any).stock)) || 0);
+
                             if (availableStock > 0) {
                                 addToCart(product);
                                 setSearchTerm('');
@@ -485,17 +495,21 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                         }
                     }}
                     rightContent={
-                        <button
-                            onClick={() => setIsScannerOpen(true)}
-                            className="hidden md:block px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            aria-label="Scan QR Code"
-                            title="Scan QR Code"
-                        >
-                            <QrCodeIcon className="w-6 h-6" />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {/* Desktop only scan button */}
+                            <button
+                                onClick={() => setIsScannerOpen(true)}
+                                className="hidden md:flex p-2 text-slate-600 hover:bg-white rounded-lg transition-colors gap-2 items-center"
+                                title="Scan Barcode"
+                            >
+                                <QrCodeIcon className="w-6 h-6" />
+                                <span className="hidden lg:inline text-sm font-medium">Scan</span>
+                            </button>
+                        </div>
                     }
                 />
             </div>
+
             {/* Main Content Area */}
             <div className="flex-grow bg-gray-100 md:rounded-2xl flex flex-col md:flex-row p-2 md:p-4 gap-4 md:overflow-hidden min-w-0 pb-20 md:pb-4">
                 {/* Product Selection - Mobile tab */}
@@ -864,16 +878,18 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                 onClose={() => setIsManualOpen(false)}
                 onSubmit={handleManualSubmit}
             />
-            {showReceiptModal && lastSale && (
-                <ReceiptModal
-                    isOpen={showReceiptModal}
-                    onClose={() => setShowReceiptModal(false)}
-                    saleData={lastSale}
-                    showSnackbar={showSnackbar}
-                    storeSettings={storeSettings}
-                />
-            )}
-        </div>
+            {
+                showReceiptModal && lastSale && (
+                    <ReceiptModal
+                        isOpen={showReceiptModal}
+                        onClose={() => setShowReceiptModal(false)}
+                        saleData={lastSale}
+                        showSnackbar={showSnackbar}
+                        storeSettings={storeSettings}
+                    />
+                )
+            }
+        </div >
     );
 };
 

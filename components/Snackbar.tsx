@@ -47,8 +47,8 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
     }[type];
 
     return (
-        <div 
-            className={`fixed bottom-5 right-5 z-50 max-w-sm rounded-md border-l-4 shadow-lg p-4 ${typeClasses[type]}`}
+        <div
+            className={`fixed top-20 md:top-4 right-4 z-50 max-w-sm rounded-md border-l-4 shadow-lg p-4 ${typeClasses[type]} animate-slide-in-right transition-all duration-300 ease-out transform`}
             role="alert"
         >
             <div className="flex">
@@ -58,16 +58,15 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
                 </div>
                 <div className="ml-auto pl-3">
                     <div className="-mx-1.5 -my-1.5">
-                        <button 
-                            type="button" 
+                        <button
+                            type="button"
                             onClick={onClose}
-                            className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-                                type === 'success' ? 'bg-green-100 text-green-500 hover:bg-green-200 focus:ring-green-600 focus:ring-offset-green-100' :
-                                type === 'error' ? 'bg-red-100 text-red-500 hover:bg-red-200 focus:ring-red-600 focus:ring-offset-red-100' :
-                                type === 'sync' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 focus:ring-gray-600 focus:ring-offset-gray-100' :
-                                'bg-blue-100 text-blue-500 hover:bg-blue-200 focus:ring-blue-600 focus:ring-offset-blue-100'
-                            }`}
-                             aria-label="Dismiss"
+                            className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${type === 'success' ? 'bg-green-100 text-green-500 hover:bg-green-200 focus:ring-green-600 focus:ring-offset-green-100' :
+                                    type === 'error' ? 'bg-red-100 text-red-500 hover:bg-red-200 focus:ring-red-600 focus:ring-offset-red-100' :
+                                        type === 'sync' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 focus:ring-gray-600 focus:ring-offset-gray-100' :
+                                            'bg-blue-100 text-blue-500 hover:bg-blue-200 focus:ring-blue-600 focus:ring-offset-blue-100'
+                                }`}
+                            aria-label="Dismiss"
                         >
                             <span className="sr-only">Dismiss</span>
                             <XMarkIcon className="h-5 w-5" />
