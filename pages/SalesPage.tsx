@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Product, CartItem, Sale, Customer, StoreSettings, Payment } from '../types';
 import { SnackbarType } from '../App';
-import PlusIcon from '../components/icons/PlusIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import ShoppingCartIcon from '../components/icons/ShoppingCartIcon';
 import BackspaceIcon from '../components/icons/BackspaceIcon';
@@ -48,6 +47,40 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
     const [mobileCartOpen, setMobileCartOpen] = useState<boolean>(false);
     const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
+    const [isFabVisible, setIsFabVisible] = useState(true);
+    const lastScrollY = useRef(0);
+
+    // Scroll to hide logic
+    useEffect(() => {
+        const handleScroll = () => {
+            const mainContent = document.getElementById('main-content');
+            if (!mainContent) return;
+
+            const currentScrollY = mainContent.scrollTop;
+            if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+                setIsFabVisible(false);
+            } else {
+                setIsFabVisible(true);
+            }
+            lastScrollY.current = currentScrollY;
+        };
+
+        const mainContent = document.getElementById('main-content');
+        if (mainContent) {
+            mainContent.addEventListener('scroll', handleScroll, { passive: true });
+        } else {
+            // Fallback for desktop or disparate structures if needed, though App.tsx ensures existence
+            window.addEventListener('scroll', handleScroll, { passive: true });
+        }
+
+        return () => {
+            if (mainContent) {
+                mainContent.removeEventListener('scroll', handleScroll);
+            } else {
+                window.removeEventListener('scroll', handleScroll);
+            }
+        };
+    }, []);
 
     /**
      * Set payment method
@@ -241,9 +274,7 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
         }
     };
 
-    const handleManualCodeEntry = () => {
-        setIsManualOpen(true);
-    };
+
 
     const handleManualSubmit = (code: string) => {
         const ok = addProductByCode(code);
@@ -378,13 +409,23 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
 
     // Floating Action Buttons
     const FloatingActionButtons = () => (
-        <div className="md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-6 p-2 rounded-full bg-slate-900/10 backdrop-blur-md border border-white/20 shadow-xl">
+        <div
+            className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-4 p-2 rounded-full bg-slate-900/10 backdrop-blur-md border border-white/20 shadow-xl transition-transform duration-300 ease-in-out ${isFabVisible ? 'translate-y-0' : 'translate-y-[200%]'}`}
+        >
+            {/* Scan Button */}
+            <button
+                onClick={() => setIsScannerOpen(true)}
+                className="w-12 h-12 rounded-full flex items-center justify-center transition-all bg-white/50 text-slate-600 hover:bg-white/80 active:scale-95"
+            >
+                <QrCodeIcon className="w-5 h-5" />
+            </button>
+
             {/* Products Button */}
             <button
                 onClick={() => setActiveTab('products')}
-                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${activeTab === 'products'
-                        ? 'bg-blue-600 text-white shadow-lg scale-110'
-                        : 'bg-white/50 text-slate-600 hover:bg-white/80'
+                className={`w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 ${activeTab === 'products'
+                    ? 'bg-blue-600 text-white shadow-lg scale-110'
+                    : 'bg-white/50 text-slate-600 hover:bg-white/80'
                     }`}
             >
                 <ShoppingCartIcon className="w-5 h-5" />
@@ -393,9 +434,9 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
             {/* Cart Button */}
             <button
                 onClick={() => setActiveTab('cart')}
-                className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all ${activeTab === 'cart'
-                        ? 'bg-blue-600 text-white shadow-lg scale-110'
-                        : 'bg-white/50 text-slate-600 hover:bg-white/80'
+                className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all active:scale-95 ${activeTab === 'cart'
+                    ? 'bg-blue-600 text-white shadow-lg scale-110'
+                    : 'bg-white/50 text-slate-600 hover:bg-white/80'
                     }`}
             >
                 <ShoppingCartIcon className="w-5 h-5" />
@@ -459,23 +500,7 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
             <div className="flex-grow bg-gray-100 md:rounded-2xl flex flex-col md:flex-row p-2 md:p-4 gap-4 md:overflow-hidden min-w-0 pb-20 md:pb-4">
                 {/* Product Selection - Mobile tab */}
                 <div className={`${activeTab === 'products' ? 'block' : 'hidden'} md:block flex-grow flex flex-col md:overflow-y-auto min-w-0 min-h-0 h-auto md:h-full`}>
-                    {/* Quick Actions Bar for Mobile */}
-                    <div className="md:hidden sticky top-0 z-20 flex gap-2 mb-2 p-2 -mx-2 px-2 bg-gray-100 backdrop-blur-2xm shadow-xl border-b border-gray-200 transition-all duration-300">
-                        <button
-                            onClick={() => setIsScannerOpen(true)}
-                            className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 flex items-center justify-center gap-2"
-                        >
-                            <QrCodeIcon className="w-5 h-5" />
-                            Scan
-                        </button>
-                        <button
-                            onClick={handleManualCodeEntry}
-                            className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 bg-white text-slate-700 font-medium hover:bg-slate-50 flex items-center justify-center gap-2"
-                        >
-                            <PlusIcon className="w-5 h-5" />
-                            Enter Code
-                        </button>
-                    </div>
+
 
                     {isLoading ? (
                         <div className="flex-1 flex items-center justify-center">

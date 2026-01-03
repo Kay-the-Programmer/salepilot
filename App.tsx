@@ -1011,7 +1011,7 @@ const App: React.FC = () => {
             </div>
 
             {/* Main content */}
-            <div className="flex-1 flex flex-col overflow-y-auto md:overflow-hidden">
+            <div id="main-content" className="flex-1 flex flex-col overflow-y-auto md:overflow-hidden">
                 {/* Mobile top bar with menu button */}
                 <div className="md:hidden h-12 bg-gray-100 border-b border-gray-200 flex items-center px-3">
                     <button
