@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { Category, CustomAttribute, Account } from '../types';
 import XMarkIcon from './icons/XMarkIcon';
 import PlusIcon from './icons/PlusIcon';
 import TrashIcon from './icons/TrashIcon';
+import ChevronDownIcon from './icons/ChevronDownIcon';
 
 interface CategoryFormModalProps {
     isOpen: boolean;
@@ -25,10 +25,12 @@ const getInitialState = (): Omit<Category, 'id'> => ({
 const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, onSave, categoryToEdit, allCategories, accounts }) => {
     const [category, setCategory] = useState(getInitialState());
     const [error, setError] = useState('');
+    const [activeSection, setActiveSection] = useState<string>('basic'); // For accordion on mobile
 
     useEffect(() => {
         if (isOpen) {
             setError('');
+            setActiveSection('basic');
             if (categoryToEdit) {
                 setCategory({ ...getInitialState(), ...categoryToEdit });
             } else {
@@ -39,7 +41,6 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
     
     const revenueAccounts = useMemo(() => accounts.filter(a => a.type === 'revenue').sort((a,b) => a.number.localeCompare(b.number)), [accounts]);
     const cogsAccounts = useMemo(() => accounts.filter(a => a.type === 'expense').sort((a,b) => a.number.localeCompare(b.number)), [accounts]);
-
 
     if (!isOpen) return null;
 
@@ -60,6 +61,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
     const addAttribute = () => {
         const newAttribute: CustomAttribute = { id: `attr_${new Date().getTime()}`, name: '' };
         setCategory(prev => ({ ...prev, attributes: [...prev.attributes, newAttribute]}));
+        setActiveSection('attributes');
     };
 
     const removeAttribute = (index: number) => {
@@ -70,7 +72,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!category.name.trim()) {
-            setError('Category name is required.');
+            setError('Category name is required');
             return;
         }
 
@@ -84,88 +86,267 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
     const availableParents = allCategories.filter(c => c.id !== categoryToEdit?.id);
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-lg w-full m-4">
-                <form onSubmit={handleSubmit}>
-                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                         <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                            {categoryToEdit ? 'Edit Category' : 'Add New Category'}
-                        </h3>
-                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
+        <div 
+            className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 transition-opacity"
+            aria-labelledby="modal-title" 
+            role="dialog" 
+            aria-modal="true"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] sm:max-w-lg flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* iOS-style drag handle for mobile */}
+                <div className="sm:hidden pt-3 pb-1 flex justify-center">
+                    <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                </div>
+                
+                {/* Header */}
+                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-xl font-semibold text-gray-900" id="modal-title">
+                                {categoryToEdit ? 'Edit Category' : 'New Category'}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-0.5">
+                                {categoryToEdit ? 'Update category details' : 'Create a new product category'}
+                            </p>
+                        </div>
+                        <button 
+                            type="button" 
+                            onClick={onClose} 
+                            className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Close"
+                        >
                             <XMarkIcon className="h-6 w-6" />
                         </button>
                     </div>
+                </div>
 
-                    <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-                        {error && <div className="rounded-md bg-red-50 p-4 mb-4"><p className="text-sm text-red-700">{error}</p></div>}
-                        
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Category Name *</label>
-                            <input type="text" name="name" id="name" value={category.name} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                        </div>
-
-                         <div>
-                            <label htmlFor="parentId" className="block text-sm font-medium text-gray-700">Parent Category</label>
-                            <select name="parentId" id="parentId" value={category.parentId || 'null'} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                <option value="null">None (Top-level)</option>
-                                {availableParents.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                        
-                        <div>
-                            <h4 className="text-md font-semibold text-gray-800 mt-6 mb-2 border-b pb-1">Custom Attributes</h4>
-                            <p className="text-xs text-gray-500 mb-3">Define attributes for products in this category (e.g., Size, Color). Attributes are inherited by sub-categories.</p>
-                            <div className="space-y-2">
-                                {category.attributes.map((attr, index) => (
-                                    <div key={index} className="flex items-center gap-2">
-                                        <input 
-                                            type="text"
-                                            placeholder="Attribute Name"
-                                            value={attr.name}
-                                            onChange={e => handleAttributeChange(index, e.target.value)}
-                                            className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                        />
-                                        <button type="button" onClick={() => removeAttribute(index)} className="text-red-500 hover:text-red-700 p-1">
-                                            <TrashIcon className="w-5 h-5"/>
-                                        </button>
+                {/* Form content - scrollable */}
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto">
+                    <div className="px-4 py-4 sm:px-6 space-y-6">
+                        {error && (
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-lg">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
                                     </div>
-                                ))}
+                                    <div className="ml-3">
+                                        <p className="text-sm text-red-700 font-medium">{error}</p>
+                                    </div>
+                                </div>
                             </div>
-                             <button type="button" onClick={addAttribute} className="mt-3 inline-flex items-center px-3 py-1.5 border border-dashed border-gray-400 text-sm font-medium rounded-md text-gray-700 bg-gray-50 hover:bg-gray-100">
-                                <PlusIcon className="w-4 h-4 mr-1.5"/> Add Attribute
+                        )}
+                        
+                        {/* Mobile accordion navigation for sections */}
+                        <div className="sm:hidden flex border-b border-gray-200">
+                            <button
+                                type="button"
+                                onClick={() => setActiveSection('basic')}
+                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'basic' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Basic Info
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveSection('attributes')}
+                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'attributes' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Attributes
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveSection('accounting')}
+                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'accounting' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                            >
+                                Accounting
                             </button>
                         </div>
 
-                        <div>
-                            <h4 className="text-md font-semibold text-gray-800 mt-6 mb-2 border-b pb-1">Accounting Integration</h4>
-                            <p className="text-xs text-gray-500 mb-3">Map sales from this category to specific accounts. If not set, defaults will be used.</p>
-                            <div>
-                                <label htmlFor="revenueAccountId" className="block text-sm font-medium text-gray-700">Sales Revenue Account</label>
-                                <select name="revenueAccountId" id="revenueAccountId" value={category.revenueAccountId || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="">Default Revenue Account</option>
-                                    {revenueAccounts.map(a => <option key={a.id} value={a.id}>{a.name} ({a.number})</option>)}
-                                </select>
-                            </div>
-                            <div className="mt-4">
-                                <label htmlFor="cogsAccountId" className="block text-sm font-medium text-gray-700">Cost of Goods Sold (COGS) Account</label>
-                                <select name="cogsAccountId" id="cogsAccountId" value={category.cogsAccountId || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                                    <option value="">Default COGS Account</option>
-                                    {cogsAccounts.map(a => <option key={a.id} value={a.id}>{a.name} ({a.number})</option>)}
-                                </select>
+                        {/* Basic Information Section */}
+                        <div className={`${activeSection === 'basic' ? 'block' : 'hidden sm:block'}`}>
+                            <div className="space-y-5">
+                                <div>
+                                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Category Name *
+                                    </label>
+                                    <input 
+                                        type="text" 
+                                        name="name" 
+                                        id="name" 
+                                        value={category.name} 
+                                        onChange={handleChange} 
+                                        required 
+                                        className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                        placeholder="e.g., Electronics, Clothing"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label htmlFor="parentId" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Parent Category
+                                    </label>
+                                    <div className="relative">
+                                        <select 
+                                            name="parentId" 
+                                            id="parentId" 
+                                            value={category.parentId || 'null'} 
+                                            onChange={handleChange} 
+                                            className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none appearance-none bg-white"
+                                        >
+                                            <option value="null">None (Top-level category)</option>
+                                            {availableParents.map(c => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
+                                            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
+                                    <p className="mt-2 text-xs text-gray-500">
+                                        Select a parent category to create a hierarchy
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
+                        {/* Attributes Section */}
+                        <div className={`${activeSection === 'attributes' ? 'block' : 'hidden sm:block'}`}>
+                            <div className="space-y-4">
+                                <div>
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-1">Custom Attributes</h4>
+                                    <p className="text-sm text-gray-500 mb-4">
+                                        Define attributes for products in this category (e.g., Size, Color, Material). 
+                                        These are inherited by sub-categories.
+                                    </p>
+                                </div>
+                                
+                                {category.attributes.length > 0 ? (
+                                    <div className="space-y-3">
+                                        {category.attributes.map((attr, index) => (
+                                            <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
+                                                <div className="flex-1">
+                                                    <input 
+                                                        type="text"
+                                                        placeholder="Attribute name"
+                                                        value={attr.name}
+                                                        onChange={e => handleAttributeChange(index, e.target.value)}
+                                                        className="block w-full bg-white px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                                    />
+                                                </div>
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => removeAttribute(index)} 
+                                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                                    aria-label="Remove attribute"
+                                                >
+                                                    <TrashIcon className="w-5 h-5"/>
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-xl">
+                                        <p className="text-gray-500">No attributes added yet</p>
+                                        <p className="text-sm text-gray-400 mt-1">Add attributes like Size, Color, etc.</p>
+                                    </div>
+                                )}
+                                
+                                <button 
+                                    type="button" 
+                                    onClick={addAttribute}
+                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 text-base font-medium rounded-xl text-gray-700 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                                >
+                                    <PlusIcon className="w-5 h-5"/>
+                                    Add Attribute
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Accounting Section */}
+                        <div className={`${activeSection === 'accounting' ? 'block' : 'hidden sm:block'}`}>
+                            <div className="space-y-5">
+                                <div>
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-1">Accounting Integration</h4>
+                                    <p className="text-sm text-gray-500 mb-4">
+                                        Map sales from this category to specific accounts. Leave empty to use defaults.
+                                    </p>
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="revenueAccountId" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Sales Revenue Account
+                                    </label>
+                                    <div className="relative">
+                                        <select 
+                                            name="revenueAccountId" 
+                                            id="revenueAccountId" 
+                                            value={category.revenueAccountId || ''} 
+                                            onChange={handleChange} 
+                                            className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none appearance-none bg-white"
+                                        >
+                                            <option value="">Default Revenue Account</option>
+                                            {revenueAccounts.map(a => (
+                                                <option key={a.id} value={a.id}>
+                                                    {a.name} ({a.number})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
+                                            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label htmlFor="cogsAccountId" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Cost of Goods Sold (COGS) Account
+                                    </label>
+                                    <div className="relative">
+                                        <select 
+                                            name="cogsAccountId" 
+                                            id="cogsAccountId" 
+                                            value={category.cogsAccountId || ''} 
+                                            onChange={handleChange} 
+                                            className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none appearance-none bg-white"
+                                        >
+                                            <option value="">Default COGS Account</option>
+                                            {cogsAccounts.map(a => (
+                                                <option key={a.id} value={a.id}>
+                                                    {a.name} ({a.number})
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3">
+                                            <ChevronDownIcon className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Save Category
-                        </button>
-                        <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
-                            Cancel
-                        </button>
+                    {/* Fixed action buttons */}
+                    <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button 
+                                type="button" 
+                                onClick={onClose}
+                                className="px-6 py-3.5 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                type="submit" 
+                                className="px-6 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
+                            >
+                                {categoryToEdit ? 'Update Category' : 'Create Category'}
+                            </button>
+                        </div>
                     </div>
                 </form>
             </div>

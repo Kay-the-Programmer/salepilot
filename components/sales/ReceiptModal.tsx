@@ -5,6 +5,8 @@ import { SnackbarType } from '../../App';
 import EnvelopeIcon from '../icons/EnvelopeIcon';
 import DevicePhoneMobileIcon from '../icons/DevicePhoneMobileIcon';
 import LinkIcon from '../icons/LinkIcon';
+import XMarkIcon from '../icons/XMarkIcon';
+import PrinterIcon from '../icons/PrinterIcon';
 import { formatCurrency } from '@/utils/currency.ts';
 
 interface ReceiptModalProps {
@@ -21,6 +23,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
     const barcodeRef = useRef<HTMLCanvasElement>(null);
     const [email, setEmail] = useState('');
     const [sms, setSms] = useState('');
+    const [isSending, setIsSending] = useState(false);
 
     useEffect(() => {
         if (isOpen && transactionId && barcodeRef.current) {
@@ -32,7 +35,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
                 JsBarcode(barcodeRef.current, barcodeId, {
                     format: "CODE128",
-                    displayValue: true, // Show the ID below barcode
+                    displayValue: true,
                     margin: 5,
                     height: 35,
                     width: 1.2,
@@ -44,7 +47,6 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
             }
         }
     }, [isOpen, transactionId]);
-
 
     if (!isOpen) return null;
 
@@ -83,6 +85,8 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                     font-size: 12px;
                     line-height: 1.4;
                     color: #000;
+                    margin: 0;
+                    padding: 15px;
                 }
                 .text-center { text-align: center; }
                 .font-bold { font-weight: bold; }
@@ -110,6 +114,9 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 .barcode-container img { max-width: 100%; }
                 .text-green-600 { color: #059669; }
                 .whitespace-pre-wrap { white-space: pre-wrap; }
+                @media print {
+                    body { margin: 0; padding: 0; }
+                }
             </style>
         `);
         printWindow.document.write('</head><body>');
@@ -123,86 +130,271 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         }, 250);
     };
     
-    const handleShare = (type: 'email' | 'sms') => {
-        if (type === 'email') {
-            if (!email) { showSnackbar('Please enter an email address.', 'error'); return; }
-            showSnackbar(`Receipt sent to ${email} (simulated).`, 'success');
-            setEmail('');
-        } else {
-            if (!sms) { showSnackbar('Please enter a phone number.', 'error'); return; }
-            showSnackbar(`Receipt sent to ${sms} (simulated).`, 'success');
-            setSms('');
+    const handleShare = async (type: 'email' | 'sms') => {
+        setIsSending(true);
+        
+        try {
+            if (type === 'email') {
+                if (!email.trim()) { 
+                    showSnackbar('Please enter an email address.', 'error'); 
+                    return;
+                }
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 500));
+                showSnackbar(`Receipt sent to ${email}`, 'success');
+                setEmail('');
+            } else {
+                if (!sms.trim()) { 
+                    showSnackbar('Please enter a phone number.', 'error'); 
+                    return;
+                }
+                // Simulate API call
+                await new Promise(resolve => setTimeout(resolve, 500));
+                showSnackbar(`Receipt sent to ${sms}`, 'success');
+                setSms('');
+            }
+        } finally {
+            setIsSending(false);
         }
     };
 
-    const handleCopyLink = () => {
-        // In a real app, this would be a unique URL to a hosted receipt page.
+    const handleCopyLink = async () => {
         const receiptLink = `${window.location.origin}/receipt/${transactionId}`;
-        navigator.clipboard.writeText(receiptLink);
-        showSnackbar('Receipt link copied to clipboard.', 'info');
+        try {
+            await navigator.clipboard.writeText(receiptLink);
+            showSnackbar('Receipt link copied to clipboard.', 'success');
+        } catch (err) {
+            showSnackbar('Failed to copy link', 'error');
+        }
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-sm w-full flex flex-col max-h-[90vh]">
-                <div ref={modalPrintAreaRef} className="p-6 text-gray-800 overflow-y-auto">
-                    <div className="text-center mb-4">
-                        <h2 className="text-xl font-bold">{storeSettings.name}</h2>
-                        <p className="text-sm">Sale Receipt</p>
-                        <p className="text-xs text-gray-500">{new Date(timestamp).toLocaleString()}</p>
-                        <p className="text-xs text-gray-500">Transaction ID: {transactionId}</p>
-                        {customerName && <p className="text-sm text-gray-600 mt-2">Customer: {customerName}</p>}
+        <div 
+            className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+            aria-labelledby="modal-title" 
+            role="dialog" 
+            aria-modal="true"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] sm:max-w-md flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* iOS-style drag handle for mobile */}
+                <div className="sm:hidden pt-3 pb-1 flex justify-center">
+                    <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                </div>
+                
+                {/* Header with close button */}
+                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-xl font-semibold text-gray-900">Receipt</h3>
+                            <p className="text-sm text-gray-500 mt-0.5">Transaction #{transactionId}</p>
+                        </div>
+                        <button 
+                            type="button" 
+                            onClick={onClose} 
+                            className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Close"
+                        >
+                            <XMarkIcon className="h-6 w-6" />
+                        </button>
                     </div>
-                    <div className="item-list space-y-2 text-sm border-t border-b border-dashed py-2">
-                        {cart.map(item => (
-                            <div key={item.productId} className="item-row">
-                                <div>{item.name}</div>
-                                <div className="item-row-details">
-                                    <span>{item.quantity} x @ {formatCurrency(item.price, storeSettings)}</span>
-                                    {/*<span>{formatCurrency(item.quantity * item.price, storeSettings)}</span>*/}
+                </div>
+                
+                {/* Scrollable receipt content */}
+                <div className="overflow-y-auto flex-1">
+                    {/* Receipt print area */}
+                    <div ref={modalPrintAreaRef} className="p-6 text-gray-800">
+                        {/* Store header */}
+                        <div className="text-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-1">{storeSettings.name}</h2>
+                            <p className="text-sm text-gray-600 mb-3">Sale Receipt</p>
+                            <div className="space-y-1 text-xs text-gray-500">
+                                <p>{new Date(timestamp).toLocaleDateString()}</p>
+                                <p>{new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                            </div>
+                            {customerName && (
+                                <div className="mt-3 p-2 bg-blue-50 rounded-lg inline-block">
+                                    <p className="text-sm font-medium text-blue-800">Customer: {customerName}</p>
+                                </div>
+                            )}
+                        </div>
+                        
+                        {/* Items list */}
+                        <div className="mb-6">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-3">Items ({cart.length})</h4>
+                            <div className="space-y-2">
+                                {cart.map(item => (
+                                    <div key={item.productId} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
+                                        <div className="flex-1">
+                                            <p className="font-medium text-gray-900">{item.name}</p>
+                                            <p className="text-xs text-gray-500">{item.quantity} × {formatCurrency(item.price, storeSettings)}</p>
+                                        </div>
+                                        <p className="font-semibold text-gray-900 ml-2">
+                                            {formatCurrency(item.price * item.quantity, storeSettings)}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Totals */}
+                        <div className="bg-gray-50 rounded-xl p-5 mb-6">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Summary</h4>
+                            <div className="space-y-3">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Subtotal</span>
+                                    <span className="font-medium">{formatCurrency(subtotal, storeSettings)}</span>
+                                </div>
+                                
+                                {discount > 0 && (
+                                    <div className="flex justify-between text-red-600">
+                                        <span>Discount</span>
+                                        <span className="font-medium">-{formatCurrency(discount, storeSettings)}</span>
+                                    </div>
+                                )}
+                                
+                                {storeCreditUsed && storeCreditUsed > 0 && (
+                                    <div className="flex justify-between text-green-600">
+                                        <span>Store Credit</span>
+                                        <span className="font-medium">-{formatCurrency(storeCreditUsed, storeSettings)}</span>
+                                    </div>
+                                )}
+                                
+                                <div className="flex justify-between">
+                                    <span className="text-gray-600">Tax</span>
+                                    <span className="font-medium">{formatCurrency(tax, storeSettings)}</span>
+                                </div>
+                                
+                                <div className="border-t border-gray-300 pt-3 flex justify-between text-lg font-bold">
+                                    <span>Total</span>
+                                    <span>{formatCurrency(total, storeSettings)}</span>
                                 </div>
                             </div>
-                        ))}
+                        </div>
+                        
+                        {/* Store message */}
+                        {storeSettings.receiptMessage && (
+                            <div className="mb-6 p-4 bg-gray-50 rounded-xl">
+                                <p className="text-center text-sm text-gray-600 whitespace-pre-wrap">
+                                    {storeSettings.receiptMessage}
+                                </p>
+                            </div>
+                        )}
+                        
+                        {/* Barcode */}
+                        <div className="text-center">
+                            <div className="border border-gray-200 rounded-lg p-4 inline-block">
+                                <canvas ref={barcodeRef} style={{ display: 'block', margin: '0 auto' }}></canvas>
+                                <p className="text-xs text-gray-500 mt-2">Transaction ID: {transactionId}</p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="totals space-y-1 text-sm pt-2">
-                        <div className="flex justify-between"><span>Subtotal:</span><span>{formatCurrency(subtotal, storeSettings)}</span></div>
-                        {discount > 0 && <div className="flex justify-between"><span>Discount:</span><span>-{formatCurrency(discount, storeSettings)}</span></div>}
-                        {storeCreditUsed && storeCreditUsed > 0 && <div className="flex justify-between text-green-600"><span>Store Credit:</span><span>-{formatCurrency(storeCreditUsed, storeSettings)}</span></div>}
-                        <div className="flex justify-between"><span>Tax:</span><span>{formatCurrency(tax, storeSettings)}</span></div>
-                        <div className="flex justify-between text-base font-bold border-t mt-2 pt-2"><span>Total:</span><span>{formatCurrency(total, storeSettings)}</span></div>
-                    </div>
-                    <p className="text-center text-xs text-gray-500 mt-6 whitespace-pre-wrap">{storeSettings.receiptMessage}</p>
-                    <div className="text-center barcode-container mt-4">
-                        <canvas ref={barcodeRef} style={{ display: 'block', margin: '0 auto' }}></canvas>
+                    
+                    {/* Share options */}
+                    <div className="px-6 pb-6 border-t border-gray-200 pt-6">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Share Receipt</h4>
+                        
+                        {/* Email */}
+                        <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-2 bg-blue-50 rounded-lg">
+                                    <EnvelopeIcon className="w-5 h-5 text-blue-600"/>
+                                </div>
+                                <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
+                            </div>
+                            <div className="flex gap-2">
+                                <input
+                                    id="email"
+                                    type="email"
+                                    placeholder="customer@example.com"
+                                    value={email}
+                                    onChange={e => setEmail(e.target.value)}
+                                    className="flex-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    disabled={isSending}
+                                />
+                                <button 
+                                    onClick={() => handleShare('email')}
+                                    disabled={isSending || !email.trim()}
+                                    className="px-5 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {isSending ? '...' : 'Send'}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* SMS */}
+                        <div className="mb-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-2 bg-green-50 rounded-lg">
+                                    <DevicePhoneMobileIcon className="w-5 h-5 text-green-600"/>
+                                </div>
+                                <label htmlFor="sms" className="text-sm font-medium text-gray-700">SMS</label>
+                            </div>
+                            <div className="flex gap-2">
+                                <input
+                                    id="sms"
+                                    type="tel"
+                                    placeholder="+1 (555) 123-4567"
+                                    value={sms}
+                                    onChange={e => setSms(e.target.value)}
+                                    className="flex-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    disabled={isSending}
+                                />
+                                <button 
+                                    onClick={() => handleShare('sms')}
+                                    disabled={isSending || !sms.trim()}
+                                    className="px-5 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 active:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                >
+                                    {isSending ? '...' : 'Send'}
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {/* Copy Link */}
+                        <div className="p-4 bg-gray-50 rounded-xl">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-purple-50 rounded-lg">
+                                        <LinkIcon className="w-5 h-5 text-purple-600"/>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-medium text-gray-900">Shareable Link</p>
+                                        <p className="text-xs text-gray-500">Copy to clipboard</p>
+                                    </div>
+                                </div>
+                                <button 
+                                    onClick={handleCopyLink}
+                                    className="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 active:bg-purple-800 transition-colors"
+                                >
+                                    Copy
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div className="px-6 pb-4 space-y-4 border-t border-gray-200 pt-4">
-                    <h4 className="text-sm font-semibold text-center text-gray-600">Share Receipt</h4>
-                    <div className="flex items-center space-x-2">
-                        <EnvelopeIcon className="w-5 h-5 text-gray-500"/>
-                        <input type="email" placeholder="Customer's email" value={email} onChange={e => setEmail(e.target.value)} className="flex-1 min-w-0 block w-full px-3 py-1.5 text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"/>
-                        <button onClick={() => handleShare('email')} className="text-sm font-medium text-blue-600 hover:text-blue-800">Send</button>
+                
+                {/* Fixed action buttons */}
+                <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <button 
+                            type="button" 
+                            onClick={handlePrint}
+                            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                        >
+                            <PrinterIcon className="w-5 h-5"/>
+                            Print Receipt
+                        </button>
+                        <button 
+                            type="button" 
+                            onClick={onClose}
+                            className="px-6 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
+                        >
+                            Done
+                        </button>
                     </div>
-                     <div className="flex items-center space-x-2">
-                        <DevicePhoneMobileIcon className="w-5 h-5 text-gray-500"/>
-                        <input type="tel" placeholder="Customer's phone" value={sms} onChange={e => setSms(e.target.value)} className="flex-1 min-w-0 block w-full px-3 py-1.5 text-sm border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"/>
-                        <button onClick={() => handleShare('sms')} className="text-sm font-medium text-blue-600 hover:text-blue-800">Send</button>
-                    </div>
-                     <div className="flex items-center space-x-2">
-                        <LinkIcon className="w-5 h-5 text-gray-500"/>
-                        <p className="flex-1 text-sm text-gray-500">Copy a shareable link.</p>
-                        <button onClick={handleCopyLink} className="text-sm font-medium text-blue-600 hover:text-blue-800">Copy</button>
-                    </div>
-                </div>
-
-                 <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-2 border-t">
-                    <button type="button" onClick={onClose} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:w-auto sm:text-sm">
-                        Done
-                    </button>
-                    <button type="button" onClick={handlePrint} className="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm">
-                        Print
-                    </button>
                 </div>
             </div>
         </div>

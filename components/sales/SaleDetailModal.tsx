@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Sale, StoreSettings } from '@/types.ts';
 import XMarkIcon from '../icons/XMarkIcon';
@@ -22,90 +21,190 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
 
     return (
         <>
-            <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-                <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-4xl w-full">
-                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                        <div>
-                            <h3 className="text-lg font-medium text-gray-900">Sale Details</h3>
-                            <p className="text-sm text-gray-500">{sale.transactionId}</p>
-                        </div>
-                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
+            {/* Mobile-optimized backdrop with native feel */}
+            <div 
+                className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" 
+                aria-labelledby="modal-title" 
+                role="dialog" 
+                aria-modal="true"
+                onClick={onClose}
+            >
+                <div 
+                    className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[85vh] sm:max-w-2xl"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    {/* iOS-style drag handle for mobile */}
+                    <div className="sm:hidden pt-3 pb-1 flex justify-center">
+                        <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
                     </div>
-                    <div className="p-6 max-h-[70vh] overflow-y-auto">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                    
+                    {/* Header with fixed position on scroll */}
+                    <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
+                        <div className="flex items-start justify-between">
                             <div>
-                                <h4 className="text-sm font-medium text-gray-500">Customer</h4>
-                                <p className="text-md text-gray-900">{sale.customerName || 'Walk-in Customer'}</p>
+                                <h3 className="text-xl font-semibold text-gray-900">Sale Details</h3>
+                                <p className="text-sm text-gray-500 mt-0.5">{sale.transactionId}</p>
                             </div>
-                            <div>
-                                <h4 className="text-sm font-medium text-gray-500">Date & Time</h4>
-                                <p className="text-md text-gray-900">{new Date(sale.timestamp).toLocaleString()}</p>
+                            <button 
+                                type="button" 
+                                onClick={onClose} 
+                                className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
+                                aria-label="Close"
+                            >
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {/* Scrollable content area */}
+                    <div className="overflow-y-auto max-h-[calc(85vh-140px)] px-4 sm:px-6 py-4">
+                        {/* Key info cards - responsive grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                            <div className="bg-gray-50 rounded-xl p-4">
+                                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Customer</h4>
+                                <p className="text-base font-medium text-gray-900 truncate">
+                                    {sale.customerName || 'Walk-in Customer'}
+                                </p>
                             </div>
-                            <div>
-                                <h4 className="text-sm font-medium text-gray-500">Payment Status</h4>
-                                <p className="text-md text-gray-900 capitalize">{sale.paymentStatus.replace('_', ' ')}</p>
+                            <div className="bg-gray-50 rounded-xl p-4">
+                                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Date & Time</h4>
+                                <p className="text-base font-medium text-gray-900">
+                                    {new Date(sale.timestamp).toLocaleDateString()}
+                                </p>
+                                <p className="text-sm text-gray-600">
+                                    {new Date(sale.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                            </div>
+                            <div className="bg-gray-50 rounded-xl p-4">
+                                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Payment Status</h4>
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    sale.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                                    sale.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                    'bg-red-100 text-red-800'
+                                }`}>
+                                    {sale.paymentStatus.replace('_', ' ')}
+                                </span>
                             </div>
                         </div>
 
-                        <h4 className="text-md font-semibold text-gray-800 mb-2 border-b pb-1">Items</h4>
-                        <table className="min-w-full divide-y divide-gray-200 mb-6">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                                    <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Qty</th>
-                                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Price</th>
-                                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                        {/* Items section */}
+                        <div className="mb-6">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-3">Items ({sale.cart.length})</h4>
+                            <div className="space-y-3">
                                 {sale.cart.map(item => (
-                                    <tr key={item.productId}>
-                                        <td className="px-4 py-2 whitespace-nowrap text-sm">{item.name}</td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-center">{item.quantity}</td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-right">{formatCurrency(item.price, storeSettings)}</td>
-                                        <td className="px-4 py-2 whitespace-nowrap text-sm text-right font-medium">{formatCurrency(item.price * item.quantity, storeSettings)}</td>
-                                    </tr>
+                                    <div key={item.productId} className="bg-white border border-gray-200 rounded-xl p-4">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div className="flex-1">
+                                                <p className="font-medium text-gray-900 truncate">{item.name}</p>
+                                                <p className="text-sm text-gray-500">SKU: {item.sku || 'N/A'}</p>
+                                            </div>
+                                            <p className="font-semibold text-gray-900 ml-2">
+                                                {formatCurrency(item.price * item.quantity, storeSettings)}
+                                            </p>
+                                        </div>
+                                        <div className="flex items-center justify-between text-sm text-gray-600">
+                                            <span>Qty: {item.quantity}</span>
+                                            <span>{formatCurrency(item.price, storeSettings)} each</span>
+                                        </div>
+                                    </div>
                                 ))}
-                            </tbody>
-                        </table>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                {(sale.payments?.length || 0) > 0 && (
-                                    <>
-                                    <h4 className="font-semibold text-gray-800 mb-2">Payments</h4>
-                                    <ul className="divide-y divide-gray-200 border rounded-md">
-                                        {sale.payments?.map(p => (
-                                            <li key={p.id} className="px-3 py-2 flex justify-between text-sm">
-                                                <span>{new Date(p.date).toLocaleDateString()} - <span className="capitalize">{p.method}</span></span>
-                                                <span className="font-medium text-green-600">{formatCurrency(p.amount, storeSettings)}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    </>
-                                )}
                             </div>
-                            <div className="text-right space-y-1 text-sm">
-                                <p><strong>Subtotal:</strong> {formatCurrency(sale.subtotal, storeSettings)}</p>
-                                {sale.discount > 0 && <p className="text-red-600"><strong>Discount:</strong> -{formatCurrency(sale.discount, storeSettings)}</p>}
-                                <p><strong>Tax:</strong> {formatCurrency(sale.tax, storeSettings)}</p>
-                                {sale.storeCreditUsed && sale.storeCreditUsed > 0 && <p className="text-green-600"><strong>Store Credit Used:</strong> -{formatCurrency(sale.storeCreditUsed, storeSettings)}</p>}
-                                <p className="text-lg font-bold border-t pt-2 mt-2"><strong>Total:</strong> {formatCurrency(sale.total, storeSettings)}</p>
-                                <p className="text-green-600"><strong>Paid:</strong> {formatCurrency(sale.amountPaid, storeSettings)}</p>
-                                {balanceDue > 0.01 && <p className="text-xl font-bold text-red-600"><strong>Balance Due:</strong> {formatCurrency(balanceDue, storeSettings)}</p>}
+                        </div>
+                        
+                        {/* Two-column layout for desktop, stacked for mobile */}
+                        <div className="space-y-6">
+                            {/* Payments section */}
+                            {(sale.payments?.length || 0) > 0 && (
+                                <div>
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-3">Payments</h4>
+                                    <div className="space-y-2">
+                                        {sale.payments?.map(p => (
+                                            <div key={p.id} className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-100">
+                                                <div>
+                                                    <p className="font-medium text-gray-900 capitalize">{p.method}</p>
+                                                    <p className="text-sm text-gray-500">
+                                                        {new Date(p.date).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                                <span className="font-semibold text-green-700">
+                                                    {formatCurrency(p.amount, storeSettings)}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Totals section - optimized for mobile */}
+                            <div className="bg-gray-50 rounded-2xl p-5">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">Summary</h4>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Subtotal</span>
+                                        <span className="font-medium">{formatCurrency(sale.subtotal, storeSettings)}</span>
+                                    </div>
+                                    
+                                    {sale.discount > 0 && (
+                                        <div className="flex justify-between text-red-600">
+                                            <span>Discount</span>
+                                            <span className="font-medium">-{formatCurrency(sale.discount, storeSettings)}</span>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="flex justify-between">
+                                        <span className="text-gray-600">Tax</span>
+                                        <span className="font-medium">{formatCurrency(sale.tax, storeSettings)}</span>
+                                    </div>
+                                    
+                                    {sale.storeCreditUsed && sale.storeCreditUsed > 0 && (
+                                        <div className="flex justify-between text-green-600">
+                                            <span>Store Credit Used</span>
+                                            <span className="font-medium">-{formatCurrency(sale.storeCreditUsed, storeSettings)}</span>
+                                        </div>
+                                    )}
+                                    
+                                    <div className="border-t border-gray-300 pt-3 flex justify-between text-lg font-bold">
+                                        <span>Total</span>
+                                        <span>{formatCurrency(sale.total, storeSettings)}</span>
+                                    </div>
+                                    
+                                    <div className="flex justify-between text-green-700">
+                                        <span>Paid</span>
+                                        <span className="font-bold">{formatCurrency(sale.amountPaid, storeSettings)}</span>
+                                    </div>
+                                    
+                                    {balanceDue > 0.01 && (
+                                        <div className="flex justify-between text-red-700 pt-3 border-t border-gray-300">
+                                            <span className="font-bold">Balance Due</span>
+                                            <span className="text-xl font-bold">{formatCurrency(balanceDue, storeSettings)}</span>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-3 border-t">
-                        <button onClick={() => setIsReceiptOpen(true)} className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
-                            <PrinterIcon className="w-5 h-5"/> View/Print Receipt
-                        </button>
-                        <button onClick={onClose} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                            Close
-                        </button>
+                    
+                    {/* Fixed bottom action bar - iOS style */}
+                    <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
+                        <div className="flex flex-col sm:flex-row gap-3">
+                            <button 
+                                onClick={() => setIsReceiptOpen(true)}
+                                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            >
+                                <PrinterIcon className="w-5 h-5"/>
+                                View Receipt
+                            </button>
+                            <button 
+                                onClick={onClose}
+                                className="px-6 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
+            
             {isReceiptOpen && sale && (
                 <ReceiptModal 
                     isOpen={isReceiptOpen}
