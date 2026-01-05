@@ -962,14 +962,14 @@ const App: React.FC = () => {
             {/* Mobile overlay/backdrop */}
             {isSidebarOpen && (
                 <div
-                    className="fixed inset-0 bg-black/40 z-30 md:hidden"
+                    className="fixed inset-0 bg-black/40 z-[55] md:hidden"
                     onClick={() => setIsSidebarOpen(false)}
                     aria-hidden="true"
                 />
             )}
 
             {/* Sidebar container: slides on mobile, static on desktop */}
-            <div id="app-sidebar" className={`fixed inset-y-0 left-0 z-40 transform transition-transform duration-200 ease-out md:static md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block`}>
+            <div id="app-sidebar" className={`fixed inset-y-0 left-0 z-[60] transform transition-transform duration-200 ease-out md:static md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block`}>
                 <Sidebar
                     currentPage={currentPage}
                     setCurrentPage={handleSetCurrentPage}

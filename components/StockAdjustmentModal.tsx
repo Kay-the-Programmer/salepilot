@@ -64,14 +64,14 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
         : 'Enter how many units to add/remove based on the selected reason.';
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <form onSubmit={handleSave} className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-md w-full m-4">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-end sm:items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <form onSubmit={handleSave} className="bg-white rounded-t-2xl rounded-b-none sm:rounded-lg shadow-xl transform transition-all sm:max-w-md w-full m-0 sm:m-4 animate-slide-up-mobile sm:animate-none">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
                     <div>
                         <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
                             Adjust Stock
                         </h3>
-                         <p className="text-sm text-gray-500 mt-1">{product.name}</p>
+                        <p className="text-sm text-gray-500 mt-1">{product.name}</p>
                     </div>
                     <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
                         <XMarkIcon className="h-6 w-6" />
@@ -82,9 +82,9 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                     <p className="text-sm text-gray-600">Current stock on hand: <span className="font-semibold text-gray-800 text-base">{product.stock}</span></p>
                     <div>
                         <label htmlFor="newQuantity" className="block text-sm font-medium text-gray-700">{inputLabel}</label>
-                        <input 
-                            type="number" 
-                            name="newQuantity" 
+                        <input
+                            type="number"
+                            name="newQuantity"
                             id="newQuantity"
                             value={newQuantity}
                             onChange={(e) => setNewQuantity(e.target.value)}
@@ -95,12 +95,12 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                         />
                         <p className="mt-1 text-xs text-gray-500">{helper}{!isStockCount && ' You can enter a negative number to subtract from stock.'}</p>
                     </div>
-                     <div>
+                    <div>
                         <label htmlFor="reason" className="block text-sm font-medium text-gray-700">Reason for Adjustment *</label>
-                        <select 
-                            id="reason" 
-                            name="reason" 
-                            value={reason} 
+                        <select
+                            id="reason"
+                            name="reason"
+                            value={reason}
                             onChange={(e) => setReason(e.target.value)}
                             className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                             required
@@ -108,7 +108,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                             <option value="" disabled>Select a reason</option>
                             {adjustmentReasons.map(r => <option key={r} value={r}>{r}</option>)}
                         </select>
-                     </div>
+                    </div>
                 </div>
 
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">

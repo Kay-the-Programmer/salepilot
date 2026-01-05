@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Sale, Customer, StoreSettings } from '../types';
 import Header from '../components/Header';
 import SalesList from '../components/sales/SalesList';
@@ -11,6 +11,12 @@ import { api } from '../services/api';
 import { dbService } from '../services/dbService';
 import FilterIcon from '../components/icons/FilterIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
+import ChevronDownIcon from '../components/icons/ChevronDownIcon';
+import CalendarIcon from '../components/icons/CalendarIcon';
+import UserIcon from '../components/icons/UserIcon';
+import ChartBarIcon from '../components/icons/ChartBarIcon';
+import RefreshIcon from '../components/icons/RefreshIcon';
+import DownloadIcon from '../components/icons/DownloadIcon';
 
 interface AllSalesPageProps {
     customers: Customer[];
@@ -51,55 +57,171 @@ const SalesFilterSheet: React.FC<{
         onClose();
     };
 
+    const formatDate = (dateString: string) => {
+        if (!dateString) return 'Select date';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    };
+
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" onClick={onClose}>
-            <div
-                className="fixed bottom-0 left-0 right-0 bg-white rounded-t-lg shadow-lg p-4 transform transition-transform duration-300 ease-in-out"
-                style={{ transform: isOpen ? 'translateY(0)' : 'translateY(100%)' }}
-                onClick={e => e.stopPropagation()}
+        <>
+            {/* Overlay */}
+            <div 
+                className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${isOpen ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent pointer-events-none'}`}
+                onClick={onClose}
             >
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Filters</h3>
-                    <button onClick={onClose} className="p-1"><XMarkIcon className="w-6 h-6" /></button>
-                </div>
-                <div className="space-y-4">
-                    <div>
-                        <label htmlFor="sheet-start-date" className="block text-sm font-medium text-gray-700">Start Date</label>
-                        <input type="date" id="sheet-start-date" value={tempStartDate} onChange={e => setTempStartDate(e.target.value)} className="mt-1 block w-full rounded-md border p-2 border-gray-300  shadow-sm"/>
+                {/* Sheet */}
+                <div
+                    className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out ${
+                        isOpen ? 'translate-y-0' : 'translate-y-full'
+                    }`}
+                    onClick={e => e.stopPropagation()}
+                >
+                    {/* Handle */}
+                    <div className="pt-3 pb-2 flex justify-center">
+                        <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
                     </div>
-                    <div>
-                        <label htmlFor="sheet-end-date" className="block text-sm font-medium text-gray-700">End Date</label>
-                        <input type="date" id="sheet-end-date" value={tempEndDate} onChange={e => setTempEndDate(e.target.value)} className="mt-1 block w-full rounded-md border p-2 border-gray-300 shadow-sm"/>
+
+                    {/* Header */}
+                    <div className="px-5 py-4 border-b border-gray-100">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900">Filters</h3>
+                                <p className="text-sm text-gray-500 mt-0.5">Narrow down your sales data</p>
+                            </div>
+                            <button 
+                                onClick={onClose}
+                                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                            >
+                                <XMarkIcon className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
                     </div>
-                    <div>
-                        <label htmlFor="sheet-customer-filter" className="block text-sm font-medium text-gray-700">Customer</label>
-                        <select id="sheet-customer-filter" value={tempCustomerId} onChange={e => setTempCustomerId(e.target.value)} className="mt-1 block w-full rounded-md border p-2 border-gray-300 shadow-sm">
-                            <option value="">All Customers</option>
-                            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
+
+                    {/* Content */}
+                    <div className="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                        {/* Date Range */}
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-gray-400" />
+                                <label className="text-sm font-semibold text-gray-900">Date Range</label>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-gray-600">From</label>
+                                    <div className="relative">
+                                        <input
+                                            type="date"
+                                            id="sheet-start-date"
+                                            value={tempStartDate}
+                                            onChange={e => setTempStartDate(e.target.value)}
+                                            className="w-full p-3 pr-10 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                        {tempStartDate && (
+                                            <button
+                                                onClick={() => setTempStartDate('')}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                            >
+                                                <XMarkIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-medium text-gray-600">To</label>
+                                    <div className="relative">
+                                        <input
+                                            type="date"
+                                            id="sheet-end-date"
+                                            value={tempEndDate}
+                                            onChange={e => setTempEndDate(e.target.value)}
+                                            className="w-full p-3 pr-10 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        />
+                                        {tempEndDate && (
+                                            <button
+                                                onClick={() => setTempEndDate('')}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2"
+                                            >
+                                                <XMarkIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Customer */}
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <UserIcon className="w-4 h-4 text-gray-400" />
+                                <label className="text-sm font-semibold text-gray-900">Customer</label>
+                            </div>
+                            <div className="relative">
+                                <select
+                                    id="sheet-customer-filter"
+                                    value={tempCustomerId}
+                                    onChange={e => setTempCustomerId(e.target.value)}
+                                    className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
+                                >
+                                    <option value="">All Customers</option>
+                                    {customers.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                    <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="space-y-1.5">
+                            <label className="text-sm font-semibold text-gray-900">Payment Status</label>
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { value: '', label: 'All', color: 'bg-gray-100 text-gray-700' },
+                                    { value: 'paid', label: 'Paid', color: 'bg-green-100 text-green-700' },
+                                    { value: 'unpaid', label: 'Unpaid', color: 'bg-red-100 text-red-700' },
+                                    { value: 'partially_paid', label: 'Partial', color: 'bg-yellow-100 text-yellow-700' },
+                                ].map((status) => (
+                                    <button
+                                        key={status.value}
+                                        onClick={() => setTempStatus(status.value)}
+                                        className={`p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                                            tempStatus === status.value
+                                                ? `${status.color} ring-2 ring-offset-1 ring-current/20`
+                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                        }`}
+                                    >
+                                        {status.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <label htmlFor="sheet-status-filter" className="block text-sm font-medium text-gray-700">Status</label>
-                        <select id="sheet-status-filter" value={tempStatus} onChange={e => setTempStatus(e.target.value)} className="mt-1 block w-full rounded-md border p-2 border-gray-300 shadow-sm">
-                            <option value="">All Statuses</option>
-                            <option value="paid">Paid</option>
-                            <option value="unpaid">Unpaid</option>
-                            <option value="partially_paid">Partially Paid</option>
-                        </select>
+
+                    {/* Footer Actions */}
+                    <div className="p-5 border-t border-gray-100 bg-gray-50/50">
+                        <div className="grid grid-cols-2 gap-3">
+                            <button
+                                onClick={handleResetAndClose}
+                                className="py-3.5 px-4 rounded-xl bg-white text-gray-700 font-semibold text-sm border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition-all duration-200"
+                            >
+                                Reset All
+                            </button>
+                            <button
+                                onClick={handleApply}
+                                className="py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 active:scale-[0.98] transition-all duration-200 shadow-sm shadow-blue-500/25"
+                            >
+                                Apply Filters
+                            </button>
+                        </div>
                     </div>
-                </div>
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                    <button onClick={handleResetAndClose} className="w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-medium text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                        Reset
-                    </button>
-                    <button onClick={handleApply} className="w-full justify-center rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700">
-                        Apply Filters
-                    </button>
                 </div>
             </div>
-        </div>
+        </>
     );
 };
 
@@ -109,45 +231,71 @@ const FilterBar: React.FC<{
     filters: { start: string; end: string; customer: string; status: string };
     customers: Customer[];
     hasActiveFilters: boolean;
-}> = ({ onOpenFilterSheet, onReset, filters, customers, hasActiveFilters }) => (
-    <div className="md:hidden flex flex-col gap-3">
-        <div className="flex items-center justify-between">
-            <button onClick={onOpenFilterSheet} className="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-semibold text-gray-800 rounded-md bg-white border shadow-sm hover:bg-gray-50">
-                <FilterIcon className="w-5 h-5" />
-                <span>Filters</span>
-            </button>
-            {hasActiveFilters && (
-                <button onClick={onReset} className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                    Clear All
+}> = ({ onOpenFilterSheet, onReset, filters, customers, hasActiveFilters }) => {
+    const formatDate = (dateString: string) => {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    };
+
+    return (
+        <div className="md:hidden space-y-3">
+            {/* Main Filter Button */}
+            <div className="flex items-center gap-3">
+                <button
+                    onClick={onOpenFilterSheet}
+                    className="flex-1 flex items-center justify-between p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]"
+                >
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-50 rounded-lg">
+                            <FilterIcon className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <div className="text-left">
+                            <div className="text-sm font-semibold text-gray-900">Filters</div>
+                            <div className="text-xs text-gray-500">
+                                {hasActiveFilters ? 'Custom filters applied' : 'Add filters to narrow results'}
+                            </div>
+                        </div>
+                    </div>
+                    <ChevronDownIcon className="w-5 h-5 text-gray-400" />
                 </button>
-            )}
-        </div>
-        {hasActiveFilters && (
-            <div className="flex flex-wrap items-center gap-2" aria-label="Active filters">
-                {filters.start && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 px-2.5 py-1 text-xs ring-1 ring-inset ring-blue-200">
-                        From: {filters.start}
-                    </span>
-                )}
-                {filters.end && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 px-2.5 py-1 text-xs ring-1 ring-inset ring-blue-200">
-                        To: {filters.end}
-                    </span>
-                )}
-                {filters.customer && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 px-2.5 py-1 text-xs ring-1 ring-inset ring-blue-200">
-                        {customers.find(c => String(c.id) === String(filters.customer))?.name || filters.customer}
-                    </span>
-                )}
-                {filters.status && (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 text-blue-700 px-2.5 py-1 text-xs ring-1 ring-inset ring-blue-200 capitalize">
-                        {filters.status.replace('_', ' ')}
-                    </span>
+                
+                {hasActiveFilters && (
+                    <button
+                        onClick={onReset}
+                        className="p-3.5 rounded-xl bg-gradient-to-r from-red-50 to-red-100 text-red-700 font-semibold hover:from-red-100 hover:to-red-200 active:scale-[0.98] transition-all duration-200 border border-red-200"
+                        title="Clear all filters"
+                    >
+                        <RefreshIcon className="w-5 h-5" />
+                    </button>
                 )}
             </div>
-        )}
-    </div>
-);
+
+            {/* Active Filters Chips */}
+            {hasActiveFilters && (
+                <div className="flex flex-wrap gap-2" aria-label="Active filters">
+                    {filters.start && filters.end && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 px-3 py-1.5 text-xs font-medium ring-1 ring-inset ring-blue-100">
+                            <CalendarIcon className="w-3 h-3" />
+                            {formatDate(filters.start)} → {formatDate(filters.end)}
+                        </span>
+                    )}
+                    {filters.customer && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 text-purple-700 px-3 py-1.5 text-xs font-medium ring-1 ring-inset ring-purple-100">
+                            <UserIcon className="w-3 h-3" />
+                            {customers.find(c => String(c.id) === String(filters.customer))?.name || filters.customer}
+                        </span>
+                    )}
+                    {filters.status && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full capitalize bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-700 px-3 py-1.5 text-xs font-medium ring-1 ring-inset ring-emerald-100">
+                            {filters.status.replace('_', ' ')}
+                        </span>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
 
 
 // --- Main Page Component ---
@@ -171,6 +319,16 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
     const [pageSize, setPageSize] = useState(20);
     const [total, setTotal] = useState(0);
 
+    // Stats
+    const stats = useMemo(() => {
+        const totalRevenue = salesData.reduce((sum, sale) => sum + (sale.total || 0), 0);
+        const totalSales = salesData.length;
+        const avgSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0;
+        const paidSales = salesData.filter(s => s.paymentStatus === 'paid').length;
+        
+        return { totalRevenue, totalSales, avgSaleValue, paidSales };
+    }, [salesData]);
+
     useEffect(() => {
         const fetchSales = async () => {
             setIsLoading(true);
@@ -192,8 +350,6 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                 setTotal(fetchedSales.total);
                 setDailySales((daily as any).daily || []);
 
-                //Debugging taking place here
-                console.log("Debugging the sales api response", fetchedSales.items)
             } catch (err: any) {
                 // Offline fallback
                 try {
@@ -315,139 +471,340 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
     };
 
     return (
-        <>
+        <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-gray-50 to-white">
             <Header title="Sales History" />
-            <main className="flex-1 overflow-y-auto bg-gray-100 p-4 sm:p-4 lg:p-4 min-w-0">
-                <div className="bg-gray-100 p-0 rounded-md mb-6 min-w-0">
-                    {/* --- Mobile Filter Bar --- */}
-                    <FilterBar
-                        onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
-                        onReset={resetFilters}
-                        filters={{ start: startDate, end: endDate, customer: selectedCustomerId, status: selectedStatus }}
-                        customers={customers}
-                        hasActiveFilters={hasActiveFilters}
-                    />
-
-                    {/* --- Desktop Filters --- */}
-                    <div className="hidden md:block">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-2 items-end">
-                            <input type="date" id="start-date" value={startDate} onChange={e => setStartDate(e.target.value)} className="p-2 border rounded-md text-sm w-full md:w-auto bg-white shadow-sm"/>
-                            <input type="date" id="end-date" value={endDate} onChange={e => setEndDate(e.target.value)} className="p-2 border rounded-md text-sm w-full md:w-auto bg-white shadow-sm"/>
-                                <select id="customer-filter" value={selectedCustomerId} onChange={e => setSelectedCustomerId(e.target.value)} className="p-2 border rounded-md text-sm w-full md:w-auto bg-white shadow-sm">
-                                    <option value="">All Customers</option>
-                                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                </select>
-                                <select id="status-filter" value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)} className="p-2 border rounded-md text-sm w-full md:w-auto bg-white shadow-sm">
-                                    <option value="">All Statuses</option>
-                                    <option value="paid">Paid</option>
-                                    <option value="unpaid">Unpaid</option>
-                                    <option value="partially_paid">Partially Paid</option>
-                                </select>
-                            <div className="flex gap-2 flex-col sm:flex-row">
-                                <button onClick={resetFilters} className="w-full sm:w-auto justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Reset</button>
+            
+            <main className="flex-1 overflow-y-auto bg-transparent p-4 md:p-6 min-w-0">
+                <div className="max-w-7xl mx-auto">
+                    {/* Mobile Stats Summary */}
+                    <div className="md:hidden mb-6">
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 border border-gray-200 shadow-sm">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-2 bg-blue-100 rounded-lg">
+                                        <ChartBarIcon className="w-4 h-4 text-blue-600" />
+                                    </div>
+                                    <div className="text-xs font-medium text-gray-600">Total Revenue</div>
+                                </div>
+                                <div className="text-xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue, storeSettings)}</div>
                             </div>
-                            <div className="flex gap-2 flex-col sm:flex-row">
-                                <button onClick={handleExportCSV} className="w-full sm:w-1/2 justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 flex items-center gap-1" title="Export CSV" aria-label="Export CSV"><ArrowDownTrayIcon className="w-4 h-4" /> CSV</button>
-                                <button onClick={handleExportPDF} className="w-full sm:w-1/2 justify-center rounded-md bg-white px-3 py-2 text-sm font-medium text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 flex items-center gap-1" title="Export PDF" aria-label="Export PDF"><ArrowDownTrayIcon className="w-4 h-4" /> PDF</button>
+                            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 border border-gray-200 shadow-sm">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <div className="p-2 bg-green-100 rounded-lg">
+                                        <ChartBarIcon className="w-4 h-4 text-green-600" />
+                                    </div>
+                                    <div className="text-xs font-medium text-gray-600">Transactions</div>
+                                </div>
+                                <div className="text-xl font-bold text-gray-900">{stats.totalSales}</div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                {isLoading && <div className="text-center p-10">Loading sales...</div>}
-                {error && <div className="text-center p-10 text-red-500">Error: {error}</div>}
-                {!isLoading && !error && (
-                    <>
-                        {dailySales && dailySales.length > 0 && (
-                            <div className="p-2 mb-6 min-w-0 rounded-md bg-white shadow-sm ">
-                                <h3 className="inline-block rounded-2xl bg-gray-50 text-base font-semibold text-gray-800 mb-2 p-2 px-4">
-                                    Daily Sales (Products)
-                                </h3>
-                                <div className="space-y-2">
-                                    {dailySales.map(day => (
-                                        <div key={day.date} className="border bg-gray-50 rounded-md overflow-hidden">
-                                            <div className="px-3 py-2 bg-gray-50 flex items-center justify-between">
-                                                <div className="font-medium text-gray-800">{new Date(day.date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}</div>
-                                                <div className="text-sm text-gray-600 flex items-center gap-4">
-                                                    <span>Qty: <strong>{day.totalQuantity.toLocaleString()}</strong></span>
-                                                    <span>Revenue: <strong>{formatCurrency(day.totalRevenue, storeSettings)}</strong></span>
-                                                </div>
-                                            </div>
-                                            <div className="p-2 overflow-x-auto">
-                                                <table className="min-w-full">
-                                                    <thead>
-                                                    <tr className="text-xs uppercase text-gray-500">
-                                                        <th className="text-left px-2 py-1">Product</th>
-                                                        <th className="text-center px-2 py-1">Qty</th>
-                                                        <th className="text-right px-2 py-1">Revenue</th>
-                                                    </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                    {day.items.map((item, idx) => (
-                                                        <tr key={item.name + idx} className="border-t hover:bg-gray-50">
-                                                            <td className="px-2 py-1 text-sm">{item.name}</td>
-                                                            <td className="px-2 py-1 text-sm text-center">{item.quantity}</td>
-                                                            <td className="px-2 py-1 text-sm text-right font-medium">{formatCurrency(item.revenue, storeSettings)}</td>
-                                                        </tr>
-                                                    ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        <SalesList
-                            sales={salesData}
-                            onSelectSale={setSelectedSale}
-                            storeSettings={storeSettings}
+                    {/* Mobile Filter Bar */}
+                    <div className="mb-6">
+                        <FilterBar
+                            onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
+                            onReset={resetFilters}
+                            filters={{ start: startDate, end: endDate, customer: selectedCustomerId, status: selectedStatus }}
+                            customers={customers}
+                            hasActiveFilters={hasActiveFilters}
                         />
+                    </div>
 
-                        {/* Pagination Controls */}
-                        <div className="mt-4 bg-white p-3 rounded-md border border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-                            <div className="text-sm text-gray-600">
-                                {total > 0 ? (
-                                    <span>
-                                        Showing <strong>{(page - 1) * pageSize + 1}</strong> - <strong>{Math.min(page * pageSize, total)}</strong> of <strong>{total}</strong>
-                                    </span>
-                                ) : (
-                                    <span>No results</span>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <label className="text-sm text-gray-600">Rows per page</label>
-                                <select
-                                    className="rounded-md border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    value={pageSize}
-                                    onChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(1); }}
-                                >
-                                    {[10, 20, 50, 100].map(sz => (
-                                        <option key={sz} value={sz}>{sz}</option>
-                                    ))}
-                                </select>
-                                <div className="flex items-center gap-1">
-                                    <button
-                                        className="px-3 py-1 rounded-md border text-sm disabled:opacity-50"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page <= 1}
+                    {/* Desktop Filters & Export */}
+                    <div className="hidden md:block mb-6">
+                        <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3 items-center">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-600">Start Date</label>
+                                    <input 
+                                        type="date" 
+                                        value={startDate} 
+                                        onChange={e => setStartDate(e.target.value)} 
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-600">End Date</label>
+                                    <input 
+                                        type="date" 
+                                        value={endDate} 
+                                        onChange={e => setEndDate(e.target.value)} 
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-600">Customer</label>
+                                    <select 
+                                        value={selectedCustomerId} 
+                                        onChange={e => setSelectedCustomerId(e.target.value)} 
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
-                                        Prev
+                                        <option value="">All Customers</option>
+                                        {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                    </select>
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-medium text-gray-600">Status</label>
+                                    <select 
+                                        value={selectedStatus} 
+                                        onChange={e => setSelectedStatus(e.target.value)} 
+                                        className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    >
+                                        <option value="">All Statuses</option>
+                                        <option value="paid">Paid</option>
+                                        <option value="unpaid">Unpaid</option>
+                                        <option value="partially_paid">Partially Paid</option>
+                                    </select>
+                                </div>
+                                <div className="flex gap-2 lg:col-span-3 justify-end">
+                                    <button 
+                                        onClick={resetFilters}
+                                        className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-medium text-sm hover:bg-gray-200 transition-colors"
+                                    >
+                                        Reset
                                     </button>
-                                    <button
-                                        className="px-3 py-1 rounded-md border text-sm disabled:opacity-50"
-                                        onClick={() => setPage(p => (p * pageSize < total ? p + 1 : p))}
-                                        disabled={page * pageSize >= total}
+                                    <button 
+                                        onClick={handleExportCSV}
+                                        className="px-4 py-2.5 rounded-xl bg-white text-gray-700 font-medium text-sm border border-gray-300 hover:bg-gray-50 transition-colors flex items-center gap-2"
                                     >
-                                        Next
+                                        <DownloadIcon className="w-4 h-4" />
+                                        CSV
+                                    </button>
+                                    <button 
+                                        onClick={handleExportPDF}
+                                        className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium text-sm hover:from-blue-700 hover:to-blue-800 transition-colors flex items-center gap-2"
+                                    >
+                                        <DownloadIcon className="w-4 h-4" />
+                                        PDF
                                     </button>
                                 </div>
                             </div>
                         </div>
-                    </>
-                )}
+                    </div>
+
+                    {/* Loading State */}
+                    {isLoading && (
+                        <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                            <div className="flex flex-col items-center justify-center space-y-4">
+                                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                                <div className="text-gray-600">Loading sales data...</div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Error State */}
+                    {error && (
+                        <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-2xl p-6">
+                            <div className="flex items-start gap-3">
+                                <div className="p-2 bg-red-100 rounded-lg">
+                                    <XMarkIcon className="w-5 h-5 text-red-600" />
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-red-900">Unable to Load Data</h3>
+                                    <p className="text-red-700 mt-1">{error}</p>
+                                    <button 
+                                        onClick={() => window.location.reload()}
+                                        className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Content */}
+                    {!isLoading && !error && (
+                        <>
+                            {/* Daily Sales Summary (Mobile Optimized) */}
+                            {dailySales && dailySales.length > 0 && (
+                                <div className="mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                    <div className="p-4 border-b border-gray-100">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg">
+                                                    <ChartBarIcon className="w-5 h-5 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-bold text-gray-900">Daily Sales Breakdown</h3>
+                                                    <p className="text-sm text-gray-500">Product performance by day</p>
+                                                </div>
+                                            </div>
+                                            <div className="text-sm text-gray-600">
+                                                {dailySales.length} day{dailySales.length !== 1 ? 's' : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="divide-y divide-gray-100">
+                                        {dailySales.map(day => (
+                                            <div key={day.date} className="hover:bg-gray-50/50 transition-colors">
+                                                <div className="p-4">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="font-semibold text-gray-900">
+                                                            {new Date(day.date).toLocaleDateString('en-US', { 
+                                                                weekday: 'short', 
+                                                                month: 'short', 
+                                                                day: 'numeric',
+                                                                year: 'numeric' 
+                                                            })}
+                                                        </div>
+                                                        <div className="flex items-center gap-4 text-sm">
+                                                            <span className="text-gray-600">
+                                                                <span className="font-semibold">{day.totalQuantity.toLocaleString()}</span> units
+                                                            </span>
+                                                            <span className="font-bold text-gray-900">
+                                                                {formatCurrency(day.totalRevenue, storeSettings)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    {/* Product Items */}
+                                                    <div className="space-y-2">
+                                                        {day.items.slice(0, 3).map((item, idx) => (
+                                                            <div key={item.name + idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                                                                <div className="flex-1 min-w-0">
+                                                                    <div className="text-sm font-medium text-gray-900 truncate">{item.name}</div>
+                                                                </div>
+                                                                <div className="flex items-center gap-4 text-sm">
+                                                                    <span className="text-gray-600 font-medium">{item.quantity}</span>
+                                                                    <span className="font-semibold text-gray-900">
+                                                                        {formatCurrency(item.revenue, storeSettings)}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {day.items.length > 3 && (
+                                                            <div className="text-center">
+                                                                <button className="text-sm text-blue-600 font-medium hover:text-blue-800">
+                                                                    + {day.items.length - 3} more products
+                                                                </button>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Sales List */}
+                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div className="p-4 border-b border-gray-100">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="font-bold text-gray-900">Recent Transactions</h3>
+                                            <p className="text-sm text-gray-500">
+                                                {total} sale{total !== 1 ? 's' : ''} found
+                                            </p>
+                                        </div>
+                                        <div className="text-sm text-gray-600">
+                                            {formatCurrency(stats.avgSaleValue, storeSettings)} avg. sale
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <SalesList
+                                    sales={salesData}
+                                    onSelectSale={setSelectedSale}
+                                    storeSettings={storeSettings}
+                                />
+
+                                {/* Pagination Controls (Mobile Optimized) */}
+                                {total > 0 && (
+                                    <div className="p-4 border-t border-gray-100 bg-gray-50/30">
+                                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                            {/* Page Info */}
+                                            <div className="text-sm text-gray-600">
+                                                <span>
+                                                    Showing <strong className="text-gray-900">{(page - 1) * pageSize + 1}</strong> -{' '}
+                                                    <strong className="text-gray-900">{Math.min(page * pageSize, total)}</strong> of{' '}
+                                                    <strong className="text-gray-900">{total.toLocaleString()}</strong> transactions
+                                                </span>
+                                            </div>
+                                            
+                                            {/* Controls */}
+                                            <div className="flex items-center gap-3">
+                                                {/* Rows per page */}
+                                                <div className="flex items-center gap-2">
+                                                    <label className="text-sm text-gray-600 hidden sm:block">Rows:</label>
+                                                    <div className="relative">
+                                                        <select
+                                                            value={pageSize}
+                                                            onChange={(e) => { 
+                                                                setPageSize(parseInt(e.target.value, 10)); 
+                                                                setPage(1); 
+                                                            }}
+                                                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        >
+                                                            {[10, 20, 50, 100].map(sz => (
+                                                                <option key={sz} value={sz}>{sz}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                            <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                {/* Pagination Buttons */}
+                                                <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg p-1">
+                                                    <button
+                                                        className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        onClick={() => setPage(p => Math.max(1, p - 1))}
+                                                        disabled={page <= 1}
+                                                    >
+                                                        ← Prev
+                                                    </button>
+                                                    <div className="px-3 py-1.5 text-sm font-medium text-gray-900">
+                                                        {page}
+                                                    </div>
+                                                    <button
+                                                        className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                        onClick={() => setPage(p => (p * pageSize < total ? p + 1 : p))}
+                                                        disabled={page * pageSize >= total}
+                                                    >
+                                                        Next →
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Empty State */}
+                            {salesData.length === 0 && !isLoading && (
+                                <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
+                                    <div className="max-w-md mx-auto">
+                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                            <ChartBarIcon className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No sales found</h3>
+                                        <p className="text-gray-600 mb-6">
+                                            {hasActiveFilters 
+                                                ? 'Try adjusting your filters to see more results'
+                                                : 'Sales will appear here once transactions are processed'}
+                                        </p>
+                                        {hasActiveFilters && (
+                                            <button
+                                                onClick={resetFilters}
+                                                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-colors"
+                                            >
+                                                Clear All Filters
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
             </main>
 
+            {/* Modals */}
             <SaleDetailModal
                 isOpen={!!selectedSale}
                 onClose={() => setSelectedSale(null)}
@@ -463,7 +820,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                 initialFilters={{ start: startDate, end: endDate, customer: selectedCustomerId, status: selectedStatus }}
                 customers={customers}
             />
-        </>
+        </div>
     );
 };
 

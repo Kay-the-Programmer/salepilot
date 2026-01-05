@@ -25,8 +25,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-lg w-full m-4 animate-fade-in">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-end sm:items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="bg-white rounded-t-2xl rounded-b-none sm:rounded-lg shadow-xl transform transition-all sm:max-w-lg w-full m-0 sm:m-4 animate-slide-up-mobile sm:animate-none">
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div className="sm:flex sm:items-start">
                         <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">

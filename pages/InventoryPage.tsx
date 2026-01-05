@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Category, Supplier, StoreSettings, User, Account } from '../types';
-import Header from '../components/Header';
+
 import ProductList from '../components/ProductList';
 import ProductFormModal from '../components/ProductFormModal';
 import CategoryList from '../components/CategoryList';
@@ -11,6 +11,8 @@ import ProductDetailView from '../components/products/ProductDetailView';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { FiFilter, FiGrid, FiList, FiPlusCircle } from 'react-icons/fi';
+import Header from '../components/Header';
 
 interface InventoryPageProps {
     products: Product[];
@@ -63,8 +65,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products');
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-
-
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [isSearchActive, setIsSearchActive] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [detailedProduct, setDetailedProduct] = useState<Product | null>(null);
@@ -117,7 +120,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         }
     }, [selectedProductId, products]);
 
-
     const handleOpenAddModal = () => {
         setEditingProduct(null);
         setIsModalOpen(true);
@@ -135,24 +137,15 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     const handleSave = async (productData: Product | Omit<Product, 'id'>) => {
         try {
-            // onSaveProduct now handles state updates, so we just need to call it
-            // and close the modal on success.
             const savedProduct = await onSaveProduct(productData);
             handleCloseModal();
-
-            // Ensure the newly added/updated product is visible in the list by clearing any active search filter
             setSearchTerm('');
-            // And jump to the first page so the newest items (usually at the top) are visible
             setPage(1);
 
-            // If user was on a detail page for the product that was just edited,
-            // update that specific product's state to ensure the view is fresh.
             if (detailedProduct && detailedProduct.id === savedProduct.id) {
                 setDetailedProduct(savedProduct);
             }
         } catch (error) {
-            // Error is handled by onSaveProduct, which shows a snackbar.
-            // We catch it here to prevent the modal from closing on failure.
             console.error("Failed to save product:", error);
         }
     };
@@ -178,7 +171,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 if (reason === 'Stock Count') {
                     nextStock = newQuantity;
                 } else {
-                    // Treat as signed delta for non Stock Count reasons
                     nextStock = Math.max(0, prev.stock + newQuantity);
                 }
                 return { ...prev, stock: nextStock };
@@ -187,7 +179,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         handleCloseStockModal();
     };
 
-    // Category Handlers
     const handleOpenAddCategoryModal = () => {
         setEditingCategory(null);
         setIsCategoryModalOpen(true);
@@ -233,7 +224,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const handleConfirmDelete = () => {
         if (productToDelete) {
             onDeleteProduct(productToDelete.id);
-            handleBackToList(); // Go back to list view after deletion
+            handleBackToList();
         }
         handleCloseDeleteModal();
     };
@@ -244,7 +235,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     const handleBackToList = () => {
         setSelectedProductId(null);
-        setSearchTerm(''); // Clear search when going back
+        setSearchTerm('');
     };
 
     const filteredProducts = products.filter(product => {
@@ -268,7 +259,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         );
     });
 
-    // --- Sorting ---
     type SortBy = 'name' | 'price' | 'stock' | 'category' | 'sku';
     type SortOrder = 'asc' | 'desc';
     const [sortBy, setSortBy] = useState<SortBy>('name');
@@ -301,9 +291,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return arr;
     }, [filteredProducts, sortBy, sortOrder, categoryMap]);
 
-    // --- Pagination ---
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(12);
+    const pageSize = 12;
     const totalPages = Math.max(1, Math.ceil(sortedProducts.length / pageSize));
 
     const paginatedProducts = useMemo(() => {
@@ -312,12 +301,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     }, [sortedProducts, page, pageSize]);
 
     useEffect(() => {
-        // Reset to first page when filters/sorting change
         setPage(1);
     }, [searchTerm, showArchived, sortBy, sortOrder]);
 
     useEffect(() => {
-        // Clamp current page if total pages shrink
         if (page > totalPages) setPage(totalPages);
     }, [totalPages, page]);
 
@@ -364,46 +351,77 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return attrs;
     }, [detailedProduct, categories]);
 
-
     if (selectedProductId) {
         return (
             <>
-                <div className="flex flex-col h-full bg-gray-100">
-                    <header className="bg-gray-100 z-10">
-                        <div className="mx-auto px-0 sm:px-6 lg:px-8">
+                <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white">
+                    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+                        <div className="mx-auto px-4">
                             <div className="flex items-center h-16">
                                 <button
                                     onClick={handleBackToList}
-                                    className="mr-4 p-2 rounded-full hover:bg-gray-100"
+                                    className="mr-3 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-transform duration-150"
                                     aria-label="Back to product list"
                                 >
-                                    <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
+                                    <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
                                 </button>
-                                <h1 className="text-xl font-bold leading-7 text-gray-700 sm:truncate">
-                                    Product Details
-                                </h1>
+                                <div className="flex-1 min-w-0 flex items-center justify-between">
+                                    <div className="min-w-0 pr-4">
+                                        <h1 className="text-lg font-semibold text-gray-900 truncate">
+                                            {detailedProduct?.name || 'Product Details'}
+                                        </h1>
+                                        <p className="text-xs text-gray-500 truncate">
+                                            {detailedProduct?.sku || 'Loading...'}
+                                        </p>
+                                    </div>
+                                    {detailedProduct && canManageProducts && (
+                                        <button
+                                            onClick={() => handleOpenEditModal(detailedProduct)}
+                                            className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+                                            aria-label="Edit product"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                                                <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </header>
                     <main className="flex-1 overflow-x-hidden overflow-y-auto">
-                        {detailIsLoading && <div className="text-center p-10">Loading product details...</div>}
-                        {detailError && <div className="text-center p-10 text-red-500">Error: {detailError}</div>}
-                        {detailedProduct && (
-                            <ProductDetailView
-                                product={detailedProduct}
-                                category={selectedProductCategory}
-                                supplier={selectedProductSupplier}
-                                attributes={displayedAttributes}
-                                storeSettings={storeSettings}
-                                user={currentUser}
-                                onEdit={handleOpenEditModal}
-                                onDelete={handleOpenDeleteModal}
-                                onArchive={onArchiveProduct}
-                                onPrintLabel={handleOpenPrintModal}
-                                onAdjustStock={handleOpenStockModal}
-                                onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
-                            />
-                        )}
+                        <div className="w-full max-w-7xl mx-auto px-4 py-6">
+                            {detailIsLoading && (
+                                <div className="flex flex-col items-center justify-center py-20">
+                                    <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
+                                    <p className="text-gray-600">Loading product details...</p>
+                                </div>
+                            )}
+                            {detailError && (
+                                <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200">
+                                    <p className="text-red-600 font-medium">Error loading product</p>
+                                    <p className="text-red-500 text-sm mt-1">{detailError}</p>
+                                </div>
+                            )}
+                            {detailedProduct && (
+                                <div className="animate-fadeIn">
+                                    <ProductDetailView
+                                        product={detailedProduct}
+                                        category={selectedProductCategory}
+                                        supplier={selectedProductSupplier}
+                                        attributes={displayedAttributes}
+                                        storeSettings={storeSettings}
+                                        user={currentUser}
+                                        onEdit={handleOpenEditModal}
+                                        onDelete={handleOpenDeleteModal}
+                                        onArchive={onArchiveProduct}
+                                        onPrintLabel={handleOpenPrintModal}
+                                        onAdjustStock={handleOpenStockModal}
+                                        onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </main>
                 </div>
                 {canManageProducts && isModalOpen && (
@@ -447,77 +465,120 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     }
 
     return (
-        <>
-            <Header
-                title="Product Inventory"
-                buttonText={canManageProducts ? (activeTab === 'products' ? "Add Product" : "Add Category") : undefined}
-                onButtonClick={canManageProducts ? (activeTab === 'products' ? handleOpenAddModal : handleOpenAddCategoryModal) : undefined}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                showArchivedToggle={false}
-                showArchived={showArchived}
-                setShowArchived={setShowArchived}
-            />
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
-                {/* Tabs */}
-                <div className="bg-white border-b px-4">
-                    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                        <button
-                            onClick={() => setActiveTab('products')}
-                            className={`${activeTab === 'products'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                        >
-                            Products
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('categories')}
-                            className={`${activeTab === 'categories'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
-                        >
-                            Categories
-                        </button>
-                    </nav>
-                </div>
+        <div className="flex flex-col h-full bg-gray-50">
+            {/* Custom Header */}
+            <div className="sticky top-0 z-30 bg-white border-b border-gray-200">
+                <Header
+                    title="Inventory"
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    isSearchActive={isSearchActive}
+                    setIsSearchActive={setIsSearchActive}
+                    className="!static !border-none !shadow-none"
+                />
 
+                {/* Tabs & Actions Row */}
+                {!isSearchActive && (
+                    <div className="px-4 pb-3 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
+                        <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                            <button
+                                onClick={() => setActiveTab('products')}
+                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'products'
+                                    ? 'bg-white text-gray-900 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Products
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('categories')}
+                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'categories'
+                                    ? 'bg-white text-gray-900 shadow-sm'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    }`}
+                            >
+                                Categories
+                            </button>
+                        </div>
+
+                        {activeTab === 'products' && (
+                            <button
+                                onClick={() => setShowFilters(!showFilters)}
+                                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showFilters || searchTerm || showArchived
+                                    ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                    }`}
+                            >
+                                <FiFilter className="w-4 h-4" />
+                                Filters
+                            </button>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            <main className="flex-1 overflow-x-hidden overflow-y-auto">
                 {activeTab === 'products' ? (
                     <>
+                        {/* Collapsible Filters Section */}
+                        {showFilters && (
+                            <div className="bg-white border-b border-gray-100 px-4 py-4 animate-slideDown">
+                                <div className="space-y-4">
+                                    <div className="flex flex-col sm:flex-row gap-4">
+                                        <div className="flex-1">
+                                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Sort By</label>
+                                            <div className="flex gap-2">
+                                                <select
+                                                    className="flex-1 form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg"
+                                                    value={sortBy}
+                                                    onChange={(e) => setSortBy(e.target.value as any)}
+                                                >
+                                                    <option value="name">Name</option>
+                                                    <option value="price">Price</option>
+                                                    <option value="stock">Stock</option>
+                                                    <option value="category">Category</option>
+                                                </select>
+                                                <button
+                                                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600"
+                                                >
+                                                    {sortOrder === 'asc' ? '↑' : '↓'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
 
-                        {/* Sorting controls */}
-                        <div className="px-4 pt-4">
-                            <div className="bg-white rounded-md border p-3 flex flex-wrap items-center gap-3">
-                                <div className="flex items-center gap-2">
-                                    <label htmlFor="sortBy" className="text-sm text-gray-700">Sort by</label>
-                                    <select
-                                        id="sortBy"
-                                        className="border rounded px-2 py-1 text-sm"
-                                        value={sortBy}
-                                        onChange={(e) => setSortBy(e.target.value as any)}
-                                    >
-                                        <option value="name">Name</option>
-                                        <option value="sku">SKU</option>
-                                        <option value="price">Price</option>
-                                        <option value="stock">Stock</option>
-                                        <option value="category">Category</option>
-                                    </select>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <label htmlFor="sortOrder" className="text-sm text-gray-700">Order</label>
-                                    <select
-                                        id="sortOrder"
-                                        className="border rounded px-2 py-1 text-sm"
-                                        value={sortOrder}
-                                        onChange={(e) => setSortOrder(e.target.value as any)}
-                                    >
-                                        <option value="asc">Ascending</option>
-                                        <option value="desc">Descending</option>
-                                    </select>
+                                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                                        <label className="flex items-center text-sm text-gray-700 cursor-pointer">
+                                            <input
+                                                type="checkbox"
+                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mr-2"
+                                                checked={showArchived}
+                                                onChange={(e) => setShowArchived(e.target.checked)}
+                                            />
+                                            Show Archived
+                                        </label>
+
+                                        {/* View Mode Toggle moved here */}
+                                        <div className="flex bg-gray-100 rounded-lg p-0.5">
+                                            <button
+                                                onClick={() => setViewMode('grid')}
+                                                className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                                            >
+                                                <FiGrid className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => setViewMode('list')}
+                                                className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                                            >
+                                                <FiList className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
+
                         <ProductList
                             products={paginatedProducts}
                             categories={categories}
@@ -527,110 +588,111 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             isLoading={isLoading}
                             error={error}
                             storeSettings={storeSettings}
-                            userRole={currentUser.role}
+                            userRole={currentUser.role as any}
+                            viewMode={viewMode}
                         />
-                        {/* Pagination controls */}
-                        <div className="px-4 pb-6">
-                            <div className="bg-white rounded-md border p-3 flex flex-wrap items-center justify-between gap-3">
-                                <div className="text-sm text-gray-700">
-                                    Showing {(sortedProducts.length === 0 ? 0 : (page - 1) * pageSize + 1)}–{Math.min(sortedProducts.length, page * pageSize)} of {sortedProducts.length}
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <label htmlFor="pageSize" className="text-sm text-gray-700">Per page</label>
-                                    <select
-                                        id="pageSize"
-                                        className="border rounded px-2 py-1 text-sm"
-                                        value={pageSize}
-                                        onChange={(e) => { setPageSize(parseInt(e.target.value, 10)); setPage(1); }}
-                                    >
-                                        <option value={12}>12</option>
-                                        <option value={24}>24</option>
-                                        <option value={48}>48</option>
-                                    </select>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                        onClick={() => setPage(1)}
-                                        disabled={page <= 1}
-                                        aria-label="First page"
-                                    >
-                                        « First
-                                    </button>
-                                    <button
-                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                        disabled={page <= 1}
-                                        aria-label="Previous page"
-                                    >
-                                        ‹ Prev
-                                    </button>
-                                    <span className="text-sm text-gray-700">Page {page} of {totalPages}</span>
-                                    <button
-                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                        onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                        disabled={page >= totalPages}
-                                        aria-label="Next page"
-                                    >
-                                        Next ›
-                                    </button>
-                                    <button
-                                        className="px-3 py-1 text-sm border rounded disabled:opacity-50"
-                                        onClick={() => setPage(totalPages)}
-                                        disabled={page >= totalPages}
-                                        aria-label="Last page"
-                                    >
-                                        Last »
-                                    </button>
+
+                        {/* Pagination - Simplified for mobile */}
+                        {sortedProducts.length > 0 && (
+                            <div className="px-4 py-6 pb-24 sm:pb-6">
+                                <div className="flex flex-col items-center gap-4">
+                                    <span className="text-sm text-gray-500">
+                                        {sortedProducts.length} Products • Page {page} of {totalPages}
+                                    </span>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                                            disabled={page <= 1}
+                                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50"
+                                        >
+                                            Previous
+                                        </button>
+                                        <button
+                                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                            disabled={page >= totalPages}
+                                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50"
+                                        >
+                                            Next
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        )}
+
+                        {/* Floating Action Button */}
+                        {canManageProducts && (
+                            <button
+                                onClick={handleOpenAddModal}
+                                className="fixed bottom-6 right-6 z-40 bg-gray-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200"
+                                aria-label="Add product"
+                            >
+                                <FiPlusCircle className="w-6 h-6" />
+                            </button>
+                        )}
                     </>
                 ) : (
-                    <CategoryList
-                        categories={categories}
-                        searchTerm={searchTerm}
-                        onEdit={handleOpenEditCategoryModal}
-                        onDelete={onDeleteCategory || (() => { })}
-                        isLoading={isLoading}
-                        error={error}
-                    />
+                    <div className="px-4 py-6">
+                        <CategoryList
+                            categories={categories}
+                            searchTerm={searchTerm}
+                            onEdit={handleOpenEditCategoryModal}
+                            onDelete={onDeleteCategory || (() => { })}
+                            isLoading={isLoading}
+                            error={error}
+                        />
+                        {/* FAB for Categories */}
+                        {canManageProducts && (
+                            <button
+                                onClick={handleOpenAddCategoryModal}
+                                className="fixed bottom-6 right-6 z-40 bg-gray-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200"
+                                aria-label="Add category"
+                            >
+                                <FiPlusCircle className="w-6 h-6" />
+                            </button>
+                        )}
+                    </div>
                 )}
             </main>
 
-            {canManageProducts && isModalOpen && (
-                <ProductFormModal
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    onSave={handleSave}
-                    productToEdit={editingProduct}
-                    categories={categories}
-                    suppliers={suppliers}
-                    storeSettings={storeSettings}
-                    onAddCategory={handleOpenAddCategoryModal}
-                />
-            )}
+            {
+                canManageProducts && isModalOpen && (
+                    <ProductFormModal
+                        isOpen={isModalOpen}
+                        onClose={handleCloseModal}
+                        onSave={handleSave}
+                        productToEdit={editingProduct}
+                        categories={categories}
+                        suppliers={suppliers}
+                        storeSettings={storeSettings}
+                        onAddCategory={handleOpenAddCategoryModal}
+                    />
+                )
+            }
 
-            {canManageProducts && isStockModalOpen && (
-                <StockAdjustmentModal
-                    isOpen={isStockModalOpen}
-                    onClose={handleCloseStockModal}
-                    onSave={handleSaveStockAdjustment}
-                    product={stockAdjustProduct}
-                    initialReason={stockAdjustInitialReason}
-                />
-            )}
+            {
+                canManageProducts && isStockModalOpen && (
+                    <StockAdjustmentModal
+                        isOpen={isStockModalOpen}
+                        onClose={handleCloseStockModal}
+                        onSave={handleSaveStockAdjustment}
+                        product={stockAdjustProduct}
+                        initialReason={stockAdjustInitialReason}
+                    />
+                )
+            }
 
-            {canManageProducts && (
-                <CategoryFormModal
-                    isOpen={isCategoryModalOpen}
-                    onClose={handleCloseCategoryModal}
-                    onSave={handleSaveCategoryInternal}
-                    categoryToEdit={editingCategory}
-                    allCategories={categories}
-                    accounts={accounts}
-                />
-            )}
+            {
+                canManageProducts && (
+                    <CategoryFormModal
+                        isOpen={isCategoryModalOpen}
+                        onClose={handleCloseCategoryModal}
+                        onSave={handleSaveCategoryInternal}
+                        categoryToEdit={editingCategory}
+                        allCategories={categories}
+                        accounts={accounts}
+                    />
+                )
+            }
             <LabelPrintModal
                 isOpen={isPrintModalOpen}
                 onClose={handleClosePrintModal}
@@ -647,7 +709,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 }
                 confirmText="Delete"
             />
-        </>
+        </div >
     );
 };
 

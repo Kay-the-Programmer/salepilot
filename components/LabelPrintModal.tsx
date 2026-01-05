@@ -30,7 +30,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
                         margin: 10,
                         height: 50,
                     });
-                } catch(e) {
+                } catch (e) {
                     console.error("Failed to generate barcode:", e);
                 }
             }
@@ -41,12 +41,12 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
             }
         }
     }, [isOpen, product]);
-    
+
     const handlePrint = () => {
         const printContents = printAreaRef.current?.innerHTML;
         const originalContents = document.body.innerHTML;
         const printWindow = window.open('', '', 'height=600,width=800');
-        
+
         if (printWindow && printContents) {
             printWindow.document.write('<html><head><title>Print Label</title>');
             printWindow.document.write('<style>body { text-align: center; font-family: sans-serif; } .label-container { display: inline-block; padding: 1rem; border: 1px dashed #ccc; } h3 { margin: 0 0 0.25rem; } p { margin: 0; font-size: 1.25rem; font-weight: bold; } canvas { max-width: 100%; } .codes { display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 0.5rem; } </style>');
@@ -63,8 +63,8 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
     if (!isOpen || !product) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-md w-full">
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-end sm:items-center z-50 p-0 sm:p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="bg-white rounded-t-2xl rounded-b-none sm:rounded-lg shadow-xl transform transition-all sm:max-w-md w-full m-0 sm:m-4 animate-slide-up-mobile sm:animate-none">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
                     <div>
                         <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
@@ -76,16 +76,16 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
                         <XMarkIcon className="h-6 w-6" />
                     </button>
                 </div>
-                
+
                 <div className="p-6 text-center">
                     <div ref={printAreaRef}>
                         <div className="label-container inline-block p-4 border border-dashed border-gray-400">
-                             <h3 className="text-lg font-semibold">{product.name}</h3>
-                             <p className="text-2xl font-bold mb-2">{formatCurrency(product.price, storeSettings)}</p>
+                            <h3 className="text-lg font-semibold">{product.name}</h3>
+                            <p className="text-2xl font-bold mb-2">{formatCurrency(product.price, storeSettings)}</p>
                             <div className="codes flex items-center justify-center gap-4">
-                               <canvas ref={qrCodeRef}></canvas>
+                                <canvas ref={qrCodeRef}></canvas>
                             </div>
-                             <canvas ref={barcodeRef}></canvas>
+                            <canvas ref={barcodeRef}></canvas>
                         </div>
                     </div>
                 </div>

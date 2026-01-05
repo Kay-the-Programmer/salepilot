@@ -10,9 +10,15 @@ import AdjustmentsHorizontalIcon from '../icons/AdjustmentsHorizontalIcon';
 import ShoppingCartIcon from '../icons/ShoppingCartIcon';
 import { buildAssetUrl } from '@/services/api';
 
-const InfoCard: React.FC<{ title: string; children: React.ReactNode; className?: string }> = ({ title, children, className }) => (
-    <div className={`bg-white shadow rounded-lg ${className}`}>
-        <h3 className="px-4 py-4 sm:px-6 text-base font-semibold text-gray-800">{title}</h3>
+interface InfoCardProps {
+    title: string;
+    children: React.ReactNode;
+    className?: string;
+}
+
+const InfoCard: React.FC<InfoCardProps> = ({ title, children, className }) => (
+    <div className={`bg-white shadow rounded-lg h-full ${className}`}>
+        <h3 className="px-4 py-4 sm:px-6 text-base font-semibold text-gray-800 border-b border-gray-100">{title}</h3>
         <div className="p-4 sm:p-6">
             {children}
         </div>
@@ -20,9 +26,9 @@ const InfoCard: React.FC<{ title: string; children: React.ReactNode; className?:
 );
 
 const DetailItem: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
-    <div>
+    <div className="flex flex-col">
         <dt className="text-sm font-medium text-gray-500">{label}</dt>
-        <dd className="mt-1 text-sm text-gray-900">{value}</dd>
+        <dd className="mt-1 text-sm text-gray-900 break-words">{value}</dd>
     </div>
 );
 
@@ -44,9 +50,7 @@ const ProductDetailView: React.FC<{
     const [mainImage, setMainImage] = React.useState('');
     const canManage = user.role === 'admin' || user.role === 'inventory_manager';
 
-    // Ensure image_urls is always an array and clean up the curly braces
     const rawImageUrls = useMemo(() => (product.imageUrls || []).map((url: string) => url.replace(/[{}]/g, '')), [product.imageUrls]);
-    // Normalize to absolute URLs for backend-served assets
     const imageUrls = useMemo(() => rawImageUrls.map((url: string) => url && !url.startsWith('data:') && !/^https?:\/\//i.test(url)
         ? buildAssetUrl(url)
         : url
@@ -57,7 +61,6 @@ const ProductDetailView: React.FC<{
         setMainImage(firstImageUrl);
     }, [product.id, imageUrls]);
 
-    // Convert string prices to numbers for calculations
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
     const costPrice = typeof product.costPrice === 'string' ? parseFloat(product.costPrice || '0') : (product.costPrice || 0);
     const profitMargin = price > 0 && costPrice > 0 ? ((price - costPrice) / price) * 100 : null;
@@ -79,160 +82,203 @@ const ProductDetailView: React.FC<{
         );
     };
 
+    const ActionButtons = () => (
+        <div className="flex flex-wrap gap-2">
+            {canManage && (
+                <>
+                    <button onClick={() => onEdit(product)} type="button"
+                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors whitespace-nowrap">
+                        Edit
+                    </button>
+                    <button onClick={() => onAdjustStock(product)} type="button" className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors whitespace-nowrap">
+                        Stock
+                    </button>
+                    {onPersonalUse && (
+                        <button onClick={() => onPersonalUse(product)} type="button" className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors whitespace-nowrap">
+                            Personal Use
+                        </button>
+                    )}
+                    <button onClick={() => onPrintLabel(product)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors whitespace-nowrap">
+                        Label
+                    </button>
+                    {product.status === 'active' ? (
+                        <button onClick={() => onArchive(product.id)} className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors whitespace-nowrap">
+                            Archive
+                        </button>
+                    ) : (
+                        <button onClick={() => onArchive(product.id)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors whitespace-nowrap">
+                            Restore
+                        </button>
+                    )}
+                    <button onClick={() => onDelete(product)} className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-full hover:bg-red-100 transition-colors whitespace-nowrap">
+                        Delete
+                    </button>
+                </>
+            )}
+        </div>
+    );
+
+    const Tags = () => (
+        <div className="flex flex-wrap items-center gap-2 mt-2">
+            <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                {category?.name || 'Uncategorized'}
+            </span>
+            <span className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
+                {product.brand || 'No Brand'}
+            </span>
+            <StatusBadge status={product.status} />
+        </div>
+    );
+
     return (
-        <div className="p-4 sm:p-6 lg:p-8 space-y-8 animate-fade-in">
-            {/* Top section with name and actions */}
-            <div className="md:flex md:items-center md:justify-between">
-                <div className="min-w-0 flex-1">
-                    <h2 className="text-3xl font-bold leading-7 py-2 text-gray-900 sm:truncate sm:tracking-tight">{product.name}</h2>
-                    <div className="mt-1 flex flex-col sm:mt-0 sm:flex-row sm:flex-wrap sm:space-x-6">
-                        <div className="mt-2 flex items-center text-sm text-gray-500">{category?.name || 'Uncategorized'}</div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500">{product.brand || 'No Brand'}</div>
-                        <div className="mt-2 flex items-center text-sm text-gray-500"><StatusBadge status={product.status} /></div>
-                    </div>
-                </div>
-                {canManage && (
-                    <div className="mt-5 flex lg:ml-4 lg:mt-0 gap-x-2">
-                        <button onClick={() => onEdit(product)} type="button"
-                            className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                            <PencilIcon className="-ml-0.5 h-5 w-5 text-gray-400" /> Edit
-                        </button>
-                        <button onClick={() => onAdjustStock(product)} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                            <AdjustmentsHorizontalIcon className="-ml-0.5 h-5 w-5 text-gray-400" /> Adjust Stock
-                        </button>
-                        {onPersonalUse && (
-                            <button onClick={() => onPersonalUse(product)} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                                <AdjustmentsHorizontalIcon className="-ml-0.5 h-5 w-5 text-gray-400" /> Personal Use
-                            </button>
-                        )}
-                    </div>
-                )}
+        <div className="animate-fade-in space-y-6">
+            {/* Desktop Actions Header */}
+            <div className="hidden lg:flex items-center justify-start bg-white p-4 rounded-lg shadow space-x-4 mb-6">
+                <ActionButtons />
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Left side */}
-                <div className="lg:col-span-2 space-y-8">
-                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow">
-                        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <div className="md:col-span-3">
-                                {mainImage ? (
-                                    <img src={mainImage} alt={product.name} className="w-full h-auto object-cover rounded-lg shadow-sm aspect-square" />
-                                ) : (
-                                    <div className="w-full aspect-square flex items-center justify-center rounded-lg bg-gray-50 border border-dashed border-gray-300">
-                                        <div className="text-center text-gray-400">
-                                            <ShoppingCartIcon className="w-16 h-16 mx-auto mb-2" />
-                                            <p className="text-sm">No image uploaded</p>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            {imageUrls.length > 0 && (
-                                <div className="md:col-span-2 md:relative">
-                                    <div className="flex flex-row md:flex-col gap-2 overflow-x-auto md:absolute md:inset-0 md:overflow-y-auto pb-2 md:pb-0">
-                                        {imageUrls.map((url: string, idx: number) => (
-                                            <img key={idx} src={url} alt={`${product.name} thumbnail ${idx + 1}`}
-                                                onClick={() => setMainImage(url)}
-                                                className={`w-20 h-20 md:w-full md:h-auto flex-shrink-0 object-cover rounded-md cursor-pointer aspect-square ${url === mainImage ? 'ring-2 ring-offset-2 ring-blue-500' : 'hover:opacity-80'}`} />
-                                        ))}
-                                    </div>
+            {/* Mobile Header (Tags + Actions) */}
+            <div className="lg:hidden flex flex-col space-y-4 mb-6">
+                <div>
+                    <Tags />
+                </div>
+                <div className="w-full overflow-x-auto pb-2">
+                    <ActionButtons />
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Left Column: Images */}
+                <div className="space-y-4">
+                    <div className="bg-white p-4 rounded-lg shadow">
+                        <div className="aspect-square w-full rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center border border-gray-200">
+                            {mainImage ? (
+                                <img src={mainImage} alt={product.name} className="w-full h-full object-contain" />
+                            ) : (
+                                <div className="text-center text-gray-400">
+                                    <ShoppingCartIcon className="w-16 h-16 mx-auto mb-2" />
+                                    <p className="text-sm">No image</p>
                                 </div>
                             )}
                         </div>
-                    </div>
-
-                    <InfoCard title="Product Description">
-                        <p className="text-gray-600 whitespace-pre-wrap">{product.description || 'No description provided.'}</p>
-                    </InfoCard>
-
-                    {(attributes.length > 0 || product.weight || product.dimensions || product.unitOfMeasure) && (
-                        <InfoCard title="Specifications">
-                            <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                {attributes.map(attr => (
-                                    <DetailItem key={attr.name} label={attr.name} value={attr.value} />
-                                ))}
-                                <DetailItem label="Unit of Measure" value={isKgUoM(product.unitOfMeasure) ? 'Kilogram (kg)' : 'Unit'} />
-                                <DetailItem label="Weight" value={product.weight ? `${product.weight} kg` : 'N/A'} />
-                                <DetailItem label="Dimensions" value={product.dimensions || 'N/A'} />
-                            </dl>
-                        </InfoCard>
-                    )}
-
-                    {Array.isArray(product.variants) && product.variants.length > 0 && (
-                        <InfoCard title="Variants">
-                            <div className="grid grid-cols-1 gap-3">
-                                {product.variants.map((v, idx) => (
-                                    <div key={idx} className="border rounded-md p-3 flex flex-col gap-1 bg-gray-50">
-                                        <div className="flex justify-between flex-wrap gap-2">
-                                            <div className="font-medium text-gray-900">{v.name || 'Variant'}</div>
-                                            <div className="text-sm text-gray-700">{formatCurrency(typeof v.price === 'string' ? parseFloat(v.price as any) : (v.price ?? 0), storeSettings)}</div>
-                                        </div>
-                                        <div className="text-xs text-gray-600 flex flex-wrap gap-4">
-                                            <span>SKU: <span className="font-mono">{v.sku}</span></span>
-                                            <span>Stock: <span className="font-semibold">{v.stock}{isKgUoM(v.unitOfMeasure) ? ' kg' : ''}</span></span>
-                                            {v.unitOfMeasure && (
-                                                <span>UoM: {isKgUoM(v.unitOfMeasure) ? 'kg' : 'unit'}</span>
-                                            )}
-                                        </div>
-                                    </div>
+                        {imageUrls.length > 0 && (
+                            <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                                {imageUrls.map((url: string, idx: number) => (
+                                    <button
+                                        key={idx}
+                                        onClick={() => setMainImage(url)}
+                                        className={`relative w-24 h-24 flex-shrink-0 rounded-md overflow-hidden border-2 ${mainImage === url ? 'border-blue-500' : 'border-transparent hover:border-gray-300'}`}
+                                    >
+                                        <img src={url} alt={`Thumbnail ${idx}`} className="w-full h-full object-cover" />
+                                    </button>
                                 ))}
                             </div>
-                        </InfoCard>
-                    )}
+                        )}
+                    </div>
                 </div>
 
-                {/* Right side */}
-                <div className="lg:col-span-1 space-y-8">
+                {/* Right Column: Details Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 content-start">
+                    {/* Desktop Title & Tags (Hidden on Mobile) */}
+                    <div className="hidden lg:block md:col-span-2">
+                        <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+                        <Tags />
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <InfoCard title="Description">
+                            <p className="text-gray-600 whitespace-pre-wrap text-sm leading-relaxed">{product.description || 'No description provided.'}</p>
+                        </InfoCard>
+                    </div>
+
                     <InfoCard title="Inventory & Pricing">
-                        <dl className="space-y-4">
+                        <dl className="space-y-3">
                             <div className="flex justify-between items-baseline">
                                 <dt className="text-sm font-medium text-gray-500">Retail Price</dt>
-                                <dd className="text-2xl font-bold text-gray-900">{formatCurrency(price, storeSettings)}</dd>
+                                <dd className="text-xl font-bold text-gray-900">{formatCurrency(price, storeSettings)}</dd>
                             </div>
                             <div className="flex justify-between">
                                 <dt className="text-sm font-medium text-gray-500">Cost Price</dt>
                                 <dd className="text-sm text-gray-700">{formatCurrency(costPrice, storeSettings)}</dd>
                             </div>
                             <div className="flex justify-between">
-                                <dt className="text-sm font-medium text-gray-500">Profit Margin</dt>
-                                <dd className={`text-sm font-semibold ${profitMargin === null || profitMargin < 0 ? 'text-red-600' : 'text-green-600'}`}>{profitMargin !== null ? `${profitMargin.toFixed(1)}%` : 'N/A'}</dd>
+                                <dt className="text-sm font-medium text-gray-500">Margin</dt>
+                                <dd className={`text-sm font-semibold ${profitMargin === null || profitMargin < 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                    {profitMargin !== null ? `${profitMargin.toFixed(1)}%` : 'N/A'}
+                                </dd>
                             </div>
-
-                            <div className="pt-4 border-t">
-                                <div className="flex justify-between">
-                                    <dt className="text-sm font-medium text-gray-500">Stock on Hand</dt>
-                                    <dd className={`text-lg font-bold ${product.stock <= (product.reorderPoint || storeSettings.lowStockThreshold) ? 'text-red-600' : 'text-gray-900'}`}>{product.stock}{isKgUoM(product.unitOfMeasure) ? ' kg' : ''}</dd>
-                                </div>
-                                <div className="flex justify-between text-xs text-gray-500">
-                                    <dt>Reorder Point:</dt>
-                                    <dd>
-                                        {product.reorderPoint != null && product.reorderPoint !== undefined && product.reorderPoint !== 0
-                                            ? `${product.reorderPoint}${isKgUoM(product.unitOfMeasure) ? ' kg' : ''}`
-                                            : `(Default: ${storeSettings.lowStockThreshold}${isKgUoM(product.unitOfMeasure) ? ' kg' : ''})`}
-                                    </dd>
-                                </div>
-                                <div className="flex justify-between text-xs text-gray-500">
-                                    <dt>Safety Stock:</dt>
-                                    <dd>{(product.safetyStock || 0)}{isKgUoM(product.unitOfMeasure) ? ' kg' : ''}</dd>
-                                </div>
+                            <hr className="my-2 border-gray-100" />
+                            <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Stock</dt>
+                                <dd className={`text-lg font-bold ${product.stock <= (product.reorderPoint || storeSettings.lowStockThreshold) ? 'text-red-600' : 'text-gray-900'}`}>
+                                    {product.stock}{isKgUoM(product.unitOfMeasure) ? ' kg' : ''}
+                                </dd>
                             </div>
-                            <DetailItem label="SKU" value={<span className="font-mono">{product.sku}</span>} />
-                            <DetailItem label="Barcode (UPC/EAN)" value={<span className="font-mono">{product.barcode || 'N/A'}</span>} />
-                            <DetailItem label="Supplier" value={supplier?.name || 'N/A'} />
+                            <div className="flex justify-between text-xs text-gray-500">
+                                <dt>Reorder Point</dt>
+                                <dd>{product.reorderPoint || storeSettings.lowStockThreshold}</dd>
+                            </div>
+                            <div className="flex justify-between text-xs text-gray-500">
+                                <dt>Safety Stock</dt>
+                                <dd>{product.safetyStock || 0}</dd>
+                            </div>
                         </dl>
                     </InfoCard>
 
-                    {canManage && (
-                        <InfoCard title="Actions">
-                            <div className="space-y-3">
-                                <button onClick={() => onPrintLabel(product)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Print Label</span><PrinterIcon className="w-5 h-5" /></button>
-                                {product.status === 'active' ? (
-                                    <button onClick={() => onArchive(product.id)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Archive Product</span><ArchiveBoxIcon className="w-5 h-5" /></button>
-                                ) : (
-                                    <button onClick={() => onArchive(product.id)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Restore Product</span><RestoreIcon className="w-5 h-5" /></button>
-                                )}
-                                <button onClick={() => onDelete(product)} className="w-full text-left p-3 rounded-md hover:bg-gray-100 flex justify-between items-center text-sm font-medium text-gray-700"><span>Delete Product</span><TrashIcon className="w-5 h-5" /></button>
+                    <InfoCard title="Specifications">
+                        <dl className="space-y-3">
+                            {attributes.map(attr => (
+                                <div key={attr.name} className="flex justify-between">
+                                    <dt className="text-sm font-medium text-gray-500">{attr.name}</dt>
+                                    <dd className="text-sm text-gray-900">{attr.value}</dd>
+                                </div>
+                            ))}
+                            <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">UoM</dt>
+                                <dd className="text-sm text-gray-900">{isKgUoM(product.unitOfMeasure) ? 'Kilogram (kg)' : 'Unit'}</dd>
                             </div>
-                        </InfoCard>
+                            <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Weight</dt>
+                                <dd className="text-sm text-gray-900">{product.weight ? `${product.weight} kg` : 'N/A'}</dd>
+                            </div>
+                            <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Dims</dt>
+                                <dd className="text-sm text-gray-900">{product.dimensions || 'N/A'}</dd>
+                            </div>
+                            <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">SKU</dt>
+                                <dd className="text-sm font-mono text-gray-900">{product.sku}</dd>
+                            </div>
+                            <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Barcode</dt>
+                                <dd className="text-sm font-mono text-gray-900">{product.barcode || 'N/A'}</dd>
+                            </div>
+                            <div className="flex justify-between">
+                                <dt className="text-sm font-medium text-gray-500">Supplier</dt>
+                                <dd className="text-sm text-gray-900 truncate max-w-[120px]">{supplier?.name || 'N/A'}</dd>
+                            </div>
+                        </dl>
+                    </InfoCard>
+
+                    {Array.isArray(product.variants) && product.variants.length > 0 && (
+                        <div className="md:col-span-2">
+                            <InfoCard title="Variants">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {product.variants.map((v, idx) => (
+                                        <div key={idx} className="border rounded-md p-3 flex flex-col gap-1 bg-gray-50">
+                                            <div className="flex justify-between items-start">
+                                                <div className="font-medium text-gray-900">{v.name || 'Variant'}</div>
+                                                <div className="text-sm font-semibold text-gray-900">{formatCurrency(typeof v.price === 'string' ? parseFloat(v.price as any) : (v.price ?? 0), storeSettings)}</div>
+                                            </div>
+                                            <div className="text-xs text-gray-500 space-y-1">
+                                                <div className="flex justify-between"><span>SKU:</span> <span className="font-mono">{v.sku}</span></div>
+                                                <div className="flex justify-between"><span>Stock:</span> <span>{v.stock}{isKgUoM(v.unitOfMeasure) ? ' kg' : ''}</span></div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </InfoCard>
+                        </div>
                     )}
                 </div>
             </div>
