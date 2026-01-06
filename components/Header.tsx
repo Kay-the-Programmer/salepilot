@@ -22,6 +22,7 @@ interface HeaderProps {
     // New props for controlling search interaction
     isSearchActive?: boolean;
     setIsSearchActive?: (active: boolean) => void;
+    showSearch?: boolean;
 }
 
 const Header: React.FC<HeaderProps> = ({
@@ -41,6 +42,7 @@ const Header: React.FC<HeaderProps> = ({
     // If parent doesn't control state, we use internal state
     isSearchActive: propIsSearchActive,
     setIsSearchActive: propSetIsSearchActive,
+    showSearch = true,
 }) => {
     const [internalIsSearchActive, setInternalIsSearchActive] = useState(false);
 
@@ -133,15 +135,17 @@ const Header: React.FC<HeaderProps> = ({
                             {searchLeftContent}
                             {rightContent}
 
-                            <button
-                                onClick={() => setIsSearchActive(true)}
-                                className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
-                                aria-label="Search"
-                            >
-                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </button>
+                            {showSearch && (
+                                <button
+                                    onClick={() => setIsSearchActive(true)}
+                                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                                    aria-label="Search"
+                                >
+                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </button>
+                            )}
 
                             {buttonText && onButtonClick && (
                                 <button

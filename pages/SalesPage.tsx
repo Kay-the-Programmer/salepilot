@@ -1000,8 +1000,17 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     <Bars3Icon className="w-6 h-6" />
                                 </button>
                             )}
-                            <h2 className="text-xl font-bold text-slate-900">Products</h2>
+                            
+                            {/* Desktop: Show Products title */}
+                            <h2 className="text-lg font-bold text-slate-900 hidden md:block">Products</h2>
                         </div>
+                        
+                        {/* Mobile: Center the logo */}
+                        <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
+                            <img src={logo} alt="SalePilot" className="h-8" />
+                        </div>
+                        
+                        {/* Cart button always on the right */}
                         <button
                             onClick={() => setActiveTab('cart')}
                             className="relative p-2"

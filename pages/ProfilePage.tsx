@@ -7,6 +7,7 @@ import ArrowDownTrayIcon from '../components/icons/ArrowDownTrayIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import DevicePhoneMobileIcon from '../components/icons/DevicePhoneMobileIcon';
 import KeyIcon from '../components/icons/KeyIcon';
+import GridIcon from '../components/icons/GridIcon';
 import EditProfileModal from '../components/EditProfileModal';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import Header from "@/components/Header.tsx";
@@ -58,6 +59,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 }) => {
     const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'info' | 'security' | 'app'>('info');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+
 
     // Platform detection for install guidance
     const ua = typeof window !== 'undefined' ? (window.navigator.userAgent || '') : '';
@@ -76,8 +81,29 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
     return (
         <>
-            <div className="min-h-screen bg-gray-100  md:min-h-0 md:h-full md:overflow-y-auto">
-                <Header title="" />
+            <div className="min-h-screen bg-gray-50 md:min-h-0 md:h-full md:overflow-y-auto">
+                <Header
+                    title="Profile"
+                    showSearch={false}
+                    rightContent={
+                        <div className="flex items-center gap-2 md:hidden">
+                            <button
+                                onClick={() => setIsEditProfileModalOpen(true)}
+                                className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                                aria-label="Edit Profile"
+                            >
+                                <PencilIcon className="w-5 h-5" />
+                            </button>
+                            <button
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                className={`p-2 rounded-full transition-colors ${isMobileMenuOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600 hover:bg-gray-100'}`}
+                                aria-label="Menu"
+                            >
+                                <GridIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                    }
+                />
 
                 <main className="px-4 sm:px-6 lg:px-8 py-8">
                     <div className="max-w-6xl mx-auto">
@@ -96,7 +122,6 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                             <div className="p-5 bg-transparent rounded-2xl transition-all duration-500 group-hover/avatar:scale-105 group-hover/avatar:rotate-2 shadow-sm group-hover/avatar:shadow-md">
                                                 <UserCircleIcon className="w-24 h-24 text-blue-600 transition-transform duration-300" />
                                             </div>
-                                            
                                         </div>
 
                                         <div className="mt-6 space-y-2">
@@ -109,16 +134,17 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                 </span>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <div className="mt-8 pt-6 border-t border-gray-200 w-full">
-                                            <button
-                                                onClick={() => setIsEditProfileModalOpen(true)}
-                                                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]"
-                                            >
-                                                <PencilIcon className="w-4 h-4" />
-                                                Edit Profile
-                                            </button>
-                                        </div>
+                                    {/* Desktop Edit Button */}
+                                    <div className="hidden lg:block mt-8 pt-6 border-t border-gray-200 w-full">
+                                        <button
+                                            onClick={() => setIsEditProfileModalOpen(true)}
+                                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white text-sm font-semibold rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]"
+                                        >
+                                            <PencilIcon className="w-4 h-4" />
+                                            Edit Profile
+                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -126,201 +152,264 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                             {/* Right Column - Details and Actions */}
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Personal Information */}
-                                <InfoCard
-                                    title="Personal Information"
-                                    icon={<UserCircleIcon className="w-5 h-5" />}
-                                >
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <div className="group">
-                                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</label>
-                                                <p className="mt-2 text-base text-gray-900 font-semibold group-hover:text-blue-600 transition-colors duration-200">{user.name}</p>
+                                <div className={`${activeTab === 'info' ? 'block' : 'hidden lg:block'}`}>
+                                    <InfoCard
+                                        title="Personal Information"
+                                        icon={<UserCircleIcon className="w-5 h-5" />}
+                                    >
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div className="space-y-4">
+                                                <div className="group">
+                                                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</label>
+                                                    <p className="mt-2 text-base text-gray-900 font-semibold group-hover:text-blue-600 transition-colors duration-200">{user.name}</p>
+                                                </div>
+                                                <div className="group">
+                                                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Address</label>
+                                                    <p className="mt-2 text-base text-gray-900 font-semibold break-all group-hover:text-blue-600 transition-colors duration-200">{user.email}</p>
+                                                </div>
                                             </div>
-                                            <div className="group">
-                                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Email Address</label>
-                                                <p className="mt-2 text-base text-gray-900 font-semibold break-all group-hover:text-blue-600 transition-colors duration-200">{user.email}</p>
+                                            <div className="space-y-4">
+                                                <div className="group">
+                                                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Role</label>
+                                                    <p className="mt-2 text-base text-gray-900 font-semibold group-hover:text-blue-600 transition-colors duration-200">
+                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                    </p>
+                                                </div>
+                                                <div>
+                                                    <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</label>
+                                                    <p className="mt-2">
+                                                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
+                                                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />Active
+                                                        </span>
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="space-y-4">
-                                            <div className="group">
-                                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Role</label>
-                                                <p className="mt-2 text-base text-gray-900 font-semibold group-hover:text-blue-600 transition-colors duration-200">
-                                                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <label className="text-xs font-medium text-gray-500 uppercase tracking-wider">Account Status</label>
-                                                <p className="mt-2">
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 border border-green-200 shadow-sm transition-all duration-300 hover:shadow-md hover:scale-105">
-                                                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />Active
-                                                    </span>
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </InfoCard>
+                                    </InfoCard>
+                                </div>
 
                                 {/* Install App Section */}
-                                <InfoCard
-                                    title="Install Application"
-                                    icon={<DevicePhoneMobileIcon className="w-5 h-5" />}
-                                >
-                                    <div className="space-y-4">
-                                        <div className="flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 rounded-xl border border-blue-100 transition-all duration-300 hover:shadow-md">
-                                            <div className="flex-shrink-0 p-2 bg-white rounded-lg shadow-sm">
-                                                <ArrowDownTrayIcon className="w-6 h-6 text-blue-600" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <p className="text-sm text-gray-900 font-semibold mb-1">
-                                                    {isStandalone
-                                                        ? "App is Installed"
-                                                        : "Install this app for better experience"}
-                                                </p>
-                                                <p className="text-sm text-gray-600 leading-relaxed">
-                                                    {isStandalone
-                                                        ? "You're running the installed version with full functionality."
-                                                        : isIOS
-                                                            ? "Install on your iPhone/iPad home screen for quick access."
-                                                            : "Install on your device for offline access and better performance."
-                                                    }
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="pt-2">
-                                            <button
-                                                onClick={() => {
-                                                    if (installPrompt) {
-                                                        onInstall();
-                                                    } else {
-                                                        const ua = window.navigator.userAgent || '';
-                                                        const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
-                                                        const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (window as any).navigator.standalone;
-                                                        if (isStandalone) {
-                                                            alert('The app is already installed and running in standalone mode.');
-                                                        } else if (isIOS) {
-                                                            alert('To install this app on iOS:\n\n1. Tap the Share button in Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" in the top right corner');
-                                                        } else {
-                                                            alert('Install prompt is not available yet. Try visiting a few pages and then return here, or use your browser menu: Install App/Add to Home Screen.');
+                                <div className={`${activeTab === 'app' ? 'block' : 'hidden lg:block'}`}>
+                                    <InfoCard
+                                        title="Install Application"
+                                        icon={<DevicePhoneMobileIcon className="w-5 h-5" />}
+                                    >
+                                        <div className="space-y-4">
+                                            <div className="flex items-start gap-4 p-5 bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 rounded-xl border border-blue-100 transition-all duration-300 hover:shadow-md">
+                                                <div className="flex-shrink-0 p-2 bg-white rounded-lg shadow-sm">
+                                                    <ArrowDownTrayIcon className="w-6 h-6 text-blue-600" />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <p className="text-sm text-gray-900 font-semibold mb-1">
+                                                        {isStandalone
+                                                            ? "App is Installed"
+                                                            : "Install this app for better experience"}
+                                                    </p>
+                                                    <p className="text-sm text-gray-600 leading-relaxed">
+                                                        {isStandalone
+                                                            ? "You're running the installed version with full functionality."
+                                                            : isIOS
+                                                                ? "Install on your iPhone/iPad home screen for quick access."
+                                                                : "Install on your device for offline access and better performance."
                                                         }
-                                                    }
-                                                }}
-                                                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-gray-900 to-gray-800 text-white text-sm font-semibold rounded-lg hover:from-gray-800 hover:to-gray-900 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100"
-                                                disabled={isStandalone}
-                                            >
-                                                {isStandalone ? (
-                                                    <>
-                                                        <DevicePhoneMobileIcon className="w-5 h-5" />
-                                                        Installed ✓
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <ArrowDownTrayIcon className="w-5 h-5" />
-                                                        Install App
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
+                                                    </p>
+                                                </div>
+                                            </div>
 
-                                        {/* Installation Guide */}
-                                        {!isStandalone && (
-                                            <div className="mt-4 p-5 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border border-gray-200">
-                                                <h4 className="text-sm font-semibold text-gray-900 mb-3">How to Install</h4>
-                                                <ul className="space-y-3 text-sm text-gray-600">
-                                                    {isIOS ? (
+                                            <div className="pt-2">
+                                                <button
+                                                    onClick={() => {
+                                                        if (installPrompt) {
+                                                            onInstall();
+                                                        } else {
+                                                            const ua = window.navigator.userAgent || '';
+                                                            const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.userAgent.includes('Mac') && 'ontouchend' in document);
+                                                            const isStandalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || (window as any).navigator.standalone;
+                                                            if (isStandalone) {
+                                                                alert('The app is already installed and running in standalone mode.');
+                                                            } else if (isIOS) {
+                                                                alert('To install this app on iOS:\n\n1. Tap the Share button in Safari\n2. Scroll down and tap "Add to Home Screen"\n3. Tap "Add" in the top right corner');
+                                                            } else {
+                                                                alert('Install prompt is not available yet. Try visiting a few pages and then return here, or use your browser menu: Install App/Add to Home Screen.');
+                                                            }
+                                                        }
+                                                    }}
+                                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-gray-900 to-gray-800 text-white text-sm font-semibold rounded-lg hover:from-gray-800 hover:to-gray-900 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] disabled:hover:scale-100"
+                                                    disabled={isStandalone}
+                                                >
+                                                    {isStandalone ? (
                                                         <>
-                                                            <li className="flex items-start gap-3 group">
-                                                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">1</span>
-                                                                <span className="pt-0.5">Open this site in Safari browser</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-3 group">
-                                                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">2</span>
-                                                                <span className="pt-0.5">Tap the Share button (square with arrow up)</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-3 group">
-                                                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">3</span>
-                                                                <span className="pt-0.5">Select "Add to Home Screen"</span>
-                                                            </li>
+                                                            <DevicePhoneMobileIcon className="w-5 h-5" />
+                                                            Installed ✓
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <li className="flex items-start gap-3 group">
-                                                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">1</span>
-                                                                <span className="pt-0.5">Look for the install icon in your browser's address bar</span>
-                                                            </li>
-                                                            <li className="flex items-start gap-3 group">
-                                                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">2</span>
-                                                                <span className="pt-0.5">Or use your browser menu → "Install App" / "Add to Home Screen"</span>
-                                                            </li>
+                                                            <ArrowDownTrayIcon className="w-5 h-5" />
+                                                            Install App
                                                         </>
                                                     )}
-                                                </ul>
+                                                </button>
                                             </div>
-                                        )}
-                                    </div>
-                                </InfoCard>
+
+                                            {/* Installation Guide */}
+                                            {!isStandalone && (
+                                                <div className="mt-4 p-5 bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border border-gray-200">
+                                                    <h4 className="text-sm font-semibold text-gray-900 mb-3">How to Install</h4>
+                                                    <ul className="space-y-3 text-sm text-gray-600">
+                                                        {isIOS ? (
+                                                            <>
+                                                                <li className="flex items-start gap-3 group">
+                                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">1</span>
+                                                                    <span className="pt-0.5">Open this site in Safari browser</span>
+                                                                </li>
+                                                                <li className="flex items-start gap-3 group">
+                                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">2</span>
+                                                                    <span className="pt-0.5">Tap the Share button (square with arrow up)</span>
+                                                                </li>
+                                                                <li className="flex items-start gap-3 group">
+                                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">3</span>
+                                                                    <span className="pt-0.5">Select "Add to Home Screen"</span>
+                                                                </li>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <li className="flex items-start gap-3 group">
+                                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">1</span>
+                                                                    <span className="pt-0.5">Look for the install icon in your browser's address bar</span>
+                                                                </li>
+                                                                <li className="flex items-start gap-3 group">
+                                                                    <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 text-blue-800 text-xs font-semibold mt-0.5 shadow-sm group-hover:scale-110 transition-transform duration-200">2</span>
+                                                                    <span className="pt-0.5">Or use your browser menu → "Install App" / "Add to Home Screen"</span>
+                                                                </li>
+                                                            </>
+                                                        )}
+                                                    </ul>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </InfoCard>
+                                </div>
 
                                 {/* Security & Account Actions */}
-                                <InfoCard
-                                    title="Security & Account"
-                                    icon={<KeyIcon className="w-5 h-5" />}
-                                >
-                                    <div className="space-y-3">
-                                        <button
-                                            onClick={() => setIsChangePasswordModalOpen(true)}
-                                            className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 group transform hover:scale-[1.01] active:scale-[0.99]"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-blue-200 transition-all duration-300">
-                                                    <KeyIcon className="w-4 h-4 text-gray-600 group-hover:text-blue-700 transition-colors duration-300" />
+                                <div className={`${activeTab === 'security' ? 'block' : 'hidden lg:block'}`}>
+                                    <InfoCard
+                                        title="Security & Account"
+                                        icon={<KeyIcon className="w-5 h-5" />}
+                                    >
+                                        <div className="space-y-3">
+                                            <button
+                                                onClick={() => setIsChangePasswordModalOpen(true)}
+                                                className="w-full flex items-center justify-between p-4 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-300 group transform hover:scale-[1.01] active:scale-[0.99]"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-gray-100 rounded-lg group-hover:bg-blue-200 transition-all duration-300">
+                                                        <KeyIcon className="w-4 h-4 text-gray-600 group-hover:text-blue-700 transition-colors duration-300" />
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <p className="text-sm font-medium text-gray-900">Change Password</p>
+                                                        <p className="text-xs text-gray-500">Update your login credentials</p>
+                                                    </div>
                                                 </div>
-                                                <div className="text-left">
-                                                    <p className="text-sm font-medium text-gray-900">Change Password</p>
-                                                    <p className="text-xs text-gray-500">Update your login credentials</p>
-                                                </div>
-                                            </div>
-                                            <span className="text-gray-400 group-hover:text-blue-600 transition-all duration-300 group-hover:translate-x-1">→</span>
-                                        </button>
-                                    </div>
-                                </InfoCard>
+                                                <span className="text-gray-400 group-hover:text-blue-600 transition-all duration-300 group-hover:translate-x-1">→</span>
+                                            </button>
+                                        </div>
+                                    </InfoCard>
 
-                                {/* Logout Section */}
-                                <InfoCard
-                                    title="Logout"
-                                    variant="danger"
-                                    icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />}
-                                >
-                                    <div className="space-y-4">
-                                        <p className="text-sm text-gray-600">
-                                            You will be signed out of all devices. Make sure to save any unsaved work.
-                                        </p>
-                                        <button
-                                            onClick={onLogout}
-                                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-semibold rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]"
+                                    {/* Logout Section */}
+                                    <div className="mt-6 md:mt-0">
+                                        <InfoCard
+                                            title="Logout"
+                                            variant="danger"
+                                            icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />}
                                         >
-                                            <ArrowLeftOnRectangleIcon className="w-5 h-5" />
-                                            Sign Out
-                                        </button>
+                                            <div className="space-y-4">
+                                                <p className="text-sm text-gray-600">
+                                                    You will be signed out of all devices. Make sure to save any unsaved work.
+                                                </p>
+                                                <button
+                                                    onClick={onLogout}
+                                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white text-sm font-semibold rounded-lg hover:from-red-700 hover:to-red-800 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98]"
+                                                >
+                                                    <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                                                    Sign Out
+                                                </button>
+                                            </div>
+                                        </InfoCard>
                                     </div>
-                                </InfoCard>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </main>
-            </div>
 
-            {/* Modals */}
-            <EditProfileModal
-                isOpen={isEditProfileModalOpen}
-                onClose={() => setIsEditProfileModalOpen(false)}
-                onSave={handleSaveProfile}
-                currentUser={user}
-            />
-            <ChangePasswordModal
-                isOpen={isChangePasswordModalOpen}
-                onClose={() => setIsChangePasswordModalOpen(false)}
-                onSave={onChangePassword}
-            />
+                {/* Mobile Menu Popup */}
+                {isMobileMenuOpen && (
+                    <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+                        <div className="absolute inset-0 bg-black/50 animate-fade-in" />
+                        <div
+                            className="absolute top-[60px] right-4 left-auto w-48 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 p-2"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    onClick={() => {
+                                        setActiveTab('info');
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${activeTab === 'info'
+                                        ? 'bg-gray-900 text-white shadow-md'
+                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    <UserCircleIcon className="w-6 h-6 mb-1" />
+                                    <span className="text-xs font-semibold">Info</span>
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setActiveTab('security');
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${activeTab === 'security'
+                                        ? 'bg-gray-900 text-white shadow-md'
+                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    <KeyIcon className="w-6 h-6 mb-1" />
+                                    <span className="text-xs font-semibold">Security</span>
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        setActiveTab('app');
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${activeTab === 'app'
+                                        ? 'bg-gray-900 text-white shadow-md'
+                                        : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                        }`}
+                                >
+                                    <DevicePhoneMobileIcon className="w-6 h-6 mb-1" />
+                                    <span className="text-xs font-semibold">App</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Modals */}
+                <EditProfileModal
+                    isOpen={isEditProfileModalOpen}
+                    onClose={() => setIsEditProfileModalOpen(false)}
+                    onSave={handleSaveProfile}
+                    currentUser={user}
+                />
+                <ChangePasswordModal
+                    isOpen={isChangePasswordModalOpen}
+                    onClose={() => setIsChangePasswordModalOpen(false)}
+                    onSave={onChangePassword}
+                />
+            </div >
         </>
     );
 };
