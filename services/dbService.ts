@@ -1,8 +1,8 @@
 import { Product, Category, Customer, Supplier, Sale, Return, PurchaseOrder, SupplierInvoice, User, Account, JournalEntry, AuditLog, StoreSettings } from '../types';
 
 const DB_NAME = 'SalePilotDB';
-const DB_VERSION = 6;
-const STORES = ['products', 'categories', 'customers', 'suppliers', 'sales', 'returns', 'purchaseOrders', 'supplierInvoices', 'users', 'accounts', 'journalEntries', 'auditLogs', 'settings', 'syncQueue', 'accounting', 'reports'];
+const DB_VERSION = 7;
+const STORES = ['products', 'categories', 'customers', 'suppliers', 'sales', 'returns', 'purchaseOrders', 'supplierInvoices', 'users', 'accounts', 'journalEntries', 'auditLogs', 'settings', 'syncQueue', 'accounting', 'reports', 'announcements'];
 
 const STORE_KEY_PATHS: { [key: string]: string } = {
     sales: 'transactionId',
@@ -174,7 +174,7 @@ class DBService {
     async put(storeName: string, item: any, key?: IDBValidKey): Promise<void> {
         const store = await this.getStore(storeName, 'readwrite');
         const request = key ? store.put(item, key) : store.put(item);
-         return new Promise((resolve, reject) => {
+        return new Promise((resolve, reject) => {
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });

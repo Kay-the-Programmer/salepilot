@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { SupplierInvoice, SupplierPayment, StoreSettings } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
 import { formatCurrency } from '../../utils/currency';
@@ -44,7 +45,7 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
         onClose();
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
             <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-lg">
                 <form onSubmit={handleSubmit}>
@@ -99,11 +100,12 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
                             />
                         </div>
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3 border-t">
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3 border-t">
                         <Button
                             type="submit"
                             variant="primary"
                             disabled={isInvalid}
+                            className="flex-1 sm:flex-none"
                         >
                             Record Payment
                         </Button>
@@ -111,13 +113,15 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
                             type="button"
                             variant="secondary"
                             onClick={onClose}
+                            className="flex-1 sm:flex-none"
                         >
                             Cancel
                         </Button>
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     )
 };
 

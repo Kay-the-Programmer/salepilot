@@ -104,13 +104,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                             placeholder="Re-enter new password"
                         />
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3 border-t">
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3 border-t">
                         <Button
                             type="submit"
                             variant="primary"
                             disabled={isSaving}
                             isLoading={isSaving}
                             loadingText="Saving..."
+                            className="flex-1 sm:flex-none"
                         >
                             Save Password
                         </Button>
@@ -119,6 +120,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                             variant="secondary"
                             onClick={onClose}
                             disabled={isSaving}
+                            className="flex-1 sm:flex-none"
                         >
                             Cancel
                         </Button>

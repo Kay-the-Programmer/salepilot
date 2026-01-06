@@ -53,7 +53,11 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                         <div class="header">
                             <h1>Invoice</h1>
                             <p>${storeSettings.name}</p>
-                            <p>${storeSettings.address}</p>
+                            <p>${typeof storeSettings.address === 'object'
+                // @ts-ignore - Runtime check for legacy/mixed data types
+                ? `${(storeSettings.address as any).street || ''}, ${(storeSettings.address as any).city || ''}, ${(storeSettings.address as any).state || ''} ${(storeSettings.address as any).zip || ''}`
+                : storeSettings.address}
+                            </p>
                         </div>
                         <div class="details">
                             <div>
@@ -195,7 +199,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                         </div>
                     </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row gap-3 border-t justify-end">
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row flex-wrap gap-3 border-t justify-end">
                     <Button
                         type="button"
                         variant="secondary"

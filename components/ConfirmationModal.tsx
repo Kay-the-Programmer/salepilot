@@ -45,11 +45,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         </div>
                     </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3">
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3">
                     <Button
                         type="button"
                         variant={confirmButtonClass.includes('red') ? 'danger' : 'primary'}
-                        className={`w-full sm:w-auto ${confirmButtonClass}`}
+                        className={`flex-1 sm:flex-none w-full sm:w-auto ${confirmButtonClass}`}
                         onClick={onConfirm}
                     >
                         {confirmText}
@@ -57,7 +57,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     <Button
                         type="button"
                         variant="secondary"
-                        className="w-full sm:w-auto mt-0"
+                        className="flex-1 sm:flex-none w-full sm:w-auto mt-0"
                         onClick={onClose}
                     >
                         {cancelText}

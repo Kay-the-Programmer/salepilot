@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, POItem, ReceptionEvent, User, StoreSettings, Account, JournalEntry, JournalEntryLine, AuditLog, Payment, SupplierInvoice, SupplierPayment } from './types';
+import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, POItem, ReceptionEvent, User, StoreSettings, Account, JournalEntry, JournalEntryLine, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
 import Sidebar from './components/Sidebar';
 import InventoryPage from './pages/InventoryPage';
 import SalesPage from './pages/SalesPage';
@@ -21,6 +21,7 @@ import UsersPage from './pages/UsersPage';
 import AccountingPage from './pages/AccountingPage';
 import AllSalesPage from './pages/AllSalesPage';
 import AuditLogPage from './pages/AuditLogPage';
+import NotificationsPage from './pages/NotificationsPage';
 import SuperAdminPage from './pages/SuperAdminPage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
@@ -38,10 +39,10 @@ type SnackbarState = {
 };
 
 const PERMISSIONS: Record<User['role'], string[]> = {
-    superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile'],
-    admin: ['reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile'],
-    staff: ['sales', 'sales-history', 'inventory', 'returns', 'customers', 'profile'],
-    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile']
+    superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications'],
+    admin: ['reports', 'sales', 'sales-history', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications'],
+    staff: ['sales', 'sales-history', 'inventory', 'returns', 'customers', 'profile', 'notifications'],
+    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
@@ -65,6 +66,7 @@ const App: React.FC = () => {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
+    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -169,7 +171,7 @@ const App: React.FC = () => {
                 loadedProducts, loadedCategories, loadedCustomers, loadedSuppliers,
                 loadedSales, loadedPOs, loadedAccounts, loadedJournalEntries, loadedSupplierInvoices,
                 loadedUsers, loadedSettings, loadedReturns, loadedLogs,
-                activeStockTake
+                activeStockTake, loadedAnnouncements
             ] = await Promise.all([
                 api.get<Product[]>('/products'), api.get<Category[]>('/categories'),
                 api.get<Customer[]>('/customers'), api.get<Supplier[]>('/suppliers'),
@@ -178,6 +180,7 @@ const App: React.FC = () => {
                 api.get<SupplierInvoice[]>('/accounting/supplier-invoices'), api.get<User[]>('/users'),
                 api.get<StoreSettings>('/settings'), api.get<Return[]>('/returns'),
                 api.get<AuditLog[]>('/audit'), api.get<StockTakeSession | null>('/stock-takes/active'),
+                Promise.resolve([] as Announcement[]) // Notifications API not yet implemented
             ]);
 
             setProducts(loadedProducts); dbService.bulkPut('products', loadedProducts);
@@ -192,6 +195,7 @@ const App: React.FC = () => {
             setUsers(loadedUsers); dbService.bulkPut('users', loadedUsers);
             setReturns(loadedReturns); dbService.bulkPut('returns', loadedReturns);
             setAuditLogs(loadedLogs); dbService.bulkPut('auditLogs', loadedLogs);
+            setAnnouncements(loadedAnnouncements); dbService.bulkPut('announcements', loadedAnnouncements);
 
             // Handle single-item stores
             setStoreSettings(loadedSettings); dbService.put('settings', loadedSettings, currentUser?.currentStoreId || 'default');
@@ -204,7 +208,7 @@ const App: React.FC = () => {
                 const [
                     cachedProducts, cachedCategories, cachedCustomers, cachedSuppliers,
                     cachedSales, cachedPOs, cachedAccounts, cachedJournalEntries, cachedSupplierInvoices,
-                    cachedUsers, cachedReturns, cachedLogs,
+                    cachedUsers, cachedReturns, cachedLogs, cachedAnnouncements
                 ] = await Promise.all([
                     dbService.getAll<Product>('products'), dbService.getAll<Category>('categories'),
                     dbService.getAll<Customer>('customers'), dbService.getAll<Supplier>('suppliers'),
@@ -212,6 +216,7 @@ const App: React.FC = () => {
                     dbService.getAll<Account>('accounts'), dbService.getAll<JournalEntry>('journalEntries'),
                     dbService.getAll<SupplierInvoice>('supplierInvoices'), dbService.getAll<User>('users'),
                     dbService.getAll<Return>('returns'), dbService.getAll<AuditLog>('auditLogs'),
+                    dbService.getAll<Announcement>('announcements'),
                 ]);
 
                 const cachedSettings = await dbService.get<StoreSettings>('settings', currentUser?.currentStoreId || 'default');
@@ -229,6 +234,7 @@ const App: React.FC = () => {
                 setUsers(cachedUsers || []);
                 setReturns(cachedReturns || []);
                 setAuditLogs(cachedLogs || []);
+                setAnnouncements(cachedAnnouncements || []);
 
                 if (cachedSettings) {
                     setStoreSettings(cachedSettings);
@@ -693,14 +699,14 @@ const App: React.FC = () => {
     const handleDeletePurchaseOrder = async (poId: string) => {
         try {
             const result = await api.delete(`/purchase-orders/${poId}`);
-            if (result.offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+            if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
         } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
 
     const handleReceivePOItems = async (poId: string, receivedItems: { productId: string, quantity: number }[]) => {
         try {
             const result = await api.post(`/purchase-orders/${poId}/receive`, receivedItems);
-            if (result.offline) { showSnackbar('Offline: Stock reception queued.', 'info'); } else { fetchData(); }
+            if ((result as any).offline) { showSnackbar('Offline: Stock reception queued.', 'info'); } else { fetchData(); }
         } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
 
@@ -801,6 +807,8 @@ const App: React.FC = () => {
         }
     };
 
+
+
     const handleDeleteUser = async (userId: string) => {
         if (userId === currentUser?.id) {
             showSnackbar("You cannot delete your own account.", "error");
@@ -846,20 +854,20 @@ const App: React.FC = () => {
         if (window.confirm('Are you sure you want to delete this account?')) {
             try {
                 const result = await api.delete(`/accounting/accounts/${accountId}`);
-                if (result.offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+                if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
             } catch (err: any) { showSnackbar(err.message, 'error'); }
         }
     };
     const handleAddManualJournalEntry = async (entry: Omit<JournalEntry, 'id'>) => {
         try {
             const result = await api.post('/accounting/journal-entries', entry);
-            if (result.offline) { showSnackbar('Offline: Journal entry queued.', 'info'); } else { fetchData(); }
+            if ((result as any).offline) { showSnackbar('Offline: Journal entry queued.', 'info'); } else { fetchData(); }
         } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
     const handleRecordSupplierPayment = async (invoiceId: string, payment: Omit<SupplierPayment, 'id'>) => {
         try {
             const result = await api.post(`/accounting/supplier-invoices/${invoiceId}/payments`, payment);
-            if (result.offline) { showSnackbar('Offline: Supplier payment queued.', 'info'); } else { fetchData(); }
+            if ((result as any).offline) { showSnackbar('Offline: Supplier payment queued.', 'info'); } else { fetchData(); }
         } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
 
@@ -933,6 +941,8 @@ const App: React.FC = () => {
                 return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
             case 'superadmin':
                 return <SuperAdminPage />;
+            case 'notifications':
+                return <NotificationsPage announcements={announcements} />;
             case 'inventory':
             default:
                 return <InventoryPage

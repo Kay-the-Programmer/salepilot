@@ -127,7 +127,7 @@ export interface Category {
 
 export interface CountedItem {
     productId: string;
-    name:string;
+    name: string;
     sku: string;
     expected: number;
     counted: number | null; // null means not yet counted
@@ -276,6 +276,14 @@ export interface SupplierInvoice {
     payments: SupplierPayment[];
 }
 
+
+export interface Announcement {
+    id: string;
+    title: string;
+    message: string;
+    createdAt: string;
+    senderName?: string;
+}
 
 // --- System Types ---
 

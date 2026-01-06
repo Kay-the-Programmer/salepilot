@@ -90,11 +90,12 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
                     </div>
                 </div>
 
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3 border-t">
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3 border-t">
                     <Button
                         type="button"
                         variant="primary"
                         onClick={handlePrint}
+                        className="flex-1 sm:flex-none"
                     >
                         Print
                     </Button>
@@ -102,6 +103,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
                         type="button"
                         variant="secondary"
                         onClick={onClose}
+                        className="flex-1 sm:flex-none"
                     >
                         Close
                     </Button>

@@ -43,7 +43,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
         setIsModalOpen(false);
         setEditingSupplier(null);
     };
-    
+
     const handleSave = (supplier: Supplier) => {
         onSaveSupplier(supplier);
         handleCloseModal();
@@ -56,7 +56,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
     const handleBackToList = () => {
         setSelectedSupplierId(null);
     };
-    
+
     const filteredSuppliers = useMemo(() => suppliers.filter(supplier => {
         if (searchTerm.trim() === '') return true;
         const term = searchTerm.toLowerCase();
@@ -67,12 +67,12 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
         );
     }), [suppliers, searchTerm]);
 
-    const selectedSupplier = useMemo(() => 
-        suppliers.find(c => c.id === selectedSupplierId), 
+    const selectedSupplier = useMemo(() =>
+        suppliers.find(c => c.id === selectedSupplierId),
         [suppliers, selectedSupplierId]
     );
 
-    const supplierProducts = useMemo(() => 
+    const supplierProducts = useMemo(() =>
         products.filter(p => p.supplierId === selectedSupplierId),
         [products, selectedSupplierId]
     );
@@ -96,7 +96,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                         </div>
                     </div>
                 </header>
-                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
                     <SupplierDetailView
                         supplier={selectedSupplier}
                         products={supplierProducts}
@@ -121,13 +121,14 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                 onButtonClick={handleOpenAddModal}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-             />
+            />
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
                 <SupplierList
                     suppliers={filteredSuppliers}
                     onSelectSupplier={handleSelectSupplier}
                     onEdit={handleOpenEditModal}
                     onDelete={onDeleteSupplier}
+                    onAddNew={handleOpenAddModal}
                     isLoading={isLoading}
                     error={error}
                 />

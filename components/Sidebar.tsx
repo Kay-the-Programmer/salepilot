@@ -20,7 +20,8 @@ import {
     BuildingStorefrontIcon,
     ChartBarIcon,
     ClipboardDocumentListIcon,
-    SwatchIcon
+    SwatchIcon,
+    BellAlertIcon
 } from './icons';
 
 interface SidebarProps {
@@ -40,107 +41,114 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
-    { 
-        name: 'Dashboard', 
-        page: 'reports', 
+    {
+        name: 'Dashboard',
+        page: 'reports',
         icon: HomeIcon,
         roles: ['superadmin', 'admin', 'inventory_manager'],
         badge: null
     },
-    { 
-        name: 'POS Terminal', 
-        page: 'sales', 
+    {
+        name: 'POS Terminal',
+        page: 'sales',
         icon: ShoppingCartIcon,
         roles: ['admin', 'staff'],
         badge: null
     },
-    { 
-        name: 'Sales History', 
-        page: 'sales-history', 
+    {
+        name: 'Sales History',
+        page: 'sales-history',
         icon: ClockIcon,
         roles: ['admin', 'staff'],
         badge: null
     },
-    { 
-        name: 'Inventory', 
-        page: 'inventory', 
+    {
+        name: 'Inventory',
+        page: 'inventory',
         icon: ArchiveBoxIcon,
         roles: ['admin', 'inventory_manager'],
         badge: null
     },
-    { 
-        name: 'Stock Takes', 
-        page: 'stock-takes', 
+    {
+        name: 'Stock Takes',
+        page: 'stock-takes',
         icon: ClipboardDocumentListIcon,
         roles: ['admin', 'inventory_manager'],
         badge: null
     },
-    { 
-        name: 'Returns', 
-        page: 'returns', 
+    {
+        name: 'Returns',
+        page: 'returns',
         icon: ArrowUturnLeftIcon,
         roles: ['admin', 'staff'],
         badge: null
     },
-    { 
-        name: 'Customers', 
-        page: 'customers', 
+    {
+        name: 'Customers',
+        page: 'customers',
         icon: UsersIcon,
         roles: ['admin'],
         badge: null
     },
-    { 
-        name: 'Suppliers', 
-        page: 'suppliers', 
+    {
+        name: 'Suppliers',
+        page: 'suppliers',
         icon: TruckIcon,
         roles: ['admin', 'inventory_manager'],
         badge: null
     },
-    { 
-        name: 'Purchase Orders', 
-        page: 'purchase-orders', 
+    {
+        name: 'Purchase Orders',
+        page: 'purchase-orders',
         icon: DocumentPlusIcon,
         roles: ['admin', 'inventory_manager'],
         badge: null
     },
-    { 
-        name: 'Accounting', 
-        page: 'accounting', 
+    {
+        name: 'Accounting',
+        page: 'accounting',
         icon: CalculatorIcon,
         roles: ['superadmin', 'admin'],
         badge: null
     },
-    { 
-        name: 'Audit Trail', 
-        page: 'audit-trail', 
+    {
+        name: 'Audit Trail',
+        page: 'audit-trail',
         icon: DocumentMagnifyingGlassIcon,
         roles: ['superadmin', 'admin'],
         badge: null
     },
-    { 
-        name: 'Users', 
-        page: 'users', 
+    {
+        name: 'Users',
+        page: 'users',
         icon: UsersIcon,
         roles: ['superadmin', 'admin'],
         badge: null
     },
-    { 
-        name: 'Settings', 
-        page: 'settings', 
+    {
+        name: 'Notifications',
+        page: 'notifications',
+        icon: BellAlertIcon,
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
+        badge: null
+    },
+    {
+        name: 'Settings',
+        page: 'settings',
         icon: Cog6ToothIcon,
         roles: ['superadmin', 'admin'],
         badge: null
     },
-    { 
-        name: 'Superadmin', 
-        page: 'superadmin', 
+    {
+        name: 'Superadmin',
+        page: 'superadmin',
         icon: UserIcon,
         roles: ['superadmin'],
         badge: 'Pro'
     },
-    { 
-        name: 'Profile', 
-        page: 'profile', 
+    {
+        name: 'Profile',
+        page: 'profile',
         icon: UserIcon,
         roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
         badge: null
@@ -175,8 +183,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     // Close sidebar when clicking outside on mobile
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (showOnMobile && 
-                sidebarRef.current && 
+            if (showOnMobile &&
+                sidebarRef.current &&
                 !sidebarRef.current.contains(event.target as Node) &&
                 window.innerWidth < 768) {
                 onMobileClose?.();
@@ -230,7 +238,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         <>
             {/* Mobile Overlay */}
             {showOnMobile && (
-                <div 
+                <div
                     className="md:hidden fixed inset-0 bg-black/50 z-50 animate-fade-in"
                     onClick={onMobileClose}
                 />
@@ -332,7 +340,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     {navItems.map(item => {
                         const IconComponent = item.icon;
                         const isActive = currentPage === item.page;
-                        
+
                         return (
                             <button
                                 key={item.page}
@@ -340,8 +348,8 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 className={`
                                     w-full flex items-center gap-3 px-3 py-3 rounded-xl
                                     transition-all duration-200 group relative
-                                    ${isActive 
-                                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500' 
+                                    ${isActive
+                                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500'
                                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                     }
                                     ${!isExpanded && 'justify-center'}
@@ -371,7 +379,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {/* User Profile & Bottom Section */}
                 <div className="px-3 py-4 border-t border-gray-200 space-y-4">
                     {/* User Profile */}
-                    <div 
+                    <div
                         onClick={() => handleNavigation('profile')}
                         className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${currentPage === 'profile' ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
                         role="button"
@@ -423,7 +431,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 {isOnline ? 'Online' : 'Offline'}
                             </span>
                         </div>
-                        
+
                         {/* Collapse/Expand Toggle */}
                         <button
                             onClick={() => setIsExpanded(!isExpanded)}

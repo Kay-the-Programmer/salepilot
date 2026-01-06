@@ -1388,7 +1388,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
                         {/* Footer */}
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6">
-                            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:justify-end">
                                 <Button
                                     type="button"
                                     variant="secondary"

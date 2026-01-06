@@ -31,11 +31,11 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({ isOpe
                         </div>
                     </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3">
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3">
                     <Button
                         type="button"
                         variant="danger"
-                        className="w-full sm:w-auto"
+                        className="flex-1 sm:flex-none w-full sm:w-auto"
                         onClick={onConfirm}
                     >
                         Logout
@@ -43,7 +43,7 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({ isOpe
                     <Button
                         type="button"
                         variant="secondary"
-                        className="w-full sm:w-auto mt-0"
+                        className="flex-1 sm:flex-none w-full sm:w-auto mt-0"
                         onClick={onClose}
                     >
                         Cancel

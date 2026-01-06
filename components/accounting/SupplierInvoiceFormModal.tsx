@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { SupplierInvoice, PurchaseOrder, Supplier } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
 import { InputField } from '../ui/InputField';
@@ -96,7 +97,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
         onClose();
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
             <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
                 <form onSubmit={handleSubmit}>
@@ -164,7 +165,8 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                     </div>
                 </form>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

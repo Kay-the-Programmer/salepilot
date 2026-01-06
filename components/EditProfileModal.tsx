@@ -89,13 +89,14 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, on
                             placeholder="Enter your email address"
                         />
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3 border-t">
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3 border-t">
                         <Button
                             type="submit"
                             variant="primary"
                             disabled={isSaving}
                             isLoading={isSaving}
                             loadingText="Saving..."
+                            className="flex-1 sm:flex-none"
                         >
                             Save Changes
                         </Button>
@@ -104,6 +105,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, on
                             variant="secondary"
                             onClick={onClose}
                             disabled={isSaving}
+                            className="flex-1 sm:flex-none"
                         >
                             Cancel
                         </Button>
