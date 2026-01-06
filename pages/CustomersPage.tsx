@@ -248,6 +248,8 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
+    const [viewMode, setViewMode] = useState<'all' | 'recent' | 'az'>('all');
+    const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
 
     const [detailedCustomer, setDetailedCustomer] = useState<Customer | null>(null);
     const [detailIsLoading, setDetailIsLoading] = useState(false);
@@ -327,15 +329,26 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
 
 
-    const filteredCustomers = useMemo(() => customers.filter(customer => {
-        if (searchTerm.trim() === '') return true;
-        const term = searchTerm.toLowerCase();
-        return (
-            customer.name.toLowerCase().includes(term) ||
-            (customer.email && customer.email.toLowerCase().includes(term)) ||
-            (customer.phone && customer.phone.includes(term))
-        );
-    }), [customers, searchTerm]);
+    const filteredCustomers = useMemo(() => {
+        let result = customers.filter(customer => {
+            if (searchTerm.trim() === '') return true;
+            const term = searchTerm.toLowerCase();
+            return (
+                customer.name.toLowerCase().includes(term) ||
+                (customer.email && customer.email.toLowerCase().includes(term)) ||
+                (customer.phone && customer.phone.includes(term))
+            );
+        });
+
+        if (viewMode === 'recent') {
+            // Assuming higher ID is newer or we just reverse original list if it's chronological
+            return [...result].reverse();
+        } else if (viewMode === 'az') {
+            return [...result].sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        return result;
+    }, [customers, searchTerm, viewMode]);
 
     const customerSales = useMemo(() =>
         sales.filter(s => s.customerId === selectedCustomerId),
@@ -578,7 +591,63 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     )}
                                 </div>
 
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-1 relative">
+                                    {/* View Options Button (Mobile) */}
+                                    {isMobile && (
+                                        <>
+                                            <button
+                                                onClick={() => setIsViewMenuOpen(!isViewMenuOpen)}
+                                                className={`p-2.5 rounded-xl transition-colors ${isViewMenuOpen ? 'bg-blue-50 text-blue-600' : 'hover:bg-gray-100 active:bg-gray-200 text-gray-600'}`}
+                                                aria-label="View options"
+                                            >
+                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                                                </svg>
+                                            </button>
+
+                                            {/* Popup Menu */}
+                                            {isViewMenuOpen && (
+                                                <>
+                                                    <div
+                                                        className="fixed inset-0 z-40"
+                                                        onClick={() => setIsViewMenuOpen(false)}
+                                                    />
+                                                    <div className="absolute top-12 right-12 z-50 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 py-2 animate-fade-in-up origin-top-right">
+                                                        <div className="px-4 py-2 border-b border-gray-50">
+                                                            <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sort Customers</span>
+                                                        </div>
+                                                        <button
+                                                            onClick={() => { setViewMode('all'); setIsViewMenuOpen(false); }}
+                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'all' ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}
+                                                        >
+                                                            <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                                            </svg>
+                                                            Default View
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setViewMode('az'); setIsViewMenuOpen(false); }}
+                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'az' ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}
+                                                        >
+                                                            <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                                                            </svg>
+                                                            Name (A-Z)
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setViewMode('recent'); setIsViewMenuOpen(false); }}
+                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'recent' ? 'text-blue-600 bg-blue-50' : 'text-gray-700 hover:bg-gray-50'}`}
+                                                        >
+                                                            <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                            Recently Added
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+                                        </>
+                                    )}
                                     {/* Search Icon Button */}
                                     <button
                                         onClick={() => setIsMobileSearchOpen(true)}

@@ -33,149 +33,187 @@ const SalesFilterSheet: React.FC<{
     onReset: () => void;
     initialFilters: { start: string; end: string; customer: string; status: string };
     customers: Customer[];
-}> = ({ isOpen, onClose, onApply, onReset, initialFilters, customers }) => {
-    const [tempStartDate, setTempStartDate] = useState(initialFilters.start);
-    const [tempEndDate, setTempEndDate] = useState(initialFilters.end);
-    const [tempCustomerId, setTempCustomerId] = useState(initialFilters.customer);
-    const [tempStatus, setTempStatus] = useState(initialFilters.status);
+    sortBy: string;
+    setSortBy: (val: string) => void;
+    sortOrder: 'asc' | 'desc';
+    setSortOrder: (val: 'asc' | 'desc') => void;
+}> = ({
+    isOpen, onClose, onApply, onReset, initialFilters, customers,
+    sortBy, setSortBy, sortOrder, setSortOrder
+}) => {
+        const [tempStartDate, setTempStartDate] = useState(initialFilters.start);
+        const [tempEndDate, setTempEndDate] = useState(initialFilters.end);
+        const [tempCustomerId, setTempCustomerId] = useState(initialFilters.customer);
+        const [tempStatus, setTempStatus] = useState(initialFilters.status);
 
-    useEffect(() => {
-        if (isOpen) {
-            setTempStartDate(initialFilters.start);
-            setTempEndDate(initialFilters.end);
-            setTempCustomerId(initialFilters.customer);
-            setTempStatus(initialFilters.status);
-        }
-    }, [isOpen, initialFilters]);
+        useEffect(() => {
+            if (isOpen) {
+                setTempStartDate(initialFilters.start);
+                setTempEndDate(initialFilters.end);
+                setTempCustomerId(initialFilters.customer);
+                setTempStatus(initialFilters.status);
+            }
+        }, [isOpen, initialFilters]);
 
-    const handleApply = () => {
-        onApply({ start: tempStartDate, end: tempEndDate, customer: tempCustomerId, status: tempStatus });
-        onClose();
-    };
+        const handleApply = () => {
+            onApply({ start: tempStartDate, end: tempEndDate, customer: tempCustomerId, status: tempStatus });
+            onClose();
+        };
 
-    const handleResetAndClose = () => {
-        onReset();
-        onClose();
-    };
+        const handleResetAndClose = () => {
+            onReset();
+            onClose();
+        };
 
+        if (!isOpen) return null;
 
-
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-50 md:hidden" onClick={onClose}>
-            <div className="absolute inset-0 bg-black/50 animate-fade-in" />
-            <div
-                className="absolute top-[60px] right-4 left-auto w-72 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 flex flex-col max-h-[80vh]"
-                onClick={e => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h3 className="font-bold text-gray-900">Filter Sales</h3>
-                    <button
-                        onClick={onClose}
-                        className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg transition-colors"
-                    >
-                        <XMarkIcon className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Scrollable Content */}
-                <div className="p-4 overflow-y-auto custom-scrollbar space-y-4">
-                    {/* Date Range */}
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <CalendarIcon className="w-4 h-4 text-blue-500" />
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date Range</label>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-medium text-gray-500">From</label>
-                                <input
-                                    type="date"
-                                    value={tempStartDate}
-                                    onChange={e => setTempStartDate(e.target.value)}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-medium text-gray-500">To</label>
-                                <input
-                                    type="date"
-                                    value={tempEndDate}
-                                    onChange={e => setTempEndDate(e.target.value)}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                        </div>
+        return (
+            <div className="fixed inset-0 z-50 md:hidden" onClick={onClose}>
+                <div className="absolute inset-0 bg-black/50 animate-fade-in" />
+                <div
+                    className="absolute top-[60px] right-4 left-auto w-72 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 flex flex-col max-h-[80vh]"
+                    onClick={e => e.stopPropagation()}
+                >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                        <h3 className="font-bold text-gray-900">Filter Options</h3>
+                        <button
+                            onClick={onClose}
+                            className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg transition-colors"
+                        >
+                            <XMarkIcon className="w-5 h-5" />
+                        </button>
                     </div>
 
-                    {/* Customer */}
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <UserIcon className="w-4 h-4 text-purple-500" />
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</label>
-                        </div>
-                        <div className="relative">
-                            <select
-                                value={tempCustomerId}
-                                onChange={e => setTempCustomerId(e.target.value)}
-                                className="w-full p-2 pr-8 rounded-lg border border-gray-200 bg-gray-50 text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
-                            >
-                                <option value="">All Customers</option>
-                                {customers.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
+                    {/* Scrollable Content */}
+                    <div className="p-4 overflow-y-auto custom-scrollbar space-y-5">
+
+                        {/* Sort By */}
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { id: 'date', label: 'Date' },
+                                    { id: 'total', label: 'Amount' },
+                                    { id: 'customer', label: 'Customer' },
+                                    { id: 'status', label: 'Status' },
+                                ].map((opt) => (
+                                    <button
+                                        key={opt.id}
+                                        onClick={() => setSortBy(opt.id)}
+                                        className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all ${sortBy === opt.id
+                                            ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {opt.label}
+                                    </button>
                                 ))}
-                            </select>
-                            <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
+                            <button
+                                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                            >
+                                <span>Order: {sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
+                                <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                            </button>
                         </div>
-                    </div>
 
-                    {/* Status */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Status</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {[
-                                { value: '', label: 'All' },
-                                { value: 'paid', label: 'Paid' },
-                                { value: 'unpaid', label: 'Unpaid' },
-                                { value: 'partially_paid', label: 'Partial' },
-                            ].map((status) => (
-                                <button
-                                    key={status.value}
-                                    onClick={() => setTempStatus(status.value)}
-                                    className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${tempStatus === status.value
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                        }`}
+                        <div className="border-t border-gray-100 my-2" />
+
+                        {/* Date Range */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <CalendarIcon className="w-4 h-4 text-blue-500" />
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date Range</label>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-medium text-gray-500">From</label>
+                                    <input
+                                        type="date"
+                                        value={tempStartDate}
+                                        onChange={e => setTempStartDate(e.target.value)}
+                                        className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-[10px] font-medium text-gray-500">To</label>
+                                    <input
+                                        type="date"
+                                        value={tempEndDate}
+                                        onChange={e => setTempEndDate(e.target.value)}
+                                        className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Customer */}
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                                <UserIcon className="w-4 h-4 text-purple-500" />
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</label>
+                            </div>
+                            <div className="relative">
+                                <select
+                                    value={tempCustomerId}
+                                    onChange={e => setTempCustomerId(e.target.value)}
+                                    className="w-full p-2 pr-8 rounded-lg border border-gray-200 bg-gray-50 text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
                                 >
-                                    {status.label}
-                                </button>
-                            ))}
+                                    <option value="">All Customers</option>
+                                    {customers.map(c => (
+                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                    ))}
+                                </select>
+                                <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        {/* Status */}
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Status</label>
+                            <div className="grid grid-cols-2 gap-2">
+                                {[
+                                    { value: '', label: 'All' },
+                                    { value: 'paid', label: 'Paid' },
+                                    { value: 'unpaid', label: 'Unpaid' },
+                                    { value: 'partially_paid', label: 'Partial' },
+                                ].map((status) => (
+                                    <button
+                                        key={status.value}
+                                        onClick={() => setTempStatus(status.value)}
+                                        className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${tempStatus === status.value
+                                            ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {status.label}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* Footer */}
-                <div className="p-3 border-t border-gray-100 bg-gray-50 flex gap-2">
-                    <button
-                        onClick={handleResetAndClose}
-                        className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold shadow-sm hover:bg-gray-50"
-                    >
-                        Reset
-                    </button>
-                    <button
-                        onClick={handleApply}
-                        className="flex-1 py-2 px-3 bg-gray-900 text-white rounded-xl text-xs font-semibold shadow-md active:scale-[0.98] transition-all"
-                    >
-                        Apply Filters
-                    </button>
+                    {/* Footer */}
+                    <div className="p-3 border-t border-gray-100 bg-gray-50 flex gap-2">
+                        <button
+                            onClick={handleResetAndClose}
+                            className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold shadow-sm hover:bg-gray-50"
+                        >
+                            Reset
+                        </button>
+                        <button
+                            onClick={handleApply}
+                            className="flex-1 py-2 px-3 bg-gray-900 text-white rounded-xl text-xs font-semibold shadow-md active:scale-[0.98] transition-all"
+                        >
+                            Apply Filters
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-    );
-};
+        );
+    };
 
 
 
@@ -296,6 +334,8 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mobileView, setMobileView] = useState<'summary' | 'history'>('summary');
+    const [sortBy, setSortBy] = useState('date');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
     const [salesData, setSalesData] = useState<Sale[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -345,6 +385,8 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                 if (selectedStatus) params.append('paymentStatus', selectedStatus);
                 params.append('page', String(page));
                 params.append('limit', String(pageSize));
+                params.append('sortBy', sortBy);
+                params.append('sortOrder', sortOrder);
 
                 const [fetchedSales, daily] = await Promise.all([
                     api.get<{ items: Sale[]; total: number; page: number; limit: number }>(`/sales?${params.toString()}`),
@@ -370,7 +412,24 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                         return true;
                     });
 
-                    filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                    filtered.sort((a, b) => {
+                        let cmp = 0;
+                        switch (sortBy) {
+                            case 'total':
+                                cmp = a.total - b.total;
+                                break;
+                            case 'customer':
+                                cmp = (a.customerName || '').localeCompare(b.customerName || '');
+                                break;
+                            case 'status':
+                                cmp = (a.paymentStatus || '').localeCompare(b.paymentStatus || '');
+                                break;
+                            case 'date':
+                            default:
+                                cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+                        }
+                        return sortOrder === 'asc' ? cmp : -cmp;
+                    });
 
                     const totalCount = filtered.length;
                     const startIdx = (page - 1) * pageSize;
@@ -430,11 +489,11 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [startDate, endDate, selectedCustomerId, selectedStatus, page, pageSize]);
+    }, [startDate, endDate, selectedCustomerId, selectedStatus, page, pageSize, sortBy, sortOrder]);
 
     useEffect(() => {
         setPage(1);
-    }, [startDate, endDate, selectedCustomerId, selectedStatus]);
+    }, [startDate, endDate, selectedCustomerId, selectedStatus, sortBy, sortOrder]);
 
     const handleApplyFilters = (newFilters: { start: string; end: string; customer: string; status: string }) => {
         setStartDate(newFilters.start);
@@ -575,6 +634,8 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                     </div>
                 </div>
             )}
+
+
 
             <main className="flex-1 overflow-y-auto bg-transparent p-4 md:p-6 min-w-0">
                 <div className="max-w-7xl mx-auto">
@@ -949,6 +1010,10 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                 onReset={resetFilters}
                 initialFilters={{ start: startDate, end: endDate, customer: selectedCustomerId, status: selectedStatus }}
                 customers={customers}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
             />
         </div>
     );
