@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Customer, StoreSettings } from '../types';
 import Header from '../components/Header';
 import SalesList from '../components/sales/SalesList';
@@ -6,7 +6,7 @@ import SaleDetailModal from '../components/sales/SaleDetailModal';
 import { formatCurrency } from '../utils/currency';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import ArrowDownTrayIcon from '../components/icons/ArrowDownTrayIcon';
+
 import { api } from '../services/api';
 import { dbService } from '../services/dbService';
 import FilterIcon from '../components/icons/FilterIcon';
@@ -17,6 +17,7 @@ import UserIcon from '../components/icons/UserIcon';
 import ChartBarIcon from '../components/icons/ChartBarIcon';
 import RefreshIcon from '../components/icons/RefreshIcon';
 import DownloadIcon from '../components/icons/DownloadIcon';
+import GridIcon from '../components/icons/GridIcon';
 
 interface AllSalesPageProps {
     customers: Customer[];
@@ -57,11 +58,7 @@ const SalesFilterSheet: React.FC<{
         onClose();
     };
 
-    const formatDate = (dateString: string) => {
-        if (!dateString) return 'Select date';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    };
+
 
     if (!isOpen) return null;
 
@@ -222,83 +219,15 @@ const SalesFilterSheet: React.FC<{
     );
 };
 
-const FilterBar: React.FC<{
-    onOpenFilterSheet: () => void;
-    onReset: () => void;
-    filters: { start: string; end: string; customer: string; status: string };
-    customers: Customer[];
-    hasActiveFilters: boolean;
-}> = ({ onOpenFilterSheet, onReset, filters, customers, hasActiveFilters }) => {
-    const formatDate = (dateString: string) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    };
 
-    return (
-        <div className="md:hidden space-y-3">
-            {/* Main Filter Button */}
-            <div className="flex items-center gap-3">
-                <button
-                    onClick={onOpenFilterSheet}
-                    className="flex-1 flex items-center justify-between p-3.5 rounded-xl bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 active:scale-[0.98]"
-                >
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-blue-50 rounded-lg">
-                            <FilterIcon className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div className="text-left">
-                            <div className="text-sm font-semibold text-gray-900">Filters</div>
-                            <div className="text-xs text-gray-500">
-                                {hasActiveFilters ? 'Custom filters applied' : 'Add filters to narrow results'}
-                            </div>
-                        </div>
-                    </div>
-                    <ChevronDownIcon className="w-5 h-5 text-gray-400" />
-                </button>
-
-                {hasActiveFilters && (
-                    <button
-                        onClick={onReset}
-                        className="p-3.5 rounded-xl bg-gradient-to-r from-red-50 to-red-100 text-red-700 font-semibold hover:from-red-100 hover:to-red-200 active:scale-[0.98] transition-all duration-200 border border-red-200"
-                        title="Clear all filters"
-                    >
-                        <RefreshIcon className="w-5 h-5" />
-                    </button>
-                )}
-            </div>
-
-            {/* Active Filters Chips */}
-            {hasActiveFilters && (
-                <div className="flex flex-wrap gap-2" aria-label="Active filters">
-                    {filters.start && filters.end && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 px-3 py-1.5 text-xs font-medium ring-1 ring-inset ring-blue-100">
-                            <CalendarIcon className="w-3 h-3" />
-                            {formatDate(filters.start)} → {formatDate(filters.end)}
-                        </span>
-                    )}
-                    {filters.customer && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 text-purple-700 px-3 py-1.5 text-xs font-medium ring-1 ring-inset ring-purple-100">
-                            <UserIcon className="w-3 h-3" />
-                            {customers.find(c => String(c.id) === String(filters.customer))?.name || filters.customer}
-                        </span>
-                    )}
-                    {filters.status && (
-                        <span className="inline-flex items-center gap-1.5 rounded-full capitalize bg-gradient-to-r from-green-50 to-emerald-50 text-emerald-700 px-3 py-1.5 text-xs font-medium ring-1 ring-inset ring-emerald-100">
-                            {filters.status.replace('_', ' ')}
-                        </span>
-                    )}
-                </div>
-            )}
-        </div>
-    );
-};
 
 
 // --- Main Page Component ---
 
 const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings }) => {
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [mobileView, setMobileView] = useState<'summary' | 'history'>('summary');
     const [salesData, setSalesData] = useState<Sale[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -478,13 +407,109 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
     };
 
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-gray-50 to-white">
-            <Header title="Sales History" />
+        <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-gray-50 to-white relative">
+            <Header title="Sales History" className="hidden md:block" />
+
+            {/* Mobile Header */}
+            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 md:hidden">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-lg font-bold text-gray-900">Sales History</h1>
+                    <div className="flex items-center space-x-2">
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${isMobileMenuOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
+                            aria-label="Menu"
+                        >
+                            <GridIcon className="w-6 h-6" />
+                        </button>
+
+                        {/* Filter Button */}
+                        <button
+                            onClick={() => setIsFilterSheetOpen(true)}
+                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors relative ${hasActiveFilters ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}
+                            aria-label="Filter options"
+                        >
+                            <FilterIcon className="w-6 h-6" />
+                            {hasActiveFilters && (
+                                <span className="absolute top-2 right-2 w-2 h-2 bg-blue-600 rounded-full ring-2 ring-white" />
+                            )}
+                        </button>
+                    </div>
+                </div>
+
+                {/* Active Filters Chips (Mobile) */}
+                {hasActiveFilters && (
+                    <div className="flex flex-wrap gap-2 mt-3 pb-1">
+                        {startDate && endDate && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 px-2.5 py-1 text-xs font-medium border border-blue-100">
+                                <CalendarIcon className="w-3 h-3" />
+                                {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                        )}
+                        {selectedCustomerId && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 text-purple-700 px-2.5 py-1 text-xs font-medium border border-purple-100">
+                                <UserIcon className="w-3 h-3" />
+                                {customers.find(c => String(c.id) === String(selectedCustomerId))?.name || 'Customer'}
+                            </span>
+                        )}
+                        {selectedStatus && (
+                            <span className="inline-flex items-center gap-1.5 rounded-full capitalize bg-green-50 text-green-700 px-2.5 py-1 text-xs font-medium border border-green-100">
+                                {selectedStatus.replace('_', ' ')}
+                            </span>
+                        )}
+                        <button onClick={resetFilters} className="text-xs text-red-600 underline ml-1">
+                            Clear
+                        </button>
+                    </div>
+                )}
+            </div>
+
+            {/* Mobile Grid Menu Popup */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+                    <div className="absolute inset-0 bg-black/50 animate-fade-in" />
+                    {/* Position below header roughly */}
+                    <div
+                        className="absolute top-[60px] right-4 left-auto w-48 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 p-2"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => {
+                                    setMobileView('summary');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${mobileView === 'summary'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                    }`}
+                            >
+                                <ChartBarIcon className="w-6 h-6 mb-1" />
+                                <span className="text-xs font-semibold">Summary</span>
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setMobileView('history');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${mobileView === 'history'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                    }`}
+                            >
+                                <RefreshIcon className="w-6 h-6 mb-1" />{/* Using RefreshIcon as History/Time icon isn't imported, or maybe logic implies generic list */}
+                                <span className="text-xs font-semibold">History</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <main className="flex-1 overflow-y-auto bg-transparent p-4 md:p-6 min-w-0">
                 <div className="max-w-7xl mx-auto">
-                    {/* Mobile Stats Summary */}
-                    <div className="md:hidden mb-6">
+                    {/* Mobile Stats Summary - Only in Summary View */}
+                    <div className={`md:hidden mb-6 ${mobileView === 'summary' ? 'block' : 'hidden'}`}>
                         <div className="grid grid-cols-2 gap-3">
                             <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 border border-gray-200 shadow-sm">
                                 <div className="flex items-center gap-2 mb-2">
@@ -507,16 +532,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                         </div>
                     </div>
 
-                    {/* Mobile Filter Bar */}
-                    <div className="mb-6">
-                        <FilterBar
-                            onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
-                            onReset={resetFilters}
-                            filters={{ start: startDate, end: endDate, customer: selectedCustomerId, status: selectedStatus }}
-                            customers={customers}
-                            hasActiveFilters={hasActiveFilters}
-                        />
-                    </div>
+                    {/* FilterBar removed - filters are in header */}
 
                     {/* Desktop Filters & Export */}
                     <div className="hidden md:block mb-6">
@@ -624,9 +640,9 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                     {/* Content */}
                     {!isLoading && !error && (
                         <>
-                            {/* Daily Sales Summary (Mobile Optimized) */}
+                            {/* Daily Sales Summary (Mobile View: Summary, Desktop: Always) */}
                             {dailySales && dailySales.length > 0 && (
-                                <div className="mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div className={`mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${mobileView === 'summary' ? 'block' : 'hidden md:block'}`}>
                                     <div className="p-4 border-b border-gray-100">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
@@ -697,8 +713,8 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                 </div>
                             )}
 
-                            {/* Sales List */}
-                            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                            {/* Sales List (Mobile View: History, Desktop: Always) */}
+                            <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:block'}`}>
                                 <div className="p-4 border-b border-gray-100">
                                     <div className="flex items-center justify-between">
                                         <div>
@@ -805,7 +821,6 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                         )}
                                     </div>
                                 </div>
-
                             )}
                         </>
                     )}
