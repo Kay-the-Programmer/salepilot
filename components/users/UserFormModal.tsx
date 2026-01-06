@@ -1,7 +1,14 @@
-
 import React, { useState, useEffect } from 'react';
 import { User } from '@/types.ts';
 import XMarkIcon from '../icons/XMarkIcon';
+import UserCircleIcon from '../icons/UserCircleIcon';
+import MailIcon from '../icons/EnvelopeIcon';
+import LockIcon from '../icons/LockIcon';
+import EyeIcon from '../icons/EyeIcon';
+import EyeSlashIcon from '../icons/EyeSlashIcon';
+import ShieldCheckIcon from '../icons/ShieldCheckIcon';
+import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
+import UserGroupIcon from '../icons/UserGroupIcon';
 import { SnackbarType } from '../../App';
 
 interface UserFormModalProps {
@@ -18,17 +25,27 @@ const getInitialState = (): Omit<User, 'id'> => ({
     role: 'staff',
 });
 
+const ROLE_OPTIONS = [
+    { value: 'staff', label: 'Staff', icon: UserGroupIcon, description: 'Basic access for daily operations', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+    { value: 'inventory_manager', label: 'Inventory Manager', icon: BuildingOfficeIcon, description: 'Full inventory control', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+    { value: 'admin', label: 'Admin', icon: ShieldCheckIcon, description: 'Full system access', color: 'bg-red-50 text-red-700 border-red-200' },
+];
+
 const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, userToEdit, showSnackbar }) => {
     const [user, setUser] = useState(getInitialState());
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [activeTab, setActiveTab] = useState<'basic' | 'security'>('basic');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
             setError('');
             setPassword('');
             setShowPassword(false);
+            setIsSubmitting(false);
+            setActiveTab('basic');
             if (userToEdit) {
                 setUser({ ...userToEdit });
             } else {
@@ -46,111 +63,330 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
         setShowPassword(!showPassword);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!user.name.trim() || !user.email.trim()) {
-            setError('Name and email are required.');
-            return;
-        }
-        if (!userToEdit && !password) {
-            setError('Password is required for new users.');
-            return;
-        }
-        if (!userToEdit && password.length < 8) {
-            setError('For new users, password must be at least 8 characters long.');
-            return;
-        }
-        if (userToEdit && password && password.length < 8) {
-            setError('If changing password, it must be at least 8 characters long.');
-            return;
-        }
-        // In a real app, password would be handled by the authService
-        // This is a mock, so we just log a message if it changes.
-        if (password) {
-            console.log(`Password for ${user.email} would be set to "${password}"`);
-            showSnackbar(`Password for ${user.email} updated (simulated).`, 'info');
-        }
+        setIsSubmitting(true);
 
-        // Include password in the user object when creating a new user or updating password
-        // For new users, password is required
-        const userWithPassword = !userToEdit || password ? { ...user, password } : user;
-        onSave(userWithPassword, userToEdit?.id);
+        try {
+            if (!user.name.trim() || !user.email.trim()) {
+                setError('Name and email are required.');
+                return;
+            }
+            if (!userToEdit && !password) {
+                setError('Password is required for new users.');
+                return;
+            }
+            if (!userToEdit && password.length < 8) {
+                setError('Password must be at least 8 characters long.');
+                return;
+            }
+            if (userToEdit && password && password.length < 8) {
+                setError('New password must be at least 8 characters long.');
+                return;
+            }
+
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(user.email)) {
+                setError('Please enter a valid email address.');
+                return;
+            }
+
+            // Show password update message
+            if (password) {
+                showSnackbar(`Password for ${user.email} updated.`, 'info');
+            }
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            const userWithPassword = !userToEdit || password ? { ...user, password } : user;
+            onSave(userWithPassword, userToEdit?.id);
+            onClose();
+        } catch (err) {
+            setError('An error occurred. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg shadow-xl sm:max-w-lg w-full m-4">
-                <form onSubmit={handleSubmit}>
-                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                        <h3 className="text-lg font-medium text-gray-900">
-                            {userToEdit ? 'Edit User' : 'Add New User'}
-                        </h3>
-                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
+        <div
+            className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 transition-opacity"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true"
+            onClick={onClose}
+        >
+            <form
+                onSubmit={handleSubmit}
+                className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] sm:max-w-md flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* iOS-style drag handle for mobile */}
+                <div className="sm:hidden pt-3 pb-1 flex justify-center">
+                    <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                </div>
+
+                {/* Header */}
+                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h3 className="text-xl font-semibold text-gray-900">
+                                {userToEdit ? 'Edit User' : 'New User'}
+                            </h3>
+                            <p className="text-sm text-gray-500 mt-0.5">
+                                {userToEdit ? 'Update user details' : 'Create a new user account'}
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
+                            aria-label="Close"
+                        >
                             <XMarkIcon className="h-6 w-6" />
                         </button>
                     </div>
-                    <div className="px-6 py-4 space-y-4">
-                        {error && <div className="rounded-md bg-red-50 p-4"><p className="text-sm text-red-700">{error}</p></div>}
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
-                            <input type="text" name="name" id="name" value={user.name} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                </div>
+
+                {/* Mobile tabs for form sections */}
+                <div className="sm:hidden flex border-b border-gray-200">
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('basic')}
+                        className={`flex-1 py-3 text-center text-sm font-medium border-b-2 ${activeTab === 'basic' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <UserCircleIcon className="w-4 h-4 inline mr-2" />
+                        Basic Info
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setActiveTab('security')}
+                        className={`flex-1 py-3 text-center text-sm font-medium border-b-2 ${activeTab === 'security' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                    >
+                        <LockIcon className="w-4 h-4 inline mr-2" />
+                        Security
+                    </button>
+                </div>
+
+                {/* Form content */}
+                <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
+                    {error && (
+                        <div className="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-slide-down">
+                            <div className="flex">
+                                <div className="flex-shrink-0">
+                                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
+                                <div className="ml-3">
+                                    <p className="text-sm text-red-700 font-medium">{error}</p>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                            <input type="email" name="email" id="email" value={user.email} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
-                        </div>
-                        <div>
-                            <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
-                            <select name="role" id="role" value={user.role} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
-                                <option value="staff">Staff</option>
-                                <option value="inventory_manager">Inventory Manager</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
-                            <div className="relative">
-                                <input 
-                                    type={showPassword ? "text" : "password"} 
-                                    name="password" 
-                                    id="password" 
-                                    value={password} 
-                                    onChange={e => setPassword(e.target.value)} 
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 pr-10" 
-                                    placeholder={userToEdit ? "Leave blank to keep current password" : "Min. 8 characters"}
+                    )}
+
+                    {/* Basic Info Section */}
+                    <div className={`${activeTab === 'basic' ? 'block' : 'hidden sm:block'}`}>
+                        <div className="space-y-5">
+                            {/* Name Field */}
+                            <div>
+                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <UserCircleIcon className="w-4 h-4 inline mr-2 text-gray-500" />
+                                    Full Name
+                                </label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    id="name"
+                                    value={user.name}
+                                    onChange={handleChange}
+                                    required
+                                    className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    placeholder="Enter full name"
                                 />
-                                <button 
-                                    type="button" 
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 mt-1"
-                                    onClick={togglePasswordVisibility}
-                                >
-                                    {showPassword ? (
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M3.707 2.293a1 1 0 00-1.414 1.414l14 14a1 1 0 001.414-1.414l-1.473-1.473A10.014 10.014 0 0019.542 10C18.268 5.943 14.478 3 10 3a9.958 9.958 0 00-4.512 1.074l-1.78-1.781zm4.261 4.26l1.514 1.515a2.003 2.003 0 012.45 2.45l1.514 1.514a4 4 0 00-5.478-5.478z" clipRule="evenodd" />
-                                            <path d="M12.454 16.697L9.75 13.992a4 4 0 01-3.742-3.741L2.335 6.578A9.98 9.98 0 00.458 10c1.274 4.057 5.065 7 9.542 7 .847 0 1.669-.105 2.454-.303z" />
-                                        </svg>
-                                    ) : (
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                                        </svg>
-                                    )}
-                                </button>
+                            </div>
+
+                            {/* Email Field */}
+                            <div>
+                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <MailIcon className="w-4 h-4 inline mr-2 text-gray-500" />
+                                    Email Address
+                                </label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    id="email"
+                                    value={user.email}
+                                    onChange={handleChange}
+                                    required
+                                    className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    placeholder="user@example.com"
+                                />
+                            </div>
+
+                            {/* Role Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                    User Role
+                                </label>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                    {ROLE_OPTIONS.map(({ value, label, icon: Icon, description, color }) => (
+                                        <button
+                                            key={value}
+                                            type="button"
+                                            onClick={() => setUser(prev => ({ ...prev, role: value as User['role'] }))}
+                                            className={`p-3 rounded-xl border-2 text-left transition-all ${user.role === value ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                                        >
+                                            <div className="flex items-center gap-2 mb-1">
+                                                <Icon className="w-5 h-5" />
+                                                <span className="text-sm font-medium">{label}</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500">{description}</p>
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="mt-4">
+                                    <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full border ${ROLE_OPTIONS.find(r => r.value === user.role)?.color}`}>
+                                        {ROLE_OPTIONS.find(r => r.value === user.role)?.icon &&
+                                            React.createElement(ROLE_OPTIONS.find(r => r.value === user.role)!.icon, { className: "w-4 h-4" })
+                                        }
+                                        <span className="text-sm font-medium">
+                                            {ROLE_OPTIONS.find(r => r.value === user.role)?.label}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">
-                            Save User
-                        </button>
-                        <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">
+
+                    {/* Security Section */}
+                    <div className={`${activeTab === 'security' ? 'block' : 'hidden sm:block'}`}>
+                        <div className="space-y-5">
+                            {/* Password Field */}
+                            <div>
+                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <LockIcon className="w-4 h-4 inline mr-2 text-gray-500" />
+                                    {userToEdit ? 'Change Password' : 'Create Password'}
+                                </label>
+                                <div className="relative">
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        name="password"
+                                        id="password"
+                                        value={password}
+                                        onChange={e => setPassword(e.target.value)}
+                                        className="block w-full px-4 py-3 pr-12 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                        placeholder={userToEdit ? "Leave blank to keep current" : "Minimum 8 characters"}
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                        onClick={togglePasswordVisibility}
+                                        aria-label={showPassword ? "Hide password" : "Show password"}
+                                    >
+                                        {showPassword ? (
+                                            <EyeSlashIcon className="h-5 w-5 text-gray-500" />
+                                        ) : (
+                                            <EyeIcon className="h-5 w-5 text-gray-500" />
+                                        )}
+                                    </button>
+                                </div>
+                                <div className="mt-2">
+                                    <div className="flex items-center justify-between text-sm">
+                                        <span className={`${password.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}>
+                                            {password.length >= 8 ? '✓ ' : '○ '}8+ characters
+                                        </span>
+                                        <span className="text-gray-500">
+                                            {password.length}/8
+                                        </span>
+                                    </div>
+                                    <div className="mt-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full ${password.length >= 8 ? 'bg-green-500' : 'bg-blue-500'}`}
+                                            style={{ width: `${Math.min((password.length / 8) * 100, 100)}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                                {userToEdit && (
+                                    <p className="mt-2 text-sm text-gray-500">
+                                        Leave password field empty to keep current password
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Password Requirements */}
+                            {!userToEdit && (
+                                <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                                    <h4 className="text-sm font-medium text-blue-900 mb-2">Password Requirements</h4>
+                                    <ul className="space-y-1 text-sm text-blue-700">
+                                        <li className="flex items-center gap-2">
+                                            <span className={`inline-block w-2 h-2 rounded-full ${password.length >= 8 ? 'bg-green-500' : 'bg-blue-300'}`}></span>
+                                            At least 8 characters long
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <span className="inline-block w-2 h-2 rounded-full bg-blue-300"></span>
+                                            Include letters and numbers
+                                        </li>
+                                        <li className="flex items-center gap-2">
+                                            <span className="inline-block w-2 h-2 rounded-full bg-blue-300"></span>
+                                            Case-sensitive
+                                        </li>
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Form Status */}
+                    <div className="mt-6 p-4 bg-gray-50 rounded-xl">
+                        <div className="flex items-center justify-between text-sm">
+                            <div>
+                                <span className="font-medium text-gray-700">Form Status:</span>
+                                <span className={`ml-2 ${user.name && user.email ? 'text-green-600' : 'text-yellow-600'}`}>
+                                    {user.name && user.email ? 'Ready to save' : 'Incomplete'}
+                                </span>
+                            </div>
+                            <div className="text-gray-500">
+                                {userToEdit ? 'Editing' : 'Creating new user'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Fixed action buttons */}
+                <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-6 py-3.5 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                        >
                             Cancel
                         </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="px-6 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        >
+                            {isSubmitting ? (
+                                <span className="flex items-center justify-center gap-2">
+                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Saving...
+                                </span>
+                            ) : (
+                                `${userToEdit ? 'Update' : 'Create'} User`
+                            )}
+                        </button>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     );
 };

@@ -760,20 +760,18 @@ const App: React.FC = () => {
     };
 
     const handleCancelStockTake = async () => {
-        if (window.confirm('Are you sure you want to cancel? All progress will be lost.')) {
-            try {
-                const result = await api.delete('/stock-takes/active');
-                setStockTakeSession(null);
-                // Clear local offline session if any
-                await dbService.put('settings', null as any, 'activeStockTake');
-                if ((result as any)?.offline) {
-                    showSnackbar('Offline: Cancellation queued.', 'info');
-                } else {
-                    showSnackbar('Stock take cancelled.', 'info');
-                }
-            } catch (err: any) {
-                showSnackbar(err.message, 'error');
+        try {
+            const result = await api.delete('/stock-takes/active');
+            setStockTakeSession(null);
+            // Clear local offline session if any
+            await dbService.put('settings', null as any, 'activeStockTake');
+            if ((result as any)?.offline) {
+                showSnackbar('Offline: Cancellation queued.', 'info');
+            } else {
+                showSnackbar('Stock take cancelled.', 'info');
             }
+        } catch (err: any) {
+            showSnackbar(err.message, 'error');
         }
     };
 
@@ -1007,6 +1005,8 @@ const App: React.FC = () => {
                             showSnackbar(err.message || 'Failed to set current store', 'error');
                         }
                     }}
+                    showOnMobile={isSidebarOpen}
+                    onMobileClose={() => setIsSidebarOpen(false)}
                 />
             </div>
 

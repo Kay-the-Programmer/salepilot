@@ -3,6 +3,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { StockTakeSession, CountedItem } from '../types';
 import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 interface StockTakePageProps {
     session: StockTakeSession | null;
@@ -15,6 +16,7 @@ interface StockTakePageProps {
 const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdateItem, onCancel, onFinalize }) => {
     const [filter, setFilter] = useState('all'); // 'all', 'counted', 'uncounted', 'discrepancy'
     const [searchTerm, setSearchTerm] = useState('');
+    const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
     const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
     useEffect(() => {
@@ -45,9 +47,12 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
     };
 
     const handleCancel = () => {
-        if (window.confirm('Are you sure you want to cancel this stock take? All progress will be lost.')) {
-            onCancel();
-        }
+        setIsCancelModalOpen(true);
+    };
+
+    const handleConfirmCancel = () => {
+        setIsCancelModalOpen(false);
+        onCancel();
     };
 
     const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -216,7 +221,17 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                     </div>
                 </div>
             </main>
-        </div>
+            <ConfirmationModal
+                isOpen={isCancelModalOpen}
+                onClose={() => setIsCancelModalOpen(false)}
+                onConfirm={handleConfirmCancel}
+                title="Cancel Stock Take"
+                message="Are you sure you want to cancel this stock take? All progress will be lost and this session will be discarded."
+                confirmText="Yes, Cancel"
+                cancelText="No, Keep It"
+                confirmButtonClass="bg-red-600 hover:bg-red-700"
+            />
+        </div >
     );
 };
 

@@ -68,15 +68,14 @@ const SalesFilterSheet: React.FC<{
     return (
         <>
             {/* Overlay */}
-            <div 
+            <div
                 className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${isOpen ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent pointer-events-none'}`}
                 onClick={onClose}
             >
                 {/* Sheet */}
                 <div
-                    className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out ${
-                        isOpen ? 'translate-y-0' : 'translate-y-full'
-                    }`}
+                    className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'
+                        }`}
                     onClick={e => e.stopPropagation()}
                 >
                     {/* Handle */}
@@ -91,7 +90,7 @@ const SalesFilterSheet: React.FC<{
                                 <h3 className="text-lg font-bold text-gray-900">Filters</h3>
                                 <p className="text-sm text-gray-500 mt-0.5">Narrow down your sales data</p>
                             </div>
-                            <button 
+                            <button
                                 onClick={onClose}
                                 className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
                             >
@@ -189,11 +188,10 @@ const SalesFilterSheet: React.FC<{
                                     <button
                                         key={status.value}
                                         onClick={() => setTempStatus(status.value)}
-                                        className={`p-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                                            tempStatus === status.value
+                                        className={`p-3 rounded-xl text-sm font-medium transition-all duration-200 ${tempStatus === status.value
                                                 ? `${status.color} ring-2 ring-offset-1 ring-current/20`
                                                 : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                                        }`}
+                                            }`}
                                     >
                                         {status.label}
                                     </button>
@@ -259,7 +257,7 @@ const FilterBar: React.FC<{
                     </div>
                     <ChevronDownIcon className="w-5 h-5 text-gray-400" />
                 </button>
-                
+
                 {hasActiveFilters && (
                     <button
                         onClick={onReset}
@@ -319,15 +317,25 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
     const [pageSize, setPageSize] = useState(20);
     const [total, setTotal] = useState(0);
 
+    // Enriched sales with customer names resolved from the customers list
+    const enrichedSales = useMemo(() => {
+        return salesData.map(sale => {
+            if (sale.customerName) return sale;
+            if (!sale.customerId) return sale;
+            const customer = customers.find(c => c.id === sale.customerId);
+            return customer ? { ...sale, customerName: customer.name } : sale;
+        });
+    }, [salesData, customers]);
+
     // Stats
     const stats = useMemo(() => {
-        const totalRevenue = salesData.reduce((sum, sale) => sum + (sale.total || 0), 0);
-        const totalSales = salesData.length;
+        const totalRevenue = enrichedSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+        const totalSales = enrichedSales.length;
         const avgSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0;
-        const paidSales = salesData.filter(s => s.paymentStatus === 'paid').length;
-        
+        const paidSales = enrichedSales.filter(s => s.paymentStatus === 'paid').length;
+
         return { totalRevenue, totalSales, avgSaleValue, paidSales };
-    }, [salesData]);
+    }, [enrichedSales]);
 
     useEffect(() => {
         const fetchSales = async () => {
@@ -449,7 +457,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
 
     const handleExportCSV = () => {
         const headers = ['Transaction ID', 'Timestamp', 'Customer Name', 'Status', 'Subtotal', 'Tax', 'Discount', 'Total'];
-        const rows = salesData.map(s => [ s.transactionId, new Date(s.timestamp).toLocaleString(), s.customerName || 'N/A', s.paymentStatus, s.subtotal.toFixed(2), s.tax.toFixed(2), s.discount.toFixed(2), s.total.toFixed(2) ]);
+        const rows = enrichedSales.map(s => [s.transactionId, new Date(s.timestamp).toLocaleString(), s.customerName || 'N/A', s.paymentStatus, s.subtotal.toFixed(2), s.tax.toFixed(2), s.discount.toFixed(2), s.total.toFixed(2)]);
         const csvContent = "data:text/csv;charset=utf-8," + [headers, ...rows].map(e => e.join(",")).join("\n");
         const link = document.createElement("a");
         link.setAttribute("href", encodeURI(csvContent));
@@ -464,7 +472,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
         doc.text("Sales Report", 14, 16);
         (doc as any).autoTable({
             head: [['ID', 'Date', 'Customer', 'Status', 'Total']],
-            body: salesData.map(s => [ s.transactionId, new Date(s.timestamp).toLocaleDateString(), s.customerName || 'N/A', s.paymentStatus, formatCurrency(s.total, storeSettings) ]),
+            body: enrichedSales.map(s => [s.transactionId, new Date(s.timestamp).toLocaleDateString(), s.customerName || 'N/A', s.paymentStatus, formatCurrency(s.total, storeSettings)]),
             startY: 20,
         });
         doc.save(`sales_report_${new Date().toISOString().split('T')[0]}.pdf`);
@@ -473,7 +481,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
     return (
         <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-gray-50 to-white">
             <Header title="Sales History" />
-            
+
             <main className="flex-1 overflow-y-auto bg-transparent p-4 md:p-6 min-w-0">
                 <div className="max-w-7xl mx-auto">
                     {/* Mobile Stats Summary */}
@@ -517,27 +525,27 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3 items-center">
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-gray-600">Start Date</label>
-                                    <input 
-                                        type="date" 
-                                        value={startDate} 
-                                        onChange={e => setStartDate(e.target.value)} 
+                                    <input
+                                        type="date"
+                                        value={startDate}
+                                        onChange={e => setStartDate(e.target.value)}
                                         className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-gray-600">End Date</label>
-                                    <input 
-                                        type="date" 
-                                        value={endDate} 
-                                        onChange={e => setEndDate(e.target.value)} 
+                                    <input
+                                        type="date"
+                                        value={endDate}
+                                        onChange={e => setEndDate(e.target.value)}
                                         className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-gray-600">Customer</label>
-                                    <select 
-                                        value={selectedCustomerId} 
-                                        onChange={e => setSelectedCustomerId(e.target.value)} 
+                                    <select
+                                        value={selectedCustomerId}
+                                        onChange={e => setSelectedCustomerId(e.target.value)}
                                         className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="">All Customers</option>
@@ -546,9 +554,9 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                 </div>
                                 <div className="space-y-1">
                                     <label className="text-xs font-medium text-gray-600">Status</label>
-                                    <select 
-                                        value={selectedStatus} 
-                                        onChange={e => setSelectedStatus(e.target.value)} 
+                                    <select
+                                        value={selectedStatus}
+                                        onChange={e => setSelectedStatus(e.target.value)}
                                         className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     >
                                         <option value="">All Statuses</option>
@@ -558,20 +566,20 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                     </select>
                                 </div>
                                 <div className="flex gap-2 lg:col-span-3 justify-end">
-                                    <button 
+                                    <button
                                         onClick={resetFilters}
                                         className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-medium text-sm hover:bg-gray-200 transition-colors"
                                     >
                                         Reset
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={handleExportCSV}
                                         className="px-4 py-2.5 rounded-xl bg-white text-gray-700 font-medium text-sm border border-gray-300 hover:bg-gray-50 transition-colors flex items-center gap-2"
                                     >
                                         <DownloadIcon className="w-4 h-4" />
                                         CSV
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={handleExportPDF}
                                         className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium text-sm hover:from-blue-700 hover:to-blue-800 transition-colors flex items-center gap-2"
                                     >
@@ -603,7 +611,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                 <div>
                                     <h3 className="font-semibold text-red-900">Unable to Load Data</h3>
                                     <p className="text-red-700 mt-1">{error}</p>
-                                    <button 
+                                    <button
                                         onClick={() => window.location.reload()}
                                         className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
                                     >
@@ -636,18 +644,18 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="divide-y divide-gray-100">
                                         {dailySales.map(day => (
                                             <div key={day.date} className="hover:bg-gray-50/50 transition-colors">
                                                 <div className="p-4">
                                                     <div className="flex items-center justify-between mb-3">
                                                         <div className="font-semibold text-gray-900">
-                                                            {new Date(day.date).toLocaleDateString('en-US', { 
-                                                                weekday: 'short', 
-                                                                month: 'short', 
+                                                            {new Date(day.date).toLocaleDateString('en-US', {
+                                                                weekday: 'short',
+                                                                month: 'short',
                                                                 day: 'numeric',
-                                                                year: 'numeric' 
+                                                                year: 'numeric'
                                                             })}
                                                         </div>
                                                         <div className="flex items-center gap-4 text-sm">
@@ -659,7 +667,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    
+
                                                     {/* Product Items */}
                                                     <div className="space-y-2">
                                                         {day.items.slice(0, 3).map((item, idx) => (
@@ -705,9 +713,9 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <SalesList
-                                    sales={salesData}
+                                    sales={enrichedSales}
                                     onSelectSale={setSelectedSale}
                                     storeSettings={storeSettings}
                                 />
@@ -724,7 +732,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                                     <strong className="text-gray-900">{total.toLocaleString()}</strong> transactions
                                                 </span>
                                             </div>
-                                            
+
                                             {/* Controls */}
                                             <div className="flex items-center gap-3">
                                                 {/* Rows per page */}
@@ -733,9 +741,9 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                                     <div className="relative">
                                                         <select
                                                             value={pageSize}
-                                                            onChange={(e) => { 
-                                                                setPageSize(parseInt(e.target.value, 10)); 
-                                                                setPage(1); 
+                                                            onChange={(e) => {
+                                                                setPageSize(parseInt(e.target.value, 10));
+                                                                setPage(1);
                                                             }}
                                                             className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                                         >
@@ -748,7 +756,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 {/* Pagination Buttons */}
                                                 <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg p-1">
                                                     <button
@@ -774,7 +782,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                     </div>
                                 )}
                             </div>
-                            
+
                             {/* Empty State */}
                             {salesData.length === 0 && !isLoading && (
                                 <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
@@ -784,7 +792,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                         </div>
                                         <h3 className="text-lg font-semibold text-gray-900 mb-2">No sales found</h3>
                                         <p className="text-gray-600 mb-6">
-                                            {hasActiveFilters 
+                                            {hasActiveFilters
                                                 ? 'Try adjusting your filters to see more results'
                                                 : 'Sales will appear here once transactions are processed'}
                                         </p>
@@ -798,6 +806,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                         )}
                                     </div>
                                 </div>
+
                             )}
                         </>
                     )}

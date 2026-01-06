@@ -611,8 +611,8 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <div className="relative">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-md">
-                                        <ShoppingCartIcon className="w-5 h-5 text-white" />
+                                    <div className="w-10 h-10  rounded-xl flex items-center justify-center shadow-md">
+                                        <ShoppingCartIcon className="w-5 h-5 text-gray-800" />
                                     </div>
                                     {cart.length > 0 && (
                                         <span className="absolute -top-1 -right-1 bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg">
@@ -666,8 +666,8 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                         className="px-4 py-3 border-b border-slate-200/50 flex items-center justify-between hover:bg-slate-50/50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg flex items-center justify-center">
-                                <UserCircleIcon className="w-4 h-4 text-white" />
+                            <div className="w-8 h-8  rounded-lg flex items-center justify-center shadow-md">
+                                <UserCircleIcon className="w-4 h-4 text-gray-800" />
                             </div>
                             <div className="text-left">
                                 <div className="text-sm font-semibold text-slate-900">
@@ -737,10 +737,6 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                                 {cart.map(item => (
                                     <div key={item.productId} className="group px-4 py-3 hover:bg-slate-50/50 transition-colors duration-200">
                                         <div className="flex items-start gap-3">
-                                            {/* Item Image/Icon */}
-                                            <div className="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-50 rounded-xl flex items-center justify-center flex-shrink-0 border border-blue-200">
-                                                <ShoppingCartIcon className="w-5 h-5 text-blue-600" />
-                                            </div>
 
                                             {/* Item Details */}
                                             <div className="flex-grow min-w-0">
@@ -800,8 +796,8 @@ const SalesPage: React.FC<SalesPageProps> = ({ products, customers, onProcessSal
                             className="w-full px-4 py-4 flex items-center justify-between text-left hover:bg-slate-50/50 transition-colors"
                         >
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
-                                    <TagIcon className="w-4 h-4 text-white" />
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center shadow-md">
+                                    <TagIcon className="w-4 h-4 text-gray-800" />
                                 </div>
                                 <div>
                                     <div className="font-bold text-slate-900">Order Summary</div>
