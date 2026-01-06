@@ -64,159 +64,116 @@ const SalesFilterSheet: React.FC<{
     if (!isOpen) return null;
 
     return (
-        <>
-            {/* Overlay */}
+        <div className="fixed inset-0 z-50 md:hidden" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/50 animate-fade-in" />
             <div
-                className="fixed inset-0 z-[100] md:hidden bg-black/50 flex items-end justify-center animate-fade-in"
-                onClick={onClose}
+                className="absolute top-[60px] right-4 left-auto w-72 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 flex flex-col max-h-[80vh]"
+                onClick={e => e.stopPropagation()}
             >
-                {/* Sheet */}
-                <div
-                    className="bg-white w-full rounded-t-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up"
-                    onClick={e => e.stopPropagation()}
-                >
-                    {/* Handle */}
-                    <div className="pt-3 pb-2 flex justify-center">
-                        <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+                    <h3 className="font-bold text-gray-900">Filter Sales</h3>
+                    <button
+                        onClick={onClose}
+                        className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg transition-colors"
+                    >
+                        <XMarkIcon className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Scrollable Content */}
+                <div className="p-4 overflow-y-auto custom-scrollbar space-y-4">
+                    {/* Date Range */}
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <CalendarIcon className="w-4 h-4 text-blue-500" />
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date Range</label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-medium text-gray-500">From</label>
+                                <input
+                                    type="date"
+                                    value={tempStartDate}
+                                    onChange={e => setTempStartDate(e.target.value)}
+                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <label className="text-[10px] font-medium text-gray-500">To</label>
+                                <input
+                                    type="date"
+                                    value={tempEndDate}
+                                    onChange={e => setTempEndDate(e.target.value)}
+                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Header */}
-                    <div className="px-5 py-4 border-b border-gray-100">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h3 className="text-lg font-bold text-gray-900">Filters</h3>
-                                <p className="text-sm text-gray-500 mt-0.5">Narrow down your sales data</p>
-                            </div>
-                            <button
-                                onClick={onClose}
-                                className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                    {/* Customer */}
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <UserIcon className="w-4 h-4 text-purple-500" />
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</label>
+                        </div>
+                        <div className="relative">
+                            <select
+                                value={tempCustomerId}
+                                onChange={e => setTempCustomerId(e.target.value)}
+                                className="w-full p-2 pr-8 rounded-lg border border-gray-200 bg-gray-50 text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
                             >
-                                <XMarkIcon className="w-5 h-5 text-gray-500" />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-                        {/* Date Range */}
-                        <div className="space-y-3">
-                            <div className="flex items-center gap-2">
-                                <CalendarIcon className="w-4 h-4 text-gray-400" />
-                                <label className="text-sm font-semibold text-gray-900">Date Range</label>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-gray-600">From</label>
-                                    <div className="relative">
-                                        <input
-                                            type="date"
-                                            id="sheet-start-date"
-                                            value={tempStartDate}
-                                            onChange={e => setTempStartDate(e.target.value)}
-                                            className="w-full p-3 pr-10 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        />
-                                        {tempStartDate && (
-                                            <button
-                                                onClick={() => setTempStartDate('')}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2"
-                                            >
-                                                <XMarkIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-medium text-gray-600">To</label>
-                                    <div className="relative">
-                                        <input
-                                            type="date"
-                                            id="sheet-end-date"
-                                            value={tempEndDate}
-                                            onChange={e => setTempEndDate(e.target.value)}
-                                            className="w-full p-3 pr-10 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        />
-                                        {tempEndDate && (
-                                            <button
-                                                onClick={() => setTempEndDate('')}
-                                                className="absolute right-3 top-1/2 -translate-y-1/2"
-                                            >
-                                                <XMarkIcon className="w-4 h-4 text-gray-400 hover:text-gray-600" />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Customer */}
-                        <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                                <UserIcon className="w-4 h-4 text-gray-400" />
-                                <label className="text-sm font-semibold text-gray-900">Customer</label>
-                            </div>
-                            <div className="relative">
-                                <select
-                                    id="sheet-customer-filter"
-                                    value={tempCustomerId}
-                                    onChange={e => setTempCustomerId(e.target.value)}
-                                    className="w-full p-3 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
-                                >
-                                    <option value="">All Customers</option>
-                                    {customers.map(c => (
-                                        <option key={c.id} value={c.id}>{c.name}</option>
-                                    ))}
-                                </select>
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                                    <ChevronDownIcon className="w-4 h-4 text-gray-400" />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Status */}
-                        <div className="space-y-1.5">
-                            <label className="text-sm font-semibold text-gray-900">Payment Status</label>
-                            <div className="grid grid-cols-3 gap-2">
-                                {[
-                                    { value: '', label: 'All', color: 'bg-gray-100 text-gray-700' },
-                                    { value: 'paid', label: 'Paid', color: 'bg-green-100 text-green-700' },
-                                    { value: 'unpaid', label: 'Unpaid', color: 'bg-red-100 text-red-700' },
-                                    { value: 'partially_paid', label: 'Partial', color: 'bg-yellow-100 text-yellow-700' },
-                                ].map((status) => (
-                                    <button
-                                        key={status.value}
-                                        onClick={() => setTempStatus(status.value)}
-                                        className={`p-3 rounded-xl text-sm font-medium transition-all duration-200 ${tempStatus === status.value
-                                            ? `${status.color} ring-2 ring-offset-1 ring-current/20`
-                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                                            }`}
-                                    >
-                                        {status.label}
-                                    </button>
+                                <option value="">All Customers</option>
+                                {customers.map(c => (
+                                    <option key={c.id} value={c.id}>{c.name}</option>
                                 ))}
-                            </div>
+                            </select>
+                            <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                         </div>
                     </div>
 
-                    {/* Footer Actions */}
-                    <div className="p-5 border-t border-gray-100 bg-gray-50/50">
-                        <div className="grid grid-cols-2 gap-3">
-                            <button
-                                onClick={handleResetAndClose}
-                                className="py-3.5 px-4 rounded-xl bg-white text-gray-700 font-semibold text-sm border border-gray-200 hover:bg-gray-50 hover:border-gray-300 active:scale-[0.98] transition-all duration-200"
-                            >
-                                Reset All
-                            </button>
-                            <button
-                                onClick={handleApply}
-                                className="py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold text-sm hover:from-blue-700 hover:to-blue-800 active:scale-[0.98] transition-all duration-200 shadow-sm shadow-blue-500/25"
-                            >
-                                Apply Filters
-                            </button>
+                    {/* Status */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Status</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { value: '', label: 'All' },
+                                { value: 'paid', label: 'Paid' },
+                                { value: 'unpaid', label: 'Unpaid' },
+                                { value: 'partially_paid', label: 'Partial' },
+                            ].map((status) => (
+                                <button
+                                    key={status.value}
+                                    onClick={() => setTempStatus(status.value)}
+                                    className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${tempStatus === status.value
+                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                >
+                                    {status.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
                 </div>
+
+                {/* Footer */}
+                <div className="p-3 border-t border-gray-100 bg-gray-50 flex gap-2">
+                    <button
+                        onClick={handleResetAndClose}
+                        className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold shadow-sm hover:bg-gray-50"
+                    >
+                        Reset
+                    </button>
+                    <button
+                        onClick={handleApply}
+                        className="flex-1 py-2 px-3 bg-gray-900 text-white rounded-xl text-xs font-semibold shadow-md active:scale-[0.98] transition-all"
+                    >
+                        Apply Filters
+                    </button>
+                </div>
             </div>
-        </>
+        </div>
     );
 };
 
