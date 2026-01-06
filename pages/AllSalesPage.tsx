@@ -60,6 +60,7 @@ const SalesFilterSheet: React.FC<{
 
 
 
+
     if (!isOpen) return null;
 
     return (
@@ -223,6 +224,116 @@ const SalesFilterSheet: React.FC<{
 
 
 // --- Main Page Component ---
+
+
+const SimpleAreaChart: React.FC<{
+    data: { date: string; totalRevenue: number }[];
+    storeSettings: StoreSettings;
+    color?: string;
+}> = ({ data, storeSettings }) => {
+    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+    if (!data || data.length === 0) return null;
+
+    const height = 180;
+    const width = 1000;
+    const padding = { top: 20, bottom: 20 };
+
+    // Sort and memoize data
+    const sortedData = useMemo(() =>
+        [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+        , [data]);
+
+    const maxVal = Math.max(...sortedData.map(d => d.totalRevenue)) || 1;
+
+    const points = sortedData.map((d, i) => {
+        const x = (i / (sortedData.length - 1 || 1)) * width;
+        const normalizedY = (d.totalRevenue / maxVal);
+        const y = height - (normalizedY * (height - padding.top - padding.bottom)) - padding.bottom;
+        return { x, y, ...d };
+    });
+
+    const pathD = `M0,${height} ` + points.map(p => `L${p.x},${p.y}`).join(' ') + ` L${width},${height} Z`;
+    const lineD = points.length === 1
+        ? `M0,${points[0].y} L${width},${points[0].y}`
+        : `M${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L${p.x},${p.y}`).join(' ');
+
+    return (
+        <div className="relative w-full h-full" onMouseLeave={() => setHoveredIndex(null)}>
+            <svg
+                viewBox={`0 0 ${width} ${height}`}
+                preserveAspectRatio="none"
+                className="w-full h-full text-blue-500 overflow-visible"
+            >
+                <defs>
+                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
+                        <stop offset="0%" stopColor="currentColor" stopOpacity="0.15" />
+                        <stop offset="90%" stopColor="currentColor" stopOpacity="0.0" />
+                    </linearGradient>
+                </defs>
+                <path d={pathD} fill="url(#chartGradient)" />
+                <path
+                    d={lineD}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3"
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                />
+
+                {/* Interactive Overlay Columns */}
+                {points.map((p, i) => (
+                    <rect
+                        key={i}
+                        x={i === 0 ? 0 : points[i - 1].x + (p.x - points[i - 1].x) / 2}
+                        y={0}
+                        width={width / points.length}
+                        height={height}
+                        fill="transparent"
+                        onMouseEnter={() => setHoveredIndex(i)}
+                        onClick={() => setHoveredIndex(i)}
+                        onTouchStart={() => setHoveredIndex(i)}
+                    />
+                ))}
+
+                {/* Visible Dots & Tooltip Indicator */}
+                {points.map((p, i) => (
+                    <g key={i}>
+                        {(points.length < 15 || hoveredIndex === i) && (
+                            <circle
+                                cx={p.x}
+                                cy={p.y}
+                                r={hoveredIndex === i ? 6 : 3}
+                                fill="white"
+                                stroke="currentColor"
+                                strokeWidth={hoveredIndex === i ? 3 : 2}
+                                vectorEffect="non-scaling-stroke"
+                            />
+                        )}
+                    </g>
+                ))}
+            </svg>
+
+            {/* Tooltip */}
+            {hoveredIndex !== null && points[hoveredIndex] && (
+                <div
+                    className="absolute bg-gray-900 text-white text-xs rounded-lg py-1 px-2 pointer-events-none shadow-xl transform -translate-x-1/2 -translate-y-full z-10"
+                    style={{
+                        left: `${(points[hoveredIndex].x / width) * 100}%`,
+                        top: `${(points[hoveredIndex].y / height) * 100}%`,
+                        marginTop: '-12px'
+                    }}
+                >
+                    <div className="font-bold whitespace-nowrap">{formatCurrency(points[hoveredIndex].totalRevenue, storeSettings)}</div>
+                    <div className="text-[10px] text-gray-300 whitespace-nowrap text-center">
+                        {new Date(points[hoveredIndex].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
 
 const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings }) => {
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -413,7 +524,9 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
             {/* Mobile Header */}
             <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 md:hidden">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-lg font-bold text-gray-900">Sales History</h1>
+                    <h1 className="text-lg font-bold text-gray-900">
+                        {mobileView === 'summary' ? 'Sales Summary' : 'Sales History'}
+                    </h1>
                     <div className="flex items-center space-x-2">
                         {/* Mobile Menu Button */}
                         <button
@@ -498,7 +611,7 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
                                     : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
                                     }`}
                             >
-                                <RefreshIcon className="w-6 h-6 mb-1" />{/* Using RefreshIcon as History/Time icon isn't imported, or maybe logic implies generic list */}
+                                <RefreshIcon className="w-6 h-6 mb-1" />
                                 <span className="text-xs font-semibold">History</span>
                             </button>
                         </div>
@@ -509,25 +622,62 @@ const AllSalesPage: React.FC<AllSalesPageProps> = ({ customers, storeSettings })
             <main className="flex-1 overflow-y-auto bg-transparent p-4 md:p-6 min-w-0">
                 <div className="max-w-7xl mx-auto">
                     {/* Mobile Stats Summary - Only in Summary View */}
-                    <div className={`md:hidden mb-6 ${mobileView === 'summary' ? 'block' : 'hidden'}`}>
+                    <div className={`md:hidden space-y-4 mb-6 ${mobileView === 'summary' ? 'block' : 'hidden'}`}>
+                        {/* 1. Top Stats Cards */}
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 border border-gray-200 shadow-sm">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <ChartBarIcon className="w-4 h-4 text-blue-600" />
-                                    </div>
-                                    <div className="text-xs font-medium text-gray-600">Total Revenue</div>
+                            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-3 opacity-5">
+                                    <ChartBarIcon className="w-16 h-16" />
                                 </div>
-                                <div className="text-xl font-bold text-gray-900">{formatCurrency(stats.totalRevenue, storeSettings)}</div>
+                                <div className="text-sm font-medium text-gray-500 mb-1">Total Revenue</div>
+                                <div className="text-xl font-bold text-gray-900 tracking-tight">
+                                    {formatCurrency(
+                                        // Try to use daily sales sum if available for more accurate "filtered" total, otherwise page stats
+                                        dailySales.length > 0
+                                            ? dailySales.reduce((sum, d) => sum + d.totalRevenue, 0)
+                                            : stats.totalRevenue,
+                                        storeSettings
+                                    )}
+                                </div>
                             </div>
-                            <div className="bg-gradient-to-br from-white to-gray-50 rounded-2xl p-4 border border-gray-200 shadow-sm">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <div className="p-2 bg-green-100 rounded-lg">
-                                        <ChartBarIcon className="w-4 h-4 text-green-600" />
-                                    </div>
-                                    <div className="text-xs font-medium text-gray-600">Transactions</div>
+                            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-3 opacity-5">
+                                    <ChartBarIcon className="w-16 h-16" />
                                 </div>
-                                <div className="text-xl font-bold text-gray-900">{stats.totalSales}</div>
+                                <div className="text-sm font-medium text-gray-500 mb-1">Transactions</div>
+                                <div className="text-xl font-bold text-gray-900 tracking-tight">
+                                    {/* Use total count from API if available, else page stats */}
+                                    {total > 0 ? total : stats.totalSales}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 2. Graph Chart Card */}
+                        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                            <div className="flex items-center justify-between mb-4">
+                                <div>
+                                    <h3 className="font-bold text-gray-900">Sales Trend</h3>
+                                    <p className="text-xs text-gray-500">Revenue over specific period</p>
+                                </div>
+                                <button
+                                    onClick={() => !hasActiveFilters && setIsFilterSheetOpen(true)}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs font-semibold text-gray-700 transition-colors"
+                                >
+                                    <FilterIcon className="w-3 h-3" />
+                                    <span>{hasActiveFilters ? 'Filtered' : 'Filter Chart'}</span>
+                                </button>
+                            </div>
+
+                            <div className="h-48 w-full">
+                                {dailySales && dailySales.length > 0 ? (
+                                    <SimpleAreaChart data={dailySales} color="#2563eb" storeSettings={storeSettings} />
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
+                                        <ChartBarIcon className="w-8 h-8 mb-2 opacity-50" />
+                                        <div className="text-xs">No chart data available</div>
+                                        <button onClick={() => setIsFilterSheetOpen(true)} className="text-xs text-blue-600 font-medium mt-1">Select Date Range</button>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

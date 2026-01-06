@@ -11,7 +11,7 @@ import ProductDetailView from '../components/products/ProductDetailView';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { FiFilter, FiGrid, FiList, FiPlusCircle } from 'react-icons/fi';
+import { FiFilter, FiGrid, FiList, FiPlusCircle, FiCamera, FiX } from 'react-icons/fi';
 import Header from '../components/Header';
 import GridIcon from '../components/icons/GridIcon';
 import CubeIcon from '../components/icons/CubeIcon';
@@ -73,6 +73,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
+    const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [detailedProduct, setDetailedProduct] = useState<Product | null>(null);
@@ -525,7 +526,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             {/* Mobile Header (New) */}
             <div className="sticky top-0 z-30 bg-white border-b border-gray-200 md:hidden">
                 <div className="px-4 py-3 flex items-center justify-between">
-                    <h1 className="text-lg font-bold text-gray-900">Inventory</h1>
+                    <h1 className="text-lg font-bold text-gray-900">
+                        {activeTab === 'products' ? 'Products' : 'Categories'}
+                    </h1>
                     <div className="flex items-center gap-2">
                         {/* Mobile Menu Button */}
                         <button
@@ -535,10 +538,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         >
                             <GridIcon className="w-6 h-6" />
                         </button>
-                        {/* Filter Button (Mobile uses same showFilters logic for specific items but maybe we should show the filter sheet? Existing logic just toggles inline filters. Retaining that for now or adapting) */}
+                        {/* Filter Button */}
                         <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${showFilters ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                            onClick={() => setIsFilterPopupOpen(true)}
+                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${isFilterPopupOpen ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
                             aria-label="Filters"
                         >
                             <FiFilter className="w-6 h-6" />
@@ -584,18 +587,117 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                 <span className="text-xs font-semibold">Categories</span>
                             </button>
 
+                            <button
+                                onClick={() => {
+                                    // Scan logic placeholder
+                                    setIsSearchActive(true); // Focus search?
+                                    setSearchTerm(''); // Clear?
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all cursor-not-allowed opacity-75"
+                                title="Scan feature coming soon"
+                            >
+                                <FiCamera className="w-6 h-6 mb-1" />
+                                <span className="text-xs font-semibold">Scan Item</span>
+                            </button>
+
                             {canManageProducts && (
                                 <button
                                     onClick={() => {
                                         handleOpenAddModal();
                                         setIsMobileMenuOpen(false);
                                     }}
-                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all col-span-2"
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
                                 >
                                     <PlusIcon className="w-6 h-6 mb-1" />
-                                    <span className="text-xs font-semibold">Add Product</span>
+                                    <span className="text-xs font-semibold">Add</span>
                                 </button>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Mobile Filter Popup */}
+            {isFilterPopupOpen && (
+                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsFilterPopupOpen(false)}>
+                    <div className="absolute inset-0 bg-black/50 animate-fade-in" />
+                    {/* Position below header roughly or absolute right */}
+                    <div
+                        className="absolute top-[60px] right-4 left-auto w-64 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 p-4"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-bold text-gray-900">Filter Options</h3>
+                            <button onClick={() => setIsFilterPopupOpen(false)} className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg">
+                                <FiX className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Sort */}
+                            <div>
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {['name', 'price', 'stock', 'category'].map((option) => (
+                                        <button
+                                            key={option}
+                                            onClick={() => setSortBy(option as any)}
+                                            className={`px-3 py-2 text-sm rounded-lg border transition-all ${sortBy === option
+                                                ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium'
+                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                                        >
+                                            {option.charAt(0).toUpperCase() + option.slice(1)}
+                                        </button>
+                                    ))}
+                                </div>
+                                <button
+                                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                    className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-600"
+                                >
+                                    <span>Order: {sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
+                                    <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
+                                </button>
+                            </div>
+
+                            {/* View Mode */}
+                            <div>
+                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">View Mode</label>
+                                <div className="flex bg-gray-100 rounded-lg p-1">
+                                    <button
+                                        onClick={() => setViewMode('grid')}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                                    >
+                                        <FiGrid className="w-4 h-4" /> Grid
+                                    </button>
+                                    <button
+                                        onClick={() => setViewMode('list')}
+                                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
+                                    >
+                                        <FiList className="w-4 h-4" /> List
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Archived Toggle */}
+                            <label className="flex items-center justify-between text-sm font-medium text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <span>Show Archived</span>
+                                <div className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${showArchived ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                    onClick={() => setShowArchived(!showArchived)}
+                                >
+                                    <span
+                                        aria-hidden="true"
+                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showArchived ? 'translate-x-4' : 'translate-x-0'}`}
+                                    />
+                                </div>
+                            </label>
+
+                            <button
+                                onClick={() => setIsFilterPopupOpen(false)}
+                                className="w-full py-3 bg-gray-900 text-white rounded-xl font-medium text-sm shadow-sm hover:bg-gray-800 active:scale-[0.98] transition-transform"
+                            >
+                                Done
+                            </button>
                         </div>
                     </div>
                 </div>
