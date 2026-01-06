@@ -1,6 +1,6 @@
-
 import React from 'react';
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
+import { Button } from './ui/Button';
 
 interface LogoutConfirmationModalProps {
     isOpen: boolean;
@@ -12,8 +12,8 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({ isOpe
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-lg w-full m-4 animate-fade-in">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-lg m-4">
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div className="sm:flex sm:items-start">
                         <div className="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -31,21 +31,23 @@ const LogoutConfirmationModal: React.FC<LogoutConfirmationModalProps> = ({ isOpe
                         </div>
                     </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3">
+                    <Button
                         type="button"
-                        className="inline-flex w-full justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
+                        variant="danger"
+                        className="w-full sm:w-auto"
                         onClick={onConfirm}
                     >
                         Logout
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                         type="button"
-                        className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                        variant="secondary"
+                        className="w-full sm:w-auto mt-0"
                         onClick={onClose}
                     >
                         Cancel
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

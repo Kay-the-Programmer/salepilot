@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import PlusIcon from './icons/PlusIcon';
 import XMarkIcon from './icons/XMarkIcon';
+import Bars3Icon from './icons/Bars3Icon';
 
 interface HeaderProps {
     title: string;
     buttonText?: string;
     onButtonClick?: () => void;
+    onMenuClick?: () => void;
     searchTerm?: string;
     setSearchTerm?: (term: string) => void;
     showArchivedToggle?: boolean;
@@ -26,6 +28,7 @@ const Header: React.FC<HeaderProps> = ({
     title,
     buttonText,
     onButtonClick,
+    onMenuClick,
     searchTerm,
     setSearchTerm,
     showArchivedToggle = false,
@@ -98,6 +101,15 @@ const Header: React.FC<HeaderProps> = ({
                 ) : (
                     <>
                         <div className="flex items-center flex-1 min-w-0 mr-2">
+                            {onMenuClick && (
+                                <button
+                                    onClick={onMenuClick}
+                                    className="mr-3 -ml-1 p-2 rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"
+                                >
+                                    <span className="sr-only">Open menu</span>
+                                    <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                                </button>
+                            )}
                             {/* Back Button Support - if we want to add it back we can */}
                             <h1 className="text-xl font-bold text-gray-900 truncate">{title}</h1>
                         </div>

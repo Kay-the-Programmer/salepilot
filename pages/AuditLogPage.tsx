@@ -192,9 +192,9 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
 
             {/* Mobile Filter Panel - Bottom Sheet */}
             {showFilters && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
+                <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
                     <div
-                        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[85vh] sm:max-w-md flex flex-col shadow-2xl"
+                        className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
                         onClick={(e) => e.stopPropagation()}
                     >
                         {/* Drag handle */}
@@ -333,7 +333,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
 
             {/* Log Detail Modal */}
             {showLogDetail && selectedLog && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
                     <div
                         className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[85vh] sm:max-w-md flex flex-col shadow-2xl"
                         onClick={(e) => e.stopPropagation()}

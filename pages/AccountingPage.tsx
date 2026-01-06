@@ -49,15 +49,15 @@ const AccountingDashboard: React.FC<{ accounts: Account[], journalEntries: Journ
                     </ul>
                 </div>
                 <div className="bg-white shadow rounded-lg">
-                     <h3 className="px-4 py-4 sm:px-6 text-base font-semibold text-gray-800 border-b">Account Balances</h3>
-                     <ul className="divide-y divide-gray-200">
+                    <h3 className="px-4 py-4 sm:px-6 text-base font-semibold text-gray-800 border-b">Account Balances</h3>
+                    <ul className="divide-y divide-gray-200">
                         {accounts.filter(a => a.subType).map(account => (
                             <li key={account.id} className="px-4 py-3 sm:px-6 flex justify-between items-center">
                                 <span className="text-sm font-medium text-gray-700">{account.name}</span>
                                 <span className="text-sm font-semibold text-gray-900">{formatCurrency(account.balance, storeSettings)}</span>
                             </li>
                         ))}
-                     </ul>
+                    </ul>
                 </div>
             </div>
         </div>
@@ -100,51 +100,51 @@ const AccountFormModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50">
-             <div className="bg-white rounded-lg shadow-xl sm:max-w-lg w-full m-4">
-                 <form onSubmit={handleSubmit}>
-                     <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                         <h3 className="text-lg font-medium text-gray-900">{accountToEdit ? 'Edit Account' : 'Add New Account'}</h3>
-                         <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
-                     </div>
-                     <div className="px-6 py-4 space-y-4">
-                         <div>
-                             <label className="block text-sm font-medium text-gray-700">Account Name</label>
-                             <input type="text" value={account.name} onChange={e => setAccount({...account, name: e.target.value})} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
-                         </div>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-lg m-4">
+                <form onSubmit={handleSubmit}>
+                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
+                        <h3 className="text-lg font-medium text-gray-900">{accountToEdit ? 'Edit Account' : 'Add New Account'}</h3>
+                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
+                    </div>
+                    <div className="px-6 py-4 space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Account Name</label>
+                            <input type="text" value={account.name} onChange={e => setAccount({ ...account, name: e.target.value })} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
-                               <label className="block text-sm font-medium text-gray-700">Account Number</label>
-                               <input type="text" value={account.number} onChange={e => setAccount({...account, number: e.target.value})} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
-                           </div>
-                           <div>
-                               <label className="block text-sm font-medium text-gray-700">Account Type</label>
-                               <select value={account.type} onChange={e => setAccount({...account, type: e.target.value as AccountType})} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
-                                   <option value="asset">Asset</option>
-                                   <option value="liability">Liability</option>
-                                   <option value="equity">Equity</option>
-                                   <option value="revenue">Revenue</option>
-                                   <option value="expense">Expense</option>
-                               </select>
-                           </div>
-                         </div>
-                         <div>
-                             <label className="block text-sm font-medium text-gray-700">Description</label>
-                             <textarea value={account.description} onChange={e => setAccount({...account, description: e.target.value})} rows={2} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
-                         </div>
-                         {accountToEdit?.subType && <p className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded-md">This is a system account used for automatic posting. Some properties cannot be changed.</p>}
-                     </div>
-                      <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
+                                <label className="block text-sm font-medium text-gray-700">Account Number</label>
+                                <input type="text" value={account.number} onChange={e => setAccount({ ...account, number: e.target.value })} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Account Type</label>
+                                <select value={account.type} onChange={e => setAccount({ ...account, type: e.target.value as AccountType })} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                                    <option value="asset">Asset</option>
+                                    <option value="liability">Liability</option>
+                                    <option value="equity">Equity</option>
+                                    <option value="revenue">Revenue</option>
+                                    <option value="expense">Expense</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea value={account.description} onChange={e => setAccount({ ...account, description: e.target.value })} rows={2} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                        </div>
+                        {accountToEdit?.subType && <p className="text-xs text-yellow-700 bg-yellow-50 p-2 rounded-md">This is a system account used for automatic posting. Some properties cannot be changed.</p>}
+                    </div>
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
                         <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm">Save Account</button>
                         <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Cancel</button>
                     </div>
-                 </form>
-             </div>
+                </form>
+            </div>
         </div>
     );
 };
 
-const ChartOfAccountsView: React.FC<{ 
+const ChartOfAccountsView: React.FC<{
     accounts: Account[],
     storeSettings: StoreSettings,
     onSaveAccount: (account: Account) => void,
@@ -169,15 +169,15 @@ const ChartOfAccountsView: React.FC<{
             <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
                     <tbody className="bg-white divide-y divide-gray-200">
-                        {accounts.filter(a => a.type === type).sort((a,b) => a.number.localeCompare(b.number)).map(account => (
+                        {accounts.filter(a => a.type === type).sort((a, b) => a.number.localeCompare(b.number)).map(account => (
                             <tr key={account.id}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.number}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{account.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{account.description}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold">{formatCurrency(account.balance, storeSettings)}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                    <button onClick={() => handleEdit(account)} className="text-blue-600 hover:text-blue-900 mr-4"><PencilIcon className="w-5 h-5"/></button>
-                                    {!account.subType && <button onClick={() => onDeleteAccount(account.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="w-5 h-5"/></button>}
+                                    <button onClick={() => handleEdit(account)} className="text-blue-600 hover:text-blue-900 mr-4"><PencilIcon className="w-5 h-5" /></button>
+                                    {!account.subType && <button onClick={() => onDeleteAccount(account.id)} className="text-red-600 hover:text-red-900"><TrashIcon className="w-5 h-5" /></button>}
                                 </td>
                             </tr>
                         ))}
@@ -192,7 +192,7 @@ const ChartOfAccountsView: React.FC<{
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <h3 className="text-xl font-semibold">Chart of Accounts</h3>
                 <button onClick={handleAdd} className="inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                    <PlusIcon className="w-5 h-5"/> Add Account
+                    <PlusIcon className="w-5 h-5" /> Add Account
                 </button>
             </div>
             {renderAccountList('asset')}
@@ -206,13 +206,13 @@ const ChartOfAccountsView: React.FC<{
     );
 };
 
-const JournalView: React.FC<{ 
-    entries: JournalEntry[], 
-    accounts: Account[], 
+const JournalView: React.FC<{
+    entries: JournalEntry[],
+    accounts: Account[],
     storeSettings: StoreSettings,
     onAddEntry: (entry: Omit<JournalEntry, 'id'>) => void,
 }> = ({ entries, storeSettings, }) => {
-    const [ setIsModalOpen] = useState(false);
+    const [setIsModalOpen] = useState(false);
 
     return (
         <div>
@@ -282,7 +282,7 @@ const CustomerStatementModal: React.FC<{
             amount: sale.total,
             type: 'invoice' as const
         }];
-        
+
         (sale.payments || []).forEach(p => {
             lines.push({
                 date: p.date || '',
@@ -293,12 +293,12 @@ const CustomerStatementModal: React.FC<{
         });
 
         return lines;
-    }).sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    
+    }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
     let runningBalance = 0;
     const finalLines = statementLines.map(line => {
         runningBalance += line.amount;
-        return {...line, balance: runningBalance};
+        return { ...line, balance: runningBalance };
     });
 
     const handlePrint = () => {
@@ -317,8 +317,8 @@ const CustomerStatementModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-4xl w-full">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-4">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-4xl">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
                     <h3 className="text-lg font-medium text-gray-900">Customer Statement</h3>
                     <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
@@ -347,16 +347,16 @@ const CustomerStatementModal: React.FC<{
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-right font-semibold">{formatCurrency(line.balance, storeSettings)}</td>
                                 </tr>
                             ))}
-                             <tr className="total-row">
+                            <tr className="total-row">
                                 <td colSpan={3} className="px-4 py-2 text-right font-bold">Current Balance Due</td>
                                 <td className="px-4 py-2 text-right font-bold">{formatCurrency(customer.accountBalance, storeSettings)}</td>
-                             </tr>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-3 border-t">
                     <button onClick={handlePrint} className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
-                        <PrinterIcon className="w-5 h-5"/> Print
+                        <PrinterIcon className="w-5 h-5" /> Print
                     </button>
                     <button onClick={onClose} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
                         Close
@@ -381,13 +381,13 @@ const RecordPaymentModal: React.FC<{
     const [method, setMethod] = useState<string>(storeSettings?.paymentMethods?.[0]?.id || 'cash');
 
     useEffect(() => {
-        if(isOpen) {
+        if (isOpen) {
             setAmount(balanceDue.toFixed(2));
             setDate(new Date().toISOString().split('T')[0]);
             setMethod(storeSettings?.paymentMethods?.[0]?.id || 'cash');
         }
     }, [invoice, balanceDue, isOpen, storeSettings]);
-    
+
     if (!isOpen) return null;
 
     const isInvalid = isNaN(parseFloat(amount)) || parseFloat(amount) <= 0 || parseFloat(amount) > balanceDue + 0.001;
@@ -402,50 +402,50 @@ const RecordPaymentModal: React.FC<{
         onSave(invoice.transactionId, { date, amount: paymentAmount, method });
         onClose();
     };
-    
+
     return (
-         <div className="fixed inset-0 bg-gray-600 bg-opacity-20 flex justify-center items-center z-50 transition-opacity">
-             <div className="bg-white rounded-lg shadow-xl sm:max-w-lg w-full m-4">
-                 <form onSubmit={handleSubmit}>
-                     <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                         <div>
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in transition-opacity">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-lg m-4">
+                <form onSubmit={handleSubmit}>
+                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
+                        <div>
                             <h3 className="text-lg font-medium text-gray-900">Record Payment for {invoice.transactionId}</h3>
                             <p className="text-sm text-gray-500 mt-1">Balance Due: {formatCurrency(balanceDue, storeSettings)}</p>
-                         </div>
-                         <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
-                     </div>
-                     <div className="px-6 py-4 space-y-4">
+                        </div>
+                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
+                    </div>
+                    <div className="px-6 py-4 space-y-4">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-700">Payment Amount</label>
                                 <input type="number" value={amount} onChange={e => setAmount(e.target.value)} max={balanceDue} step="0.01" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
                             </div>
-                             <div>
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">Payment Date</label>
                                 <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
                             </div>
                         </div>
-                         <div>
+                        <div>
                             <label className="block text-sm font-medium text-gray-700">Payment Method</label>
-                             <select value={method} onChange={e => setMethod(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                            <select value={method} onChange={e => setMethod(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
                                 {storeSettings.paymentMethods?.map(pm => (
                                     <option key={pm.id} value={pm.id}>{pm.name}</option>
                                 ))}
                             </select>
-                         </div>
-                     </div>
+                        </div>
+                    </div>
                     <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
                         <button type="submit" disabled={isInvalid} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm disabled:bg-blue-400">Record Payment</button>
                         <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Cancel</button>
                     </div>
-                 </form>
-             </div>
+                </form>
+            </div>
         </div>
     )
 }
 
-const ARManagementView: React.FC<{ 
-    sales: Sale[], 
+const ARManagementView: React.FC<{
+    sales: Sale[],
     customers: Customer[],
     storeSettings: StoreSettings,
     onRecordPayment: (saleId: string, payment: Omit<Payment, 'id'>) => void,
@@ -463,7 +463,7 @@ const ARManagementView: React.FC<{
         };
         return sales
             .filter(s => !isPaid(s))
-            .sort((a,b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime());
+            .sort((a, b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime());
     }, [sales]);
 
     // Map customers by id for quick lookup of names when invoice.customerName is missing
@@ -479,7 +479,7 @@ const ARManagementView: React.FC<{
         setSelectedInvoice(invoice);
         setIsPaymentModalOpen(true);
     }
-    
+
     const handleGenerateStatement = (customerId: string) => {
         const customer = customers.find(c => c.id === customerId);
         if (customer) {
@@ -511,22 +511,23 @@ const ARManagementView: React.FC<{
                             const isPaid = balanceCents <= 0 || invoice.paymentStatus === 'paid';
                             const isOverdue = !isPaid && invoice.dueDate && new Date(invoice.dueDate) < new Date();
                             return (
-                            <tr key={invoice.transactionId} onClick={() => onViewInvoice(invoice)} className="hover:bg-gray-50 cursor-pointer">
-                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{invoice.transactionId}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{invoice.customerName || (invoice.customerId ? customersById[invoice.customerId]?.name : undefined) || 'Unknown Customer'}</td>
-                                <td className={`px-6 py-4 whitespace-nowrap text-sm ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold">{formatCurrency(balanceDue, storeSettings)}</td>
-                                <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isPaid ? 'bg-green-100 text-green-800' : isOverdue ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                       {isPaid ? 'PAID' : isOverdue ? 'Overdue' : (invoice.paymentStatus || 'unpaid').replace('_', ' ').toUpperCase()}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm" onClick={e => e.stopPropagation()}>
-                                    <button onClick={() => handleRecordPaymentClick(invoice)} className="text-blue-600 hover:text-blue-800 font-medium">Record Payment</button>
-                                </td>
-                            </tr>
-                        )})}
-                         {openInvoices.length === 0 && (
+                                <tr key={invoice.transactionId} onClick={() => onViewInvoice(invoice)} className="hover:bg-gray-50 cursor-pointer">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{invoice.transactionId}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{invoice.customerName || (invoice.customerId ? customersById[invoice.customerId]?.name : undefined) || 'Unknown Customer'}</td>
+                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>{invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold">{formatCurrency(balanceDue, storeSettings)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${isPaid ? 'bg-green-100 text-green-800' : isOverdue ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                            {isPaid ? 'PAID' : isOverdue ? 'Overdue' : (invoice.paymentStatus || 'unpaid').replace('_', ' ').toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm" onClick={e => e.stopPropagation()}>
+                                        <button onClick={() => handleRecordPaymentClick(invoice)} className="text-blue-600 hover:text-blue-800 font-medium">Record Payment</button>
+                                    </td>
+                                </tr>
+                            )
+                        })}
+                        {openInvoices.length === 0 && (
                             <tr>
                                 <td colSpan={6} className="text-center py-10 text-gray-500">
                                     No open invoices.
@@ -540,14 +541,14 @@ const ARManagementView: React.FC<{
             <h3 className="text-xl font-semibold mt-12">Customer Statements</h3>
             <div className="bg-white p-4 rounded-lg shadow ring-1 ring-black ring-opacity-5">
                 <label htmlFor="customer-statement-select" className="block text-sm font-medium text-gray-700">Select a customer to generate a statement</label>
-                <select 
-                    id="customer-statement-select" 
+                <select
+                    id="customer-statement-select"
                     onChange={e => e.target.value && handleGenerateStatement(e.target.value)}
                     value={''}
                     className="mt-1 block w-full max-w-sm pl-3 pr-10 py-2 text-base border p-2 border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
                 >
                     <option value="" disabled>-- Select a Customer --</option>
-                    {customers.filter(c=> c.accountBalance > 0).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    {customers.filter(c => c.accountBalance > 0).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
             </div>
 
@@ -579,7 +580,7 @@ const APManagementView: React.FC<{
     suppliers: Supplier[],
     onOpenInvoiceForm: () => void,
 }> = ({ supplierInvoices, storeSettings, onRecordPayment, onViewInvoice, onOpenInvoiceForm }) => {
-    
+
     const [invoiceToPay, setInvoiceToPay] = useState<SupplierInvoice | null>(null);
 
     const StatusBadge: React.FC<{ status: SupplierInvoice['status'] }> = ({ status }) => {
@@ -599,10 +600,10 @@ const APManagementView: React.FC<{
     const invoicesWithStatus = useMemo(() => {
         return supplierInvoices.map(inv => {
             if (inv.status !== 'paid' && new Date(inv.dueDate) < new Date()) {
-                return {...inv, status: 'overdue' as const};
+                return { ...inv, status: 'overdue' as const };
             }
             return inv;
-        }).sort((a,b) => new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime());
+        }).sort((a, b) => new Date(b.invoiceDate).getTime() - new Date(a.invoiceDate).getTime());
     }, [supplierInvoices]);
 
     return (
@@ -610,10 +611,10 @@ const APManagementView: React.FC<{
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                 <h3 className="text-xl font-semibold">Supplier Invoices</h3>
                 <button onClick={onOpenInvoiceForm} className="inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
-                    <PlusIcon className="w-5 h-5"/> Record Invoice
+                    <PlusIcon className="w-5 h-5" /> Record Invoice
                 </button>
             </div>
-             <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+            <div className="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
@@ -642,7 +643,7 @@ const APManagementView: React.FC<{
                                 </td>
                             </tr>
                         ))}
-                         {invoicesWithStatus.length === 0 && (
+                        {invoicesWithStatus.length === 0 && (
                             <tr>
                                 <td colSpan={7} className="text-center py-10 text-gray-500">
                                     No supplier invoices found.
@@ -672,10 +673,10 @@ const TaxReportView: React.FC<{ sales: Sale[], storeSettings: StoreSettings }> =
 
     const filteredData = useMemo(() => {
         const start = new Date(startDate);
-        start.setHours(0,0,0,0);
+        start.setHours(0, 0, 0, 0);
         const end = new Date(endDate);
-        end.setHours(23,59,59,999);
-        
+        end.setHours(23, 59, 59, 999);
+
         const relevantSales = sales.filter(s => {
             const saleDate = new Date(s.timestamp);
             return saleDate >= start && saleDate <= end;
@@ -713,7 +714,7 @@ const TaxReportView: React.FC<{ sales: Sale[], storeSettings: StoreSettings }> =
                         <dt className="text-sm font-medium text-gray-500">Total Tax Collected</dt>
                         <dd className="mt-1 text-3xl font-bold text-gray-900">{formatCurrency(filteredData.totalTax, storeSettings)}</dd>
                     </div>
-                     <div>
+                    <div>
                         <dt className="text-sm font-medium text-gray-500">Number of Transactions</dt>
                         <dd className="mt-1 text-3xl font-bold text-gray-900">{filteredData.numberOfTransactions}</dd>
                     </div>
@@ -733,12 +734,12 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
 
     const pnlData = useMemo(() => {
         const start = new Date(pnlStartDate);
-        start.setHours(0,0,0,0);
+        start.setHours(0, 0, 0, 0);
         const end = new Date(pnlEndDate);
-        end.setHours(23,59,59,999);
+        end.setHours(23, 59, 59, 999);
 
-        const revenueAccounts = new Map<string, {name: string, balance: number}>();
-        const expenseAccounts = new Map<string, {name: string, balance: number}>();
+        const revenueAccounts = new Map<string, { name: string, balance: number }>();
+        const expenseAccounts = new Map<string, { name: string, balance: number }>();
 
         const revenueAccountIds = new Set(accounts.filter(a => a.type === 'revenue').map(a => a.id));
         const expenseAccountIds = new Set(accounts.filter(a => a.type === 'expense').map(a => a.id));
@@ -761,7 +762,7 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
                 }
             }
         }
-        
+
         const totalRevenue = Array.from(revenueAccounts.values()).reduce((sum, acc) => sum + acc.balance, 0);
         const totalExpenses = Array.from(expenseAccounts.values()).reduce((sum, acc) => sum + acc.balance, 0);
         const netIncome = totalRevenue - totalExpenses;
@@ -774,22 +775,22 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
             netIncome
         };
     }, [accounts, journalEntries, pnlStartDate, pnlEndDate]);
-    
+
     const balanceSheetData = useMemo(() => {
-        const assets = accounts.filter(a => a.type === 'asset').sort((a,b) => a.number.localeCompare(b.number));
-        const liabilities = accounts.filter(a => a.type === 'liability').sort((a,b) => a.number.localeCompare(b.number));
-        const equity = accounts.filter(a => a.type === 'equity').sort((a,b) => a.number.localeCompare(b.number));
+        const assets = accounts.filter(a => a.type === 'asset').sort((a, b) => a.number.localeCompare(b.number));
+        const liabilities = accounts.filter(a => a.type === 'liability').sort((a, b) => a.number.localeCompare(b.number));
+        const equity = accounts.filter(a => a.type === 'equity').sort((a, b) => a.number.localeCompare(b.number));
 
         const totalAssets = assets.reduce((sum, a) => sum + a.balance, 0);
         const totalLiabilities = liabilities.reduce((sum, a) => sum + a.balance, 0);
         const totalEquity = equity.reduce((sum, a) => sum + a.balance, 0);
-        
+
         return { assets, liabilities, equity, totalAssets, totalLiabilities, totalEquity };
     }, [accounts]);
 
     const renderPNL = () => (
         <div className="bg-white shadow rounded-lg p-6">
-             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                 <h3 className="text-xl font-semibold">Profit & Loss Statement</h3>
                 <div className="flex flex-wrap items-center gap-2">
                     <input type="date" value={pnlStartDate} onChange={e => setPnlStartDate(e.target.value)} className="p-1.5 border rounded-md text-sm" />
@@ -811,9 +812,9 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
                         <span>{formatCurrency(pnlData.totalRevenue, storeSettings)}</span>
                     </div>
                 </div>
-                 <div>
+                <div>
                     <h4 className="font-bold text-base mt-4 mb-1">Expenses</h4>
-                     {pnlData.expenseAccounts.map(acc => (
+                    {pnlData.expenseAccounts.map(acc => (
                         <div key={acc.name} className="flex justify-between pl-4 py-1">
                             <span>{acc.name}</span>
                             <span>{formatCurrency(acc.balance, storeSettings)}</span>
@@ -831,15 +832,15 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
             </div>
         </div>
     );
-    
-     const renderBalanceSheet = () => (
-         <div className="bg-white shadow rounded-lg p-6">
+
+    const renderBalanceSheet = () => (
+        <div className="bg-white shadow rounded-lg p-6">
             <h3 className="text-xl font-semibold mb-4">Balance Sheet as of {new Date().toLocaleDateString()}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
                 <div>
                     <h4 className="font-bold text-base mb-2">Assets</h4>
                     {balanceSheetData.assets.map(acc => (
-                         <div key={acc.id} className="flex justify-between py-1">
+                        <div key={acc.id} className="flex justify-between py-1">
                             <span>{acc.name}</span>
                             <span>{formatCurrency(acc.balance, storeSettings)}</span>
                         </div>
@@ -849,10 +850,10 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
                         <span>{formatCurrency(balanceSheetData.totalAssets, storeSettings)}</span>
                     </div>
                 </div>
-                 <div>
+                <div>
                     <h4 className="font-bold text-base mb-2">Liabilities</h4>
-                     {balanceSheetData.liabilities.map(acc => (
-                         <div key={acc.id} className="flex justify-between py-1">
+                    {balanceSheetData.liabilities.map(acc => (
+                        <div key={acc.id} className="flex justify-between py-1">
                             <span>{acc.name}</span>
                             <span>{formatCurrency(acc.balance, storeSettings)}</span>
                         </div>
@@ -863,8 +864,8 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
                     </div>
 
                     <h4 className="font-bold text-base mb-2 mt-6">Equity</h4>
-                     {balanceSheetData.equity.map(acc => (
-                         <div key={acc.id} className="flex justify-between py-1">
+                    {balanceSheetData.equity.map(acc => (
+                        <div key={acc.id} className="flex justify-between py-1">
                             <span>{acc.name}</span>
                             <span>{formatCurrency(acc.balance, storeSettings)}</span>
                         </div>
@@ -874,7 +875,7 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
                         <span>{formatCurrency(balanceSheetData.totalEquity, storeSettings)}</span>
                     </div>
 
-                     <div className="flex justify-between font-bold border-t-2 pt-2 mt-2">
+                    <div className="flex justify-between font-bold border-t-2 pt-2 mt-2">
                         <span>Total Liabilities & Equity</span>
                         <span>{formatCurrency(balanceSheetData.totalLiabilities + balanceSheetData.totalEquity, storeSettings)}</span>
                     </div>
@@ -924,7 +925,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     isLoading, error, storeSettings
 }) => {
     const [activeTab, setActiveTab] = useState('dashboard');
-    
+
     // Define available tabs for validation/hash syncing
     const availableTabs = useRef<string[]>([
         'dashboard',
@@ -950,7 +951,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
             window.history.replaceState(null, '', `#${tabName}`);
         }
     };
-    
+
     // --- Modal States ---
     const [isSupplierInvoiceFormOpen, setIsSupplierInvoiceFormOpen] = useState(false);
     const [editingSupplierInvoice, setEditingSupplierInvoice] = useState<SupplierInvoice | null>(null);
@@ -960,7 +961,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
 
     const [isRecordSupplierPaymentOpen, setIsRecordSupplierPaymentOpen] = useState(false);
     const [invoiceToPayAP, setInvoiceToPayAP] = useState<SupplierInvoice | null>(null);
-    
+
     // Mobile tab menu state
     const [isTabMenuOpen, setIsTabMenuOpen] = useState(false);
 
@@ -968,7 +969,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         setActiveTabAndHash(tabName);
         setIsTabMenuOpen(false);
     };
-    
+
     const TabButton: React.FC<{ tabName: string, label: string, shortLabel?: string }> = ({ tabName, label, shortLabel }) => (
         <button
             type="button"
@@ -976,8 +977,8 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
             aria-selected={activeTab === tabName}
             onClick={() => setActiveTabAndHash(tabName)}
             className={`shrink-0 inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
-                ${activeTab === tabName 
-                    ? 'bg-gray-50 text-gray-700 fontweight-semibold shadow-md' 
+                ${activeTab === tabName
+                    ? 'bg-gray-50 text-gray-700 fontweight-semibold shadow-md'
                     : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'}`
             }
         >
@@ -985,7 +986,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
             <span className="sm:hidden inline">{shortLabel ?? label}</span>
         </button>
     );
-    
+
     const handleOpenRecordPaymentAP = (invoice: SupplierInvoice) => {
         setInvoiceToPayAP(invoice);
         setIsRecordSupplierPaymentOpen(true);
@@ -1023,23 +1024,23 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 return <AccountingDashboard accounts={accounts} journalEntries={journalEntries} storeSettings={storeSettings} />;
         }
     };
-    
+
     return (
         <div className="flex flex-col h-full bg-gray-100 ">
             <Header title={"Accounting"} rightContent={(
-                            <button
-                                type="button"
-                                className="sm:hidden inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-100 border"
-                                aria-haspopup="menu"
-                                aria-expanded={isTabMenuOpen}
-                                aria-controls="accounting-tab-menu"
-                                onClick={() => setIsTabMenuOpen(o => !o)}
-                            >
-                                Menu
-                            </button>
-                        )} />
+                <button
+                    type="button"
+                    className="sm:hidden inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-100 border"
+                    aria-haspopup="menu"
+                    aria-expanded={isTabMenuOpen}
+                    aria-controls="accounting-tab-menu"
+                    onClick={() => setIsTabMenuOpen(o => !o)}
+                >
+                    Menu
+                </button>
+            )} />
             <main className="flex-1 overflow-y-auto p-0 px-4 pb-4 ">
-                 <div className=" mb-6 rounded-md sticky top-0 z-20 ">
+                <div className=" mb-6 rounded-md sticky top-0 z-20 ">
                     <div className="relative">
                         <nav className="hidden bg-gray-100  p-2 sm:flex -mx-4 px-4 items-center gap-2 overflow-x-auto whitespace-nowrap no-scrollbar" aria-label="Tabs" role="tablist">
                             <TabButton tabName="dashboard" label="Dashboard" shortLabel="Home" />
@@ -1075,7 +1076,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                     {renderContent()}
                 </div>
             </main>
-            
+
             {/* --- Modals --- */}
             <SupplierInvoiceFormModal
                 isOpen={isSupplierInvoiceFormOpen}
@@ -1104,7 +1105,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 />
             )}
             {viewingARInvoice && (
-                 <SalesInvoiceDetailModal
+                <SalesInvoiceDetailModal
                     isOpen={!!viewingARInvoice}
                     onClose={() => setViewingARInvoice(null)}
                     invoice={viewingARInvoice}
@@ -1116,7 +1117,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                     }}
                     storeSettings={storeSettings}
                     customerName={viewingARInvoice.customerName || (viewingARInvoice.customerId ? (customers.find(c => c.id === viewingARInvoice.customerId)?.name) : undefined) || undefined}
-                 />
+                />
             )}
         </div>
     );

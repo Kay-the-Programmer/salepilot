@@ -32,7 +32,7 @@ interface PurchaseOrdersPageProps {
     storeSettings: StoreSettings;
 }
 
-type ViewState = 
+type ViewState =
     | { mode: 'list' }
     | { mode: 'detail'; po: PurchaseOrder }
     | { mode: 'form'; po?: PurchaseOrder };
@@ -45,7 +45,7 @@ const StatusBadge: React.FC<{ status: PurchaseOrder['status'] }> = ({ status }) 
         received: { color: 'bg-green-100 text-green-800', icon: '✅' },
         canceled: { color: 'bg-red-100 text-red-800', icon: '❌' },
     };
-    
+
     const config = statusConfig[status];
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${config.color}`}>
@@ -105,8 +105,8 @@ const ReceiveStockModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-            <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[85vh] sm:max-w-2xl flex flex-col shadow-2xl">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
                 {/* Drag handle for mobile */}
                 <div className="sm:hidden pt-3 pb-1 flex justify-center">
                     <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
@@ -123,9 +123,9 @@ const ReceiveStockModal: React.FC<{
                                 PO #{po.poNumber} • {po.supplierName}
                             </p>
                         </div>
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
+                        <button
+                            type="button"
+                            onClick={onClose}
                             className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
                         >
                             <XMarkIcon className="h-6 w-6" />
@@ -309,7 +309,7 @@ const PurchaseOrderForm: React.FC<{
         const subtotal = po.items.reduce((acc, item) => acc + (item.quantity * item.costPrice), 0);
         const tax = subtotal * (storeSettings.taxRate / 100);
         const total = subtotal + po.shippingCost + tax;
-        setPo(prev => ({...prev, subtotal, tax, total }));
+        setPo(prev => ({ ...prev, subtotal, tax, total }));
     }, [po.items, po.shippingCost, storeSettings.taxRate]);
 
     const availableProducts = useMemo(() => {
@@ -372,7 +372,7 @@ const PurchaseOrderForm: React.FC<{
             {/* Header */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 sm:px-6">
                 <div className="flex items-center">
-                    <button 
+                    <button
                         onClick={onCancel}
                         className="p-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
                     >
@@ -399,9 +399,9 @@ const PurchaseOrderForm: React.FC<{
                             Supplier Selection
                         </h3>
                         <div className="relative">
-                            <select 
-                                id="supplierId" 
-                                value={po.supplierId} 
+                            <select
+                                id="supplierId"
+                                value={po.supplierId}
                                 onChange={handleSupplierChange}
                                 className="w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
                                 disabled={!!poToEdit}
@@ -521,7 +521,7 @@ const PurchaseOrderForm: React.FC<{
                                         PO Items ({po.items.length})
                                     </h3>
                                 </div>
-                                
+
                                 {po.items.length > 0 ? (
                                     <div className="divide-y divide-gray-200">
                                         {po.items.map(item => (
@@ -618,7 +618,7 @@ const PurchaseOrderForm: React.FC<{
                                         type="date"
                                         id="expectedAt"
                                         value={po.expectedAt?.split('T')[0] || ''}
-                                        onChange={e => setPo({...po, expectedAt: new Date(e.target.value).toISOString()})}
+                                        onChange={e => setPo({ ...po, expectedAt: new Date(e.target.value).toISOString() })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                     />
                                 </div>
@@ -629,7 +629,7 @@ const PurchaseOrderForm: React.FC<{
                                     <textarea
                                         id="notes"
                                         value={po.notes || ''}
-                                        onChange={e => setPo({...po, notes: e.target.value})}
+                                        onChange={e => setPo({ ...po, notes: e.target.value })}
                                         rows={3}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                         placeholder="Add any notes or instructions..."
@@ -658,7 +658,7 @@ const PurchaseOrderForm: React.FC<{
                                             type="number"
                                             id="shippingCost"
                                             value={po.shippingCost}
-                                            onChange={e => setPo({...po, shippingCost: parseFloat(e.target.value) || 0})}
+                                            onChange={e => setPo({ ...po, shippingCost: parseFloat(e.target.value) || 0 })}
                                             className="w-24 px-2 py-1 text-right border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                         />
                                     </div>
@@ -734,7 +734,7 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
     }, [purchaseOrders, view]);
 
     const filteredPOs = useMemo(() => {
-        let filtered = purchaseOrders.filter(po => 
+        let filtered = purchaseOrders.filter(po =>
             po.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
             po.supplierName.toLowerCase().includes(searchTerm.toLowerCase())
         );
@@ -743,7 +743,7 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
             filtered = filtered.filter(po => po.status === statusFilter);
         }
 
-        return filtered.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }, [purchaseOrders, searchTerm, statusFilter]);
 
     const handleCreateNew = () => setView({ mode: 'form' });
@@ -833,11 +833,10 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
                                     <button
                                         key={status}
                                         onClick={() => setStatusFilter(status)}
-                                        className={`px-3 py-2 rounded-lg text-sm font-medium ${
-                                            statusFilter === status
-                                                ? 'bg-blue-600 text-white'
-                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
+                                        className={`px-3 py-2 rounded-lg text-sm font-medium ${statusFilter === status
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
                                     >
                                         {status === 'all' ? 'All' : status.replace('_', ' ')}
                                     </button>
@@ -854,11 +853,10 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
                                 <button
                                     key={status}
                                     onClick={() => setStatusFilter(status)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
-                                        statusFilter === status
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
+                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${statusFilter === status
+                                        ? 'bg-blue-600 text-white'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
                                 >
                                     {status === 'all' ? 'All Status' : status.replace('_', ' ')}
                                 </button>
@@ -1006,6 +1004,16 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
                         </div>
                         <div className="flex items-center gap-3">
                             <StatusBadge status={po.status} />
+                            {po.status === 'draft' && (
+                                <button
+                                    onClick={() => handleEditPO(po)}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
+                                >
+                                    <PencilIcon className="w-5 h-5" />
+                                    <span className="hidden sm:inline">Continue Editing</span>
+                                    <span className="sm:hidden">Edit</span>
+                                </button>
+                            )}
                             {(po.status === 'ordered' || po.status === 'partially_received') && (
                                 <button
                                     onClick={() => handleReceiveStock(po)}
@@ -1195,7 +1203,7 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
                 return renderDetailView(view.po);
             case 'form':
                 return (
-                    <PurchaseOrderForm 
+                    <PurchaseOrderForm
                         poToEdit={view.po}
                         suppliers={suppliers}
                         products={products}
@@ -1215,7 +1223,7 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
         <>
             {renderCurrentView()}
             {selectedPO && (
-                <ReceiveStockModal 
+                <ReceiveStockModal
                     isOpen={isReceiveModalOpen}
                     onClose={() => {
                         setIsReceiveModalOpen(false);

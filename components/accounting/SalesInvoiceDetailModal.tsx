@@ -24,7 +24,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
             alert('Could not open print window. Please check your browser\'s pop-up blocker settings.');
             return;
         }
-    
+
         const html = `
             <html>
                 <head>
@@ -116,7 +116,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                 </body>
             </html>
         `;
-    
+
         printWindow.document.write(html);
         printWindow.document.close();
         printWindow.focus();
@@ -127,8 +127,8 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
     };
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-4xl w-full">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-4xl">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
                     <div>
                         <h3 className="text-lg font-medium text-gray-900">Invoice Details</h3>
@@ -168,20 +168,20 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                             ))}
                         </tbody>
                     </table>
-                    
+
                     <div className="grid grid-cols-2 gap-8">
                         <div>
-                             {(invoice.payments?.length || 0) > 0 && (
+                            {(invoice.payments?.length || 0) > 0 && (
                                 <>
-                                <h4 className="font-semibold text-gray-800 mb-2">Payments</h4>
-                                <ul className="divide-y divide-gray-200 border rounded-md">
-                                    {invoice.payments?.map(p => (
-                                        <li key={p.id} className="px-3 py-2 flex justify-between text-sm">
-                                            <span>{new Date(p.date).toLocaleDateString()} - {p.method}</span>
-                                            <span className="font-medium text-green-600">{formatCurrency(p.amount, storeSettings)}</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                    <h4 className="font-semibold text-gray-800 mb-2">Payments</h4>
+                                    <ul className="divide-y divide-gray-200 border rounded-md">
+                                        {invoice.payments?.map(p => (
+                                            <li key={p.id} className="px-3 py-2 flex justify-between text-sm">
+                                                <span>{new Date(p.date).toLocaleDateString()} - {p.method}</span>
+                                                <span className="font-medium text-green-600">{formatCurrency(p.amount, storeSettings)}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
                                 </>
                             )}
                         </div>
@@ -196,7 +196,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                 </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-3 border-t">
                     <button onClick={handlePrint} className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
-                        <PrinterIcon className="w-5 h-5"/> Print
+                        <PrinterIcon className="w-5 h-5" /> Print
                     </button>
                     {balanceDue > 0 && (
                         <button onClick={() => onRecordPayment(invoice)} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">

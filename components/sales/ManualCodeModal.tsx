@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import XMarkIcon from '../icons/XMarkIcon';
+import { Button } from '../ui/Button';
 
 interface ManualCodeModalProps {
   isOpen: boolean;
@@ -36,13 +37,13 @@ const ManualCodeModal: React.FC<ManualCodeModalProps> = ({ isOpen, onClose, onSu
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
       aria-labelledby="manual-code-modal-title"
       role="dialog"
       aria-modal="true"
       onClick={handleBackdropClick}
     >
-      <div className="relative bg-white rounded-lg shadow-xl w-full max-w-md mx-4">
+      <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md">
         <div className="p-4 flex justify-between items-center border-b">
           <h3 className="text-lg font-medium text-gray-900" id="manual-code-modal-title">
             {title}
@@ -65,26 +66,26 @@ const ManualCodeModal: React.FC<ManualCodeModalProps> = ({ isOpen, onClose, onSu
               autoComplete="off"
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              className="w-full px-3 py-2 border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
               placeholder={placeholder}
             />
             <p className="text-xs text-gray-500 mt-1">Tip: You can paste a barcode number or type a SKU, then press Enter.</p>
           </div>
           <div className="flex justify-end gap-2 pt-1">
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={onClose}
-              className="px-4 py-2 rounded-md border border-slate-300 bg-white text-gray-700 hover:bg-slate-50"
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               disabled={!code.trim()}
-              className="px-4 py-2 rounded-md bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 disabled:bg-blue-300"
+              variant="primary"
             >
               Add to cart
-            </button>
+            </Button>
           </div>
         </form>
       </div>

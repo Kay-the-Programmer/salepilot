@@ -149,8 +149,8 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
 
             {/* Mobile Action Menu */}
             {showActionMenu && (
-                <div className="md:hidden fixed inset-0 z-50 bg-black/50" onClick={() => setShowActionMenu(false)}>
-                    <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl animate-slide-up">
+                <div className="md:hidden fixed inset-0 z-[100] bg-black/50 flex items-end justify-center animate-fade-in" onClick={() => setShowActionMenu(false)}>
+                    <div className="bg-white w-full rounded-t-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
                         <div className="p-2">
                             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
                             <div className="space-y-1">
@@ -192,8 +192,8 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
 
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
-                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
-                    <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[60vh] sm:max-w-md flex flex-col shadow-2xl">
+                <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
+                    <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md">
                         <div className="sm:hidden pt-3 pb-1 flex justify-center">
                             <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
                         </div>

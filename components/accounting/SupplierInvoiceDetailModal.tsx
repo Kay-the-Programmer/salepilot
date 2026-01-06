@@ -2,6 +2,7 @@ import React from 'react';
 import { SupplierInvoice, StoreSettings } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
 import { formatCurrency } from '../../utils/currency';
+import { Button } from '../ui/Button';
 
 interface SupplierInvoiceDetailModalProps {
     isOpen: boolean;
@@ -17,8 +18,8 @@ const SupplierInvoiceDetailModal: React.FC<SupplierInvoiceDetailModalProps> = ({
     const balanceDue = invoice.amount - invoice.amountPaid;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-2xl w-full">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
                     <div>
                         <h3 className="text-lg font-medium text-gray-900">Supplier Invoice Details</h3>
@@ -56,7 +57,7 @@ const SupplierInvoiceDetailModal: React.FC<SupplierInvoiceDetailModalProps> = ({
                             </dl>
                         </div>
                     </div>
-                    
+
                     <div className="mt-6">
                         <h4 className="text-md font-semibold text-gray-800 mb-2">Payment History</h4>
                         {invoice.payments.length > 0 ? (
@@ -78,16 +79,17 @@ const SupplierInvoiceDetailModal: React.FC<SupplierInvoiceDetailModalProps> = ({
                 </div>
                 <div className="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-3 border-t">
                     {balanceDue > 0 && (
-                        <button onClick={() => onRecordPayment(invoice)} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
+                        <Button onClick={() => onRecordPayment(invoice)} variant="success">
                             Record Payment
-                        </button>
+                        </Button>
                     )}
-                    <button onClick={onClose} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    <Button onClick={onClose} variant="primary">
                         Close
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>
+
     );
 };
 

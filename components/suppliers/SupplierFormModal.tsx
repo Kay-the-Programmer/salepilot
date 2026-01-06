@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Supplier } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
+import CheckIcon from '../icons/CheckIcon';
+import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
+import UserCircleIcon from '../icons/UserCircleIcon';
+import EnvelopeIcon from '../icons/EnvelopeIcon';
+import PhoneIcon from '../icons/PhoneIcon';
+import MapPinIcon from '../icons/MapPinIcon';
+import BanknotesIcon from '../icons/BanknotesIcon';
+import BankIcon from '../icons/BankIcon';
+import DocumentTextIcon from '../icons/DocumentTextIcon';
 
 interface SupplierFormModalProps {
     isOpen: boolean;
@@ -8,6 +17,8 @@ interface SupplierFormModalProps {
     onSave: (supplier: Supplier) => void;
     supplierToEdit?: Supplier | null;
 }
+
+type SupplierFormSection = 'basic' | 'details' | 'banking' | 'notes';
 
 const getInitialState = (): Omit<Supplier, 'id'> => ({
     name: '',
@@ -20,9 +31,41 @@ const getInitialState = (): Omit<Supplier, 'id'> => ({
     notes: '',
 });
 
+interface SectionProgressProps {
+    activeSection: SupplierFormSection;
+    setActiveSection: (section: SupplierFormSection) => void;
+}
+
+const SectionProgress: React.FC<SectionProgressProps> = ({ activeSection, setActiveSection }) => (
+    <div className="flex items-center justify-center space-x-2 mb-6">
+        {(['basic', 'details', 'banking', 'notes'] as const).map((section, index) => (
+            <React.Fragment key={section}>
+                <button
+                    type="button"
+                    onClick={() => setActiveSection(section)}
+                    className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${activeSection === section
+                        ? 'bg-gray-900 text-white scale-110'
+                        : 'bg-gray-100 text-gray-500'
+                        }`}
+                    aria-label={`Go to ${section} section`}
+                >
+                    {index + 1}
+                </button>
+                {index < 3 && (
+                    <div className={`w-6 h-0.5 ${index < 1 ? 'bg-gray-900' : 'bg-gray-200'}`} />
+                )}
+            </React.Fragment>
+        ))}
+    </div>
+);
+
+import { InputField } from '../ui/InputField';
+import { Button } from '../ui/Button';
+
 const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, onSave, supplierToEdit }) => {
     const [supplier, setSupplier] = useState(getInitialState());
     const [error, setError] = useState('');
+    const [activeSection, setActiveSection] = useState<SupplierFormSection>('basic');
 
     useEffect(() => {
         if (isOpen) {
@@ -32,6 +75,7 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
             } else {
                 setSupplier(getInitialState());
             }
+            setActiveSection('basic');
         }
     }, [supplierToEdit, isOpen]);
 
@@ -47,88 +91,276 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
         e.preventDefault();
         if (!supplier.name.trim()) {
             setError('Supplier name is required.');
+            // Scroll to error
+            document.getElementById('name')?.focus();
             return;
         }
 
         const finalSupplier: Supplier = {
             ...supplier,
-            id: supplierToEdit?.id || `sup_${new Date().toISOString()}`,
+            id: supplierToEdit?.id || `sup_${Date.now()}`,
         };
         onSave(finalSupplier);
+        // Success animation
+        if (document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Escape') {
+            onClose();
+        }
+        if (e.key === 'Enter' && e.metaKey) {
+            handleSubmit(e);
+        }
     };
 
     if (!isOpen) return null;
 
-    const renderSectionTitle = (title: string) => <h4 className="text-md font-semibold text-gray-800 mt-6 mb-2 border-b pb-1">{title}</h4>;
+    const renderSection = () => {
+        switch (activeSection) {
+            case 'basic':
+                return (
+                    <div className="space-y-4 animate-slide-in">
+                        <div className="flex items-center mb-4">
+                            <BuildingOfficeIcon className="w-5 h-5 text-gray-600 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+                        </div>
 
+                        {error && (
+                            <div className="rounded-xl bg-red-50 p-4 border border-red-100 mb-4 animate-shake">
+                                <p className="text-sm text-red-600 flex items-center">
+                                    <span className="mr-2">⚠️</span>
+                                    {error}
+                                </p>
+                            </div>
+                        )}
+
+                        <InputField
+                            label="Supplier Name"
+                            name="name"
+                            value={supplier.name}
+                            onChange={handleChange}
+                            required
+                            hasError={!!error}
+                            icon={<BuildingOfficeIcon className="w-5 h-5" />}
+                            placeholder="Enter supplier name"
+                        />
+
+                        <InputField
+                            label="Contact Person"
+                            name="contactPerson"
+                            value={supplier.contactPerson}
+                            onChange={handleChange}
+                            icon={<UserCircleIcon className="w-5 h-5" />}
+                            placeholder="Name of contact person"
+                        />
+
+                        <InputField
+                            label="Email"
+                            name="email"
+                            value={supplier.email || ''}
+                            onChange={handleChange}
+                            type="email"
+                            icon={<EnvelopeIcon className="w-5 h-5" />}
+                            placeholder="supplier@example.com"
+                        />
+
+                        <InputField
+                            label="Phone"
+                            name="phone"
+                            value={supplier.phone || ''}
+                            onChange={handleChange}
+                            type="tel"
+                            icon={<PhoneIcon className="w-5 h-5" />}
+                            placeholder="+1 (555) 123-4567"
+                        />
+                    </div>
+                );
+
+            case 'details':
+                return (
+                    <div className="space-y-4 animate-slide-in">
+                        <div className="flex items-center mb-4">
+                            <MapPinIcon className="w-5 h-5 text-gray-600 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900">Address & Terms</h3>
+                        </div>
+
+                        <InputField
+                            label="Address"
+                            name="address"
+                            value={supplier.address || ''}
+                            onChange={handleChange}
+                            multiline
+                            icon={<MapPinIcon className="w-5 h-5" />}
+                            placeholder="Full address including city, state, and ZIP"
+                            rows={3}
+                        />
+
+                        <InputField
+                            label="Payment Terms"
+                            name="paymentTerms"
+                            value={supplier.paymentTerms || ''}
+                            onChange={handleChange}
+                            icon={<BanknotesIcon className="w-5 h-5" />}
+                            placeholder="e.g., Net 30, COD, 2/10 Net 30"
+                        />
+                    </div>
+                );
+
+            case 'banking':
+                return (
+                    <div className="space-y-4 animate-slide-in">
+                        <div className="flex items-center mb-4">
+                            <BankIcon className="w-5 h-5 text-gray-600 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900">Banking Details</h3>
+                        </div>
+
+                        <InputField
+                            label="Banking Information"
+                            name="bankingDetails"
+                            value={supplier.bankingDetails || ''}
+                            onChange={handleChange}
+                            multiline
+                            icon={<BankIcon className="w-5 h-5" />}
+                            placeholder="Bank name, account number, routing number, SWIFT/BIC"
+                            rows={4}
+                        />
+                    </div>
+                );
+
+            case 'notes':
+                return (
+                    <div className="space-y-4 animate-slide-in">
+                        <div className="flex items-center mb-4">
+                            <DocumentTextIcon className="w-5 h-5 text-gray-600 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900">Additional Notes</h3>
+                        </div>
+
+                        <InputField
+                            label="Notes"
+                            name="notes"
+                            value={supplier.notes || ''}
+                            onChange={handleChange}
+                            multiline
+                            icon={<DocumentTextIcon className="w-5 h-5" />}
+                            placeholder="Minimum order quantity, delivery schedule, special instructions, etc."
+                            rows={5}
+                        />
+                    </div>
+                );
+        }
+    };
+
+    const isLastSection = activeSection === 'notes';
+    const isFirstSection = activeSection === 'basic';
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-2xl w-full m-4">
-                <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[95vh]">
-                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                         <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                            {supplierToEdit ? 'Edit Supplier' : 'Add New Supplier'}
-                        </h3>
-                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
-                            <XMarkIcon className="h-6 w-6" />
-                        </button>
-                    </div>
-                     <div className="px-4 sm:px-6 py-4 flex-grow overflow-y-auto">
-                        {error && <div className="rounded-md bg-red-50 p-4 mb-4"><p className="text-sm text-red-700">{error}</p></div>}
-                        
-                        {renderSectionTitle('Primary Information')}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Supplier Name *</label>
-                                <input type="text" name="name" id="name" value={supplier.name} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label htmlFor="contactPerson" className="block text-sm font-medium text-gray-700">Contact Person</label>
-                                <input type="text" name="contactPerson" id="contactPerson" value={supplier.contactPerson} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" name="email" id="email" value={supplier.email || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
-                                <input type="tel" name="phone" id="phone" value={supplier.phone || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
+        <div
+            className="fixed inset-0 z-[100] bg-black/40 flex items-end justify-center md:items-center safe-area-bottom"
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-title"
+        >
+            <div
+                className="bg-white w-full max-w-md md:max-w-2xl md:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up"
+                onClick={(e) => e.stopPropagation()}
+                onKeyDown={handleKeyDown}
+            >
+                {/* Header */}
+                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <button
+                                onClick={onClose}
+                                className="p-2 -ml-2 rounded-xl active:bg-gray-100 transition-colors"
+                                aria-label="Close modal"
+                            >
+                                <XMarkIcon className="w-6 h-6 text-gray-600" />
+                            </button>
+                            <div className="ml-2">
+                                <h1 id="modal-title" className="text-lg font-bold text-gray-900">
+                                    {supplierToEdit ? 'Edit Supplier' : 'New Supplier'}
+                                </h1>
+                                <div className="text-xs text-gray-500">
+                                    {activeSection === 'basic' && 'Basic Information'}
+                                    {activeSection === 'details' && 'Address & Terms'}
+                                    {activeSection === 'banking' && 'Banking Details'}
+                                    {activeSection === 'notes' && 'Additional Notes'}
+                                </div>
                             </div>
                         </div>
 
-                        {renderSectionTitle('Address & Terms')}
-                        <div>
-                            <label htmlFor="address" className="block text-sm font-medium text-gray-700">Address</label>
-                            <textarea name="address" id="address" rows={2} value={supplier.address || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" />
+                        <div className="flex items-center">
+                            <Button
+                                onClick={handleSubmit}
+                                icon={<CheckIcon className="w-5 h-5" />}
+                            >
+                                Save
+                            </Button>
                         </div>
-                        <div className="mt-4">
-                            <label htmlFor="paymentTerms" className="block text-sm font-medium text-gray-700">Payment Terms</label>
-                            <input type="text" name="paymentTerms" id="paymentTerms" value={supplier.paymentTerms || ''} onChange={handleChange} placeholder="e.g., Net 30, COD" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                        </div>
-                         <div className="mt-4">
-                            <label htmlFor="bankingDetails" className="block text-sm font-medium text-gray-700">Banking Details</label>
-                             <textarea name="bankingDetails" id="bankingDetails" rows={3} value={supplier.bankingDetails || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="Bank Name, Account Number, Routing, etc."/>
-                        </div>
-                        
-                        {renderSectionTitle('Additional Information')}
-                        <div>
-                             <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
-                             <textarea name="notes" id="notes" rows={4} value={supplier.notes || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Minimum order quantity, delivery schedule, etc."/>
+                    </div>
+                </div>
+
+                {/* Progress Indicator */}
+                <div className="px-4 pt-4">
+                    <SectionProgress activeSection={activeSection} setActiveSection={setActiveSection} />
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto px-4 pb-4">
+                    <form onSubmit={handleSubmit} className="pb-4">
+                        {renderSection()}
+                    </form>
+                </div>
+
+                {/* Footer Navigation */}
+                <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                        <Button
+                            type="button"
+                            variant={isFirstSection ? 'ghost' : 'secondary'}
+                            onClick={() => {
+                                const sections: SupplierFormSection[] = ['basic', 'details', 'banking', 'notes'];
+                                const currentIndex = sections.indexOf(activeSection);
+                                if (currentIndex > 0) {
+                                    setActiveSection(sections[currentIndex - 1]);
+                                }
+                            }}
+                            disabled={isFirstSection}
+                        >
+                            Back
+                        </Button>
+
+                        <div className="text-xs text-gray-500">
+                            {activeSection === 'basic' && 'Step 1 of 4'}
+                            {activeSection === 'details' && 'Step 2 of 4'}
+                            {activeSection === 'banking' && 'Step 3 of 4'}
+                            {activeSection === 'notes' && 'Step 4 of 4'}
                         </div>
 
-                    </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Save Supplier
+                        <button
+                            type="button"
+                            onClick={() => {
+                                const sections: SupplierFormSection[] = ['basic', 'details', 'banking', 'notes'];
+                                const currentIndex = sections.indexOf(activeSection);
+                                if (currentIndex < sections.length - 1) {
+                                    setActiveSection(sections[currentIndex + 1]);
+                                } else {
+                                    handleSubmit({ preventDefault: () => { } } as React.FormEvent);
+                                }
+                            }}
+                            className={`px-4 py-2.5 rounded-xl font-medium transition-all ${isLastSection
+                                ? 'bg-gray-900 text-white active:bg-gray-800 active:scale-95'
+                                : 'bg-gray-100 text-gray-900 active:bg-gray-200'
+                                }`}
+                        >
+                            {isLastSection ? 'Save Supplier' : 'Next'}
                         </button>
-                        <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
-                            Cancel
-                        </button>
                     </div>
-                </form>
+                </div>
             </div>
         </div>
     );

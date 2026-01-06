@@ -195,8 +195,8 @@ const MobileTabBar: React.FC<{
                     key={tab.id}
                     onClick={() => onChange(tab.id)}
                     className={`flex-shrink-0 px-4 py-2.5 rounded-lg mx-1 flex items-center space-x-2 transition-all duration-200 ${activeTab === tab.id
-                            ? 'bg-gray-900 text-white shadow-md'
-                            : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-gray-900 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-gray-100'
                         }`}
                 >
                     {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
@@ -812,7 +812,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
             {/* Mobile Filter Modal */}
             {showFilters && (
-                <div className="fixed inset-0 z-50 bg-black bg-opacity-50 animate-fade-in flex items-end md:items-center justify-center">
+                <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 animate-fade-in flex items-end md:items-center justify-center">
                     <div className="bg-white w-full md:w-auto md:min-w-[400px] rounded-t-3xl md:rounded-2xl shadow-2xl animate-slide-up max-h-[85vh] overflow-hidden">
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-6">

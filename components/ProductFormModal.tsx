@@ -10,6 +10,8 @@ import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
 import { toSnakeCase } from "@/utils/helpers.ts";
 import SupplierFormModal from './suppliers/SupplierFormModal';
 import BarcodeScannerModal from './BarcodeScannerModal';
+import { InputField } from './ui/InputField';
+import { Button } from './ui/Button';
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -367,11 +369,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                         key={section.id}
                         type="button"
                         onClick={() => setActiveSection(section.id)}
-                        className={`flex-1 min-w-0 px-3 py-3 flex flex-col items-center justify-center transition-colors ${
-                            activeSection === section.id 
-                                ? 'bg-blue-50 text-blue-600 border-t-2 border-blue-600' 
-                                : 'text-gray-600 hover:bg-gray-50'
-                        }`}
+                        className={`flex-1 min-w-0 px-3 py-3 flex flex-col items-center justify-center transition-colors ${activeSection === section.id
+                            ? 'bg-blue-50 text-blue-600 border-t-2 border-blue-600'
+                            : 'text-gray-600 hover:bg-gray-50'
+                            }`}
                     >
                         <span className="text-lg mb-1">{section.icon}</span>
                         <span className="text-xs font-medium">{section.label}</span>
@@ -388,29 +389,25 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                     <>
                         {renderSectionTitle('Product Details')}
                         <div className="space-y-4">
+                            <InputField
+                                label="Product Name"
+                                name="name"
+                                id="name"
+                                value={product.name}
+                                onChange={handleChange}
+                                required
+                                placeholder="Enter product name"
+                            />
                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                                <input 
-                                    type="text" 
-                                    name="name" 
-                                    id="name" 
-                                    value={product.name} 
-                                    onChange={handleChange} 
-                                    required 
-                                    className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-                                    placeholder="Enter product name"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
+                                <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
                                 <div className="flex gap-2">
-                                    <select 
-                                        name="categoryId" 
-                                        id="categoryId" 
-                                        value={product.categoryId || ''} 
-                                        onChange={handleChange} 
-                                        required 
-                                        className="flex-1 px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    <select
+                                        name="categoryId"
+                                        id="categoryId"
+                                        value={product.categoryId || ''}
+                                        onChange={handleChange}
+                                        required
+                                        className="flex-1 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                     >
                                         <option value="" disabled>Select a category</option>
                                         {categories.filter(c => c.parentId === null).map(c => (
@@ -422,14 +419,15 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             </React.Fragment>
                                         ))}
                                     </select>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="secondary"
                                         onClick={onAddCategory}
-                                        className="px-4 py-3 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100"
                                         title="Add New Category"
+                                        className="px-4"
                                     >
                                         <span className="text-lg font-bold text-blue-600">+</span>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
@@ -437,75 +435,69 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                         {relevantAttributes.length > 0 && (
                             <div className="mt-4 space-y-4">
                                 {relevantAttributes.map(attr => (
-                                    <div key={attr.id}>
-                                        <label htmlFor={`custom_${attr.id}`} className="block text-sm font-medium text-gray-700 mb-1">{attr.name}</label>
-                                        <input
-                                            type="text"
-                                            name={`custom_${attr.id}`}
-                                            id={`custom_${attr.id}`}
-                                            value={product.customAttributes?.[attr.id] || ''}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder={`Enter ${attr.name.toLowerCase()}`}
-                                        />
-                                    </div>
+                                    <InputField
+                                        key={attr.id}
+                                        label={attr.name}
+                                        name={`custom_${attr.id}`}
+                                        id={`custom_${attr.id}`}
+                                        value={product.customAttributes?.[attr.id] || ''}
+                                        onChange={handleChange}
+                                        placeholder={`Enter ${attr.name.toLowerCase()}`}
+                                    />
                                 ))}
                             </div>
                         )}
 
                         <div className="space-y-4 mt-4">
+                            <InputField
+                                label="Brand"
+                                name="brand"
+                                id="brand"
+                                value={product.brand || ''}
+                                onChange={handleChange}
+                                placeholder="Enter brand name"
+                            />
                             <div>
-                                <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                                <input 
-                                    type="text" 
-                                    name="brand" 
-                                    id="brand" 
-                                    value={product.brand || ''} 
-                                    onChange={handleChange} 
-                                    className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                    placeholder="Enter brand name"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="supplierId" className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                                <label htmlFor="supplierId" className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
                                 <div className="flex gap-2">
-                                    <select 
-                                        name="supplierId" 
-                                        id="supplierId" 
-                                        value={product.supplierId || ''} 
-                                        onChange={handleChange} 
-                                        className="flex-1 px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    <select
+                                        name="supplierId"
+                                        id="supplierId"
+                                        value={product.supplierId || ''}
+                                        onChange={handleChange}
+                                        className="flex-1 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                     >
                                         <option value="">No Supplier</option>
                                         {localSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                                     </select>
-                                    <button
+                                    <Button
                                         type="button"
+                                        variant="secondary"
                                         onClick={() => setIsSupplierModalOpen(true)}
-                                        className="px-4 py-3 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100"
                                         title="Add New Supplier"
+                                        className="px-4"
                                     >
                                         <span className="text-lg font-bold text-blue-600">+</span>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div className="mt-4">
-                            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+
+                        <div className="mt-4 relative">
+                            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">Description</label>
                             <div className="relative">
-                                <textarea 
-                                    name="description" 
-                                    id="description" 
-                                    rows={4} 
-                                    value={product.description} 
-                                    onChange={handleChange} 
-                                    className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-32"
+                                <textarea
+                                    name="description"
+                                    id="description"
+                                    rows={4}
+                                    value={product.description}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all pr-32"
                                     placeholder="Enter product description..."
                                 />
-                                <button 
-                                    type="button" 
-                                    onClick={handleGenerateDescription} 
+                                <button
+                                    type="button"
+                                    onClick={handleGenerateDescription}
                                     disabled={isGenerating || !product.name || !product.categoryId}
                                     className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                                 >
@@ -522,44 +514,34 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                         {renderSectionTitle('Pricing')}
                         <div className="space-y-4">
                             <div>
-                                <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                                    Retail Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''} *
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                                    <input 
-                                        type="number" 
-                                        name="price" 
-                                        id="price" 
-                                        value={product.price} 
-                                        onChange={handleChange} 
-                                        required 
-                                        min="0.01" 
-                                        step="0.01" 
-                                        className="w-full pl-8 pr-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="0.00"
-                                    />
-                                </div>
-                                {product.unitOfMeasure === 'kg' && (
-                                    <p className="mt-2 text-xs text-gray-500">Enter the price per kilogram. The POS will multiply by the weight sold.</p>
-                                )}
+                                <InputField
+                                    label={`Retail Price ${product.unitOfMeasure === 'kg' ? '(per kg)' : ''}`}
+                                    name="price"
+                                    id="price"
+                                    type="number"
+                                    value={product.price}
+                                    onChange={handleChange}
+                                    required
+                                    min="0.01"
+                                    step="0.01"
+                                    icon={<span className="text-gray-500">$</span>}
+                                    placeholder="0.00"
+                                    helperText={product.unitOfMeasure === 'kg' ? "Enter the price per kilogram. The POS will multiply by the weight sold." : undefined}
+                                />
                             </div>
                             <div>
-                                <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
-                                    <input 
-                                        type="number" 
-                                        name="costPrice" 
-                                        id="costPrice" 
-                                        value={product.costPrice || ''} 
-                                        onChange={handleChange} 
-                                        min="0" 
-                                        step="0.01" 
-                                        className="w-full pl-8 pr-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        placeholder="0.00"
-                                    />
-                                </div>
+                                <InputField
+                                    label="Cost Price"
+                                    name="costPrice"
+                                    id="costPrice"
+                                    type="number"
+                                    value={product.costPrice || ''}
+                                    onChange={handleChange}
+                                    min="0"
+                                    step="0.01"
+                                    icon={<span className="text-gray-500">$</span>}
+                                    placeholder="0.00"
+                                />
                             </div>
                         </div>
                     </>
@@ -569,42 +551,40 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                     <>
                         {renderSectionTitle('Inventory & Shipping')}
                         <div className="space-y-4">
+                            <InputField
+                                label="SKU"
+                                name="sku"
+                                id="sku"
+                                value={product.sku}
+                                onChange={handleChange}
+                                required
+                            />
                             <div>
-                                <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                                <input 
-                                    type="text" 
-                                    name="sku" 
-                                    id="sku" 
-                                    value={product.sku} 
-                                    onChange={handleChange} 
-                                    required 
-                                    className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
+                                <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-2">Barcode</label>
                                 <div className="space-y-2">
                                     <div className="flex gap-2">
-                                        <input 
-                                            type="text" 
-                                            name="barcode" 
-                                            id="barcode" 
-                                            value={product.barcode || ''} 
-                                            onChange={handleChange} 
-                                            className="flex-1 px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            placeholder="Scan or enter barcode"
-                                        />
-                                        <button 
-                                            type="button" 
+                                        <div className="flex-1">
+                                            <InputField
+                                                name="barcode"
+                                                id="barcode"
+                                                value={product.barcode || ''}
+                                                onChange={handleChange}
+                                                placeholder="Scan or enter barcode"
+                                                className="mb-0"
+                                            />
+                                        </div>
+                                        <Button
+                                            type="button"
+                                            variant="secondary"
                                             onClick={() => setIsBarcodeScannerOpen(true)}
-                                            className="px-4 py-3 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100"
                                             title="Scan Barcode"
+                                            className="px-4"
                                         >
                                             <span role="img" aria-label="scan">📷</span>
-                                        </button>
+                                        </Button>
                                     </div>
-                                    <button 
-                                        type="button" 
+                                    <button
+                                        type="button"
                                         onClick={handleGenerateBarcode}
                                         className="w-full py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 text-sm font-medium"
                                     >
@@ -612,92 +592,84 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Stock{product.unitOfMeasure === 'kg' ? ' (kg)' : ''} *
-                                    </label>
-                                    <input 
-                                        type="number" 
-                                        name="stock" 
-                                        id="stock" 
-                                        value={product.stock} 
-                                        onChange={handleChange} 
-                                        required 
-                                        min="0" 
+                                    <InputField
+                                        label="Current Stock"
+                                        name="stock"
+                                        id="stock"
+                                        type="number"
+                                        value={product.stock}
+                                        onChange={handleChange}
+                                        required
+                                        min="0"
                                         step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
-                                        className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="unitOfMeasure" className="block text-sm font-medium text-gray-700 mb-1">Unit of Measure</label>
-                                    <select 
-                                        name="unitOfMeasure" 
-                                        id="unitOfMeasure" 
-                                        value={product.unitOfMeasure || 'unit'} 
-                                        onChange={handleChange} 
-                                        className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    <label htmlFor="unitOfMeasure" className="block text-sm font-medium text-gray-700 mb-2">Unit of Measure</label>
+                                    <select
+                                        name="unitOfMeasure"
+                                        id="unitOfMeasure"
+                                        value={product.unitOfMeasure || 'unit'}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                     >
                                         <option value="unit">Unit</option>
                                         <option value="kg">Kilogram (kg)</option>
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label htmlFor="reorderPoint" className="block text-sm font-medium text-gray-700 mb-1">Reorder Point</label>
-                                    <input 
-                                        type="number" 
-                                        name="reorderPoint" 
-                                        id="reorderPoint" 
-                                        value={product.reorderPoint || ''} 
-                                        onChange={handleChange} 
-                                        min="0" 
+                                    <InputField
+                                        label="Reorder Point"
+                                        name="reorderPoint"
+                                        id="reorderPoint"
+                                        type="number"
+                                        value={product.reorderPoint || ''}
+                                        onChange={handleChange}
+                                        min="0"
                                         step="1"
-                                        className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         placeholder={`Default: ${storeSettings.lowStockThreshold}`}
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="safetyStock" className="block text-sm font-medium text-gray-700 mb-1">Safety Stock</label>
-                                    <input 
-                                        type="number" 
-                                        name="safetyStock" 
-                                        id="safetyStock" 
-                                        value={product.safetyStock || ''} 
-                                        onChange={handleChange} 
-                                        min="0" 
+                                    <InputField
+                                        label="Safety Stock"
+                                        name="safetyStock"
+                                        id="safetyStock"
+                                        type="number"
+                                        value={product.safetyStock || ''}
+                                        onChange={handleChange}
+                                        min="0"
                                         step="1"
-                                        className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                                    <input 
-                                        type="number" 
-                                        name="weight" 
-                                        id="weight" 
-                                        value={product.weight || ''} 
-                                        onChange={handleChange} 
-                                        min="0" 
+                                    <InputField
+                                        label="Weight (kg)"
+                                        name="weight"
+                                        id="weight"
+                                        type="number"
+                                        value={product.weight || ''}
+                                        onChange={handleChange}
+                                        min="0"
                                         step="0.001"
-                                        className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700 mb-1">Dimensions</label>
-                                    <input 
-                                        type="text" 
-                                        name="dimensions" 
-                                        id="dimensions" 
-                                        value={product.dimensions || ''} 
-                                        onChange={handleChange} 
-                                        className="w-full px-4 py-3 text-base rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    <InputField
+                                        label="Dimensions"
+                                        name="dimensions"
+                                        id="dimensions"
+                                        value={product.dimensions || ''}
+                                        onChange={handleChange}
                                         placeholder="10 x 20 x 5 cm"
                                     />
                                 </div>
@@ -715,11 +687,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 <div key={idx} className="p-4 bg-gray-50 rounded-lg space-y-3">
                                     <div className="flex justify-between items-start">
                                         <span className="font-medium text-gray-700">Variant {idx + 1}</span>
-                                        <button 
-                                            type="button" 
-                                            onClick={() => setProduct(prev => ({ 
-                                                ...prev, 
-                                                variants: (prev.variants || []).filter((_, i) => i !== idx) 
+                                        <button
+                                            type="button"
+                                            onClick={() => setProduct(prev => ({
+                                                ...prev,
+                                                variants: (prev.variants || []).filter((_, i) => i !== idx)
                                             }))}
                                             className="text-red-600 hover:text-red-700 p-1"
                                         >
@@ -793,12 +765,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 type="button"
                                 onClick={() => setProduct(prev => ({
                                     ...prev,
-                                    variants: [...(prev.variants || []), { 
-                                        name: '', 
-                                        sku: `${product.sku}-${(prev.variants?.length || 0) + 1}`, 
-                                        price: product.price, 
-                                        stock: 0, 
-                                        unitOfMeasure: product.unitOfMeasure 
+                                    variants: [...(prev.variants || []), {
+                                        name: '',
+                                        sku: `${product.sku}-${(prev.variants?.length || 0) + 1}`,
+                                        price: product.price,
+                                        stock: 0,
+                                        unitOfMeasure: product.unitOfMeasure
                                     }]
                                 }))}
                                 className="w-full py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors"
@@ -816,10 +788,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-3 gap-3 mb-4">
                                 {images.map((imgSrc, index) => (
                                     <div key={index} className="relative group aspect-square">
-                                        <img 
-                                            src={buildAssetUrl(imgSrc)} 
-                                            alt={`Product image ${index + 1}`} 
-                                            className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200" 
+                                        <img
+                                            src={buildAssetUrl(imgSrc)}
+                                            alt={`Product image ${index + 1}`}
+                                            className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
                                         />
                                         <button
                                             type="button"
@@ -858,29 +830,27 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             />
                             <p className="text-xs text-gray-500">The first image will be the primary display image.</p>
                         </div>
-                        
+
                         <div className="mt-6">
                             <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">Product Status</label>
                             <div className="flex gap-2">
                                 <button
                                     type="button"
                                     onClick={() => setProduct(prev => ({ ...prev, status: 'active' }))}
-                                    className={`flex-1 py-3 rounded-lg border font-medium ${
-                                        product.status === 'active' 
-                                            ? 'bg-green-100 border-green-500 text-green-700' 
-                                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                    }`}
+                                    className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'active'
+                                        ? 'bg-green-100 border-green-500 text-green-700'
+                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                        }`}
                                 >
                                     Active
                                 </button>
                                 <button
                                     type="button"
                                     onClick={() => setProduct(prev => ({ ...prev, status: 'archived' }))}
-                                    className={`flex-1 py-3 rounded-lg border font-medium ${
-                                        product.status === 'archived' 
-                                            ? 'bg-gray-100 border-gray-500 text-gray-700' 
-                                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                    }`}
+                                    className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'archived'
+                                        ? 'bg-gray-100 border-gray-500 text-gray-700'
+                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                        }`}
                                 >
                                     Archived
                                 </button>
@@ -895,8 +865,8 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
     return (
         <>
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-0 sm:p-4 transition-opacity">
-                <div className="bg-white w-full h-full sm:h-auto sm:rounded-2xl sm:max-w-2xl sm:max-h-[90vh] flex flex-col animate-slide-up">
+            <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
+                <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
                     {/* Header */}
                     <div className="sticky top-0 bg-white z-20 border-b border-gray-200">
                         <div className="px-4 py-3 sm:px-6 flex items-center justify-between">
@@ -908,15 +878,15 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     {mobileSections.find(s => s.id === activeSection)?.label}
                                 </p>
                             </div>
-                            <button 
-                                type="button" 
+                            <button
+                                type="button"
                                 onClick={onClose}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                             >
                                 <XMarkIcon className="w-6 h-6 text-gray-500" />
                             </button>
                         </div>
-                        
+
                         {/* Mobile Tabs */}
                         <div className="sm:hidden overflow-x-auto hide-scrollbar border-t border-gray-200">
                             <div className="flex">
@@ -925,11 +895,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         key={section.id}
                                         type="button"
                                         onClick={() => setActiveSection(section.id)}
-                                        className={`flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${
-                                            activeSection === section.id 
-                                                ? 'border-blue-600 text-blue-600 bg-blue-50' 
-                                                : 'border-transparent text-gray-600 hover:text-gray-900'
-                                        }`}
+                                        className={`flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeSection === section.id
+                                            ? 'border-blue-600 text-blue-600 bg-blue-50'
+                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                            }`}
                                     >
                                         {section.label}
                                     </button>
@@ -959,25 +928,25 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="col-span-2">
                                         <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                                        <input 
-                                            type="text" 
-                                            name="name" 
-                                            id="name" 
-                                            value={product.name} 
-                                            onChange={handleChange} 
-                                            required 
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                        <input
+                                            type="text"
+                                            name="name"
+                                            id="name"
+                                            value={product.name}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                                         <div className="flex gap-2">
-                                            <select 
-                                                name="categoryId" 
-                                                id="categoryId" 
-                                                value={product.categoryId || ''} 
-                                                onChange={handleChange} 
-                                                required 
+                                            <select
+                                                name="categoryId"
+                                                id="categoryId"
+                                                value={product.categoryId || ''}
+                                                onChange={handleChange}
+                                                required
                                                 className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="" disabled>Select a category</option>
@@ -1002,23 +971,23 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     </div>
                                     <div>
                                         <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                                        <input 
-                                            type="text" 
-                                            name="brand" 
-                                            id="brand" 
-                                            value={product.brand || ''} 
-                                            onChange={handleChange} 
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                        <input
+                                            type="text"
+                                            name="brand"
+                                            id="brand"
+                                            value={product.brand || ''}
+                                            onChange={handleChange}
+                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
                                     <div>
                                         <label htmlFor="supplierId" className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
                                         <div className="flex gap-2">
-                                            <select 
-                                                name="supplierId" 
-                                                id="supplierId" 
-                                                value={product.supplierId || ''} 
-                                                onChange={handleChange} 
+                                            <select
+                                                name="supplierId"
+                                                id="supplierId"
+                                                value={product.supplierId || ''}
+                                                onChange={handleChange}
                                                 className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="">No Supplier</option>
@@ -1052,22 +1021,22 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Description */}
                                 <div>
                                     <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                                     <div className="relative">
-                                        <textarea 
-                                            name="description" 
-                                            id="description" 
-                                            rows={3} 
-                                            value={product.description} 
-                                            onChange={handleChange} 
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-28" 
+                                        <textarea
+                                            name="description"
+                                            id="description"
+                                            rows={3}
+                                            value={product.description}
+                                            onChange={handleChange}
+                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-28"
                                         />
-                                        <button 
-                                            type="button" 
-                                            onClick={handleGenerateDescription} 
+                                        <button
+                                            type="button"
+                                            onClick={handleGenerateDescription}
                                             disabled={isGenerating || !product.name || !product.categoryId}
                                             className="absolute top-2 right-2 inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
                                         >
@@ -1086,15 +1055,15 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         </label>
                                         <div className="relative">
                                             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
-                                            <input 
-                                                type="number" 
-                                                name="price" 
-                                                id="price" 
-                                                value={product.price} 
-                                                onChange={handleChange} 
-                                                required 
-                                                min="0.01" 
-                                                step="0.01" 
+                                            <input
+                                                type="number"
+                                                name="price"
+                                                id="price"
+                                                value={product.price}
+                                                onChange={handleChange}
+                                                required
+                                                min="0.01"
+                                                step="0.01"
                                                 className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
@@ -1103,14 +1072,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
                                         <div className="relative">
                                             <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
-                                            <input 
-                                                type="number" 
-                                                name="costPrice" 
-                                                id="costPrice" 
-                                                value={product.costPrice || ''} 
-                                                onChange={handleChange} 
-                                                min="0" 
-                                                step="0.01" 
+                                            <input
+                                                type="number"
+                                                name="costPrice"
+                                                id="costPrice"
+                                                value={product.costPrice || ''}
+                                                onChange={handleChange}
+                                                min="0"
+                                                step="0.01"
                                                 className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
@@ -1123,37 +1092,37 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                                            <input 
-                                                type="text" 
-                                                name="sku" 
-                                                id="sku" 
-                                                value={product.sku} 
-                                                onChange={handleChange} 
-                                                required 
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                            <input
+                                                type="text"
+                                                name="sku"
+                                                id="sku"
+                                                value={product.sku}
+                                                onChange={handleChange}
+                                                required
+                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
                                             <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
                                             <div className="flex gap-2">
-                                                <input 
-                                                    type="text" 
-                                                    name="barcode" 
-                                                    id="barcode" 
-                                                    value={product.barcode || ''} 
-                                                    onChange={handleChange} 
-                                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                                <input
+                                                    type="text"
+                                                    name="barcode"
+                                                    id="barcode"
+                                                    value={product.barcode || ''}
+                                                    onChange={handleChange}
+                                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
-                                                <button 
-                                                    type="button" 
+                                                <button
+                                                    type="button"
                                                     onClick={() => setIsBarcodeScannerOpen(true)}
                                                     className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
                                                     title="Scan Barcode"
                                                 >
                                                     📷
                                                 </button>
-                                                <button 
-                                                    type="button" 
+                                                <button
+                                                    type="button"
                                                     onClick={handleGenerateBarcode}
                                                     className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
                                                 >
@@ -1167,25 +1136,25 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
                                                 Stock{product.unitOfMeasure === 'kg' ? ' (kg)' : ''} *
                                             </label>
-                                            <input 
-                                                type="number" 
-                                                name="stock" 
-                                                id="stock" 
-                                                value={product.stock} 
-                                                onChange={handleChange} 
-                                                required 
-                                                min="0" 
+                                            <input
+                                                type="number"
+                                                name="stock"
+                                                id="stock"
+                                                value={product.stock}
+                                                onChange={handleChange}
+                                                required
+                                                min="0"
                                                 step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
                                             <label htmlFor="unitOfMeasure" className="block text-sm font-medium text-gray-700 mb-1">Unit of Measure</label>
-                                            <select 
-                                                name="unitOfMeasure" 
-                                                id="unitOfMeasure" 
-                                                value={product.unitOfMeasure || 'unit'} 
-                                                onChange={handleChange} 
+                                            <select
+                                                name="unitOfMeasure"
+                                                id="unitOfMeasure"
+                                                value={product.unitOfMeasure || 'unit'}
+                                                onChange={handleChange}
                                                 className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="unit">Unit</option>
@@ -1194,54 +1163,54 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         </div>
                                         <div>
                                             <label htmlFor="reorderPoint" className="block text-sm font-medium text-gray-700 mb-1">Reorder Point</label>
-                                            <input 
-                                                type="number" 
-                                                name="reorderPoint" 
-                                                id="reorderPoint" 
-                                                value={product.reorderPoint || ''} 
-                                                onChange={handleChange} 
-                                                min="0" 
+                                            <input
+                                                type="number"
+                                                name="reorderPoint"
+                                                id="reorderPoint"
+                                                value={product.reorderPoint || ''}
+                                                onChange={handleChange}
+                                                min="0"
                                                 step="1"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label htmlFor="safetyStock" className="block text-sm font-medium text-gray-700 mb-1">Safety Stock</label>
-                                            <input 
-                                                type="number" 
-                                                name="safetyStock" 
-                                                id="safetyStock" 
-                                                value={product.safetyStock || ''} 
-                                                onChange={handleChange} 
-                                                min="0" 
+                                            <input
+                                                type="number"
+                                                name="safetyStock"
+                                                id="safetyStock"
+                                                value={product.safetyStock || ''}
+                                                onChange={handleChange}
+                                                min="0"
                                                 step="1"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
                                             <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                                            <input 
-                                                type="number" 
-                                                name="weight" 
-                                                id="weight" 
-                                                value={product.weight || ''} 
-                                                onChange={handleChange} 
-                                                min="0" 
+                                            <input
+                                                type="number"
+                                                name="weight"
+                                                id="weight"
+                                                value={product.weight || ''}
+                                                onChange={handleChange}
+                                                min="0"
                                                 step="0.001"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
                                             <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700 mb-1">Dimensions</label>
-                                            <input 
-                                                type="text" 
-                                                name="dimensions" 
-                                                id="dimensions" 
-                                                value={product.dimensions || ''} 
-                                                onChange={handleChange} 
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                                            <input
+                                                type="text"
+                                                name="dimensions"
+                                                id="dimensions"
+                                                value={product.dimensions || ''}
+                                                onChange={handleChange}
+                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="10 x 20 x 5 cm"
                                             />
                                         </div>
@@ -1294,11 +1263,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                     />
                                                 </div>
                                                 <div className="flex gap-1">
-                                                    <button 
-                                                        type="button" 
-                                                        onClick={() => setProduct(prev => ({ 
-                                                            ...prev, 
-                                                            variants: (prev.variants || []).filter((_, i) => i !== idx) 
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setProduct(prev => ({
+                                                            ...prev,
+                                                            variants: (prev.variants || []).filter((_, i) => i !== idx)
                                                         }))}
                                                         className="px-2 py-1.5 text-sm rounded border border-red-300 text-red-700 hover:bg-red-50"
                                                     >
@@ -1342,12 +1311,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         type="button"
                                         onClick={() => setProduct(prev => ({
                                             ...prev,
-                                            variants: [...(prev.variants || []), { 
-                                                name: '', 
-                                                sku: `${product.sku}-${(prev.variants?.length || 0) + 1}`, 
-                                                price: product.price, 
-                                                stock: 0, 
-                                                unitOfMeasure: product.unitOfMeasure 
+                                            variants: [...(prev.variants || []), {
+                                                name: '',
+                                                sku: `${product.sku}-${(prev.variants?.length || 0) + 1}`,
+                                                price: product.price,
+                                                stock: 0,
+                                                unitOfMeasure: product.unitOfMeasure
                                             }]
                                         }))}
                                         className="w-full py-2 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm"
@@ -1362,10 +1331,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <div className="grid grid-cols-4 gap-3">
                                         {images.map((imgSrc, index) => (
                                             <div key={index} className="relative group aspect-square">
-                                                <img 
-                                                    src={buildAssetUrl(imgSrc)} 
-                                                    alt={`Product image ${index + 1}`} 
-                                                    className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200" 
+                                                <img
+                                                    src={buildAssetUrl(imgSrc)}
+                                                    alt={`Product image ${index + 1}`}
+                                                    className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
                                                 />
                                                 <button
                                                     type="button"
@@ -1402,12 +1371,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
                                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Product Status</label>
-                                        <select 
-                                            id="status" 
-                                            name="status" 
-                                            value={product.status} 
-                                            onChange={handleChange} 
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        <select
+                                            id="status"
+                                            name="status"
+                                            value={product.status}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                         >
                                             <option value="active">Active</option>
                                             <option value="archived">Archived</option>
@@ -1420,37 +1389,29 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                         {/* Footer */}
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6">
                             <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
-                                <button 
-                                    type="button" 
-                                    onClick={onClose} 
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={onClose}
                                     disabled={isSaving}
-                                    className="px-6 py-3 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
                                 >
                                     Cancel
-                                </button>
-                                <button 
-                                    type="submit" 
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    variant="primary"
                                     disabled={isSaving}
-                                    className="px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium flex items-center justify-center"
+                                    isLoading={isSaving}
+                                    loadingText="Saving..."
                                 >
-                                    {isSaving ? (
-                                        <>
-                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Saving...
-                                        </>
-                                    ) : (
-                                        `Save ${productToEdit ? 'Changes' : 'Product'}`
-                                    )}
-                                </button>
+                                    {`Save ${productToEdit ? 'Changes' : 'Product'}`}
+                                </Button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-            
+
             {/* Modals */}
             <CameraCaptureModal
                 isOpen={isCameraModalOpen}

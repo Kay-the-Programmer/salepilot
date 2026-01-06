@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Customer } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
+import { InputField } from '../ui/InputField';
+import { Button } from '../ui/Button';
 
 interface CustomerFormModalProps {
     isOpen: boolean;
@@ -47,11 +49,11 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        
+
         if (name === 'storeCredit') {
-            setCustomer(prev => ({...prev, storeCredit: parseFloat(value) || 0}));
+            setCustomer(prev => ({ ...prev, storeCredit: parseFloat(value) || 0 }));
         } else {
-             setCustomer(prev => ({
+            setCustomer(prev => ({
                 ...prev,
                 [name]: value,
             }));
@@ -90,76 +92,122 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
 
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50 transition-opacity" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-lg shadow-xl transform transition-all sm:max-w-2xl w-full m-4">
-                <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[95vh]">
-                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                         <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                            {customerToEdit ? 'Edit Customer' : 'Add New Customer'}
-                        </h3>
-                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
-                            <XMarkIcon className="h-6 w-6" />
-                        </button>
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
+                <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[90vh]">
+                    {/* Header */}
+                    <div className="sticky top-0 bg-white px-4 pt-5 pb-4 sm:p-6 border-b border-gray-200 z-10">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                {customerToEdit ? 'Edit Customer' : 'Add New Customer'}
+                            </h3>
+                            <button type="button" onClick={onClose} className="p-2 -m-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
+                                <XMarkIcon className="h-6 w-6" />
+                            </button>
+                        </div>
                     </div>
-                     <div className="px-4 sm:px-6 py-4 flex-grow overflow-y-auto">
-                        {error && <div className="rounded-md bg-red-50 p-4 mb-4"><p className="text-sm text-red-700">{error}</p></div>}
-                        
+
+                    {/* Content */}
+                    <div className="px-4 sm:px-6 py-4 flex-grow overflow-y-auto">
+                        {error && <div className="rounded-xl bg-red-50 p-4 mb-4 border border-red-100"><p className="text-sm text-red-700">{error}</p></div>}
+
                         {renderSectionTitle('Primary Information')}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                             <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name *</label>
-                                <input type="text" name="name" id="name" value={customer.name} onChange={handleChange} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label htmlFor="storeCredit" className="block text-sm font-medium text-gray-700">Store Credit Balance ($)</label>
-                                <input type="number" name="storeCredit" id="storeCredit" value={customer.storeCredit || 0} onChange={handleChange} min="0" step="0.01" className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
+                            <InputField
+                                label="Full Name"
+                                name="name"
+                                value={customer.name}
+                                onChange={handleChange}
+                                required
+                                placeholder="John Doe"
+                            />
+                            <InputField
+                                label="Store Credit Balance ($)"
+                                name="storeCredit"
+                                type="number"
+                                value={customer.storeCredit?.toString() || '0'}
+                                onChange={handleChange}
+                                min="0"
+                                step="0.01"
+                            />
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
-                             <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                                <input type="email" name="email" id="email" value={customer.email || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                            <div>
-                                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
-                                <input type="tel" name="phone" id="phone" value={customer.phone || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                            <InputField
+                                label="Email"
+                                name="email"
+                                type="email"
+                                value={customer.email || ''}
+                                onChange={handleChange}
+                                placeholder="john@example.com"
+                            />
+                            <InputField
+                                label="Phone"
+                                name="phone"
+                                type="tel"
+                                value={customer.phone || ''}
+                                onChange={handleChange}
+                                placeholder="+1 (555) 000-0000"
+                            />
                         </div>
 
                         {renderSectionTitle('Address')}
-                        <div>
-                            <label htmlFor="street" className="block text-sm font-medium text-gray-700">Street Address</label>
-                            <input type="text" name="street" id="street" value={customer.address?.street || ''} onChange={handleAddressChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-                            <div>
-                                <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
-                                <input type="text" name="city" id="city" value={customer.address?.city || ''} onChange={handleAddressChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                             <div>
-                                <label htmlFor="state" className="block text-sm font-medium text-gray-700">State / Province</label>
-                                <input type="text" name="state" id="state" value={customer.address?.state || ''} onChange={handleAddressChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                             <div>
-                                <label htmlFor="zip" className="block text-sm font-medium text-gray-700">Zip / Postal Code</label>
-                                <input type="text" name="zip" id="zip" value={customer.address?.zip || ''} onChange={handleAddressChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"/>
-                            </div>
-                        </div>
-                        
-                        {renderSectionTitle('Additional Information')}
-                        <div>
-                             <label htmlFor="notes" className="block text-sm font-medium text-gray-700">Notes</label>
-                             <textarea name="notes" id="notes" rows={4} value={customer.notes || ''} onChange={handleChange} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="e.g., Prefers window shopping, birthday in June, etc."/>
+                        <InputField
+                            label="Street Address"
+                            name="street"
+                            value={customer.address?.street || ''}
+                            onChange={(e: any) => handleAddressChange(e)}
+                            placeholder="123 Main St"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                            <InputField
+                                label="City"
+                                name="city"
+                                value={customer.address?.city || ''}
+                                onChange={(e: any) => handleAddressChange(e)}
+                            />
+                            <InputField
+                                label="State / Province"
+                                name="state"
+                                value={customer.address?.state || ''}
+                                onChange={(e: any) => handleAddressChange(e)}
+                            />
+                            <InputField
+                                label="Zip / Postal Code"
+                                name="zip"
+                                value={customer.address?.zip || ''}
+                                onChange={(e: any) => handleAddressChange(e)}
+                            />
                         </div>
 
+                        {renderSectionTitle('Additional Information')}
+                        <InputField
+                            label="Notes"
+                            name="notes"
+                            multiline
+                            rows={4}
+                            value={customer.notes || ''}
+                            onChange={handleChange}
+                            placeholder="e.g., Prefers window shopping, birthday in June, etc."
+                        />
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="submit" className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Save Customer
-                        </button>
-                        <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm">
-                            Cancel
-                        </button>
+
+                    {/* Footer */}
+                    <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
+                        <div className="flex flex-col sm:flex-row justify-end gap-3">
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={onClose}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                variant="primary"
+                            >
+                                Save Customer
+                            </Button>
+                        </div>
                     </div>
                 </form>
             </div>

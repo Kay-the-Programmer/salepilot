@@ -4,6 +4,7 @@ import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
 import { formatCurrency } from '@/utils/currency.ts';
 import ReceiptModal from './ReceiptModal';
+import { Button } from '../ui/Button';
 
 interface SaleDetailModalProps {
     isOpen: boolean;
@@ -23,14 +24,14 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
         <>
             {/* Mobile-optimized backdrop with native feel */}
             <div
-                className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
+                className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
                 aria-labelledby="modal-title"
                 role="dialog"
                 aria-modal="true"
                 onClick={onClose}
             >
                 <div
-                    className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[85vh] sm:max-w-2xl"
+                    className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* iOS-style drag handle for mobile */}
@@ -78,8 +79,8 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
                             <div className="bg-gray-50 rounded-xl p-3">
                                 <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Payment Status</h4>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${sale.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
-                                        sale.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
+                                    sale.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                        'bg-red-100 text-red-800'
                                     }`}>
                                     {sale.paymentStatus.replace('_', ' ')}
                                 </span>
@@ -185,20 +186,22 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
 
                     {/* Fixed bottom action bar - iOS style */}
                     <div className="sticky bottom-0 bg-white px-4 py-3 sm:px-6 border-t border-gray-200">
-                        <div className="flex flex-col sm:flex-row gap-3">
-                            <button
+                        <div className="flex flex-col sm:flex-row justify-end gap-3">
+                            <Button
+                                type="button"
+                                variant="secondary"
                                 onClick={() => setIsReceiptOpen(true)}
-                                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                                icon={<PrinterIcon className="w-5 h-5" />}
                             >
-                                <PrinterIcon className="w-5 h-5" />
                                 View Receipt
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                type="button"
+                                variant="primary"
                                 onClick={onClose}
-                                className="px-6 py-2.5 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
                             >
                                 Close
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

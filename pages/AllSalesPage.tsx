@@ -69,13 +69,12 @@ const SalesFilterSheet: React.FC<{
         <>
             {/* Overlay */}
             <div
-                className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${isOpen ? 'bg-black/60 backdrop-blur-sm' : 'bg-transparent pointer-events-none'}`}
+                className="fixed inset-0 z-[100] md:hidden bg-black/50 flex items-end justify-center animate-fade-in"
                 onClick={onClose}
             >
                 {/* Sheet */}
                 <div
-                    className={`fixed bottom-0 left-0 right-0 bg-white rounded-t-2xl shadow-2xl transform transition-transform duration-300 ease-out ${isOpen ? 'translate-y-0' : 'translate-y-full'
-                        }`}
+                    className="bg-white w-full rounded-t-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up"
                     onClick={e => e.stopPropagation()}
                 >
                     {/* Handle */}
@@ -189,8 +188,8 @@ const SalesFilterSheet: React.FC<{
                                         key={status.value}
                                         onClick={() => setTempStatus(status.value)}
                                         className={`p-3 rounded-xl text-sm font-medium transition-all duration-200 ${tempStatus === status.value
-                                                ? `${status.color} ring-2 ring-offset-1 ring-current/20`
-                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                            ? `${status.color} ring-2 ring-offset-1 ring-current/20`
+                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
                                             }`}
                                     >
                                         {status.label}

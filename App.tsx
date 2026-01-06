@@ -904,7 +904,7 @@ const App: React.FC = () => {
 
         switch (currentPage) {
             case 'sales':
-                return <SalesPage products={products} customers={customers} onProcessSale={handleProcessSale} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
+                return <SalesPage products={products} customers={customers} onProcessSale={handleProcessSale} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} />;
             case 'sales-history':
                 return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
             case 'returns':
@@ -1011,20 +1011,22 @@ const App: React.FC = () => {
             </div>
 
             {/* Main content */}
-            <div id="main-content" className="flex-1 flex flex-col overflow-y-auto md:overflow-hidden">
-                {/* Mobile top bar with menu button */}
-                <div className="md:hidden h-12 bg-gray-100 border-b border-gray-200 flex items-center px-3">
-                    <button
-                        onClick={() => setIsSidebarOpen(true)}
-                        className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        aria-label="Open menu"
-                        aria-controls="app-sidebar"
-                        aria-expanded={isSidebarOpen}
-                    >
-                        <Bars3Icon className="w-6 h-6" />
-                    </button>
-                    <span className="ml-2 font-semibold text-gray-800">Menu</span>
-                </div>
+            <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
+                {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
+                {currentPage !== 'sales' && (
+                    <div className="md:hidden h-12 bg-gray-100 border-b border-gray-200 flex items-center px-3">
+                        <button
+                            onClick={() => setIsSidebarOpen(true)}
+                            className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            aria-label="Open menu"
+                            aria-controls="app-sidebar"
+                            aria-expanded={isSidebarOpen}
+                        >
+                            <Bars3Icon className="w-6 h-6" />
+                        </button>
+                        <span className="ml-2 font-semibold text-gray-800">Menu</span>
+                    </div>
+                )}
                 {renderPage()}
             </div>
 

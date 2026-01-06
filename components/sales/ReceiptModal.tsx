@@ -8,6 +8,7 @@ import LinkIcon from '../icons/LinkIcon';
 import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
 import { formatCurrency } from '@/utils/currency.ts';
+import { Button } from '../ui/Button';
 
 interface ReceiptModalProps {
     isOpen: boolean;
@@ -42,7 +43,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                     fontSize: 12,
                     textMargin: 2
                 });
-            } catch(e) {
+            } catch (e) {
                 console.error("Failed to generate receipt barcode:", e);
             }
         }
@@ -52,20 +53,20 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
     const handlePrint = () => {
         if (!modalPrintAreaRef.current || !barcodeRef.current) return;
-    
+
         const printWindow = window.open('', '', 'height=600,width=400');
         if (!printWindow) {
             showSnackbar("Could not open print window. Please check your browser's pop-up settings.", "error");
             return;
         }
-    
+
         // Convert the canvas to an image data URL
         const barcodeDataUrl = barcodeRef.current.toDataURL();
-    
+
         // Create a temporary container to manipulate the DOM for printing
         const tempDiv = document.createElement('div');
         tempDiv.innerHTML = modalPrintAreaRef.current.innerHTML;
-    
+
         // Find the canvas in our temporary DOM and replace it with an image
         const canvas = tempDiv.querySelector('canvas');
         if (canvas) {
@@ -73,9 +74,9 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
             img.src = barcodeDataUrl;
             canvas.parentNode?.replaceChild(img, canvas);
         }
-    
+
         const finalHtml = tempDiv.innerHTML;
-    
+
         printWindow.document.write('<html><head><title>Receipt</title>');
         printWindow.document.write(`
             <style>
@@ -124,19 +125,19 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         printWindow.document.write('</body></html>');
         printWindow.document.close();
         printWindow.focus();
-        setTimeout(() => { 
+        setTimeout(() => {
             printWindow.print();
             printWindow.close();
         }, 250);
     };
-    
+
     const handleShare = async (type: 'email' | 'sms') => {
         setIsSending(true);
-        
+
         try {
             if (type === 'email') {
-                if (!email.trim()) { 
-                    showSnackbar('Please enter an email address.', 'error'); 
+                if (!email.trim()) {
+                    showSnackbar('Please enter an email address.', 'error');
                     return;
                 }
                 // Simulate API call
@@ -144,8 +145,8 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 showSnackbar(`Receipt sent to ${email}`, 'success');
                 setEmail('');
             } else {
-                if (!sms.trim()) { 
-                    showSnackbar('Please enter a phone number.', 'error'); 
+                if (!sms.trim()) {
+                    showSnackbar('Please enter a phone number.', 'error');
                     return;
                 }
                 // Simulate API call
@@ -169,22 +170,22 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
     };
 
     return (
-        <div 
-            className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4"
-            aria-labelledby="modal-title" 
-            role="dialog" 
+        <div
+            className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
+            aria-labelledby="modal-title"
+            role="dialog"
             aria-modal="true"
             onClick={onClose}
         >
-            <div 
-                className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] sm:max-w-md flex flex-col"
+            <div
+                className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
                 <div className="sm:hidden pt-3 pb-1 flex justify-center">
                     <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
                 </div>
-                
+
                 {/* Header with close button */}
                 <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
                     <div className="flex items-center justify-between">
@@ -192,9 +193,9 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                             <h3 className="text-xl font-semibold text-gray-900">Receipt</h3>
                             <p className="text-sm text-gray-500 mt-0.5">Transaction #{transactionId}</p>
                         </div>
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
+                        <button
+                            type="button"
+                            onClick={onClose}
                             className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
                             aria-label="Close"
                         >
@@ -202,7 +203,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                         </button>
                     </div>
                 </div>
-                
+
                 {/* Scrollable receipt content */}
                 <div className="overflow-y-auto flex-1">
                     {/* Receipt print area */}
@@ -221,7 +222,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                 </div>
                             )}
                         </div>
-                        
+
                         {/* Items list */}
                         <div className="mb-6">
                             <h4 className="text-lg font-semibold text-gray-900 mb-3">Items ({cart.length})</h4>
@@ -239,7 +240,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                 ))}
                             </div>
                         </div>
-                        
+
                         {/* Totals */}
                         <div className="bg-gray-50 rounded-xl p-5 mb-6">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Summary</h4>
@@ -248,33 +249,33 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                     <span className="text-gray-600">Subtotal</span>
                                     <span className="font-medium">{formatCurrency(subtotal, storeSettings)}</span>
                                 </div>
-                                
+
                                 {discount > 0 && (
                                     <div className="flex justify-between text-red-600">
                                         <span>Discount</span>
                                         <span className="font-medium">-{formatCurrency(discount, storeSettings)}</span>
                                     </div>
                                 )}
-                                
+
                                 {storeCreditUsed && storeCreditUsed > 0 && (
                                     <div className="flex justify-between text-green-600">
                                         <span>Store Credit</span>
                                         <span className="font-medium">-{formatCurrency(storeCreditUsed, storeSettings)}</span>
                                     </div>
                                 )}
-                                
+
                                 <div className="flex justify-between">
                                     <span className="text-gray-600">Tax</span>
                                     <span className="font-medium">{formatCurrency(tax, storeSettings)}</span>
                                 </div>
-                                
+
                                 <div className="border-t border-gray-300 pt-3 flex justify-between text-lg font-bold">
                                     <span>Total</span>
                                     <span>{formatCurrency(total, storeSettings)}</span>
                                 </div>
                             </div>
                         </div>
-                        
+
                         {/* Store message */}
                         {storeSettings.receiptMessage && (
                             <div className="mb-6 p-4 bg-gray-50 rounded-xl">
@@ -283,7 +284,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                 </p>
                             </div>
                         )}
-                        
+
                         {/* Barcode */}
                         <div className="text-center">
                             <div className="border border-gray-200 rounded-lg p-4 inline-block">
@@ -292,16 +293,16 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                             </div>
                         </div>
                     </div>
-                    
+
                     {/* Share options */}
                     <div className="px-6 pb-6 border-t border-gray-200 pt-6">
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">Share Receipt</h4>
-                        
+
                         {/* Email */}
                         <div className="mb-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="p-2 bg-blue-50 rounded-lg">
-                                    <EnvelopeIcon className="w-5 h-5 text-blue-600"/>
+                                    <EnvelopeIcon className="w-5 h-5 text-blue-600" />
                                 </div>
                                 <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
                             </div>
@@ -312,24 +313,25 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                     placeholder="customer@example.com"
                                     value={email}
                                     onChange={e => setEmail(e.target.value)}
-                                    className="flex-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    className="flex-1 block w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
                                     disabled={isSending}
                                 />
-                                <button 
+                                <Button
                                     onClick={() => handleShare('email')}
                                     disabled={isSending || !email.trim()}
-                                    className="px-5 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    variant="primary"
+                                    className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
                                 >
                                     {isSending ? '...' : 'Send'}
-                                </button>
+                                </Button>
                             </div>
                         </div>
-                        
+
                         {/* SMS */}
                         <div className="mb-4">
                             <div className="flex items-center gap-2 mb-2">
                                 <div className="p-2 bg-green-50 rounded-lg">
-                                    <DevicePhoneMobileIcon className="w-5 h-5 text-green-600"/>
+                                    <DevicePhoneMobileIcon className="w-5 h-5 text-green-600" />
                                 </div>
                                 <label htmlFor="sms" className="text-sm font-medium text-gray-700">SMS</label>
                             </div>
@@ -340,60 +342,62 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                     placeholder="+1 (555) 123-4567"
                                     value={sms}
                                     onChange={e => setSms(e.target.value)}
-                                    className="flex-1 block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
+                                    className="flex-1 block w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
                                     disabled={isSending}
                                 />
-                                <button 
+                                <Button
                                     onClick={() => handleShare('sms')}
                                     disabled={isSending || !sms.trim()}
-                                    className="px-5 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 active:bg-green-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    variant="success"
+                                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white"
                                 >
                                     {isSending ? '...' : 'Send'}
-                                </button>
+                                </Button>
                             </div>
                         </div>
-                        
+
                         {/* Copy Link */}
                         <div className="p-4 bg-gray-50 rounded-xl">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-purple-50 rounded-lg">
-                                        <LinkIcon className="w-5 h-5 text-purple-600"/>
+                                        <LinkIcon className="w-5 h-5 text-purple-600" />
                                     </div>
                                     <div>
                                         <p className="text-sm font-medium text-gray-900">Shareable Link</p>
                                         <p className="text-xs text-gray-500">Copy to clipboard</p>
                                     </div>
                                 </div>
-                                <button 
+                                <Button
                                     onClick={handleCopyLink}
-                                    className="px-4 py-2 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 active:bg-purple-800 transition-colors"
+                                    variant="secondary"
+                                    className="bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 border-none"
                                 >
                                     Copy
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
                 {/* Fixed action buttons */}
                 <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <button 
-                            type="button" 
+                    <div className="flex flex-col sm:flex-row justify-end gap-3">
+                        <Button
+                            type="button"
+                            variant="secondary"
                             onClick={handlePrint}
-                            className="inline-flex items-center justify-center gap-2 px-6 py-3.5 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            icon={<PrinterIcon className="w-5 h-5" />}
                         >
-                            <PrinterIcon className="w-5 h-5"/>
                             Print Receipt
-                        </button>
-                        <button 
-                            type="button" 
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="primary"
                             onClick={onClose}
-                            className="px-6 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
                         >
                             Done
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

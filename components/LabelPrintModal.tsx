@@ -63,8 +63,8 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
     if (!isOpen || !product) return null;
 
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-end sm:items-center z-50 p-0 sm:p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white rounded-t-2xl rounded-b-none sm:rounded-lg shadow-xl transform transition-all sm:max-w-md w-full m-0 sm:m-4 animate-slide-up-mobile sm:animate-none">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-md m-0 sm:m-4">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
                     <div>
                         <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">

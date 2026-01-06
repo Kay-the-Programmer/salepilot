@@ -76,8 +76,8 @@ const BarcodeScannerModal: React.FC<BarcodeScannerModalProps> = ({ isOpen, onClo
     }
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-4">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-lg">
                 <div className="p-4 flex justify-between items-center border-b">
                     <h3 className="text-lg font-medium text-gray-900" id="modal-title">Scan Barcode</h3>
                     <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">

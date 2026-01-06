@@ -55,8 +55,8 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
     };
 
     return (
-         <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg shadow-xl sm:max-w-lg w-full m-4">
+        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
+            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-lg">
                 <form onSubmit={handleSubmit}>
                     <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
                         <h3 className="text-lg font-medium text-gray-900">Change Password</h3>

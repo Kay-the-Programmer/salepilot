@@ -11,6 +11,9 @@ import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
 import UserGroupIcon from '../icons/UserGroupIcon';
 import { SnackbarType } from '../../App';
 
+import { InputField } from '../ui/InputField';
+import { Button } from '../ui/Button';
+
 interface UserFormModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -54,7 +57,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
         }
     }, [userToEdit, isOpen]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setUser(prev => ({ ...prev, [name]: value }));
     };
@@ -114,7 +117,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
 
     return (
         <div
-            className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 transition-opacity"
+            className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
@@ -122,7 +125,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
         >
             <form
                 onSubmit={handleSubmit}
-                className="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full max-h-[90vh] sm:max-w-md flex flex-col"
+                className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -193,40 +196,27 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
                     <div className={`${activeTab === 'basic' ? 'block' : 'hidden sm:block'}`}>
                         <div className="space-y-5">
                             {/* Name Field */}
-                            <div>
-                                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-                                    <UserCircleIcon className="w-4 h-4 inline mr-2 text-gray-500" />
-                                    Full Name
-                                </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    id="name"
-                                    value={user.name}
-                                    onChange={handleChange}
-                                    required
-                                    className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                    placeholder="Enter full name"
-                                />
-                            </div>
+                            <InputField
+                                label="Full Name"
+                                name="name"
+                                value={user.name}
+                                onChange={handleChange}
+                                required
+                                icon={<UserCircleIcon className="w-5 h-5" />}
+                                placeholder="Enter full name"
+                            />
 
                             {/* Email Field */}
-                            <div>
-                                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                    <MailIcon className="w-4 h-4 inline mr-2 text-gray-500" />
-                                    Email Address
-                                </label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    value={user.email}
-                                    onChange={handleChange}
-                                    required
-                                    className="block w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                    placeholder="user@example.com"
-                                />
-                            </div>
+                            <InputField
+                                label="Email Address"
+                                name="email"
+                                value={user.email}
+                                onChange={handleChange}
+                                type="email"
+                                required
+                                icon={<MailIcon className="w-5 h-5" />}
+                                placeholder="user@example.com"
+                            />
 
                             {/* Role Selection */}
                             <div>
@@ -267,56 +257,50 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
                     <div className={`${activeTab === 'security' ? 'block' : 'hidden sm:block'}`}>
                         <div className="space-y-5">
                             {/* Password Field */}
-                            <div>
-                                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                    <LockIcon className="w-4 h-4 inline mr-2 text-gray-500" />
-                                    {userToEdit ? 'Change Password' : 'Create Password'}
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        name="password"
-                                        id="password"
-                                        value={password}
-                                        onChange={e => setPassword(e.target.value)}
-                                        className="block w-full px-4 py-3 pr-12 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none"
-                                        placeholder={userToEdit ? "Leave blank to keep current" : "Minimum 8 characters"}
-                                    />
-                                    <button
-                                        type="button"
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                                        onClick={togglePasswordVisibility}
-                                        aria-label={showPassword ? "Hide password" : "Show password"}
-                                    >
-                                        {showPassword ? (
-                                            <EyeSlashIcon className="h-5 w-5 text-gray-500" />
-                                        ) : (
-                                            <EyeIcon className="h-5 w-5 text-gray-500" />
-                                        )}
-                                    </button>
-                                </div>
-                                <div className="mt-2">
-                                    <div className="flex items-center justify-between text-sm">
-                                        <span className={`${password.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}>
-                                            {password.length >= 8 ? '✓ ' : '○ '}8+ characters
-                                        </span>
-                                        <span className="text-gray-500">
-                                            {password.length}/8
-                                        </span>
-                                    </div>
-                                    <div className="mt-1 h-1 bg-gray-200 rounded-full overflow-hidden">
-                                        <div
-                                            className={`h-full ${password.length >= 8 ? 'bg-green-500' : 'bg-blue-500'}`}
-                                            style={{ width: `${Math.min((password.length / 8) * 100, 100)}%` }}
-                                        ></div>
-                                    </div>
-                                </div>
-                                {userToEdit && (
-                                    <p className="mt-2 text-sm text-gray-500">
-                                        Leave password field empty to keep current password
-                                    </p>
-                                )}
+                            <InputField
+                                label={userToEdit ? "Change Password" : "Create Password"}
+                                name="password"
+                                type={showPassword ? 'text' : 'password'}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                icon={<LockIcon className="w-5 h-5" />}
+                                placeholder={userToEdit ? "Leave blank to keep current" : "Minimum 8 characters"}
+                            />
+                            <div className="absolute right-0 top-0 mt-9 mr-3">
+                                <button
+                                    type="button"
+                                    onClick={togglePasswordVisibility}
+                                    className="p-1 text-gray-400 hover:text-gray-600 focus:outline-none"
+                                >
+                                    {showPassword ? (
+                                        <EyeSlashIcon className="h-5 w-5" />
+                                    ) : (
+                                        <EyeIcon className="h-5 w-5" />
+                                    )}
+                                </button>
                             </div>
+                            <div className="mt-2">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className={`${password.length >= 8 ? 'text-green-600' : 'text-gray-500'}`}>
+                                        {password.length >= 8 ? '✓ ' : '○ '}8+ characters
+                                    </span>
+                                    <span className="text-gray-500">
+                                        {password.length}/8
+                                    </span>
+                                </div>
+                                <div className="mt-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full ${password.length >= 8 ? 'bg-green-500' : 'bg-blue-500'}`}
+                                        style={{ width: `${Math.min((password.length / 8) * 100, 100)}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                            {userToEdit && (
+                                <p className="mt-2 text-sm text-gray-500">
+                                    Leave password field empty to keep current password
+                                </p>
+                            )}
+
 
                             {/* Password Requirements */}
                             {!userToEdit && (
@@ -359,35 +343,26 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
 
                 {/* Fixed action buttons */}
                 <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        <button
+                    <div className="flex flex-col sm:flex-row justify-end gap-3">
+                        <Button
                             type="button"
+                            variant="secondary"
                             onClick={onClose}
-                            className="px-6 py-3.5 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            disabled={isSubmitting}
                         >
                             Cancel
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
-                            disabled={isSubmitting}
-                            className="px-6 py-3.5 border border-transparent text-base font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                            variant="primary"
+                            isLoading={isSubmitting}
                         >
-                            {isSubmitting ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                    </svg>
-                                    Saving...
-                                </span>
-                            ) : (
-                                `${userToEdit ? 'Update' : 'Create'} User`
-                            )}
-                        </button>
+                            {userToEdit ? 'Update' : 'Create'} User
+                        </Button>
                     </div>
                 </div>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 };
 
