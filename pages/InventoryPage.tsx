@@ -13,6 +13,10 @@ import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { FiFilter, FiGrid, FiList, FiPlusCircle } from 'react-icons/fi';
 import Header from '../components/Header';
+import GridIcon from '../components/icons/GridIcon';
+import CubeIcon from '../components/icons/CubeIcon';
+import TagIcon from '../components/icons/TagIcon';
+import PlusIcon from '../components/icons/PlusIcon';
 
 interface InventoryPageProps {
     products: Product[];
@@ -50,6 +54,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     currentUser
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [showArchived, setShowArchived] = useState(false);
@@ -466,8 +471,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     return (
         <div className="flex flex-col h-full bg-gray-50">
-            {/* Custom Header */}
-            <div className="sticky top-0 z-30 bg-white border-b border-gray-200">
+            {/* Custom Header (Desktop) */}
+            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 hidden md:block">
                 <Header
                     title="Inventory"
                     searchTerm={searchTerm}
@@ -477,7 +482,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     className="!static !border-none !shadow-none"
                 />
 
-                {/* Tabs & Actions Row */}
+                {/* Tabs & Actions Row (Desktop) */}
                 {!isSearchActive && (
                     <div className="px-4 pb-3 flex items-center justify-between gap-3 overflow-x-auto no-scrollbar">
                         <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
@@ -516,6 +521,85 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     </div>
                 )}
             </div>
+
+            {/* Mobile Header (New) */}
+            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 md:hidden">
+                <div className="px-4 py-3 flex items-center justify-between">
+                    <h1 className="text-lg font-bold text-gray-900">Inventory</h1>
+                    <div className="flex items-center gap-2">
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${isMobileMenuOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
+                            aria-label="Menu"
+                        >
+                            <GridIcon className="w-6 h-6" />
+                        </button>
+                        {/* Filter Button (Mobile uses same showFilters logic for specific items but maybe we should show the filter sheet? Existing logic just toggles inline filters. Retaining that for now or adapting) */}
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${showFilters ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
+                            aria-label="Filters"
+                        >
+                            <FiFilter className="w-6 h-6" />
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Menu Popup */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+                    <div className="absolute inset-0 bg-black/50 animate-fade-in" />
+                    <div
+                        className="absolute top-[60px] right-4 left-auto w-48 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 p-2"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => {
+                                    setActiveTab('products');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${activeTab === 'products'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                    }`}
+                            >
+                                <CubeIcon className="w-6 h-6 mb-1" />
+                                <span className="text-xs font-semibold">Products</span>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setActiveTab('categories');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${activeTab === 'categories'
+                                    ? 'bg-gray-900 text-white shadow-md'
+                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
+                                    }`}
+                            >
+                                <TagIcon className="w-6 h-6 mb-1" />
+                                <span className="text-xs font-semibold">Categories</span>
+                            </button>
+
+                            {canManageProducts && (
+                                <button
+                                    onClick={() => {
+                                        handleOpenAddModal();
+                                        setIsMobileMenuOpen(false);
+                                    }}
+                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all col-span-2"
+                                >
+                                    <PlusIcon className="w-6 h-6 mb-1" />
+                                    <span className="text-xs font-semibold">Add Product</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <main className="flex-1 overflow-x-hidden overflow-y-auto">
                 {activeTab === 'products' ? (
@@ -623,7 +707,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         {canManageProducts && (
                             <button
                                 onClick={handleOpenAddModal}
-                                className="fixed bottom-6 right-6 z-40 bg-gray-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200"
+                                className="hidden md:block fixed bottom-6 right-6 z-40 bg-gray-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200"
                                 aria-label="Add product"
                             >
                                 <FiPlusCircle className="w-6 h-6" />
@@ -644,7 +728,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         {canManageProducts && (
                             <button
                                 onClick={handleOpenAddCategoryModal}
-                                className="fixed bottom-6 right-6 z-40 bg-gray-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200"
+                                className="hidden md:block fixed bottom-6 right-6 z-40 bg-gray-900 text-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all duration-200"
                                 aria-label="Add category"
                             >
                                 <FiPlusCircle className="w-6 h-6" />
