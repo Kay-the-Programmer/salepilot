@@ -264,48 +264,64 @@ textarea {
 }
 
 @keyframes slide-up {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+  from {
+    transform: translateY(100%);
+  }
+
+  to {
+    transform: translateY(0);
+  }
 }
 
 @keyframes slide-in {
-    from { 
-        opacity: 0;
-        transform: translateX(20px);
-    }
-    to { 
-        opacity: 1;
-        transform: translateX(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  25% {
+    transform: translateX(-5px);
+  }
+
+  75% {
+    transform: translateX(5px);
+  }
 }
 
 .animate-slide-up {
-    animation: slide-up 0.3s ease-out;
+  animation: slide-up 0.3s ease-out;
 }
 
 .animate-slide-in {
-    animation: slide-in 0.3s ease-out;
+  animation: slide-in 0.3s ease-out;
 }
 
 .animate-shake {
-    animation: shake 0.5s ease-in-out;
+  animation: shake 0.5s ease-in-out;
 }
 
 .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* For desktop */
 @media (min-width: 768px) {
-    .animate-slide-up {
-        animation: none;
-    }
+  .animate-slide-up {
+    animation: none;
+  }
 }
 
 /* Add to your global.css or tailwind.css */
@@ -333,7 +349,8 @@ textarea {
 
 /* Improve tap targets on mobile */
 @media (max-width: 768px) {
-  button, 
+
+  button,
   [role="button"] {
     min-height: 44px;
     min-width: 44px;
@@ -344,6 +361,22 @@ textarea {
 @media (prefers-reduced-motion: no-preference) {
   .mobile-transition {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

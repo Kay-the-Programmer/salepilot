@@ -16,7 +16,6 @@ import {
     ChevronDoubleLeftIcon,
     ArrowLeftOnRectangleIcon,
     XMarkIcon,
-    Bars3Icon,
     BuildingStorefrontIcon,
     ChartBarIcon,
     ClipboardDocumentListIcon,
@@ -236,52 +235,94 @@ const Sidebar: React.FC<SidebarProps> = ({
 
     return (
         <>
-            {/* Mobile Overlay */}
+            {/* Mobile Popup Menu (Grid Layout) */}
             {showOnMobile && (
                 <div
-                    className="md:hidden fixed inset-0 bg-black/50 z-50 animate-fade-in"
-                    onClick={onMobileClose}
-                />
+                    ref={sidebarRef}
+                    className="md:hidden w-full max-w-sm bg-white rounded-3xl shadow-2xl flex flex-col max-h-[85vh] pointer-events-auto animate-fade-in-up mx-4 overflow-hidden"
+                >
+                    {/* Cloud Header Style */}
+                    <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                        <div>
+                            <h2 className="text-lg font-bold text-gray-900">Menu</h2>
+                            <p className="text-xs text-gray-500">SalePilot Apps</p>
+                        </div>
+                        <button
+                            onClick={onMobileClose}
+                            className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
+                        >
+                            <XMarkIcon className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Grid Content */}
+                    <div className="flex-1 overflow-y-auto p-4">
+                        <div className="grid grid-cols-3 gap-4">
+                            {navItems.map((item) => {
+                                const IconComponent = item.icon;
+                                const isActive = currentPage === item.page;
+                                return (
+                                    <button
+                                        key={item.page}
+                                        onClick={() => handleNavigation(item.page)}
+                                        className="flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all"
+                                    >
+                                        <div className={`
+                                            w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors
+                                            ${isActive ? 'bg-blue-100 text-blue-600' : 'bg-white border border-gray-100 text-gray-600'}
+                                        `}>
+                                            <IconComponent className="w-7 h-7" />
+                                        </div>
+                                        <span className={`text-xs font-medium text-center leading-tight ${isActive ? 'text-blue-700' : 'text-gray-600'}`}>
+                                            {item.name}
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Mobile Footer (User & Logout) */}
+                    <div className="p-4 border-t border-gray-100 bg-gray-50/50">
+                        <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer" onClick={() => handleNavigation('profile')}>
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-md">
+                                {user.name.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+                                <p className="text-xs text-gray-500 truncate">{user.role}</p>
+                            </div>
+                            <button
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onLogout();
+                                }}
+                                className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                            >
+                                <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
 
-            {/* Sidebar Container */}
+            {/* Desktop Sidebar (Existing Layout) */}
             <aside
-                ref={sidebarRef}
                 className={`
+                    hidden md:flex
                     bg-gradient-to-b from-gray-50 to-white border-r border-gray-200/50
-                    h-screen flex flex-col transition-all duration-300 ease-in-out z-50
-                    fixed md:relative md:translate-x-0
-                    ${isExpanded ? 'w-72 md:w-64' : 'w-20'}
-                    ${showOnMobile ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
-                    shadow-xl md:shadow-none
+                    h-screen flex-col transition-all duration-300 ease-in-out z-50
+                    relative translate-x-0
+                    ${isExpanded ? 'w-64' : 'w-20'}
+                    shadow-none
                 `}
                 style={{
                     scrollbarWidth: 'thin',
                     scrollbarColor: '#9CA3AF transparent'
                 }}
             >
-                {/* Mobile Header */}
-                <div className="md:hidden px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                            <BuildingStorefrontIcon className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-gray-900">SalePilot</h1>
-                            <p className="text-xs text-gray-500">Business Suite</p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onMobileClose}
-                        className="p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100"
-                        aria-label="Close menu"
-                    >
-                        <XMarkIcon className="w-6 h-6" />
-                    </button>
-                </div>
-
                 {/* Desktop Logo */}
-                <div className="hidden md:flex h-16 items-center px-6 border-b border-gray-200">
+                <div className="flex h-16 items-center px-6 border-b border-gray-200">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                             <BuildingStorefrontIcon className="w-6 h-6 text-white" />
@@ -443,16 +484,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
                 </div>
             </aside>
-
-            {/* Mobile Floating Menu Button */}
-            <button
-                onClick={onMobileClose}
-                className="md:hidden fixed bottom-20 right-4 z-40 w-14 h-14 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center hover:bg-blue-700 active:scale-95 transition-all"
-                aria-label="Open menu"
-                style={{ marginBottom: 'env(safe-area-inset-bottom, 0)' }}
-            >
-                <Bars3Icon className="w-6 h-6" />
-            </button>
         </>
     );
 };

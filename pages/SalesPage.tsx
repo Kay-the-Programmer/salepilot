@@ -27,6 +27,7 @@ import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 import Bars3BottomLeftIcon from '../components/icons/Bars3BottomLeftIcon';
 import BanknotesIcon from '../components/icons/BanknotesIcon';
 import Bars3Icon from '../components/icons/Bars3Icon';
+import logo from '../assets/logo.png';
 
 interface SalesPageProps {
     products: Product[];
@@ -514,7 +515,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             <div className="p-4 border-b border-slate-100">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h2 className="text-lg font-bold text-slate-900">Products</h2>
+                                        <div className="flex items-center">
+                                            <h2 className="text-lg font-bold text-slate-900 hidden md:block">Products</h2>
+                                            <img src={logo} alt="SalePilot" className="h-8 md:hidden" />
+                                        </div>
                                         <p className="text-sm text-slate-600">Tap to add items to cart</p>
                                     </div>
                                     <div className="flex items-center gap-2">

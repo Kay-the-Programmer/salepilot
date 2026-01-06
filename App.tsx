@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, POItem, ReceptionEvent, User, StoreSettings, Account, JournalEntry, JournalEntryLine, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
-import Logo from './assets/output-onlinepngtools (1) (1).png';
+import Logo from './assets/logo.png';
 import Sidebar from './components/Sidebar';
 import InventoryPage from './pages/InventoryPage';
 import SalesPage from './pages/SalesPage';
@@ -978,8 +978,14 @@ const App: React.FC = () => {
                 />
             )}
 
-            {/* Sidebar container: slides on mobile, static on desktop */}
-            <div id="app-sidebar" className={`fixed inset-y-0 left-0 z-[60] transform transition-transform duration-200 ease-out md:static md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:block`}>
+            {/* Sidebar container: modal on mobile, static on desktop */}
+            <div id="app-sidebar" className={`
+                z-[60] md:static md:block
+                ${isSidebarOpen
+                    ? 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none'
+                    : 'hidden md:block'
+                }
+            `}>
                 <Sidebar
                     currentPage={currentPage}
                     setCurrentPage={handleSetCurrentPage}
