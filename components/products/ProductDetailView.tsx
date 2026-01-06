@@ -16,9 +16,11 @@ import ScaleIcon from '../icons/ScaleIcon';
 import BarcodeIcon from '../icons/BarcodeIcon';
 import TruckIcon from '../icons/TruckIcon';
 import InformationCircleIcon from '../icons/InformationCircleIcon';
-import ShareIcon from '../icons/ShareIcon';
 import EyeIcon from '../icons/EyeIcon';
 import { buildAssetUrl } from '@/services/api';
+
+import ArrowLeftIcon from '../icons/ArrowLeftIcon';
+import EllipsisVerticalIcon from '../icons/EllipsisVerticalIcon';
 
 interface InfoCardProps {
     title: string;
@@ -46,9 +48,9 @@ const InfoCard: React.FC<InfoCardProps> = ({ title, children, icon, variant = 'd
     </div>
 );
 
-const DetailItem: React.FC<{ 
-    label: string; 
-    value: React.ReactNode; 
+const DetailItem: React.FC<{
+    label: string;
+    value: React.ReactNode;
     icon?: React.ReactNode;
     highlight?: boolean;
     truncate?: boolean;
@@ -85,10 +87,12 @@ const ProductDetailView: React.FC<{
     onPrintLabel: (product: Product) => void;
     onAdjustStock: (product: Product) => void;
     onPersonalUse?: (product: Product) => void;
-}> = ({ product, category, supplier, attributes, storeSettings, user, onEdit, onDelete, onArchive, onPrintLabel, onAdjustStock, onPersonalUse }) => {
+    onBack?: () => void;
+}> = ({ product, category, supplier, attributes, storeSettings, user, onEdit, onDelete, onArchive, onPrintLabel, onAdjustStock, onPersonalUse, onBack }) => {
 
     const [mainImage, setMainImage] = useState('');
     const [imageLoaded, setImageLoaded] = useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     const canManage = user.role === 'admin' || user.role === 'inventory_manager';
 
     const rawImageUrls = useMemo(() => (product.imageUrls || []).map((url: string) => url.replace(/[{}]/g, '')), [product.imageUrls]);
@@ -103,6 +107,18 @@ const ProductDetailView: React.FC<{
         setImageLoaded(false);
     }, [product.id, imageUrls]);
 
+    // Close menu when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            // Simple check - in a real app, use a proper ref check or Headless UI
+            if (isMenuOpen && !(event.target as Element).closest('.menu-trigger') && !(event.target as Element).closest('.menu-content')) {
+                setIsMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isMenuOpen]);
+
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
     const costPrice = typeof product.costPrice === 'string' ? parseFloat(product.costPrice || '0') : (product.costPrice || 0);
     const profitMargin = price > 0 && costPrice > 0 ? ((price - costPrice) / price) * 100 : null;
@@ -115,21 +131,21 @@ const ProductDetailView: React.FC<{
 
     const StatusBadge: React.FC<{ status: Product['status'] }> = ({ status }) => {
         const statusConfig = {
-            active: { 
-                color: 'from-emerald-500 to-green-500', 
-                bg: 'bg-emerald-50', 
+            active: {
+                color: 'from-emerald-500 to-green-500',
+                bg: 'bg-emerald-50',
                 text: 'text-emerald-700',
                 label: 'Active'
             },
-            archived: { 
-                color: 'from-slate-400 to-slate-500', 
-                bg: 'bg-slate-50', 
+            archived: {
+                color: 'from-slate-400 to-slate-500',
+                bg: 'bg-slate-50',
                 text: 'text-slate-700',
                 label: 'Archived'
             },
         };
         const config = statusConfig[status] || statusConfig.active;
-        
+
         return (
             <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold ${config.bg} ${config.text} border border-slate-200`}>
                 <div className={`w-2 h-2 rounded-full bg-gradient-to-br ${config.color}`}></div>
@@ -137,72 +153,6 @@ const ProductDetailView: React.FC<{
             </span>
         );
     };
-
-    const ActionButtons = () => (
-        <div className="flex flex-wrap gap-2">
-            {canManage && (
-                <>
-                    <button 
-                        onClick={() => onEdit(product)} 
-                        type="button"
-                        className="group px-4 py-2.5 text-sm font-semibold text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200 hover:from-blue-100 hover:to-blue-200 hover:border-blue-300 transition-all duration-200 flex items-center gap-2"
-                    >
-                        <PencilIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        Edit
-                    </button>
-                    <button 
-                        onClick={() => onAdjustStock(product)} 
-                        type="button" 
-                        className="group px-4 py-2.5 text-sm font-semibold text-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-200 hover:from-slate-100 hover:to-slate-200 hover:border-slate-300 transition-all duration-200 flex items-center gap-2"
-                    >
-                        <AdjustmentsHorizontalIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        Adjust Stock
-                    </button>
-                    {onPersonalUse && (
-                        <button 
-                            onClick={() => onPersonalUse(product)} 
-                            type="button" 
-                            className="group px-4 py-2.5 text-sm font-semibold text-purple-700 bg-gradient-to-r from-purple-50 to-purple-100 rounded-xl border border-purple-200 hover:from-purple-100 hover:to-purple-200 hover:border-purple-300 transition-all duration-200 flex items-center gap-2"
-                        >
-                            <ShoppingCartIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            Personal Use
-                        </button>
-                    )}
-                    <button 
-                        onClick={() => onPrintLabel(product)} 
-                        className="group px-4 py-2.5 text-sm font-semibold text-amber-700 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl border border-amber-200 hover:from-amber-100 hover:to-amber-200 hover:border-amber-300 transition-all duration-200 flex items-center gap-2"
-                    >
-                        <PrinterIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        Print Label
-                    </button>
-                    {product.status === 'active' ? (
-                        <button 
-                            onClick={() => onArchive(product.id)} 
-                            className="group px-4 py-2.5 text-sm font-semibold text-slate-700 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-200 hover:from-slate-100 hover:to-slate-200 hover:border-slate-300 transition-all duration-200 flex items-center gap-2"
-                        >
-                            <ArchiveBoxIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            Archive
-                        </button>
-                    ) : (
-                        <button 
-                            onClick={() => onArchive(product.id)} 
-                            className="group px-4 py-2.5 text-sm font-semibold text-green-700 bg-gradient-to-r from-green-50 to-green-100 rounded-xl border border-green-200 hover:from-green-100 hover:to-green-200 hover:border-green-300 transition-all duration-200 flex items-center gap-2"
-                        >
-                            <RestoreIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                            Restore
-                        </button>
-                    )}
-                    <button 
-                        onClick={() => onDelete(product)} 
-                        className="group px-4 py-2.5 text-sm font-semibold text-red-700 bg-gradient-to-r from-red-50 to-red-100 rounded-xl border border-red-200 hover:from-red-100 hover:to-red-200 hover:border-red-300 transition-all duration-200 flex items-center gap-2"
-                    >
-                        <TrashIcon className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        Delete
-                    </button>
-                </>
-            )}
-        </div>
-    );
 
     const Tags = () => (
         <div className="flex flex-wrap items-center gap-2">
@@ -226,7 +176,7 @@ const ProductDetailView: React.FC<{
         const lowStockThreshold = product.reorderPoint || storeSettings.lowStockThreshold;
         const isLowStock = product.stock <= lowStockThreshold;
         const isOutOfStock = product.stock === 0;
-        
+
         return (
             <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -236,14 +186,13 @@ const ProductDetailView: React.FC<{
                     </span>
                 </div>
                 <div className="relative h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div 
-                        className={`absolute left-0 top-0 h-full transition-all duration-500 ${
-                            isOutOfStock ? 'w-0 bg-red-500' : 
-                            isLowStock ? 'w-1/3 bg-amber-500' : 
-                            'w-2/3 bg-emerald-500'
-                        }`}
-                        style={{ 
-                            width: `${Math.min(100, (product.stock / (lowStockThreshold * 3)) * 100)}%` 
+                    <div
+                        className={`absolute left-0 top-0 h-full transition-all duration-500 ${isOutOfStock ? 'w-0 bg-red-500' :
+                            isLowStock ? 'w-1/3 bg-amber-500' :
+                                'w-2/3 bg-emerald-500'
+                            }`}
+                        style={{
+                            width: `${Math.min(100, (product.stock / (lowStockThreshold * 3)) * 100)}%`
                         }}
                     />
                 </div>
@@ -256,33 +205,109 @@ const ProductDetailView: React.FC<{
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white px-4 py-6 sm:p-6 lg:p-8">
             {/* Header Section */}
             <div className="max-w-7xl mx-auto mb-8">
-                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-4">
-                            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 truncate">
+                <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                        {onBack && (
+                            <button
+                                onClick={onBack}
+                                className="p-2 -ml-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-6 h-6" />
+                            </button>
+                        )}
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 truncate max-w-[200px] sm:max-w-md">
                                 {product.name}
                             </h1>
-                            <StatusBadge status={product.status} />
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <Tags />
+                            {/* Optional secondary info could go here */}
                         </div>
                     </div>
-                    <div className="flex-shrink-0">
-                        <div className="hidden lg:block">
-                            <ActionButtons />
-                        </div>
+
+                    <div className="bg-slate-100 h-8 w-px mx-2 hidden sm:block"></div>
+
+                    {/* Ellipsis Menu */}
+                    <div className="relative">
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="menu-trigger p-2 rounded-xl text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        >
+                            <EllipsisVerticalIcon className="w-6 h-6" />
+                        </button>
+
+                        {isMenuOpen && (
+                            <div className="menu-content absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-xl border border-slate-100 z-50 overflow-hidden animate-fade-in-up origin-top-right">
+                                <div className="p-1">
+                                    {canManage && (
+                                        <>
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onEdit(product); }}
+                                                className="w-full text-left px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+                                            >
+                                                <PencilIcon className="w-4 h-4 text-slate-400" />
+                                                Edit Product
+                                            </button>
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onAdjustStock(product); }}
+                                                className="w-full text-left px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+                                            >
+                                                <AdjustmentsHorizontalIcon className="w-4 h-4 text-slate-400" />
+                                                Adjust Stock
+                                            </button>
+                                            {onPersonalUse && (
+                                                <button
+                                                    onClick={() => { setIsMenuOpen(false); onPersonalUse(product); }}
+                                                    className="w-full text-left px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+                                                >
+                                                    <ShoppingCartIcon className="w-4 h-4 text-slate-400" />
+                                                    Personal Use
+                                                </button>
+                                            )}
+                                            <div className="border-t border-slate-100 my-1"></div>
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onPrintLabel(product); }}
+                                                className="w-full text-left px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+                                            >
+                                                <PrinterIcon className="w-4 h-4 text-slate-400" />
+                                                Print Label
+                                            </button>
+                                            {product.status === 'active' ? (
+                                                <button
+                                                    onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
+                                                    className="w-full text-left px-3 py-2 text-sm font-medium text-slate-700 rounded-lg hover:bg-slate-50 transition-colors flex items-center gap-2"
+                                                >
+                                                    <ArchiveBoxIcon className="w-4 h-4 text-slate-400" />
+                                                    Archive
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
+                                                    className="w-full text-left px-3 py-2 text-sm font-medium text-green-600 rounded-lg hover:bg-green-50 transition-colors flex items-center gap-2"
+                                                >
+                                                    <RestoreIcon className="w-4 h-4 text-green-500" />
+                                                    Restore
+                                                </button>
+                                            )}
+                                            <div className="border-t border-slate-100 my-1"></div>
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onDelete(product); }}
+                                                className="w-full text-left px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-2"
+                                            >
+                                                <TrashIcon className="w-4 h-4 text-red-500" />
+                                                Delete Product
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
-
-            {/* Mobile Actions */}
-            <div className="lg:hidden mb-6">
-                <div className="w-full overflow-x-auto pb-3">
-                    <ActionButtons />
+                {/* Compact Tags Row */}
+                <div className="mt-[-1rem] mb-6 pl-1">
+                    <Tags />
                 </div>
             </div>
 
@@ -297,9 +322,9 @@ const ProductDetailView: React.FC<{
                                 <div className="relative aspect-square w-full rounded-2xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50 border border-slate-200">
                                     {mainImage ? (
                                         <>
-                                            <img 
-                                                src={mainImage} 
-                                                alt={product.name} 
+                                            <img
+                                                src={mainImage}
+                                                alt={product.name}
                                                 className={`w-full h-full object-contain transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
                                                 onLoad={() => setImageLoaded(true)}
                                             />
@@ -325,14 +350,14 @@ const ProductDetailView: React.FC<{
                                                 <button
                                                     key={idx}
                                                     onClick={() => setMainImage(url)}
-                                                    className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 ${mainImage === url 
-                                                        ? 'border-blue-500 ring-2 ring-blue-200' 
+                                                    className={`relative flex-shrink-0 w-20 h-20 rounded-xl overflow-hidden border-2 transition-all duration-200 ${mainImage === url
+                                                        ? 'border-blue-500 ring-2 ring-blue-200'
                                                         : 'border-transparent hover:border-slate-300 hover:scale-105'
-                                                    }`}
+                                                        }`}
                                                 >
-                                                    <img 
-                                                        src={url} 
-                                                        alt={`${product.name} - View ${idx + 1}`} 
+                                                    <img
+                                                        src={url}
+                                                        alt={`${product.name} - View ${idx + 1}`}
                                                         className="w-full h-full object-cover"
                                                     />
                                                     {mainImage === url && (
@@ -349,8 +374,8 @@ const ProductDetailView: React.FC<{
                         </div>
 
                         {/* Description Card */}
-                        <InfoCard 
-                            title="Product Description" 
+                        <InfoCard
+                            title="Product Description"
                             icon={<InformationCircleIcon className="w-5 h-5" />}
                         >
                             <div className="prose prose-sm max-w-none">
@@ -362,17 +387,14 @@ const ProductDetailView: React.FC<{
 
                         {/* Variants */}
                         {Array.isArray(product.variants) && product.variants.length > 0 && (
-                            <InfoCard 
-                                title="Product Variants" 
+                            <InfoCard
+                                title="Product Variants"
                                 icon={<CubeIcon className="w-5 h-5" />}
                             >
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {product.variants.map((v, idx) => {
                                         const variantPrice = typeof v.price === 'string' ? parseFloat(v.price as any) : (v.price ?? 0);
-                                        const variantCost = typeof v.costPrice === 'string' ? parseFloat(v.costPrice as any) : (v.costPrice ?? 0);
-                                        const variantMargin = variantPrice > 0 && variantCost > 0 
-                                            ? ((variantPrice - variantCost) / variantPrice) * 100 
-                                            : null;
+                                        // Variant cost price not currently tracked in types
 
                                         return (
                                             <div key={idx} className="group p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200 hover:border-blue-200 transition-all duration-200">
@@ -385,11 +407,7 @@ const ProductDetailView: React.FC<{
                                                         <div className="text-sm font-bold text-slate-900">
                                                             {formatCurrency(variantPrice, storeSettings)}
                                                         </div>
-                                                        {variantMargin !== null && (
-                                                            <div className={`text-xs font-medium ${variantMargin < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                                                                {variantMargin.toFixed(1)}% margin
-                                                            </div>
-                                                        )}
+                                                        {/* Margin calculation removed as costPrice is not available */}
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center justify-between text-xs text-slate-600">
@@ -413,14 +431,14 @@ const ProductDetailView: React.FC<{
                     {/* Right Column: Stats & Details */}
                     <div className="space-y-6">
                         {/* Pricing Card */}
-                        <InfoCard 
-                            title="Pricing & Profitability" 
+                        <InfoCard
+                            title="Pricing & Profitability"
                             icon={<CurrencyDollarIcon className="w-5 h-5" />}
                             variant="highlight"
                         >
                             <div className="space-y-1">
-                                <DetailItem 
-                                    label="Retail Price" 
+                                <DetailItem
+                                    label="Retail Price"
                                     value={
                                         <div className="text-lg font-bold text-slate-900">
                                             {formatCurrency(price, storeSettings)}
@@ -429,8 +447,8 @@ const ProductDetailView: React.FC<{
                                     icon={<CurrencyDollarIcon className="w-4 h-4 text-blue-500" />}
                                     highlight={true}
                                 />
-                                <DetailItem 
-                                    label="Cost Price" 
+                                <DetailItem
+                                    label="Cost Price"
                                     value={
                                         <div className="text-sm">
                                             {formatCurrency(costPrice, storeSettings)}
@@ -438,8 +456,8 @@ const ProductDetailView: React.FC<{
                                     }
                                     icon={<ChartBarIcon className="w-4 h-4 text-slate-500" />}
                                 />
-                                <DetailItem 
-                                    label="Profit Amount" 
+                                <DetailItem
+                                    label="Profit Amount"
                                     value={
                                         <div className={`text-sm font-medium ${profitAmount < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                                             {formatCurrency(profitAmount, storeSettings)}
@@ -447,8 +465,8 @@ const ProductDetailView: React.FC<{
                                     }
                                     icon={<ChartBarIcon className="w-4 h-4 text-emerald-500" />}
                                 />
-                                <DetailItem 
-                                    label="Profit Margin" 
+                                <DetailItem
+                                    label="Profit Margin"
                                     value={
                                         <div className={`text-sm font-semibold ${profitMargin === null || profitMargin < 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                                             {profitMargin !== null ? `${profitMargin.toFixed(1)}%` : 'N/A'}
@@ -460,48 +478,48 @@ const ProductDetailView: React.FC<{
                         </InfoCard>
 
                         {/* Stock Card */}
-                        <InfoCard 
-                            title="Inventory Status" 
+                        <InfoCard
+                            title="Inventory Status"
                             icon={<ArchiveBoxIcon className="w-5 h-5" />}
                         >
                             <StockIndicator />
                         </InfoCard>
 
                         {/* Specifications Card */}
-                        <InfoCard 
-                            title="Specifications" 
+                        <InfoCard
+                            title="Specifications"
                             icon={<CubeIcon className="w-5 h-5" />}
                         >
                             <div className="space-y-1">
-                                <DetailItem 
-                                    label="Unit of Measure" 
+                                <DetailItem
+                                    label="Unit of Measure"
                                     value={isKgUoM(product.unitOfMeasure) ? 'Kilogram (kg)' : 'Unit'}
                                     icon={<ScaleIcon className="w-4 h-4 text-slate-500" />}
                                 />
-                                <DetailItem 
-                                    label="Weight" 
+                                <DetailItem
+                                    label="Weight"
                                     value={product.weight ? `${product.weight} kg` : 'N/A'}
                                     icon={<ScaleIcon className="w-4 h-4 text-slate-500" />}
                                 />
-                                <DetailItem 
-                                    label="Dimensions" 
+                                <DetailItem
+                                    label="Dimensions"
                                     value={product.dimensions || 'N/A'}
                                     icon={<CubeIcon className="w-4 h-4 text-slate-500" />}
                                 />
-                                <DetailItem 
-                                    label="SKU Code" 
+                                <DetailItem
+                                    label="SKU Code"
                                     value={<code className="font-mono text-slate-900">{product.sku}</code>}
                                     icon={<BarcodeIcon className="w-4 h-4 text-slate-500" />}
                                 />
-                                <DetailItem 
-                                    label="Barcode" 
+                                <DetailItem
+                                    label="Barcode"
                                     value={product.barcode ? (
                                         <code className="font-mono text-slate-900">{product.barcode}</code>
                                     ) : 'N/A'}
                                     icon={<BarcodeIcon className="w-4 h-4 text-slate-500" />}
                                 />
-                                <DetailItem 
-                                    label="Supplier" 
+                                <DetailItem
+                                    label="Supplier"
                                     value={
                                         supplier ? (
                                             <div className="flex items-center gap-2">
@@ -518,8 +536,8 @@ const ProductDetailView: React.FC<{
 
                         {/* Attributes Card */}
                         {attributes.length > 0 && (
-                            <InfoCard 
-                                title="Product Attributes" 
+                            <InfoCard
+                                title="Product Attributes"
                                 icon={<TagIcon className="w-5 h-5" />}
                             >
                                 <div className="grid grid-cols-1 gap-3">

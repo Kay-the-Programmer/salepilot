@@ -8,7 +8,6 @@ import CategoryFormModal from '../components/CategoryFormModal';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
-import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { FiFilter, FiGrid, FiList, FiPlusCircle, FiCamera, FiX } from 'react-icons/fi';
@@ -364,42 +363,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return (
             <>
                 <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white">
-                    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
-                        <div className="mx-auto px-4">
-                            <div className="flex items-center h-16">
-                                <button
-                                    onClick={handleBackToList}
-                                    className="mr-3 p-2 rounded-lg hover:bg-gray-100 active:scale-95 transition-transform duration-150"
-                                    aria-label="Back to product list"
-                                >
-                                    <ArrowLeftIcon className="w-5 h-5 text-gray-700" />
-                                </button>
-                                <div className="flex-1 min-w-0 flex items-center justify-between">
-                                    <div className="min-w-0 pr-4">
-                                        <h1 className="text-lg font-semibold text-gray-900 truncate">
-                                            {detailedProduct?.name || 'Product Details'}
-                                        </h1>
-                                        <p className="text-xs text-gray-500 truncate">
-                                            {detailedProduct?.sku || 'Loading...'}
-                                        </p>
-                                    </div>
-                                    {detailedProduct && canManageProducts && (
-                                        <button
-                                            onClick={() => handleOpenEditModal(detailedProduct)}
-                                            className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
-                                            aria-label="Edit product"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                                                <path d="M21.731 2.269a2.625 2.625 0 00-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 000-3.712zM19.513 8.199l-3.712-3.712-12.15 12.15a5.25 5.25 0 00-1.32 2.214l-.8 2.685a.75.75 0 00.933.933l2.685-.8a5.25 5.25 0 002.214-1.32L19.513 8.2z" />
-                                            </svg>
-                                        </button>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </header>
-                    <main className="flex-1 overflow-x-hidden overflow-y-auto">
-                        <div className="w-full max-w-7xl mx-auto px-4 py-6">
+                    <main className="flex-1 overflow-y-auto bg-gray-50/50">
+                        <div className="w-full h-full">
                             {detailIsLoading && (
                                 <div className="flex flex-col items-center justify-center py-20">
                                     <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
@@ -407,7 +372,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                 </div>
                             )}
                             {detailError && (
-                                <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200">
+                                <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200 m-6">
                                     <p className="text-red-600 font-medium">Error loading product</p>
                                     <p className="text-red-500 text-sm mt-1">{detailError}</p>
                                 </div>
@@ -427,6 +392,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                         onPrintLabel={handleOpenPrintModal}
                                         onAdjustStock={handleOpenStockModal}
                                         onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
+                                        onBack={handleBackToList}
                                     />
                                 </div>
                             )}
