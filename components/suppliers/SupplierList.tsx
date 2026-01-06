@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Supplier } from '../../types';
-import PencilIcon from '../icons/PencilIcon';
 import TrashIcon from '../icons/TrashIcon';
 import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
 import UserCircleIcon from '../icons/UserCircleIcon';
@@ -22,14 +21,14 @@ interface SupplierListProps {
     error: string | null;
 }
 
-const SupplierList: React.FC<SupplierListProps> = ({ 
-    suppliers, 
-    onSelectSupplier, 
-    onEdit, 
-    onDelete, 
+const SupplierList: React.FC<SupplierListProps> = ({
+    suppliers,
+    onSelectSupplier,
+    onEdit,
+    onDelete,
     onAddNew,
-    isLoading, 
-    error 
+    isLoading,
+    error
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -71,7 +70,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                 <div className="text-red-500 text-4xl mb-4">⚠️</div>
                 <div className="text-lg font-medium text-gray-900 mb-2">Error Loading Suppliers</div>
                 <div className="text-gray-600 text-center mb-6">{error}</div>
-                <button 
+                <button
                     onClick={() => window.location.reload()}
                     className="px-6 py-3 bg-gray-900 text-white rounded-xl font-medium active:scale-95 transition-transform"
                 >
@@ -107,16 +106,15 @@ const SupplierList: React.FC<SupplierListProps> = ({
     const SupplierCard: React.FC<{ supplier: Supplier }> = ({ supplier }) => (
         <Swipeable
             onSwipeLeft={() => handleSwipe('left', supplier.id)}
-            onSwipeRight={() => {}}
+            onSwipeRight={() => { }}
             leftActionColor="bg-red-500"
             leftActionIcon={<TrashIcon className="w-5 h-5 text-white" />}
         >
-            <div 
-                className={`bg-white rounded-2xl p-4 border border-gray-200 mb-3 transition-all duration-200 ${
-                    selectedId === supplier.id 
-                        ? 'ring-2 ring-gray-900 scale-[0.99]' 
+            <div
+                className={`bg-white rounded-2xl p-4 border border-gray-200 mb-3 transition-all duration-200 ${selectedId === supplier.id
+                        ? 'ring-2 ring-gray-900 scale-[0.99]'
                         : 'hover:shadow-lg active:scale-[0.99]'
-                }`}
+                    }`}
                 onClick={() => handleSupplierClick(supplier.id)}
             >
                 <div className="flex items-start justify-between mb-3">
@@ -136,7 +134,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                     </div>
                     <ChevronRightIcon className="w-5 h-5 text-gray-400" />
                 </div>
-                
+
                 <div className="space-y-2">
                     {supplier.email && (
                         <div className="flex items-center text-sm">
@@ -144,21 +142,21 @@ const SupplierList: React.FC<SupplierListProps> = ({
                             <span className="text-gray-600 truncate">{supplier.email}</span>
                         </div>
                     )}
-                    
+
                     {supplier.phone && (
                         <div className="flex items-center text-sm">
                             <PhoneIcon className="w-4 h-4 text-gray-400 mr-2" />
                             <span className="text-gray-600">{supplier.phone}</span>
                         </div>
                     )}
-                    
+
                     {supplier.paymentTerms && (
                         <div className="inline-block px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-lg mt-2">
                             {supplier.paymentTerms}
                         </div>
                     )}
                 </div>
-                
+
                 <div className="flex items-center justify-end mt-4 pt-3 border-t border-gray-100">
                     <button
                         onClick={(e) => {
@@ -184,7 +182,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
     );
 
     const SupplierGridItem: React.FC<{ supplier: Supplier }> = ({ supplier }) => (
-        <div 
+        <div
             className="bg-white rounded-2xl p-4 border border-gray-200 flex flex-col items-center text-center hover:shadow-lg active:scale-[0.98] transition-all"
             onClick={() => handleSupplierClick(supplier.id)}
         >
@@ -231,7 +229,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                         )}
                     </div>
                 </div>
-                
+
                 {/* Search */}
                 <div className="relative">
                     <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />

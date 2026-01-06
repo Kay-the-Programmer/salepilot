@@ -10,6 +10,7 @@ import QrCodeIcon from '../components/icons/QrCodeIcon';
 import QrScannerModal from '../components/sales/QrScannerModal';
 import ManualCodeModal from '../components/sales/ManualCodeModal';
 import CustomerSelect from '../components/sales/CustomerSelect';
+import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { formatCurrency } from '../utils/currency';
 import DocumentPlusIcon from '../components/icons/DocumentPlusIcon';
 import { buildAssetUrl } from '@/services/api';
@@ -393,6 +394,17 @@ const SalesPage: React.FC<SalesPageProps> = ({
             >
                 <Bars3BottomLeftIcon className="w-6 h-6" />
             </button>
+            <button
+                onClick={() => setShowHeldPanel(true)}
+                className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-all"
+            >
+                <ClockIcon className="w-6 h-6" />
+                {heldSales.length > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">
+                        {heldSales.length}
+                    </span>
+                )}
+            </button>
         </div>
     );
 
@@ -427,6 +439,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             Quick Add
                         </button>
                         <button
+                            onClick={() => setShowHeldPanel(true)}
+                            className="px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 text-sm font-medium rounded-lg border border-amber-200 flex items-center gap-2 hover:border-amber-300 transition-colors relative"
+                        >
+                            <ClockIcon className="w-4 h-4" />
+                            Held Sales
+                            {heldSales.length > 0 && (
+                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                                    {heldSales.length}
+                                </span>
+                            )}
+                        </button>
+                        <button
                             onClick={() => setIsScannerOpen(true)}
                             className="px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 text-sm font-medium rounded-lg border border-emerald-200 flex items-center gap-2 hover:border-emerald-300 transition-colors"
                         >
@@ -438,45 +462,47 @@ const SalesPage: React.FC<SalesPageProps> = ({
             </div>
 
             {/* Quick Actions Panel */}
-            {showQuickActions && (
-                <div className="px-4 py-3 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border-b border-blue-100">
-                    <div className="max-w-7xl mx-auto">
-                        <div className="flex items-center justify-between mb-2">
-                            <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                                <BoltIcon className="w-4 h-4 text-blue-600" />
-                                Quick Add Products
-                            </h3>
-                            <button
-                                onClick={() => setShowQuickActions(false)}
-                                className="text-slate-500 hover:text-slate-700"
-                            >
-                                <XMarkIcon className="w-4 h-4" />
-                            </button>
-                        </div>
-                        <div className="flex gap-2 overflow-x-auto pb-2">
-                            {quickActions.map(product => (
+            {
+                showQuickActions && (
+                    <div className="px-4 py-3 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border-b border-blue-100">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="flex items-center justify-between mb-2">
+                                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                                    <BoltIcon className="w-4 h-4 text-blue-600" />
+                                    Quick Add Products
+                                </h3>
                                 <button
-                                    key={product.id}
-                                    onClick={() => addToCart(product)}
-                                    className="flex-shrink-0 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-2 group"
+                                    onClick={() => setShowQuickActions(false)}
+                                    className="text-slate-500 hover:text-slate-700"
                                 >
-                                    <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded flex items-center justify-center">
-                                        <PlusIcon className="w-3 h-3 text-blue-600" />
-                                    </div>
-                                    <div className="text-left">
-                                        <div className="text-sm font-medium text-slate-900 truncate max-w-[120px]">
-                                            {product.name}
-                                        </div>
-                                        <div className="text-xs text-slate-600">
-                                            {formatCurrency(product.price, storeSettings)}
-                                        </div>
-                                    </div>
+                                    <XMarkIcon className="w-4 h-4" />
                                 </button>
-                            ))}
+                            </div>
+                            <div className="flex gap-2 overflow-x-auto pb-2">
+                                {quickActions.map(product => (
+                                    <button
+                                        key={product.id}
+                                        onClick={() => addToCart(product)}
+                                        className="flex-shrink-0 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-2 group"
+                                    >
+                                        <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded flex items-center justify-center">
+                                            <PlusIcon className="w-3 h-3 text-blue-600" />
+                                        </div>
+                                        <div className="text-left">
+                                            <div className="text-sm font-medium text-slate-900 truncate max-w-[120px]">
+                                                {product.name}
+                                            </div>
+                                            <div className="text-xs text-slate-600">
+                                                {formatCurrency(product.price, storeSettings)}
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <div className="max-w-7xl mx-auto p-4">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -916,50 +942,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 )}
                             </div>
 
-                            {/* Held Sales Panel */}
-                            {heldSales.length > 0 && (
-                                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <div className="p-4 border-b border-slate-100">
-                                        <div className="flex items-center justify-between">
-                                            <h3 className="font-bold text-lg text-slate-900 flex items-center gap-2">
-                                                <ClockIcon className="w-5 h-5 text-amber-600" />
-                                                Held Sales
-                                            </h3>
-                                            <span className="text-sm font-medium text-slate-600">
-                                                {heldSales.length} held
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div className="p-4 space-y-3">
-                                        {heldSales.map((heldCart, index) => (
-                                            <div key={index} className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                                                <div className="flex items-center justify-between mb-2">
-                                                    <span className="text-sm font-medium text-slate-900">
-                                                        Held Sale #{index + 1}
-                                                    </span>
-                                                    <span className="text-sm font-bold text-slate-900">
-                                                        {formatCurrency(
-                                                            heldCart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-                                                            storeSettings
-                                                        )}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center justify-between">
-                                                    <span className="text-xs text-slate-600">
-                                                        {heldCart.length} items
-                                                    </span>
-                                                    <button
-                                                        onClick={() => handleRecallSale(index)}
-                                                        className="px-3 py-1 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 text-sm font-medium rounded-lg hover:from-blue-100 hover:to-blue-200 transition-colors"
-                                                    >
-                                                        Recall
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 </div>
@@ -1263,16 +1245,25 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 onClose={() => setIsManualOpen(false)}
                 onSubmit={handleManualSubmit}
             />
-            {showReceiptModal && lastSale && (
-                <ReceiptModal
-                    isOpen={showReceiptModal}
-                    onClose={() => setShowReceiptModal(false)}
-                    saleData={lastSale}
-                    showSnackbar={showSnackbar}
-                    storeSettings={storeSettings}
-                />
-            )}
-        </div>
+            <HeldSalesModal
+                isOpen={showHeldPanel}
+                onClose={() => setShowHeldPanel(false)}
+                heldSales={heldSales}
+                onRecallSale={handleRecallSale}
+                storeSettings={storeSettings}
+            />
+            {
+                showReceiptModal && lastSale && (
+                    <ReceiptModal
+                        isOpen={showReceiptModal}
+                        onClose={() => setShowReceiptModal(false)}
+                        saleData={lastSale}
+                        showSnackbar={showSnackbar}
+                        storeSettings={storeSettings}
+                    />
+                )
+            }
+        </div >
     );
 };
 

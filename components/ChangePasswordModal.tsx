@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import XMarkIcon from './icons/XMarkIcon';
+import { InputField } from './ui/InputField';
+import { Button } from './ui/Button';
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -63,25 +65,63 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                         <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
                     </div>
                     <div className="px-6 py-4 space-y-4">
-                        {error && <div className="rounded-md bg-red-50 p-4"><p className="text-sm text-red-700">{error}</p></div>}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Current Password</label>
-                            <input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">New Password</label>
-                            <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700">Confirm New Password</label>
-                            <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
-                        </div>
+                        {error && (
+                            <div className="rounded-xl bg-red-50 p-4 border border-red-100">
+                                <div className="flex">
+                                    <div className="flex-shrink-0">
+                                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div className="ml-3">
+                                        <p className="text-sm font-medium text-red-800">{error}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <InputField
+                            label="Current Password"
+                            type="password"
+                            value={currentPassword}
+                            onChange={(e) => setCurrentPassword(e.target.value)}
+                            required
+                            placeholder="Enter current password"
+                        />
+                        <InputField
+                            label="New Password"
+                            type="password"
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            required
+                            placeholder="Min. 8 characters"
+                        />
+                        <InputField
+                            label="Confirm New Password"
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            required
+                            placeholder="Re-enter new password"
+                        />
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="submit" disabled={isSaving} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm disabled:bg-blue-400">
-                            {isSaving ? 'Saving...' : 'Save Password'}
-                        </button>
-                        <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Cancel</button>
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3 border-t">
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            disabled={isSaving}
+                            isLoading={isSaving}
+                            loadingText="Saving..."
+                        >
+                            Save Password
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onClose}
+                            disabled={isSaving}
+                        >
+                            Cancel
+                        </Button>
                     </div>
                 </form>
             </div>

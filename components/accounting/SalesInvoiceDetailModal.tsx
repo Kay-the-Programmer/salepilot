@@ -3,6 +3,7 @@ import { Sale, StoreSettings } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
 import { formatCurrency } from '../../utils/currency';
+import { Button } from '../ui/Button';
 
 interface SalesInvoiceDetailModalProps {
     isOpen: boolean;
@@ -194,18 +195,31 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                         </div>
                     </div>
                 </div>
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end gap-3 border-t">
-                    <button onClick={handlePrint} className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50">
-                        <PrinterIcon className="w-5 h-5" /> Print
-                    </button>
+                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row gap-3 border-t justify-end">
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={handlePrint}
+                        icon={<PrinterIcon className="w-5 h-5" />}
+                    >
+                        Print
+                    </Button>
                     {balanceDue > 0 && (
-                        <button onClick={() => onRecordPayment(invoice)} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700">
+                        <Button
+                            type="button"
+                            variant="success"
+                            onClick={() => onRecordPayment(invoice)}
+                        >
                             Record Payment
-                        </button>
+                        </Button>
                     )}
-                    <button onClick={onClose} className="px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
+                    <Button
+                        type="button"
+                        variant="primary"
+                        onClick={onClose}
+                    >
                         Close
-                    </button>
+                    </Button>
                 </div>
             </div>
         </div>

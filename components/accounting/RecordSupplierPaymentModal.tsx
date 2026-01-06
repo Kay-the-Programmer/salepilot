@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { SupplierInvoice, SupplierPayment, StoreSettings } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
 import { formatCurrency } from '../../utils/currency';
+import { InputField } from '../ui/InputField';
+import { Button } from '../ui/Button';
 
 interface RecordSupplierPaymentModalProps {
     isOpen: boolean;
@@ -56,30 +58,62 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
                     <div className="px-6 py-4 space-y-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Payment Amount</label>
-                                <input type="number" value={amount} onChange={e => setAmount(e.target.value)} max={balanceDue} step="0.01" required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                                <InputField
+                                    label="Payment Amount"
+                                    type="number"
+                                    value={amount}
+                                    onChange={(e) => setAmount(e.target.value)}
+                                    max={balanceDue}
+                                    step="0.01"
+                                    required
+                                />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">Payment Date</label>
-                                <input type="date" value={date} onChange={e => setDate(e.target.value)} required className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                                <InputField
+                                    label="Payment Date"
+                                    type="date"
+                                    value={date}
+                                    onChange={(e) => setDate(e.target.value)}
+                                    required
+                                />
                             </div>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Payment Method</label>
-                            <select value={method} onChange={e => setMethod(e.target.value as any)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3">
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                            <select
+                                value={method}
+                                onChange={e => setMethod(e.target.value as any)}
+                                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                            >
                                 {(storeSettings.supplierPaymentMethods || []).map(pm => (
                                     <option key={pm.id} value={pm.name}>{pm.name}</option>
                                 ))}
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Reference / Check #</label>
-                            <input type="text" value={reference} onChange={e => setReference(e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3" />
+                            <InputField
+                                label="Reference / Check #"
+                                type="text"
+                                value={reference}
+                                onChange={(e) => setReference(e.target.value)}
+                            />
                         </div>
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
-                        <button type="submit" disabled={isInvalid} className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 font-medium text-white hover:bg-blue-700 sm:ml-3 sm:w-auto sm:text-sm disabled:bg-blue-400">Record Payment</button>
-                        <button type="button" onClick={onClose} className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:w-auto sm:text-sm">Cancel</button>
+                    <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-col sm:flex-row-reverse gap-3 border-t">
+                        <Button
+                            type="submit"
+                            variant="primary"
+                            disabled={isInvalid}
+                        >
+                            Record Payment
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onClose}
+                        >
+                            Cancel
+                        </Button>
                     </div>
                 </form>
             </div>
