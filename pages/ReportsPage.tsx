@@ -22,6 +22,7 @@ import FunnelIcon from '../components/icons/FunnelIcon';
 import DocumentArrowDownIcon from '../components/icons/DocumentArrowDownIcon';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
+import GridIcon from '../components/icons/GridIcon';
 
 interface ReportsPageProps {
     storeSettings: StoreSettings;
@@ -219,6 +220,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
     const exportMenuRef = useRef<HTMLDivElement>(null);
     const [showFilters, setShowFilters] = useState(false);
     const [datePreset, setDatePreset] = useState<'7d' | '30d' | 'month' | 'custom'>('30d');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     const [reportData, setReportData] = useState<any | null>(null);
     const [dailySales, setDailySales] = useState<any[] | null>(null);
@@ -730,6 +732,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
     return (
         <div className="flex flex-col h-full w-full bg-gray-50 relative">
+
             {/* Header */}
             <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
                 <div className="flex items-center justify-between">
@@ -745,6 +748,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         )}
                         <div className="ml-2">
                             <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
+                            {/* ... (date preset text) ... */}
                             <div className="text-xs text-gray-500">
                                 {datePreset === 'custom'
                                     ? `${new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
@@ -757,6 +761,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                     </div>
 
                     <div className="flex items-center space-x-2">
+                        {/* Mobile Menu Button - New */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="md:hidden p-2 rounded-lg bg-gray-100 active:bg-gray-200 text-gray-600"
+                            aria-label="Menu"
+                        >
+                            <GridIcon className="w-5 h-5" />
+                        </button>
+
                         <button
                             onClick={() => setShowFilters(true)}
                             className="p-2 rounded-lg bg-gray-100 active:bg-gray-200"
@@ -764,6 +777,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         >
                             <FunnelIcon className="w-5 h-5 text-gray-600" />
                         </button>
+
                         <div className="relative" ref={exportMenuRef}>
                             <button
                                 onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
@@ -796,12 +810,49 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                 </div>
             </div>
 
-            {/* Mobile Tabs */}
-            <MobileTabBar
-                tabs={tabs}
-                activeTab={activeTab}
-                onChange={setActiveTab}
-            />
+            {/* Mobile Tabs - Hidden on Mobile now, visible on Desktop */}
+            <div className="hidden md:block">
+                <MobileTabBar
+                    tabs={tabs}
+                    activeTab={activeTab}
+                    onChange={setActiveTab}
+                />
+            </div>
+
+            {/* Mobile Grid Menu Popup */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 bg-black/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+                    {/* Position slightly below header */}
+                    <div
+                        className="absolute top-[70px] right-4 left-4 bg-white rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <div className="grid grid-cols-3 gap-4">
+                            {tabs.map((tab) => {
+                                const isActive = activeTab === tab.id;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => {
+                                            setActiveTab(tab.id);
+                                            setIsMobileMenuOpen(false);
+                                        }}
+                                        className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
+                                            ? 'bg-gray-900 text-white shadow-lg'
+                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                            }`}
+                                    >
+                                        <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
+                                            {React.cloneElement(tab.icon as React.ReactElement, { className: "w-6 h-6" })}
+                                        </div>
+                                        <span className="text-xs font-semibold">{tab.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Content */}
             <main className="flex-1 overflow-y-auto p-4">
