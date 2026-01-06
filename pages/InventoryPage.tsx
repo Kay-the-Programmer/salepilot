@@ -14,6 +14,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import { FiFilter, FiGrid, FiList, FiPlusCircle, FiCamera, FiX } from 'react-icons/fi';
 import Header from '../components/Header';
 import GridIcon from '../components/icons/GridIcon';
+import ScanBarcodeModal from '../components/ScanBarcodeModal';
 import CubeIcon from '../components/icons/CubeIcon';
 import TagIcon from '../components/icons/TagIcon';
 import PlusIcon from '../components/icons/PlusIcon';
@@ -65,6 +66,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [productToPrint, setProductToPrint] = useState<Product | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+    const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+
 
     // Category Management State
     const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products');
@@ -466,6 +469,27 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     }
                     confirmText="Delete"
                 />
+                <ScanBarcodeModal
+                    isOpen={isScanModalOpen}
+                    onClose={() => setIsScanModalOpen(false)}
+                    onScan={(code) => {
+                        // Try to find product by barcode or SKU
+                        const scannedProduct = products.find(p =>
+                            p.sku === code ||
+                            p.barcode === code ||
+                            (p.variants && p.variants.some(v => v.sku === code))
+                        );
+
+                        if (scannedProduct) {
+                            setSelectedProductId(scannedProduct.id);
+                            setIsScanModalOpen(false);
+                        } else {
+                            setSearchTerm(code);
+                            setIsScanModalOpen(false);
+                            // Optional: Show "Product not found" toast or let the search result show "No products found"
+                        }
+                    }}
+                />
             </>
         )
     }
@@ -530,6 +554,14 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         {activeTab === 'products' ? 'Products' : 'Categories'}
                     </h1>
                     <div className="flex items-center gap-2">
+                        {/* Scan Button */}
+                        <button
+                            onClick={() => setIsScanModalOpen(true)}
+                            className="p-2 rounded-lg text-gray-600 active:bg-gray-100 transition-colors"
+                            aria-label="Scan Barcode"
+                        >
+                            <FiCamera className="w-6 h-6" />
+                        </button>
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -589,13 +621,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
                             <button
                                 onClick={() => {
-                                    // Scan logic placeholder
-                                    setIsSearchActive(true); // Focus search?
-                                    setSearchTerm(''); // Clear?
+                                    setIsScanModalOpen(true);
                                     setIsMobileMenuOpen(false);
                                 }}
-                                className="flex flex-col items-center justify-center p-3 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all cursor-not-allowed opacity-75"
-                                title="Scan feature coming soon"
+                                className="hidden flex-col items-center justify-center p-3 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all"
                             >
                                 <FiCamera className="w-6 h-6 mb-1" />
                                 <span className="text-xs font-semibold">Scan Item</span>

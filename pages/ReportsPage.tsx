@@ -764,7 +764,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         {/* Mobile Menu Button - New */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 rounded-lg bg-gray-100 active:bg-gray-200 text-gray-600"
+                            className="md:hidden p-2 rounded-lg active:bg-gray-200 text-gray-600"
                             aria-label="Menu"
                         >
                             <GridIcon className="w-5 h-5" />
@@ -772,7 +772,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
                         <button
                             onClick={() => setShowFilters(true)}
-                            className="p-2 rounded-lg bg-gray-100 active:bg-gray-200"
+                            className="p-2 rounded-lg active:bg-gray-200"
                             aria-label="Filter options"
                         >
                             <FunnelIcon className="w-5 h-5 text-gray-600" />
@@ -781,7 +781,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         <div className="relative" ref={exportMenuRef}>
                             <button
                                 onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                                className="p-2 rounded-lg bg-gray-100 active:bg-gray-200"
+                                className="p-2 rounded-lg active:bg-gray-200"
                                 aria-label="Export options"
                             >
                                 <ArrowDownTrayIcon className="w-5 h-5 text-gray-600" />
@@ -857,13 +857,74 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
             {/* Content */}
             <main className="flex-1 overflow-y-auto p-4">
                 <div className="max-w-7xl mx-auto w-full">
+                    {/* Desktop Filters */}
+                    {showFilters && (
+                        <div className="hidden md:block mb-6 animate-slideDown">
+                            <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                                <div className="flex flex-col gap-4">
+                                    <div className="flex items-center gap-4">
+                                        <div className="text-sm font-medium text-gray-700">Date Range:</div>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => setDateRange(7, '7d')}
+                                                className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${datePreset === '7d' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                            >
+                                                Last 7 Days
+                                            </button>
+                                            <button
+                                                onClick={() => setDateRange(30, '30d')}
+                                                className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${datePreset === '30d' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                            >
+                                                Last 30 Days
+                                            </button>
+                                            <button
+                                                onClick={setThisMonth}
+                                                className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${datePreset === 'month' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                            >
+                                                This Month
+                                            </button>
+                                            <button
+                                                onClick={() => setDatePreset('custom')}
+                                                className={`px-4 py-2 rounded-xl border text-sm font-medium transition-colors ${datePreset === 'custom' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                            >
+                                                Custom
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {datePreset === 'custom' && (
+                                        <div className="flex items-center gap-4 pt-4 border-t border-gray-100">
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-medium text-gray-600">Start Date</label>
+                                                <input
+                                                    type="date"
+                                                    value={startDate}
+                                                    onChange={(e) => setStartDate(e.target.value)}
+                                                    className="block w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-xs font-medium text-gray-600">End Date</label>
+                                                <input
+                                                    type="date"
+                                                    value={endDate}
+                                                    onChange={(e) => setEndDate(e.target.value)}
+                                                    className="block w-full px-3 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                     {renderContent()}
                 </div>
             </main>
 
             {/* Mobile Filter Modal */}
             {showFilters && (
-                <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 animate-fade-in flex items-end md:items-center justify-center">
+                <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 animate-fade-in flex items-end md:items-center justify-center md:hidden">
                     <div className="bg-white w-full md:w-auto md:min-w-[400px] rounded-t-3xl md:rounded-2xl shadow-2xl animate-slide-up max-h-[85vh] overflow-hidden">
                         <div className="p-4">
                             <div className="flex items-center justify-between mb-6">

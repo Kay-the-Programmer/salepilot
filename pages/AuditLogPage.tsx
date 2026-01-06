@@ -190,9 +190,9 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                 }
             />
 
-            {/* Mobile Filter Panel - Bottom Sheet */}
+            {/* Mobile Filter Panel - Bottom Sheet - Hidden on Desktop */}
             {showFilters && (
-                <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
+                <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4 md:hidden">
                     <div
                         className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
                         onClick={(e) => e.stopPropagation()}
@@ -456,76 +456,78 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                     </div>
 
                     {/* Desktop Filters */}
-                    <div className="hidden md:block mb-6">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                            <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                                    <select
-                                        value={sortBy}
-                                        onChange={e => setSortBy(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    {showFilters && (
+                        <div className="hidden md:block mb-6 animate-slideDown">
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                                        <select
+                                            value={sortBy}
+                                            onChange={e => setSortBy(e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        >
+                                            {SORT_OPTIONS.map(option => (
+                                                <option key={option} value={option}>{option}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">User</label>
+                                        <select
+                                            value={selectedUserId}
+                                            onChange={e => setSelectedUserId(e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        >
+                                            <option value="">All Users</option>
+                                            {users.map(u => (
+                                                <option key={u.id} value={u.id}>{u.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">Action Contains</label>
+                                        <input
+                                            type="text"
+                                            value={actionFilter}
+                                            onChange={e => setActionFilter(e.target.value)}
+                                            placeholder="Search actions..."
+                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                                        <input
+                                            type="date"
+                                            value={startDate}
+                                            onChange={e => setStartDate(e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                                        <input
+                                            type="date"
+                                            value={endDate}
+                                            onChange={e => setEndDate(e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-4">
+                                    <button
+                                        onClick={resetFilters}
+                                        className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
                                     >
-                                        {SORT_OPTIONS.map(option => (
-                                            <option key={option} value={option}>{option}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">User</label>
-                                    <select
-                                        value={selectedUserId}
-                                        onChange={e => setSelectedUserId(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    >
-                                        <option value="">All Users</option>
-                                        {users.map(u => (
-                                            <option key={u.id} value={u.id}>{u.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Action Contains</label>
-                                    <input
-                                        type="text"
-                                        value={actionFilter}
-                                        onChange={e => setActionFilter(e.target.value)}
-                                        placeholder="Search actions..."
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
-                                    <input
-                                        type="date"
-                                        value={startDate}
-                                        onChange={e => setStartDate(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
-                                    <input
-                                        type="date"
-                                        value={endDate}
-                                        onChange={e => setEndDate(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    />
-                                </div>
-                            </div>
-                            <div className="flex justify-between items-center mt-4">
-                                <button
-                                    onClick={resetFilters}
-                                    className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
-                                >
-                                    Reset All Filters
-                                </button>
-                                <div className="text-sm text-gray-500">
-                                    Showing {totalItems} logs
+                                        Reset All Filters
+                                    </button>
+                                    <div className="text-sm text-gray-500">
+                                        Showing {totalItems} logs
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Content Area */}
                     {viewMode === 'list' ? (
