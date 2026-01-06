@@ -924,6 +924,26 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 }
                 confirmText="Delete"
             />
+            <ScanBarcodeModal
+                isOpen={isScanModalOpen}
+                onClose={() => setIsScanModalOpen(false)}
+                onScan={(code) => {
+                    // Try to find product by barcode or SKU
+                    const scannedProduct = products.find(p =>
+                        p.sku === code ||
+                        p.barcode === code ||
+                        (p.variants && p.variants.some(v => v.sku === code))
+                    );
+
+                    if (scannedProduct) {
+                        setSelectedProductId(scannedProduct.id);
+                        setIsScanModalOpen(false);
+                    } else {
+                        setSearchTerm(code);
+                        setIsScanModalOpen(false);
+                    }
+                }}
+            />
         </div >
     );
 };
