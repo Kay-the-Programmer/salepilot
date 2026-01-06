@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, POItem, ReceptionEvent, User, StoreSettings, Account, JournalEntry, JournalEntryLine, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
+import Logo from './assets/output-onlinepngtools (1) (1).png';
 import Sidebar from './components/Sidebar';
 import InventoryPage from './pages/InventoryPage';
 import SalesPage from './pages/SalesPage';
@@ -26,6 +27,8 @@ import SuperAdminPage from './pages/SuperAdminPage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import Bars3Icon from './components/icons/Bars3Icon';
+import MagnifyingGlassIcon from './components/icons/MagnifyingGlassIcon';
+import XMarkIcon from './components/icons/XMarkIcon';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -78,7 +81,9 @@ const App: React.FC = () => {
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Mobile sidebar state
+    // Mobile sidebar state
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isGlobalSearchOpen, setIsGlobalSearchOpen] = useState(false);
 
     // Superadmin mode and store selection
     const [superMode, setSuperMode] = useState<'superadmin' | 'store'>(() => {
@@ -1023,18 +1028,56 @@ const App: React.FC = () => {
             {/* Main content */}
             <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
                 {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
+                {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                 {currentPage !== 'sales' && (
-                    <div className="md:hidden h-12 bg-gray-100 border-b border-gray-200 flex items-center px-3">
-                        <button
-                            onClick={() => setIsSidebarOpen(true)}
-                            className="p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            aria-label="Open menu"
-                            aria-controls="app-sidebar"
-                            aria-expanded={isSidebarOpen}
-                        >
-                            <Bars3Icon className="w-6 h-6" />
-                        </button>
-                        <span className="ml-2 font-semibold text-gray-800">Menu</span>
+                    <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
+                        {isGlobalSearchOpen ? (
+                            <div className="flex items-center w-full animate-fadeIn">
+                                <div className="relative flex-1">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        autoFocus
+                                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                        placeholder="Search..."
+                                    // TODO: wiring up global search functionality
+                                    />
+                                </div>
+                                <button
+                                    onClick={() => setIsGlobalSearchOpen(false)}
+                                    className="ml-3 p-2 text-gray-400 hover:text-gray-500 focus:outline-none"
+                                >
+                                    <span className="sr-only">Close search</span>
+                                    <XMarkIcon className="h-6 w-6" aria-hidden="true" />
+                                </button>
+                            </div>
+                        ) : (
+                            <>
+                                <button
+                                    onClick={() => setIsSidebarOpen(true)}
+                                    className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    aria-label="Open menu"
+                                    aria-controls="app-sidebar"
+                                    aria-expanded={isSidebarOpen}
+                                >
+                                    <Bars3Icon className="w-6 h-6" />
+                                </button>
+
+                                <div className="flex items-center justify-center flex-1">
+                                    <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
+                                </div>
+
+                                <button
+                                    onClick={() => setIsGlobalSearchOpen(true)}
+                                    className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    aria-label="Search"
+                                >
+                                    <MagnifyingGlassIcon className="w-6 h-6" />
+                                </button>
+                            </>
+                        )}
                     </div>
                 )}
                 {renderPage()}
