@@ -9,7 +9,7 @@ import ChevronRightIcon from '../icons/ChevronRightIcon';
 import PlusIcon from '../icons/PlusIcon';
 import SearchIcon from '../icons/SearchIcon';
 import FunnelIcon from '../icons/FunnelIcon';
-import Swipeable from './SwipeAble';
+import Swipeable from './Swipeable';
 
 interface SupplierListProps {
     suppliers: Supplier[];
