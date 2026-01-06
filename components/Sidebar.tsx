@@ -241,19 +241,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                     ref={sidebarRef}
                     className="md:hidden w-full max-w-sm bg-white rounded-3xl shadow-2xl flex flex-col max-h-[85vh] pointer-events-auto animate-fade-in-up mx-4 overflow-hidden"
                 >
-                    {/* Cloud Header Style */}
-                    <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                        <div>
-                            <h2 className="text-lg font-bold text-gray-900">Menu</h2>
-                            <p className="text-xs text-gray-500">SalePilot Apps</p>
-                        </div>
-                        <button
-                            onClick={onMobileClose}
-                            className="p-2 rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200"
-                        >
-                            <XMarkIcon className="w-5 h-5" />
-                        </button>
-                    </div>
 
                     {/* Grid Content */}
                     <div className="flex-1 overflow-y-auto p-4">
