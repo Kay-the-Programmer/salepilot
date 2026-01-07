@@ -22,6 +22,7 @@ import {
     SwatchIcon,
     BellAlertIcon
 } from './icons';
+import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 
 interface SidebarProps {
     currentPage: string;
@@ -58,6 +59,13 @@ const NAV_ITEMS = [
         name: 'Sales History',
         page: 'sales-history',
         icon: ClockIcon,
+        roles: ['admin', 'staff'],
+        badge: null
+    },
+    {
+        name: 'Online Orders',
+        page: 'orders',
+        icon: TruckIcon, // Reusing TruckIcon, reasonable for shipping/orders
         roles: ['admin', 'staff'],
         badge: null
     },
@@ -433,6 +441,27 @@ const Sidebar: React.FC<SidebarProps> = ({
                             </div>
                         </div>
                     </div>
+
+                    {/* Visit Online Store */}
+                    {(selectedStoreId || user.currentStoreId) && (
+                        <a
+                            href={`/shop/${selectedStoreId || user.currentStoreId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`
+                                flex items-center gap-3 px-3 py-3 rounded-xl
+                                text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700
+                                transition-colors duration-200
+                                ${!isExpanded && 'justify-center'}
+                            `}
+                            title={!isExpanded ? 'Visit Online Store' : undefined}
+                        >
+                            <HiOutlineArrowTopRightOnSquare className="w-5 h-5 flex-shrink-0" />
+                            <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                Visit Online Store
+                            </span>
+                        </a>
+                    )}
 
                     {/* Logout Button */}
                     <button

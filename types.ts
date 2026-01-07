@@ -90,6 +90,14 @@ export interface Sale {
     customerName?: string;
     // New fields for invoicing
     paymentStatus: 'paid' | 'unpaid' | 'partially_paid';
+    fulfillmentStatus?: 'pending' | 'fulfilled' | 'shipped' | 'cancelled';
+    channel?: 'pos' | 'online';
+    customerDetails?: {
+        name: string;
+        email?: string;
+        phone?: string;
+        address?: string;
+    };
     amountPaid: number;
     dueDate?: string;
     payments?: Payment[];
