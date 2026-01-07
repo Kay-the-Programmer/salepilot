@@ -5,8 +5,8 @@ import Header from '../components/Header';
 import UserList from '../components/users/UserList';
 import UserFormModal from '../components/users/UserFormModal';
 import UserDetailsView from '../components/users/UserDetailsView';
-import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
-import { SnackbarType } from '../App';
+import PlusIcon from '../components/icons/PlusIcon';
+import { SnackbarType } from '../Dashboard';
 
 interface UsersPageProps {
     users: User[];
@@ -20,7 +20,7 @@ interface UsersPageProps {
 const UsersPage: React.FC<UsersPageProps> = ({ users, onSaveUser, onDeleteUser, showSnackbar, isLoading, error }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState<User | null>(null);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm] = useState('');
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
 
     const handleOpenAddModal = () => {
@@ -46,27 +46,24 @@ const UsersPage: React.FC<UsersPageProps> = ({ users, onSaveUser, onDeleteUser, 
             setSelectedUserId(null);
         }
     };
-    
+
     const handleDeleteUser = (userId: string) => {
         onDeleteUser(userId);
         setSelectedUserId(null); // Go back to list after deletion
     };
-    
+
     const handleSelectUser = (userId: string) => {
         setSelectedUserId(userId);
     };
 
-    const handleBackToList = () => {
-        setSelectedUserId(null);
-    };
 
     const filteredUsers = useMemo(() => users.filter(user =>
         user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     ), [users, searchTerm]);
-    
-    const selectedUser = useMemo(() => 
-        users.find(u => u.id === selectedUserId), 
+
+    const selectedUser = useMemo(() =>
+        users.find(u => u.id === selectedUserId),
         [users, selectedUserId]
     );
 
@@ -76,7 +73,7 @@ const UsersPage: React.FC<UsersPageProps> = ({ users, onSaveUser, onDeleteUser, 
 
                 <Header title={selectedUser.name} />
 
-                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
                     <UserDetailsView
                         user={selectedUser}
                         onEdit={handleOpenEditModal}
@@ -99,10 +96,17 @@ const UsersPage: React.FC<UsersPageProps> = ({ users, onSaveUser, onDeleteUser, 
         <>
             <Header
                 title="User Management"
-                buttonText="Add User"
-                onButtonClick={handleOpenAddModal}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
+                showSearch={false}
+                rightContent={
+                    <button
+                        onClick={handleOpenAddModal}
+                        className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 shadow-lg shadow-blue-500/20 transition-all transform hover:scale-110 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        title="Add User"
+                        aria-label="Add User"
+                    >
+                        <PlusIcon className="w-6 h-6" />
+                    </button>
+                }
             />
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
                 <UserList

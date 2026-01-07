@@ -2,8 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { SupplierInvoice, PurchaseOrder, Supplier } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
+import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
+import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
+import TagIcon from '../icons/TagIcon';
+import CurrencyDollarIcon from '../icons/CurrencyDollarIcon';
+import CalendarIcon from '../icons/CalendarIcon';
 import { InputField } from '../ui/InputField';
-import { Button } from '../ui/Button';
 
 interface SupplierInvoiceFormModalProps {
     isOpen: boolean;
@@ -59,7 +63,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
     const handleSupplierSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedSupplierId(e.target.value);
         const supplier = suppliers.find(s => s.id === e.target.value);
-        setInvoice(prev => ({
+        setInvoice(() => ({
             ...getInitialState(),
             supplierId: supplier?.id,
             supplierName: supplier?.name
@@ -98,70 +102,163 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
-            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
-                <form onSubmit={handleSubmit}>
-                    <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
-                        <h3 className="text-lg font-medium text-gray-900">{invoiceToEdit ? 'Edit' : 'Record'} Supplier Invoice</h3>
-                        <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500"><XMarkIcon className="h-6 w-6" /></button>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            {/* Backdrop with blur */}
+            <div
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+                onClick={onClose}
+            />
+
+            <div className="relative bg-white w-full sm:max-w-xl max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50">
+                <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+                    {/* Header */}
+                    <div className="px-6 py-6 sm:px-8 border-b border-slate-100 flex justify-between items-center bg-white">
+                        <div>
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                                {invoiceToEdit ? 'Edit' : 'Record'} Invoice
+                            </h3>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                                Supplier Accounts Payable
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="p-2.5 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all border border-slate-100 shadow-sm"
+                        >
+                            <XMarkIcon className="h-5 w-5" />
+                        </button>
                     </div>
-                    <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Supplier</label>
-                                <select value={selectedSupplierId} onChange={handleSupplierSelect} required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all">
-                                    <option value="" disabled>-- Select Supplier --</option>
-                                    {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
+
+                    <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-8 space-y-8 custom-scrollbar">
+                        {/* Section: Partnership */}
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                                    <BuildingOfficeIcon className="w-4 h-4" />
+                                </div>
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Partner Intelligence</h4>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Link to Purchase Order</label>
-                                <select name="purchaseOrderId" value={invoice.purchaseOrderId} onChange={handlePOSelect} required className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all" disabled={!selectedSupplierId}>
-                                    <option value="">-- Select PO --</option>
-                                    {availablePOs.map(po => <option key={po.id} value={po.id}>{po.poNumber} - {new Date(po.createdAt).toLocaleDateString()}</option>)}
-                                </select>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Supplier Entity</label>
+                                    <div className="relative">
+                                        <BuildingOfficeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                        <select
+                                            value={selectedSupplierId}
+                                            onChange={handleSupplierSelect}
+                                            required
+                                            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 font-bold shadow-sm"
+                                        >
+                                            <option value="" disabled>Select Supplier</option>
+                                            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Linked PO Reference</label>
+                                    <div className="relative">
+                                        <ClipboardDocumentListIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                        <select
+                                            name="purchaseOrderId"
+                                            value={invoice.purchaseOrderId}
+                                            onChange={handlePOSelect}
+                                            required
+                                            disabled={!selectedSupplierId}
+                                            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 font-bold shadow-sm disabled:bg-slate-50 disabled:text-slate-400"
+                                        >
+                                            <option value="">Select PO Reference</option>
+                                            {availablePOs.map(po => <option key={po.id} value={po.id}>{po.poNumber} — {new Date(po.createdAt).toLocaleDateString()}</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <InputField
-                                label="Supplier's Invoice #"
-                                name="invoiceNumber"
-                                value={invoice.invoiceNumber || ''}
-                                onChange={handleChange}
-                                required
-                            />
-                            <InputField
-                                label="Invoice Amount"
-                                name="amount"
-                                type="number"
-                                value={invoice.amount?.toString() || ''}
-                                onChange={handleChange}
-                                step="0.01"
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <InputField
-                                label="Invoice Date"
-                                name="invoiceDate"
-                                type="date"
-                                value={invoice.invoiceDate || ''}
-                                onChange={handleChange}
-                                required
-                            />
-                            <InputField
-                                label="Due Date"
-                                name="dueDate"
-                                type="date"
-                                value={invoice.dueDate || ''}
-                                onChange={handleChange}
-                                required
-                            />
+
+                        {/* Section: Invoice Identity */}
+                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                            <div className="flex items-center gap-2 mb-2">
+                                <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
+                                    <TagIcon className="w-4 h-4" />
+                                </div>
+                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Invoice Details</h4>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <InputField
+                                    label="External Invoice #"
+                                    name="invoiceNumber"
+                                    value={invoice.invoiceNumber || ''}
+                                    onChange={handleChange}
+                                    required
+                                    placeholder="INV-2024-001"
+                                    icon={<TagIcon className="h-4 w-4" />}
+                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                />
+                                <InputField
+                                    label="Absolute Amount"
+                                    name="amount"
+                                    type="number"
+                                    value={invoice.amount?.toString() || ''}
+                                    onChange={handleChange}
+                                    step="0.01"
+                                    required
+                                    placeholder="0.00"
+                                    icon={<CurrencyDollarIcon className="h-4 w-4" />}
+                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <InputField
+                                    label="Issue Date"
+                                    name="invoiceDate"
+                                    type="date"
+                                    value={invoice.invoiceDate || ''}
+                                    onChange={handleChange}
+                                    required
+                                    icon={<CalendarIcon className="h-4 w-4" />}
+                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                />
+                                <InputField
+                                    label="Maturity (Due) Date"
+                                    name="dueDate"
+                                    type="date"
+                                    value={invoice.dueDate || ''}
+                                    onChange={handleChange}
+                                    required
+                                    icon={<CalendarIcon className="h-4 w-4" />}
+                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                />
+                            </div>
                         </div>
                     </div>
-                    <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t gap-3">
-                        <Button type="submit" disabled={isInvalid} variant="primary">Save Invoice</Button>
-                        <Button type="button" onClick={onClose} variant="secondary">Cancel</Button>
+
+                    {/* Footer */}
+                    <div className="px-6 py-6 sm:px-8 border-t border-slate-100 bg-white sm:flex sm:flex-row-reverse gap-4">
+                        <button
+                            type="submit"
+                            disabled={isInvalid}
+                            className="w-full sm:w-auto px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] font-bold text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                            <ClipboardDocumentListIcon className="w-5 h-5" />
+                            {invoiceToEdit ? 'Finalize Changes' : 'Record Invoice'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white text-slate-600 border border-slate-200 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 transition-all active:scale-[0.98] flex items-center justify-center"
+                        >
+                            Discard
+                        </button>
                     </div>
                 </form>
             </div>

@@ -7,22 +7,17 @@ import CalendarIcon from '../components/icons/CalendarIcon';
 import UserIcon from '../components/icons/UserIcon';
 import SearchIcon from '../components/icons/SearchIcon';
 import ChevronDownIcon from '../components/icons/ChevronDownIcon';
-import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
-import ChevronRightIcon from '../components/icons/ChevronRightIcon';
-import ChevronDoubleLeftIcon from '../components/icons/ChevronDoubleLeftIcon';
-import ChevronDoubleRightIcon from '../components/icons/ChevronDoubleRightIcon';
 import ListIcon from '../components/icons/ListIcon';
 import GridIcon from '../components/icons/GridIcon';
-import SortIcon from '../components/icons/SortIcon';
 import ClockIcon from '../components/icons/ClockIcon';
+import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
+import { InputField } from '../components/ui/InputField';
 
 interface AuditLogPageProps {
     logs: AuditLog[];
     users: User[];
 }
 
-const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
-const DEFAULT_ITEMS_PER_PAGE = 25;
 const SORT_OPTIONS = ['Newest First', 'Oldest First', 'User A-Z', 'Action A-Z'];
 
 const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
@@ -33,14 +28,12 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
     const [showFilters, setShowFilters] = useState(false);
     const [viewMode, setViewMode] = useState<'list' | 'cards'>('list');
     const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(DEFAULT_ITEMS_PER_PAGE);
+    const [itemsPerPage] = useState(25);
     const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
     const [showLogDetail, setShowLogDetail] = useState(false);
     const [sortBy, setSortBy] = useState('Newest First');
-    const [showSortOptions, setShowSortOptions] = useState(false);
 
     const mainContentRef = useRef<HTMLDivElement>(null);
-    const scrollTimeoutRef = useRef<NodeJS.Timeout>();
 
     const filteredLogs = useMemo(() => {
         let filtered = logs.filter(log => {
@@ -118,28 +111,18 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
 
     const activeFilterCount = [startDate, endDate, selectedUserId, actionFilter].filter(Boolean).length;
 
-    const formatDateForDisplay = (dateStr: string) => {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: date.getFullYear() !== new Date().getFullYear() ? 'numeric' : undefined
-        });
-    };
-
     const handleLogClick = (log: AuditLog) => {
         setSelectedLog(log);
         setShowLogDetail(true);
     };
 
     const getActionColor = (action: string) => {
-        if (action.includes('Deleted')) return 'bg-red-100 text-red-800 border-red-200';
-        if (action.includes('Created')) return 'bg-green-100 text-green-800 border-green-200';
-        if (action.includes('Updated')) return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-        if (action.includes('Viewed')) return 'bg-blue-100 text-blue-800 border-blue-200';
-        if (action.includes('Logged')) return 'bg-purple-100 text-purple-800 border-purple-200';
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        if (action.includes('Deleted')) return 'bg-rose-50 text-rose-600 border-rose-100';
+        if (action.includes('Created')) return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+        if (action.includes('Updated')) return 'bg-amber-50 text-amber-600 border-amber-100';
+        if (action.includes('Viewed')) return 'bg-sky-50 text-sky-600 border-sky-100';
+        if (action.includes('Logged')) return 'bg-indigo-50 text-indigo-600 border-indigo-100';
+        return 'bg-slate-50 text-slate-600 border-slate-100';
     };
 
     const getTimeAgo = (timestamp: string) => {
@@ -158,85 +141,60 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 relative overflow-hidden">
+        <div className="flex flex-col h-screen bg-gray-50 overflow-hidden">
             <Header
                 title="Audit Trail"
-                showBackButton={false}
+                showSearch={false}
                 rightContent={
                     <div className="flex items-center gap-2">
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className="relative p-2.5 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            className={`p-2 rounded-lg border transition-colors shadow-sm ${activeFilterCount > 0
+                                ? 'bg-blue-50 border-blue-200 text-blue-600'
+                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                }`}
                         >
-                            <FilterIcon className="w-5 h-5 text-gray-600" />
-                            {activeFilterCount > 0 && (
-                                <span className="absolute -top-1.5 -right-1.5 bg-blue-600 text-white text-xs font-medium rounded-full w-5 h-5 flex items-center justify-center">
-                                    {activeFilterCount}
-                                </span>
-                            )}
+                            <FilterIcon className="w-5 h-5" />
                         </button>
                         <button
                             onClick={() => setViewMode(viewMode === 'list' ? 'cards' : 'list')}
-                            className="p-2.5 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                            aria-label={viewMode === 'list' ? 'Switch to card view' : 'Switch to list view'}
+                            className="p-2 rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 shadow-sm transition-colors"
                         >
-                            {viewMode === 'list' ? (
-                                <GridIcon className="w-5 h-5 text-gray-600" />
-                            ) : (
-                                <ListIcon className="w-5 h-5 text-gray-600" />
-                            )}
+                            {viewMode === 'list' ? <GridIcon className="w-5 h-5" /> : <ListIcon className="w-5 h-5" />}
                         </button>
                     </div>
                 }
             />
 
-            {/* Mobile Filter Panel - Bottom Sheet - Hidden on Desktop */}
+            {/* Filter Panel */}
             {showFilters && (
-                <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4 md:hidden">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
                     <div
-                        className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        {/* Drag handle */}
-                        <div className="sm:hidden pt-3 pb-1 flex justify-center">
-                            <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+                        onClick={() => setShowFilters(false)}
+                    />
+                    <div className="relative bg-white w-full sm:max-w-md max-h-[90vh] sm:rounded-2xl rounded-t-2xl shadow-xl overflow-hidden flex flex-col animate-fade-in-up">
+                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                            <h3 className="text-lg font-bold text-gray-900">Filter History</h3>
+                            <button
+                                onClick={() => setShowFilters(false)}
+                                className="p-2 rounded-lg hover:bg-gray-100 text-gray-400"
+                            >
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
                         </div>
 
-                        {/* Header */}
-                        <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h3 className="text-xl font-semibold text-gray-900">Filters</h3>
-                                    <p className="text-sm text-gray-500">Refine audit log results</p>
-                                </div>
-                                <button
-                                    onClick={() => setShowFilters(false)}
-                                    className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
-                                >
-                                    <XMarkIcon className="w-6 h-6" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Filter content */}
-                        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 space-y-6">
-                            {/* Sort Options */}
+                        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-                                    <SortIcon className="w-4 h-4" />
-                                    Sort By
-                                </label>
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Sort Order</label>
                                 <div className="grid grid-cols-2 gap-2">
                                     {SORT_OPTIONS.map(option => (
                                         <button
                                             key={option}
-                                            onClick={() => {
-                                                setSortBy(option);
-                                                setShowSortOptions(false);
-                                            }}
-                                            className={`px-4 py-2.5 rounded-xl border-2 text-sm font-medium transition-all ${sortBy === option
+                                            onClick={() => setSortBy(option)}
+                                            className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${sortBy === option
                                                 ? 'border-blue-500 bg-blue-50 text-blue-700'
-                                                : 'border-gray-200 text-gray-700 hover:border-gray-300 hover:bg-gray-50'
+                                                : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
                                                 }`}
                                         >
                                             {option}
@@ -245,87 +203,70 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                                 </div>
                             </div>
 
-                            {/* User Filter */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                    <UserIcon className="w-4 h-4" />
-                                    User
-                                </label>
-                                <div className="relative">
-                                    <select
-                                        value={selectedUserId}
-                                        onChange={e => setSelectedUserId(e.target.value)}
-                                        className="w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
-                                    >
-                                        <option value="">All Users</option>
-                                        {users.map(u => (
-                                            <option key={u.id} value={u.id}>{u.name}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                            <div className="space-y-4">
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider">Filters</label>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-xs font-medium text-gray-600 mb-1.5 ml-1">Personnel</label>
+                                        <div className="relative">
+                                            <UserIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                            <select
+                                                value={selectedUserId}
+                                                onChange={e => setSelectedUserId(e.target.value)}
+                                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm font-medium text-gray-900 appearance-none"
+                                            >
+                                                <option value="">All Personnel</option>
+                                                {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                                            </select>
+                                            <ChevronDownIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                                        </div>
+                                    </div>
+
+                                    <InputField
+                                        label="Action Scan"
+                                        value={actionFilter}
+                                        onChange={e => setActionFilter(e.target.value)}
+                                        placeholder="Search activities..."
+                                        icon={<SearchIcon className="w-4 h-4" />}
+                                        className="rounded-xl border-gray-200"
+                                    />
                                 </div>
                             </div>
 
-                            {/* Action Filter */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                    <SearchIcon className="w-4 h-4" />
-                                    Action Contains
-                                </label>
-                                <input
-                                    type="text"
-                                    value={actionFilter}
-                                    onChange={e => setActionFilter(e.target.value)}
-                                    placeholder="e.g., 'Product', 'Sale', 'User'"
-                                    className="w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                />
-                            </div>
-
-                            {/* Date Range */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                    <CalendarIcon className="w-4 h-4" />
-                                    Date Range
-                                </label>
+                                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Date Range</label>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-2">From Date</label>
-                                        <input
-                                            type="date"
-                                            value={startDate}
-                                            onChange={e => setStartDate(e.target.value)}
-                                            className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs text-gray-500 mb-2">To Date</label>
-                                        <input
-                                            type="date"
-                                            value={endDate}
-                                            onChange={e => setEndDate(e.target.value)}
-                                            className="w-full px-3 py-2.5 text-sm border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
+                                    <InputField
+                                        label="From"
+                                        type="date"
+                                        value={startDate}
+                                        onChange={e => setStartDate(e.target.value)}
+                                        className="rounded-xl border-gray-200"
+                                    />
+                                    <InputField
+                                        label="To"
+                                        type="date"
+                                        value={endDate}
+                                        onChange={e => setEndDate(e.target.value)}
+                                        className="rounded-xl border-gray-200"
+                                    />
                                 </div>
                             </div>
                         </div>
 
-                        {/* Action buttons */}
-                        <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={resetFilters}
-                                    className="flex-1 px-4 py-3.5 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 active:bg-gray-100 transition-colors"
-                                >
-                                    Reset All
-                                </button>
-                                <button
-                                    onClick={() => setShowFilters(false)}
-                                    className="flex-1 px-4 py-3.5 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
-                                >
-                                    Apply Filters
-                                </button>
-                            </div>
+                        <div className="px-6 py-4 border-t border-gray-100 bg-white flex gap-3">
+                            <button
+                                onClick={resetFilters}
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-all"
+                            >
+                                Reset
+                            </button>
+                            <button
+                                onClick={() => setShowFilters(false)}
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700 transition-all shadow-md"
+                            >
+                                Apply
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -333,73 +274,69 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
 
             {/* Log Detail Modal */}
             {showLogDetail && selectedLog && (
-                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4">
+                <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
                     <div
-                        className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-h-[85vh] sm:max-w-md flex flex-col shadow-2xl"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="sm:hidden pt-3 pb-1 flex justify-center">
-                            <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                        className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity"
+                        onClick={() => setShowLogDetail(false)}
+                    />
+                    <div className="relative bg-white w-full sm:max-w-md max-h-[90vh] sm:rounded-2xl rounded-t-2xl shadow-xl overflow-hidden flex flex-col animate-fade-in-up">
+                        <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                            <h3 className="text-lg font-bold text-gray-900">Log Details</h3>
+                            <button
+                                onClick={() => setShowLogDetail(false)}
+                                className="p-2 rounded-lg hover:bg-gray-100 text-gray-400"
+                            >
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
                         </div>
 
-                        <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-xl font-semibold text-gray-900">Log Details</h3>
-                                <button
-                                    onClick={() => setShowLogDetail(false)}
-                                    className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full"
-                                >
-                                    <XMarkIcon className="w-6 h-6" />
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
-                            <div className="space-y-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <span className="text-blue-600 font-semibold text-lg">
-                                            {selectedLog.userName.charAt(0).toUpperCase()}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 className="font-semibold text-gray-900">{selectedLog.userName}</h4>
-                                        <p className="text-sm text-gray-500">{selectedLog.userId}</p>
-                                    </div>
+                        <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xl">
+                                    {selectedLog.userName.charAt(0).toUpperCase()}
                                 </div>
-
-                                <div className="bg-gray-50 rounded-xl p-4">
-                                    <span className={`inline-block px-3 py-1.5 rounded-full text-sm font-medium border ${getActionColor(selectedLog.action)}`}>
-                                        {selectedLog.action}
-                                    </span>
-                                </div>
-
                                 <div>
-                                    <h5 className="text-sm font-medium text-gray-700 mb-2">Details</h5>
-                                    <div className="bg-gray-50 rounded-xl p-4">
-                                        <p className="text-gray-700 whitespace-pre-wrap">{selectedLog.details}</p>
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="bg-blue-50 rounded-xl p-4">
-                                        <p className="text-xs text-blue-600 font-medium mb-1">Date</p>
-                                        <p className="text-sm text-gray-900">
-                                            {new Date(selectedLog.timestamp).toLocaleDateString()}
-                                        </p>
-                                    </div>
-                                    <div className="bg-blue-50 rounded-xl p-4">
-                                        <p className="text-xs text-blue-600 font-medium mb-1">Time</p>
-                                        <p className="text-sm text-gray-900">
-                                            {new Date(selectedLog.timestamp).toLocaleTimeString([], {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                second: '2-digit'
-                                            })}
-                                        </p>
-                                    </div>
+                                    <h4 className="font-bold text-gray-900">{selectedLog.userName}</h4>
+                                    <p className="text-xs text-gray-500">ID: {selectedLog.userId.slice(0, 8)}</p>
                                 </div>
                             </div>
+
+                            <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
+                                <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border mb-3 ${getActionColor(selectedLog.action)}`}>
+                                    {selectedLog.action}
+                                </span>
+                                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+                                    {selectedLog.details}
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                        <CalendarIcon className="w-3 h-3" /> Date
+                                    </p>
+                                    <p className="text-sm font-bold text-gray-900">
+                                        {new Date(selectedLog.timestamp).toLocaleDateString(undefined, { dateStyle: 'medium' })}
+                                    </p>
+                                </div>
+                                <div className="p-4 bg-white border border-gray-100 rounded-xl shadow-sm">
+                                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1.5">
+                                        <ClockIcon className="w-3 h-3" /> Time
+                                    </p>
+                                    <p className="text-sm font-bold text-gray-900">
+                                        {new Date(selectedLog.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-4 border-t border-gray-100 bg-white">
+                            <button
+                                onClick={() => setShowLogDetail(false)}
+                                className="w-full py-3 rounded-xl bg-gray-900 text-white font-bold text-sm hover:bg-gray-800 transition-all shadow-md"
+                            >
+                                Close
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -407,397 +344,182 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
 
             <main
                 ref={mainContentRef}
-                className="flex-1 overflow-x-hidden overflow-y-auto scroll-smooth"
+                className="flex-1 overflow-y-auto bg-gray-50 smooth-scroll"
             >
-                <div className="p-4 md:p-6">
-                    {/* Mobile Summary Bar */}
-                    <div className="md:hidden mb-4">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-                            <div className="flex items-center justify-between mb-3">
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Audit Logs</h3>
-                                    <p className="text-sm text-gray-500">
-                                        {totalItems} total • {activeFilterCount} filter{activeFilterCount !== 1 ? 's' : ''} active
-                                    </p>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <button
-                                        onClick={() => setShowFilters(true)}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-xl border border-gray-200 hover:bg-gray-50 active:bg-gray-100"
-                                    >
-                                        <FilterIcon className="w-4 h-4 text-gray-600" />
-                                        <span className="text-sm font-medium">Filter</span>
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Quick Info Bar */}
-                            <div className="grid grid-cols-3 gap-3 text-center">
-                                <div className="bg-blue-50 rounded-lg p-2">
-                                    <p className="text-xs text-blue-600 font-medium">Showing</p>
-                                    <p className="text-sm font-semibold text-gray-900">
-                                        {paginatedLogs.length}
-                                    </p>
-                                </div>
-                                <div className="bg-green-50 rounded-lg p-2">
-                                    <p className="text-xs text-green-600 font-medium">Page</p>
-                                    <p className="text-sm font-semibold text-gray-900">
-                                        {currentPage}/{totalPages}
-                                    </p>
-                                </div>
-                                <div className="bg-purple-50 rounded-lg p-2">
-                                    <p className="text-xs text-purple-600 font-medium">Sorted By</p>
-                                    <p className="text-sm font-semibold text-gray-900 truncate">
-                                        {sortBy.split(' ')[0]}
-                                    </p>
-                                </div>
-                            </div>
+                <div className="p-4 md:p-8 max-w-7xl mx-auto">
+                    {/* Page Info */}
+                    <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                        <div>
+                            <h2 className="text-2xl font-bold text-gray-900">History Log</h2>
+                            <p className="text-sm text-gray-500 mt-1">
+                                {totalItems} total events recorded
+                            </p>
                         </div>
+                        {activeFilterCount > 0 && (
+                            <button
+                                onClick={resetFilters}
+                                className="text-xs font-semibold text-blue-600 px-3 py-1.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+                            >
+                                Clear all filters
+                            </button>
+                        )}
                     </div>
 
-                    {/* Desktop Filters */}
-                    {showFilters && (
-                        <div className="hidden md:block mb-6 animate-slideDown">
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
-                                <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
-                                        <select
-                                            value={sortBy}
-                                            onChange={e => setSortBy(e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        >
-                                            {SORT_OPTIONS.map(option => (
-                                                <option key={option} value={option}>{option}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">User</label>
-                                        <select
-                                            value={selectedUserId}
-                                            onChange={e => setSelectedUserId(e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        >
-                                            <option value="">All Users</option>
-                                            {users.map(u => (
-                                                <option key={u.id} value={u.id}>{u.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Action Contains</label>
-                                        <input
-                                            type="text"
-                                            value={actionFilter}
-                                            onChange={e => setActionFilter(e.target.value)}
-                                            placeholder="Search actions..."
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">From Date</label>
-                                        <input
-                                            type="date"
-                                            value={startDate}
-                                            onChange={e => setStartDate(e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">To Date</label>
-                                        <input
-                                            type="date"
-                                            value={endDate}
-                                            onChange={e => setEndDate(e.target.value)}
-                                            className="w-full px-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-4">
-                                    <button
-                                        onClick={resetFilters}
-                                        className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50"
-                                    >
-                                        Reset All Filters
-                                    </button>
-                                    <div className="text-sm text-gray-500">
-                                        Showing {totalItems} logs
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Content Area */}
-                    {viewMode === 'list' ? (
-                        // List View
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                            {/* Mobile List View */}
-                            <div className="md:hidden divide-y divide-gray-100">
-                                {paginatedLogs.map(log => (
-                                    <div
-                                        key={log.id}
-                                        className="p-4 active:bg-gray-50 transition-colors"
-                                        onClick={() => handleLogClick(log)}
-                                    >
-                                        <div className="flex items-start gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                                                <span className="text-blue-600 font-semibold">
-                                                    {log.userName.charAt(0).toUpperCase()}
-                                                </span>
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <h4 className="font-semibold text-gray-900 truncate">
-                                                        {log.userName}
-                                                    </h4>
-                                                    <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getActionColor(log.action)}`}>
-                                                        {log.action}
-                                                    </span>
-                                                </div>
-                                                <p className="text-sm text-gray-600 line-clamp-2 mb-2">
-                                                    {log.details}
-                                                </p>
-                                                <div className="flex items-center gap-3 text-xs text-gray-500">
-                                                    <span className="flex items-center gap-1">
-                                                        <ClockIcon className="w-3 h-3" />
-                                                        {getTimeAgo(log.timestamp)}
-                                                    </span>
-                                                    <span>
-                                                        {new Date(log.timestamp).toLocaleDateString()}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Desktop Table */}
-                            <div className="hidden md:block overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                                                User
-                                            </th>
-                                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                                                Action
-                                            </th>
-                                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                                                Details
-                                            </th>
-                                            <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
-                                                Time
-                                            </th>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        {viewMode === 'list' ? (
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left border-collapse">
+                                    <thead>
+                                        <tr className="bg-gray-50">
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">Personnel</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">Action</th>
+                                            <th className="hidden md:table-cell px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">Details</th>
+                                            <th className="px-6 py-4 text-xs font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100 text-right">Time</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-100">
+                                    <tbody className="divide-y divide-gray-50">
                                         {paginatedLogs.map(log => (
                                             <tr
                                                 key={log.id}
-                                                className="hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
                                                 onClick={() => handleLogClick(log)}
+                                                className="group hover:bg-gray-50/50 transition-colors cursor-pointer"
                                             >
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center">
-                                                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                                                            <span className="text-blue-600 font-semibold">
-                                                                {log.userName.charAt(0).toUpperCase()}
-                                                            </span>
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-9 h-9 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                                            {log.userName.charAt(0).toUpperCase()}
                                                         </div>
-                                                        <div>
-                                                            <div className="font-medium text-gray-900">{log.userName}</div>
-                                                            <div className="text-sm text-gray-500">{log.userId}</div>
-                                                        </div>
+                                                        <span className="text-sm font-semibold text-gray-900">{log.userName}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`px-3 py-1.5 rounded-full text-sm font-medium border ${getActionColor(log.action)}`}>
+                                                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${getActionColor(log.action)}`}>
                                                         {log.action}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="text-gray-600 max-w-md line-clamp-2">
+                                                <td className="hidden md:table-cell px-6 py-4">
+                                                    <p className="text-sm text-gray-600 line-clamp-1 max-w-sm">
                                                         {log.details}
-                                                    </div>
+                                                    </p>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-gray-900 font-medium">
-                                                        {getTimeAgo(log.timestamp)}
-                                                    </div>
-                                                    <div className="text-xs text-gray-500">
-                                                        {new Date(log.timestamp).toLocaleDateString()}
-                                                    </div>
+                                                <td className="px-6 py-4 text-right whitespace-nowrap">
+                                                    <p className="text-sm font-semibold text-gray-900">{getTimeAgo(log.timestamp)}</p>
+                                                    <p className="text-[10px] text-gray-400 font-medium">
+                                                        {new Date(log.timestamp).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                    </p>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
-
-                            {paginatedLogs.length === 0 && (
-                                <div className="text-center py-16 px-4">
-                                    <div className="mx-auto w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-5">
-                                        <SearchIcon className="w-10 h-10 text-gray-400" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">No logs found</h3>
-                                    <p className="text-gray-500 max-w-sm mx-auto mb-6">
-                                        {activeFilterCount > 0
-                                            ? "Try adjusting your filters or search criteria."
-                                            : "Audit logs will appear here as actions are performed."}
-                                    </p>
-                                    {activeFilterCount > 0 && (
-                                        <button
-                                            onClick={resetFilters}
-                                            className="px-6 py-3 rounded-xl bg-blue-600 text-white font-semibold hover:bg-blue-700 active:bg-blue-800"
-                                        >
-                                            Clear All Filters
-                                        </button>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        // Card View
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {paginatedLogs.map(log => (
-                                <div
-                                    key={log.id}
-                                    className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 hover:shadow-md active:shadow-lg active:scale-[0.98] transition-all cursor-pointer"
-                                    onClick={() => handleLogClick(log)}
-                                >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                                                <span className="text-blue-600 font-semibold text-lg">
+                        ) : (
+                            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {paginatedLogs.map(log => (
+                                    <div
+                                        key={log.id}
+                                        onClick={() => handleLogClick(log)}
+                                        className="p-5 bg-white border border-gray-200 rounded-2xl hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer group animate-fade-in"
+                                    >
+                                        <div className="flex items-start justify-between mb-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-xl bg-gray-100 text-gray-500 flex items-center justify-center font-bold group-hover:bg-blue-600 group-hover:text-white transition-all">
                                                     {log.userName.charAt(0).toUpperCase()}
-                                                </span>
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-bold text-gray-900 text-sm">{log.userName}</h4>
+                                                    <p className="text-[10px] text-gray-400 font-bold uppercase">Activity</p>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <h4 className="font-semibold text-gray-900">{log.userName}</h4>
-                                                <p className="text-sm text-gray-500">{log.userId}</p>
-                                            </div>
+                                            <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider border ${getActionColor(log.action)}`}>
+                                                {log.action}
+                                            </span>
                                         </div>
-                                        <ChevronDownIcon className="w-5 h-5 text-gray-400 transform rotate-90" />
+                                        <p className="text-sm text-gray-600 line-clamp-2 mb-4 leading-relaxed">
+                                            {log.details}
+                                        </p>
+                                        <div className="flex items-center justify-between pt-3 border-t border-gray-50">
+                                            <div className="flex items-center gap-1.5">
+                                                <ClockIcon className="w-3.5 h-3.5 text-gray-300" />
+                                                <span className="text-[11px] font-bold text-gray-900">{getTimeAgo(log.timestamp)}</span>
+                                            </div>
+                                            <p className="text-[10px] text-gray-400 font-bold">
+                                                {new Date(log.timestamp).toLocaleDateString()}
+                                            </p>
+                                        </div>
                                     </div>
+                                ))}
+                            </div>
+                        )}
 
-                                    <div className="mb-4">
-                                        <span className={`inline-block px-3 py-1.5 rounded-full text-sm font-medium border ${getActionColor(log.action)}`}>
-                                            {log.action}
-                                        </span>
-                                    </div>
-
-                                    <div className="text-sm text-gray-600 line-clamp-3 mb-4">
-                                        {log.details}
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-100 text-sm text-gray-500">
-                                        <span className="flex items-center gap-1">
-                                            <ClockIcon className="w-4 h-4" />
-                                            {getTimeAgo(log.timestamp)}
-                                        </span>
-                                        <span>
-                                            {new Date(log.timestamp).toLocaleDateString()}
-                                        </span>
-                                    </div>
+                        {paginatedLogs.length === 0 && (
+                            <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+                                <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
+                                    <ShieldCheckIcon className="w-8 h-8 text-gray-200" />
                                 </div>
-                            ))}
-                        </div>
-                    )}
+                                <h3 className="text-lg font-bold text-gray-900">No events found</h3>
+                                <p className="text-sm text-gray-500 max-w-xs mt-1">
+                                    Try adjusting your filters to find what you're looking for.
+                                </p>
+                                {activeFilterCount > 0 && (
+                                    <button
+                                        onClick={resetFilters}
+                                        className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-md"
+                                    >
+                                        Clear History Filters
+                                    </button>
+                                )}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-4">
-                            <div className="flex flex-col gap-4">
-                                {/* Page info */}
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">
-                                            Page {currentPage} of {totalPages}
-                                        </p>
-                                        <p className="text-xs text-gray-500">
-                                            {totalItems} total items
-                                        </p>
-                                    </div>
-                                    <select
-                                        value={itemsPerPage}
-                                        onChange={(e) => {
-                                            setItemsPerPage(Number(e.target.value));
-                                            setCurrentPage(1);
-                                        }}
-                                        className="px-3 py-1.5 rounded-lg border border-gray-300 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    >
-                                        {ITEMS_PER_PAGE_OPTIONS.map(option => (
-                                            <option key={option} value={option}>
-                                                {option} per page
-                                            </option>
-                                        ))}
-                                    </select>
+                        <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+                            <p className="text-xs text-gray-500 font-medium order-2 sm:order-1">
+                                Showing page <span className="text-gray-900 font-bold">{currentPage}</span> of <span className="text-gray-900 font-bold">{totalPages}</span>
+                            </p>
+                            <div className="flex items-center gap-2 order-1 sm:order-2">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="px-4 py-2 rounded-xl border border-gray-200 bg-white text-gray-600 font-bold text-xs hover:bg-gray-50 disabled:opacity-30 disabled:hover:bg-white transition-all shadow-sm"
+                                >
+                                    Previous
+                                </button>
+
+                                <div className="hidden sm:flex items-center gap-1">
+                                    {[...Array(totalPages)].map((_, i) => {
+                                        const page = i + 1;
+                                        if (totalPages <= 7 || page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                                            return (
+                                                <button
+                                                    key={page}
+                                                    onClick={() => handlePageChange(page)}
+                                                    className={`w-9 h-9 rounded-lg font-bold text-xs transition-all ${currentPage === page
+                                                        ? 'bg-blue-600 text-white shadow-md'
+                                                        : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                                                        }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            );
+                                        }
+                                        if (page === 2 || page === totalPages - 1) {
+                                            return <span key={page} className="text-gray-300 px-1">...</span>;
+                                        }
+                                        return null;
+                                    })}
                                 </div>
 
-                                {/* Page navigation */}
-                                <div className="flex items-center justify-between gap-2">
-                                    <button
-                                        onClick={() => handlePageChange(1)}
-                                        disabled={currentPage === 1}
-                                        className="flex-1 p-3 rounded-xl border border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 flex items-center justify-center gap-2"
-                                    >
-                                        <ChevronDoubleLeftIcon className="w-5 h-5" />
-                                        <span className="text-sm font-medium">First</span>
-                                    </button>
-
-                                    <button
-                                        onClick={() => handlePageChange(currentPage - 1)}
-                                        disabled={currentPage === 1}
-                                        className="flex-1 p-3 rounded-xl border border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 flex items-center justify-center gap-2"
-                                    >
-                                        <ChevronLeftIcon className="w-5 h-5" />
-                                        <span className="text-sm font-medium">Prev</span>
-                                    </button>
-
-                                    <div className="px-3 py-2 rounded-lg bg-blue-50">
-                                        <span className="text-blue-600 font-semibold">{currentPage}</span>
-                                    </div>
-
-                                    <button
-                                        onClick={() => handlePageChange(currentPage + 1)}
-                                        disabled={currentPage === totalPages}
-                                        className="flex-1 p-3 rounded-xl border border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 flex items-center justify-center gap-2"
-                                    >
-                                        <span className="text-sm font-medium">Next</span>
-                                        <ChevronRightIcon className="w-5 h-5" />
-                                    </button>
-
-                                    <button
-                                        onClick={() => handlePageChange(totalPages)}
-                                        disabled={currentPage === totalPages}
-                                        className="flex-1 p-3 rounded-xl border border-gray-300 hover:bg-gray-50 active:bg-gray-100 disabled:opacity-30 flex items-center justify-center gap-2"
-                                    >
-                                        <span className="text-sm font-medium">Last</span>
-                                        <ChevronDoubleRightIcon className="w-5 h-5" />
-                                    </button>
-                                </div>
-
-                                {/* Page input for desktop */}
-                                <div className="hidden sm:flex items-center justify-center gap-3">
-                                    <span className="text-sm text-gray-600">Go to page:</span>
-                                    <input
-                                        type="number"
-                                        min="1"
-                                        max={totalPages}
-                                        value={currentPage}
-                                        onChange={(e) => {
-                                            const page = parseInt(e.target.value);
-                                            if (!isNaN(page) && page >= 1 && page <= totalPages) {
-                                                handlePageChange(page);
-                                            }
-                                        }}
-                                        className="w-16 p-2 rounded-lg border border-gray-300 text-center text-sm"
-                                    />
-                                    <span className="text-sm text-gray-600">of {totalPages}</span>
-                                </div>
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="px-4 py-2 rounded-xl bg-blue-600 text-white font-bold text-xs hover:bg-blue-700 disabled:opacity-30 disabled:hover:bg-blue-600 transition-all shadow-md"
+                                >
+                                    Next
+                                </button>
                             </div>
                         </div>
                     )}
