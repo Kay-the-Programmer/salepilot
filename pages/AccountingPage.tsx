@@ -577,15 +577,43 @@ const JournalView: React.FC<{
 
     const enrichedEntries = useMemo(() => {
         return entries.map(entry => {
-            if (entry.source?.type === 'sale' && entry.source.id && entry.description.includes('undefined')) {
+            const isUndefinedDesc = entry.description.includes('undefined');
+
+            if (!isUndefinedDesc) return entry;
+
+            let cName = '';
+
+            if (entry.source?.type === 'sale' && entry.source.id) {
                 const sale = sales.find(s => s.transactionId === entry.source.id);
                 if (sale) {
-                    const cName = sale.customerName || (sale.customerId ? customers.find(c => c.id === sale.customerId)?.name : '');
-                    if (cName) {
-                        return { ...entry, description: entry.description.replace('undefined', cName) };
-                    }
+                    cName = sale.customerName ||
+                        (sale.customerId ? customers.find(c => c.id === sale.customerId)?.name : undefined) ||
+                        'Walk-in Customer';
+                }
+            } else if (entry.source?.type === 'payment' && entry.source.id) {
+                // For payments, the ID might be the payment ID or the Sale ID depending on implementation.
+                // But usually payments are children of sales.
+                // Let's try to find a sale that has this payment ID.
+                const sale = sales.find(s => s.payments?.some(p => p.id === entry.source.id)) ||
+                    sales.find(s => s.transactionId === entry.source.id); // Fallback if source.id is actually saleId
+
+                if (sale) {
+                    cName = sale.customerName ||
+                        (sale.customerId ? customers.find(c => c.id === sale.customerId)?.name : undefined) ||
+                        'Walk-in Customer';
                 }
             }
+
+            if (cName) {
+                let newDesc = entry.description;
+                if (newDesc.includes('customer - ID undefined')) {
+                    newDesc = newDesc.replace('customer - ID undefined', cName);
+                } else {
+                    newDesc = newDesc.replace('undefined', cName);
+                }
+                return { ...entry, description: newDesc };
+            }
+
             return entry;
         });
     }, [entries, sales, customers]);
@@ -885,11 +913,11 @@ const CustomerStatementModal: React.FC<{
 const RecordPaymentModal: React.FC<{
     isOpen: boolean;
     onClose: () => void;
-    invoice: Sale;
-    onSave: (saleId: string, payment: Omit<Payment, 'id'>) => void;
     storeSettings: StoreSettings;
-}> = ({ isOpen, onClose, invoice, onSave, storeSettings }) => {
-    const balanceDue = invoice.total - invoice.amountPaid;
+    customerName?: string;
+}> = ({ isOpen, onClose, invoice, onSave, storeSettings, customerName }) => {
+    const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
+    const balanceDue = Math.max(0, invoice.total - calculatedAmountPaid);
     const [amount, setAmount] = useState(balanceDue.toFixed(2));
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [method, setMethod] = useState<string>(storeSettings?.paymentMethods?.[0]?.id || 'cash');
@@ -947,7 +975,7 @@ const RecordPaymentModal: React.FC<{
                                 </div>
                                 <div className="text-right">
                                     <div className="text-sm text-blue-700">Customer</div>
-                                    <div className="font-medium text-blue-900">{invoice.customerName || 'Unknown'}</div>
+                                    <div className="font-medium text-blue-900">{customerName || invoice.customerName || 'Unknown'}</div>
                                 </div>
                             </div>
                         </div>
@@ -1028,15 +1056,10 @@ const ARManagementView: React.FC<{
     const [selectedInvoice, setSelectedInvoice] = useState<Sale | null>(null);
     const [isStatementModalOpen, setIsStatementModalOpen] = useState(false);
     const [selectedCustomerForStatement, setSelectedCustomerForStatement] = useState<Customer | null>(null);
-    const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [statusFilter, setStatusFilter] = useState<string>('open');
 
-    const openInvoices = useMemo(() => {
-        const isPaid = (s: Sale) => {
-            const balanceCents = Math.round((s.total - s.amountPaid) * 100);
-            return s.paymentStatus === 'paid' || balanceCents <= 0;
-        };
+    const sortedInvoices = useMemo(() => {
         return sales
-            .filter(s => !isPaid(s))
             .sort((a, b) => new Date(a.dueDate || 0).getTime() - new Date(b.dueDate || 0).getTime());
     }, [sales]);
 
@@ -1049,16 +1072,38 @@ const ARManagementView: React.FC<{
     }, [customers]);
 
     const filteredInvoices = useMemo(() => {
-        if (statusFilter === 'all') return openInvoices;
-        if (statusFilter === 'overdue') {
-            return openInvoices.filter(invoice => invoice.dueDate && new Date(invoice.dueDate) < new Date());
+        const isPaid = (s: Sale) => {
+            const calculatedAmountPaid = s.payments?.reduce((sum, p) => sum + p.amount, 0) ?? s.amountPaid;
+            const balanceCents = Math.round((s.total - calculatedAmountPaid) * 100);
+            return s.paymentStatus === 'paid' || balanceCents <= 0;
+        };
+
+        if (statusFilter === 'all') return sortedInvoices;
+
+        if (statusFilter === 'paid') {
+            return sortedInvoices.filter(s => isPaid(s));
         }
-        return openInvoices;
-    }, [openInvoices, statusFilter]);
+
+        if (statusFilter === 'overdue') {
+            return sortedInvoices.filter(s => !isPaid(s) && s.dueDate && new Date(s.dueDate) < new Date());
+        }
+
+        // Default 'open' - show only unpaid
+        return sortedInvoices.filter(s => !isPaid(s));
+    }, [sortedInvoices, statusFilter]);
 
     const totalOutstanding = useMemo(() =>
-        filteredInvoices.reduce((sum, inv) => sum + (inv.total - inv.amountPaid), 0),
-        [filteredInvoices]
+        // Calculation should probably be based on ALL unpaid invoices, not just filtered view
+        // But for "Total Outstanding" display, it typically implies current open debt. 
+        // Let's stick to calculating from ALL OPEN invoices regardless of view, 
+        // or just calculate from the current filtered set? 
+        // User probably wants "Total Receivable" (global) vs current grid sum.
+        // Let's calculate global outstanding for the summary card.
+        sortedInvoices.reduce((sum, inv) => {
+            const calculatedAmountPaid = inv.payments?.reduce((pSum, p) => pSum + p.amount, 0) ?? inv.amountPaid;
+            return sum + Math.max(0, inv.total - calculatedAmountPaid);
+        }, 0),
+        [sortedInvoices]
     );
 
     const handleRecordPaymentClick = (invoice: Sale) => {
@@ -1075,7 +1120,8 @@ const ARManagementView: React.FC<{
     };
 
     const StatusBadge: React.FC<{ invoice: Sale }> = ({ invoice }) => {
-        const rawBalance = (invoice.total - invoice.amountPaid);
+        const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
+        const rawBalance = (invoice.total - calculatedAmountPaid);
         const balanceCents = Math.round(rawBalance * 100);
         const isPaid = balanceCents <= 0 || invoice.paymentStatus === 'paid';
         const isOverdue = !isPaid && invoice.dueDate && new Date(invoice.dueDate) < new Date();
@@ -1119,28 +1165,49 @@ const ARManagementView: React.FC<{
             </div>
 
             {/* Filters */}
+            {/* Filters */}
             <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2">
                     <button
-                        onClick={() => setStatusFilter('all')}
-                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'all'
-                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                        onClick={() => setStatusFilter('open')}
+                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'open'
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm'
                             : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
                             }`}
                     >
-                        All Invoices
+                        Open
                     </button>
                     <button
                         onClick={() => setStatusFilter('overdue')}
                         className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'overdue'
-                            ? 'bg-gradient-to-r from-red-600 to-red-700 text-white'
+                            ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-sm'
                             : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
                             }`}
                     >
                         Overdue
                     </button>
+                    <button
+                        onClick={() => setStatusFilter('paid')}
+                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'paid'
+                            ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-sm'
+                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                            }`}
+                    >
+                        Paid
+                    </button>
+                    <button
+                        onClick={() => setStatusFilter('all')}
+                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'all'
+                            ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-sm'
+                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                            }`}
+                    >
+                        All History
+                    </button>
                 </div>
+
                 <div className="flex-1"></div>
+
                 <div className="relative">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2">
                         <UsersIcon className="w-4 h-4 text-slate-400" />
@@ -1148,7 +1215,7 @@ const ARManagementView: React.FC<{
                     <select
                         onChange={e => e.target.value && handleGenerateStatement(e.target.value)}
                         value={''}
-                        className="pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none"
+                        className="pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none bg-white text-sm"
                     >
                         <option value="" disabled>Generate Customer Statement</option>
                         {customers.filter(c => c.accountBalance > 0).map(c => (
@@ -1176,7 +1243,8 @@ const ARManagementView: React.FC<{
                         </thead>
                         <tbody className="bg-white divide-y divide-slate-200">
                             {filteredInvoices.map(invoice => {
-                                const rawBalance = (invoice.total - invoice.amountPaid);
+                                const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
+                                const rawBalance = (invoice.total - calculatedAmountPaid);
                                 const balanceCents = Math.round(rawBalance * 100);
                                 const balanceDue = Math.max(0, balanceCents) / 100;
                                 const isPaid = balanceCents <= 0 || invoice.paymentStatus === 'paid';
@@ -1213,12 +1281,14 @@ const ARManagementView: React.FC<{
                                             <StatusBadge invoice={invoice} />
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm" onClick={e => e.stopPropagation()}>
-                                            <button
-                                                onClick={() => handleRecordPaymentClick(invoice)}
-                                                className="px-3 py-1.5 text-sm font-medium text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200"
-                                            >
-                                                Record Payment
-                                            </button>
+                                            {!isPaid && (
+                                                <button
+                                                    onClick={() => handleRecordPaymentClick(invoice)}
+                                                    className="px-3 py-1.5 text-sm font-medium text-blue-700 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg hover:from-blue-100 hover:to-blue-200 transition-all duration-200"
+                                                >
+                                                    Record Payment
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 );
@@ -1239,28 +1309,33 @@ const ARManagementView: React.FC<{
                 </div>
             </div>
 
-            {selectedInvoice && (
-                <RecordPaymentModal
-                    isOpen={isPaymentModalOpen}
-                    onClose={() => setIsPaymentModalOpen(false)}
-                    invoice={selectedInvoice}
-                    onSave={onRecordPayment}
-                    storeSettings={storeSettings}
-                />
-            )}
-            {selectedCustomerForStatement && (
-                <CustomerStatementModal
-                    isOpen={isStatementModalOpen}
-                    onClose={() => {
-                        setIsStatementModalOpen(false);
-                        setSelectedCustomerForStatement(null);
-                    }}
-                    customer={selectedCustomerForStatement}
-                    sales={sales}
-                    storeSettings={storeSettings}
-                />
-            )}
-        </div>
+            {
+                selectedInvoice && (
+                    <RecordPaymentModal
+                        isOpen={isPaymentModalOpen}
+                        onClose={() => setIsPaymentModalOpen(false)}
+                        invoice={sales.find(s => s.transactionId === selectedInvoice.transactionId) || selectedInvoice}
+                        onSave={onRecordPayment}
+                        storeSettings={storeSettings}
+                        customerName={selectedInvoice.customerName || (selectedInvoice.customerId ? customersById[selectedInvoice.customerId]?.name : undefined)}
+                    />
+                )
+            }
+            {
+                selectedCustomerForStatement && (
+                    <CustomerStatementModal
+                        isOpen={isStatementModalOpen}
+                        onClose={() => {
+                            setIsStatementModalOpen(false);
+                            setSelectedCustomerForStatement(null);
+                        }}
+                        customer={selectedCustomerForStatement}
+                        sales={sales}
+                        storeSettings={storeSettings}
+                    />
+                )
+            }
+        </div >
     );
 };
 
@@ -2291,7 +2366,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 <SalesInvoiceDetailModal
                     isOpen={!!viewingARInvoice}
                     onClose={() => setViewingARInvoice(null)}
-                    invoice={viewingARInvoice}
+                    invoice={sales.find(s => s.transactionId === viewingARInvoice.transactionId) || viewingARInvoice}
                     onRecordPayment={handleOpenRecordPaymentAR}
                     storeSettings={storeSettings}
                     customerName={viewingARInvoice.customerName || (viewingARInvoice.customerId ? (customers.find(c => c.id === viewingARInvoice.customerId)?.name) : undefined) || undefined}
@@ -2301,9 +2376,10 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 <RecordPaymentModal
                     isOpen={isRecordARPaymentOpen}
                     onClose={() => setIsRecordARPaymentOpen(false)}
-                    invoice={invoiceToPayAR}
+                    invoice={sales.find(s => s.transactionId === invoiceToPayAR.transactionId) || invoiceToPayAR}
                     onSave={onRecordPayment}
                     storeSettings={storeSettings}
+                    customerName={invoiceToPayAR.customerName || (invoiceToPayAR.customerId ? (customers.find(c => c.id === invoiceToPayAR.customerId)?.name) : undefined) || undefined}
                 />
             )}
         </div>

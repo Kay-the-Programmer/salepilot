@@ -15,22 +15,22 @@ interface SalesListProps {
 
 const PaymentStatusBadge: React.FC<{ status: Sale['paymentStatus'] }> = ({ status }) => {
     const statusConfig = {
-        paid: { 
-            color: 'from-emerald-500 to-green-500', 
+        paid: {
+            color: 'from-emerald-500 to-green-500',
             bg: 'bg-gradient-to-r from-emerald-50 to-green-50',
             text: 'text-emerald-700',
             icon: '✓',
             label: 'Paid'
         },
-        unpaid: { 
-            color: 'from-red-500 to-red-600', 
+        unpaid: {
+            color: 'from-red-500 to-red-600',
             bg: 'bg-gradient-to-r from-red-50 to-red-100',
             text: 'text-red-700',
             icon: '!',
             label: 'Unpaid'
         },
-        partially_paid: { 
-            color: 'from-amber-500 to-yellow-500', 
+        partially_paid: {
+            color: 'from-amber-500 to-yellow-500',
             bg: 'bg-gradient-to-r from-amber-50 to-yellow-50',
             text: 'text-amber-700',
             icon: '~',
@@ -77,12 +77,24 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
             {/* Mobile View */}
             <div className="md:hidden space-y-3">
                 {sales.map((sale) => {
-                    const isOverdue = sale.paymentStatus === 'unpaid' && sale.dueDate && new Date(sale.dueDate) < new Date();
-                    const paymentPercentage = sale.amountPaid > 0 ? (sale.amountPaid / sale.total) * 100 : 0;
-                    
+                    const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
+                    const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
+
+                    let derivedStatus = sale.paymentStatus;
+                    if (balanceDue <= 0.01) {
+                        derivedStatus = 'paid';
+                    } else if (calculatedAmountPaid > 0) {
+                        derivedStatus = 'partially_paid';
+                    } else if (sale.paymentStatus === 'paid' && balanceDue > 0.01) {
+                        derivedStatus = 'partially_paid';
+                    }
+
+                    const isOverdue = derivedStatus !== 'paid' && sale.dueDate && new Date(sale.dueDate) < new Date();
+                    const paymentPercentage = calculatedAmountPaid > 0 ? (calculatedAmountPaid / sale.total) * 100 : 0;
+
                     return (
-                        <div 
-                            key={sale.transactionId} 
+                        <div
+                            key={sale.transactionId}
                             onClick={() => onSelectSale(sale)}
                             className="group bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 transition-all duration-200 overflow-hidden cursor-pointer active:scale-[0.99]"
                         >
@@ -94,7 +106,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                             <div className="px-2.5 py-1 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 text-xs font-medium rounded-full">
                                                 {sale.transactionId.substring(0, 8)}
                                             </div>
-                                            <PaymentStatusBadge status={sale.paymentStatus} />
+                                            <PaymentStatusBadge status={derivedStatus} />
                                             {isOverdue && (
                                                 <span className="px-2 py-1 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-xs font-medium rounded-full">
                                                     Overdue
@@ -134,14 +146,14 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                 </div>
 
                                 {/* Payment Progress */}
-                                {sale.paymentStatus === 'partially_paid' && (
+                                {derivedStatus === 'partially_paid' && (
                                     <div className="mb-3">
                                         <div className="flex justify-between text-xs text-slate-600 mb-1">
                                             <span>Payment Progress</span>
-                                            <span>{formatCurrency(sale.amountPaid, storeSettings)} / {formatCurrency(sale.total, storeSettings)}</span>
+                                            <span>{formatCurrency(calculatedAmountPaid, storeSettings)} / {formatCurrency(sale.total, storeSettings)}</span>
                                         </div>
                                         <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                                            <div 
+                                            <div
                                                 className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
                                                 style={{ width: `${paymentPercentage}%` }}
                                             />
@@ -201,13 +213,25 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                             </thead>
                             <tbody className="bg-white divide-y divide-slate-200">
                                 {sales.map((sale) => {
-                                    const isOverdue = sale.paymentStatus === 'unpaid' && sale.dueDate && new Date(sale.dueDate) < new Date();
+                                    const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
+                                    const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
+
+                                    let derivedStatus = sale.paymentStatus;
+                                    if (balanceDue <= 0.01) {
+                                        derivedStatus = 'paid';
+                                    } else if (calculatedAmountPaid > 0) {
+                                        derivedStatus = 'partially_paid';
+                                    } else if (sale.paymentStatus === 'paid' && balanceDue > 0.01) {
+                                        derivedStatus = 'partially_paid';
+                                    }
+
+                                    const isOverdue = derivedStatus !== 'paid' && sale.dueDate && new Date(sale.dueDate) < new Date();
                                     const itemsCount = sale.itemsCount || sale.cart?.length || 0;
-                                    const paymentPercentage = sale.amountPaid > 0 ? (sale.amountPaid / sale.total) * 100 : 0;
-                                    
+                                    const paymentPercentage = calculatedAmountPaid > 0 ? (calculatedAmountPaid / sale.total) * 100 : 0;
+
                                     return (
-                                        <tr 
-                                            key={sale.transactionId} 
+                                        <tr
+                                            key={sale.transactionId}
                                             onClick={() => onSelectSale(sale)}
                                             className="group hover:bg-slate-50/50 cursor-pointer transition-colors duration-200"
                                         >
@@ -248,7 +272,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                             {/* Status */}
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex flex-col items-center gap-2">
-                                                    <PaymentStatusBadge status={sale.paymentStatus} />
+                                                    <PaymentStatusBadge status={derivedStatus} />
                                                     {isOverdue && (
                                                         <span className="px-2 py-0.5 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-xs font-medium rounded-full">
                                                             Overdue
@@ -257,7 +281,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                                     {paymentPercentage > 0 && paymentPercentage < 100 && (
                                                         <div className="w-20">
                                                             <div className="h-1 bg-slate-200 rounded-full overflow-hidden">
-                                                                <div 
+                                                                <div
                                                                     className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
                                                                     style={{ width: `${paymentPercentage}%` }}
                                                                 />
@@ -291,9 +315,9 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                                     <div className="text-lg font-bold text-slate-900">
                                                         {formatCurrency(sale.total, storeSettings)}
                                                     </div>
-                                                    {sale.amountPaid > 0 && sale.amountPaid < sale.total && (
+                                                    {calculatedAmountPaid > 0 && calculatedAmountPaid < sale.total && (
                                                         <div className="text-xs text-slate-500">
-                                                            Paid: {formatCurrency(sale.amountPaid, storeSettings)}
+                                                            Paid: {formatCurrency(calculatedAmountPaid, storeSettings)}
                                                         </div>
                                                     )}
                                                 </div>

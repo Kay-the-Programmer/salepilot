@@ -18,7 +18,19 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
 
     if (!isOpen || !sale) return null;
 
-    const balanceDue = sale.total - sale.amountPaid;
+    // Calculate amount paid from payments array if available, as it might be more up-to-date than the static field
+    const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
+    const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
+
+    let derivedPaymentStatus = sale.paymentStatus;
+    if (balanceDue <= 0.01) {
+        derivedPaymentStatus = 'paid';
+    } else if (calculatedAmountPaid > 0) {
+        derivedPaymentStatus = 'partially_paid';
+    } else if (sale.paymentStatus === 'paid' && balanceDue > 0.01) {
+        // Fallback if status says paid but balance is positive (unlikely with correct logic, but safe)
+        derivedPaymentStatus = 'partially_paid';
+    }
 
     return (
         <>
@@ -78,11 +90,12 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
                             </div>
                             <div className="bg-gray-50 rounded-xl p-3">
                                 <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Payment Status</h4>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${sale.paymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
-                                    sale.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-red-100 text-red-800'
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${derivedPaymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
+                                    derivedPaymentStatus === 'partially_paid' ? 'bg-blue-100 text-blue-800' :
+                                        derivedPaymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                            'bg-red-100 text-red-800'
                                     }`}>
-                                    {sale.paymentStatus.replace('_', ' ')}
+                                    {derivedPaymentStatus?.replace('_', ' ') || 'Unknown'}
                                 </span>
                             </div>
                         </div>
@@ -170,7 +183,7 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
 
                                     <div className="flex justify-between text-green-700">
                                         <span>Paid</span>
-                                        <span className="font-bold">{formatCurrency(sale.amountPaid, storeSettings)}</span>
+                                        <span className="font-bold">{formatCurrency(calculatedAmountPaid, storeSettings)}</span>
                                     </div>
 
                                     {balanceDue > 0.01 && (

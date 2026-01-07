@@ -205,6 +205,7 @@ export interface StoreSettings {
     phone: string;
     email: string;
     website: string;
+    isOnlineStoreEnabled: boolean;
 
     // Financial
     taxRate: number; // as a percentage, e.g., 10 for 10%

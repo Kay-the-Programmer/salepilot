@@ -17,7 +17,10 @@ interface SalesInvoiceDetailModalProps {
 const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpen, onClose, invoice, onRecordPayment, storeSettings, customerName }) => {
     if (!isOpen) return null;
 
-    const balanceDue = invoice.total - invoice.amountPaid;
+    // Calculate amount paid from payments array if available, as it might be more up-to-date than the static field
+    // especially after immediate client-side updates
+    const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
+    const balanceDue = Math.max(0, invoice.total - calculatedAmountPaid);
 
     const handlePrint = () => {
         const printWindow = window.open('', '', 'height=800,width=600');
@@ -108,7 +111,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                                     </tr>
                                     <tr>
                                         <td class="label">Amount Paid:</td>
-                                        <td class="text-right">${formatCurrency(invoice.amountPaid, storeSettings)}</td>
+                                        <td class="text-right">${formatCurrency(calculatedAmountPaid, storeSettings)}</td>
                                     </tr>
                                     <tr>
                                         <td class="label balance-due">Balance Due:</td>
@@ -194,7 +197,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                             <p><strong>Subtotal:</strong> {formatCurrency(invoice.subtotal, storeSettings)}</p>
                             <p><strong>Tax:</strong> {formatCurrency(invoice.tax, storeSettings)}</p>
                             <p className="text-lg font-bold"><strong>Total:</strong> {formatCurrency(invoice.total, storeSettings)}</p>
-                            <p className="text-green-600"><strong>Paid:</strong> {formatCurrency(invoice.amountPaid, storeSettings)}</p>
+                            <p className="text-green-600"><strong>Paid:</strong> {formatCurrency(calculatedAmountPaid, storeSettings)}</p>
                             <p className="text-xl font-bold text-red-600 border-t pt-2 mt-2"><strong>Balance Due:</strong> {formatCurrency(balanceDue, storeSettings)}</p>
                         </div>
                     </div>

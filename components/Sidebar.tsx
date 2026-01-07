@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User } from '../types';
+import { User, StoreSettings } from '../types';
 import {
     HomeIcon,
     ShoppingCartIcon,
@@ -20,7 +20,8 @@ import {
     ChartBarIcon,
     ClipboardDocumentListIcon,
     SwatchIcon,
-    BellAlertIcon
+    BellAlertIcon,
+    SparklesIcon
 } from './icons';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 
@@ -38,6 +39,7 @@ interface SidebarProps {
     onSelectStore?: (storeId: string) => void;
     showOnMobile?: boolean;
     onMobileClose?: () => void;
+    storeSettings?: StoreSettings | null;
 }
 
 const NAV_ITEMS = [
@@ -160,6 +162,20 @@ const NAV_ITEMS = [
         roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
         badge: null
     },
+    {
+        name: 'Marketplace',
+        page: 'directory',
+        icon: BuildingStorefrontIcon,
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
+        badge: null
+    },
+    {
+        name: 'Marketing',
+        page: 'marketing',
+        icon: SparklesIcon,
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
+        badge: 'New'
+    },
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -175,7 +191,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     selectedStoreId,
     onSelectStore,
     showOnMobile = false,
-    onMobileClose
+    onMobileClose,
+    storeSettings
 }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [mobileMode, setMobileMode] = useState<'menu' | 'settings'>('menu');
@@ -443,7 +460,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     </div>
 
                     {/* Visit Online Store */}
-                    {(selectedStoreId || user.currentStoreId) && (
+                    {(selectedStoreId || user.currentStoreId) && (storeSettings?.isOnlineStoreEnabled !== false) && (
                         <a
                             href={`/shop/${selectedStoreId || user.currentStoreId}`}
                             target="_blank"

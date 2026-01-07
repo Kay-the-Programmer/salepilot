@@ -25,6 +25,8 @@ import AuditLogPage from './pages/AuditLogPage';
 import OrdersPage from './pages/OrdersPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SuperAdminPage from './pages/SuperAdminPage';
+import MarketingPage from './pages/MarketingPage';
+import MarketplacePage from './pages/shop/MarketplacePage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import Bars3Icon from './components/icons/Bars3Icon';
@@ -42,10 +44,10 @@ type SnackbarState = {
 };
 
 const PERMISSIONS: Record<User['role'], string[]> = {
-    superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications'],
-    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications'],
-    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications'],
-    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications']
+    superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
+    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
+    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory'],
+    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
@@ -947,6 +949,10 @@ const Dashboard: React.FC = () => {
                 return <SuperAdminPage />;
             case 'notifications':
                 return <NotificationsPage announcements={announcements} />;
+            case 'marketing':
+                return <MarketingPage />;
+            case 'directory':
+                return <MarketplacePage />;
             case 'inventory':
             default:
                 return <InventoryPage
@@ -1027,6 +1033,7 @@ const Dashboard: React.FC = () => {
                     }}
                     showOnMobile={isSidebarOpen}
                     onMobileClose={() => setIsSidebarOpen(false)}
+                    storeSettings={storeSettings}
                 />
             </div>
 

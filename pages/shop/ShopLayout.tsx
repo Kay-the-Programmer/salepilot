@@ -56,6 +56,19 @@ const ShopLayout: React.FC = () => {
         return <div className="min-h-screen flex items-center justify-center bg-gray-50">Store not found</div>;
     }
 
+    // Check if store is enabled
+    if (shopInfo.settings.isOnlineStoreEnabled === false) { // Explicit check as undefined should default to true or be handled safely
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-6">
+                    <HiOutlineShoppingBag className="w-8 h-8 text-gray-400" />
+                </div>
+                <h1 className="text-2xl font-bold text-gray-900 mb-2">{shopInfo.settings.name || shopInfo.name} is currently offline</h1>
+                <p className="text-gray-500 max-w-md">The store is currently undergoing maintenance or is temporarily closed. Please check back later.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
             {/* Header */}

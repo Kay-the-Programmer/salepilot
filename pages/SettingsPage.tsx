@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../types';
-import Header from '../components/Header';
 import PencilIcon from '../components/icons/PencilIcon';
 import BuildingStorefrontIcon from '../components/icons/BuildingStorefrontIcon';
 import BanknotesIcon from '../components/icons/BanknotesIcon';
@@ -8,8 +7,6 @@ import ReceiptPercentIcon from '../components/icons/ReceiptPercentIcon';
 import ArchiveBoxIcon from '../components/icons/ArchiveBoxIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import TrashIcon from '../components/icons/TrashIcon';
-import CheckCircleIcon from '../components/icons/CheckCircleIcon';
-import XCircleIcon from '../components/icons/XCircleIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import CogIcon from '../components/icons/CogIcon';
 import CreditCardIcon from '../components/icons/CreditCardIcon';
@@ -58,7 +55,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
                             ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/20'
                             : 'bg-slate-50 text-slate-500 border border-slate-100'
                             }`}>
-                            {React.cloneElement(icon as React.ReactElement, { className: "w-5 h-5" })}
+                            {React.cloneElement(icon as React.ReactElement<{ className: string }>, { className: "w-5 h-5" })}
                             {isEditing && (
                                 <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center border-4 border-white shadow-md">
                                     <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
@@ -303,6 +300,35 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                     {renderInput("Website", "website", "url", {
                                         placeholder: "https://example.com"
                                     })}
+
+                                    <div className="pt-2">
+                                        <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                            <div>
+                                                <label htmlFor="isOnlineStoreEnabled" className="text-sm font-semibold text-slate-900 cursor-pointer block">
+                                                    Online Store Status
+                                                </label>
+                                                <p className="text-xs text-slate-500 mt-1">
+                                                    {currentSettings.isOnlineStoreEnabled !== false
+                                                        ? 'Your store is currently visible to customers'
+                                                        : 'Your store is hidden (maintenance mode)'}
+                                                </p>
+                                            </div>
+
+                                            <label className="relative cursor-pointer">
+                                                <input
+                                                    id="isOnlineStoreEnabled"
+                                                    name="isOnlineStoreEnabled"
+                                                    type="checkbox"
+                                                    checked={currentSettings.isOnlineStoreEnabled !== false}
+                                                    onChange={(e) => setCurrentSettings(prev => ({ ...prev, isOnlineStoreEnabled: e.target.checked }))}
+                                                    className="peer sr-only"
+                                                />
+                                                <div className="w-12 h-6 bg-slate-300 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
+                                                    <div className="absolute w-5 h-5 bg-white rounded-full left-1 top-0.5 peer-checked:left-7 transition-all duration-300 shadow-sm"></div>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="space-y-6">
                                     {renderInput("Phone Number", "phone", "tel", {
@@ -354,6 +380,21 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                             ) : 'Not set'
                                         }
                                         icon={<GlobeAltIcon className="w-4 h-4 text-slate-500" />}
+                                    />
+                                    <DetailItem
+                                        label="Online Store Status"
+                                        value={
+                                            <div className="flex items-center gap-2">
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${settings.isOnlineStoreEnabled !== false
+                                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                                    : 'bg-slate-50 text-slate-600 border-slate-200'
+                                                    }`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${settings.isOnlineStoreEnabled !== false ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                                                    {settings.isOnlineStoreEnabled !== false ? 'Active' : 'Disabled'}
+                                                </span>
+                                            </div>
+                                        }
+                                        icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500" />}
                                     />
                                 </div>
                                 <div className="space-y-1">
@@ -682,7 +723,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                         value={
                                             (settings.paymentMethods || []).length > 0 ? (
                                                 <div className="flex flex-wrap gap-2">
-                                                    {(settings.paymentMethods || []).map((pm, index) => (
+                                                    {(settings.paymentMethods || []).map((pm) => (
                                                         <span key={pm.id} className="px-3 py-2 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-sm font-medium rounded-lg border border-blue-200">
                                                             {pm.name}
                                                         </span>
@@ -699,7 +740,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                         value={
                                             (settings.supplierPaymentMethods || []).length > 0 ? (
                                                 <div className="flex flex-wrap gap-2">
-                                                    {(settings.supplierPaymentMethods || []).map((pm, index) => (
+                                                    {(settings.supplierPaymentMethods || []).map((pm) => (
                                                         <span key={pm.id} className="px-3 py-2 bg-gradient-to-r from-purple-50 to-violet-50 text-purple-700 text-sm font-medium rounded-lg border border-purple-200">
                                                             {pm.name}
                                                         </span>
@@ -809,8 +850,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                         )}
                     </SettingsCard>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 };
 

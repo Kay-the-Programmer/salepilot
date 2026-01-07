@@ -14,6 +14,7 @@ export interface ShopInfo {
         phone?: string;
         email?: string;
         website?: string;
+        isOnlineStoreEnabled?: boolean;
         currency?: any;
     };
 }
