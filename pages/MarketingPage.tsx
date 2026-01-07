@@ -48,22 +48,22 @@ const MarketingPage: React.FC = () => {
     }, [tone]);
 
     return (
-        <div className="p-6 h-full flex flex-col overflow-hidden bg-gray-50/50">
+        <div className="p-4 md:p-6 lg:h-full flex flex-col overflow-y-auto lg:overflow-hidden bg-gray-50/50">
             <div className="mb-6 flex items-center gap-3">
                 <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
                     <SparklesIcon className="w-6 h-6" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Marketing Studio</h1>
-                    <p className="text-sm text-gray-500">Create professional social media posters for your products in seconds.</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">Marketing Studio</h1>
+                    <p className="text-xs md:text-sm text-gray-500">Create professional social media posters for your products in seconds.</p>
                 </div>
             </div>
 
-            <div className="flex-1 flex gap-6 overflow-hidden min-h-0">
+            <div className="flex-1 flex flex-col lg:flex-row gap-6 lg:overflow-hidden min-h-0">
                 {/* Left Panel: Selection & Controls */}
-                <div className="w-1/3 min-w-[320px] max-w-sm flex flex-col gap-4 overflow-hidden">
+                <div className="w-full lg:w-1/3 lg:min-w-[320px] lg:max-w-sm flex flex-col gap-4 lg:overflow-hidden">
                     {/* Product Selection */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col flex-1 overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col h-[400px] lg:h-auto lg:flex-1 overflow-hidden">
                         <div className="p-4 border-b border-gray-100">
                             <h2 className="font-semibold text-gray-800 text-sm uppercase tracking-wide">1. Select Product</h2>
                         </div>
@@ -93,12 +93,12 @@ const MarketingPage: React.FC = () => {
                 </div>
 
                 {/* Right Panel: Preview & Actions */}
-                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col overflow-hidden">
+                <div className="flex-1 bg-white rounded-2xl shadow-sm border border-gray-100 flex flex-col min-h-[500px] lg:min-h-0 lg:overflow-hidden">
                     <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/30">
                         <h2 className="font-semibold text-gray-800 text-sm uppercase tracking-wide">2. Live Preview</h2>
-                        {selectedProduct && <span className="text-xs text-gray-400 font-mono">{selectedProduct.name}</span>}
+                        {selectedProduct && <span className="text-xs text-gray-400 font-mono hidden sm:block">{selectedProduct.name}</span>}
                     </div>
-                    <div className="flex-1 p-8 bg-slate-50 flex items-center justify-center overflow-y-auto">
+                    <div className="flex-1 p-4 md:p-8 bg-slate-50 flex items-center justify-center lg:overflow-y-auto">
                         {selectedProduct ? (
                             <PosterGenerator
                                 product={selectedProduct}

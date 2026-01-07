@@ -2280,6 +2280,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
             <Header
                 title="Accounting"
+                showSearch={false}
                 rightContent={
                     <button
                         type="button"
@@ -2321,8 +2322,8 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                                                 key={tab.tabName}
                                                 onClick={() => handleSelectTab(tab.tabName)}
                                                 className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
-                                                        ? 'bg-slate-900 text-white shadow-lg'
-                                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                                                    ? 'bg-slate-900 text-white shadow-lg'
+                                                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                                                     }`}
                                             >
                                                 <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}`}>

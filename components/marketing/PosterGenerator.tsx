@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Product, StoreSettings } from '../../types';
-import { ArrowDownTrayIcon, ShareIcon } from '../icons'; // Assuming ShareIcon exists or I'll generic it
+import { ArrowDownTrayIcon } from '../icons';
 // Checking icons: ShareIcon not explicitly in import list from sidebar, but likely available or can use generic.
 // I will stick to what I know exists or generic SVG if unsure. `ArrowDownTrayIcon` exists.
 
@@ -15,7 +15,6 @@ interface Props {
 const PosterGenerator: React.FC<Props> = ({ product, storeSettings, tone, customText, format }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-    const [isGenerating, setIsGenerating] = useState(false);
 
     // Canvas dimensions
     const width = 1080;
@@ -30,8 +29,6 @@ const PosterGenerator: React.FC<Props> = ({ product, storeSettings, tone, custom
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
         if (!ctx) return;
-
-        setIsGenerating(true);
 
         // Clear canvas
         ctx.fillStyle = '#ffffff';
@@ -129,7 +126,6 @@ const PosterGenerator: React.FC<Props> = ({ product, storeSettings, tone, custom
 
         // Export to blob/url
         setPreviewUrl(canvas.toDataURL('image/png'));
-        setIsGenerating(false);
     };
 
     const handleDownload = () => {
@@ -141,7 +137,7 @@ const PosterGenerator: React.FC<Props> = ({ product, storeSettings, tone, custom
     };
 
     return (
-        <div className="flex flex-col items-center gap-6 h-full">
+        <div className="flex flex-col items-center gap-4 md:gap-6 w-full h-full">
             {/* Hidden Canvas */}
             <canvas
                 ref={canvasRef}
@@ -151,7 +147,7 @@ const PosterGenerator: React.FC<Props> = ({ product, storeSettings, tone, custom
             />
 
             {/* Preview Area */}
-            <div className="relative group bg-gray-100 border border-gray-200 shadow-inner rounded-xl overflow-hidden flex items-center justify-center p-4 max-h-[600px] w-full max-w-[500px]">
+            <div className="relative group bg-gray-100 border border-gray-200 shadow-inner rounded-2xl overflow-hidden flex items-center justify-center p-2 sm:p-4 h-full max-h-[400px] md:max-h-[600px] w-full max-w-[500px]">
                 {previewUrl ? (
                     <img src={previewUrl} alt="Poster Preview" className="max-w-full max-h-full object-contain shadow-lg rounded-lg" />
                 ) : (
@@ -162,11 +158,11 @@ const PosterGenerator: React.FC<Props> = ({ product, storeSettings, tone, custom
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-auto">
                 <button
                     onClick={handleDownload}
                     disabled={!previewUrl}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-md transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
                 >
                     <ArrowDownTrayIcon className="w-5 h-5" />
                     Download Poster

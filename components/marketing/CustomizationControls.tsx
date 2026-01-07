@@ -17,7 +17,7 @@ const CustomizationControls: React.FC<Props> = ({
     format, setFormat
 }) => {
     return (
-        <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
+        <div className="bg-white p-3 md:p-4 rounded-xl border border-gray-100 shadow-sm space-y-4">
             <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Poster Format</label>
                 <div className="flex gap-2 p-1 bg-gray-50 rounded-xl border border-gray-200">
