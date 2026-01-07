@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Return, StoreSettings } from '../types';
-import { SnackbarType } from '../App';
+import { SnackbarType } from '../Dashboard';
 import Header from '../components/Header';
 import QrScannerModal from '../components/sales/QrScannerModal';
 import QrCodeIcon from '../components/icons/QrCodeIcon';
@@ -8,6 +8,12 @@ import ArrowUturnLeftIcon from '../components/icons/ArrowUturnLeftIcon';
 import { formatCurrency } from '../utils/currency';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import PrinterIcon from '../components/icons/PrinterIcon';
+import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
+import CalendarIcon from '../components/icons/CalendarIcon';
+import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
+import ChevronRightIcon from '../components/icons/ChevronRightIcon';
+import CheckCircleIcon from '../components/icons/CheckCircleIcon';
+import PackageIcon from '../components/icons/PackageIcon';
 
 interface ReturnsPageProps {
     sales: Sale[];
@@ -19,6 +25,67 @@ interface ReturnsPageProps {
 
 const returnReasons = ["Unwanted item", "Damaged goods", "Incorrect size/color", "Doesn't match description", "Other"];
 
+// Inline CSS for mobile responsiveness
+const styles = `
+  .safe-area-padding {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .touch-manipulation {
+    touch-action: manipulation;
+  }
+  
+  .no-pull-to-refresh {
+    overscroll-behavior-y: none;
+  }
+  
+  .smooth-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  @media (min-width: 769px) {
+    .desktop-hover:hover {
+      background-color: rgba(243, 244, 246, 1);
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .mobile-tap-target {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Glass effect */
+  .glass-morphism {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+`;
+
+// Custom media query hook
+const useMediaQuery = (query: string): boolean => {
+    const [matches, setMatches] = useState(false);
+
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        const updateMatches = () => setMatches(media.matches);
+        updateMatches();
+        const listener = () => updateMatches();
+        media.addEventListener('change', listener);
+        return () => media.removeEventListener('change', listener);
+    }, [query]);
+
+    return matches;
+};
+
 const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessReturn, showSnackbar, storeSettings }) => {
     const [lookupId, setLookupId] = useState('');
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
@@ -26,9 +93,25 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
     const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
     const taxRate = storeSettings.taxRate / 100;
 
+    // Responsive breakpoints
+    const isMobile = useMediaQuery('(max-width: 768px)');
+    const isTablet = useMediaQuery('(max-width: 1024px)');
+    const isDesktop = !isMobile && !isTablet;
+
     // State for the return items being built
-    const [itemsToReturn, setItemsToReturn] = useState<{ [productId: string]: { quantity: number; reason: string; addToStock: boolean; name: string; price: number;} }>({});
+    const [itemsToReturn, setItemsToReturn] = useState<{ [productId: string]: { quantity: number; reason: string; addToStock: boolean; name: string; price: number; } }>({});
     const [refundMethod, setRefundMethod] = useState('original_method');
+
+    useEffect(() => {
+        // Add styles to document head
+        const styleElement = document.createElement('style');
+        styleElement.innerHTML = styles;
+        document.head.appendChild(styleElement);
+
+        return () => {
+            document.head.removeChild(styleElement);
+        };
+    }, []);
 
     useEffect(() => {
         // Reset form when a new sale is selected or deselected
@@ -49,11 +132,11 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
             showSnackbar('Sale not found. Please check the Transaction ID.', 'error');
         }
     };
-    
+
     const handleScanSuccess = (decodedText: string) => {
         setLookupId(decodedText);
         const foundSale = sales.find(s => s.transactionId.toLowerCase() === decodedText.toLowerCase().trim());
-         if (foundSale) {
+        if (foundSale) {
             if (foundSale.refundStatus === 'fully_refunded') {
                 showSnackbar('This sale has already been fully refunded.', 'error');
             }
@@ -88,7 +171,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
             return updated;
         });
     };
-    
+
     const handleItemDetailChange = (productId: string, field: 'reason' | 'addToStock', value: string | boolean) => {
         if (!itemsToReturn[productId]) return;
 
@@ -107,7 +190,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
         }
 
         const refundSubtotal = Object.values(itemsToReturn).reduce((acc, item) => acc + item.price * item.quantity, 0);
-        
+
         // Calculate proportional discount
         const originalSubtotal = selectedSale.cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
         const proportionOfSale = originalSubtotal > 0 ? refundSubtotal / originalSubtotal : 0;
@@ -143,71 +226,102 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
 
     if (!selectedSale) {
         return (
-            <>
-                <Header title="" />
-                <main className="flex-1 overflow-y-auto bg-gray-100 p-4 sm:p-6 lg:p-8">
-                    <div className="max-w-xl mx-auto bg-white p-6 rounded-lg shadow">
-                        <h2 className="text-lg font-medium text-gray-900">Find a Past Sale</h2>
-                        <p className="mt-1 text-sm text-gray-600">Enter the Transaction ID from the receipt or scan the receipt's barcode.</p>
-                        <div className="mt-4 flex gap-2">
-                             <input
-                                type="text"
-                                placeholder="Enter Transaction ID (e.g., SALE-1704106800000)"
-                                value={lookupId}
-                                onChange={(e) => setLookupId(e.target.value)}
-                                onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
-                                className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-                            />
-                            <button
-                                onClick={() => setIsScannerOpen(true)}
-                                className="p-2 border rounded-md bg-white hover:bg-gray-100 text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                aria-label="Scan Receipt Barcode"
-                                title="Scan Receipt Barcode"
-                            >
-                                <QrCodeIcon className="w-6 h-6" />
-                            </button>
-                            <button onClick={handleLookup} className="px-4 py-2 bg-blue-600 text-white rounded-md shadow-sm hover:bg-blue-700">Find</button>
-                        </div>
-                    </div>
-                    
-                     <div className="max-w-4xl mx-auto mt-8">
-                        <h3 className="text-lg font-medium text-gray-900">Recent Returns</h3>
-                        <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md">
-                            <ul role="list" className="divide-y divide-gray-200">
-                                {returns.slice(0, 10).map((ret) => (
-                                    <li key={ret.id}>
-                                        <div className="px-4 py-4 sm:px-6">
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-sm font-medium text-blue-600 truncate">{ret.id}</p>
-                                                <div className="ml-2 flex-shrink-0 flex">
-                                                    <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                                        Ref: {ret.originalSaleId}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="mt-2 sm:flex sm:justify-between">
-                                                <div className="sm:flex">
-                                                    <p className="flex items-center text-sm text-gray-500">
-                                                        <ArrowUturnLeftIcon className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-                                                        {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items returned
-                                                    </p>
-                                                </div>
-                                                <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                                                    <p>
-                                                        {new Date(ret.timestamp).toLocaleString()}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+            <div className="flex flex-col h-full bg-gray-50">
+                <Header title="Returns & Refunds" />
+                <main className="flex-1 overflow-y-auto smooth-scroll safe-area-padding safe-area-bottom">
+                    {/* Hero Search Section */}
+                    <div className="bg-white border-b border-gray-200 py-12 px-4 shadow-sm">
+                        <div className="max-w-2xl mx-auto text-center">
+                            <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">Find a Past Sale</h2>
+                            <p className="mt-2 text-sm text-gray-500">
+                                Enter the Transaction ID from the receipt or scan the barcode to start a return.
+                            </p>
+
+                            <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                                <div className="relative flex-1">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Transaction ID..."
+                                        value={lookupId}
+                                        onChange={(e) => setLookupId(e.target.value)}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleLookup()}
+                                        className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base transition-all"
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setIsScannerOpen(true)}
+                                        className="flex-1 sm:flex-none inline-flex items-center justify-center p-3 border border-gray-300 rounded-xl bg-white text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all mobile-tap-target"
+                                        title="Scan Receipt"
+                                    >
+                                        <QrCodeIcon className="w-6 h-6 mr-2 sm:mr-0" />
+                                        <span className="sm:hidden font-medium">Scan QR</span>
+                                    </button>
+                                    <button
+                                        onClick={handleLookup}
+                                        className="flex-[2] sm:flex-none inline-flex items-center justify-center px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl shadow-md hover:bg-blue-700 active:scale-[0.98] transition-all mobile-tap-target"
+                                    >
+                                        Find Sale
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
+                    {/* Recent Returns Section */}
+                    <div className="max-w-4xl mx-auto px-4 py-8">
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <ArrowUturnLeftIcon className="w-5 h-5 text-blue-600" />
+                                Recent Returns
+                            </h3>
+                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Last 10 transactions
+                            </span>
+                        </div>
+
+                        {returns.length === 0 ? (
+                            <div className="text-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                                <div className="mx-auto w-12 h-12 text-gray-300 mb-3">
+                                    <ArrowUturnLeftIcon className="w-full h-full" />
+                                </div>
+                                <p className="text-gray-500">No returns recorded yet.</p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {returns.slice(0, 10).map((ret) => (
+                                    <div key={ret.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">{ret.id}</span>
+                                                <h4 className="text-sm font-semibold text-gray-900 mt-0.5">Sale Ref: {ret.originalSaleId}</h4>
+                                            </div>
+                                            <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
+                                                {formatCurrency(ret.refundAmount, storeSettings)}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50 text-sm text-gray-500">
+                                            <div className="flex items-center gap-1.5">
+                                                <CalendarIcon className="w-4 h-4" />
+                                                {new Date(ret.timestamp).toLocaleDateString()}
+                                            </div>
+                                            <div className="flex items-center gap-1.5 font-medium text-gray-700">
+                                                {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items
+                                                <ChevronRightIcon className="w-4 h-4 text-gray-400" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </main>
                 <QrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={handleScanSuccess} onScanError={(err) => showSnackbar(err, 'error')} />
-            </>
+            </div>
         )
     }
 
@@ -216,132 +330,196 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
     // Return processing view
     return (
         <>
-            <div className="flex flex-col h-full">
-                <Header title={`Processing Return for Sale: ${selectedSale.transactionId}`} buttonText="Find Another Sale" onButtonClick={() => setSelectedSale(null)} />
-                <main className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-4 overflow-y-auto bg-gray-100">
-                    {/* Left side: Item selection */}
-                    <div className="lg:col-span-2 bg-gray-50 p-4 rounded-lg shadow-md">
-                        <div className="flex justify-between items-center border-b pb-3 mb-4">
-                            <h3 className="text-xl font-semibold text-gray-900">Select Items to Return</h3>
-                            <button
-                                onClick={() => setIsReceiptModalOpen(true)}
-                                className="inline-flex items-center gap-2 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50"
-                            >
-                                <PrinterIcon className="h-5 w-5 text-gray-500" />
-                                Print Receipt
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            {selectedSale.cart.map(item => {
-                                const returnableQty = item.quantity - (item.returnedQuantity || 0);
-                                const currentReturn = itemsToReturn[item.productId];
-                                if (returnableQty <= 0) {
-                                    return (
-                                        <div key={item.productId} className="p-4 rounded-md bg-gray-100 opacity-60">
-                                            <p className="font-medium text-gray-600">{item.name}</p>
-                                            <p className="text-sm text-gray-500">All items have been returned.</p>
-                                        </div>
-                                    );
-                                }
-                                return (
-                                    <div key={item.productId} className="p-4 rounded-md border border-gray-200">
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <p className="font-medium text-gray-800">{item.name}</p>
-                                                <p className="text-sm text-gray-500">Purchased: {item.quantity} &bull; Price: {formatCurrency(item.price, storeSettings)}</p>
-                                            </div>
-                                            <div className="w-24">
-                                                <label htmlFor={`qty-${item.productId}`} className="block text-sm font-medium text-gray-700 text-right">Return Qty</label>
-                                                <input
-                                                    type="number"
-                                                    id={`qty-${item.productId}`}
-                                                    value={currentReturn?.quantity ?? '0'}
-                                                    onChange={(e) => handleReturnQuantityChange(item.productId, item, e.target.value)}
-                                                    min="0"
-                                                    max={returnableQty}
-                                                    className="mt-1 block w-full rounded-md border p-1 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-center"
-                                                />
-                                                <p className="text-xs text-gray-500 text-right">Max: {returnableQty}</p>
-                                            </div>
-                                        </div>
-                                        {currentReturn?.quantity > 0 && (
-                                            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
-                                                <div>
-                                                    <label htmlFor={`reason-${item.productId}`} className="block text-sm font-medium text-gray-700">Reason</label>
-                                                    <select
-                                                        id={`reason-${item.productId}`}
-                                                        value={currentReturn.reason || returnReasons[0]}
-                                                        onChange={e => handleItemDetailChange(item.productId, 'reason', e.target.value)}
-                                                        className="mt-1 block w-full rounded-md border p-1 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
-                                                    >
-                                                        {returnReasons.map(r => <option key={r} value={r}>{r}</option>)}
-                                                    </select>
-                                                </div>
-                                                <div className="flex items-end">
-                                                    <div className="relative flex items-start">
-                                                        <div className="flex h-6 items-center">
-                                                            <input id={`stock-${item.productId}`} type="checkbox" checked={currentReturn.addToStock || false} onChange={e => handleItemDetailChange(item.productId, 'addToStock', e.target.checked)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600" />
-                                                        </div>
-                                                        <div className="ml-3 text-sm leading-6">
-                                                            <label htmlFor={`stock-${item.productId}`} className="font-medium text-gray-900">Add back to stock?</label>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                    {/* Right side: Summary */}
-                    <div className="lg:col-span-1">
-                        <div className="bg-gray-50 p-4 rounded-lg shadow-md sticky top-0">
-                            <h3 className="text-xl font-semibold text-gray-700 border-b pb-3 mb-4">Refund Summary</h3>
-                            <div className="space-y-2 text-sm">
-                                <div className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(refundSubtotal, storeSettings)}</span></div>
-                                <div className="flex justify-between"><span>Discount</span><span className="text-green-600">-{formatCurrency(refundDiscount, storeSettings)}</span></div>
-                                <div className="flex justify-between"><span>Tax</span><span>{formatCurrency(refundTax, storeSettings)}</span></div>
-                                <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2"><span>Total Refund</span><span>{formatCurrency(refundTotal, storeSettings)}</span></div>
-                            </div>
+            <div className="flex flex-col h-full bg-gray-50">
+                <Header
+                    title={isMobile ? "Process Return" : `Return: ${selectedSale.transactionId}`}
+                    buttonText="Find Another Sale"
+                    onButtonClick={() => setSelectedSale(null)}
+                />
 
-                            <div className="mt-6">
-                                <h4 className="text-md font-semibold text-gray-800 mb-2">Refund Method</h4>
-                                <fieldset className="mt-2">
-                                    <legend className="sr-only">Refund method</legend>
-                                    <div className="space-y-2">
-                                        <div className="flex items-center">
-                                            <input id="original_method" name="refund-method" type="radio" checked={refundMethod === 'original_method'} onChange={() => setRefundMethod('original_method')} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
-                                            <label htmlFor="original_method" className="ml-3 block text-sm font-medium leading-6 text-gray-900">Original Method</label>
-                                        </div>
-                                        <div className="flex items-center">
-                                            <input id="store_credit" name="refund-method" type="radio" checked={refundMethod === 'store_credit'} onChange={() => setRefundMethod('store_credit')} disabled={!saleHasCustomer || !storeSettings.enableStoreCredit} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600 disabled:opacity-50" />
-                                            <label htmlFor="store_credit" className={`ml-3 block text-sm font-medium leading-6 text-gray-900 ${!saleHasCustomer || !storeSettings.enableStoreCredit ? 'text-gray-400' : ''}`}>
-                                                Store Credit
-                                                {!saleHasCustomer && <span className="text-xs"> (Customer required)</span>}
-                                                {!storeSettings.enableStoreCredit && <span className="text-xs"> (Disabled)</span>}
-                                            </label>
-                                        </div>
-                                        {(storeSettings.paymentMethods || []).map((method) => (
-                                            <div key={method.id} className="flex items-center">
-                                                <input id={method.id} name="refund-method" type="radio" checked={refundMethod === method.name} onChange={() => setRefundMethod(method.name)} className="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-600" />
-                                                <label htmlFor={method.id} className="ml-3 block text-sm font-medium leading-6 text-gray-900">{method.name}</label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </fieldset>
-                            </div>
-                            
-                            <div className="mt-6">
+                <main className="flex-1 overflow-y-auto smooth-scroll safe-area-padding safe-area-bottom">
+                    <div className={`grid grid-cols-1 ${isDesktop ? 'lg:grid-cols-12' : ''} gap-6 p-4 lg:p-8 max-w-[1600px] mx-auto`}>
+
+                        {/* Left side: Item selection (8 cols on desktop) */}
+                        <div className={`${isDesktop ? 'lg:col-span-8' : ''} space-y-6`}>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                                <div>
+                                    <h3 className="text-xl font-bold text-gray-900">Select Items to Return</h3>
+                                    <p className="text-sm text-gray-500 mt-1">Adjust quantities for the items you want to refund.</p>
+                                </div>
                                 <button
-                                    onClick={processReturn}
-                                    disabled={refundTotal <= 0}
-                                    className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 disabled:bg-gray-400 transition-colors"
+                                    onClick={() => setIsReceiptModalOpen(true)}
+                                    className="inline-flex items-center gap-2 rounded-xl bg-gray-50 px-4 py-2.5 text-sm font-bold text-gray-700 hover:bg-gray-100 transition-all border border-gray-200 mobile-tap-target"
                                 >
-                                    Process Refund
+                                    <PrinterIcon className="h-5 w-5 text-gray-500" />
+                                    Print Receipt
                                 </button>
                             </div>
 
+                            <div className="space-y-4">
+                                {selectedSale.cart.map(item => {
+                                    const returnableQty = item.quantity - (item.returnedQuantity || 0);
+                                    const currentReturn = itemsToReturn[item.productId];
+                                    const isReturning = currentReturn?.quantity > 0;
+
+                                    if (returnableQty <= 0) {
+                                        return (
+                                            <div key={item.productId} className="p-5 rounded-2xl bg-gray-100 border border-gray-200 opacity-60 flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-bold text-gray-600 line-through">{item.name}</p>
+                                                    <p className="text-xs text-gray-500">Fully returned</p>
+                                                </div>
+                                                <CheckCircleIcon className="w-6 h-6 text-gray-400" />
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div key={item.productId} className={`p-6 rounded-2xl bg-white border ${isReturning ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-100'} shadow-sm transition-all`}>
+                                            <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-bold text-gray-900 text-lg">{item.name}</p>
+                                                        {isReturning && <span className="bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded">Selected</span>}
+                                                    </div>
+                                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-500">
+                                                        <span className="flex items-center gap-1"><PackageIcon className="w-4 h-4" /> Purchased: {item.quantity}</span>
+                                                        <span className="flex items-center gap-1"><CurrencyDollarIcon className="w-4 h-4" /> {formatCurrency(item.price, storeSettings)}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="w-full sm:w-32">
+                                                    <label htmlFor={`qty-${item.productId}`} className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">Quantity</label>
+                                                    <div className="relative">
+                                                        <input
+                                                            type="number"
+                                                            id={`qty-${item.productId}`}
+                                                            value={currentReturn?.quantity ?? '0'}
+                                                            onChange={(e) => handleReturnQuantityChange(item.productId, item, e.target.value)}
+                                                            min="0"
+                                                            max={returnableQty}
+                                                            className="block w-full rounded-xl border-gray-200 bg-gray-50 py-2.5 text-center font-bold text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                                        />
+                                                        <p className="mt-1.5 text-[10px] font-bold text-gray-400 text-center uppercase">Max: {returnableQty}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {isReturning && (
+                                                <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6 animate-fadeIn">
+                                                    <div>
+                                                        <label htmlFor={`reason-${item.productId}`} className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 text-left">Reason for Return</label>
+                                                        <select
+                                                            id={`reason-${item.productId}`}
+                                                            value={currentReturn.reason || returnReasons[0]}
+                                                            onChange={e => handleItemDetailChange(item.productId, 'reason', e.target.value)}
+                                                            className="block w-full rounded-xl border-gray-200 bg-white py-2.5 px-3 text-sm font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                        >
+                                                            {returnReasons.map(r => <option key={r} value={r}>{r}</option>)}
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex items-end">
+                                                        <label className="relative flex items-center p-3 rounded-xl bg-gray-50 border border-gray-100 cursor-pointer w-full hover:bg-gray-100 transition-colors">
+                                                            <input
+                                                                id={`stock-${item.productId}`}
+                                                                type="checkbox"
+                                                                checked={currentReturn.addToStock || false}
+                                                                onChange={e => handleItemDetailChange(item.productId, 'addToStock', e.target.checked)}
+                                                                className="h-5 w-5 rounded-md border-gray-300 text-blue-600 focus:ring-blue-600 transition-all"
+                                                            />
+                                                            <span className="ml-3 text-sm font-bold text-gray-700">Add back to stock?</span>
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Right side: Summary (4 cols on desktop) */}
+                        <div className={`${isDesktop ? 'lg:col-span-4' : ''}`}>
+                            <div className={`${isDesktop ? 'sticky top-24' : ''} space-y-6`}>
+                                {/* Detailed Refund Calculations */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                    <div className="p-6 bg-gray-50 border-b border-gray-100">
+                                        <h3 className="text-lg font-bold text-gray-900">Refund Summary</h3>
+                                    </div>
+                                    <div className="p-6 space-y-4">
+                                        <div className="flex justify-between text-sm text-gray-600 font-medium">
+                                            <span>Subtotal</span>
+                                            <span>{formatCurrency(refundSubtotal, storeSettings)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-green-600 font-bold">
+                                            <span>Discount Adjustment</span>
+                                            <span>-{formatCurrency(refundDiscount, storeSettings)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-sm text-gray-600 font-medium pb-4 border-b border-gray-50">
+                                            <span>Estimated Tax Refund</span>
+                                            <span>{formatCurrency(refundTax, storeSettings)}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center py-2">
+                                            <span className="text-lg font-black text-gray-900 uppercase tracking-tighter">Total Refund</span>
+                                            <span className="text-2xl font-black text-blue-600">{formatCurrency(refundTotal, storeSettings)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Refund Method Selection */}
+                                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                    <h4 className="text-sm font-black text-gray-400 uppercase tracking-widest mb-4">Refund Method</h4>
+                                    <div className="space-y-3">
+                                        <label className={`flex items-center p-3 rounded-xl border transition-all cursor-pointer ${refundMethod === 'original_method' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 bg-white hover:bg-gray-50'}`}>
+                                            <input
+                                                name="refund-method"
+                                                type="radio"
+                                                checked={refundMethod === 'original_method'}
+                                                onChange={() => setRefundMethod('original_method')}
+                                                className="h-5 w-5 border-gray-300 text-blue-600 focus:ring-blue-600"
+                                            />
+                                            <span className="ml-3 font-bold text-sm">Original Payment Method</span>
+                                        </label>
+
+                                        <label className={`flex items-center p-3 rounded-xl border transition-all cursor-pointer ${refundMethod === 'store_credit' ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 bg-white hover:bg-gray-50'} ${(!saleHasCustomer || !storeSettings.enableStoreCredit) ? 'opacity-40 cursor-not-allowed' : ''}`}>
+                                            <input
+                                                name="refund-method"
+                                                type="radio"
+                                                checked={refundMethod === 'store_credit'}
+                                                onChange={() => setRefundMethod('store_credit')}
+                                                disabled={!saleHasCustomer || !storeSettings.enableStoreCredit}
+                                                className="h-5 w-5 border-gray-300 text-blue-600 focus:ring-blue-600"
+                                            />
+                                            <div className="ml-3">
+                                                <p className="font-bold text-sm text-left">Store Credit</p>
+                                                {!saleHasCustomer && <p className="text-[10px] font-bold uppercase tracking-tight opacity-70">Requires Customer</p>}
+                                                {!storeSettings.enableStoreCredit && <p className="text-[10px] font-bold uppercase tracking-tight opacity-70">Disabled in Settings</p>}
+                                            </div>
+                                        </label>
+
+                                        {(storeSettings.paymentMethods || []).map((method) => (
+                                            <label key={method.id} className={`flex items-center p-3 rounded-xl border transition-all cursor-pointer ${refundMethod === method.name ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-100 bg-white hover:bg-gray-50'}`}>
+                                                <input
+                                                    name="refund-method"
+                                                    type="radio"
+                                                    checked={refundMethod === method.name}
+                                                    onChange={() => setRefundMethod(method.name)}
+                                                    className="h-5 w-5 border-gray-300 text-blue-600 focus:ring-blue-600"
+                                                />
+                                                <span className="ml-3 font-bold text-sm">{method.name}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+
+                                    <button
+                                        onClick={processReturn}
+                                        disabled={refundTotal <= 0}
+                                        className="w-full mt-8 bg-blue-600 text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
+                                    >
+                                        Complete Refund
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </main>
