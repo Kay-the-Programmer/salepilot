@@ -26,6 +26,7 @@ import CreditCardIcon from '../components/icons/CreditCardIcon';
 import UsersIcon from '../components/icons/UsersIcon';
 import BuildingOfficeIcon from '../components/icons/BuildingOfficeIcon';
 import InformationCircleIcon from '../components/icons/InformationCircleIcon';
+import GridIcon from '../components/icons/GridIcon';
 
 // --- Subcomponents for AccountingPage ---
 const AccountingDashboard: React.FC<{ accounts: Account[], journalEntries: JournalEntry[], storeSettings: StoreSettings }> = ({ accounts, journalEntries, storeSettings }) => {
@@ -2282,14 +2283,13 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 rightContent={
                     <button
                         type="button"
-                        className="sm:hidden inline-flex items-center gap-2 px-3 py-2.5 text-sm font-medium rounded-xl text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 transition-all duration-200"
+                        className="sm:hidden p-2 rounded-lg text-slate-600 active:bg-slate-100"
                         aria-haspopup="menu"
                         aria-expanded={isTabMenuOpen}
                         aria-controls="accounting-tab-menu"
                         onClick={() => setIsTabMenuOpen(o => !o)}
                     >
-                        <span>Menu</span>
-                        <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isTabMenuOpen ? 'rotate-180' : ''}`} />
+                        <GridIcon className="w-5 h-5" />
                     </button>
                 }
             />
@@ -2303,29 +2303,40 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         ))}
                     </div>
 
-                    {/* Mobile Tab Menu */}
+                    {/* Mobile Tab Menu (Floating Grid) */}
                     {isTabMenuOpen && (
-                        <>
-                            <div className="fixed inset-0 z-10 bg-black/30 sm:hidden" onClick={() => setIsTabMenuOpen(false)}></div>
-                            <div id="accounting-tab-menu" role="menu" aria-label="Accounting Tabs" className="sm:hidden absolute left-4 right-4 mt-2 z-20">
-                                <div className="bg-white rounded-2xl shadow-2xl ring-1 ring-black ring-opacity-5 divide-y divide-slate-200 overflow-hidden">
-                                    {tabConfig.map((tab) => (
-                                        <button
-                                            key={tab.tabName}
-                                            className={`w-full text-left px-4 py-3 text-sm flex items-center gap-3 transition-colors duration-200 ${activeTab === tab.tabName
-                                                ? 'bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700'
-                                                : 'hover:bg-slate-50'
-                                                }`}
-                                            onClick={() => handleSelectTab(tab.tabName)}
-                                            role="menuitem"
-                                        >
-                                            {tab.icon && <span className="w-4 h-4">{tab.icon}</span>}
-                                            {tab.label}
-                                        </button>
-                                    ))}
+                        <div
+                            className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm sm:hidden animate-fade-in"
+                            onClick={() => setIsTabMenuOpen(false)}
+                        >
+                            <div
+                                className="absolute top-[70px] right-4 left-4 bg-white rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-slate-100"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <div className="grid grid-cols-3 gap-4">
+                                    {tabConfig.map((tab) => {
+                                        const isActive = activeTab === tab.tabName;
+                                        return (
+                                            <button
+                                                key={tab.tabName}
+                                                onClick={() => handleSelectTab(tab.tabName)}
+                                                className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
+                                                        ? 'bg-slate-900 text-white shadow-lg'
+                                                        : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                                                    }`}
+                                            >
+                                                <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
+                                                    {React.cloneElement(tab.icon as React.ReactElement, { className: "w-6 h-6" })}
+                                                </div>
+                                                <span className="text-[10px] font-bold text-center leading-tight">
+                                                    {tab.shortLabel || tab.label}
+                                                </span>
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        </>
+                        </div>
                     )}
 
                     {/* Content */}

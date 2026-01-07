@@ -2,6 +2,7 @@ import React from 'react';
 import { Product, Category, StoreSettings } from '../types';
 import { formatCurrency } from '@/utils/currency';
 import { buildAssetUrl } from '../services/api';
+import LoadingSpinner from './LoadingSpinner';
 
 interface Props {
   products: Product[];
@@ -69,8 +70,8 @@ const ProductCard: React.FC<{
         {/* Status Badge */}
         <div className="absolute top-3 right-3 flex gap-2">
           <span className={`px-2 py-1 text-xs font-semibold rounded-lg backdrop-blur-md border border-white/20 shadow-sm ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold)
-              ? 'bg-red-500/90 text-white'
-              : 'bg-white/90 text-gray-700'
+            ? 'bg-red-500/90 text-white'
+            : 'bg-white/90 text-gray-700'
             }`}>
             {asNumber(product.stock)} left
           </span>
@@ -122,7 +123,6 @@ const ProductList: React.FC<Props> = ({
   products,
   categories,
   onSelectProduct,
-  onStockChange,
   onAdjustStock,
   isLoading,
   error,
@@ -130,7 +130,7 @@ const ProductList: React.FC<Props> = ({
   userRole,
   viewMode = 'grid',
 }) => {
-  if (isLoading) return <div className="p-6">Loading products...</div>;
+  if (isLoading) return <LoadingSpinner fullScreen={false} text="Loading products..." className="py-12" />;
   if (error) return <div className="p-6 text-red-500">Error: {error}</div>;
 
   const getCategoryName = (categoryId?: string) =>

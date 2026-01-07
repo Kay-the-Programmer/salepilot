@@ -31,6 +31,7 @@ import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import Bars3Icon from './components/icons/Bars3Icon';
 import BellAlertIcon from './components/icons/BellAlertIcon';
+import LoadingSpinner from './components/LoadingSpinner';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -876,7 +877,7 @@ const Dashboard: React.FC = () => {
     };
 
     if (isAuthLoading) {
-        return <div className="flex h-screen items-center justify-center">Loading...</div>;
+        return <LoadingSpinner />;
     }
 
     if (!currentUser) {
@@ -900,7 +901,7 @@ const Dashboard: React.FC = () => {
     const isStoreScoped = (currentUser.role !== 'superadmin') || (currentUser.role === 'superadmin' && superMode === 'store');
     if (isStoreScoped) {
         if (!storeSettings && isLoading) {
-            return <div className="flex h-screen items-center justify-center">Loading store settings...</div>;
+            return <LoadingSpinner text="Loading store settings..." />;
         }
 
         if (!storeSettings && !isLoading) {

@@ -17,6 +17,7 @@ import ScanBarcodeModal from '../components/ScanBarcodeModal';
 import CubeIcon from '../components/icons/CubeIcon';
 import TagIcon from '../components/icons/TagIcon';
 import PlusIcon from '../components/icons/PlusIcon';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 interface InventoryPageProps {
     products: Product[];
@@ -366,10 +367,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     <main className="flex-1 overflow-y-auto bg-gray-50/50">
                         <div className="w-full h-full">
                             {detailIsLoading && (
-                                <div className="flex flex-col items-center justify-center py-20">
-                                    <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-                                    <p className="text-gray-600">Loading product details...</p>
-                                </div>
+                                <LoadingSpinner fullScreen={false} text="Loading product details..." className="py-20" />
                             )}
                             {detailError && (
                                 <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200 m-6">

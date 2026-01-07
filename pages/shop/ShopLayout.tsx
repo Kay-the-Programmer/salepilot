@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Outlet, useParams, Link, useNavigate } from 'react-router-dom';
 import { shopService, ShopInfo } from '../../services/shop.service';
 import { HiOutlineShoppingBag } from 'react-icons/hi2';
+import LoadingSpinner from '../../components/LoadingSpinner';
 
 const ShopLayout: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
@@ -49,7 +50,7 @@ const ShopLayout: React.FC = () => {
     }, [storeId]);
 
     if (loading) {
-        return <div className="min-h-screen flex items-center justify-center bg-gray-50">Loading store...</div>;
+        return <LoadingSpinner text="Loading store..." />;
     }
 
     if (!shopInfo) {

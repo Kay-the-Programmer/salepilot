@@ -5,6 +5,7 @@ import ProductSelector from '../components/marketing/ProductSelector';
 import PosterGenerator from '../components/marketing/PosterGenerator';
 import CustomizationControls from '../components/marketing/CustomizationControls';
 import { SparklesIcon } from '../components/icons';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const MarketingPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -68,7 +69,7 @@ const MarketingPage: React.FC = () => {
                         </div>
                         <div className="flex-1 overflow-hidden">
                             {isLoading ? (
-                                <div className="p-4 text-center text-gray-500">Loading products...</div>
+                                <LoadingSpinner fullScreen={false} text="Loading products..." className="py-8" />
                             ) : (
                                 <ProductSelector
                                     products={products}
