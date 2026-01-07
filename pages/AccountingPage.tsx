@@ -27,6 +27,11 @@ import UsersIcon from '../components/icons/UsersIcon';
 import BuildingOfficeIcon from '../components/icons/BuildingOfficeIcon';
 import InformationCircleIcon from '../components/icons/InformationCircleIcon';
 import GridIcon from '../components/icons/GridIcon';
+import EllipsisVerticalIcon from '../components/icons/EllipsisVerticalIcon';
+import EyeIcon from '../components/icons/EyeIcon';
+import CalendarDaysIcon from '../components/icons/CalendarDaysIcon';
+import CalendarIcon from '../components/icons/CalendarIcon';
+import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 
 // --- Subcomponents for AccountingPage ---
 const AccountingDashboard: React.FC<{ accounts: Account[], journalEntries: JournalEntry[], storeSettings: StoreSettings }> = ({ accounts, journalEntries, storeSettings }) => {
@@ -251,17 +256,6 @@ const AccountFormModal: React.FC<{
         onClose();
     };
 
-    const getTypeColor = (type: AccountType) => {
-        switch (type) {
-            case 'asset': return 'bg-blue-100 text-blue-800';
-            case 'liability': return 'bg-red-100 text-red-800';
-            case 'equity': return 'bg-purple-100 text-purple-800';
-            case 'revenue': return 'bg-green-100 text-green-800';
-            case 'expense': return 'bg-amber-100 text-amber-800';
-            default: return 'bg-slate-100 text-slate-800';
-        }
-    };
-
     return createPortal(
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-4">
             <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up">
@@ -272,7 +266,7 @@ const AccountFormModal: React.FC<{
                                 <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
                                     <PencilIcon className="w-5 h-5 text-blue-600" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-slate-900">
+                                <h3 className="text-lg font-black text-slate-900 tracking-tight">
                                     {accountToEdit ? 'Edit Account' : 'Add New Account'}
                                 </h3>
                             </div>
@@ -283,36 +277,36 @@ const AccountFormModal: React.FC<{
                     </div>
 
                     <div className="px-6 py-5 space-y-4">
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700">Account Name</label>
+                        <div className="space-y-1.5">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Account Name</label>
                             <input
                                 type="text"
                                 value={account.name}
                                 onChange={e => setAccount({ ...account, name: e.target.value })}
                                 required
-                                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium"
                                 placeholder="e.g., Cash, Accounts Receivable"
                             />
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-slate-700">Account Number</label>
+                            <div className="space-y-1.5">
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Account Number</label>
                                 <input
                                     type="text"
                                     value={account.number}
                                     onChange={e => setAccount({ ...account, number: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium"
                                     placeholder="e.g., 1000, 2000"
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-slate-700">Account Type</label>
+                            <div className="space-y-1.5">
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Account Type</label>
                                 <select
                                     value={account.type}
                                     onChange={e => setAccount({ ...account, type: e.target.value as AccountType })}
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium appearance-none"
                                 >
                                     <option value="asset">Asset</option>
                                     <option value="liability">Liability</option>
@@ -323,45 +317,38 @@ const AccountFormModal: React.FC<{
                             </div>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700">Description</label>
+                        <div className="space-y-1.5">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Description</label>
                             <textarea
                                 value={account.description}
                                 onChange={e => setAccount({ ...account, description: e.target.value })}
                                 rows={2}
-                                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 resize-none"
-                                placeholder="Brief description of the account purpose"
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium resize-none"
+                                placeholder="Purpose of this account"
                             />
                         </div>
 
                         {accountToEdit?.subType && (
-                            <div className="p-3 bg-gradient-to-r from-amber-50 to-yellow-50 rounded-xl border border-amber-200">
-                                <div className="flex items-start gap-2">
-                                    <div className="mt-0.5">
-                                        <div className="w-4 h-4 rounded-full bg-amber-500 flex items-center justify-center">
-                                            <span className="text-xs text-white">!</span>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-medium text-amber-800">System Account</p>
-                                        <p className="text-xs text-amber-700 mt-1">This is a system account used for automatic posting. Some properties cannot be changed.</p>
-                                    </div>
-                                </div>
+                            <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-start gap-3">
+                                <InformationCircleIcon className="w-4 h-4 text-blue-600 mt-0.5" />
+                                <p className="text-[10px] sm:text-xs font-medium text-blue-700">
+                                    System Account: This account is used for automatic bookkeeping. Some core properties are protected.
+                                </p>
                             </div>
                         )}
                     </div>
 
-                    <div className="bg-gradient-to-b from-white to-slate-50 px-6 py-5 border-t border-slate-200 flex justify-end gap-3">
+                    <div className="bg-slate-50 px-6 py-5 border-t border-slate-200 flex flex-col-reverse sm:flex-row justify-end gap-3">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all duration-200"
+                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-all duration-200"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
-                            className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-sm"
+                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-black text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl hover:shadow-lg hover:shadow-blue-500/25 transition-all duration-200"
                         >
                             Save Account
                         </button>
@@ -382,6 +369,7 @@ const ChartOfAccountsView: React.FC<{
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeActionMenu, setActiveActionMenu] = useState<string | null>(null);
     const [expandedSections, setExpandedSections] = useState<Record<AccountType, boolean>>({
         asset: true, liability: true, equity: true, revenue: true, expense: true
     });
@@ -389,6 +377,7 @@ const ChartOfAccountsView: React.FC<{
     const handleEdit = (account: Account) => {
         setEditingAccount(account);
         setIsModalOpen(true);
+        setActiveActionMenu(null);
     };
 
     const handleAdd = () => {
@@ -410,98 +399,106 @@ const ChartOfAccountsView: React.FC<{
         );
     }, [accounts, searchTerm]);
 
-    const getTypeStats = (type: AccountType) => {
-        const typeAccounts = filteredAccounts.filter(a => a.type === type);
-        const totalBalance = typeAccounts.reduce((sum, a) => sum + a.balance, 0);
-        const count = typeAccounts.length;
-        return { totalBalance, count };
-    };
-
-    const renderAccountList = (type: AccountType, title: string, iconColor: string) => {
+    const renderAccountList = (type: AccountType, title: string, iconColor: string, accentColor: string) => {
         const typeAccounts = filteredAccounts.filter(a => a.type === type);
         if (typeAccounts.length === 0) return null;
 
-        const stats = getTypeStats(type);
+        const totalBalance = typeAccounts.reduce((sum, a) => sum + a.balance, 0);
         const isExpanded = expandedSections[type];
 
         return (
-            <div className="mb-6">
-                <div
-                    className="flex items-center justify-between p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors"
+            <div className="mb-4">
+                <button
                     onClick={() => toggleSection(type)}
+                    className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 transition-all duration-200 shadow-sm group"
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${iconColor}`}>
+                        <div className={`p-2 rounded-xl bg-slate-50 group-hover:bg-white transition-colors border border-transparent group-hover:border-slate-100 ${accentColor}`}>
                             <CalculatorIcon className="w-4 h-4" />
                         </div>
-                        <div>
-                            <h4 className="font-semibold text-slate-900">{title}s</h4>
-                            <div className="flex items-center gap-3 text-xs text-slate-600">
-                                <span>{typeAccounts.length} accounts</span>
-                                <span>•</span>
-                                <span>Total: {formatCurrency(stats.totalBalance, storeSettings)}</span>
-                            </div>
+                        <div className="text-left">
+                            <h4 className="font-black text-slate-900 tracking-tight text-sm uppercase">{title}s</h4>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                                {typeAccounts.length} accounts • Total: {formatCurrency(totalBalance, storeSettings)}
+                            </p>
                         </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                        <div className={`text-sm font-semibold px-2.5 py-1 rounded-lg ${type === 'asset' ? 'bg-blue-50 text-blue-700' :
-                            type === 'liability' ? 'bg-red-50 text-red-700' :
-                                type === 'equity' ? 'bg-purple-50 text-purple-700' :
-                                    type === 'revenue' ? 'bg-green-50 text-green-700' :
-                                        'bg-amber-50 text-amber-700'
-                            }`}>
-                            {type.charAt(0).toUpperCase()}
-                        </div>
-                        <ChevronDownIcon className={`w-5 h-5 text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
-                    </div>
-                </div>
+                    <ChevronDownIcon className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                </button>
 
                 {isExpanded && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-2 space-y-2 pl-2">
                         {typeAccounts.sort((a, b) => a.number.localeCompare(b.number)).map(account => (
-                            <div key={account.id} className="group flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 transition-all duration-200">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-3 mb-1">
-                                        <div className="font-mono text-sm font-medium text-slate-500 min-w-[60px]">
+                            <div key={account.id} className="relative group bg-white border border-slate-100 rounded-xl p-3 md:p-4 hover:border-blue-200 hover:shadow-sm transition-all duration-200">
+                                <div className="flex items-center justify-between gap-4">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="hidden sm:block font-mono text-xs font-black text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">
                                             {account.number}
                                         </div>
-                                        <div className="flex-1 min-w-0">
+                                        <div className="min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <h5 className="font-semibold text-slate-900 truncate">{account.name}</h5>
+                                                <span className="sm:hidden font-mono text-[10px] font-black text-slate-400">{account.number}</span>
+                                                <h5 className="font-bold text-slate-900 text-sm truncate">{account.name}</h5>
                                                 {account.subType && (
-                                                    <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-600 rounded-full">
-                                                        System
-                                                    </span>
+                                                    <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black uppercase tracking-tighter">System</span>
                                                 )}
                                             </div>
                                             {account.description && (
-                                                <p className="text-xs text-slate-500 truncate mt-1">{account.description}</p>
+                                                <p className="text-[10px] text-slate-500 truncate mt-0.5">{account.description}</p>
                                             )}
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="text-right">
-                                        <div className={`text-sm font-bold ${account.balance >= 0 ? 'text-slate-900' : 'text-red-600'
-                                            }`}>
+
+                                    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                                        <div className={`text-sm md:text-base font-black tracking-tight ${account.balance >= 0 ? 'text-slate-900' : 'text-red-600'}`}>
                                             {formatCurrency(account.balance, storeSettings)}
                                         </div>
-                                    </div>
-                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                                        <button
-                                            onClick={() => handleEdit(account)}
-                                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        >
-                                            <PencilIcon className="w-4 h-4" />
-                                        </button>
-                                        {!account.subType && (
-                                            <button
-                                                onClick={() => onDeleteAccount(account.id)}
-                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                            >
-                                                <TrashIcon className="w-4 h-4" />
+
+                                        {/* Desktop Actions */}
+                                        <div className="hidden md:flex items-center gap-1">
+                                            <button onClick={() => handleEdit(account)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                                <PencilIcon className="w-4 h-4" />
                                             </button>
-                                        )}
+                                            {!account.subType && (
+                                                <button onClick={() => onDeleteAccount(account.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                    <TrashIcon className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </div>
+
+                                        {/* Mobile Actions */}
+                                        <div className="md:hidden relative">
+                                            <button
+                                                onClick={() => setActiveActionMenu(activeActionMenu === account.id ? null : account.id)}
+                                                className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors"
+                                            >
+                                                <EllipsisVerticalIcon className="w-5 h-5 text-slate-400" />
+                                            </button>
+
+                                            {activeActionMenu === account.id && (
+                                                <>
+                                                    <div className="fixed inset-0 z-30" onClick={() => setActiveActionMenu(null)}></div>
+                                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-scale-up">
+                                                        <button
+                                                            onClick={() => handleEdit(account)}
+                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                                                        >
+                                                            <PencilIcon className="w-4 h-4 text-blue-500" />
+                                                            Edit Account
+                                                        </button>
+                                                        {!account.subType && (
+                                                            <button
+                                                                onClick={() => { onDeleteAccount(account.id); setActiveActionMenu(null); }}
+                                                                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50"
+                                                            >
+                                                                <TrashIcon className="w-4 h-4" />
+                                                                Delete Account
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -513,46 +510,40 @@ const ChartOfAccountsView: React.FC<{
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold text-slate-900">Chart of Accounts</h3>
-                    <p className="text-slate-600 mt-1">Manage your accounting accounts and categories</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Chart of Accounts</h3>
+                    <p className="text-sm text-slate-600 mt-1">Organize and manage your financial structure</p>
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-600/20"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black text-sm rounded-2xl hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300"
                 >
                     <PlusIcon className="w-5 h-5" />
-                    Add Account
+                    New Account
                 </button>
             </div>
 
-            {/* Search Bar */}
-            <div className="relative">
+            <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                    <div className="w-5 h-5">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </div>
+                    <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    placeholder="Search accounts by name, number, or description..."
-                    className="w-full pl-12 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                    placeholder="Search accounts name or number..."
+                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-sm font-medium shadow-sm"
                 />
             </div>
 
-            {/* Account Lists */}
-            <div className="space-y-2">
-                {renderAccountList('asset', 'Asset', 'bg-blue-100 text-blue-600')}
-                {renderAccountList('liability', 'Liability', 'bg-red-100 text-red-600')}
-                {renderAccountList('equity', 'Equity', 'bg-purple-100 text-purple-600')}
-                {renderAccountList('revenue', 'Revenue', 'bg-green-100 text-green-600')}
-                {renderAccountList('expense', 'Expense', 'bg-amber-100 text-amber-600')}
+            <div className="animate-fade-in space-y-2">
+                {renderAccountList('asset', 'Asset', 'bg-blue-100 text-blue-600', 'text-blue-600')}
+                {renderAccountList('liability', 'Liability', 'bg-red-100 text-red-600', 'text-red-600')}
+                {renderAccountList('equity', 'Equity', 'bg-purple-100 text-purple-600', 'text-purple-600')}
+                {renderAccountList('revenue', 'Revenue', 'bg-green-100 text-green-600', 'text-green-600')}
+                {renderAccountList('expense', 'Expense', 'bg-amber-100 text-amber-600', 'text-amber-600')}
             </div>
 
             <AccountFormModal
@@ -657,39 +648,50 @@ const JournalView: React.FC<{
     );
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold text-slate-900">General Journal</h3>
-                    <p className="text-slate-600 mt-1">View and manage all accounting entries</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900">General Journal</h3>
+                    <p className="text-sm text-slate-600 mt-1">View and manage all accounting entries</p>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600">
-                    <span className="px-3 py-1.5 bg-slate-100 rounded-lg">Balance</span>
-                    <span className="font-medium text-slate-900">{formatCurrency(totalDebits, storeSettings)}</span>
-                    <span className="text-slate-400">/</span>
-                    <span className="font-medium text-slate-900">{formatCurrency(totalCredits, storeSettings)}</span>
+                <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-xl border border-slate-100 self-start lg:self-auto">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Total Dr</span>
+                            <span className="font-bold text-blue-700">{formatCurrency(totalDebits, storeSettings)}</span>
+                        </div>
+                        <div className="hidden sm:block text-slate-300">|</div>
+                        <div className="flex items-center gap-2">
+                            <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">Total Cr</span>
+                            <span className="font-bold text-green-700">{formatCurrency(totalCredits, storeSettings)}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700">Filter by Date</label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <div className="relative group">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <CalendarIcon className="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    </div>
                     <input
                         type="date"
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm"
                     />
                 </div>
-                <div className="space-y-2">
-                    <label className="block text-sm font-semibold text-slate-700">Search Entries</label>
+                <div className="relative group">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                        <MagnifyingGlassIcon className="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    </div>
                     <input
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        placeholder="Search by description or account..."
-                        className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                        placeholder="Search entries..."
+                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm"
                     />
                 </div>
             </div>
@@ -697,52 +699,60 @@ const JournalView: React.FC<{
             {/* Journal Entries */}
             <div className="space-y-4">
                 {filteredEntries.length === 0 ? (
-                    <div className="text-center py-12 bg-gradient-to-b from-white to-slate-50 rounded-2xl border border-slate-200">
-                        <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                            <BookOpenIcon className="w-8 h-8 text-slate-400" />
+                    <div className="text-center py-12 md:py-24 bg-white rounded-3xl border border-slate-100 shadow-sm">
+                        <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                            <BookOpenIcon className="w-8 h-8 text-slate-300" />
                         </div>
-                        <p className="text-slate-700 font-medium mb-2">No journal entries found</p>
-                        <p className="text-sm text-slate-500">Try adjusting your filters or date range</p>
+                        <p className="text-slate-600 font-medium">No journal entries found</p>
+                        <p className="text-sm text-slate-500 mt-1">Try adjusting your filters or date range</p>
                     </div>
                 ) : (
                     filteredEntries.map(entry => (
-                        <div key={entry.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                            <div className="p-5 border-b border-slate-100">
-                                <div className="flex items-start justify-between mb-3">
+                        <div key={entry.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden group hover:border-slate-300 transition-colors">
+                            <div className="p-4 md:p-5 border-b border-slate-50 bg-slate-50/30">
+                                <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="px-2.5 py-1 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                                            <div className="px-2.5 py-1 bg-white shadow-sm border border-slate-100 text-slate-700 text-[10px] md:text-xs font-bold rounded-lg flex items-center gap-1.5 uppercase tracking-wider">
+                                                <CalendarDaysIcon className="w-3 h-3 text-slate-400" />
                                                 {new Date(entry.date).toLocaleDateString()}
                                             </div>
                                             {entry.reference && (
-                                                <div className="px-2.5 py-1 bg-gradient-to-r from-slate-50 to-slate-100 text-slate-700 text-xs font-medium rounded-full">
+                                                <div className="px-2.5 py-1 bg-blue-50 text-blue-700 text-[10px] md:text-xs font-bold rounded-lg border border-blue-100 uppercase tracking-wider">
                                                     Ref: {entry.reference}
                                                 </div>
                                             )}
                                         </div>
-                                        <p className="font-semibold text-slate-900">{entry.description}</p>
+                                        <p className="font-bold text-slate-900 text-sm md:text-base leading-tight">{entry.description}</p>
                                     </div>
-                                    <div className="text-right">
-                                        <div className="text-xs text-slate-500">Entry ID</div>
-                                        <div className="text-sm font-mono text-slate-900">{entry.id.substring(0, 8)}</div>
+                                    <div className="text-right shrink-0">
+                                        <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-0.5">ID</div>
+                                        <div className="text-xs font-mono font-bold text-slate-600 px-2 py-0.5 bg-slate-100 rounded-md">
+                                            {entry.id.substring(0, 8)}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div className="p-5">
-                                <div className="space-y-3">
+                            <div className="p-4 md:p-5 bg-white">
+                                <div className="space-y-1.5 md:space-y-2">
                                     {entry.lines.map((line, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-3 bg-gradient-to-r from-slate-50 to-slate-100/50 rounded-xl border border-slate-200">
+                                        <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-transparent hover:border-slate-100 hover:bg-slate-50/50 transition-all duration-200">
                                             <div className="flex items-center gap-3">
-                                                <div className={`w-2 h-8 rounded-full ${line.type === 'debit' ? 'bg-gradient-to-b from-blue-500 to-blue-600' : 'bg-gradient-to-b from-green-500 to-green-600'
+                                                <div className={`w-1 md:w-1.5 h-10 rounded-full ${line.type === 'debit' ? 'bg-gradient-to-b from-blue-400 to-blue-600' : 'bg-gradient-to-b from-emerald-400 to-emerald-600'
                                                     }`}></div>
-                                                <div>
-                                                    <div className="font-medium text-slate-900">{line.accountName}</div>
-                                                    <div className="text-xs text-slate-500">Account: {line.accountId}</div>
+                                                <div className="min-w-0">
+                                                    <div className="font-bold text-slate-900 text-sm truncate">{line.accountName}</div>
+                                                    <div className="text-[10px] text-slate-500 font-medium uppercase tracking-tight truncate">Acc: {line.accountId}</div>
                                                 </div>
                                             </div>
-                                            <div className={`text-lg font-bold ${line.type === 'debit' ? 'text-blue-700' : 'text-green-700'
-                                                }`}>
-                                                {formatCurrency(line.amount, storeSettings)}
+                                            <div className="text-right shrink-0">
+                                                <div className={`text-base md:text-lg font-black tracking-tight ${line.type === 'debit' ? 'text-blue-700' : 'text-emerald-700'
+                                                    }`}>
+                                                    {formatCurrency(line.amount, storeSettings)}
+                                                </div>
+                                                <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                                                    {line.type}
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -1058,6 +1068,7 @@ const ARManagementView: React.FC<{
     const [isStatementModalOpen, setIsStatementModalOpen] = useState(false);
     const [selectedCustomerForStatement, setSelectedCustomerForStatement] = useState<Customer | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('open');
+    const [activeActionMenu, setActiveActionMenu] = useState<string | null>(null);
 
     const sortedInvoices = useMemo(() => {
         return sales
@@ -1089,17 +1100,10 @@ const ARManagementView: React.FC<{
             return sortedInvoices.filter(s => !isPaid(s) && s.dueDate && new Date(s.dueDate) < new Date());
         }
 
-        // Default 'open' - show only unpaid
         return sortedInvoices.filter(s => !isPaid(s));
     }, [sortedInvoices, statusFilter]);
 
     const totalOutstanding = useMemo(() =>
-        // Calculation should probably be based on ALL unpaid invoices, not just filtered view
-        // But for "Total Outstanding" display, it typically implies current open debt. 
-        // Let's stick to calculating from ALL OPEN invoices regardless of view, 
-        // or just calculate from the current filtered set? 
-        // User probably wants "Total Receivable" (global) vs current grid sum.
-        // Let's calculate global outstanding for the summary card.
         sortedInvoices.reduce((sum, inv) => {
             const calculatedAmountPaid = inv.payments?.reduce((pSum, p) => pSum + p.amount, 0) ?? inv.amountPaid;
             return sum + Math.max(0, inv.total - calculatedAmountPaid);
@@ -1129,7 +1133,7 @@ const ARManagementView: React.FC<{
 
         if (isPaid) {
             return (
-                <span className="px-2.5 py-1 bg-gradient-to-r from-green-50 to-green-100 text-green-700 text-xs font-medium rounded-full">
+                <span className="px-2.5 py-1 bg-gradient-to-r from-green-50 to-green-100 text-green-700 text-[10px] md:text-xs font-medium rounded-full">
                     Paid
                 </span>
             );
@@ -1137,88 +1141,63 @@ const ARManagementView: React.FC<{
 
         if (isOverdue) {
             return (
-                <span className="px-2.5 py-1 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-xs font-medium rounded-full">
+                <span className="px-2.5 py-1 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-[10px] md:text-xs font-medium rounded-full">
                     Overdue
                 </span>
             );
         }
 
         return (
-            <span className="px-2.5 py-1 bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 text-xs font-medium rounded-full">
+            <span className="px-2.5 py-1 bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 text-[10px] md:text-xs font-medium rounded-full">
                 Pending
             </span>
         );
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold text-slate-900">Accounts Receivable</h3>
-                    <p className="text-slate-600 mt-1">Manage customer invoices and payments</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900">Accounts Receivable</h3>
+                    <p className="text-sm text-slate-600 mt-1">Manage customer invoices and payments</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                        <div className="text-sm font-medium text-blue-700">Total Outstanding</div>
-                        <div className="text-xl font-bold text-blue-900">{formatCurrency(totalOutstanding, storeSettings)}</div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
+                        <div className="text-xs font-medium text-blue-700 uppercase tracking-wider">Total Outstanding</div>
+                        <div className="text-lg md:text-xl font-bold text-blue-900">{formatCurrency(totalOutstanding, storeSettings)}</div>
                     </div>
                 </div>
             </div>
 
-            {/* Filters */}
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setStatusFilter('open')}
-                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'open'
-                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-sm'
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                            }`}
-                    >
-                        Open
-                    </button>
-                    <button
-                        onClick={() => setStatusFilter('overdue')}
-                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'overdue'
-                            ? 'bg-gradient-to-r from-red-600 to-red-700 text-white shadow-sm'
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                            }`}
-                    >
-                        Overdue
-                    </button>
-                    <button
-                        onClick={() => setStatusFilter('paid')}
-                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'paid'
-                            ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-sm'
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                            }`}
-                    >
-                        Paid
-                    </button>
-                    <button
-                        onClick={() => setStatusFilter('all')}
-                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'all'
-                            ? 'bg-gradient-to-r from-slate-700 to-slate-800 text-white shadow-sm'
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                            }`}
-                    >
-                        All History
-                    </button>
+            {/* Filters and Actions */}
+            <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex flex-wrap items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                    {['open', 'overdue', 'paid', 'all'].map((status) => (
+                        <button
+                            key={status}
+                            onClick={() => setStatusFilter(status)}
+                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 whitespace-nowrap ${statusFilter === status
+                                ? 'bg-blue-900 border-blue-900 text-white shadow-lg'
+                                : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300'
+                                }`}
+                        >
+                            {status === 'all' ? 'All History' : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </button>
+                    ))}
                 </div>
 
                 <div className="flex-1"></div>
 
-                <div className="relative">
+                <div className="relative group">
                     <div className="absolute left-3 top-1/2 -translate-y-1/2">
-                        <UsersIcon className="w-4 h-4 text-slate-400" />
+                        <UsersIcon className="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                     </div>
                     <select
                         onChange={e => e.target.value && handleGenerateStatement(e.target.value)}
                         value={''}
-                        className="pl-10 pr-8 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none bg-white text-sm"
+                        className="w-full md:w-64 pl-10 pr-8 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 appearance-none text-sm font-medium text-slate-700 shadow-sm"
                     >
-                        <option value="" disabled>Generate Customer Statement</option>
+                        <option value="" disabled>Generate Statement</option>
                         {customers.filter(c => c.accountBalance > 0).map(c => (
                             <option key={c.id} value={c.id}>
                                 {c.name} ({formatCurrency(c.accountBalance, storeSettings)})
@@ -1228,8 +1207,91 @@ const ARManagementView: React.FC<{
                 </div>
             </div>
 
-            {/* Invoices Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Mobile View: Cards */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredInvoices.map(invoice => {
+                    const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
+                    const rawBalance = (invoice.total - calculatedAmountPaid);
+                    const balanceCents = Math.round(rawBalance * 100);
+                    const balanceDue = Math.max(0, balanceCents) / 100;
+                    const isPaid = balanceCents <= 0 || invoice.paymentStatus === 'paid';
+                    const isOverdue = !isPaid && invoice.dueDate && new Date(invoice.dueDate) < new Date();
+                    const customerName = invoice.customerName || (invoice.customerId ? customersById[invoice.customerId]?.name : undefined) || 'Unknown Customer';
+
+                    return (
+                        <div
+                            key={invoice.transactionId}
+                            className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group active:bg-slate-50 transition-colors"
+                            onClick={() => onViewInvoice(invoice)}
+                        >
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <span className="text-sm font-bold text-slate-900">#{invoice.transactionId}</span>
+                                        <StatusBadge invoice={invoice} />
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                        <UsersIcon className="w-3.5 h-3.5" />
+                                        <span>{customerName}</span>
+                                    </div>
+                                </div>
+                                <div className="relative" onClick={e => e.stopPropagation()}>
+                                    <button
+                                        onClick={() => setActiveActionMenu(activeActionMenu === invoice.transactionId ? null : invoice.transactionId)}
+                                        className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full"
+                                    >
+                                        <EllipsisVerticalIcon className="w-5 h-5" />
+                                    </button>
+                                    {activeActionMenu === invoice.transactionId && (
+                                        <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-10 py-1 animate-fade-in-up">
+                                            <button
+                                                onClick={() => {
+                                                    onViewInvoice(invoice);
+                                                    setActiveActionMenu(null);
+                                                }}
+                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                            >
+                                                <EyeIcon className="w-4 h-4" />
+                                                View Details
+                                            </button>
+                                            {!isPaid && (
+                                                <button
+                                                    onClick={() => {
+                                                        handleRecordPaymentClick(invoice);
+                                                        setActiveActionMenu(null);
+                                                    }}
+                                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium"
+                                                >
+                                                    <CalculatorIcon className="w-4 h-4" />
+                                                    Record Payment
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-50">
+                                <div>
+                                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Due Date</div>
+                                    <div className={`text-sm font-semibold ${isOverdue ? 'text-red-600' : 'text-slate-900'}`}>
+                                        {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}
+                                    </div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Balance Due</div>
+                                    <div className="text-sm font-bold text-slate-900">
+                                        {formatCurrency(balanceDue, storeSettings)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Desktop View: Table */}
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-200">
                         <thead className="bg-slate-50">
@@ -1269,7 +1331,7 @@ const ARManagementView: React.FC<{
                                                 <div className="w-8 h-8 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg flex items-center justify-center">
                                                     <UsersIcon className="w-4 h-4 text-blue-600" />
                                                 </div>
-                                                <span className="text-sm text-slate-900">{customerName}</span>
+                                                <span className="text-sm text-slate-900 font-medium">{customerName}</span>
                                             </div>
                                         </td>
                                         <td className={`px-6 py-4 whitespace-nowrap text-sm ${isOverdue ? 'text-red-600 font-semibold' : 'text-slate-500'}`}>
@@ -1294,27 +1356,29 @@ const ARManagementView: React.FC<{
                                     </tr>
                                 );
                             })}
-                            {filteredInvoices.length === 0 && (
-                                <tr>
-                                    <td colSpan={6} className="text-center py-12">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                            <DocumentChartBarIcon className="w-8 h-8 text-slate-400" />
-                                        </div>
-                                        <p className="text-slate-600 font-medium">No open invoices found</p>
-                                        <p className="text-sm text-slate-500 mt-1">All invoices are paid up!</p>
-                                    </td>
-                                </tr>
-                            )}
                         </tbody>
                     </table>
                 </div>
             </div>
 
+            {filteredInvoices.length === 0 && (
+                <div className="text-center py-12 md:py-24 bg-white rounded-2xl border border-slate-100 shadow-sm">
+                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <DocumentChartBarIcon className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="text-slate-600 font-medium">No open invoices found</p>
+                    <p className="text-sm text-slate-500 mt-1">All invoices are paid up!</p>
+                </div>
+            )}
+
             {
                 selectedInvoice && (
                     <RecordPaymentModal
                         isOpen={isPaymentModalOpen}
-                        onClose={() => setIsPaymentModalOpen(false)}
+                        onClose={() => {
+                            setIsPaymentModalOpen(false);
+                            setActiveActionMenu(null);
+                        }}
                         invoice={sales.find(s => s.transactionId === selectedInvoice.transactionId) || selectedInvoice}
                         onSave={onRecordPayment}
                         storeSettings={storeSettings}
@@ -1352,6 +1416,7 @@ const APManagementView: React.FC<{
 }> = ({ supplierInvoices, storeSettings, onRecordPayment, onViewInvoice, onOpenInvoiceForm }) => {
     const [invoiceToPay, setInvoiceToPay] = useState<SupplierInvoice | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [activeActionMenu, setActiveActionMenu] = useState<string | null>(null);
 
     const StatusBadge: React.FC<{ status: SupplierInvoice['status'] }> = ({ status }) => {
         const statusConfig = {
@@ -1363,8 +1428,8 @@ const APManagementView: React.FC<{
         const config = statusConfig[status] || statusConfig.unpaid;
 
         return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-                <div className={`w-2 h-2 rounded-full bg-gradient-to-br ${config.color}`}></div>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs font-medium ${config.bg} ${config.text}`}>
+                <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gradient-to-br ${config.color}`}></div>
                 {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </span>
         );
@@ -1403,23 +1468,23 @@ const APManagementView: React.FC<{
     );
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold text-slate-900">Accounts Payable</h3>
-                    <p className="text-slate-600 mt-1">Manage supplier invoices and payments</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900">Accounts Payable</h3>
+                    <p className="text-sm text-slate-600 mt-1">Manage supplier invoices and payments</p>
                 </div>
-                <div className="flex items-center gap-4">
-                    <div className="px-4 py-2.5 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl border border-amber-200">
-                        <div className="text-sm font-medium text-amber-700">Total Outstanding</div>
-                        <div className="text-xl font-bold text-amber-900">{formatCurrency(totalOutstanding, storeSettings)}</div>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                    <div className="flex-1 px-4 py-2.5 bg-gradient-to-r from-amber-50 to-amber-100 rounded-xl border border-amber-200">
+                        <div className="text-xs font-medium text-amber-700 uppercase tracking-wider">Total Outstanding</div>
+                        <div className="text-lg md:text-xl font-bold text-amber-900">{formatCurrency(totalOutstanding, storeSettings)}</div>
                     </div>
                     <button
                         onClick={onOpenInvoiceForm}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md shadow-blue-100"
                     >
                         <PlusIcon className="w-5 h-5" />
-                        Record Invoice
+                        <span className="whitespace-nowrap">Record Invoice</span>
                     </button>
                 </div>
             </div>
@@ -1442,46 +1507,95 @@ const APManagementView: React.FC<{
 
             {/* Filters */}
             <div className="flex flex-wrap items-center gap-2">
-                <button
-                    onClick={() => setStatusFilter('all')}
-                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'all'
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                        }`}
-                >
-                    All Invoices
-                </button>
-                <button
-                    onClick={() => setStatusFilter('unpaid')}
-                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'unpaid'
-                        ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white'
-                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                        }`}
-                >
-                    Unpaid
-                </button>
-                <button
-                    onClick={() => setStatusFilter('partially_paid')}
-                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'partially_paid'
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                        }`}
-                >
-                    Partially Paid
-                </button>
-                <button
-                    onClick={() => setStatusFilter('overdue')}
-                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === 'overdue'
-                        ? 'bg-gradient-to-r from-red-600 to-red-700 text-white'
-                        : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
-                        }`}
-                >
-                    Overdue
-                </button>
+                {['all', 'unpaid', 'overdue', 'paid'].map((status) => (
+                    <button
+                        key={status}
+                        onClick={() => setStatusFilter(status)}
+                        className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${statusFilter === status
+                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
+                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                            }`}
+                    >
+                        {status === 'all' ? 'All Invoices' : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </button>
+                ))}
             </div>
 
-            {/* Invoices Table */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            {/* Mobile View: Cards */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredInvoices.map(invoice => (
+                    <div
+                        key={invoice.id}
+                        className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm relative overflow-hidden group active:bg-slate-50 transition-colors"
+                        onClick={() => onViewInvoice(invoice)}
+                    >
+                        <div className="flex justify-between items-start mb-3">
+                            <div>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-sm font-bold text-slate-900">{invoice.invoiceNumber}</span>
+                                    <StatusBadge status={invoice.status} />
+                                </div>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                    <BuildingOfficeIcon className="w-3.5 h-3.5" />
+                                    <span>{invoice.supplierName}</span>
+                                </div>
+                            </div>
+                            <div className="relative" onClick={e => e.stopPropagation()}>
+                                <button
+                                    onClick={() => setActiveActionMenu(activeActionMenu === invoice.id ? null : invoice.id)}
+                                    className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full"
+                                >
+                                    <EllipsisVerticalIcon className="w-5 h-5" />
+                                </button>
+                                {activeActionMenu === invoice.id && (
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-xl border border-slate-100 z-10 py-1 animate-fade-in-up">
+                                        <button
+                                            onClick={() => {
+                                                onViewInvoice(invoice);
+                                                setActiveActionMenu(null);
+                                            }}
+                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 hover:bg-slate-50"
+                                        >
+                                            <EyeIcon className="w-4 h-4" />
+                                            View Details
+                                        </button>
+                                        {invoice.status !== 'paid' && (
+                                            <button
+                                                onClick={() => {
+                                                    setInvoiceToPay(invoice);
+                                                    setActiveActionMenu(null);
+                                                }}
+                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 hover:bg-blue-50 font-medium"
+                                            >
+                                                <CalculatorIcon className="w-4 h-4" />
+                                                Record Payment
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-50">
+                            <div>
+                                <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Due Date</div>
+                                <div className={`text-sm font-semibold ${invoice.status === 'overdue' ? 'text-red-600' : 'text-slate-900'}`}>
+                                    {new Date(invoice.dueDate).toLocaleDateString()}
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <div className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Outstanding</div>
+                                <div className="text-sm font-bold text-slate-900">
+                                    {formatCurrency(invoice.amount - invoice.amountPaid, storeSettings)}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop View: Table */}
+            <div className="hidden md:block bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-slate-200">
                         <thead className="bg-slate-50">
@@ -1559,7 +1673,10 @@ const APManagementView: React.FC<{
             {invoiceToPay && (
                 <RecordSupplierPaymentModal
                     isOpen={!!invoiceToPay}
-                    onClose={() => setInvoiceToPay(null)}
+                    onClose={() => {
+                        setInvoiceToPay(null);
+                        setActiveActionMenu(null);
+                    }}
                     invoice={invoiceToPay}
                     onSave={onRecordPayment}
                     storeSettings={storeSettings}
@@ -1604,147 +1721,141 @@ const TaxReportView: React.FC<{ sales: Sale[], storeSettings: StoreSettings }> =
     const taxRate = storeSettings.taxRate;
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold text-slate-900">Sales Tax Report</h3>
-                    <p className="text-slate-600 mt-1">Track and report sales tax collections</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900">Sales Tax Report</h3>
+                    <p className="text-sm text-slate-600 mt-1">Track and report sales tax collections</p>
                 </div>
-                <div className="flex flex-wrap items-center gap-2">
-                    <div className="relative">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative group flex-1 sm:flex-none">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            <CalendarDaysIcon className="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        </div>
                         <input
                             type="date"
                             value={startDate}
                             onChange={e => setStartDate(e.target.value)}
-                            className="px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                            className="w-full sm:w-auto pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium text-slate-700"
                         />
                     </div>
-                    <span className="text-slate-500">to</span>
-                    <div className="relative">
+                    <span className="hidden sm:block text-slate-400 font-bold px-1">/</span>
+                    <div className="relative group flex-1 sm:flex-none">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            <CalendarDaysIcon className="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        </div>
                         <input
                             type="date"
                             value={endDate}
                             onChange={e => setEndDate(e.target.value)}
-                            className="px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                            className="w-full sm:w-auto pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium text-slate-700"
                         />
                     </div>
                 </div>
             </div>
 
             {/* Tax Summary Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 p-5 md:p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-                            <ArrowTrendingUpIcon className="w-6 h-6 text-white" />
+                        <div className="p-2.5 bg-blue-600 rounded-xl shadow-lg shadow-blue-200">
+                            <ArrowTrendingUpIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-sm font-medium text-blue-700">Taxable Sales</div>
+                            <div className="text-[10px] uppercase tracking-wider font-bold text-blue-700">Taxable Sales</div>
                         </div>
                     </div>
-                    <div className="text-2xl font-bold text-blue-900">{formatCurrency(filteredData.totalSales, storeSettings)}</div>
-                    <div className="text-xs text-blue-600 mt-2">Total sales subject to tax</div>
+                    <div className="text-xl md:text-2xl font-black text-blue-900 tracking-tight">{formatCurrency(filteredData.totalSales, storeSettings)}</div>
+                    <div className="text-[10px] font-medium text-blue-600 mt-2 uppercase tracking-wider">Subject to Tax</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl border border-emerald-200 p-6">
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl border border-emerald-200 p-5 md:p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl">
-                            <BanknotesIcon className="w-6 h-6 text-white" />
+                        <div className="p-2.5 bg-emerald-600 rounded-xl shadow-lg shadow-emerald-200">
+                            <BanknotesIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-sm font-medium text-emerald-700">Tax Collected</div>
+                            <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700">Tax Collected</div>
                         </div>
                     </div>
-                    <div className="text-2xl font-bold text-emerald-900">{formatCurrency(filteredData.totalTax, storeSettings)}</div>
-                    <div className="text-xs text-emerald-600 mt-2">At {taxRate}% tax rate</div>
+                    <div className="text-xl md:text-2xl font-black text-emerald-900 tracking-tight">{formatCurrency(filteredData.totalTax, storeSettings)}</div>
+                    <div className="text-[10px] font-medium text-emerald-600 mt-2 uppercase tracking-wider">At {taxRate}% tax rate</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl border border-purple-200 p-6">
+                <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border border-purple-200 p-5 md:p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-gradient-to-br from-purple-500 to-violet-600 rounded-xl">
-                            <ReceiptPercentIcon className="w-6 h-6 text-white" />
+                        <div className="p-2.5 bg-purple-600 rounded-xl shadow-lg shadow-purple-200">
+                            <ReceiptPercentIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-sm font-medium text-purple-700">Transactions</div>
+                            <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700">Transactions</div>
                         </div>
                     </div>
-                    <div className="text-2xl font-bold text-purple-900">{filteredData.numberOfTransactions}</div>
-                    <div className="text-xs text-purple-600 mt-2">Taxable transactions</div>
+                    <div className="text-xl md:text-2xl font-black text-purple-900 tracking-tight">{filteredData.numberOfTransactions}</div>
+                    <div className="text-[10px] font-medium text-purple-600 mt-2 uppercase tracking-wider">Total Count</div>
                 </div>
 
-                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200 p-6">
+                <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl border border-slate-200 p-5 md:p-6 shadow-sm">
                     <div className="flex items-center justify-between mb-4">
-                        <div className="p-3 bg-gradient-to-br from-slate-500 to-slate-600 rounded-xl">
-                            <CalculatorIcon className="w-6 h-6 text-white" />
+                        <div className="p-2.5 bg-slate-600 rounded-xl shadow-lg shadow-slate-200">
+                            <CalculatorIcon className="w-5 h-5 text-white" />
                         </div>
                         <div className="text-right">
-                            <div className="text-sm font-medium text-slate-700">Avg Transaction</div>
+                            <div className="text-[10px] uppercase tracking-wider font-bold text-slate-700">Avg Transaction</div>
                         </div>
                     </div>
-                    <div className="text-2xl font-bold text-slate-900">{formatCurrency(filteredData.averageTransaction, storeSettings)}</div>
-                    <div className="text-xs text-slate-600 mt-2">Including tax</div>
+                    <div className="text-xl md:text-2xl font-black text-slate-900 tracking-tight">{formatCurrency(filteredData.averageTransaction, storeSettings)}</div>
+                    <div className="text-[10px] font-medium text-slate-500 mt-2 uppercase tracking-wider">Inc. Tax</div>
                 </div>
             </div>
 
             {/* Tax Calculation Details */}
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="px-6 py-5 border-b border-slate-100">
-                    <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-                            <CalculatorIcon className="w-5 h-5 text-blue-600" />
+                <div className="px-5 py-4 border-b border-slate-50 bg-slate-50/30">
+                    <div className="flex items-center gap-2">
+                        <div className="p-1.5 bg-white rounded-lg shadow-sm border border-slate-100">
+                            <CalculatorIcon className="w-4 h-4 text-blue-600" />
                         </div>
-                        <h3 className="text-lg font-semibold text-slate-900">Tax Calculation Details</h3>
+                        <h3 className="text-base font-bold text-slate-900">Tax Calculation Breakdown</h3>
                     </div>
                 </div>
-                <div className="p-6">
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-200">
-                            <div>
-                                <div className="text-sm font-medium text-slate-700">Taxable Sales</div>
-                                <div className="text-2xl font-bold text-slate-900 mt-1">{formatCurrency(filteredData.totalSales, storeSettings)}</div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-sm text-slate-500">× {taxRate}% Tax Rate</div>
-                            </div>
+                <div className="p-4 md:p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 hover:border-slate-200 transition-colors">
+                            <div className="text-[10px] uppercase tracking-wider font-bold text-slate-400 mb-1">Taxable Sales</div>
+                            <div className="text-xl font-black text-slate-900 tracking-tight">{formatCurrency(filteredData.totalSales, storeSettings)}</div>
+                            <div className="text-[10px] text-slate-500 mt-2 font-medium">Base amount for calculation</div>
                         </div>
 
-                        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200">
-                            <div>
-                                <div className="text-sm font-medium text-emerald-700">Tax Amount</div>
-                                <div className="text-2xl font-bold text-emerald-900 mt-1">{formatCurrency(filteredData.totalTax, storeSettings)}</div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-sm text-emerald-700">To be remitted</div>
-                            </div>
+                        <div className="p-4 bg-blue-50/50 rounded-2xl border border-blue-100 hover:border-blue-200 transition-colors">
+                            <div className="text-[10px] uppercase tracking-wider font-bold text-blue-700 mb-1">Tax Collected</div>
+                            <div className="text-xl font-black text-blue-900 tracking-tight">{formatCurrency(filteredData.totalTax, storeSettings)}</div>
+                            <div className="text-[10px] text-blue-600 mt-2 font-medium">Amount to be remitted ({taxRate}%)</div>
                         </div>
 
-                        <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
-                            <div>
-                                <div className="text-sm font-medium text-blue-700">Total with Tax</div>
-                                <div className="text-2xl font-bold text-blue-900 mt-1">
-                                    {formatCurrency(filteredData.totalSales + filteredData.totalTax, storeSettings)}
-                                </div>
+                        <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100 hover:border-emerald-200 transition-colors">
+                            <div className="text-[10px] uppercase tracking-wider font-bold text-emerald-700 mb-1">Total inclusive</div>
+                            <div className="text-xl font-black text-emerald-900 tracking-tight">
+                                {formatCurrency(filteredData.totalSales + filteredData.totalTax, storeSettings)}
                             </div>
-                            <div className="text-right">
-                                <div className="text-sm text-blue-700">Including tax</div>
-                            </div>
+                            <div className="text-[10px] text-emerald-600 mt-2 font-medium">Sum of sales and tax</div>
                         </div>
                     </div>
+                </div>
 
-                    <div className="mt-6 p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-200">
-                        <div className="flex items-start gap-2">
-                            <div className="mt-0.5">
-                                <InformationCircleIcon className="w-5 h-5 text-slate-400" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-slate-600">
-                                    This report summarizes the total sales tax collected at the rate of {taxRate}% for the selected period.
-                                    The tax amount of {formatCurrency(filteredData.totalTax, storeSettings)} should be remitted to the relevant tax authorities.
-                                </p>
-                                <p className="text-xs text-slate-500 mt-2">
-                                    Note: This is a simplified report based on a single tax rate. For multi-rate tax management, further configuration is required.
-                                </p>
-                            </div>
+                <div className="mt-6 p-4 bg-gradient-to-r from-slate-50 to-slate-100 rounded-xl border border-slate-200">
+                    <div className="flex items-start gap-2">
+                        <div className="mt-0.5">
+                            <InformationCircleIcon className="w-5 h-5 text-slate-400" />
+                        </div>
+                        <div>
+                            <p className="text-sm text-slate-600">
+                                This report summarizes the total sales tax collected at the rate of {taxRate}% for the selected period.
+                                The tax amount of {formatCurrency(filteredData.totalTax, storeSettings)} should be remitted to the relevant tax authorities.
+                            </p>
+                            <p className="text-xs text-slate-500 mt-2">
+                                Note: This is a simplified report based on a single tax rate. For multi-rate tax management, further configuration is required.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -1819,104 +1930,123 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
     }, [accounts]);
 
     const renderPNL = () => (
-        <div className="space-y-6">
+        <div className="space-y-4 md:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <h3 className="text-xl font-bold text-slate-900">Profit & Loss Statement</h3>
-                <div className="flex flex-wrap items-center gap-2">
-                    <input
-                        type="date"
-                        value={pnlStartDate}
-                        onChange={e => setPnlStartDate(e.target.value)}
-                        className="px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    />
-                    <span className="text-slate-500">to</span>
-                    <input
-                        type="date"
-                        value={pnlEndDate}
-                        onChange={e => setPnlEndDate(e.target.value)}
-                        className="px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                    />
+                <h3 className="text-lg font-bold text-slate-900">Profit & Loss Statement</h3>
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            <CalendarDaysIcon className="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        </div>
+                        <input
+                            type="date"
+                            value={pnlStartDate}
+                            onChange={e => setPnlStartDate(e.target.value)}
+                            className="w-full sm:w-auto pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium text-slate-700"
+                        />
+                    </div>
+                    <span className="hidden sm:block text-slate-400 font-bold px-1">/</span>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            <CalendarDaysIcon className="w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                        </div>
+                        <input
+                            type="date"
+                            value={pnlEndDate}
+                            onChange={e => setPnlEndDate(e.target.value)}
+                            className="w-full sm:w-auto pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm font-medium text-slate-700"
+                        />
+                    </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Revenue Section */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-green-50 to-emerald-50">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="px-5 py-4 border-b border-slate-50 bg-emerald-50/30">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg">
-                                    <ArrowTrendingUpIcon className="w-5 h-5 text-white" />
+                                <div className="p-2 bg-emerald-600 rounded-xl shadow-lg shadow-emerald-100">
+                                    <ArrowTrendingUpIcon className="w-4 h-4 text-white" />
                                 </div>
-                                <h4 className="font-semibold text-slate-900">Revenue</h4>
+                                <h4 className="font-bold text-slate-900">Revenue</h4>
                             </div>
-                            <div className="text-lg font-bold text-green-700">
+                            <div className="text-lg font-black text-emerald-700 tracking-tight">
                                 {formatCurrency(pnlData.totalRevenue, storeSettings)}
                             </div>
                         </div>
                     </div>
-                    <div className="p-6">
-                        <div className="space-y-3">
+                    <div className="p-4 md:p-5 flex-1 bg-white">
+                        <div className="space-y-1">
                             {pnlData.revenueAccounts.map(acc => (
-                                <div key={acc.name} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-colors">
-                                    <span className="text-sm text-slate-700">{acc.name}</span>
-                                    <span className="text-sm font-semibold text-green-700">
+                                <div key={acc.name} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100">
+                                    <span className="text-sm font-medium text-slate-700">{acc.name}</span>
+                                    <span className="text-sm font-bold text-emerald-700 tracking-tight">
                                         {formatCurrency(acc.balance, storeSettings)}
                                     </span>
                                 </div>
                             ))}
+                            {pnlData.revenueAccounts.length === 0 && (
+                                <div className="text-center py-8 text-slate-400 text-sm">No revenue entries</div>
+                            )}
                         </div>
                     </div>
                 </div>
 
                 {/* Expenses Section */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-red-50 to-red-50">
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="px-5 py-4 border-b border-slate-50 bg-red-50/30">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
-                                    <ArrowTrendingDownIcon className="w-5 h-5 text-white" />
+                                <div className="p-2 bg-red-600 rounded-xl shadow-lg shadow-red-100">
+                                    <ArrowTrendingDownIcon className="w-4 h-4 text-white" />
                                 </div>
-                                <h4 className="font-semibold text-slate-900">Expenses</h4>
+                                <h4 className="font-bold text-slate-900">Expenses</h4>
                             </div>
-                            <div className="text-lg font-bold text-red-700">
+                            <div className="text-lg font-black text-red-700 tracking-tight">
                                 {formatCurrency(pnlData.totalExpenses, storeSettings)}
                             </div>
                         </div>
                     </div>
-                    <div className="p-6">
-                        <div className="space-y-3">
+                    <div className="p-4 md:p-5 flex-1 bg-white">
+                        <div className="space-y-1">
                             {pnlData.expenseAccounts.map(acc => (
-                                <div key={acc.name} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-colors">
-                                    <span className="text-sm text-slate-700">{acc.name}</span>
-                                    <span className="text-sm font-semibold text-red-700">
+                                <div key={acc.name} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100">
+                                    <span className="text-sm font-medium text-slate-700">{acc.name}</span>
+                                    <span className="text-sm font-bold text-red-700 tracking-tight">
                                         ({formatCurrency(acc.balance, storeSettings)})
                                     </span>
                                 </div>
                             ))}
+                            {pnlData.expenseAccounts.length === 0 && (
+                                <div className="text-center py-8 text-slate-400 text-sm">No expense entries</div>
+                            )}
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Net Income Summary */}
-            <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl border border-slate-200 p-6">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl">
-                            <CalculatorIcon className="w-6 h-6 text-white" />
+            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-6 md:p-8 text-white shadow-xl">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-white/10 rounded-2xl backdrop-blur-md">
+                            <CalculatorIcon className="w-8 h-8 text-blue-400" />
                         </div>
                         <div>
-                            <h4 className="font-semibold text-slate-900">Net Income Summary</h4>
-                            <p className="text-sm text-slate-600 mt-1">Period: {new Date(pnlStartDate).toLocaleDateString()} to {new Date(pnlEndDate).toLocaleDateString()}</p>
+                            <h4 className="text-lg font-bold text-slate-100">Net Income Result</h4>
+                            <p className="text-sm text-slate-400 mt-1">Total revenue minus all expenses</p>
                         </div>
                     </div>
-                    <div className="text-right">
-                        <div className={`text-3xl font-bold ${pnlData.netIncome >= 0 ? 'text-green-700' : 'text-red-700'}`}>
+                    <div className="text-center md:text-right">
+                        <div className={`text-3xl md:text-4xl font-black tracking-tight ${pnlData.netIncome >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                             {formatCurrency(pnlData.netIncome, storeSettings)}
                         </div>
-                        <div className="text-sm text-slate-600 mt-1">
-                            {pnlData.netIncome >= 0 ? 'Profit' : 'Loss'}
+                        <div className="flex items-center justify-center md:justify-end gap-2 mt-2">
+                            <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${pnlData.netIncome >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'
+                                }`}>
+                                {pnlData.netIncome >= 0 ? 'Profit' : 'Loss'}
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -1925,74 +2055,72 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
     );
 
     const renderBalanceSheet = () => (
-        <div className="space-y-6">
-            <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-slate-900">Balance Sheet</h3>
-                <div className="text-sm text-slate-500">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex items-center justify-between px-1">
+                <h3 className="text-lg font-bold text-slate-900">Balance Sheet</h3>
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-wider bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
                     As of {new Date().toLocaleDateString()}
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Assets */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-blue-50">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                                        <ArrowTrendingUpIcon className="w-5 h-5 text-white" />
-                                    </div>
-                                    <h4 className="font-semibold text-slate-900">Assets</h4>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+                    <div className="px-5 py-4 border-b border-slate-50 bg-blue-50/30">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-100">
+                                    <ArrowTrendingUpIcon className="w-4 h-4 text-white" />
                                 </div>
-                                <div className="text-lg font-bold text-blue-700">
-                                    {formatCurrency(balanceSheetData.totalAssets, storeSettings)}
-                                </div>
+                                <h4 className="font-bold text-slate-900">Assets</h4>
+                            </div>
+                            <div className="text-lg font-black text-blue-700 tracking-tight">
+                                {formatCurrency(balanceSheetData.totalAssets, storeSettings)}
                             </div>
                         </div>
-                        <div className="p-6">
-                            <div className="space-y-3">
-                                {balanceSheetData.assets.map(acc => (
-                                    <div key={acc.id} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                            <span className="text-sm text-slate-700">{acc.name}</span>
-                                        </div>
-                                        <span className="text-sm font-semibold text-blue-700">
-                                            {formatCurrency(acc.balance, storeSettings)}
-                                        </span>
+                    </div>
+                    <div className="p-4 md:p-5 flex-1 bg-white">
+                        <div className="space-y-1">
+                            {balanceSheetData.assets.map(acc => (
+                                <div key={acc.id} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+                                        <span className="text-sm font-medium text-slate-700">{acc.name}</span>
                                     </div>
-                                ))}
-                            </div>
+                                    <span className="text-sm font-bold text-blue-700 tracking-tight">
+                                        {formatCurrency(acc.balance, storeSettings)}
+                                    </span>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </div>
 
-                {/* Liabilities & Equity */}
-                <div className="space-y-6">
+                <div className="space-y-4 md:space-y-6">
+                    {/* Liabilities */}
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-red-50 to-red-50">
+                        <div className="px-5 py-4 border-b border-slate-50 bg-red-50/30">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-gradient-to-br from-red-500 to-red-600 rounded-lg">
-                                        <ArrowTrendingDownIcon className="w-5 h-5 text-white" />
+                                    <div className="p-2 bg-red-600 rounded-xl shadow-lg shadow-red-100">
+                                        <ArrowTrendingDownIcon className="w-4 h-4 text-white" />
                                     </div>
-                                    <h4 className="font-semibold text-slate-900">Liabilities</h4>
+                                    <h4 className="font-bold text-slate-900">Liabilities</h4>
                                 </div>
-                                <div className="text-lg font-bold text-red-700">
+                                <div className="text-lg font-black text-red-700 tracking-tight">
                                     {formatCurrency(balanceSheetData.totalLiabilities, storeSettings)}
                                 </div>
                             </div>
                         </div>
-                        <div className="p-6">
-                            <div className="space-y-3">
+                        <div className="p-4 md:p-5 bg-white">
+                            <div className="space-y-1">
                                 {balanceSheetData.liabilities.map(acc => (
-                                    <div key={acc.id} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                            <span className="text-sm text-slate-700">{acc.name}</span>
+                                    <div key={acc.id} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
+                                            <span className="text-sm font-medium text-slate-700">{acc.name}</span>
                                         </div>
-                                        <span className="text-sm font-semibold text-red-700">
+                                        <span className="text-sm font-bold text-red-700 tracking-tight">
                                             {formatCurrency(acc.balance, storeSettings)}
                                         </span>
                                     </div>
@@ -2001,29 +2129,30 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
                         </div>
                     </div>
 
+                    {/* Equity */}
                     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                        <div className="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-purple-50 to-purple-50">
+                        <div className="px-5 py-4 border-b border-slate-50 bg-purple-50/30">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg">
-                                        <ChartBarIcon className="w-5 h-5 text-white" />
+                                    <div className="p-2 bg-purple-600 rounded-xl shadow-lg shadow-purple-100">
+                                        <ChartBarIcon className="w-4 h-4 text-white" />
                                     </div>
-                                    <h4 className="font-semibold text-slate-900">Equity</h4>
+                                    <h4 className="font-bold text-slate-900">Equity</h4>
                                 </div>
-                                <div className="text-lg font-bold text-purple-700">
+                                <div className="text-lg font-black text-purple-700 tracking-tight">
                                     {formatCurrency(balanceSheetData.totalEquity, storeSettings)}
                                 </div>
                             </div>
                         </div>
-                        <div className="p-6">
-                            <div className="space-y-3">
+                        <div className="p-4 md:p-5 bg-white">
+                            <div className="space-y-1">
                                 {balanceSheetData.equity.map(acc => (
-                                    <div key={acc.id} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-colors">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-2 h-2 rounded-full bg-purple-500"></div>
-                                            <span className="text-sm text-slate-700">{acc.name}</span>
+                                    <div key={acc.id} className="flex justify-between items-center p-3 hover:bg-slate-50/50 rounded-xl transition-all duration-200 border border-transparent hover:border-slate-100">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-purple-500"></div>
+                                            <span className="text-sm font-medium text-slate-700">{acc.name}</span>
                                         </div>
-                                        <span className="text-sm font-semibold text-purple-700">
+                                        <span className="text-sm font-bold text-purple-700 tracking-tight">
                                             {formatCurrency(acc.balance, storeSettings)}
                                         </span>
                                     </div>
@@ -2035,37 +2164,37 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
             </div>
 
             {/* Balance Sheet Summary */}
-            <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl border border-slate-200 p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="text-center">
-                        <div className="text-sm font-medium text-slate-700">Total Assets</div>
-                        <div className="text-2xl font-bold text-blue-700 mt-2">
+            <div className="bg-gradient-to-r from-slate-50 to-slate-100 rounded-2xl border border-slate-200 p-5 md:p-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Total Assets</div>
+                        <div className="text-lg md:text-xl font-black text-blue-700">
                             {formatCurrency(balanceSheetData.totalAssets, storeSettings)}
                         </div>
                     </div>
-                    <div className="text-center">
-                        <div className="text-sm font-medium text-slate-700">Total Liabilities</div>
-                        <div className="text-2xl font-bold text-red-700 mt-2">
+                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Total Liabilities</div>
+                        <div className="text-lg md:text-xl font-black text-red-700">
                             {formatCurrency(balanceSheetData.totalLiabilities, storeSettings)}
                         </div>
                     </div>
-                    <div className="text-center">
-                        <div className="text-sm font-medium text-slate-700">Total Equity</div>
-                        <div className="text-2xl font-bold text-purple-700 mt-2">
+                    <div className="text-center p-4 bg-white rounded-xl shadow-sm border border-slate-100">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-1">Total Equity</div>
+                        <div className="text-lg md:text-xl font-black text-purple-700">
                             {formatCurrency(balanceSheetData.totalEquity, storeSettings)}
                         </div>
                     </div>
                 </div>
-                <div className="mt-6 pt-6 border-t border-slate-200 text-center">
-                    <div className="text-sm font-medium text-slate-700">Balance Check</div>
-                    <div className={`text-lg font-bold mt-2 ${Math.abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01
-                        ? 'text-green-700'
-                        : 'text-red-700'
+                <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-slate-200 text-center">
+                    <div className="text-[10px] uppercase tracking-widest font-black text-slate-400 mb-2">Equation Audit</div>
+                    <div className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black border-2 ${Math.abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                        : 'bg-red-50 text-red-700 border-red-100'
                         }`}>
                         Assets = Liabilities + Equity: {
                             Math.abs(balanceSheetData.totalAssets - (balanceSheetData.totalLiabilities + balanceSheetData.totalEquity)) < 0.01
-                                ? '✓ Balanced'
-                                : '✗ Imbalanced'
+                                ? '✓ Perfectly Balanced'
+                                : '✗ Equation Imbalance'
                         }
                     </div>
                 </div>
@@ -2074,34 +2203,36 @@ const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: J
     );
 
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="space-y-4 md:space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold text-slate-900">Financial Statements</h3>
-                    <p className="text-slate-600 mt-1">View and analyze your financial reports</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Financial Statements</h3>
+                    <p className="text-sm text-slate-600 mt-1">View and analyze your business health</p>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex bg-slate-100 p-1 rounded-2xl border border-slate-200 self-start lg:self-auto">
                     <button
                         onClick={() => setActiveReport('pnl')}
-                        className={`px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${activeReport === 'pnl'
-                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                        className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 ${activeReport === 'pnl'
+                            ? 'bg-white text-blue-700 shadow-md ring-1 ring-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Profit & Loss
                     </button>
                     <button
                         onClick={() => setActiveReport('balance_sheet')}
-                        className={`px-4 py-2.5 text-sm font-medium rounded-xl transition-all duration-200 ${activeReport === 'balance_sheet'
-                            ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white'
-                            : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-50'
+                        className={`px-4 py-2 text-xs sm:text-sm font-bold rounded-xl transition-all duration-300 ${activeReport === 'balance_sheet'
+                            ? 'bg-white text-blue-700 shadow-md ring-1 ring-slate-200'
+                            : 'text-slate-500 hover:text-slate-700'
                             }`}
                     >
                         Balance Sheet
                     </button>
                 </div>
             </div>
-            {activeReport === 'pnl' ? renderPNL() : renderBalanceSheet()}
+            <div className="animate-fade-in">
+                {activeReport === 'pnl' ? renderPNL() : renderBalanceSheet()}
+            </div>
         </div>
     );
 };
