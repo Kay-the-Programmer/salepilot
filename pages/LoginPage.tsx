@@ -23,13 +23,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
             setPasswordStrength(0);
             return;
         }
-        
+
         let strength = 0;
         if (password.length >= 8) strength += 25;
         if (/[A-Z]/.test(password)) strength += 25;
         if (/[0-9]/.test(password)) strength += 25;
         if (/[^A-Za-z0-9]/.test(password)) strength += 25;
-        
+
         setPasswordStrength(strength);
     }, [password, view]);
 
@@ -67,7 +67,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                     throw new Error("Password must be at least 8 characters long.");
                 }
                 const newUser = await register(name, email, password);
-                try { localStorage.setItem('salePilotUser', JSON.stringify(newUser)); } catch {}
+                try { localStorage.setItem('salePilotUser', JSON.stringify(newUser)); } catch { }
                 showSnackbar('Account created successfully! Let\'s set up your store.', 'success');
                 onLogin(newUser);
             } else if (view === 'forgot') {
@@ -107,9 +107,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                             <h2 className="text-2xl font-bold text-gray-900">Create Account</h2>
                             <p className="mt-2 text-sm text-gray-600">
                                 Already have an account?{' '}
-                                <button 
+                                <button
                                     type="button"
-                                    onClick={() => switchView('login')} 
+                                    onClick={() => switchView('login')}
                                     className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
                                     disabled={isLoading}
                                 >
@@ -129,12 +129,12 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
                                     Full Name
                                 </label>
-                                <input 
-                                    id="name" 
-                                    name="name" 
-                                    type="text" 
-                                    required 
-                                    value={name} 
+                                <input
+                                    id="name"
+                                    name="name"
+                                    type="text"
+                                    required
+                                    value={name}
                                     onChange={e => setName(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     placeholder="Jane Doe"
@@ -146,13 +146,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 <label htmlFor="email-address-reg" className="block text-sm font-medium text-gray-700 mb-1">
                                     Email Address
                                 </label>
-                                <input 
-                                    id="email-address-reg" 
-                                    name="email" 
-                                    type="email" 
-                                    autoComplete="email" 
-                                    required 
-                                    value={email} 
+                                <input
+                                    id="email-address-reg"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
+                                    value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     placeholder="you@example.com"
@@ -164,42 +164,41 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 <label htmlFor="password-reg" className="block text-sm font-medium text-gray-700 mb-1">
                                     Password
                                 </label>
-                                <input 
-                                    id="password-reg" 
-                                    name="password" 
-                                    type="password" 
-                                    autoComplete="new-password" 
-                                    required 
-                                    value={password} 
+                                <input
+                                    id="password-reg"
+                                    name="password"
+                                    type="password"
+                                    autoComplete="new-password"
+                                    required
+                                    value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     placeholder="Create a strong password"
                                     disabled={isLoading}
                                 />
-                                
+
                                 {password.length > 0 && (
                                     <div className="mt-2 space-y-1">
                                         <div className="flex items-center justify-between text-xs">
                                             <span className="text-gray-500">Password strength</span>
-                                            <span className={`font-medium ${
-                                                passwordStrength < 25 ? 'text-red-600' :
-                                                passwordStrength < 50 ? 'text-orange-600' :
-                                                passwordStrength < 75 ? 'text-yellow-600' : 'text-green-600'
-                                            }`}>
+                                            <span className={`font-medium ${passwordStrength < 25 ? 'text-red-600' :
+                                                    passwordStrength < 50 ? 'text-orange-600' :
+                                                        passwordStrength < 75 ? 'text-yellow-600' : 'text-green-600'
+                                                }`}>
                                                 {passwordStrength < 25 ? 'Weak' :
-                                                 passwordStrength < 50 ? 'Fair' :
-                                                 passwordStrength < 75 ? 'Good' : 'Strong'}
+                                                    passwordStrength < 50 ? 'Fair' :
+                                                        passwordStrength < 75 ? 'Good' : 'Strong'}
                                             </span>
                                         </div>
                                         <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                                            <div 
+                                            <div
                                                 className={`h-full ${getStrengthColor()} transition-all duration-300`}
                                                 style={{ width: `${passwordStrength}%` }}
                                             />
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 <ul className="mt-2 text-xs text-gray-500 space-y-1">
                                     <li className="flex items-center">
                                         <svg className={`h-3 w-3 mr-1 ${password.length >= 8 ? 'text-green-500' : 'text-gray-300'}`} fill="currentColor" viewBox="0 0 20 20">
@@ -210,8 +209,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 </ul>
                             </div>
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={isLoading}
                                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
                             >
@@ -243,13 +242,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 <label htmlFor="email-address-forgot" className="block text-sm font-medium text-gray-700 mb-1">
                                     Email Address
                                 </label>
-                                <input 
-                                    id="email-address-forgot" 
-                                    name="email" 
-                                    type="email" 
-                                    autoComplete="email" 
-                                    required 
-                                    value={email} 
+                                <input
+                                    id="email-address-forgot"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
+                                    value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     placeholder="you@example.com"
@@ -257,8 +256,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 />
                             </div>
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={isLoading}
                                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
                             >
@@ -267,9 +266,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                             </button>
 
                             <div className="text-center pt-2">
-                                <button 
+                                <button
                                     type="button"
-                                    onClick={() => switchView('login')} 
+                                    onClick={() => switchView('login')}
                                     className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
                                     disabled={isLoading}
                                 >
@@ -288,9 +287,9 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                             <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
                             <p className="mt-2 text-sm text-gray-600">
                                 Don't have an account?{' '}
-                                <button 
+                                <button
                                     type="button"
-                                    onClick={() => switchView('register')} 
+                                    onClick={() => switchView('register')}
                                     className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
                                     disabled={isLoading}
                                 >
@@ -310,13 +309,13 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
                                     Email Address
                                 </label>
-                                <input 
-                                    id="email-address" 
-                                    name="email" 
-                                    type="email" 
-                                    autoComplete="email" 
-                                    required 
-                                    value={email} 
+                                <input
+                                    id="email-address"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
+                                    required
+                                    value={email}
                                     onChange={e => setEmail(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     placeholder="you@example.com"
@@ -329,22 +328,22 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                     <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                                         Password
                                     </label>
-                                    <button 
+                                    <button
                                         type="button"
-                                        onClick={() => switchView('forgot')} 
+                                        onClick={() => switchView('forgot')}
                                         className="text-sm font-medium text-blue-600 hover:text-blue-500 transition-colors"
                                         disabled={isLoading}
                                     >
                                         Forgot password?
                                     </button>
                                 </div>
-                                <input 
-                                    id="password" 
-                                    name="password" 
-                                    type="password" 
-                                    autoComplete="current-password" 
-                                    required 
-                                    value={password} 
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
+                                    autoComplete="current-password"
+                                    required
+                                    value={password}
                                     onChange={e => setPassword(e.target.value)}
                                     className="w-full px-4 py-3 rounded-lg border border-gray-300 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                                     placeholder="Enter your password"
@@ -352,8 +351,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                 />
                             </div>
 
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 disabled={isLoading}
                                 className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all font-medium"
                             >
@@ -391,11 +390,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                         <button
                             type="button"
                             onClick={() => switchView('login')}
-                            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                                view === 'login'
+                            className={`flex-1 py-3 text-sm font-medium transition-colors ${view === 'login'
                                     ? 'text-blue-600 border-b-2 border-blue-600'
                                     : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                                }`}
                             disabled={isLoading}
                         >
                             Sign In
@@ -403,11 +401,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                         <button
                             type="button"
                             onClick={() => switchView('register')}
-                            className={`flex-1 py-3 text-sm font-medium transition-colors ${
-                                view === 'register'
+                            className={`flex-1 py-3 text-sm font-medium transition-colors ${view === 'register'
                                     ? 'text-blue-600 border-b-2 border-blue-600'
                                     : 'text-gray-500 hover:text-gray-700'
-                            }`}
+                                }`}
                             disabled={isLoading}
                         >
                             Sign Up

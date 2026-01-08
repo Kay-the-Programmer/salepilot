@@ -3,7 +3,6 @@ import CustomerList from '../components/customers/CustomerList';
 import CustomerFormModal from '../components/customers/CustomerFormModal';
 import CustomerDetailView from '../components/customers/CustomerDetailView';
 import { api } from '../services/api';
-import EllipsisVerticalIcon from '../components/icons/EllipsisVerticalIcon';
 import TrashIcon from '../components/icons/TrashIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import PencilIcon from '../components/icons/PencilIcon';
@@ -254,7 +253,6 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
     const [viewMode, setViewMode] = useState<'all' | 'recent' | 'az'>('all');
     const [isViewMenuOpen, setIsViewMenuOpen] = useState(false);
-    const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
 
     const [detailedCustomer, setDetailedCustomer] = useState<Customer | null>(null);
     const [detailIsLoading, setDetailIsLoading] = useState(false);
@@ -465,50 +463,32 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     </div>
                                 </div>
                                 {detailedCustomer && canManageCustomers && (
-                                    <div className="flex items-center gap-2 relative">
+                                    <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                                            className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-100 text-sm font-black hover:bg-blue-700 transition-all uppercase tracking-widest active:scale-[0.98]"
+                                            className="inline-flex items-center px-4 py-2.5 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-100 text-sm font-black hover:bg-blue-700 transition-all uppercase tracking-widest active:scale-[0.98]"
                                         >
                                             <PencilIcon className="w-4 h-4 mr-2" />
                                             Edit
                                         </button>
 
-                                        <div className="relative">
-                                            <button
-                                                onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
-                                                className={`p-3 rounded-xl border transition-all ${isActionMenuOpen ? 'bg-gray-100 border-gray-200' : 'bg-white border-gray-200 text-gray-400 hover:text-gray-600 hover:border-gray-300'}`}
-                                            >
-                                                <EllipsisVerticalIcon className="w-5 h-5" />
-                                            </button>
+                                        <button
+                                            onClick={() => {/* Implement Export Logic */ }}
+                                            className="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-black hover:bg-gray-50 transition-all uppercase tracking-widest active:scale-[0.98]"
+                                        >
+                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            Export
+                                        </button>
 
-                                            {isActionMenuOpen && (
-                                                <>
-                                                    <div className="fixed inset-0 z-40" onClick={() => setIsActionMenuOpen(false)} />
-                                                    <div className="absolute top-full mt-2 right-0 w-56 bg-white rounded-2xl shadow-2xl border border-gray-100 py-2 z-50 animate-fade-in-up origin-top-right">
-                                                        <button
-                                                            onClick={() => {
-                                                                setIsActionMenuOpen(false);
-                                                                onDeleteCustomer(detailedCustomer.id);
-                                                            }}
-                                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 transition-colors"
-                                                        >
-                                                            <TrashIcon className="w-4 h-4" />
-                                                            Delete Customer
-                                                        </button>
-                                                        <button
-                                                            onClick={() => setIsActionMenuOpen(false)}
-                                                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-                                                        >
-                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                                            </svg>
-                                                            Export Data
-                                                        </button>
-                                                    </div>
-                                                </>
-                                            )}
-                                        </div>
+                                        <button
+                                            onClick={() => onDeleteCustomer(detailedCustomer.id)}
+                                            className="inline-flex items-center px-4 py-2.5 bg-white border border-red-100 text-red-600 rounded-xl text-sm font-black hover:bg-red-50 transition-all uppercase tracking-widest active:scale-[0.98]"
+                                        >
+                                            <TrashIcon className="w-4 h-4 mr-2" />
+                                            Delete
+                                        </button>
                                     </div>
                                 )}
                             </div>
@@ -585,49 +565,30 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
                 {/* Mobile Bottom Action - Primary */}
                 {isMobile && detailedCustomer && canManageCustomers && (
-                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-t border-gray-100 p-4 safe-area-bottom shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex gap-3">
+                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-lg border-t border-gray-100 p-4 safe-area-bottom shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center gap-2">
                         <button
                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                            className="flex-1 py-4 px-6 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-xs"
+                            className="flex-1 py-4 px-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
                         >
-                            Edit Profile
+                            <PencilIcon className="w-4 h-4" />
+                            Edit
                         </button>
                         <button
-                            onClick={() => setIsActionMenuOpen(!isActionMenuOpen)}
-                            className={`p-4 rounded-2xl border transition-all ${isActionMenuOpen ? 'bg-gray-100 border-gray-200' : 'bg-white border-gray-100 text-gray-400'}`}
+                            onClick={() => {/* Implement Export Logic */ }}
+                            className="flex-1 py-4 px-4 bg-white border border-gray-100 text-gray-700 font-black rounded-2xl hover:bg-gray-50 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
                         >
-                            <EllipsisVerticalIcon className="w-6 h-6" />
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                            Export
                         </button>
-
-                        {isActionMenuOpen && (
-                            <>
-                                <div className="fixed inset-0 z-40" onClick={() => setIsActionMenuOpen(false)} />
-                                <div className="absolute bottom-full mb-4 right-4 w-64 bg-white rounded-3xl shadow-2xl border border-gray-100 py-3 z-50 animate-fade-in-up origin-bottom-right">
-                                    <div className="px-6 py-2 mb-2 border-b border-gray-50 text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                                        Customer Actions
-                                    </div>
-                                    <button
-                                        onClick={() => {
-                                            setIsActionMenuOpen(false);
-                                            onDeleteCustomer(detailedCustomer.id);
-                                        }}
-                                        className="w-full flex items-center gap-4 px-6 py-4 text-sm font-bold text-red-600 active:bg-red-50 transition-colors"
-                                    >
-                                        <TrashIcon className="w-5 h-5" />
-                                        Delete Customer
-                                    </button>
-                                    <button
-                                        onClick={() => setIsActionMenuOpen(false)}
-                                        className="w-full flex items-center gap-4 px-6 py-4 text-sm font-bold text-gray-600 active:bg-gray-50 transition-colors"
-                                    >
-                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Export Data
-                                    </button>
-                                </div>
-                            </>
-                        )}
+                        <button
+                            onClick={() => onDeleteCustomer(detailedCustomer.id)}
+                            className="p-4 bg-red-50 text-red-600 rounded-2xl hover:bg-red-100 active:scale-[0.98] transition-all"
+                            aria-label="Delete Customer"
+                        >
+                            <TrashIcon className="w-5 h-5" />
+                        </button>
                     </div>
                 )}
 

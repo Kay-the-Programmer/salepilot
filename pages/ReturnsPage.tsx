@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Return, StoreSettings } from '../types';
 import { SnackbarType } from '../Dashboard';
 import Header from '../components/Header';
-import QrScannerModal from '../components/sales/QrScannerModal';
+import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import QrCodeIcon from '../components/icons/QrCodeIcon';
 import ArrowUturnLeftIcon from '../components/icons/ArrowUturnLeftIcon';
 import { formatCurrency } from '../utils/currency';
@@ -320,7 +320,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                         )}
                     </div>
                 </main>
-                <QrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={handleScanSuccess} onScanError={(err) => showSnackbar(err, 'error')} />
+                <UnifiedScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={handleScanSuccess} onScanError={(err) => showSnackbar(err, 'error')} />
             </div>
         )
     }

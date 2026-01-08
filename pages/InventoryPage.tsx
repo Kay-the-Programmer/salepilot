@@ -13,7 +13,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import { FiFilter, FiGrid, FiList, FiPlusCircle, FiCamera, FiX } from 'react-icons/fi';
 import Header from '../components/Header';
 import GridIcon from '../components/icons/GridIcon';
-import ScanBarcodeModal from '../components/ScanBarcodeModal';
+import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import CubeIcon from '../components/icons/CubeIcon';
 import TagIcon from '../components/icons/TagIcon';
 import PlusIcon from '../components/icons/PlusIcon';
@@ -433,10 +433,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     }
                     confirmText="Delete"
                 />
-                <ScanBarcodeModal
+                <UnifiedScannerModal
                     isOpen={isScanModalOpen}
                     onClose={() => setIsScanModalOpen(false)}
-                    onScan={(code) => {
+                    onScanSuccess={(code) => {
                         // Try to find product by barcode or SKU
                         const scannedProduct = products.find(p =>
                             p.sku === code ||
@@ -888,10 +888,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 }
                 confirmText="Delete"
             />
-            <ScanBarcodeModal
+            <UnifiedScannerModal
                 isOpen={isScanModalOpen}
                 onClose={() => setIsScanModalOpen(false)}
-                onScan={(code) => {
+                onScanSuccess={(code) => {
                     // Try to find product by barcode or SKU
                     const scannedProduct = products.find(p =>
                         p.sku === code ||

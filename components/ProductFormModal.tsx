@@ -9,7 +9,7 @@ import CameraCaptureModal from './CameraCaptureModal';
 import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
 import { toSnakeCase } from "@/utils/helpers.ts";
 import SupplierFormModal from './suppliers/SupplierFormModal';
-import BarcodeScannerModal from './BarcodeScannerModal';
+import UnifiedScannerModal from './UnifiedScannerModal';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
 
@@ -1423,10 +1423,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 onClose={() => setIsSupplierModalOpen(false)}
                 onSave={handleCreateSupplier}
             />
-            <BarcodeScannerModal
+            <UnifiedScannerModal
                 isOpen={isBarcodeScannerOpen}
                 onClose={() => setIsBarcodeScannerOpen(false)}
-                onScanSuccess={handleBarcodeScan}
+                onScanSuccess={(code) => {
+                    setProduct(prev => ({ ...prev, barcode: code }));
+                    setIsBarcodeScannerOpen(false);
+                }}
+                title="Scan Product Barcode"
             />
         </>
     );

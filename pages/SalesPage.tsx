@@ -7,7 +7,7 @@ import ShoppingCartIcon from '../components/icons/ShoppingCartIcon';
 import BackspaceIcon from '../components/icons/BackspaceIcon';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import QrCodeIcon from '../components/icons/QrCodeIcon';
-import QrScannerModal from '../components/sales/QrScannerModal';
+import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import ManualCodeModal from '../components/sales/ManualCodeModal';
 import CustomerSelect from '../components/sales/CustomerSelect';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
@@ -248,6 +248,19 @@ const SalesPage: React.FC<SalesPageProps> = ({
             showSnackbar('No product found for scanned code', 'error');
         }
         setIsScannerOpen(false);
+    };
+
+    const handleContinuousScan = (decodedText: string) => {
+        const trimmed = decodedText.trim();
+        const product = products.find(p =>
+            p.status === 'active' &&
+            (p.barcode === trimmed || p.sku === trimmed)
+        );
+        if (product) {
+            addToCart(product);
+        } else {
+            showSnackbar('No product found for scanned code', 'error');
+        }
     };
 
     const handleScanError = (error: any) => {
@@ -1000,16 +1013,16 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     <Bars3Icon className="w-6 h-6" />
                                 </button>
                             )}
-                            
+
                             {/* Desktop: Show Products title */}
                             <h2 className="text-lg font-bold text-slate-900 hidden md:block">Products</h2>
                         </div>
-                        
+
                         {/* Mobile: Center the logo */}
                         <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
                             <img src={logo} alt="SalePilot" className="h-8" />
                         </div>
-                        
+
                         {/* Cart button always on the right */}
                         <button
                             onClick={() => setActiveTab('cart')}
@@ -1247,11 +1260,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
             {/* Modals */}
             <FloatingActionButtons />
-            <QrScannerModal
+            <UnifiedScannerModal
                 isOpen={isScannerOpen}
                 onClose={() => setIsScannerOpen(false)}
-                onScanSuccess={handleScanSuccess}
+                onScanSuccess={handleContinuousScan}
                 onScanError={handleScanError}
+                continuous={true}
+                title="Scan Products"
             />
             <ManualCodeModal
                 isOpen={isManualOpen}
