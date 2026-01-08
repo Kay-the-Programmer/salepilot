@@ -137,6 +137,10 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     },
                     aspectRatio: 1.0,
                     disableFlip: true, // Performance boost by avoiding mirroring
+                    videoConstraints: {
+                        width: { min: 640, ideal: 1280, max: 1920 },
+                        height: { min: 480, ideal: 720, max: 1080 }
+                    },
                     experimentalFeatures: {
                         useBarCodeDetectorIfSupported: true // Native hardware acceleration
                     },
@@ -166,8 +170,8 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                             cleanup().then(() => onClose());
                         }
                     },
-                    () => {
-                        // Regular frame error - ignore
+                    (errorMessage) => {
+                        if (onScanError) onScanError(errorMessage);
                     }
                 );
 
@@ -250,6 +254,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                                     {/* Scan Line Animation */}
                                     <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
+
+                                    {/* Visual Haptic Flash */}
+                                    <div className={`absolute inset-0 bg-white transition-opacity duration-150 ${isFlashing ? 'opacity-40' : 'opacity-0'}`}></div>
 
                                     {/* Vignette effect */}
                                     <div className="absolute inset-0 bg-black/20"></div>
