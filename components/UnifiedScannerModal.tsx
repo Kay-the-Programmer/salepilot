@@ -26,6 +26,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     const [isTorchOn, setIsTorchOn] = useState(false);
     const [hasTorch, setHasTorch] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
+    const [isFlashing, setIsFlashing] = useState(false);
 
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const isRunningRef = useRef<boolean>(false);
@@ -68,6 +69,10 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
         if ('vibrate' in navigator) {
             navigator.vibrate(100);
         }
+
+        // Visual haptic fallback (especially for iOS)
+        setIsFlashing(true);
+        setTimeout(() => setIsFlashing(false), 150);
     }, []);
 
     const handleTorchToggle = async () => {
@@ -124,13 +129,17 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 scannerRef.current = html5QrCode;
 
                 const config = {
-                    fps: 25, // Higher FPS for smoother scanning
+                    fps: 15, // Balanced FPS for mobile performance
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
                         const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                        const size = Math.floor(minEdge * 0.7);
+                        const size = Math.floor(minEdge * 0.75);
                         return { width: size, height: size };
                     },
                     aspectRatio: 1.0,
+                    disableFlip: true, // Performance boost by avoiding mirroring
+                    experimentalFeatures: {
+                        useBarCodeDetectorIfSupported: true // Native hardware acceleration
+                    },
                     formatsToSupport: [
                         Html5QrcodeSupportedFormats.QR_CODE,
                         Html5QrcodeSupportedFormats.EAN_13,
