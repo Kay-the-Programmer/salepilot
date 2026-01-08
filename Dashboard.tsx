@@ -921,7 +921,7 @@ const Dashboard: React.FC = () => {
             case 'sales-history':
                 return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
             case 'orders':
-                return <OrdersPage />;
+                return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} showSnackbar={showSnackbar} />;
             case 'returns':
                 return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
             case 'customers':

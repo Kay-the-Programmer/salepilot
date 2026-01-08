@@ -1,20 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../services/api';
-import { Sale } from '../types';
+import { Sale, StoreSettings, Payment } from '../types';
 import { HiOutlineEye, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineBanknotes } from 'react-icons/hi2';
 import Header from '../components/Header';
-
+import RecordOrderPaymentModal from '../components/orders/RecordOrderPaymentModal';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 interface OrdersPageProps {
     onOpenSidebar?: () => void;
+    storeSettings: StoreSettings;
+    showSnackbar: (message: string, type: 'success' | 'error' | 'info' | 'sync') => void;
 }
 
-const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar }) => {
+const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar, storeSettings, showSnackbar }) => {
     const [orders, setOrders] = useState<Sale[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedOrder, setSelectedOrder] = useState<Sale | null>(null);
+    const [paymentOrder, setPaymentOrder] = useState<Sale | null>(null);
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { }
+    });
 
     // Stats calculation
     const stats = {
@@ -53,31 +68,37 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar }) => {
             alert('Order is already fully paid.');
             return;
         }
+        setPaymentOrder(order);
+    };
 
-        const method = prompt(`Enter payment method for $${remaining.toFixed(2)}:`, 'Card');
-        if (!method) return;
-
-        if (!confirm(`Mark order #${order.transactionId} as paid with ${method}?`)) return;
-
+    const handleSavePayment = async (order: Sale, payment: Omit<Payment, 'id'>) => {
         try {
-            await api.post(`/sales/${order.transactionId}/payments`, {
-                amount: remaining,
-                method: method,
-                date: new Date().toISOString()
-            });
+            await api.post(`/sales/${order.transactionId}/payments`, payment);
 
             fetchOrders();
             if (selectedOrder && selectedOrder.transactionId === order.transactionId) {
                 setSelectedOrder(null);
             }
+            setPaymentOrder(null);
+            showSnackbar('Payment recorded successfully!', 'success');
         } catch (error: any) {
             console.error('Error recording payment:', error);
-            alert(error.response?.data?.message || 'Failed to record payment');
+            const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to record payment';
+            showSnackbar(errorMessage, 'error');
         }
     };
 
     const updateStatus = async (orderId: string, newStatus: string) => {
-        if (!confirm(`Are you sure you want to mark this order as ${newStatus}?`)) return;
+        setConfirmModal({
+            isOpen: true,
+            title: 'Update Order Status',
+            message: `Are you sure you want to mark this order as ${newStatus}?`,
+            onConfirm: () => proceedWithUpdateStatus(orderId, newStatus)
+        });
+    };
+
+    const proceedWithUpdateStatus = async (orderId: string, newStatus: string) => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
 
         try {
             await api.put(`/sales/${orderId}/fulfillment`,
@@ -87,9 +108,11 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar }) => {
             if (selectedOrder && selectedOrder.transactionId === orderId) {
                 setSelectedOrder(null);
             }
-        } catch (error) {
+            showSnackbar(`Order marked as ${newStatus}!`, 'success');
+        } catch (error: any) {
             console.error('Error updating status:', error);
-            alert('Failed to update status');
+            const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to update status';
+            showSnackbar(errorMessage, 'error');
         }
     };
 
@@ -373,6 +396,28 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar }) => {
                     </div>
                 </div>
             )}
+
+            {/* Record Payment Modal */}
+            {paymentOrder && (
+                <RecordOrderPaymentModal
+                    isOpen={!!paymentOrder}
+                    onClose={() => setPaymentOrder(null)}
+                    order={paymentOrder}
+                    onSave={handleSavePayment}
+                    storeSettings={storeSettings}
+                    showSnackbar={showSnackbar}
+                />
+            )}
+
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText="Proceed"
+                confirmButtonClass="bg-emerald-600 hover:bg-emerald-700"
+            />
         </div>
     );
 };
