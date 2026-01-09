@@ -2,6 +2,7 @@ import React, { useState, FormEvent, useEffect } from 'react';
 import { User } from '../types';
 import { SnackbarType } from '../App';
 import { login, register, forgotPassword } from '../services/authService';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface LoginPageProps {
     onLogin: (user: User) => void;
@@ -9,7 +10,13 @@ interface LoginPageProps {
 }
 
 const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
-    const [view, setView] = useState<'login' | 'register' | 'forgot'>('login');
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // Determine view from URL
+    const view = location.pathname === '/register' ? 'register' :
+        location.pathname === '/forgot-password' ? 'forgot' : 'login';
+
     const [email, setEmail] = useState('admin@sale-pilot.com');
     const [password, setPassword] = useState('password');
     const [name, setName] = useState('');
@@ -34,7 +41,10 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
     }, [password, view]);
 
     const switchView = (v: 'login' | 'register' | 'forgot') => {
-        setView(v);
+        if (v === 'login') navigate('/login');
+        else if (v === 'register') navigate('/register');
+        else if (v === 'forgot') navigate('/forgot-password');
+
         setError(null);
         if (v === 'login') {
             setEmail('admin@sale-pilot.com');
@@ -73,7 +83,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
             } else if (view === 'forgot') {
                 await forgotPassword(email);
                 showSnackbar(`If an account exists for ${email}, a password reset link has been sent.`, 'info');
-                setView('login');
+                navigate('/login');
             }
         } catch (err: any) {
             const msg = (err && typeof err.message === 'string') ? err.message : 'An unexpected error occurred.';
@@ -81,7 +91,7 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                 const friendly = 'An account with this email already exists. Please sign in.';
                 setError(friendly);
                 showSnackbar(friendly, 'error');
-                setView('login');
+                navigate('/login');
             } else {
                 setError(msg);
                 showSnackbar(msg, 'error');
@@ -182,8 +192,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                                         <div className="flex items-center justify-between text-xs">
                                             <span className="text-gray-500">Password strength</span>
                                             <span className={`font-medium ${passwordStrength < 25 ? 'text-red-600' :
-                                                    passwordStrength < 50 ? 'text-orange-600' :
-                                                        passwordStrength < 75 ? 'text-yellow-600' : 'text-green-600'
+                                                passwordStrength < 50 ? 'text-orange-600' :
+                                                    passwordStrength < 75 ? 'text-yellow-600' : 'text-green-600'
                                                 }`}>
                                                 {passwordStrength < 25 ? 'Weak' :
                                                     passwordStrength < 50 ? 'Fair' :
@@ -391,8 +401,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                             type="button"
                             onClick={() => switchView('login')}
                             className={`flex-1 py-3 text-sm font-medium transition-colors ${view === 'login'
-                                    ? 'text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'text-blue-600 border-b-2 border-blue-600'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                             disabled={isLoading}
                         >
@@ -402,8 +412,8 @@ const LoginPage: React.FC<LoginPageProps> = ({ onLogin, showSnackbar }) => {
                             type="button"
                             onClick={() => switchView('register')}
                             className={`flex-1 py-3 text-sm font-medium transition-colors ${view === 'register'
-                                    ? 'text-blue-600 border-b-2 border-blue-600'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                ? 'text-blue-600 border-b-2 border-blue-600'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                             disabled={isLoading}
                         >

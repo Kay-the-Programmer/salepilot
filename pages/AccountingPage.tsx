@@ -8,7 +8,7 @@ import PencilIcon from '../components/icons/PencilIcon';
 import TrashIcon from '../components/icons/TrashIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import PrinterIcon from '../components/icons/PrinterIcon';
-import RecordSupplierPaymentModal from '../components/accounting/RecordSupplierPaymentModal';
+import UnifiedRecordPaymentModal from '../components/accounting/UnifiedRecordPaymentModal';
 import SupplierInvoiceFormModal from '../components/accounting/SupplierInvoiceFormModal';
 import SupplierInvoiceDetailModal from '../components/accounting/SupplierInvoiceDetailModal';
 import SalesInvoiceDetailModal from '../components/accounting/SalesInvoiceDetailModal';
@@ -921,140 +921,6 @@ const CustomerStatementModal: React.FC<{
     );
 };
 
-const RecordPaymentModal: React.FC<{
-    isOpen: boolean;
-    onClose: () => void;
-    storeSettings: StoreSettings;
-    customerName?: string;
-}> = ({ isOpen, onClose, invoice, onSave, storeSettings, customerName }) => {
-    const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
-    const balanceDue = Math.max(0, invoice.total - calculatedAmountPaid);
-    const [amount, setAmount] = useState(balanceDue.toFixed(2));
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
-    const [method, setMethod] = useState<string>(storeSettings?.paymentMethods?.[0]?.id || 'cash');
-
-    useEffect(() => {
-        if (isOpen) {
-            setAmount(balanceDue.toFixed(2));
-            setDate(new Date().toISOString().split('T')[0]);
-            setMethod(storeSettings?.paymentMethods?.[0]?.id || 'cash');
-        }
-    }, [invoice, balanceDue, isOpen, storeSettings]);
-
-    if (!isOpen) return null;
-
-    const isInvalid = isNaN(parseFloat(amount)) || parseFloat(amount) <= 0 || parseFloat(amount) > balanceDue + 0.001;
-
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        const paymentAmount = parseFloat(amount);
-        if (isInvalid) {
-            alert("Invalid payment amount.");
-            return;
-        }
-        onSave(invoice.transactionId, { date, amount: paymentAmount, method });
-        onClose();
-    };
-
-    return createPortal(
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-4">
-            <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up">
-                <form onSubmit={handleSubmit}>
-                    <div className="px-6 py-5 border-b border-slate-200">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
-                                    <CreditCardIcon className="w-5 h-5 text-green-600" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-semibold text-slate-900">Record Payment</h3>
-                                    <p className="text-sm text-slate-500 mt-1">Invoice #{invoice.transactionId}</p>
-                                </div>
-                            </div>
-                            <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
-                                <XMarkIcon className="w-5 h-5 text-slate-500" />
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="px-6 py-5 space-y-4">
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-xl border border-blue-200">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <div className="text-sm font-medium text-blue-700">Balance Due</div>
-                                    <div className="text-2xl font-bold text-blue-900">{formatCurrency(balanceDue, storeSettings)}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-sm text-blue-700">Customer</div>
-                                    <div className="font-medium text-blue-900">{customerName || invoice.customerName || 'Unknown'}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-slate-700">Payment Amount</label>
-                                <div className="relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500">{storeSettings.currency.symbol}</span>
-                                    <input
-                                        type="number"
-                                        value={amount}
-                                        onChange={e => setAmount(e.target.value)}
-                                        max={balanceDue}
-                                        step="0.01"
-                                        required
-                                        className="w-full pl-8 pr-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-semibold text-slate-700">Payment Date</label>
-                                <input
-                                    type="date"
-                                    value={date}
-                                    onChange={e => setDate(e.target.value)}
-                                    required
-                                    className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="block text-sm font-semibold text-slate-700">Payment Method</label>
-                            <select
-                                value={method}
-                                onChange={e => setMethod(e.target.value)}
-                                className="w-full px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 appearance-none"
-                            >
-                                {storeSettings.paymentMethods?.map(pm => (
-                                    <option key={pm.id} value={pm.id}>{pm.name}</option>
-                                ))}
-                            </select>
-                        </div>
-                    </div>
-
-                    <div className="bg-gradient-to-b from-white to-slate-50 px-6 py-5 border-t border-slate-200 flex justify-end gap-3">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="px-5 py-2.5 text-sm font-semibold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 transition-all duration-200"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={isInvalid}
-                            className="px-5 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Record Payment
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>,
-        document.body
-    );
-};
 
 const ARManagementView: React.FC<{
     sales: Sale[],
@@ -1373,16 +1239,18 @@ const ARManagementView: React.FC<{
 
             {
                 selectedInvoice && (
-                    <RecordPaymentModal
+                    <UnifiedRecordPaymentModal
                         isOpen={isPaymentModalOpen}
                         onClose={() => {
                             setIsPaymentModalOpen(false);
                             setActiveActionMenu(null);
                         }}
-                        invoice={sales.find(s => s.transactionId === selectedInvoice.transactionId) || selectedInvoice}
+                        invoiceId={selectedInvoice.transactionId}
+                        balanceDue={Math.max(0, selectedInvoice.total - (selectedInvoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? selectedInvoice.amountPaid))}
+                        customerOrSupplierName={selectedInvoice.customerName || (selectedInvoice.customerId ? customersById[selectedInvoice.customerId]?.name : undefined)}
+                        paymentMethods={storeSettings.paymentMethods}
                         onSave={onRecordPayment}
                         storeSettings={storeSettings}
-                        customerName={selectedInvoice.customerName || (selectedInvoice.customerId ? customersById[selectedInvoice.customerId]?.name : undefined)}
                     />
                 )
             }
@@ -1671,13 +1539,17 @@ const APManagementView: React.FC<{
             </div>
 
             {invoiceToPay && (
-                <RecordSupplierPaymentModal
+                <UnifiedRecordPaymentModal
                     isOpen={!!invoiceToPay}
                     onClose={() => {
                         setInvoiceToPay(null);
                         setActiveActionMenu(null);
                     }}
-                    invoice={invoiceToPay}
+                    invoiceId={invoiceToPay.id}
+                    invoiceNumber={invoiceToPay.invoiceNumber}
+                    balanceDue={invoiceToPay.amount - invoiceToPay.amountPaid}
+                    customerOrSupplierName={invoiceToPay.supplierName}
+                    paymentMethods={storeSettings.supplierPaymentMethods || storeSettings.paymentMethods}
                     onSave={onRecordPayment}
                     storeSettings={storeSettings}
                 />

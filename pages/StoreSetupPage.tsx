@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { SnackbarType } from '../App';
 import { registerStoreAndRefreshUser } from '../services/storesService';
+import { useNavigate } from 'react-router-dom';
 import { User } from '../types';
 
 interface StoreSetupPageProps {
@@ -11,6 +12,7 @@ interface StoreSetupPageProps {
 const MIN_LEN = 2;
 
 const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackbar }) => {
+  const navigate = useNavigate();
   const [name, setName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,15 +48,17 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="flex justify-center items-center gap-3">
-          <svg className="h-10 w-auto text-blue-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M7 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7zM9 5v2h6V5H9zm0 4v2h6V9H9zm0 4v2h6v-2H9z" />
-          </svg>
-          <h1 className="text-3xl font-bold text-gray-900">SalePilot</h1>
+          <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
+            <svg className="h-10 w-auto text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M7 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7zM9 5v2h6V5H9zm0 4v2h6V9H9zm0 4v2h6v-2H9z" />
+            </svg>
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SalePilot</h1>
         </div>
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-lg rounded-3xl sm:px-10">
+        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl sm:px-10">
           <h2 className="text-2xl font-bold text-center text-gray-800">Create Your Store</h2>
           <p className="text-center text-gray-600 mt-2">Finish setup by creating your first store. Your data will be isolated to this store.</p>
 

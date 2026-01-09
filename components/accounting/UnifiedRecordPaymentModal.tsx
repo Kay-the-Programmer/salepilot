@@ -1,24 +1,40 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { SupplierInvoice, SupplierPayment, StoreSettings } from '../../types';
+import { StoreSettings } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
 import CurrencyDollarIcon from '../icons/CurrencyDollarIcon';
 import CalendarIcon from '../icons/CalendarIcon';
 import BanknotesIcon from '../icons/BanknotesIcon';
 import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
+import CreditCardIcon from '../icons/CreditCardIcon';
 import { formatCurrency } from '../../utils/currency';
 import { InputField } from '../ui/InputField';
 
-interface RecordSupplierPaymentModalProps {
+interface UnifiedRecordPaymentModalProps {
     isOpen: boolean;
     onClose: () => void;
-    invoice: SupplierInvoice;
-    onSave: (invoiceId: string, payment: Omit<SupplierPayment, 'id'>) => void;
+    title?: string;
+    invoiceId: string;
+    invoiceNumber?: string;
+    balanceDue: number;
+    customerOrSupplierName?: string;
+    paymentMethods: { id: string; name: string; }[];
+    onSave: (invoiceId: string, payment: { date: string; amount: number; method: string; reference?: string }) => void;
     storeSettings: StoreSettings;
 }
 
-const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({ isOpen, onClose, invoice, onSave, storeSettings }) => {
-    const balanceDue = invoice.amount - invoice.amountPaid;
+const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
+    isOpen,
+    onClose,
+    title = 'Record Payment',
+    invoiceId,
+    invoiceNumber,
+    balanceDue,
+    customerOrSupplierName,
+    paymentMethods,
+    onSave,
+    storeSettings
+}) => {
     const [amount, setAmount] = useState(balanceDue.toFixed(2));
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [method, setMethod] = useState('');
@@ -28,10 +44,10 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
         if (isOpen) {
             setAmount(balanceDue.toFixed(2));
             setDate(new Date().toISOString().split('T')[0]);
-            setMethod(storeSettings.supplierPaymentMethods?.[0]?.name || '');
+            setMethod(paymentMethods[0]?.id || paymentMethods[0]?.name || '');
             setReference('');
         }
-    }, [invoice, balanceDue, isOpen, storeSettings.supplierPaymentMethods]);
+    }, [invoiceId, balanceDue, isOpen, paymentMethods]);
 
     if (!isOpen) return null;
 
@@ -44,7 +60,7 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
             return;
         }
         const paymentAmount = parseFloat(amount);
-        onSave(invoice.id, { date, amount: paymentAmount, method, reference });
+        onSave(invoiceId, { date, amount: paymentAmount, method, reference });
         onClose();
     };
 
@@ -60,18 +76,23 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
                 <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
                     <div className="px-6 py-6 sm:px-8 border-b border-slate-100 flex justify-between items-center bg-white">
-                        <div>
-                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                                Record Payment
-                            </h3>
-                            <div className="flex items-center gap-2 mt-1">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                                    Invoice {invoice.invoiceNumber}
-                                </p>
-                                <div className="w-1 h-1 rounded-full bg-slate-200" />
-                                <p className="text-sm font-bold text-blue-600">
-                                    {formatCurrency(balanceDue, storeSettings)} due
-                                </p>
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg shadow-blue-200">
+                                <CreditCardIcon className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                                    {title}
+                                </h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                        Invoice {invoiceNumber || invoiceId}
+                                    </p>
+                                    <div className="w-1 h-1 rounded-full bg-slate-200" />
+                                    <p className="text-sm font-bold text-blue-600">
+                                        {formatCurrency(balanceDue, storeSettings)} due
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         <button
@@ -84,9 +105,22 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
                     </div>
 
                     <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-8 space-y-6">
+                        <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 rounded-2xl border border-blue-200">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <div className="text-xs font-black text-blue-700 uppercase tracking-widest mb-1">Balance Due</div>
+                                    <div className="text-2xl font-black text-blue-900 tracking-tight">{formatCurrency(balanceDue, storeSettings)}</div>
+                                </div>
+                                <div className="text-right">
+                                    <div className="text-xs font-black text-blue-700 uppercase tracking-widest mb-1">Entity</div>
+                                    <div className="font-bold text-blue-900 truncate max-w-[150px]">{customerOrSupplierName || 'N/A'}</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <InputField
-                                label="Disbursement Amount"
+                                label="Payment Amount"
                                 type="number"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
@@ -97,7 +131,7 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
                                 className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
                             />
                             <InputField
-                                label="Execution Date"
+                                label="Payment Date"
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
@@ -113,12 +147,15 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
                                 <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                 <select
                                     value={method}
-                                    onChange={e => setMethod(e.target.value as any)}
+                                    onChange={e => setMethod(e.target.value)}
                                     className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 font-bold shadow-sm"
                                 >
-                                    {(storeSettings.supplierPaymentMethods || []).map(pm => (
-                                        <option key={pm.id} value={pm.name}>{pm.name}</option>
+                                    {paymentMethods.map(pm => (
+                                        <option key={pm.id} value={pm.id}>{pm.name}</option>
                                     ))}
+                                    {paymentMethods.length === 0 && (
+                                        <option value="" disabled>No payment methods configured</option>
+                                    )}
                                 </select>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
@@ -162,4 +199,4 @@ const RecordSupplierPaymentModal: React.FC<RecordSupplierPaymentModalProps> = ({
     );
 };
 
-export default RecordSupplierPaymentModal;
+export default UnifiedRecordPaymentModal;

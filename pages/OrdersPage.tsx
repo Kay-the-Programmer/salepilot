@@ -5,6 +5,7 @@ import { HiOutlineEye, HiOutlineCheckCircle, HiOutlineXCircle, HiOutlineBanknote
 import Header from '../components/Header';
 import RecordOrderPaymentModal from '../components/orders/RecordOrderPaymentModal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { formatCurrency } from '../utils/currency';
 
 interface OrdersPageProps {
     onOpenSidebar?: () => void;
@@ -135,10 +136,10 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar, storeSettings, s
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
             <Header
                 title="Online Orders"
-                onMenuClick={onOpenSidebar}
+
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                hideSearchOnMobile={false}
+                hideSearchOnMobile={true}
             />
 
             {/* Stats & Filters Bar */}
@@ -155,7 +156,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar, storeSettings, s
                         </div>
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-                            <span className="text-slate-600">Revenue: <span className="font-semibold text-slate-900">${stats.revenue.toFixed(2)}</span></span>
+                            <span className="text-slate-600">Revenue: <span className="font-semibold text-slate-900">{formatCurrency(stats.revenue, storeSettings)}</span></span>
                         </div>
                     </div>
 
@@ -225,7 +226,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar, storeSettings, s
                                                 <div className="text-xs text-slate-500">{order.customerDetails?.email}</div>
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-slate-900">
-                                                ${Number(order.total).toFixed(2)}
+                                                {formatCurrency(order.total, storeSettings)}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center">
                                                 <span className={`px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full border ${order.paymentStatus === 'paid'
@@ -339,7 +340,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar, storeSettings, s
                                                                     <span className="font-medium text-slate-900">{item.quantity}x</span>
                                                                     <span className="text-slate-600">{item.name}</span>
                                                                 </div>
-                                                                <span className="font-medium text-slate-900">${(Number(item.price) * Number(item.quantity)).toFixed(2)}</span>
+                                                                <span className="font-medium text-slate-900">{formatCurrency(Number(item.price) * Number(item.quantity), storeSettings)}</span>
                                                             </li>
                                                         ))}
                                                     </ul>
@@ -349,15 +350,15 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar, storeSettings, s
                                                 <div className="bg-slate-50 p-4 rounded-xl space-y-2 border border-slate-100">
                                                     <div className="flex justify-between text-slate-600 text-sm">
                                                         <span>Subtotal</span>
-                                                        <span>${Number(selectedOrder.total).toFixed(2)}</span>
+                                                        <span>{formatCurrency(selectedOrder.total, storeSettings)}</span>
                                                     </div>
                                                     <div className="flex justify-between text-emerald-600 text-sm font-medium">
                                                         <span>Amount Paid</span>
-                                                        <span>-${Number(selectedOrder.amountPaid || 0).toFixed(2)}</span>
+                                                        <span>-{formatCurrency(selectedOrder.amountPaid || 0, storeSettings)}</span>
                                                     </div>
                                                     <div className="pt-2 border-t border-slate-200 flex justify-between text-slate-900 font-bold text-lg">
                                                         <span>Total Due</span>
-                                                        <span>${(Number(selectedOrder.total) - Number(selectedOrder.amountPaid || 0)).toFixed(2)}</span>
+                                                        <span>{formatCurrency(Number(selectedOrder.total) - Number(selectedOrder.amountPaid || 0), storeSettings)}</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -417,6 +418,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ onOpenSidebar, storeSettings, s
                 message={confirmModal.message}
                 confirmText="Proceed"
                 confirmButtonClass="bg-emerald-600 hover:bg-emerald-700"
+                variant="floating"
             />
         </div>
     );

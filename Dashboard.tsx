@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
 import Logo from './assets/logo.png';
 import Sidebar from './components/Sidebar';
@@ -32,12 +33,13 @@ import { dbService } from './services/dbService';
 import Bars3Icon from './components/icons/Bars3Icon';
 import BellAlertIcon from './components/icons/BellAlertIcon';
 import LoadingSpinner from './components/LoadingSpinner';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
 const getSuperModeKey = (userId?: string) => userId ? `salePilot.superMode.${userId}` : 'salePilot.superMode';
 
-export type SnackbarType = 'success' | 'error' | 'info' | 'sync';
+// SnackbarType now imported from App.tsx
 
 type SnackbarState = {
     message: string;
@@ -77,7 +79,6 @@ const Dashboard: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [currentPage, setCurrentPage] = useState('reports');
     const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
     const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
     const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -143,10 +144,16 @@ const Dashboard: React.FC = () => {
         return () => window.removeEventListener('keydown', onKeyDown);
     }, []);
 
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // Determine current "page" from URL
+    const currentPage = location.pathname.substring(1) || 'reports';
+
     // Close mobile sidebar after navigation
     useEffect(() => {
         setIsSidebarOpen(false);
-    }, [currentPage]);
+    }, [location.pathname]);
 
     const hasAccess = (page: string, role: User['role']) => {
         // When superadmin is in super mode, only allow strictly superadmin routes (Superadmin page)
@@ -157,17 +164,6 @@ const Dashboard: React.FC = () => {
         return PERMISSIONS[effectiveRole].includes(page);
     };
 
-    const handleSetCurrentPage = useCallback((page: string) => {
-        if (currentUser && hasAccess(page, currentUser.role)) {
-            setCurrentPage(page);
-            try {
-                const key = getLastPageKey(currentUser.id);
-                localStorage.setItem(key, page);
-            } catch (_) { /* ignore storage errors */ }
-        } else {
-            showSnackbar("You don't have permission to access this page.", "error");
-        }
-    }, [currentUser, showSnackbar]);
 
     const fetchData = useCallback(async () => {
         setIsLoading(true);
@@ -308,8 +304,9 @@ const Dashboard: React.FC = () => {
                     const verifiedUser = await verifySession();
                     const authedUser = { ...verifiedUser, token: localUser.token } as User;
                     setCurrentUser(authedUser);
-                    // Restore last page based on mode
-                    try {
+                    // Check if current path is already valid before redirecting to 'desired'
+                    const currentPath = location.pathname.substring(1);
+                    if (!currentPath || !hasAccess(currentPath, authedUser.role)) {
                         const key = getLastPageKey(authedUser.id);
                         const saved = localStorage.getItem(key) || localStorage.getItem(getLastPageKey());
                         const fallback = DEFAULT_PAGES[authedUser.role];
@@ -322,14 +319,14 @@ const Dashboard: React.FC = () => {
                         } else {
                             desired = (saved && hasAccess(saved, authedUser.role) ? saved : fallback);
                         }
-                        setCurrentPage(desired);
-                    } catch (_) {
-                        setCurrentPage(DEFAULT_PAGES[authedUser.role]);
+                        navigate(`/${desired}`, { replace: true });
                     }
                 } catch (error) {
                     console.log("Session verification failed, running in offline mode.");
                     setCurrentUser(localUser as User); // Assume user is valid offline
-                    try {
+                    // Check if current path is already valid before redirecting
+                    const currentPath = location.pathname.substring(1);
+                    if (!currentPath || !hasAccess(currentPath, localUser.role)) {
                         const key = getLastPageKey(localUser.id);
                         const saved = localStorage.getItem(key) || localStorage.getItem(getLastPageKey());
                         const fallback = DEFAULT_PAGES[localUser.role];
@@ -342,9 +339,7 @@ const Dashboard: React.FC = () => {
                         } else {
                             desired = (saved && hasAccess(saved, localUser.role) ? saved : fallback);
                         }
-                        setCurrentPage(desired);
-                    } catch (_) {
-                        setCurrentPage(DEFAULT_PAGES[localUser.role]);
+                        navigate(`/${desired}`, { replace: true });
                     }
                 }
             }
@@ -370,14 +365,13 @@ const Dashboard: React.FC = () => {
             }
         } catch { }
         setCurrentUser(user);
-        // Explicitly redirect superadmin to the superadmin page after login
         const desired = user.role === 'superadmin' ? 'superadmin' : DEFAULT_PAGES[user.role];
-        setCurrentPage(desired);
         // Persist last page for this user for consistency across reloads
         try {
             const key = getLastPageKey(user.id);
             localStorage.setItem(key, desired);
         } catch (_) { /* ignore storage errors */ }
+        navigate(`/${desired}`);
         showSnackbar(`Welcome back, ${user.name}!`, 'success');
     };
 
@@ -736,11 +730,11 @@ const Dashboard: React.FC = () => {
                 };
                 setStockTakeSession(offlineSession);
                 await dbService.put('settings', offlineSession, 'activeStockTake');
-                handleSetCurrentPage('stock-takes');
+                navigate('/stock-takes');
                 showSnackbar('Offline: Stock take started. Changes will sync when back online.', 'info');
             } else {
                 setStockTakeSession(result as StockTakeSession);
-                handleSetCurrentPage('stock-takes');
+                navigate('/stock-takes');
                 showSnackbar('New stock take session started.', 'info');
             }
         } catch (err: any) {
@@ -889,10 +883,9 @@ const Dashboard: React.FC = () => {
         const token = getCurrentUser()?.token;
         const handleCompleted = (user: User) => {
             const merged = token ? ({ ...user, token } as User) : user;
-            // Persist merged user (we already set it in StoreSetupPage but ensure token merge)
             try { localStorage.setItem('salePilotUser', JSON.stringify(merged)); } catch { }
             setCurrentUser(merged);
-            setCurrentPage(DEFAULT_PAGES[merged.role]);
+            navigate(`/${DEFAULT_PAGES[merged.role]}`);
         };
         return <StoreSetupPage onCompleted={handleCompleted} showSnackbar={showSnackbar} />;
     }
@@ -910,12 +903,24 @@ const Dashboard: React.FC = () => {
     }
 
 
-    const renderPage = () => {
-        if (!hasAccess(currentPage, currentUser.role)) {
+    const renderPage = (page: string) => {
+        if (!hasAccess(page, currentUser.role)) {
             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
         }
 
-        switch (currentPage) {
+        switch (page) {
+            case 'setup-store':
+                return (
+                    <StoreSetupPage
+                        onCompleted={(user) => {
+                            const token = currentUser.token;
+                            const merged = token ? { ...user, token } : user;
+                            setCurrentUser(merged as User);
+                            navigate(`/${DEFAULT_PAGES[merged.role]}`);
+                        }}
+                        showSnackbar={showSnackbar}
+                    />
+                );
             case 'sales':
                 return <SalesPage products={products} customers={customers} onProcessSale={handleProcessSale} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} />;
             case 'sales-history':
@@ -996,8 +1001,6 @@ const Dashboard: React.FC = () => {
                 }
             `}>
                 <Sidebar
-                    currentPage={currentPage}
-                    setCurrentPage={handleSetCurrentPage}
                     user={currentUser}
                     onLogout={handleLogout}
                     isOnline={isOnline}
@@ -1009,9 +1012,10 @@ const Dashboard: React.FC = () => {
                         // Redirect to appropriate default page if current is no longer permitted
                         const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
                         const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin'] : PERMISSIONS[effectiveRole];
-                        if (!allowed.includes(currentPage)) {
+                        const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
+                        if (!allowed.includes(page)) {
                             const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
-                            setCurrentPage(next);
+                            navigate(`/${next}`);
                             try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
                         }
                     }}
@@ -1042,7 +1046,7 @@ const Dashboard: React.FC = () => {
             <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
                 {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                 {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
-                {currentPage !== 'sales' && (
+                {location.pathname !== '/sales' && (
                     <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
                         <button
                             onClick={() => setIsSidebarOpen(true)}
@@ -1059,7 +1063,7 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         <button
-                            onClick={() => setCurrentPage('notifications')}
+                            onClick={() => navigate('/notifications')}
                             className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
                             aria-label="Notifications"
                         >
@@ -1067,7 +1071,8 @@ const Dashboard: React.FC = () => {
                         </button>
                     </div>
                 )}
-                {renderPage()}
+
+                {renderPage(currentPage)}
             </div>
 
             {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}

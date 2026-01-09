@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { User, StoreSettings } from '../types';
 import {
     HomeIcon,
@@ -15,9 +16,7 @@ import {
     Cog6ToothIcon,
     ChevronDoubleLeftIcon,
     ArrowLeftOnRectangleIcon,
-    XMarkIcon,
     BuildingStorefrontIcon,
-    ChartBarIcon,
     ClipboardDocumentListIcon,
     SwatchIcon,
     BellAlertIcon,
@@ -26,8 +25,6 @@ import {
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 
 interface SidebarProps {
-    currentPage: string;
-    setCurrentPage: (page: string) => void;
     user: User;
     onLogout: () => void;
     isOnline: boolean;
@@ -179,8 +176,6 @@ const NAV_ITEMS = [
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({
-    currentPage,
-    setCurrentPage,
     user,
     onLogout,
     isOnline,
@@ -195,8 +190,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     storeSettings
 }) => {
     const [isExpanded, setIsExpanded] = useState(true);
-    const [mobileMode, setMobileMode] = useState<'menu' | 'settings'>('menu');
     const sidebarRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
 
     // Filter navigation items based on user role and allowed pages
     let navItems = NAV_ITEMS.filter(item => item.roles.includes(user.role));
@@ -211,6 +206,10 @@ const Sidebar: React.FC<SidebarProps> = ({
                 sidebarRef.current &&
                 !sidebarRef.current.contains(event.target as Node) &&
                 window.innerWidth < 768) {
+                // The original instruction had a misplaced line here.
+                // The `location` and `currentPage` logic is typically used for determining active state,
+                // not for closing the sidebar on outside click.
+                // Assuming the intent was to just close the sidebar if clicked outside.
                 onMobileClose?.();
             }
         };
@@ -231,8 +230,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         };
     }, [showOnMobile]);
 
+
     const handleNavigation = (page: string) => {
-        setCurrentPage(page);
+        navigate(`/${page}`);
         if (window.innerWidth < 768) {
             onMobileClose?.();
         }
@@ -272,23 +272,30 @@ const Sidebar: React.FC<SidebarProps> = ({
                         <div className="grid grid-cols-3 gap-4">
                             {navItems.map((item) => {
                                 const IconComponent = item.icon;
-                                const isActive = currentPage === item.page;
                                 return (
-                                    <button
+                                    <NavLink
                                         key={item.page}
-                                        onClick={() => handleNavigation(item.page)}
-                                        className="flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all"
+                                        to={`/${item.page}`}
+                                        onClick={() => window.innerWidth < 768 && onMobileClose?.()}
+                                        className={({ isActive }) => `
+                                            flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all
+                                            ${isActive ? 'bg-blue-50/50' : ''}
+                                        `}
                                     >
-                                        <div className={`
-                                            w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors
-                                            ${isActive ? 'bg-blue-100 text-blue-600' : 'bg-white border border-gray-100 text-gray-600'}
-                                        `}>
-                                            <IconComponent className="w-7 h-7" />
-                                        </div>
-                                        <span className={`text-xs font-medium text-center leading-tight ${isActive ? 'text-blue-700' : 'text-gray-600'}`}>
-                                            {item.name}
-                                        </span>
-                                    </button>
+                                        {({ isActive }) => (
+                                            <>
+                                                <div className={`
+                                                    w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors
+                                                    ${isActive ? 'bg-blue-100 text-blue-600' : 'bg-white border border-gray-100 text-gray-600'}
+                                                `}>
+                                                    <IconComponent className="w-7 h-7" />
+                                                </div>
+                                                <span className={`text-xs font-medium text-center leading-tight ${isActive ? 'text-blue-700' : 'text-gray-600'}`}>
+                                                    {item.name}
+                                                </span>
+                                            </>
+                                        )}
+                                    </NavLink>
                                 );
                             })}
                         </div>
@@ -392,14 +399,13 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
                     {navItems.map(item => {
                         const IconComponent = item.icon;
-                        const isActive = currentPage === item.page;
 
                         return (
-                            <button
+                            <NavLink
                                 key={item.page}
-                                onClick={() => handleNavigation(item.page)}
-                                className={`
-                                    w-full flex items-center gap-3 px-3 py-3 rounded-xl
+                                to={`/${item.page}`}
+                                className={({ isActive }) => `
+                                    w-full flex items-center gap-3 px-4 py-3 rounded-xl
                                     transition-all duration-200 group relative
                                     ${isActive
                                         ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500'
@@ -409,22 +415,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 `}
                                 title={!isExpanded ? item.name : undefined}
                             >
-                                <div className={`flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
-                                    <IconComponent className="w-5 h-5" />
-                                </div>
-                                <div className={`flex-1 text-left transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                    <span className="text-sm font-medium whitespace-nowrap">{item.name}</span>
-                                </div>
-                                {item.badge && isExpanded && (
-                                    <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                                        {item.badge}
-                                    </span>
+                                {({ isActive }) => (
+                                    <>
+                                        <div className={`flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
+                                            <IconComponent className="w-5 h-5" />
+                                        </div>
+                                        <div className={`flex-1 text-left transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                            <span className="text-sm font-medium whitespace-nowrap">{item.name}</span>
+                                        </div>
+                                        {item.badge && isExpanded && (
+                                            <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                                {item.badge}
+                                            </span>
+                                        )}
+                                        {/* Active indicator for collapsed mode */}
+                                        {!isExpanded && isActive && (
+                                            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
+                                        )}
+                                    </>
                                 )}
-                                {/* Active indicator for collapsed mode */}
-                                {!isExpanded && isActive && (
-                                    <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                                )}
-                            </button>
+                            </NavLink>
                         );
                     })}
                 </nav>
@@ -432,9 +442,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {/* User Profile & Bottom Section */}
                 <div className="px-3 py-4 border-t border-gray-200 space-y-4">
                     {/* User Profile */}
-                    <div
-                        onClick={() => handleNavigation('profile')}
-                        className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${currentPage === 'profile' ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
+                    <NavLink
+                        to="/profile"
+                        className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isActive ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => e.key === 'Enter' && handleNavigation('profile')}
@@ -457,7 +467,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </NavLink>
 
                     {/* Visit Online Store */}
                     {(selectedStoreId || user.currentStoreId) && (storeSettings?.isOnlineStoreEnabled !== false) && (
