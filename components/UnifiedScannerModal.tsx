@@ -134,7 +134,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
         const initScanner = async () => {
             setIsInitializing(true);
             setError(null);
-            setHasTorch(false); // Reset torch capability on each init
+            setHasTorch(false);
 
             const element = document.getElementById(readerId);
             if (!element) {
@@ -148,6 +148,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 const html5QrCode = new Html5Qrcode(readerId);
                 scannerRef.current = html5QrCode;
 
+                // Configure scanner
                 const config = {
                     fps: 15,
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
@@ -156,42 +157,35 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         return { width: size, height: size };
                     },
                     aspectRatio: 1.0,
-                    disableFlip: facingMode === 'environment', // Don't flip back camera, DO flip front (user)
-                    videoConstraints: {
-                        width: { min: 640, ideal: 1280, max: 1920 },
-                        height: { min: 480, ideal: 720, max: 1080 }
-                    },
+                    disableFlip: facingMode === 'environment', // Flip for front camera (natural), don't flip for back
                     experimentalFeatures: {
                         useBarCodeDetectorIfSupported: true
                     }
                 };
 
-                // Get all cameras to find a matches for "environment" or "user" if the browser is stubborn
-                const devices = await Html5Qrcode.getCameras();
+                // Determine camera selection
+                // Priority 1: Constraints (usually most reliable for mobile browsers)
                 let cameraSelection: any = { facingMode: facingMode };
 
-                if (devices && devices.length > 0) {
-                    // Filter cameras by label if possible (browsers often name them "Back Camera" etc)
-                    const backCameras = devices.filter(d =>
-                        d.label.toLowerCase().includes('back') ||
-                        d.label.toLowerCase().includes('rear') ||
-                        d.label.toLowerCase().includes('environment')
-                    );
-                    const frontCameras = devices.filter(d =>
-                        d.label.toLowerCase().includes('front') ||
-                        d.label.toLowerCase().includes('user') ||
-                        d.label.toLowerCase().includes('selfie')
-                    );
+                try {
+                    const devices = await Html5Qrcode.getCameras();
+                    if (devices && devices.length > 0) {
+                        setHasMultipleCameras(devices.length > 1);
 
-                    if (facingMode === 'environment' && backCameras.length > 0) {
-                        cameraSelection = backCameras[0].id;
-                    } else if (facingMode === 'user' && frontCameras.length > 0) {
-                        cameraSelection = frontCameras[0].id;
-                    } else if (devices.length > 0) {
-                        // Fallback: If we set environment but no "back" found, pick last one (usually back)
-                        // If we set user but no "front" found, pick first one (usually front)
-                        cameraSelection = facingMode === 'environment' ? devices[devices.length - 1].id : devices[0].id;
+                        // Priority 2: If we have multiple cameras and labels, find a specific match
+                        // This helps on some hybrid devices or PCs with multiple external webcams
+                        const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
+                        const frontCamera = devices.find(d => /front|user|selfie/i.test(d.label));
+
+                        if (facingMode === 'environment' && backCamera) {
+                            cameraSelection = backCamera.id;
+                        } else if (facingMode === 'user' && frontCamera) {
+                            cameraSelection = frontCamera.id;
+                        }
+                        // If no clear label match, we fall back to Priority 1 (facingMode constraint)
                     }
+                } catch (e) {
+                    console.warn("Could not fetch camera list, falling back to facingMode constraint:", e);
                 }
 
                 await html5QrCode.start(
@@ -210,7 +204,10 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         }
                     },
                     (errorMessage) => {
-                        if (onScanError) onScanError(errorMessage);
+                        // Suppress noisy frame errors
+                        if (onScanError && !errorMessage.includes("No barcode or QR code detected")) {
+                            onScanError(errorMessage);
+                        }
                     }
                 );
 
