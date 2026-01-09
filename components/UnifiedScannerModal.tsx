@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { Html5Qrcode } from 'html5-qrcode';
 import { FiX, FiZap, FiZapOff, FiRefreshCw } from 'react-icons/fi';
 import XMarkIcon from './icons/XMarkIcon';
 
@@ -149,34 +149,53 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 scannerRef.current = html5QrCode;
 
                 const config = {
-                    fps: 15, // Balanced FPS for mobile performance
+                    fps: 15,
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
                         const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
                         const size = Math.floor(minEdge * 0.75);
                         return { width: size, height: size };
                     },
                     aspectRatio: 1.0,
-                    disableFlip: true, // Performance boost by avoiding mirroring
+                    disableFlip: facingMode === 'environment', // Don't flip back camera, DO flip front (user)
                     videoConstraints: {
                         width: { min: 640, ideal: 1280, max: 1920 },
                         height: { min: 480, ideal: 720, max: 1080 }
                     },
                     experimentalFeatures: {
-                        useBarCodeDetectorIfSupported: true // Native hardware acceleration
-                    },
-                    formatsToSupport: [
-                        Html5QrcodeSupportedFormats.QR_CODE,
-                        Html5QrcodeSupportedFormats.EAN_13,
-                        Html5QrcodeSupportedFormats.EAN_8,
-                        Html5QrcodeSupportedFormats.CODE_128,
-                        Html5QrcodeSupportedFormats.CODE_39,
-                        Html5QrcodeSupportedFormats.UPC_A,
-                        Html5QrcodeSupportedFormats.UPC_E,
-                    ]
+                        useBarCodeDetectorIfSupported: true
+                    }
                 };
 
+                // Get all cameras to find a matches for "environment" or "user" if the browser is stubborn
+                const devices = await Html5Qrcode.getCameras();
+                let cameraSelection: any = { facingMode: facingMode };
+
+                if (devices && devices.length > 0) {
+                    // Filter cameras by label if possible (browsers often name them "Back Camera" etc)
+                    const backCameras = devices.filter(d =>
+                        d.label.toLowerCase().includes('back') ||
+                        d.label.toLowerCase().includes('rear') ||
+                        d.label.toLowerCase().includes('environment')
+                    );
+                    const frontCameras = devices.filter(d =>
+                        d.label.toLowerCase().includes('front') ||
+                        d.label.toLowerCase().includes('user') ||
+                        d.label.toLowerCase().includes('selfie')
+                    );
+
+                    if (facingMode === 'environment' && backCameras.length > 0) {
+                        cameraSelection = backCameras[0].id;
+                    } else if (facingMode === 'user' && frontCameras.length > 0) {
+                        cameraSelection = frontCameras[0].id;
+                    } else if (devices.length > 0) {
+                        // Fallback: If we set environment but no "back" found, pick last one (usually back)
+                        // If we set user but no "front" found, pick first one (usually front)
+                        cameraSelection = facingMode === 'environment' ? devices[devices.length - 1].id : devices[0].id;
+                    }
+                }
+
                 await html5QrCode.start(
-                    { facingMode: facingMode },
+                    cameraSelection,
                     config,
                     (decodedText) => {
                         const now = Date.now();
@@ -205,7 +224,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 }
             } catch (err) {
                 console.error("Error starting scanner:", err);
-                setError("Failed to start camera. Please ensure permissions are granted.");
+                setError("Failed to start camera. Please ensure permissions are granted and no other app is using it.");
                 setIsInitializing(false);
             }
         };
