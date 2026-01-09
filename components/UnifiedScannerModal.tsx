@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { FiX, FiZap, FiZapOff } from 'react-icons/fi';
+import { FiX, FiZap, FiZapOff, FiRefreshCw } from 'react-icons/fi';
 import XMarkIcon from './icons/XMarkIcon';
 
 interface UnifiedScannerModalProps {
@@ -27,6 +27,8 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     const [hasTorch, setHasTorch] = useState(false);
     const [isInitializing, setIsInitializing] = useState(true);
     const [isFlashing, setIsFlashing] = useState(false);
+    const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
+    const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
 
     const scannerRef = useRef<Html5Qrcode | null>(null);
     const isRunningRef = useRef<boolean>(false);
@@ -59,6 +61,18 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
         (window as any)._playScannerBeep = playBeep;
     }, []);
 
+    // Check for multiple cameras
+    useEffect(() => {
+        if (!isOpen) return;
+
+        Html5Qrcode.getCameras().then(devices => {
+            setHasMultipleCameras(devices && devices.length > 1);
+        }).catch(err => {
+            console.error("Error checking cameras:", err);
+            setHasMultipleCameras(false);
+        });
+    }, [isOpen]);
+
     const provideFeedback = useCallback(() => {
         // Audio feedback
         if ((window as any)._playScannerBeep) {
@@ -89,6 +103,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
         }
     };
 
+    const handleCameraSwitch = () => {
+        if (isInitializing) return;
+        setFacingMode(prev => prev === "environment" ? "user" : "environment");
+    };
+
     const cleanup = useCallback(async () => {
         if (scannerRef.current && isRunningRef.current) {
             try {
@@ -115,6 +134,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
         const initScanner = async () => {
             setIsInitializing(true);
             setError(null);
+            setHasTorch(false); // Reset torch capability on each init
 
             const element = document.getElementById(readerId);
             if (!element) {
@@ -156,7 +176,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 };
 
                 await html5QrCode.start(
-                    { facingMode: "environment" },
+                    { facingMode: facingMode },
                     config,
                     (decodedText) => {
                         const now = Date.now();
@@ -196,7 +216,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
             clearTimeout(timer);
             cleanup();
         };
-    }, [isOpen, onScanSuccess, onClose, continuous, delayBetweenScans, cleanup, provideFeedback]);
+    }, [isOpen, onScanSuccess, onClose, continuous, delayBetweenScans, cleanup, provideFeedback, facingMode]);
 
     if (!isOpen) return null;
 
@@ -260,6 +280,17 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                                     {/* Vignette effect */}
                                     <div className="absolute inset-0 bg-black/20"></div>
+
+                                    {/* Camera Switch Button */}
+                                    {hasMultipleCameras && (
+                                        <button
+                                            onClick={handleCameraSwitch}
+                                            disabled={isInitializing}
+                                            className="absolute bottom-6 left-6 pointer-events-auto p-4 rounded-full backdrop-blur-xl bg-white/10 text-white border border-white/20 transition-all active:scale-90 disabled:opacity-50"
+                                        >
+                                            <FiRefreshCw className={`w-6 h-6 transition-transform duration-500 ${isInitializing ? 'animate-spin' : ''}`} />
+                                        </button>
+                                    )}
 
                                     {/* Torch Control Button */}
                                     {hasTorch && (

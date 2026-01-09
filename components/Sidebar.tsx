@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import * as React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { User, StoreSettings } from '../types';
 import {
@@ -64,7 +64,7 @@ const NAV_ITEMS = [
     {
         name: 'Online Orders',
         page: 'orders',
-        icon: TruckIcon, // Reusing TruckIcon, reasonable for shipping/orders
+        icon: TruckIcon,
         roles: ['admin', 'staff'],
         badge: null
     },
@@ -189,8 +189,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     onMobileClose,
     storeSettings
 }) => {
-    const [isExpanded, setIsExpanded] = useState(true);
-    const sidebarRef = useRef<HTMLDivElement>(null);
+    const [isExpanded, setIsExpanded] = React.useState(true);
+    const sidebarRef = React.useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
     // Filter navigation items based on user role and allowed pages
@@ -200,16 +200,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
 
     // Close sidebar when clicking outside on mobile
-    useEffect(() => {
+    React.useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (showOnMobile &&
                 sidebarRef.current &&
                 !sidebarRef.current.contains(event.target as Node) &&
                 window.innerWidth < 768) {
-                // The original instruction had a misplaced line here.
-                // The `location` and `currentPage` logic is typically used for determining active state,
-                // not for closing the sidebar on outside click.
-                // Assuming the intent was to just close the sidebar if clicked outside.
                 onMobileClose?.();
             }
         };
@@ -219,7 +215,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }, [showOnMobile, onMobileClose]);
 
     // Prevent body scroll when sidebar is open on mobile
-    useEffect(() => {
+    React.useEffect(() => {
         if (showOnMobile && window.innerWidth < 768) {
             document.body.style.overflow = 'hidden';
         } else {
