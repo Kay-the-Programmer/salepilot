@@ -954,7 +954,10 @@ const Dashboard: React.FC = () => {
                         showSnackbar={showSnackbar}
                     />;
                 }
-                return <MarketplacePage />;
+                // Return null or a message, as this is now a standalone page.
+                // However, since it's still in PERMISSIONS, it might be reached if someone manually navigates.
+                // But App.tsx should catch it first.
+                return <div className="p-8 text-center text-slate-500">Redirecting to Marketplace...</div>;
             case 'inventory':
             default:
                 return <InventoryPage

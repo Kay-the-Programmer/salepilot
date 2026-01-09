@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { HiOutlineBuildingStorefront, HiOutlineMagnifyingGlass, HiOutlineShoppingBag, HiOutlinePlus, HiOutlineMapPin, HiOutlineArrowRight } from 'react-icons/hi2';
+import { HiOutlineBuildingStorefront, HiOutlineMagnifyingGlass, HiOutlineShoppingBag, HiOutlinePlus, HiOutlineMapPin, HiOutlineArrowRight, HiOutlineUserCircle, HiOutlinePresentationChartLine } from 'react-icons/hi2';
 import { api } from '../../services/api';
+import { getCurrentUser } from '../../services/authService';
 import { formatCurrency } from '../../utils/currency';
 import RequestWizard from '../../components/RequestWizard';
 
@@ -36,6 +37,7 @@ const MarketplacePage: React.FC = () => {
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
     const navigate = useNavigate();
+    const currentUser = getCurrentUser();
 
     const [recentRequests, setRecentRequests] = useState<any[]>([]);
 
@@ -127,14 +129,34 @@ const MarketplacePage: React.FC = () => {
                         <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">SalePilot <span className="text-[#FF7F27]">Market</span></h1>
                     </div>
 
-                    <button
-                        onClick={() => setIsRequestModalOpen(true)}
-                        className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-slate-900 text-white rounded-full hover:bg-slate-800 transition-all font-bold text-xs sm:text-sm shadow-xl shadow-slate-200 active:scale-95"
-                    >
-                        <HiOutlinePlus className="w-4 h-4 sm:w-5 sm:h-5" />
-                        <span className="hidden xs:inline">Post a Request</span>
-                        <span className="xs:hidden">Request</span>
-                    </button>
+                    <div className="flex items-center gap-3 sm:gap-6">
+                        {currentUser ? (
+                            <button
+                                onClick={() => navigate('/reports')}
+                                className="flex items-center gap-2 px-4 py-2 sm:py-2.5 bg-slate-100 text-[#0A2E5C] rounded-full hover:bg-slate-200 transition-all font-bold text-xs sm:text-sm active:scale-95"
+                            >
+                                <HiOutlinePresentationChartLine className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="hidden xs:inline">Dashboard</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => navigate('/login')}
+                                className="flex items-center gap-2 px-4 py-2 sm:py-2.5 bg-slate-100 text-[#0A2E5C] rounded-full hover:bg-slate-200 transition-all font-bold text-xs sm:text-sm active:scale-95"
+                            >
+                                <HiOutlineUserCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                                <span className="hidden xs:inline">Login</span>
+                            </button>
+                        )}
+
+                        <button
+                            onClick={() => setIsRequestModalOpen(true)}
+                            className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-slate-900 text-white rounded-full hover:bg-slate-800 transition-all font-bold text-xs sm:text-sm shadow-xl shadow-slate-200 active:scale-95"
+                        >
+                            <HiOutlinePlus className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="hidden xs:inline">Post a Request</span>
+                            <span className="xs:hidden">Request</span>
+                        </button>
+                    </div>
                 </div>
             </header>
 

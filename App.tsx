@@ -8,6 +8,7 @@ import ShopProductList from './pages/shop/ShopProductList';
 import ShopProductDetail from './pages/shop/ShopProductDetail';
 import CartPage from './pages/shop/CartPage';
 import LandingPage from './pages/LandingPage';
+import MarketplacePage from './pages/shop/MarketplacePage';
 
 const App: React.FC = () => {
     return (
@@ -49,7 +50,9 @@ const App: React.FC = () => {
             <Route path="/settings" element={<Dashboard />} />
             <Route path="/superadmin" element={<Dashboard />} />
             <Route path="/marketing" element={<Dashboard />} />
-            <Route path="/directory" element={<Dashboard />} />
+            <Route path="/directory" element={<MarketplacePage />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/directory/request/:requestId" element={<Dashboard />} />
 
             {/* Fallback */}
             <Route path="*" element={<Dashboard />} />
