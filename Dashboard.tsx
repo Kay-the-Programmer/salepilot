@@ -28,6 +28,7 @@ import NotificationsPage from './pages/NotificationsPage';
 import SuperAdminPage from './pages/SuperAdminPage';
 import MarketingPage from './pages/MarketingPage';
 import MarketplacePage from './pages/shop/MarketplacePage';
+import MarketplaceRequestActionPage from './pages/MarketplaceRequestActionPage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import Bars3Icon from './components/icons/Bars3Icon';
@@ -75,6 +76,7 @@ const Dashboard: React.FC = () => {
     const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+    const [pendingMatches, setPendingMatches] = useState<any[]>([]);
     const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -185,7 +187,7 @@ const Dashboard: React.FC = () => {
                 api.get<Return[]>('/returns'),
                 api.get<AuditLog[]>('/audit'),
                 api.get<StockTakeSession | null>('/stock-takes/active'),
-                Promise.resolve([] as Announcement[])
+                currentUser?.currentStoreId ? api.get<Announcement[]>(`/notifications/stores/${currentUser.currentStoreId}`) : Promise.resolve([] as Announcement[])
             ]);
 
             const mapResult = <T,>(res: PromiseSettledResult<T>, fallback: T): T =>
@@ -206,6 +208,13 @@ const Dashboard: React.FC = () => {
             setAuditLogs(mapResult(results[12], [] as AuditLog[]));
             setStockTakeSession(mapResult(results[13], null as any));
             setAnnouncements(mapResult(results[14], [] as Announcement[]));
+
+            // Fetch pending marketplace matches separately to avoid blocking
+            if (currentUser?.currentStoreId) {
+                api.get<any[]>(`/marketplace/stores/${currentUser.currentStoreId}/matches`)
+                    .then(matches => setPendingMatches(matches || []))
+                    .catch(() => setPendingMatches([]));
+            }
 
             await dbService.updateLastSync();
             const ts = await dbService.getLastSync();
@@ -875,7 +884,10 @@ const Dashboard: React.FC = () => {
     }
 
 
-    const renderPage = (page: string) => {
+    const renderPage = (pagePath: string) => {
+        const parts = pagePath.split('/');
+        const page = parts[0];
+
         if (!hasAccess(page, currentUser.role)) {
             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
         }
@@ -926,10 +938,20 @@ const Dashboard: React.FC = () => {
             case 'superadmin':
                 return <SuperAdminPage />;
             case 'notifications':
-                return <NotificationsPage announcements={announcements} />;
+                return <NotificationsPage announcements={announcements} onRefresh={fetchData} />;
             case 'marketing':
                 return <MarketingPage />;
+            case 'marketplace':
             case 'directory':
+                if (parts[1] === 'request' && parts[2]) {
+                    return <MarketplaceRequestActionPage
+                        requestId={parts[2]}
+                        products={products}
+                        storeSettings={storeSettings}
+                        onBack={() => navigate('/directory')}
+                        showSnackbar={showSnackbar}
+                    />;
+                }
                 return <MarketplacePage />;
             case 'inventory':
             default:
@@ -1013,6 +1035,8 @@ const Dashboard: React.FC = () => {
                     storeSettings={storeSettings}
                     lastSync={lastSync}
                     isSyncing={isSyncing}
+                    unreadNotificationsCount={announcements.filter(a => !a.isRead).length}
+                    pendingMatchesCount={pendingMatches.length}
                 />
             </div>
 
@@ -1042,6 +1066,9 @@ const Dashboard: React.FC = () => {
                             aria-label="Notifications"
                         >
                             <BellAlertIcon className="w-6 h-6" />
+                            {announcements.some(a => !a.isRead) && (
+                                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                            )}
                         </button>
                     </div>
                 )}

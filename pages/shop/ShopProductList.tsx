@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { shopService } from '../../services/shop.service';
+import { shopService, ShopInfo } from '../../services/shop.service';
 import { buildAssetUrl } from '../../services/api';
 import { Product, Category } from '../../types';
 import { HiOutlineFunnel, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
+import { useOutletContext } from 'react-router-dom';
+import { formatCurrency } from '../../utils/currency';
 
 const ShopProductList: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
+    const { shopInfo } = useOutletContext<{ shopInfo: ShopInfo }>();
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
@@ -35,10 +38,7 @@ const ShopProductList: React.FC = () => {
     }, [storeId, selectedCategory, searchQuery]);
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-        }).format(price);
+        return formatCurrency(price, shopInfo.settings as any);
     };
 
     return (

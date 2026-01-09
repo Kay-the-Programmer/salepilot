@@ -39,6 +39,8 @@ interface SidebarProps {
     storeSettings?: StoreSettings | null;
     lastSync?: number | null;
     isSyncing?: boolean;
+    unreadNotificationsCount?: number;
+    pendingMatchesCount?: number;
 }
 
 const NAV_ITEMS = [
@@ -191,14 +193,26 @@ const Sidebar: React.FC<SidebarProps> = ({
     onMobileClose,
     storeSettings,
     lastSync,
-    isSyncing
+    isSyncing,
+    unreadNotificationsCount,
+    pendingMatchesCount
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(true);
     const sidebarRef = React.useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
     // Filter navigation items based on user role and allowed pages
-    let navItems = NAV_ITEMS.filter(item => item.roles.includes(user.role));
+    const navItemsWithBadges = NAV_ITEMS.map(item => {
+        if (item.page === 'notifications' && (unreadNotificationsCount || 0) > 0) {
+            return { ...item, badge: unreadNotificationsCount?.toString() || null };
+        }
+        if (item.page === 'directory' && (pendingMatchesCount || 0) > 0) {
+            return { ...item, badge: pendingMatchesCount?.toString() || null };
+        }
+        return item;
+    });
+
+    let navItems = navItemsWithBadges.filter(item => item.roles.includes(user.role));
     if (allowedPages && allowedPages.length > 0) {
         navItems = navItems.filter(item => allowedPages.includes(item.page));
     }

@@ -16,6 +16,8 @@ export interface ShopInfo {
         website?: string;
         isOnlineStoreEnabled?: boolean;
         currency?: any;
+        taxRate?: number;
+        receiptMessage?: string;
     };
 }
 

@@ -302,6 +302,31 @@ export interface Announcement {
     message: string;
     createdAt: string;
     senderName?: string;
+    type?: string;
+    isRead?: boolean;
+    link?: string;
+}
+
+export interface MarketplaceRequest {
+    id: string;
+    customerName: string;
+    customerEmail: string;
+    query: string;
+    targetPrice: number;
+    status: 'open' | 'matched' | 'completed' | 'cancelled';
+    createdAt: string;
+    offers?: MarketplaceOffer[];
+}
+
+export interface MarketplaceOffer {
+    id: string;
+    requestId: string;
+    storeId: string;
+    storeName: string;
+    productId?: string;
+    sellerPrice: number;
+    status: 'pending' | 'accepted' | 'declined';
+    createdAt: string;
 }
 
 // --- System Types ---

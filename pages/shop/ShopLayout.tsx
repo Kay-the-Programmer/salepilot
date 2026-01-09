@@ -12,7 +12,10 @@ const ShopLayout: React.FC = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (!storeId) return;
+        if (!storeId || storeId === 'undefined') {
+            setLoading(false);
+            return;
+        }
 
         const loadShopInfo = async () => {
             try {

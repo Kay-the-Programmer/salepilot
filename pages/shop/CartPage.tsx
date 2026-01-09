@@ -3,6 +3,7 @@ import { useParams, Link, useOutletContext } from 'react-router-dom';
 import { HiOutlineTrash, HiOutlinePlus, HiOutlineMinus } from 'react-icons/hi2';
 import { buildAssetUrl } from '../../services/api';
 import { ShopInfo, shopService } from '../../services/shop.service';
+import { formatCurrency } from '../../utils/currency';
 
 const CartPage: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
@@ -97,12 +98,12 @@ const CartPage: React.FC = () => {
     };
 
     const formatPrice = (price: number) => {
-        const currency = shopInfo.settings?.currency?.code || 'USD';
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(price);
+        return formatCurrency(price, shopInfo.settings as any);
     };
 
     const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    const tax = subtotal * 0.10; // Estimated 10%
+    const taxRate = shopInfo.settings?.taxRate || 0;
+    const tax = subtotal * (taxRate / 100);
     const total = subtotal + tax;
 
     if (orderComplete) {
@@ -117,7 +118,12 @@ const CartPage: React.FC = () => {
                         Order ID: <span className="font-mono">{orderData.orderId}</span>
                     </p>
                 )}
-                <p className="mt-2 text-sm text-gray-400">
+                {shopInfo.settings.receiptMessage && (
+                    <div className="mt-6 p-4 bg-indigo-50 rounded-lg text-indigo-700 text-sm whitespace-pre-wrap">
+                        {shopInfo.settings.receiptMessage}
+                    </div>
+                )}
+                <p className="mt-2 text-sm text-gray-400 italic">
                     We'll contact you at {customerDetails.email} with updates.
                 </p>
                 <div className="mt-10">
