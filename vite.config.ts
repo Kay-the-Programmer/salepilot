@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => {
           changeOrigin: true,
           secure: false,
         },
-        '/images': {
+        '/images/uploads': {
           target: 'http://localhost:5000',
           changeOrigin: true,
           secure: false,

@@ -1027,7 +1027,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
             )}
 
             {/* CSS for safe areas and animations */}
-            <style jsx>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 @keyframes fade-in {
                     from { opacity: 0; }
                     to { opacity: 1; }
@@ -1055,7 +1056,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                 .scrollbar-hide::-webkit-scrollbar {
                     display: none;
                 }
-            `}</style>
+            ` }} />
         </div>
     );
 };

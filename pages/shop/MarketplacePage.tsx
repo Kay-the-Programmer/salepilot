@@ -34,6 +34,7 @@ const MarketplacePage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'stores' | 'products'>('stores');
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const [recentRequests, setRecentRequests] = useState<any[]>([]);
@@ -48,11 +49,14 @@ const MarketplacePage: React.FC = () => {
 
     const fetchStores = async () => {
         setLoading(true);
+        setApiError(null);
         try {
             const data = await api.get<PublicStore[]>('/shop/stores');
-            setStores(data);
-        } catch (error) {
+            setStores(data || []);
+        } catch (error: any) {
             console.error('Error fetching stores:', error);
+            setApiError(error.message || 'Failed to fetch stores');
+            setStores([]);
         } finally {
             setLoading(false);
         }
@@ -60,11 +64,13 @@ const MarketplacePage: React.FC = () => {
 
     const fetchGlobalProducts = async () => {
         setLoading(true);
+        setApiError(null);
         try {
             const data = await api.get<PublicProduct[]>('/shop/global-products');
-            setProducts(data);
-        } catch (error) {
+            setProducts(data || []);
+        } catch (error: any) {
             console.error('Error fetching global products:', error);
+            setApiError(error.message || 'Failed to fetch products');
             setProducts([]);
         } finally {
             setLoading(false);
@@ -211,6 +217,24 @@ const MarketplacePage: React.FC = () => {
                             </button>
                         </div>
                     </div>
+
+                    {apiError && !loading && (
+                        <div className="w-full max-w-2xl bg-red-50 border border-red-100 p-4 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                            <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                                <span className="text-red-600 font-bold">!</span>
+                            </div>
+                            <div>
+                                <h4 className="text-sm font-bold text-red-900">Connection Error</h4>
+                                <p className="text-xs text-red-700">{apiError}. The marketplace is currently in offline mode.</p>
+                            </div>
+                            <button
+                                onClick={() => activeTab === 'stores' ? fetchStores() : fetchGlobalProducts()}
+                                className="ml-auto px-4 py-2 bg-red-600 text-white text-xs font-bold rounded-xl hover:bg-red-700 transition-colors"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {loading ? (

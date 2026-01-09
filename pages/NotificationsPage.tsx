@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Announcement } from '../types';
 import { api } from '../services/api';
+import { notificationService } from '../services/notificationService';
 
 interface NotificationsPageProps {
     announcements: Announcement[];
@@ -10,6 +11,32 @@ interface NotificationsPageProps {
 
 const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, onRefresh }) => {
     const navigate = useNavigate();
+    const [isPushEnabled, setIsPushEnabled] = React.useState(false);
+    const [isSupported, setIsSupported] = React.useState(true);
+
+    React.useEffect(() => {
+        const checkStatus = async () => {
+            const status = await notificationService.getSubscriptionStatus();
+            setIsPushEnabled(status);
+
+            const supported = 'serviceWorker' in navigator && 'PushManager' in window;
+            setIsSupported(supported);
+        };
+        checkStatus();
+    }, []);
+
+    const togglePush = async () => {
+        if (isPushEnabled) {
+            await notificationService.unsubscribeUser();
+            setIsPushEnabled(false);
+        } else {
+            const sub = await notificationService.subscribeUser();
+            if (sub) {
+                setIsPushEnabled(true);
+            }
+        }
+    };
+
     // Sort by date descending (newest first)
     const sortedAnnouncements = [...announcements].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -30,6 +57,32 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, on
             <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <h1 className="text-xl font-bold text-gray-900 tracking-tight">Notifications</h1>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+                {/* Push Notification Controls */}
+                <div className="bg-gradient-to-br from-indigo-600 to-violet-700 rounded-2xl shadow-lg p-6 text-white mb-8 border border-white/10">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h2 className="text-lg font-bold mb-1">Push Notifications</h2>
+                            <p className="text-indigo-100 text-sm opacity-90">
+                                {isSupported
+                                    ? "Stay updated with real-time alerts even when the app is closed."
+                                    : "Push notifications are not supported in your current browser."}
+                            </p>
+                        </div>
+                        {isSupported && (
+                            <button
+                                onClick={togglePush}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ring-2 ring-white/20 ${isPushEnabled ? 'bg-white' : 'bg-white/30'}`}
+                            >
+                                <span
+                                    className={`inline-block h-4 w-4 transform rounded-full transition-transform ${isPushEnabled ? 'translate-x-6 bg-indigo-600' : 'translate-x-1 bg-white shadow-sm'}`}
+                                />
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

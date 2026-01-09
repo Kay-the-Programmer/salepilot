@@ -191,7 +191,10 @@ const ENDPOINT_TO_STORE: Record<string, string> = {
   '/users': 'users',
   '/returns': 'returns',
   '/audit': 'auditLogs',
-  '/settings': 'settings'
+  '/settings': 'settings',
+  '/shop/stores': 'marketStores',
+  '/shop/global-products': 'marketProducts',
+  '/marketplace/requests/recent': 'marketRequests'
 };
 
 export const api = {

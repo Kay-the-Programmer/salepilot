@@ -87,7 +87,7 @@ self.addEventListener('fetch', (event) => {
         // Fresh copy of index.html to cache for offline
         if (url.pathname === '/' || url.pathname.endsWith('.html')) {
           const copy = network.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy)).catch(() => {});
+          caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy)).catch(() => { });
         }
         return network;
       } catch (_) {
@@ -171,4 +171,53 @@ self.addEventListener('fetch', (event) => {
       return new Response('Offline', { status: 503 });
     }
   })());
+});
+
+// --- Push Notifications ---
+
+self.addEventListener('push', (event) => {
+  let data = { title: 'New Notification', body: 'You have a new message from SalePilot.' };
+
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = { title: 'New Notification', body: event.data.text() };
+    }
+  }
+
+  const options = {
+    body: data.body,
+    icon: data.icon || '/images/salepilot.png',
+    badge: '/images/salepilot.png',
+    data: data.data || { url: '/' },
+    vibrate: [100, 50, 100],
+    actions: data.actions || []
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      // Check if there is already a window open and focus it
+      for (let i = 0; i < windowClients.length; i++) {
+        const client = windowClients[i];
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // If no window is open, open a new one
+      if (clients.openWindow) {
+        return clients.openWindow(urlToOpen);
+      }
+    })
+  );
 });
