@@ -888,6 +888,8 @@ const Dashboard: React.FC = () => {
         const parts = pagePath.split('/');
         const page = parts[0];
 
+        console.log(`[Router] Rendering page: ${page}, Path: ${pagePath}`);
+
         if (!hasAccess(page, currentUser.role)) {
             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
         }

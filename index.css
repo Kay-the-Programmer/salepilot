@@ -13,6 +13,13 @@ body,
   height: 100%;
 }
 
+:root {
+  --salepilot-navy: #0A2E5C;
+  --salepilot-navy-light: #154180;
+  --salepilot-orange: #FF7F27;
+  --salepilot-orange-dark: #E66B1F;
+}
+
 body {
   margin: 0;
   -webkit-font-smoothing: antialiased;
@@ -379,4 +386,29 @@ textarea {
 
 .animate-fade-in-up {
   animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: fit-content;
+  animation: marquee 30s linear infinite;
+}
+
+.mask-fade-edges {
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+}
+
+/* Hover to pause marquee */
+.animate-marquee:hover {
+  animation-play-state: paused;
 }

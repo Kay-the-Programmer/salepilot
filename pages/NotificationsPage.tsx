@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Announcement } from '../types';
 import { api } from '../services/api';
 
@@ -8,6 +9,7 @@ interface NotificationsPageProps {
 }
 
 const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, onRefresh }) => {
+    const navigate = useNavigate();
     // Sort by date descending (newest first)
     const sortedAnnouncements = [...announcements].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -85,14 +87,16 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, on
                             </div>
                             {announcement.link && (
                                 <div className="mt-4 pt-4 border-t border-gray-50 flex justify-end">
-                                    <a
-                                        href={announcement.link}
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (announcement.link) navigate(announcement.link);
+                                        }}
                                         className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
-                                        onClick={(e) => { e.stopPropagation(); }}
                                     >
                                         Take Action
                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
-                                    </a>
+                                    </button>
                                 </div>
                             )}
                         </div>

@@ -35,7 +35,7 @@ import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 
 // --- Subcomponents for AccountingPage ---
 const AccountingDashboard: React.FC<{ accounts: Account[], journalEntries: JournalEntry[], storeSettings: StoreSettings }> = ({ accounts, journalEntries, storeSettings }) => {
-    const recentTransactions = useMemo(() => {
+    const recentTransactions = React.useMemo(() => {
         return [...journalEntries]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
             .slice(0, 5);
@@ -1737,7 +1737,7 @@ const TaxReportView: React.FC<{ sales: Sale[], storeSettings: StoreSettings }> =
 };
 
 const FinancialStatementsView: React.FC<{ accounts: Account[], journalEntries: JournalEntry[], storeSettings: StoreSettings }> = ({ accounts, journalEntries, storeSettings }) => {
-    const [activeReport, setActiveReport] = useState('pnl');
+    const [activeReport, setActiveReport] = React.useState('pnl');
     const [pnlStartDate, setPnlStartDate] = useState(() => {
         const d = new Date();
         d.setDate(1);
@@ -2135,18 +2135,18 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     onSaveSupplierInvoice, onRecordSupplierPayment,
     isLoading, error, storeSettings
 }) => {
-    const [activeTab, setActiveTab] = useState('dashboard');
-    const [isTabMenuOpen, setIsTabMenuOpen] = useState(false);
-    const [isSupplierInvoiceFormOpen, setIsSupplierInvoiceFormOpen] = useState(false);
-    const [editingSupplierInvoice, setEditingSupplierInvoice] = useState<SupplierInvoice | null>(null);
-    const [viewingAPInvoice, setViewingAPInvoice] = useState<SupplierInvoice | null>(null);
-    const [viewingARInvoice, setViewingARInvoice] = useState<Sale | null>(null);
-    const [isRecordSupplierPaymentOpen, setIsRecordSupplierPaymentOpen] = useState(false);
-    const [invoiceToPayAP, setInvoiceToPayAP] = useState<SupplierInvoice | null>(null);
-    const [isRecordARPaymentOpen, setIsRecordARPaymentOpen] = useState(false);
-    const [invoiceToPayAR, setInvoiceToPayAR] = useState<Sale | null>(null);
+    const [activeTab, setActiveTab] = React.useState('dashboard');
+    const [isTabMenuOpen, setIsTabMenuOpen] = React.useState(false);
+    const [isSupplierInvoiceFormOpen, setIsSupplierInvoiceFormOpen] = React.useState(false);
+    const [editingSupplierInvoice, setEditingSupplierInvoice] = React.useState<SupplierInvoice | null>(null);
+    const [viewingAPInvoice, setViewingAPInvoice] = React.useState<SupplierInvoice | null>(null);
+    const [viewingARInvoice, setViewingARInvoice] = React.useState<Sale | null>(null);
+    const [isRecordSupplierPaymentOpen, setIsRecordSupplierPaymentOpen] = React.useState(false);
+    const [invoiceToPayAP, setInvoiceToPayAP] = React.useState<SupplierInvoice | null>(null);
+    const [isRecordARPaymentOpen, setIsRecordARPaymentOpen] = React.useState(false);
+    const [invoiceToPayAR, setInvoiceToPayAR] = React.useState<Sale | null>(null);
 
-    const availableTabs = useRef<string[]>([
+    const availableTabs = React.useRef<string[]>([
         'dashboard',
         'reports',
         'ar_management',
@@ -2156,7 +2156,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         'journal',
     ]);
 
-    useEffect(() => {
+    React.useEffect(() => {
         const hash = typeof window !== 'undefined' ? window.location.hash.replace('#', '') : '';
         if (hash && availableTabs.current.includes(hash)) {
             setActiveTab(hash);
