@@ -52,6 +52,7 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [subError, setSubError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -98,14 +99,16 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
+        setSubError(null);
         try {
             await onSubmit(formData);
             setIsSuccess(true);
             setTimeout(() => {
                 onClose();
             }, 3000);
-        } catch (error) {
-            console.error(error);
+        } catch (error: any) {
+            console.error('Marketplace submission error:', error);
+            setSubError(error.message || 'Failed to send request. Please check your connection.');
         } finally {
             setIsSubmitting(false);
         }
@@ -180,6 +183,12 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
                                 onKeyDown={(e) => e.key === 'Enter' && handleNext()}
                                 className="w-full bg-white/5 border-2 border-white/20 rounded-[32px] px-8 py-6 text-2xl font-black text-white placeholder-white/20 focus:outline-none focus:border-[#FF7F27] focus:ring-4 focus:ring-[#FF7F27]/20 transition-all text-center"
                             />
+
+                            {subError && (
+                                <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-2xl text-red-200 text-sm font-bold text-center animate-in shake duration-500">
+                                    {subError}
+                                </div>
+                            )}
 
                             <button
                                 onClick={handleNext}

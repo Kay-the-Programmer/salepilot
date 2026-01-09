@@ -5,6 +5,8 @@ import { api } from '../../services/api';
 import { getCurrentUser } from '../../services/authService';
 import { formatCurrency } from '../../utils/currency';
 import RequestWizard from '../../components/RequestWizard';
+import Snackbar from '../../components/Snackbar';
+import { SnackbarType } from '../../App';
 
 interface PublicStore {
     id: string;
@@ -40,6 +42,11 @@ const MarketplacePage: React.FC = () => {
     const currentUser = getCurrentUser();
 
     const [recentRequests, setRecentRequests] = useState<any[]>([]);
+    const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+
+    const showSnackbar = (message: string, type: SnackbarType = 'success') => {
+        setSnackbar({ message, type });
+    };
 
     useEffect(() => {
         if (activeTab === 'stores') {
@@ -85,6 +92,7 @@ const MarketplacePage: React.FC = () => {
                 ...formData,
                 targetPrice: parseFloat(formData.targetPrice)
             });
+            showSnackbar('Your request has been broadcasted successfully!', 'success');
             fetchRecentRequests();
         } catch (error) {
             console.error('Error submitting request:', error);
@@ -368,6 +376,14 @@ const MarketplacePage: React.FC = () => {
                 onClose={() => setIsRequestModalOpen(false)}
                 onSubmit={handleRequestSubmit}
             />
+
+            {snackbar && (
+                <Snackbar
+                    message={snackbar.message}
+                    type={snackbar.type}
+                    onClose={() => setSnackbar(null)}
+                />
+            )}
 
             <footer className="bg-white border-t border-slate-200 mt-20">
                 <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-8">
