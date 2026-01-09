@@ -37,6 +37,8 @@ interface SidebarProps {
     showOnMobile?: boolean;
     onMobileClose?: () => void;
     storeSettings?: StoreSettings | null;
+    lastSync?: number | null;
+    isSyncing?: boolean;
 }
 
 const NAV_ITEMS = [
@@ -187,7 +189,9 @@ const Sidebar: React.FC<SidebarProps> = ({
     onSelectStore,
     showOnMobile = false,
     onMobileClose,
-    storeSettings
+    storeSettings,
+    lastSync,
+    isSyncing
 }) => {
     const [isExpanded, setIsExpanded] = React.useState(true);
     const sidebarRef = React.useRef<HTMLDivElement>(null);
@@ -252,6 +256,15 @@ const Sidebar: React.FC<SidebarProps> = ({
             case 'superadmin': return '🦸';
             default: return '👤';
         }
+    };
+
+    const formatLastSync = (timestamp: number | null | undefined) => {
+        if (!timestamp) return 'Never';
+        const diff = Date.now() - timestamp;
+        if (diff < 60000) return 'Just now';
+        if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+        if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+        return new Date(timestamp).toLocaleDateString();
     };
 
     return (
@@ -505,11 +518,18 @@ const Sidebar: React.FC<SidebarProps> = ({
 
                     {/* Status & Toggle */}
                     <div className={`flex items-center justify-between px-3 ${!isExpanded && 'justify-center'}`}>
-                        <div className={`flex items-center gap-2 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                            <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-yellow-500'}`}></div>
-                            <span className="text-xs text-gray-500">
-                                {isOnline ? 'Online' : 'Offline'}
-                            </span>
+                        <div className={`flex flex-col gap-1 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                            <div className="flex items-center gap-2">
+                                <div className={`w-2 h-2 rounded-full ${isOnline ? (isSyncing ? 'bg-blue-500 animate-spin' : 'bg-green-500 animate-pulse') : 'bg-yellow-500'}`}></div>
+                                <span className="text-xs text-gray-500">
+                                    {isOnline ? (isSyncing ? 'Syncing...' : 'Online') : 'Offline'}
+                                </span>
+                            </div>
+                            {lastSync && isExpanded && (
+                                <span className="text-[10px] text-gray-400 pl-4">
+                                    Synced {formatLastSync(lastSync)}
+                                </span>
+                            )}
                         </div>
 
                         {/* Collapse/Expand Toggle */}

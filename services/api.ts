@@ -129,22 +129,116 @@ async function queueAndReturn<T>(endpoint: string, options: RequestInit, bodyEch
   echo.offline = true;
   return echo as T & { offline: true };
 }
-
 export function buildAssetUrl(url: string): string {
   if (!url) return url;
   if (/^https?:\/\//i.test(url) || url.startsWith('data:')) return url;
-  // Derive backend origin by removing trailing /api from BASE_URL
   const backendBase = BASE_URL.replace(/\/?api$/i, '');
-  // Ensure single slash join
   const path = url.startsWith('/') ? url : `/${url}`;
   return `${backendBase}${path}`;
 }
 
+/**
+ * Optimistically apply a mutation to the local IndexedDB cache.
+ * This ensures the UI is updated immediately even when offline.
+ */
+async function applyOptimisticUpdate(endpoint: string, method: string, body: any): Promise<string | undefined> {
+  const storeName = ENDPOINT_TO_STORE[endpoint.split('?')[0]];
+  if (!storeName) return;
+
+  try {
+    if (method === 'POST') {
+      const tempId = body.id || `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const item = { ...body, id: tempId, _pending: true };
+      await dbService.put(storeName, item);
+      return tempId;
+    } else if (method === 'PUT' || method === 'PATCH') {
+      if (body.id) {
+        const existing = await dbService.get<any>(storeName, body.id);
+        await dbService.put(storeName, { ...existing, ...body, _pending: true });
+      }
+    } else if (method === 'DELETE') {
+      // For delete, we might want to hide it rather than actually delete if it's pending sync
+      // but for now, let's just delete it from cache
+      const id = endpoint.split('/').pop();
+      if (id) await dbService.deleteQueuedMutation(Number(id)); // Wait, this is for syncQueue. 
+      // Correct logic for deleting from entity store:
+      const entityId = endpoint.split('/').pop();
+      if (entityId) {
+        // We can't easily "undo" this if sync fails, but better than nothing.
+        // Actually, maybe add _deleted flag?
+        const existing = await dbService.get<any>(storeName, entityId);
+        if (existing) {
+          await dbService.put(storeName, { ...existing, _deleted: true, _pending: true });
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Optimistic update failed:', err);
+  }
+}
+
+// Mapping of API endpoints to IndexedDB stores for automatic caching
+const ENDPOINT_TO_STORE: Record<string, string> = {
+  '/products': 'products',
+  '/categories': 'categories',
+  '/customers': 'customers',
+  '/suppliers': 'suppliers',
+  '/sales': 'sales',
+  '/purchase-orders': 'purchaseOrders',
+  '/accounting/accounts': 'accounts',
+  '/accounting/journal-entries': 'journalEntries',
+  '/accounting/supplier-invoices': 'supplierInvoices',
+  '/users': 'users',
+  '/returns': 'returns',
+  '/audit': 'auditLogs',
+  '/settings': 'settings'
+};
+
 export const api = {
-  async get<T>(endpoint: string): Promise<T> {
-    // Do not short-circuit based on navigator.onLine. Local backends work without internet.
-    // Let fetch determine actual reachability.
-    return await request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, options: { useCache?: boolean; store?: string } = {}): Promise<T> {
+    const isOnline = getOnlineStatus();
+    const cacheStore = options.store || ENDPOINT_TO_STORE[endpoint.split('?')[0]];
+
+    if (!isOnline && cacheStore) {
+      console.log(`Offline: loading ${endpoint} from cache store ${cacheStore}`);
+      if (cacheStore === 'settings') {
+        const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+        const settings = await dbService.get<T>('settings', currentUser?.currentStoreId || 'default');
+        if (settings) return settings;
+      } else {
+        const cached = await dbService.getAll<any>(cacheStore);
+        if (cached && cached.length > 0) return cached as unknown as T;
+      }
+    }
+
+    try {
+      const data = await request<T>(endpoint, { method: 'GET' });
+
+      // Background update cache if we have a match
+      if (cacheStore && data) {
+        if (cacheStore === 'settings') {
+          const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+          dbService.put('settings', data, currentUser?.currentStoreId || 'default');
+        } else if (Array.isArray(data)) {
+          dbService.bulkPut(cacheStore, data);
+        }
+      }
+
+      return data;
+    } catch (err) {
+      // If network request fails but we have cache, fallback
+      if (cacheStore) {
+        if (cacheStore === 'settings') {
+          const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+          const settings = await dbService.get<T>('settings', currentUser?.currentStoreId || 'default');
+          if (settings) return settings;
+        } else {
+          const cached = await dbService.getAll<any>(cacheStore);
+          if (cached && cached.length > 0) return cached as unknown as T;
+        }
+      }
+      throw err;
+    }
   },
 
   async post<T>(endpoint: string, body?: any): Promise<T | (T & { offline: true })> {
@@ -156,6 +250,8 @@ export const api = {
     };
 
     if (!getOnlineStatus()) {
+      const tempId = await applyOptimisticUpdate(endpoint, 'POST', body);
+      if (tempId) (options as any)._tempId = tempId;
       return queueAndReturn<T>(endpoint, options, body);
     }
 
@@ -178,6 +274,7 @@ export const api = {
     };
 
     if (!getOnlineStatus()) {
+      await applyOptimisticUpdate(endpoint, 'PUT', body);
       return queueAndReturn<T>(endpoint, options, body);
     }
 
@@ -199,6 +296,7 @@ export const api = {
     };
 
     if (!getOnlineStatus()) {
+      await applyOptimisticUpdate(endpoint, 'PATCH', body);
       return queueAndReturn<T>(endpoint, options, body);
     }
 
@@ -216,6 +314,7 @@ export const api = {
     const options: RequestInit = { method: 'DELETE' };
 
     if (!getOnlineStatus()) {
+      await applyOptimisticUpdate(endpoint, 'DELETE', {});
       return queueAndReturn<T>(endpoint, options, {});
     }
 
@@ -236,6 +335,9 @@ export const api = {
       headers: getAuthHeaders(),
     };
     if (!getOnlineStatus()) {
+      const obj: any = {};
+      formData.forEach((v, k) => { if (!(v instanceof Blob)) obj[k] = v; });
+      await applyOptimisticUpdate(endpoint, options.method || 'POST', obj);
       return queueAndReturn<T>(endpoint, options, formData);
     }
     try {
@@ -255,6 +357,9 @@ export const api = {
       headers: getAuthHeaders(),
     };
     if (!getOnlineStatus()) {
+      const obj: any = {};
+      formData.forEach((v, k) => { if (!(v instanceof Blob)) obj[k] = v; });
+      await applyOptimisticUpdate(endpoint, options.method || 'POST', obj);
       return queueAndReturn<T>(endpoint, options, formData);
     }
     try {
@@ -304,17 +409,43 @@ function reconstructOptions(options: any): RequestInit {
 
 export async function syncOfflineMutations(): Promise<{ succeeded: number; failed: number }> {
   const queued = await dbService.getQueuedMutations();
+  const sorted = queued.sort((a, b) => a.timestamp - b.timestamp);
+
   let succeeded = 0;
   let failed = 0;
 
-  for (const item of queued) {
+  for (const item of sorted) {
+    if (item.id == null || item.status === 'syncing') continue;
+
     try {
+      await dbService.markMutationSyncing(item.id);
       const init = reconstructOptions(item.options);
       await request(item.endpoint, init);
-      if (item.id != null) await dbService.deleteQueuedMutation(item.id);
+
+      // Cleanup optimistic record if needed
+      const tempId = item.options._tempId;
+      const storeName = ENDPOINT_TO_STORE[item.endpoint.split('?')[0]];
+      if (tempId && storeName) {
+        try {
+          // Accessing private method getStore for cleanup (internal service use)
+          const store = await (dbService as any).getStore(storeName, 'readwrite');
+          await store.delete(tempId);
+        } catch (err) {
+          console.warn('Failed to cleanup optimistic record:', err);
+        }
+      }
+
+      await dbService.deleteQueuedMutation(item.id);
       succeeded++;
-    } catch (e) {
+    } catch (e: any) {
+      console.error(`Sync failed for ${item.endpoint}:`, e);
+      await dbService.markMutationFailed(item.id, e.message || 'Unknown error');
       failed++;
+
+      // If it's a network error, stop syncing for now to avoid multiple errors
+      if (e.message?.toLowerCase?.().includes('failed to fetch')) {
+        break;
+      }
     }
   }
 

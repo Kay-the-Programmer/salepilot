@@ -1,4 +1,4 @@
-import { Product, Category, Customer, Supplier, Sale, Return, PurchaseOrder, SupplierInvoice, User, Account, JournalEntry, AuditLog, StoreSettings } from '../types';
+
 
 const DB_NAME = 'SalePilotDB';
 const DB_VERSION = 7;
@@ -12,8 +12,11 @@ const STORE_KEY_PATHS: { [key: string]: string } = {
 export interface SyncQueueItem {
     id?: number;
     endpoint: string;
-    options: RequestInit;
+    options: any; // Serialized options
     timestamp: number;
+    retries?: number;
+    lastError?: string;
+    status: 'pending' | 'syncing' | 'failed';
 }
 
 class DBService {
@@ -65,7 +68,7 @@ class DBService {
                     // Now open with the appropriate version
                     const request = indexedDB.open(DB_NAME, versionToUse);
 
-                    request.onerror = (event) => {
+                    request.onerror = () => {
                         const error = request.error;
                         console.error("IndexedDB error:", error);
                         reject(error);
@@ -103,7 +106,7 @@ class DBService {
                     // If we can't check the version, try with our expected version
                     const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-                    request.onerror = (event) => {
+                    request.onerror = () => {
                         const error = request.error;
                         console.error("IndexedDB error:", error);
                         reject(error);
@@ -181,13 +184,33 @@ class DBService {
     }
 
     // Sync Queue methods
-    async addMutationToQueue(endpoint: string, options: RequestInit): Promise<void> {
+    async addMutationToQueue(endpoint: string, options: any): Promise<void> {
         const item: Omit<SyncQueueItem, 'id'> = {
             endpoint,
             options,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            retries: 0,
+            status: 'pending'
         };
         await this.put('syncQueue', item);
+    }
+
+    async markMutationFailed(id: number, error: string): Promise<void> {
+        const item = await this.get<SyncQueueItem>('syncQueue', id);
+        if (item) {
+            item.status = 'failed';
+            item.lastError = error;
+            item.retries = (item.retries || 0) + 1;
+            await this.put('syncQueue', item);
+        }
+    }
+
+    async markMutationSyncing(id: number): Promise<void> {
+        const item = await this.get<SyncQueueItem>('syncQueue', id);
+        if (item) {
+            item.status = 'syncing';
+            await this.put('syncQueue', item);
+        }
     }
 
     async getQueuedMutations(): Promise<SyncQueueItem[]> {
@@ -201,6 +224,23 @@ class DBService {
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);
         });
+    }
+
+    async clearStore(storeName: string): Promise<void> {
+        const store = await this.getStore(storeName, 'readwrite');
+        const request = store.clear();
+        return new Promise((resolve, reject) => {
+            request.onsuccess = () => resolve();
+            request.onerror = () => reject(request.error);
+        });
+    }
+
+    async updateLastSync(): Promise<void> {
+        await this.put('settings', Date.now(), 'lastSyncTimestamp');
+    }
+
+    async getLastSync(): Promise<number | null> {
+        return (await this.get<number>('settings', 'lastSyncTimestamp')) || null;
     }
 }
 

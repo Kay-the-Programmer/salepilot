@@ -1240,18 +1240,28 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 <div className="grid grid-cols-2 gap-3 pt-4">
                                     <button
                                         onClick={handleHoldSale}
-                                        className="py-3 bg-orange-100 text-orange-700 rounded-lg font-medium"
+                                        className="py-3 bg-orange-100 text-orange-700 rounded-lg font-medium flex items-center justify-center gap-2"
                                     >
+                                        <ClockIcon className="w-5 h-5" />
                                         Hold
                                     </button>
                                     <button
                                         onClick={() => processTransaction('paid')}
                                         disabled={total < 0 || (isCashMethod && cashReceivedNumber < total)}
-                                        className="py-3 bg-blue-600 text-white rounded-lg font-bold disabled:opacity-50"
+                                        className="py-3 bg-blue-600 text-white rounded-lg font-bold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
                                     >
+                                        <CreditCardIcon className="w-5 h-5" />
                                         Pay {formatCurrency(total, storeSettings)}
                                     </button>
                                 </div>
+                                <button
+                                    onClick={() => processTransaction('invoice')}
+                                    disabled={cart.length === 0 || total < 0 || !selectedCustomer}
+                                    className="w-full py-3 px-4 bg-slate-100 text-slate-900 font-semibold rounded-lg border border-slate-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+                                >
+                                    <DocumentPlusIcon className="w-5 h-5" />
+                                    Charge to Account
+                                </button>
                             </div>
                         </div>
                     )}

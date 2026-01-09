@@ -100,6 +100,7 @@ const Dashboard: React.FC = () => {
     // --- Offline State ---
     const [isOnline, setIsOnline] = useState(getOnlineStatus());
     const [isSyncing, setIsSyncing] = useState(false);
+    const [lastSync, setLastSync] = useState<number | null>(null);
 
     const showSnackbar = useCallback((message: string, type: SnackbarType = 'info') => {
         setSnackbar({ message, type });
@@ -164,100 +165,59 @@ const Dashboard: React.FC = () => {
         return PERMISSIONS[effectiveRole].includes(page);
     };
 
-
     const fetchData = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const [
-                loadedProducts, loadedCategories, loadedCustomers, loadedSuppliers,
-                loadedSales, loadedPOs, loadedAccounts, loadedJournalEntries, loadedSupplierInvoices,
-                loadedUsers, loadedSettings, loadedReturns, loadedLogs,
-                activeStockTake, loadedAnnouncements
-            ] = await Promise.all([
-                api.get<Product[]>('/products'), api.get<Category[]>('/categories'),
-                api.get<Customer[]>('/customers'), api.get<Supplier[]>('/suppliers'),
-                api.get<Sale[]>('/sales'), api.get<PurchaseOrder[]>('/purchase-orders'),
-                api.get<Account[]>('/accounting/accounts'), api.get<JournalEntry[]>('/accounting/journal-entries'),
-                api.get<SupplierInvoice[]>('/accounting/supplier-invoices'), api.get<User[]>('/users'),
-                api.get<StoreSettings>('/settings'), api.get<Return[]>('/returns'),
-                api.get<AuditLog[]>('/audit'), api.get<StockTakeSession | null>('/stock-takes/active'),
-                Promise.resolve([] as Announcement[]) // Notifications API not yet implemented
+            // Using api.get which now handles automatic IndexedDB fallback and caching
+            const results = await Promise.allSettled([
+                api.get<Product[]>('/products'),
+                api.get<Category[]>('/categories'),
+                api.get<Customer[]>('/customers'),
+                api.get<Supplier[]>('/suppliers'),
+                api.get<Sale[]>('/sales'),
+                api.get<PurchaseOrder[]>('/purchase-orders'),
+                api.get<Account[]>('/accounting/accounts'),
+                api.get<JournalEntry[]>('/accounting/journal-entries'),
+                api.get<SupplierInvoice[]>('/accounting/supplier-invoices'),
+                api.get<User[]>('/users'),
+                api.get<StoreSettings>('/settings'),
+                api.get<Return[]>('/returns'),
+                api.get<AuditLog[]>('/audit'),
+                api.get<StockTakeSession | null>('/stock-takes/active'),
+                Promise.resolve([] as Announcement[])
             ]);
 
-            setProducts(loadedProducts); dbService.bulkPut('products', loadedProducts);
-            setCategories(loadedCategories); dbService.bulkPut('categories', loadedCategories);
-            setCustomers(loadedCustomers); dbService.bulkPut('customers', loadedCustomers);
-            setSuppliers(loadedSuppliers); dbService.bulkPut('suppliers', loadedSuppliers);
-            setSales(loadedSales); dbService.bulkPut('sales', loadedSales);
-            setPurchaseOrders(loadedPOs); dbService.bulkPut('purchaseOrders', loadedPOs);
-            setAccounts(loadedAccounts); dbService.bulkPut('accounts', loadedAccounts);
-            setJournalEntries(loadedJournalEntries); dbService.bulkPut('journalEntries', loadedJournalEntries);
-            setSupplierInvoices(loadedSupplierInvoices); dbService.bulkPut('supplierInvoices', loadedSupplierInvoices);
-            setUsers(loadedUsers); dbService.bulkPut('users', loadedUsers);
-            setReturns(loadedReturns); dbService.bulkPut('returns', loadedReturns);
-            setAuditLogs(loadedLogs); dbService.bulkPut('auditLogs', loadedLogs);
-            setAnnouncements(loadedAnnouncements); dbService.bulkPut('announcements', loadedAnnouncements);
+            const mapResult = <T,>(res: PromiseSettledResult<T>, fallback: T): T =>
+                res.status === 'fulfilled' ? res.value : fallback;
 
-            // Handle single-item stores
-            setStoreSettings(loadedSettings); dbService.put('settings', loadedSettings, currentUser?.currentStoreId || 'default');
-            setStockTakeSession(activeStockTake);
-            // Do not cache active stock take when online; session is volatile and kept server-side
+            setProducts(mapResult(results[0], [] as Product[]));
+            setCategories(mapResult(results[1], [] as Category[]));
+            setCustomers(mapResult(results[2], [] as Customer[]));
+            setSuppliers(mapResult(results[3], [] as Supplier[]));
+            setSales(mapResult(results[4], [] as Sale[]));
+            setPurchaseOrders(mapResult(results[5], [] as PurchaseOrder[]));
+            setAccounts(mapResult(results[6], [] as Account[]));
+            setJournalEntries(mapResult(results[7], [] as JournalEntry[]));
+            setSupplierInvoices(mapResult(results[8], [] as SupplierInvoice[]));
+            setUsers(mapResult(results[9], [] as User[]));
+            setStoreSettings(mapResult(results[10], null as any));
+            setReturns(mapResult(results[11], [] as Return[]));
+            setAuditLogs(mapResult(results[12], [] as AuditLog[]));
+            setStockTakeSession(mapResult(results[13], null as any));
+            setAnnouncements(mapResult(results[14], [] as Announcement[]));
+
+            await dbService.updateLastSync();
+            const ts = await dbService.getLastSync();
+            setLastSync(ts);
 
         } catch (err: any) {
-            // Fall back to IndexedDB when API calls fail (offline or backend unreachable)
-            try {
-                const [
-                    cachedProducts, cachedCategories, cachedCustomers, cachedSuppliers,
-                    cachedSales, cachedPOs, cachedAccounts, cachedJournalEntries, cachedSupplierInvoices,
-                    cachedUsers, cachedReturns, cachedLogs, cachedAnnouncements
-                ] = await Promise.all([
-                    dbService.getAll<Product>('products'), dbService.getAll<Category>('categories'),
-                    dbService.getAll<Customer>('customers'), dbService.getAll<Supplier>('suppliers'),
-                    dbService.getAll<Sale>('sales'), dbService.getAll<PurchaseOrder>('purchaseOrders'),
-                    dbService.getAll<Account>('accounts'), dbService.getAll<JournalEntry>('journalEntries'),
-                    dbService.getAll<SupplierInvoice>('supplierInvoices'), dbService.getAll<User>('users'),
-                    dbService.getAll<Return>('returns'), dbService.getAll<AuditLog>('auditLogs'),
-                    dbService.getAll<Announcement>('announcements'),
-                ]);
-
-                const cachedSettings = await dbService.get<StoreSettings>('settings', currentUser?.currentStoreId || 'default');
-
-                // Apply cached data to state (use empty arrays if none)
-                setProducts(cachedProducts || []);
-                setCategories(cachedCategories || []);
-                setCustomers(cachedCustomers || []);
-                setSuppliers(cachedSuppliers || []);
-                setSales(cachedSales || []);
-                setPurchaseOrders(cachedPOs || []);
-                setAccounts(cachedAccounts || []);
-                setJournalEntries(cachedJournalEntries || []);
-                setSupplierInvoices(cachedSupplierInvoices || []);
-                setUsers(cachedUsers || []);
-                setReturns(cachedReturns || []);
-                setAuditLogs(cachedLogs || []);
-                setAnnouncements(cachedAnnouncements || []);
-
-                if (cachedSettings) {
-                    setStoreSettings(cachedSettings);
-                } else {
-                    setStoreSettings(null);
-                }
-
-                // Try restore an offline stock take session from local cache
-                const localStockTake = await dbService.get<StockTakeSession>('settings', 'activeStockTake');
-                setStockTakeSession(localStockTake || null);
-
-                // Keep an error message to inform the user, but allow operation with cached data
-                setError(err.message || 'Offline: using cached data');
-            } catch (fallbackErr: any) {
-                // If even the cache fails, surface the original error
-                setError(err.message || fallbackErr?.message || 'Failed to load data');
-            }
+            console.error("Critical fetch error:", err);
+            setError(err.message || 'Failed to load data');
         } finally {
             setIsLoading(false);
         }
-    }, [showSnackbar]);
+    }, [currentUser?.currentStoreId]);
 
     const handleSync = useCallback(async () => {
         if (isSyncing || !getOnlineStatus()) return;
@@ -287,6 +247,18 @@ const Dashboard: React.FC = () => {
         window.addEventListener('onlineStatusChange', handleStatusChange);
         return () => window.removeEventListener('onlineStatusChange', handleStatusChange);
     }, [handleSync]);
+
+    useEffect(() => {
+        const initSyncStatus = async () => {
+            try {
+                const ts = await dbService.getLastSync();
+                setLastSync(ts);
+            } catch (err) {
+                console.error("Failed to load last sync timestamp:", err);
+            }
+        };
+        initSyncStatus();
+    }, []);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -1039,6 +1011,8 @@ const Dashboard: React.FC = () => {
                     showOnMobile={isSidebarOpen}
                     onMobileClose={() => setIsSidebarOpen(false)}
                     storeSettings={storeSettings}
+                    lastSync={lastSync}
+                    isSyncing={isSyncing}
                 />
             </div>
 
