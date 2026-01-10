@@ -55,6 +55,13 @@ const NAV_ITEMS = [
         badge: null
     },
     {
+        name: 'My Orders',
+        page: 'customer/dashboard',
+        icon: HomeIcon,
+        roles: ['customer'],
+        badge: null
+    },
+    {
         name: 'POS Terminal',
         page: 'sales',
         icon: ShoppingCartIcon,
@@ -142,7 +149,7 @@ const NAV_ITEMS = [
         name: 'Notifications',
         page: 'notifications',
         icon: BellAlertIcon,
-        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer'],
         badge: null
     },
     {
@@ -163,14 +170,14 @@ const NAV_ITEMS = [
         name: 'Profile',
         page: 'profile',
         icon: UserIcon,
-        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer'],
         badge: null
     },
     {
         name: 'Marketplace',
         page: 'directory',
         icon: BuildingStorefrontIcon,
-        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer'],
         badge: null
     },
     {
