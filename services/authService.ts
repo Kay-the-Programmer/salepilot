@@ -63,6 +63,16 @@ export const registerCustomer = async (name: string, email: string, password?: s
     return normalized;
 };
 
+export const loginWithGoogle = async (idToken: string): Promise<User> => {
+    const user = await api.post<User>('/auth/google', { idToken: idToken });
+    const normalized = normalizeUser(user);
+    if (normalized && normalized.token) {
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
+        return normalized;
+    }
+    throw new Error('Google Login failed: No user data returned.');
+};
+
 export const logout = (): void => {
     localStorage.removeItem(CURRENT_USER_KEY);
 };

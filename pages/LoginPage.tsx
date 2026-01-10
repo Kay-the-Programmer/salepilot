@@ -1,7 +1,8 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { User } from '../types';
 import { SnackbarType } from '../App';
-import { login, register, registerCustomer, forgotPassword } from '../services/authService';
+import { login, register, registerCustomer, forgotPassword, loginWithGoogle } from '../services/authService';
+import { signInWithGoogle } from '../services/firebase/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     HiOutlineEnvelope,
@@ -82,8 +83,23 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
         }
     };
 
-    const handleGoogleLogin = () => {
-        showSnackbar('Google Login is coming soon!', 'info');
+    const handleGoogleLogin = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const firebaseUser = await signInWithGoogle();
+            const token = await firebaseUser.getIdToken();
+            const user = await loginWithGoogle(token);
+            onLogin(user);
+            showSnackbar(`Welcome back, ${user.name}!`, 'success');
+        } catch (err: any) {
+            console.error("Google Login Error", err);
+            const msg = (err && typeof err.message === 'string') ? err.message : 'Google Login failed.';
+            setError(msg);
+            showSnackbar(msg, 'error');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleForgotPassword = async () => {
