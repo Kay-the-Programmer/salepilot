@@ -1,12 +1,15 @@
-import { auth } from "./config";
-import {
-    GoogleAuthProvider,
-    signInWithPopup
-} from "firebase/auth";
+import { signInWithPopup, User as FirebaseUser } from 'firebase/auth';
+import { auth, googleProvider } from '../../firebase/firebase';
 
-export const doSignInWithGoogle = async () => {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(auth, provider);
-    // Return the full user credential so we can get the ID token
-    return result.user;
+export { auth, googleProvider };
+
+export const signInWithGoogle = async (): Promise<FirebaseUser> => {
+    if (!auth) throw new Error("Firebase not configured. Missing API keys.");
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        return result.user;
+    } catch (error) {
+        console.error("Google Sign In Error", error);
+        throw error;
+    }
 };

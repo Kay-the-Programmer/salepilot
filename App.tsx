@@ -7,6 +7,8 @@ import ShopProductList from './pages/shop/ShopProductList';
 import ShopProductDetail from './pages/shop/ShopProductDetail';
 import CartPage from './pages/shop/CartPage';
 import LandingPage from './pages/LandingPage';
+import MarketplacePage from './pages/shop/MarketplacePage';
+import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
 
 export default function App() {
     return (
@@ -48,9 +50,12 @@ export default function App() {
             <Route path="/settings" element={<Dashboard />} />
             <Route path="/superadmin" element={<Dashboard />} />
             <Route path="/marketing" element={<Dashboard />} />
-            <Route path="/directory" element={<Dashboard />} />
-            <Route path="/marketplace" element={<Dashboard />} />
-            <Route path="/marketplace/track/:requestId" element={<Dashboard />} />
+            <Route path="/directory" element={<MarketplacePage />} />
+            <Route path="/directory/request/:requestId" element={<Dashboard />} />
+            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/marketplace/track/:requestId" element={<CustomerRequestTrackingPage />} />
+
+            {/* Customer Dashboard - Protected by Dashboard logic */}
             <Route path="/customer/login" element={<Dashboard />} />
             <Route path="/customer/register" element={<Dashboard />} />
             <Route path="/customer/dashboard" element={<Dashboard />} />
