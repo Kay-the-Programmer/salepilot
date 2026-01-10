@@ -1,4 +1,3 @@
-import React from 'react';
 export type SnackbarType = 'success' | 'error' | 'info' | 'warning' | 'sync';
 import { Routes, Route } from 'react-router-dom';
 import Dashboard from './Dashboard';
@@ -8,9 +7,8 @@ import ShopProductList from './pages/shop/ShopProductList';
 import ShopProductDetail from './pages/shop/ShopProductDetail';
 import CartPage from './pages/shop/CartPage';
 import LandingPage from './pages/LandingPage';
-import MarketplacePage from './pages/shop/MarketplacePage';
 
-const App: React.FC = () => {
+export default function App() {
     return (
         <Routes>
             {/* Public Landing Page */}
@@ -50,8 +48,12 @@ const App: React.FC = () => {
             <Route path="/settings" element={<Dashboard />} />
             <Route path="/superadmin" element={<Dashboard />} />
             <Route path="/marketing" element={<Dashboard />} />
-            <Route path="/directory" element={<MarketplacePage />} />
-            <Route path="/marketplace" element={<MarketplacePage />} />
+            <Route path="/directory" element={<Dashboard />} />
+            <Route path="/marketplace" element={<Dashboard />} />
+            <Route path="/marketplace/track/:requestId" element={<Dashboard />} />
+            <Route path="/customer/login" element={<Dashboard />} />
+            <Route path="/customer/register" element={<Dashboard />} />
+            <Route path="/customer/dashboard" element={<Dashboard />} />
             <Route path="/directory/request/:requestId" element={<Dashboard />} />
 
             {/* Fallback */}
@@ -60,4 +62,4 @@ const App: React.FC = () => {
     );
 };
 
-export default App;
+

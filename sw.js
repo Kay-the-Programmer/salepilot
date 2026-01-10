@@ -1,5 +1,5 @@
 
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const CACHE_NAME = `salepilot-cache-${CACHE_VERSION}`;
 const ASSET_CACHE = `salepilot-assets-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `salepilot-image-cache-${CACHE_VERSION}`;

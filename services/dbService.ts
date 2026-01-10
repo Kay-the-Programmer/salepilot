@@ -1,7 +1,7 @@
 
 
 const DB_NAME = 'SalePilotDB';
-const DB_VERSION = 8;
+const DB_VERSION = 9;
 const STORES = ['products', 'categories', 'customers', 'suppliers', 'sales', 'returns', 'purchaseOrders', 'supplierInvoices', 'users', 'accounts', 'journalEntries', 'auditLogs', 'settings', 'syncQueue', 'accounting', 'reports', 'announcements', 'marketStores', 'marketProducts', 'marketRequests'];
 
 const STORE_KEY_PATHS: { [key: string]: string } = {

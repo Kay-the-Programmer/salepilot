@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { User, StoreSettings } from '../types';
 import {
@@ -9,6 +9,7 @@ import {
     ArrowUturnLeftIcon,
     UsersIcon,
     TruckIcon,
+    ArrowDownTrayIcon,
     DocumentPlusIcon,
     CalculatorIcon,
     DocumentMagnifyingGlassIcon,
@@ -41,6 +42,8 @@ interface SidebarProps {
     isSyncing?: boolean;
     unreadNotificationsCount?: number;
     pendingMatchesCount?: number;
+    installPrompt?: any | null;
+    onInstall?: () => void;
 }
 
 const NAV_ITEMS = [
@@ -179,7 +182,7 @@ const NAV_ITEMS = [
     },
 ];
 
-const Sidebar: React.FC<SidebarProps> = ({
+export default function Sidebar({
     user,
     onLogout,
     isOnline,
@@ -195,10 +198,12 @@ const Sidebar: React.FC<SidebarProps> = ({
     lastSync,
     isSyncing,
     unreadNotificationsCount,
-    pendingMatchesCount
-}) => {
-    const [isExpanded, setIsExpanded] = React.useState(true);
-    const sidebarRef = React.useRef<HTMLDivElement>(null);
+    pendingMatchesCount,
+    installPrompt,
+    onInstall
+}: SidebarProps) {
+    const [isExpanded, setIsExpanded] = useState(true);
+    const sidebarRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
     // Filter navigation items based on user role and allowed pages
@@ -218,7 +223,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }
 
     // Close sidebar when clicking outside on mobile
-    React.useEffect(() => {
+    useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (showOnMobile &&
                 sidebarRef.current &&
@@ -233,7 +238,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     }, [showOnMobile, onMobileClose]);
 
     // Prevent body scroll when sidebar is open on mobile
-    React.useEffect(() => {
+    useEffect(() => {
         if (showOnMobile && window.innerWidth < 768) {
             document.body.style.overflow = 'hidden';
         } else {
@@ -301,26 +306,35 @@ const Sidebar: React.FC<SidebarProps> = ({
                                         to={`/${item.page}`}
                                         onClick={() => window.innerWidth < 768 && onMobileClose?.()}
                                         className={({ isActive }) => `
-                                            flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all
-                                            ${isActive ? 'bg-blue-50/50' : ''}
+                                            flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all group
+                                            ${isActive ? 'bg-blue-50/50 active' : ''}
                                         `}
                                     >
-                                        {({ isActive }) => (
-                                            <>
-                                                <div className={`
-                                                    w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors
-                                                    ${isActive ? 'bg-blue-100 text-blue-600' : 'bg-white border border-gray-100 text-gray-600'}
-                                                `}>
-                                                    <IconComponent className="w-7 h-7" />
-                                                </div>
-                                                <span className={`text-xs font-medium text-center leading-tight ${isActive ? 'text-blue-700' : 'text-gray-600'}`}>
-                                                    {item.name}
-                                                </span>
-                                            </>
-                                        )}
+                                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors bg-white border border-gray-100 text-gray-600 group-[.active]:bg-blue-100 group-[.active]:text-blue-600">
+                                            <IconComponent className="w-7 h-7" />
+                                        </div>
+                                        <span className="text-xs font-medium text-center leading-tight text-gray-600 group-[.active]:text-blue-700">
+                                            {item.name}
+                                        </span>
                                     </NavLink>
                                 );
                             })}
+                            {installPrompt && (
+                                <button
+                                    onClick={() => {
+                                        onInstall?.();
+                                        onMobileClose?.();
+                                    }}
+                                    className="flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 active:scale-95 transition-all group"
+                                >
+                                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors bg-white border border-blue-100 text-blue-600">
+                                        <ArrowDownTrayIcon className="w-7 h-7" />
+                                    </div>
+                                    <span className="text-xs font-medium text-center leading-tight text-blue-700">
+                                        Install App
+                                    </span>
+                                </button>
+                            )}
                         </div>
                     </div>
 
@@ -431,32 +445,25 @@ const Sidebar: React.FC<SidebarProps> = ({
                                     w-full flex items-center gap-3 px-4 py-3 rounded-xl
                                     transition-all duration-200 group relative
                                     ${isActive
-                                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500'
+                                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500 active-link'
                                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                     }
                                     ${!isExpanded && 'justify-center'}
                                 `}
                                 title={!isExpanded ? item.name : undefined}
                             >
-                                {({ isActive }) => (
-                                    <>
-                                        <div className={`flex-shrink-0 ${isActive ? 'text-blue-600' : 'text-gray-500 group-hover:text-gray-700'}`}>
-                                            <IconComponent className="w-5 h-5" />
-                                        </div>
-                                        <div className={`flex-1 text-left transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                            <span className="text-sm font-medium whitespace-nowrap">{item.name}</span>
-                                        </div>
-                                        {item.badge && isExpanded && (
-                                            <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                                                {item.badge}
-                                            </span>
-                                        )}
-                                        {/* Active indicator for collapsed mode */}
-                                        {!isExpanded && isActive && (
-                                            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full"></div>
-                                        )}
-                                    </>
+                                <div className="flex-shrink-0 text-gray-500 group-hover:text-gray-700 [[.active-link]_&]:text-blue-600">
+                                    <IconComponent className="w-5 h-5" />
+                                </div>
+                                <div className={`flex-1 text-left transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                    <span className="text-sm font-medium whitespace-nowrap">{item.name}</span>
+                                </div>
+                                {item.badge && isExpanded && (
+                                    <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
+                                        {item.badge}
+                                    </span>
                                 )}
+                                {!isExpanded && <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 [[.active-link]_&]:opacity-100"></div>}
                             </NavLink>
                         );
                     })}
@@ -513,6 +520,25 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </a>
                     )}
 
+                    {/* Install App Link (Manual Trigger) */}
+                    {installPrompt && (
+                        <button
+                            onClick={onInstall}
+                            className={`
+                                flex items-center gap-3 px-3 py-3 rounded-xl
+                                text-blue-600 hover:bg-blue-50 hover:text-blue-700
+                                transition-colors duration-200
+                                ${!isExpanded && 'justify-center'}
+                            `}
+                            title={!isExpanded ? 'Install App' : undefined}
+                        >
+                            <ArrowDownTrayIcon className="w-5 h-5 flex-shrink-0" />
+                            <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                Install App
+                            </span>
+                        </button>
+                    )}
+
                     {/* Logout Button */}
                     <button
                         onClick={onLogout}
@@ -561,4 +587,3 @@ const Sidebar: React.FC<SidebarProps> = ({
     );
 };
 
-export default Sidebar;

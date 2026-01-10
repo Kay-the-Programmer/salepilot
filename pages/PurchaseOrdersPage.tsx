@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PurchaseOrder, Supplier, Product, POItem, StoreSettings } from '../types';
 import Header from '../components/Header';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
@@ -9,7 +9,6 @@ import { SnackbarType } from '../App';
 import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import ArrowDownTrayIcon from '../components/icons/ArrowDownTrayIcon';
-import CalendarDaysIcon from '../components/icons/CalendarDaysIcon';
 import TruckIcon from '../components/icons/TruckIcon';
 import PackageIcon from '../components/icons/PackageIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
@@ -37,7 +36,7 @@ type ViewState =
     | { mode: 'detail'; po: PurchaseOrder }
     | { mode: 'form'; po?: PurchaseOrder };
 
-const StatusBadge: React.FC<{ status: PurchaseOrder['status'] }> = ({ status }) => {
+export function StatusBadge({ status }: { status: PurchaseOrder['status'] }) {
     const statusConfig = {
         draft: { color: 'bg-gray-100 text-gray-800', icon: '📝' },
         ordered: { color: 'bg-blue-100 text-blue-800', icon: '📦' },
@@ -55,13 +54,13 @@ const StatusBadge: React.FC<{ status: PurchaseOrder['status'] }> = ({ status }) 
     );
 };
 
-const ReceiveStockModal: React.FC<{
+export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSettings }: {
     isOpen: boolean;
     onClose: () => void;
     po: PurchaseOrder;
     onReceive: (receivedItems: { productId: string, quantity: number }[]) => void;
     storeSettings: StoreSettings;
-}> = ({ isOpen, onClose, po, onReceive, storeSettings }) => {
+}) {
     const [receivedQuantities, setReceivedQuantities] = useState<{ [key: string]: string }>({});
 
     useEffect(() => {
@@ -239,7 +238,7 @@ const ReceiveStockModal: React.FC<{
     );
 };
 
-const PurchaseOrderForm: React.FC<{
+export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings }: {
     poToEdit?: PurchaseOrder;
     suppliers: Supplier[];
     products: Product[];
@@ -247,7 +246,7 @@ const PurchaseOrderForm: React.FC<{
     onCancel: () => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
     storeSettings: StoreSettings;
-}> = ({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings }) => {
+}) {
     const [po, setPo] = useState<Omit<PurchaseOrder, 'id' | 'poNumber' | 'createdAt'>>(() => {
         if (poToEdit) return { ...poToEdit };
         return {
@@ -305,7 +304,7 @@ const PurchaseOrderForm: React.FC<{
         }));
     };
 
-    React.useEffect(() => {
+    useEffect(() => {
         const subtotal = po.items.reduce((acc, item) => acc + (item.quantity * item.costPrice), 0);
         const tax = subtotal * (storeSettings.taxRate / 100);
         const total = subtotal + po.shippingCost + tax;
@@ -705,7 +704,7 @@ const PurchaseOrderForm: React.FC<{
     );
 };
 
-const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
+export default function PurchaseOrdersPage({
     purchaseOrders,
     suppliers,
     products,
@@ -716,7 +715,7 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
     isLoading,
     error,
     storeSettings,
-}) => {
+}: PurchaseOrdersPageProps) {
     const [view, setView] = useState<ViewState>({ mode: 'list' });
     const [searchTerm, setSearchTerm] = useState('');
     const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
@@ -790,9 +789,18 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
                     onButtonClick={handleCreateNew}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    showFilterButton
-                    onFilterClick={() => setShowFilters(!showFilters)}
-                    filterCount={statusFilter !== 'all' ? 1 : 0}
+                    rightContent={
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full relative"
+                            aria-label="Filter"
+                        >
+                            <FilterIcon className="w-6 h-6" />
+                            {statusFilter !== 'all' && (
+                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white"></span>
+                            )}
+                        </button>
+                    }
                 />
 
                 {/* Stats Cards */}
@@ -1240,6 +1248,4 @@ const PurchaseOrdersPage: React.FC<PurchaseOrdersPageProps> = ({
             )}
         </>
     );
-};
-
-export default PurchaseOrdersPage;
+}

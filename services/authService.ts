@@ -9,8 +9,9 @@ const normalizeRole = (role: any): User['role'] => {
     if (['superadmin', 'super-user', 'super_user', 'superuser', 'owner', 'root'].includes(r)) return 'superadmin';
     if (['admin', 'administrator'].includes(r)) return 'admin';
     if (['inventory_manager', 'inventory-manager', 'inventory manager'].includes(r)) return 'inventory_manager';
+    if (['customer', 'user', 'client'].includes(r)) return 'customer';
     // default to staff when unknown to avoid granting unintended privileges
-    if (!['superadmin','admin','staff','inventory_manager'].includes(r)) return 'staff';
+    if (!['superadmin', 'admin', 'staff', 'inventory_manager', 'customer'].includes(r)) return 'staff';
     return r as User['role'];
 };
 
@@ -18,6 +19,7 @@ const normalizeUser = (u: any): User => ({
     id: u.id,
     name: u.name,
     email: u.email,
+    phone: u.phone,
     role: normalizeRole(u.role),
     token: u.token,
     currentStoreId: u.currentStoreId,
@@ -51,6 +53,16 @@ export const register = async (name: string, email: string, password?: string): 
     return normalizeUser(u);
 };
 
+export const registerCustomer = async (name: string, email: string, password?: string): Promise<User> => {
+    const u = await api.post<User>('/auth/register-customer', { name, email, password });
+    const normalized = normalizeUser(u);
+    if (normalized && normalized.token) {
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
+        return normalized;
+    }
+    return normalized;
+};
+
 export const logout = (): void => {
     localStorage.removeItem(CURRENT_USER_KEY);
 };
@@ -69,7 +81,7 @@ export const getCurrentUser = (): User | null => {
 };
 
 export const forgotPassword = async (email: string): Promise<void> => {
-     await api.post('/auth/forgot-password', { email });
+    await api.post('/auth/forgot-password', { email });
 };
 
 export const getUsers = async (): Promise<User[]> => {
@@ -78,7 +90,7 @@ export const getUsers = async (): Promise<User[]> => {
 };
 
 export const saveUser = (user: Omit<User, 'id'>, id?: string): Promise<User> => {
-     if (id) {
+    if (id) {
         // If we are updating the current user, update localStorage too
         const currentUser = getCurrentUser();
         if (currentUser && currentUser.id === id) {

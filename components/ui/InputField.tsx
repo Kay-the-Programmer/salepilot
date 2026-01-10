@@ -10,7 +10,7 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement | H
     helperText?: string;
 }
 
-export const InputField: React.FC<InputFieldProps> = ({
+export function InputField({
     label,
     icon,
     rightElement,
@@ -19,9 +19,17 @@ export const InputField: React.FC<InputFieldProps> = ({
     hasError = false,
     helperText,
     className = '',
+    value,
     ...props
-}) => {
+}: InputFieldProps) {
     const baseInputClasses = `w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all ${icon ? 'pl-10' : ''} ${hasError ? 'border-red-300' : ''} ${className}`;
+
+    // Ensure value is never null and doesn't switch between controlled/uncontrolled
+    // If value is undefined, we let it be uncontrolled (unless defaultValue is also missing, 
+    // but React handles undefined value as uncontrolled).
+    // If value is null, we convert to empty string to avoid React warning.
+    const isControlled = value !== undefined;
+    const safeValue = isControlled ? (value ?? '') : undefined;
 
     return (
         <div className="mb-4">
@@ -39,12 +47,14 @@ export const InputField: React.FC<InputFieldProps> = ({
                 {multiline ? (
                     <textarea
                         {...(props as React.TextareaHTMLAttributes<HTMLTextAreaElement>)}
+                        value={safeValue as string}
                         rows={rows}
                         className={baseInputClasses}
                     />
                 ) : (
                     <input
                         {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
+                        value={safeValue as string | number | string[]}
                         className={baseInputClasses}
                     />
                 )}
@@ -61,6 +71,6 @@ export const InputField: React.FC<InputFieldProps> = ({
             )}
         </div>
     );
-};
+}
 
 export default InputField;

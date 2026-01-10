@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState } from 'react';
 import { Sale, StoreSettings } from '@/types.ts';
 import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
@@ -13,8 +13,8 @@ interface SaleDetailModalProps {
     storeSettings: StoreSettings;
 }
 
-const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale, storeSettings }) => {
-    const [isReceiptOpen, setIsReceiptOpen] = React.useState(false);
+export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }: SaleDetailModalProps) {
+    const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
     if (!isOpen || !sale) return null;
 
@@ -92,8 +92,7 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
                                 <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Payment Status</h4>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${derivedPaymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
                                     derivedPaymentStatus === 'partially_paid' ? 'bg-blue-100 text-blue-800' :
-                                        derivedPaymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                                            'bg-red-100 text-red-800'
+                                        'bg-red-100 text-red-800'
                                     }`}>
                                     {derivedPaymentStatus?.replace('_', ' ') || 'Unknown'}
                                 </span>
@@ -231,6 +230,4 @@ const SaleDetailModal: React.FC<SaleDetailModalProps> = ({ isOpen, onClose, sale
             )}
         </>
     );
-};
-
-export default SaleDetailModal;
+}

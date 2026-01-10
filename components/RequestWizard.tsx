@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HiOutlineArrowRight, HiOutlineCheck, HiOutlineUser, HiOutlinePhone, HiOutlineChatBubbleBottomCenterText, HiOutlineCurrencyDollar, HiOutlineXMark } from 'react-icons/hi2';
+import { getCurrentUser } from '../services/authService';
 
 interface RequestWizardProps {
     isOpen: boolean;
@@ -52,14 +53,30 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
-    const [subError, setSubError] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
-            setCurrentStep(0);
+            const user = getCurrentUser();
+            const initialName = user?.name || '';
+            const initialPhone = user?.phone || '';
+
+            setFormData({
+                customerName: initialName,
+                customerPhone: initialPhone,
+                query: '',
+                targetPrice: ''
+            });
             setIsSuccess(false);
-            setFormData({ customerName: '', customerPhone: '', query: '', targetPrice: '' });
+
+            // Determine starting step
+            // If name is present, skip step 0 (name)
+            if (initialName) {
+                setCurrentStep(1); // Go to query
+            } else {
+                setCurrentStep(0);
+            }
+
             setTimeout(() => inputRef.current?.focus(), 500);
         }
     }, [isOpen]);
@@ -70,8 +87,16 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
 
         if (!value) return;
 
-        if (currentStep < steps.length - 1) {
-            setCurrentStep(prev => prev + 1);
+        // Special logic for skipping phone if already present
+        let next = currentStep + 1;
+        if (next < steps.length && steps[next].id === 'phone' && formData.customerPhone) {
+            // Already have phone, skip to submit
+            handleSubmit();
+            return;
+        }
+
+        if (next < steps.length) {
+            setCurrentStep(next);
             setTimeout(() => inputRef.current?.focus(), 100);
         } else {
             handleSubmit();
@@ -99,16 +124,14 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
-        setSubError(null);
         try {
             await onSubmit(formData);
             setIsSuccess(true);
             setTimeout(() => {
                 onClose();
             }, 3000);
-        } catch (error: any) {
-            console.error('Marketplace submission error:', error);
-            setSubError(error.message || 'Failed to send request. Please check your connection.');
+        } catch (error) {
+            console.error(error);
         } finally {
             setIsSubmitting(false);
         }
@@ -183,12 +206,6 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
                                 onKeyDown={(e) => e.key === 'Enter' && handleNext()}
                                 className="w-full bg-white/5 border-2 border-white/20 rounded-[32px] px-8 py-6 text-2xl font-black text-white placeholder-white/20 focus:outline-none focus:border-[#FF7F27] focus:ring-4 focus:ring-[#FF7F27]/20 transition-all text-center"
                             />
-
-                            {subError && (
-                                <div className="p-4 bg-red-500/20 border border-red-500/50 rounded-2xl text-red-200 text-sm font-bold text-center animate-in shake duration-500">
-                                    {subError}
-                                </div>
-                            )}
 
                             <button
                                 onClick={handleNext}

@@ -82,9 +82,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Scroll behavior for FAB
     useEffect(() => {
         const handleScroll = (e: Event) => {
-            const target = e.target as HTMLElement;
+            const target = e.target;
+            if (!target) return;
             // Handle both window scroll and element scroll
-            const currentScrollY = target === document ? window.scrollY : (target as HTMLElement).scrollTop;
+            const currentScrollY = (target instanceof Document) ? window.scrollY : (target as HTMLElement).scrollTop;
 
             if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
                 setIsFabVisible(false);
@@ -154,6 +155,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     {
                         productId: product.id,
                         name: product.name,
+                        sku: product.sku,
                         price: product.price,
                         quantity: step,
                         stock: availableStock,

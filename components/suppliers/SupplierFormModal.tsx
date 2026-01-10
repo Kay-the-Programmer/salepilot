@@ -10,6 +10,8 @@ import MapPinIcon from '../icons/MapPinIcon';
 import BanknotesIcon from '../icons/BanknotesIcon';
 import BankIcon from '../icons/BankIcon';
 import DocumentTextIcon from '../icons/DocumentTextIcon';
+import { InputField } from '../ui/InputField';
+import { Button } from '../ui/Button';
 
 interface SupplierFormModalProps {
     isOpen: boolean;
@@ -36,33 +38,32 @@ interface SectionProgressProps {
     setActiveSection: (section: SupplierFormSection) => void;
 }
 
-const SectionProgress: React.FC<SectionProgressProps> = ({ activeSection, setActiveSection }) => (
-    <div className="flex items-center justify-center space-x-2 mb-6">
-        {(['basic', 'details', 'banking', 'notes'] as const).map((section, index) => (
-            <React.Fragment key={section}>
-                <button
-                    type="button"
-                    onClick={() => setActiveSection(section)}
-                    className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${activeSection === section
-                        ? 'bg-gray-900 text-white scale-110'
-                        : 'bg-gray-100 text-gray-500'
-                        }`}
-                    aria-label={`Go to ${section} section`}
-                >
-                    {index + 1}
-                </button>
-                {index < 3 && (
-                    <div className={`w-6 h-0.5 ${index < 1 ? 'bg-gray-900' : 'bg-gray-200'}`} />
-                )}
-            </React.Fragment>
-        ))}
-    </div>
-);
+function SectionProgress({ activeSection, setActiveSection }: SectionProgressProps) {
+    return (
+        <div className="flex items-center justify-center space-x-2 mb-6">
+            {(['basic', 'details', 'banking', 'notes'] as const).map((section, index) => (
+                <React.Fragment key={section}>
+                    <button
+                        type="button"
+                        onClick={() => setActiveSection(section)}
+                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${activeSection === section
+                            ? 'bg-gray-900 text-white scale-110'
+                            : 'bg-gray-100 text-gray-500'
+                            }`}
+                        aria-label={`Go to ${section} section`}
+                    >
+                        {index + 1}
+                    </button>
+                    {index < 3 && (
+                        <div className={`w-6 h-0.5 ${activeSection === section || index < ['basic', 'details', 'banking', 'notes'].indexOf(activeSection) ? 'bg-gray-900' : 'bg-gray-200'}`} />
+                    )}
+                </React.Fragment>
+            ))}
+        </div>
+    );
+}
 
-import { InputField } from '../ui/InputField';
-import { Button } from '../ui/Button';
-
-const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, onSave, supplierToEdit }) => {
+export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToEdit }: SupplierFormModalProps) {
     const [supplier, setSupplier] = useState(getInitialState());
     const [error, setError] = useState('');
     const [activeSection, setActiveSection] = useState<SupplierFormSection>('basic');
@@ -87,8 +88,8 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
         }));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleSubmit = (e?: React.FormEvent) => {
+        if (e) e.preventDefault();
         if (!supplier.name.trim()) {
             setError('Supplier name is required.');
             // Scroll to error
@@ -99,7 +100,7 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
         const finalSupplier: Supplier = {
             ...supplier,
             id: supplierToEdit?.id || `sup_${Date.now()}`,
-        };
+        } as Supplier;
         onSave(finalSupplier);
         // Success animation
         if (document.activeElement instanceof HTMLElement) {
@@ -111,8 +112,8 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
         if (e.key === 'Escape') {
             onClose();
         }
-        if (e.key === 'Enter' && e.metaKey) {
-            handleSubmit(e);
+        if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+            handleSubmit();
         }
     };
 
@@ -295,7 +296,7 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
 
                         <div className="flex items-center">
                             <Button
-                                onClick={handleSubmit}
+                                onClick={() => handleSubmit()}
                                 icon={<CheckIcon className="w-5 h-5" />}
                             >
                                 Save
@@ -349,7 +350,7 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
                                 if (currentIndex < sections.length - 1) {
                                     setActiveSection(sections[currentIndex + 1]);
                                 } else {
-                                    handleSubmit({ preventDefault: () => { } } as React.FormEvent);
+                                    handleSubmit();
                                 }
                             }}
                             className={`px-4 py-2.5 rounded-xl font-medium transition-all ${isLastSection
@@ -364,6 +365,4 @@ const SupplierFormModal: React.FC<SupplierFormModalProps> = ({ isOpen, onClose, 
             </div>
         </div>
     );
-};
-
-export default SupplierFormModal;
+}

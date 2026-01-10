@@ -16,16 +16,6 @@ const RUNTIME_BASE = (typeof window !== 'undefined' && (window as any).__API_URL
 // NOTE: VITE_API_URL should define the full path to api, e.g. "https://backend.com/api"
 const BASE_URL = (RUNTIME_BASE || ENV_BASE || LOCAL_BACKEND).replace(/\/+$/, '');
 
-// Log initialization status (helpful for debugging Vercel/Render deployments)
-if (typeof window !== 'undefined') {
-  const isLocal = BASE_URL.includes('localhost') || BASE_URL.includes('127.0.0.1');
-  if (!isLocal || import.meta.env.DEV) {
-    console.log(`[API] Initialized with BASE_URL: ${BASE_URL} (${ENV_BASE ? 'from env' : 'fallback'})`);
-  } else {
-    console.warn(`[API] WARNING: Using localhost backend in production environment! Ensure VITE_API_URL is set in your deployment settings.`);
-  }
-}
-
 // Storage key used by authService
 const CURRENT_USER_KEY = 'salePilotUser';
 

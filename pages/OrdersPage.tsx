@@ -1,23 +1,52 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { api } from '../services/api';
 import { Sale, StoreSettings, Payment } from '../types';
 import {
-    HiOutlineEye,
-    HiOutlineXCircle,
     HiOutlineBanknotes,
-    HiOutlineChevronRight,
+    HiOutlineXMark,
     HiOutlineEllipsisVertical,
     HiOutlineUser,
-    HiOutlineCalendar,
     HiOutlineCurrencyDollar,
     HiOutlineShoppingBag,
-    HiOutlineFunnel,
-    HiOutlineMagnifyingGlass
+    HiOutlinePrinter,
+    HiOutlineCheckCircle,
+    HiOutlineTruck
 } from 'react-icons/hi2';
 import Header from '../components/Header';
 import RecordOrderPaymentModal from '../components/orders/RecordOrderPaymentModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { formatCurrency } from '../utils/currency';
+
+const styles = `
+    .premium-scrollbar::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+    }
+    .premium-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .premium-scrollbar::-webkit-scrollbar-thumb {
+        background: #e2e8f0;
+        border-radius: 10px;
+    }
+    .premium-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #cbd5e1;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+    }
+`;
 
 interface OrdersPageProps {
     onOpenSidebar?: () => void;
@@ -25,7 +54,7 @@ interface OrdersPageProps {
     showSnackbar: (message: string, type: 'success' | 'error' | 'info' | 'sync') => void;
 }
 
-const OrdersPage: React.FC<OrdersPageProps> = ({ storeSettings, showSnackbar }) => {
+export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPageProps) {
     const [orders, setOrders] = useState<Sale[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -43,15 +72,6 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ storeSettings, showSnackbar }) 
         message: '',
         onConfirm: () => { }
     });
-
-    // Enhanced stats calculation with more metrics
-    const stats = {
-        total: orders.length,
-        pending: orders.filter(o => o.fulfillmentStatus === 'pending').length,
-        revenue: orders.reduce((sum, o) => sum + (o.paymentStatus === 'paid' ? Number(o.total) : 0), 0),
-        avgOrderValue: orders.length > 0 ?
-            orders.reduce((sum, o) => sum + Number(o.total), 0) / orders.length : 0
-    };
 
     useEffect(() => {
         fetchOrders();
@@ -79,7 +99,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ storeSettings, showSnackbar }) 
     const handleMarkAsPaid = async (order: Sale) => {
         const remaining = Number(order.total) - Number(order.amountPaid || 0);
         if (remaining <= 0.01) {
-            alert('Order is already fully paid.');
+            showSnackbar('Order is already fully paid.', 'info');
             return;
         }
         setPaymentOrder(order);
@@ -90,18 +110,36 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ storeSettings, showSnackbar }) 
             await api.post(`/sales/${order.transactionId}/payments`, payment);
             fetchOrders();
             if (selectedOrder && selectedOrder.transactionId === order.transactionId) {
-                setSelectedOrder(null);
+                const updatedOrder = { ...selectedOrder, amountPaid: (Number(selectedOrder.amountPaid || 0) + Number(payment.amount)).toString() };
+                if (Number(updatedOrder.amountPaid) >= Number(updatedOrder.total)) {
+                    updatedOrder.paymentStatus = 'paid';
+                }
+                setSelectedOrder(updatedOrder);
             }
             setPaymentOrder(null);
             showSnackbar('Payment recorded successfully!', 'success');
         } catch (error: any) {
-            console.error('Error recording payment:', error);
             const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to record payment';
             showSnackbar(errorMessage, 'error');
         }
     };
 
-    const updateStatus = async (orderId: string, newStatus: string) => {
+    const proceedWithUpdateStatus = async (orderId: string, newStatus: NonNullable<Sale['fulfillmentStatus']>) => {
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+        try {
+            await api.put(`/sales/${orderId}/fulfillment`, { status: newStatus });
+            fetchOrders();
+            if (selectedOrder && selectedOrder.transactionId === orderId) {
+                setSelectedOrder({ ...selectedOrder, fulfillmentStatus: newStatus });
+            }
+            showSnackbar(`Order marked as ${newStatus}!`, 'success');
+        } catch (error: any) {
+            const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to update status';
+            showSnackbar(errorMessage, 'error');
+        }
+    };
+
+    const updateStatus = (orderId: string, newStatus: NonNullable<Sale['fulfillmentStatus']>) => {
         setConfirmModal({
             isOpen: true,
             title: 'Update Order Status',
@@ -110,23 +148,7 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ storeSettings, showSnackbar }) 
         });
     };
 
-    const proceedWithUpdateStatus = async (orderId: string, newStatus: string) => {
-        setConfirmModal(prev => ({ ...prev, isOpen: false }));
-        try {
-            await api.put(`/sales/${orderId}/fulfillment`, { status: newStatus });
-            fetchOrders();
-            if (selectedOrder && selectedOrder.transactionId === orderId) {
-                setSelectedOrder(null);
-            }
-            showSnackbar(`Order marked as ${newStatus}!`, 'success');
-        } catch (error: any) {
-            console.error('Error updating status:', error);
-            const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to update status';
-            showSnackbar(errorMessage, 'error');
-        }
-    };
-
-    const getStatusColor = (status?: string) => {
+    const getStatusStyles = (status?: string) => {
         switch (status) {
             case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
             case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -136,478 +158,321 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ storeSettings, showSnackbar }) 
         }
     };
 
-    const getPaymentStatusColor = (status?: string) => {
+    const getPaymentStatusStyles = (status?: string) => {
         switch (status) {
             case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
             case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200';
             default: return 'bg-slate-50 text-slate-700 border-slate-200';
         }
     };
 
-    const filteredOrders = orders.filter(order =>
-        (order.customerDetails?.name || order.customerName || 'Guest').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.transactionId.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredOrders = useMemo(() => {
+        return orders.filter(order =>
+            (order.customerDetails?.name || order.customerName || 'Guest').toLowerCase().includes(searchTerm.toLowerCase()) ||
+            order.transactionId.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [orders, searchTerm]);
+
+    const stats = useMemo(() => ({
+        total: orders.length,
+        pending: orders.filter(o => o.fulfillmentStatus === 'pending').length,
+        revenue: orders.reduce((sum, o) => sum + (o.paymentStatus === 'paid' ? Number(o.total) : 0), 0),
+        avgOrderValue: orders.length > 0 ?
+            orders.reduce((sum, o) => sum + Number(o.total), 0) / orders.length : 0
+    }), [orders]);
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-white flex flex-col">
+        <div className="flex flex-col h-full bg-[#f8fafc]">
+            <style>{styles}</style>
             <Header
                 title="Online Orders"
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                hideSearchOnMobile={false}
             />
 
-            {/* Enhanced Stats Cards */}
-            <div className="px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-slate-600 mb-1">Total Orders</p>
-                                    <p className="text-2xl font-bold text-slate-900">{stats.total}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
-                                    <HiOutlineShoppingBag className="w-6 h-6 text-indigo-600" />
-                                </div>
+            <main className="flex-1 overflow-hidden flex flex-col">
+                {/* Metrics Bar */}
+                <div className="px-6 py-4 border-b border-slate-200 bg-white/50 overflow-x-auto no-scrollbar">
+                    <div className="flex items-center gap-4 min-w-max">
+                        {[
+                            { label: 'Total', value: stats.total, color: 'slate' },
+                            { label: 'Pending', value: stats.pending, color: 'amber' },
+                            { label: 'Revenue', value: formatCurrency(stats.revenue, storeSettings), color: 'emerald' },
+                            { label: 'Avg Value', value: formatCurrency(stats.avgOrderValue, storeSettings), color: 'indigo' }
+                        ].map((s, i) => (
+                            <div key={i} className="flex flex-col px-4 py-2 bg-white rounded-2xl border border-slate-200 min-w-[120px]">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s.label}</span>
+                                <span className={`text-lg font-bold text-${s.color}-600`}>{s.value}</span>
                             </div>
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                <span className="text-xs font-medium text-slate-500">Online channel</span>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-slate-600 mb-1">Pending Orders</p>
-                                    <p className="text-2xl font-bold text-slate-900">{stats.pending}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
-                                    <HiOutlineCalendar className="w-6 h-6 text-amber-600" />
-                                </div>
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                <span className="text-xs font-medium text-slate-500">
-                                    {stats.total > 0 ? `${Math.round((stats.pending / stats.total) * 100)}% of total` : 'No orders'}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-slate-600 mb-1">Revenue</p>
-                                    <p className="text-2xl font-bold text-slate-900">{formatCurrency(stats.revenue, storeSettings)}</p>
-                                </div>
-                                <div className="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center">
-                                    <HiOutlineCurrencyDollar className="w-6 h-6 text-emerald-600" />
-                                </div>
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                <span className="text-xs font-medium text-slate-500">
-                                    Avg: {formatCurrency(stats.avgOrderValue, storeSettings)}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-sm font-medium text-slate-600 mb-1">Actions Needed</p>
-                                    <p className="text-2xl font-bold text-slate-900">
-                                        {orders.filter(o => o.paymentStatus !== 'paid' || o.fulfillmentStatus === 'pending').length}
-                                    </p>
-                                </div>
-                                <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center">
-                                    <HiOutlineFunnel className="w-6 h-6 text-rose-600" />
-                                </div>
-                            </div>
-                            <div className="mt-4 pt-4 border-t border-slate-100">
-                                <span className="text-xs font-medium text-slate-500">Require attention</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Enhanced Filter Bar */}
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 mb-8">
-                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                            <div className="w-full sm:w-auto">
-                                <div className="relative">
-                                    <HiOutlineMagnifyingGlass className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search orders or customers..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full sm:w-80 pl-12 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-sm font-medium text-slate-600 hidden sm:block">Status:</span>
-                                <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                                    {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map(status => (
-                                        <button
-                                            key={status}
-                                            onClick={() => setFilterStatus(status)}
-                                            className={`px-4 py-2 rounded-lg text-sm font-medium capitalize transition-all whitespace-nowrap ${filterStatus === status
-                                                ? 'bg-indigo-600 text-white shadow-sm'
-                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                                }`}
-                                        >
-                                            {status === 'all' ? 'All Orders' : status}
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        ))}
                     </div>
                 </div>
-            </div>
 
-            <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 flex-grow pb-12">
-                {loading ? (
-                    <div className="py-20 text-center">
-                        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-sm font-medium text-slate-600">Loading orders...</p>
-                    </div>
-                ) : filteredOrders.length === 0 ? (
-                    <div className="py-32 text-center bg-white rounded-3xl border-2 border-dashed border-slate-200 max-w-2xl mx-auto">
-                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <HiOutlineShoppingBag className="w-10 h-10 text-slate-300" />
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-2">No Orders Found</h3>
-                        <p className="text-slate-500 mb-8">Try adjusting your search or filter criteria</p>
+                {/* Filter Tabs */}
+                <div className="px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-white/30">
+                    {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map(status => (
                         <button
-                            onClick={() => { setSearchTerm(''); setFilterStatus('all'); }}
-                            className="px-6 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 transition-colors"
+                            key={status}
+                            onClick={() => setFilterStatus(status)}
+                            className={`px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${filterStatus === status
+                                ? 'bg-slate-900 text-white shadow-lg'
+                                : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
+                                }`}
                         >
-                            Reset Filters
+                            {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
                         </button>
-                    </div>
-                ) : (
-                    <>
-                        {/* Mobile Grid Layout */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:hidden gap-4">
-                            {filteredOrders.map(order => (
-                                <div
-                                    key={order.transactionId}
-                                    onClick={() => setSelectedOrder(order)}
-                                    className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer"
-                                >
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div>
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
-                                                    #{order.transactionId.slice(-6)}
-                                                </span>
-                                                <span className={`text-xs font-medium px-2 py-1 rounded border ${getPaymentStatusColor(order.paymentStatus)}`}>
-                                                    {order.paymentStatus}
-                                                </span>
-                                            </div>
-                                            <h4 className="text-base font-semibold text-slate-900 mb-1">
-                                                {order.customerDetails?.name || order.customerName || 'Guest'}
-                                            </h4>
-                                            <p className="text-xs text-slate-500">
-                                                {new Date(order.timestamp).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-lg font-bold text-slate-900">
-                                                {formatCurrency(order.total, storeSettings)}
-                                            </p>
-                                            <span className={`text-xs font-medium mt-1 px-2 py-1 rounded inline-block ${getStatusColor(order.fulfillmentStatus)}`}>
+                    ))}
+                </div>
+
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Orders List */}
+                    <div className={`flex-1 flex flex-col min-w-0 ${selectedOrder ? 'hidden lg:flex lg:max-w-md border-r border-slate-200' : 'flex'}`}>
+                        <div className="flex-1 overflow-y-auto premium-scrollbar p-6 space-y-3">
+                            {loading ? (
+                                <div className="h-full flex items-center justify-center">
+                                    <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                                </div>
+                            ) : filteredOrders.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center p-10 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+                                        <HiOutlineShoppingBag className="w-8 h-8 text-slate-300" />
+                                    </div>
+                                    <p className="text-slate-500 font-medium">No orders found</p>
+                                </div>
+                            ) : (
+                                filteredOrders.map(order => (
+                                    <button
+                                        key={order.transactionId}
+                                        onClick={() => setSelectedOrder(order)}
+                                        className={`w-full text-left p-4 rounded-2xl border transition-all animate-fadeIn ${selectedOrder?.transactionId === order.transactionId
+                                            ? 'bg-white border-indigo-200 shadow-md ring-1 ring-indigo-100'
+                                            : 'bg-white border-slate-100 hover:border-slate-200 hover:shadow-sm'
+                                            }`}
+                                    >
+                                        <div className="flex justify-between items-start mb-2">
+                                            <span className="text-[10px] font-bold text-slate-400 tracking-tighter uppercase">#{order.transactionId.slice(-8)}</span>
+                                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${getStatusStyles(order.fulfillmentStatus)}`}>
                                                 {order.fulfillmentStatus || 'pending'}
                                             </span>
                                         </div>
+                                        <h3 className="font-bold text-slate-900 truncate">
+                                            {order.customerDetails?.name || order.customerName || 'Guest'}
+                                        </h3>
+                                        <div className="flex justify-between items-end mt-3">
+                                            <div className="text-[10px] text-slate-400 font-medium">
+                                                {new Date(order.timestamp).toLocaleDateString()} • {order.cart.length} items
+                                            </div>
+                                            <div className="text-sm font-bold text-slate-900">
+                                                {formatCurrency(order.total, storeSettings)}
+                                            </div>
+                                        </div>
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Order Details Panel */}
+                    <div className={`flex-1 flex flex-col bg-white overflow-hidden ${selectedOrder ? 'flex' : 'hidden lg:flex items-center justify-center text-slate-300'}`}>
+                        {selectedOrder ? (
+                            <div className="flex flex-col h-full animate-fadeIn">
+                                {/* Details Header */}
+                                <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
+                                    <div className="flex items-center gap-4">
+                                        <button
+                                            onClick={() => setSelectedOrder(null)}
+                                            className="lg:hidden p-2 -ml-2 text-slate-400 hover:text-slate-600"
+                                        >
+                                            <HiOutlineXMark className="w-6 h-6" />
+                                        </button>
+                                        <div>
+                                            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                                Order Details
+                                                <span className="text-sm text-slate-400 font-normal">#{selectedOrder.transactionId.slice(-8)}</span>
+                                            </h2>
+                                            <p className="text-xs text-slate-400 font-medium">{new Date(selectedOrder.timestamp).toLocaleString()}</p>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                                        <div className="flex items-center gap-2">
-                                            <HiOutlineUser className="w-4 h-4 text-slate-400" />
-                                            <span className="text-sm text-slate-600">
-                                                {order.cart.length} item{order.cart.length !== 1 ? 's' : ''}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm text-slate-500">View details</span>
-                                            <HiOutlineChevronRight className="w-4 h-4 text-slate-400" />
-                                        </div>
+                                    <div className="flex items-center gap-2">
+                                        <button className="p-2 text-slate-400 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-all">
+                                            <HiOutlinePrinter className="w-5 h-5" />
+                                        </button>
+                                        <button className="p-2 text-slate-400 hover:text-indigo-600 rounded-xl hover:bg-indigo-50 transition-all">
+                                            <HiOutlineEllipsisVertical className="w-5 h-5" />
+                                        </button>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
 
-                        {/* Desktop Table */}
-                        <div className="hidden lg:block bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-slate-100">
-                                    <thead>
-                                        <tr className="bg-slate-50">
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Order</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Date</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Payment</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100">
-                                        {filteredOrders.map((order) => (
-                                            <tr
-                                                key={order.transactionId}
-                                                className="hover:bg-slate-50/50 transition-colors"
+                                <div className="flex-1 overflow-y-auto premium-scrollbar p-8 space-y-8">
+                                    {/* Status Cards */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className={`p-4 rounded-2xl border ${getStatusStyles(selectedOrder.fulfillmentStatus)} flex items-center gap-3`}>
+                                            <div className="p-2 bg-white/50 rounded-xl">
+                                                <HiOutlineTruck className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] uppercase font-bold tracking-widest opacity-70">Fulfillment</p>
+                                                <p className="text-sm font-bold">{selectedOrder.fulfillmentStatus || 'Pending'}</p>
+                                            </div>
+                                        </div>
+                                        <div className={`p-4 rounded-2xl border ${getPaymentStatusStyles(selectedOrder.paymentStatus)} flex items-center gap-3`}>
+                                            <div className="p-2 bg-white/50 rounded-xl">
+                                                <HiOutlineCurrencyDollar className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <p className="text-[10px] uppercase font-bold tracking-widest opacity-70">Payment</p>
+                                                <p className="text-sm font-bold">{selectedOrder.paymentStatus || 'Pending'}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Customer Section */}
+                                    <section>
+                                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Customer Information</h3>
+                                        <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-start gap-4">
+                                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shrink-0 shadow-sm border border-slate-200">
+                                                <HiOutlineUser className="w-6 h-6 text-indigo-600" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-slate-900 truncate">{selectedOrder.customerDetails?.name || selectedOrder.customerName || 'Guest'}</p>
+                                                <div className="mt-1 space-y-1">
+                                                    <p className="text-xs text-slate-500 font-medium truncate">{selectedOrder.customerDetails?.email || 'No email'}</p>
+                                                    <p className="text-xs text-slate-500 font-medium">{selectedOrder.customerDetails?.phone || 'No phone'}</p>
+                                                </div>
+                                                {selectedOrder.customerDetails?.address && (
+                                                    <div className="mt-4 pt-4 border-t border-slate-200">
+                                                        <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-1 shadow-none">Delivery Address</p>
+                                                        <p className="text-xs text-slate-600 font-medium leading-relaxed">{selectedOrder.customerDetails.address}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Items Section */}
+                                    <section>
+                                        <h3 className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-4">Ordered Items</h3>
+                                        <div className="bg-white border border-slate-100 rounded-3xl overflow-hidden shadow-sm">
+                                            <div className="divide-y divide-slate-100">
+                                                {selectedOrder.cart.map((item, idx) => (
+                                                    <div key={idx} className="p-4 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
+                                                        <div className="flex items-center gap-4">
+                                                            <div className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center font-bold text-xs text-slate-600 border border-slate-100">
+                                                                {item.quantity}x
+                                                            </div>
+                                                            <div>
+                                                                <p className="text-sm font-bold text-slate-900 leading-none mb-1">{item.name}</p>
+                                                                <p className="text-[10px] text-slate-400 font-medium">SKU: {item.sku || 'N/A'}</p>
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-right">
+                                                            <p className="text-sm font-bold text-slate-900">
+                                                                {formatCurrency(Number(item.price) * (item.quantity || 1), storeSettings)}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div className="p-4 bg-slate-50/50 flex flex-col gap-2">
+                                                <div className="flex justify-between text-xs text-slate-500 font-medium">
+                                                    <span>Subtotal</span>
+                                                    <span>{formatCurrency(selectedOrder.total, storeSettings)}</span>
+                                                </div>
+                                                <div className="flex justify-between text-xs text-slate-500 font-medium">
+                                                    <span>Discount</span>
+                                                    <span>-</span>
+                                                </div>
+                                                <div className="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-200">
+                                                    <span>Total</span>
+                                                    <span>{formatCurrency(selectedOrder.total, storeSettings)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </section>
+
+                                    {/* Payment Progress */}
+                                    <section className="p-6 bg-slate-900 rounded-[32px] text-white overflow-hidden relative shadow-xl shadow-slate-200">
+                                        <div className="relative z-10">
+                                            <div className="flex justify-between items-end mb-6">
+                                                <div>
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mb-2">Payment Progress</p>
+                                                    <h4 className="text-2xl font-bold flex items-center gap-2">
+                                                        {formatCurrency(selectedOrder.amountPaid || 0, storeSettings)}
+                                                        <span className="text-sm text-slate-500 font-normal"> / {formatCurrency(selectedOrder.total, storeSettings)}</span>
+                                                    </h4>
+                                                </div>
+                                                <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${selectedOrder.paymentStatus === 'paid' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                                    }`}>
+                                                    {selectedOrder.paymentStatus}
+                                                </div>
+                                            </div>
+
+                                            <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden mb-2">
+                                                <div
+                                                    className={`h-full transition-all duration-1000 ${selectedOrder.paymentStatus === 'paid' ? 'bg-emerald-400' : 'bg-amber-400'}`}
+                                                    style={{ width: `${Math.min(100, (Number(selectedOrder.amountPaid || 0) / Number(selectedOrder.total)) * 100)}%` }}
+                                                />
+                                            </div>
+
+                                            {selectedOrder.paymentStatus !== 'paid' && (
+                                                <p className="text-xs text-slate-400 font-medium">Remaining: {formatCurrency(Number(selectedOrder.total) - Number(selectedOrder.amountPaid || 0), storeSettings)}</p>
+                                            )}
+                                        </div>
+                                        {/* Abstract background shape */}
+                                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+                                    </section>
+                                </div>
+
+                                {/* Actions Footer */}
+                                <div className="p-8 border-t border-slate-100 bg-white sticky bottom-0 z-10">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        {selectedOrder.paymentStatus !== 'paid' && (
+                                            <button
+                                                onClick={() => handleMarkAsPaid(selectedOrder)}
+                                                className="col-span-1 flex items-center justify-center gap-2 py-4 px-6 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-emerald-100 transition-all active:scale-95"
                                             >
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-semibold text-slate-900">
-                                                        #{order.transactionId.slice(-8)}
-                                                    </div>
-                                                    <div className="text-xs text-slate-500 mt-1">
-                                                        {order.cart.length} items
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                                            <HiOutlineUser className="w-4 h-4 text-indigo-600" />
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-sm font-medium text-slate-900">
-                                                                {order.customerDetails?.name || order.customerName || 'Guest'}
-                                                            </div>
-                                                            <div className="text-xs text-slate-500">
-                                                                {order.customerDetails?.email || 'No email'}
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm text-slate-900">
-                                                        {new Date(order.timestamp).toLocaleDateString()}
-                                                    </div>
-                                                    <div className="text-xs text-slate-500">
-                                                        {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-semibold text-slate-900">
-                                                        {formatCurrency(order.total, storeSettings)}
-                                                    </div>
-                                                    <div className="text-xs text-slate-500">
-                                                        {order.paymentStatus === 'paid' ? 'Paid' : `Due: ${formatCurrency(Number(order.total) - Number(order.amountPaid || 0), storeSettings)}`}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${getPaymentStatusColor(order.paymentStatus)}`}>
-                                                        {order.paymentStatus}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`text-xs font-medium px-3 py-1 rounded-full ${getStatusColor(order.fulfillmentStatus)}`}>
-                                                        {order.fulfillmentStatus || 'pending'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <div className="flex justify-end items-center gap-2">
-                                                        <button
-                                                            onClick={() => setSelectedOrder(order)}
-                                                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-                                                            title="View Details"
-                                                        >
-                                                            <HiOutlineEye className="w-5 h-5" />
-                                                        </button>
-                                                        {order.paymentStatus !== 'paid' && (
-                                                            <button
-                                                                onClick={() => handleMarkAsPaid(order)}
-                                                                className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                                                                title="Record Payment"
-                                                            >
-                                                                <HiOutlineBanknotes className="w-5 h-5" />
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() => updateStatus(order.transactionId, 'fulfilled')}
-                                                            className="p-2 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
-                                                            title="More options"
-                                                        >
-                                                            <HiOutlineEllipsisVertical className="w-5 h-5" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </>
-                )}
-            </div>
-
-            {/* Enhanced Order Detail Modal */}
-            {selectedOrder && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-end animate-in fade-in duration-300">
-                    <div
-                        className="absolute inset-0 bg-black/30 backdrop-blur-sm transition-opacity"
-                        onClick={() => setSelectedOrder(null)}
-                    />
-                    <div className="relative h-full w-full max-w-2xl bg-white shadow-xl animate-in slide-in-from-right duration-300 overflow-y-auto flex flex-col">
-                        {/* Header */}
-                        <div className="sticky top-0 z-10 bg-white border-b border-slate-100 p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="text-xl font-bold text-slate-900">Order Details</h2>
-                                    <p className="text-sm text-slate-600 mt-1">
-                                        #{selectedOrder.transactionId} • {new Date(selectedOrder.timestamp).toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => setSelectedOrder(null)}
-                                    className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                                >
-                                    <HiOutlineXCircle className="w-6 h-6 text-slate-400" />
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-grow p-6 space-y-6">
-                            {/* Customer Info */}
-                            <div className="bg-slate-50 rounded-xl p-5">
-                                <h3 className="text-sm font-semibold text-slate-900 mb-4">Customer Information</h3>
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <HiOutlineUser className="w-6 h-6 text-indigo-600" />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <p className="font-medium text-slate-900">
-                                            {selectedOrder.customerDetails?.name || selectedOrder.customerName || 'Guest Customer'}
-                                        </p>
-                                        <p className="text-sm text-slate-600 mt-1">
-                                            {selectedOrder.customerDetails?.email || 'No email provided'}
-                                        </p>
-                                        <p className="text-sm text-slate-600">
-                                            {selectedOrder.customerDetails?.phone || 'No phone number'}
-                                        </p>
-                                        {selectedOrder.customerDetails?.address && (
-                                            <div className="mt-3 pt-3 border-t border-slate-200">
-                                                <p className="text-sm font-medium text-slate-900">Shipping Address</p>
-                                                <p className="text-sm text-slate-600 mt-1">{selectedOrder.customerDetails.address}</p>
+                                                <HiOutlineBanknotes className="w-5 h-5" />
+                                                Record Payment
+                                            </button>
+                                        )}
+                                        {selectedOrder.fulfillmentStatus === 'pending' && (
+                                            <button
+                                                onClick={() => updateStatus(selectedOrder.transactionId, 'fulfilled')}
+                                                className={`flex items-center justify-center gap-2 py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-indigo-100 transition-all active:scale-95 ${selectedOrder.paymentStatus === 'paid' ? 'col-span-2' : 'col-span-1'}`}
+                                            >
+                                                <HiOutlineCheckCircle className="w-5 h-5" />
+                                                Fulfill Order
+                                            </button>
+                                        )}
+                                        {selectedOrder.fulfillmentStatus === 'fulfilled' && (
+                                            <button
+                                                onClick={() => updateStatus(selectedOrder.transactionId, 'shipped')}
+                                                className={`flex items-center justify-center gap-2 py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-blue-100 transition-all active:scale-95 ${selectedOrder.paymentStatus === 'paid' ? 'col-span-2' : 'col-span-1'}`}
+                                            >
+                                                <HiOutlineTruck className="w-5 h-5" />
+                                                Mark Shipped
+                                            </button>
+                                        )}
+                                        {((selectedOrder.paymentStatus === 'paid' && (selectedOrder.fulfillmentStatus === 'shipped' || selectedOrder.fulfillmentStatus === 'cancelled'))) && (
+                                            <div className="col-span-2 text-center text-xs font-bold text-slate-400 uppercase tracking-widest py-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                                Order Completed
                                             </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Order Items */}
-                            <div className="bg-white border border-slate-100 rounded-xl">
-                                <div className="p-5 border-b border-slate-100">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-sm font-semibold text-slate-900">Order Items</h3>
-                                        <span className="text-sm text-slate-600">{selectedOrder.cart.length} items</span>
-                                    </div>
-                                </div>
-                                <div className="divide-y divide-slate-100">
-                                    {selectedOrder.cart.map((item, idx) => (
-                                        <div key={idx} className="p-5 flex items-center justify-between hover:bg-slate-50/50">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                                                    <span className="text-sm font-medium text-slate-600">{item.quantity}</span>
-                                                </div>
-                                                <div>
-                                                    <p className="font-medium text-slate-900">{item.name}</p>
-                                                    <p className="text-sm text-slate-600 mt-1">
-                                                        {formatCurrency(Number(item.price), storeSettings)} each
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-semibold text-slate-900">
-                                                    {formatCurrency(Number(item.price) * (item.quantity || 1), storeSettings)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
+                        ) : (
+                            <div className="flex flex-col items-center gap-4">
+                                <HiOutlineShoppingBag className="w-12 h-12" />
+                                <p className="font-bold text-sm tracking-widest uppercase">Select an order to view details</p>
                             </div>
-
-                            {/* Payment Summary */}
-                            <div className="bg-slate-900 rounded-xl p-6 text-white">
-                                <h3 className="text-sm font-semibold text-slate-200 mb-4">Payment Summary</h3>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-slate-300">Subtotal</span>
-                                        <span className="font-medium">{formatCurrency(selectedOrder.total, storeSettings)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-sm text-slate-300">Amount Paid</span>
-                                        <span className="font-medium text-emerald-400">-{formatCurrency(selectedOrder.amountPaid || 0, storeSettings)}</span>
-                                    </div>
-                                    <div className="pt-4 border-t border-slate-700">
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm font-semibold text-slate-200">Balance Due</span>
-                                            <span className="text-xl font-bold">
-                                                {formatCurrency(Number(selectedOrder.total) - Number(selectedOrder.amountPaid || 0), storeSettings)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Order Status */}
-                            <div className="bg-white border border-slate-100 rounded-xl p-5">
-                                <h3 className="text-sm font-semibold text-slate-900 mb-4">Order Status</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p className="text-xs text-slate-500 mb-1">Payment Status</p>
-                                        <span className={`text-sm font-medium px-3 py-1.5 rounded-lg ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>
-                                            {selectedOrder.paymentStatus}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs text-slate-500 mb-1">Fulfillment Status</p>
-                                        <span className={`text-sm font-medium px-3 py-1.5 rounded-lg ${getStatusColor(selectedOrder.fulfillmentStatus)}`}>
-                                            {selectedOrder.fulfillmentStatus || 'pending'}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer Actions */}
-                        <div className="sticky bottom-0 bg-white border-t border-slate-100 p-6">
-                            <div className="grid grid-cols-2 gap-3">
-                                {selectedOrder.paymentStatus !== 'paid' && (
-                                    <button
-                                        onClick={() => handleMarkAsPaid(selectedOrder)}
-                                        className="bg-emerald-600 text-white py-3 px-4 rounded-xl font-medium hover:bg-emerald-700 transition-colors"
-                                    >
-                                        Record Payment
-                                    </button>
-                                )}
-                                {selectedOrder.fulfillmentStatus === 'pending' && (
-                                    <button
-                                        onClick={() => updateStatus(selectedOrder.transactionId, 'fulfilled')}
-                                        className={`${selectedOrder.paymentStatus === 'paid' ? 'col-span-2' : ''} bg-indigo-600 text-white py-3 px-4 rounded-xl font-medium hover:bg-indigo-700 transition-colors`}
-                                    >
-                                        Fulfill Order
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => setSelectedOrder(null)}
-                                    className={`${(selectedOrder.paymentStatus === 'paid' && selectedOrder.fulfillmentStatus !== 'pending') ? 'col-span-2' : ''} bg-slate-100 text-slate-900 py-3 px-4 rounded-xl font-medium hover:bg-slate-200 transition-colors`}
-                                >
-                                    Close
-                                </button>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
-            )}
+            </main>
 
-            {/* Payment Modal */}
+            {/* Modals */}
             {paymentOrder && (
                 <RecordOrderPaymentModal
                     isOpen={!!paymentOrder}
@@ -625,12 +490,10 @@ const OrdersPage: React.FC<OrdersPageProps> = ({ storeSettings, showSnackbar }) 
                 onConfirm={confirmModal.onConfirm}
                 title={confirmModal.title}
                 message={confirmModal.message}
-                confirmText="Apply Status"
-                confirmButtonClass="bg-indigo-600 hover:bg-indigo-700 rounded-xl"
+                confirmText="Update Status"
+                confirmButtonClass="bg-[#0f172a] rounded-2xl font-bold uppercase tracking-widest text-xs"
                 variant="floating"
             />
         </div>
     );
-};
-
-export default OrdersPage;
+}

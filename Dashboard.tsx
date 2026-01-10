@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
 import Logo from './assets/logo.png';
@@ -26,8 +26,10 @@ import AuditLogPage from './pages/AuditLogPage';
 import OrdersPage from './pages/OrdersPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SuperAdminPage from './pages/SuperAdminPage';
-import MarketingPage from './pages/MarketingPage';
 import MarketplacePage from './pages/shop/MarketplacePage';
+import CustomerDashboard from './pages/shop/CustomerDashboard';
+import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
+import MarketingPage from './pages/MarketingPage';
 import MarketplaceRequestActionPage from './pages/MarketplaceRequestActionPage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
@@ -51,17 +53,19 @@ const PERMISSIONS: Record<User['role'], string[]> = {
     superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
     admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
     staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory'],
-    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory']
+    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory'],
+    customer: ['profile', 'notifications', 'marketing', 'directory']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
     superadmin: 'superadmin',
     admin: 'reports',
     staff: 'sales',
-    inventory_manager: 'inventory'
+    inventory_manager: 'inventory',
+    customer: 'profile'
 };
 
-const Dashboard: React.FC = () => {
+export default function Dashboard() {
     const [products, setProducts] = useState<Product[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -216,9 +220,13 @@ const Dashboard: React.FC = () => {
                     .catch(() => setPendingMatches([]));
             }
 
-            await dbService.updateLastSync();
-            const ts = await dbService.getLastSync();
-            setLastSync(ts);
+            if (dbService && typeof dbService.updateLastSync === 'function') {
+                await dbService.updateLastSync();
+            }
+            if (dbService && typeof dbService.getLastSync === 'function') {
+                const ts = await dbService.getLastSync();
+                setLastSync(ts);
+            }
 
         } catch (err: any) {
             console.error("Critical fetch error:", err);
@@ -260,8 +268,10 @@ const Dashboard: React.FC = () => {
     useEffect(() => {
         const initSyncStatus = async () => {
             try {
-                const ts = await dbService.getLastSync();
-                setLastSync(ts);
+                if (dbService && typeof dbService.getLastSync === 'function') {
+                    const ts = await dbService.getLastSync();
+                    setLastSync(ts);
+                }
             } catch (err) {
                 console.error("Failed to load last sync timestamp:", err);
             }
@@ -884,11 +894,11 @@ const Dashboard: React.FC = () => {
     }
 
 
+
+
     const renderPage = (pagePath: string) => {
         const parts = pagePath.split('/');
         const page = parts[0];
-
-        console.log(`[Router] Rendering page: ${page}, Path: ${pagePath}`);
 
         if (!hasAccess(page, currentUser.role)) {
             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
@@ -937,46 +947,26 @@ const Dashboard: React.FC = () => {
                 return <SettingsPage settings={storeSettings!} onSave={handleSaveSettings} />;
             case 'users':
                 return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
-            case 'superadmin':
-                return <SuperAdminPage />;
             case 'notifications':
                 return <NotificationsPage announcements={announcements} onRefresh={fetchData} />;
+            case 'directory':
+            case 'marketplace':
+                if (parts[1] === 'request' && parts[2]) {
+                    return <MarketplaceRequestActionPage requestId={parts[2]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} showSnackbar={showSnackbar} />;
+                }
+                return <MarketplacePage />;
+            case 'customer-dashboard':
+                return <CustomerDashboard />;
+            case 'track':
+                return <CustomerRequestTrackingPage />;
+            case 'superadmin':
+                return <SuperAdminPage />;
             case 'marketing':
                 return <MarketingPage />;
-            case 'marketplace':
-            case 'directory':
-                if (parts[1] === 'request' && parts[2]) {
-                    return <MarketplaceRequestActionPage
-                        requestId={parts[2]}
-                        products={products}
-                        storeSettings={storeSettings}
-                        onBack={() => navigate('/directory')}
-                        showSnackbar={showSnackbar}
-                    />;
-                }
-                // Return null or a message, as this is now a standalone page.
-                // However, since it's still in PERMISSIONS, it might be reached if someone manually navigates.
-                // But App.tsx should catch it first.
-                return <div className="p-8 text-center text-slate-500">Redirecting to Marketplace...</div>;
             case 'inventory':
+                return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
             default:
-                return <InventoryPage
-                    products={products}
-                    categories={categories}
-                    suppliers={suppliers}
-                    accounts={accounts}
-                    onSaveProduct={handleSaveProduct}
-                    onDeleteProduct={handleDeleteProduct}
-                    onArchiveProduct={handleArchiveProduct}
-                    onStockChange={handleStockChange}
-                    onAdjustStock={handleStockAdjustment}
-                    onSaveCategory={handleSaveCategory}
-                    onDeleteCategory={handleDeleteCategory}
-                    isLoading={isLoading}
-                    error={error}
-                    storeSettings={storeSettings!}
-                    currentUser={currentUser}
-                />;
+                return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
         }
     };
 
@@ -1040,6 +1030,8 @@ const Dashboard: React.FC = () => {
                     storeSettings={storeSettings}
                     lastSync={lastSync}
                     isSyncing={isSyncing}
+                    installPrompt={installPrompt}
+                    onInstall={handleInstall}
                     unreadNotificationsCount={announcements.filter(a => !a.isRead).length}
                     pendingMatchesCount={pendingMatches.length}
                 />
@@ -1085,6 +1077,6 @@ const Dashboard: React.FC = () => {
             <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
         </div>
     );
-};
+}
 
-export default Dashboard;
+

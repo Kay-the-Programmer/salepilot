@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import PlusIcon from './icons/PlusIcon';
 import XMarkIcon from './icons/XMarkIcon';
 import Bars3Icon from './icons/Bars3Icon';
@@ -25,7 +25,7 @@ interface HeaderProps {
     showSearch?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({
+export default function Header({
     title,
     buttonText,
     onButtonClick,
@@ -43,7 +43,7 @@ const Header: React.FC<HeaderProps> = ({
     isSearchActive: propIsSearchActive,
     setIsSearchActive: propSetIsSearchActive,
     showSearch = true,
-}) => {
+}: HeaderProps) {
     const [internalIsSearchActive, setInternalIsSearchActive] = useState(false);
 
     // Use prop state if provided, otherwise internal
@@ -112,7 +112,6 @@ const Header: React.FC<HeaderProps> = ({
                                     <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                                 </button>
                             )}
-                            {/* Back Button Support - if we want to add it back we can */}
                             <h1 className="text-xl font-bold text-gray-900 truncate">{title}</h1>
                         </div>
 
@@ -163,6 +162,4 @@ const Header: React.FC<HeaderProps> = ({
             </div>
         </header>
     );
-};
-
-export default Header;
+}

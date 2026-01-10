@@ -7,7 +7,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
     icon?: React.ReactNode;
 }
 
-export const Button: React.FC<ButtonProps> = ({
+export function Button({
     children,
     variant = 'primary',
     isLoading = false,
@@ -16,7 +16,7 @@ export const Button: React.FC<ButtonProps> = ({
     className = '',
     disabled,
     ...props
-}) => {
+}: ButtonProps) {
     const baseClasses = "items-center justify-center font-medium rounded-xl transition-all focus:outline-none focus:ring-2 focus:ring-offset-1 disabled:opacity-50 disabled:cursor-not-allowed";
 
     // Size classes (default to standard size used in SupplierFormModal)
@@ -52,6 +52,6 @@ export const Button: React.FC<ButtonProps> = ({
             )}
         </button>
     );
-};
+}
 
 export default Button;

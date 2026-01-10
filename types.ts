@@ -36,7 +36,8 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    role: 'superadmin' | 'admin' | 'staff' | 'inventory_manager';
+    role: 'superadmin' | 'admin' | 'staff' | 'inventory_manager' | 'customer';
+    phone?: string;
     token?: string; // JWT returned on login (stored client-side)
     currentStoreId?: string; // Multi-tenant: currently selected store
 }
@@ -44,6 +45,7 @@ export interface User {
 export interface CartItem {
     productId: string;
     name: string;
+    sku: string;
     price: number;
     quantity: number;
     stock: number; // To check against when increasing quantity
@@ -323,6 +325,9 @@ export interface MarketplaceOffer {
     requestId: string;
     storeId: string;
     storeName: string;
+    storePhone?: string;
+    storeEmail?: string;
+    storeAddress?: string;
     productId?: string;
     sellerPrice: number;
     status: 'pending' | 'accepted' | 'declined';
