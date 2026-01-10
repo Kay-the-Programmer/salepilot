@@ -13,6 +13,10 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import Logo from '../assets/logo.png';
 
+import { doSignInWithGoogle } from '../services/firebase/auth';
+import { loginWithGoogle } from '../services/authService';
+import GoogleRoleSelectionModal from '../components/GoogleRoleSelectionModal';
+
 interface LoginPageProps {
     onLogin: (user: User) => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
@@ -35,6 +39,11 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // New State for Google Interstitial
+    const [showGoogleRoleModal, setShowGoogleRoleModal] = useState(false);
+    const [googleIdToken, setGoogleIdToken] = useState<string | null>(null);
+    const [googleUserName, setGoogleUserName] = useState('');
 
     // Sync state with URL changes if needed
     useEffect(() => {
@@ -82,8 +91,70 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
         }
     };
 
-    const handleGoogleLogin = () => {
-        showSnackbar('Google Login is coming soon!', 'info');
+    const handleGoogleLogin = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const userCredential = await doSignInWithGoogle();
+            const idToken = await userCredential.getIdToken();
+
+            // First attempt: sending token WITHOUT role.
+            // Backend will return { isNewUser: true } if user doesn't exist
+            const response = await loginWithGoogle(idToken);
+
+            if ('isNewUser' in response) {
+                // It's a new user! Show the modal.
+                setGoogleIdToken(idToken);
+                setGoogleUserName(response.name);
+                setShowGoogleRoleModal(true);
+            } else {
+                // Existing user logged in
+                onLogin(response);
+                showSnackbar(`Welcome back, ${response.name}!`, 'success');
+                if (response.role === 'customer') navigate('/customer/dashboard');
+                else navigate('/reports');
+            }
+
+        } catch (err: any) {
+            console.error("Google Login failed", err);
+
+            // Handle popup closed by user gracefully
+            if (err.code === 'auth/popup-closed-by-user' || err.message?.includes('popup-closed-by-user')) {
+                setIsLoading(false);
+                return; // Don't show error snackbar for cancellation
+            }
+
+            const msg = err.message || 'Google Login failed';
+            setError(msg);
+            showSnackbar(msg, 'error');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleGoogleRoleSelect = async (role: 'business' | 'customer') => {
+        if (!googleIdToken) return;
+        setShowGoogleRoleModal(false);
+        setIsLoading(true);
+
+        try {
+            // Second attempt: sending token WITH role.
+            // Backend will create the user.
+            const user = await loginWithGoogle(googleIdToken, role) as User; // We know it returns User now
+
+            onLogin(user);
+            showSnackbar(`Welcome to SalePilot, ${user.name}!`, 'success');
+            if (user.role === 'customer') navigate('/customer/dashboard');
+            else navigate('/reports');
+
+        } catch (err: any) {
+            const msg = err.message || 'Account creation failed';
+            setError(msg);
+            showSnackbar(msg, 'error');
+        } finally {
+            setIsLoading(false);
+            setGoogleIdToken(null);
+        }
     };
 
     const handleForgotPassword = async () => {
@@ -284,6 +355,12 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                 </div>
 
             </div>
+            <GoogleRoleSelectionModal
+                isOpen={showGoogleRoleModal}
+                userName={googleUserName}
+                onSelectRole={handleGoogleRoleSelect}
+                onCancel={() => setShowGoogleRoleModal(false)}
+            />
         </div>
     );
 }

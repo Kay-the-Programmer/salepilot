@@ -48,6 +48,24 @@ export const login = async (email: string, password?: string): Promise<User> => 
     throw new Error('Login failed: No user data or token returned.');
 };
 
+export const loginWithGoogle = async (idToken: string, role?: 'business' | 'customer'): Promise<User | { isNewUser: true, email: string, name: string }> => {
+    const response = await api.post<User | { isNewUser: true, email: string, name: string }>('/auth/google', { idToken, role });
+
+    // Check if it's a new user response (has isNewUser flag)
+    if ('isNewUser' in response && response.isNewUser) {
+        return response as { isNewUser: true, email: string, name: string };
+    }
+
+    // Otherwise it's a logged in user
+    const user = response as User;
+    const normalized = normalizeUser(user);
+    if (normalized && normalized.token) {
+        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
+        return normalized;
+    }
+    throw new Error('Google Login failed: No user data or token returned from backend.');
+};
+
 export const register = async (name: string, email: string, password?: string): Promise<User> => {
     const u = await api.post<User>('/auth/register', { name, email, password });
     return normalizeUser(u);

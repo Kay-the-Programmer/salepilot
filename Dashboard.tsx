@@ -27,7 +27,7 @@ import OrdersPage from './pages/OrdersPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SuperAdminPage from './pages/SuperAdminPage';
 import MarketplacePage from './pages/shop/MarketplacePage';
-import CustomerDashboard from './pages/shop/CustomerDashboard';
+import CustomerDashboard from './pages/customers/CustomerDashboard';
 import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
 import MarketingPage from './pages/MarketingPage';
 import MarketplaceRequestActionPage from './pages/MarketplaceRequestActionPage';
@@ -54,7 +54,7 @@ const PERMISSIONS: Record<User['role'], string[]> = {
     admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
     staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory'],
     inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory'],
-    customer: ['profile', 'notifications', 'marketing', 'directory']
+    customer: ['profile', 'notifications', 'directory', 'customer']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
@@ -62,7 +62,7 @@ const DEFAULT_PAGES: Record<User['role'], string> = {
     admin: 'reports',
     staff: 'sales',
     inventory_manager: 'inventory',
-    customer: 'profile'
+    customer: 'customer/dashboard'
 };
 
 export default function Dashboard() {
@@ -869,8 +869,8 @@ export default function Dashboard() {
         return <LoginPage onLogin={handleLogin} showSnackbar={showSnackbar} />;
     }
 
-    // If user has no current store yet, guide them to create one (except superadmin, who is store-agnostic)
-    if (currentUser && !currentUser.currentStoreId && currentUser.role !== 'superadmin') {
+    // If user has no current store yet, guide them to create one (except superadmin and customers, who are store-agnostic)
+    if (currentUser && !currentUser.currentStoreId && currentUser.role !== 'superadmin' && currentUser.role !== 'customer') {
         const token = getCurrentUser()?.token;
         const handleCompleted = (user: User) => {
             const merged = token ? ({ ...user, token } as User) : user;
@@ -882,7 +882,7 @@ export default function Dashboard() {
     }
 
     // Store settings gating applies for any store-scoped context
-    const isStoreScoped = (currentUser.role !== 'superadmin') || (currentUser.role === 'superadmin' && superMode === 'store');
+    const isStoreScoped = (currentUser.role !== 'superadmin' && currentUser.role !== 'customer') || (currentUser.role === 'superadmin' && superMode === 'store');
     if (isStoreScoped) {
         if (!storeSettings && isLoading) {
             return <LoadingSpinner text="Loading store settings..." />;
@@ -902,6 +902,10 @@ export default function Dashboard() {
 
         if (!hasAccess(page, currentUser.role)) {
             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
+        }
+
+        if (pagePath === 'customer/dashboard') {
+            return <CustomerDashboard />;
         }
 
         switch (page) {
@@ -955,8 +959,7 @@ export default function Dashboard() {
                     return <MarketplaceRequestActionPage requestId={parts[2]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} showSnackbar={showSnackbar} />;
                 }
                 return <MarketplacePage />;
-            case 'customer-dashboard':
-                return <CustomerDashboard />;
+
             case 'track':
                 return <CustomerRequestTrackingPage />;
             case 'superadmin':
