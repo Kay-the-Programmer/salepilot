@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
 import { PurchaseOrder, Supplier, Product, POItem, StoreSettings } from '../types';
-import Header from '../components/Header';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PencilIcon from '../components/icons/PencilIcon';
 import TrashIcon from '../components/icons/TrashIcon';
@@ -14,8 +13,8 @@ import PackageIcon from '../components/icons/PackageIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
-import FilterIcon from '../components/icons/FilterIcon';
-import SortIcon from '../components/icons/SortIcon';
+
+import GridIcon from '../components/icons/GridIcon';
 import { formatCurrency } from '../utils/currency';
 
 interface PurchaseOrdersPageProps {
@@ -709,7 +708,7 @@ export default function PurchaseOrdersPage({
     suppliers,
     products,
     onSave,
-    onDelete,
+
     onReceiveItems,
     showSnackbar,
     isLoading,
@@ -717,11 +716,10 @@ export default function PurchaseOrdersPage({
     storeSettings,
 }: PurchaseOrdersPageProps) {
     const [view, setView] = useState<ViewState>({ mode: 'list' });
-    const [searchTerm, setSearchTerm] = useState('');
     const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
     const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
-    const [showFilters, setShowFilters] = useState(false);
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         if (view.mode === 'detail') {
@@ -733,23 +731,20 @@ export default function PurchaseOrdersPage({
     }, [purchaseOrders, view]);
 
     const filteredPOs = useMemo(() => {
-        let filtered = purchaseOrders.filter(po =>
-            po.poNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            po.supplierName.toLowerCase().includes(searchTerm.toLowerCase())
-        );
+        let filtered = purchaseOrders;
 
         if (statusFilter !== 'all') {
             filtered = filtered.filter(po => po.status === statusFilter);
         }
 
         return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }, [purchaseOrders, searchTerm, statusFilter]);
+    }, [purchaseOrders, statusFilter]);
 
     const handleCreateNew = () => setView({ mode: 'form' });
     const handleSelectPO = (po: PurchaseOrder) => setView({ mode: 'detail', po });
     const handleEditPO = (po: PurchaseOrder) => setView({ mode: 'form', po });
     const handleBackToList = () => {
-        setSearchTerm('');
+
         setView({ mode: 'list' });
     };
 
@@ -783,25 +778,85 @@ export default function PurchaseOrdersPage({
         return (
             <div className="min-h-screen bg-gray-50">
                 {/* Header */}
-                <Header
-                    title="Purchase Orders"
-                    buttonText="New PO"
-                    onButtonClick={handleCreateNew}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    rightContent={
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="p-2 text-gray-600 hover:bg-gray-100 rounded-full relative"
-                            aria-label="Filter"
+                {/* Header */}
+                <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <h1 className="text-xl font-bold text-gray-900">Purchase Orders</h1>
+                        </div>
+
+                        {/* Desktop Tabs (Pills) */}
+                        <div className="hidden md:flex items-center gap-3 mx-6">
+                            <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                                {['all', 'draft', 'ordered', 'received', 'canceled'].map((status) => (
+                                    <button
+                                        key={status}
+                                        onClick={() => setStatusFilter(status)}
+                                        className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${statusFilter === status
+                                            ? 'bg-white text-gray-900 shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {status === 'all' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                            {/* Mobile Menu Button */}
+                            <button
+                                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                                className="md:hidden p-2 rounded-lg active:bg-gray-200 text-gray-600"
+                                aria-label="Menu"
+                            >
+                                <GridIcon className="w-5 h-5" />
+                            </button>
+
+                            <button
+                                onClick={handleCreateNew}
+                                className="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            >
+                                <PlusIcon className="w-5 h-5 mr-1" />
+                                <span className="hidden sm:inline">New PO</span>
+                                <span className="sm:hidden">Add</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Mobile Grid Menu Popup */}
+                {isMobileMenuOpen && (
+                    <div className="fixed inset-0 z-50 bg-black/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+                        <div
+                            className="absolute top-[70px] right-4 left-4 bg-white rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100"
+                            onClick={e => e.stopPropagation()}
                         >
-                            <FilterIcon className="w-6 h-6" />
-                            {statusFilter !== 'all' && (
-                                <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-blue-600 rounded-full border-2 border-white"></span>
-                            )}
-                        </button>
-                    }
-                />
+                            <div className="grid grid-cols-2 gap-4">
+                                {['all', 'draft', 'ordered', 'received', 'canceled'].map((status) => {
+                                    const isActive = statusFilter === status;
+                                    return (
+                                        <button
+                                            key={status}
+                                            onClick={() => {
+                                                setStatusFilter(status);
+                                                setIsMobileMenuOpen(false);
+                                            }}
+                                            className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
+                                                ? 'bg-gray-900 text-white shadow-lg'
+                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                                }`}
+                                        >
+                                            <span className="text-sm font-semibold whitespace-nowrap">
+                                                {status === 'all' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
+                                            </span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Stats Cards */}
                 <div className="px-4 py-4 sm:px-6">
@@ -824,53 +879,7 @@ export default function PurchaseOrdersPage({
                         </div>
                     </div>
 
-                    {/* Mobile Filters */}
-                    {showFilters && (
-                        <div className="sm:hidden mb-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                            <div className="flex items-center justify-between mb-3">
-                                <h3 className="font-medium text-gray-900">Filters</h3>
-                                <button
-                                    onClick={() => setShowFilters(false)}
-                                    className="text-sm text-blue-600 hover:text-blue-800"
-                                >
-                                    Done
-                                </button>
-                            </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                {['all', 'draft', 'ordered', 'partially_received', 'received', 'canceled'].map(status => (
-                                    <button
-                                        key={status}
-                                        onClick={() => setStatusFilter(status)}
-                                        className={`px-3 py-2 rounded-lg text-sm font-medium ${statusFilter === status
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        {status === 'all' ? 'All' : status.replace('_', ' ')}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
-                    {/* Desktop Filters */}
-                    <div className="hidden sm:flex items-center gap-2 mb-6">
-                        <SortIcon className="w-5 h-5 text-gray-500" />
-                        <div className="flex flex-wrap gap-2">
-                            {['all', 'draft', 'ordered', 'partially_received', 'received', 'canceled'].map(status => (
-                                <button
-                                    key={status}
-                                    onClick={() => setStatusFilter(status)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium ${statusFilter === status
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                        }`}
-                                >
-                                    {status === 'all' ? 'All Status' : status.replace('_', ' ')}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
                     {/* POs List */}
                     {isLoading ? (
@@ -893,7 +902,7 @@ export default function PurchaseOrdersPage({
                             </div>
                             <h3 className="text-lg font-semibold text-gray-900 mb-2">No purchase orders found</h3>
                             <p className="text-gray-500 mb-6">
-                                {searchTerm || statusFilter !== 'all' ? 'Try adjusting your filters' : 'Create your first purchase order'}
+                                {statusFilter !== 'all' ? 'Try adjusting your filters' : 'Create your first purchase order'}
                             </p>
                             <button
                                 onClick={handleCreateNew}

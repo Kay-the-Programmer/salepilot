@@ -8,7 +8,7 @@ import BackspaceIcon from '../components/icons/BackspaceIcon';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import QrCodeIcon from '../components/icons/QrCodeIcon';
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
-import ManualCodeModal from '../components/sales/ManualCodeModal';
+
 import CustomerSelect from '../components/sales/CustomerSelect';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { formatCurrency } from '../utils/currency';
@@ -67,7 +67,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
     const lastScrollY = useRef(0);
-    const [isManualOpen, setIsManualOpen] = useState<boolean>(false);
+
     const [showQuickActions, setShowQuickActions] = useState<boolean>(false);
     const [cartItemBeingEdited, setCartItemBeingEdited] = useState<string | null>(null);
 
@@ -238,19 +238,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         );
     }, [products, searchTerm]);
 
-    const handleScanSuccess = (decodedText: string) => {
-        const trimmed = decodedText.trim();
-        const product = products.find(p =>
-            p.status === 'active' &&
-            (p.barcode === trimmed || p.sku === trimmed)
-        );
-        if (product) {
-            addToCart(product);
-        } else {
-            showSnackbar('No product found for scanned code', 'error');
-        }
-        setIsScannerOpen(false);
-    };
+
 
     const handleContinuousScan = (decodedText: string) => {
         const trimmed = decodedText.trim();
@@ -269,10 +257,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         console.warn(error);
     };
 
-    const handleManualSubmit = (code: string) => {
-        handleScanSuccess(code);
-        setIsManualOpen(false);
-    };
+
 
     const { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit } = useMemo(() => {
         const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -404,12 +389,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     </span>
                 )}
             </button>
-            <button
-                onClick={() => setIsManualOpen(true)}
-                className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/30 flex items-center justify-center active:scale-95 transition-all"
-            >
-                <Bars3BottomLeftIcon className="w-6 h-6" />
-            </button>
+
             <button
                 onClick={() => setShowHeldPanel(true)}
                 className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-all"
@@ -424,6 +404,40 @@ const SalesPage: React.FC<SalesPageProps> = ({
         </div>
     );
 
+    // Header Actions for Desktop
+    const headerActions = (
+        <div className="hidden md:flex items-center gap-3">
+            <button
+                onClick={() => setShowQuickActions(!showQuickActions)}
+                className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-sm font-medium rounded-lg border border-blue-200 flex items-center gap-2 hover:border-blue-300 transition-colors"
+            >
+                <BoltIcon className="w-4 h-4" />
+                Quick Add
+            </button>
+            <button
+                onClick={() => setShowHeldPanel(true)}
+                className="px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 text-sm font-medium rounded-lg border border-amber-200 flex items-center gap-2 hover:border-amber-300 transition-colors relative"
+            >
+                <ClockIcon className="w-4 h-4" />
+                Held Sales
+                {heldSales.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
+                        {heldSales.length}
+                    </span>
+                )}
+            </button>
+            <button
+                onClick={() => setIsScannerOpen(true)}
+                className="px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 text-sm font-medium rounded-lg border border-emerald-200 flex items-center gap-2 hover:border-emerald-300 transition-colors"
+            >
+                <QrCodeIcon className="w-4 h-4" />
+                Scan
+            </button>
+        </div>
+    );
+
+
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
             <Header
@@ -432,50 +446,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 hideSearchOnMobile={true}
+                showSearch={false}
+                rightContent={headerActions}
             />
 
-            {/* Stats Bar */}
-            <div className="px-4 py-3 bg-white/80 backdrop-blur-sm border-b border-slate-200">
-                <div className="max-w-7xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                            <span className="text-sm font-medium text-slate-700">Ready</span>
-                        </div>
-                        <div className="text-sm text-slate-600">
-                            <span className="font-semibold">{products.filter(p => p.status === 'active').length}</span> products available
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => setShowQuickActions(!showQuickActions)}
-                            className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-sm font-medium rounded-lg border border-blue-200 flex items-center gap-2 hover:border-blue-300 transition-colors"
-                        >
-                            <BoltIcon className="w-4 h-4" />
-                            Quick Add
-                        </button>
-                        <button
-                            onClick={() => setShowHeldPanel(true)}
-                            className="px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 text-sm font-medium rounded-lg border border-amber-200 flex items-center gap-2 hover:border-amber-300 transition-colors relative"
-                        >
-                            <ClockIcon className="w-4 h-4" />
-                            Held Sales
-                            {heldSales.length > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white">
-                                    {heldSales.length}
-                                </span>
-                            )}
-                        </button>
-                        <button
-                            onClick={() => setIsScannerOpen(true)}
-                            className="px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 text-sm font-medium rounded-lg border border-emerald-200 flex items-center gap-2 hover:border-emerald-300 transition-colors"
-                        >
-                            <QrCodeIcon className="w-4 h-4" />
-                            Scan
-                        </button>
-                    </div>
-                </div>
-            </div>
+
 
             {/* Quick Actions Panel */}
             {
@@ -929,12 +904,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         </div>
 
                                         {/* Action Buttons */}
-                                        <div className="p-4 border-t border-slate-100 bg-gradient-to-b from-white to-slate-50 space-y-3">
+                                        <div className="p-4 border-t border-slate-100 bg-white space-y-3">
                                             <div className="grid grid-cols-2 gap-3">
                                                 <button
                                                     onClick={handleHoldSale}
                                                     disabled={cart.length === 0}
-                                                    className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                                                    className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold rounded-lg hover:from-amber-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
                                                 >
                                                     <ClockIcon className="w-5 h-5" />
                                                     Hold Sale
@@ -942,7 +917,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 <button
                                                     onClick={() => processTransaction('paid')}
                                                     disabled={cart.length === 0 || total < 0 || (isCashMethod && cashReceivedNumber < total)}
-                                                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                                                    className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30"
                                                 >
                                                     <CreditCardIcon className="w-5 h-5" />
                                                     Complete Sale
@@ -951,12 +926,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                             <button
                                                 onClick={() => processTransaction('invoice')}
                                                 disabled={cart.length === 0 || total < 0 || !selectedCustomer}
-                                                className="w-full py-3 px-4 bg-gradient-to-r from-slate-100 to-slate-50 text-slate-900 font-semibold rounded-lg border-2 border-slate-300 hover:border-blue-400 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
+                                                className="w-full py-3 px-4 bg-white text-slate-900 font-semibold rounded-lg border-2 border-slate-200 hover:border-blue-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                                             >
                                                 <DocumentPlusIcon className="w-5 h-5" />
                                                 Charge to Account
                                             </button>
                                         </div>
+
                                     </>
                                 )}
                             </div>
@@ -1280,11 +1256,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 continuous={true}
                 title="Scan Products"
             />
-            <ManualCodeModal
-                isOpen={isManualOpen}
-                onClose={() => setIsManualOpen(false)}
-                onSubmit={handleManualSubmit}
-            />
+
             <HeldSalesModal
                 isOpen={showHeldPanel}
                 onClose={() => setShowHeldPanel(false)}
@@ -1303,6 +1275,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 )
             }
+
         </div >
     );
 };

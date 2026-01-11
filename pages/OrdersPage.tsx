@@ -110,7 +110,7 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
             await api.post(`/sales/${order.transactionId}/payments`, payment);
             fetchOrders();
             if (selectedOrder && selectedOrder.transactionId === order.transactionId) {
-                const updatedOrder = { ...selectedOrder, amountPaid: (Number(selectedOrder.amountPaid || 0) + Number(payment.amount)).toString() };
+                const updatedOrder = { ...selectedOrder, amountPaid: (Number(selectedOrder.amountPaid || 0) + Number(payment.amount)) };
                 if (Number(updatedOrder.amountPaid) >= Number(updatedOrder.total)) {
                     updatedOrder.paymentStatus = 'paid';
                 }
@@ -185,10 +185,38 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
     return (
         <div className="flex flex-col h-full bg-[#f8fafc]">
             <style>{styles}</style>
+            {/* Desktop Header */}
+            <div className="hidden md:flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 sticky top-0 z-30">
+                <div className="flex w-full justify-between">
+                    <h1 className="text-xl font-bold text-slate-900">Online Orders</h1>
+
+                    {/* Status Pills */}
+                    <div className="flex bg-slate-100/80 p-1 rounded-xl shrink-0">
+                        {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map((status) => {
+                            const isActive = filterStatus === status;
+                            const label = status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
+                            return (
+                                <button
+                                    key={status}
+                                    onClick={() => setFilterStatus(status)}
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${isActive
+                                        ? 'bg-white text-slate-900 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700'
+                                        }`}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
             <Header
                 title="Online Orders"
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
+                className="md:hidden"
             />
 
             <main className="flex-1 overflow-hidden flex flex-col">
@@ -209,8 +237,8 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
                     </div>
                 </div>
 
-                {/* Filter Tabs */}
-                <div className="px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-white/30">
+                {/* Filter Tabs (Mobile Only) */}
+                <div className="md:hidden px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-white/30">
                     {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map(status => (
                         <button
                             key={status}

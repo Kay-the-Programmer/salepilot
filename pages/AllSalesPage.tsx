@@ -1,6 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Sale, Customer, StoreSettings } from '../types';
-import Header from '../components/Header';
 import SalesList from '../components/sales/SalesList';
 import SaleDetailModal from '../components/sales/SaleDetailModal';
 import { formatCurrency } from '../utils/currency';
@@ -538,22 +537,33 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
     return (
         <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-gray-50 to-white relative">
-            <Header
-                title="Sales History"
-                className="hidden md:block"
-                rightContent={
-                    <button
-                        onClick={() => setShowFilters(!showFilters)}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showFilters || hasActiveFilters
-                            ? 'bg-blue-50 border-blue-200 text-blue-700'
-                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                            }`}
-                    >
-                        <FilterIcon className="w-4 h-4" />
-                        Filters
-                    </button>
-                }
-            />
+            {/* Desktop Header */}
+            <div className="hidden md:flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 sticky top-0 z-30">
+                <div className="flex justify-between w-full">
+                    <h1 className="text-xl font-bold text-gray-900">Sales History</h1>
+
+                    {/* Status Pills */}
+                    <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                        {['', 'paid', 'unpaid', 'partially_paid'].map((status) => {
+                            const isActive = selectedStatus === status;
+                            const label = status === '' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+                            return (
+                                <button
+                                    key={status}
+                                    onClick={() => setSelectedStatus(status)}
+                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                                        ? 'bg-white text-gray-900 shadow-sm'
+                                        : 'text-gray-500 hover:text-gray-700'
+                                        }`}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+            </div>
 
             {/* Mobile Header */}
             <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 md:hidden">
@@ -691,19 +701,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                             {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                         </select>
                                     </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-600">Status</label>
-                                        <select
-                                            value={selectedStatus}
-                                            onChange={e => setSelectedStatus(e.target.value)}
-                                            className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        >
-                                            <option value="">All Statuses</option>
-                                            <option value="paid">Paid</option>
-                                            <option value="unpaid">Unpaid</option>
-                                            <option value="partially_paid">Partially Paid</option>
-                                        </select>
-                                    </div>
+
                                     <div className="flex gap-2 lg:col-span-3 justify-end h-full items-end pb-1">
                                         <button
                                             onClick={resetFilters}

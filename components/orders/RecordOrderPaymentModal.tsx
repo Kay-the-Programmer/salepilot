@@ -30,7 +30,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
             const remaining = Number(order.total) - Number(order.amountPaid || 0);
             setAmount(remaining.toFixed(2));
             setDate(new Date().toISOString().split('T')[0]);
-            setMethod(storeSettings.paymentMethods?.[0]?.name || 'Card');
+            setMethod(storeSettings.paymentMethods?.[0]?.name || '');
             setReference('');
         }
     }, [order, isOpen, storeSettings.paymentMethods]);
@@ -121,8 +121,9 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                     {(storeSettings.paymentMethods || []).map(pm => (
                                         <option key={pm.id} value={pm.name}>{pm.name}</option>
                                     ))}
-                                    {(storeSettings.paymentMethods || []).length === 0 && <option value="Card">Card</option>}
-                                    {(storeSettings.paymentMethods || []).length === 0 && <option value="Cash">Cash</option>}
+                                    {(storeSettings.paymentMethods || []).length === 0 && (
+                                        <option value="" disabled>No payment methods configured</option>
+                                    )}
                                 </select>
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>

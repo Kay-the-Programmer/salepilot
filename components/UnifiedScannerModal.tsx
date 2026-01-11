@@ -109,40 +109,67 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     };
 
     const cleanup = useCallback(async () => {
-        if (scannerRef.current && isRunningRef.current) {
-            try {
-                await scannerRef.current.stop();
+        // Prevent concurrent cleanups or cleanup if already cleaned
+        if (!scannerRef.current) return;
+
+        const scanner = scannerRef.current;
+        // Don't nullify scannerRef immediately if we need it for stop()
+        // But we can mark it as null to prevent other operations?
+        // Actually, let's keep the ref until we are done, but use a local to operate on.
+
+        try {
+            // Check state if possible, or just try/catch the stop
+            // Html5Qrcode doesn't expose a clean Sync getState in all versions, 
+            // but isRunningRef helps us track our local intent.
+            if (isRunningRef.current) {
+                // Determine if it is actually running to avoid "not running" error
+                // Some versions of library throw if you stop() when not scanning.
+                try {
+                    await scanner.stop();
+                } catch (e: any) {
+                    // Ignore "not running" errors specifically
+                    const msg = e?.message || "";
+                    if (!msg.includes("not running") && !msg.includes("not started")) {
+                        console.warn("Scanner stop warning:", e);
+                    }
+                }
                 isRunningRef.current = false;
-                setIsTorchOn(false);
-            } catch (e) {
-                console.error("Failed to stop scanner", e);
             }
-        }
-        if (scannerRef.current) {
+            setIsTorchOn(false);
+        } catch (e) {
+            console.error("Failed to stop scanner", e);
+        } finally {
+            // Always clear internal details and nullify ref
             try {
-                scannerRef.current.clear();
+                scanner.clear();
             } catch (e) {
-                console.error("Failed to clear scanner", e);
+                // ignore clear errors
             }
-            scannerRef.current = null;
+            if (scannerRef.current === scanner) {
+                scannerRef.current = null;
+            }
         }
     }, []);
 
     useEffect(() => {
         if (!isOpen) return;
 
+        let isMounted = true;
         const initScanner = async () => {
+            if (!isMounted) return;
+
             setIsInitializing(true);
             setError(null);
             setHasTorch(false);
 
             const element = document.getElementById(readerId);
             if (!element) {
-                setTimeout(initScanner, 100);
+                if (isMounted) setTimeout(initScanner, 100);
                 return;
             }
 
             await cleanup();
+            if (!isMounted) return;
 
             try {
                 const html5QrCode = new Html5Qrcode(readerId);
@@ -169,7 +196,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                 try {
                     const devices = await Html5Qrcode.getCameras();
-                    if (devices && devices.length > 0) {
+                    if (isMounted && devices && devices.length > 0) {
                         setHasMultipleCameras(devices.length > 1);
 
                         // Priority 2: If we have multiple cameras and labels, find a specific match
@@ -188,10 +215,13 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     console.warn("Could not fetch camera list, falling back to facingMode constraint:", e);
                 }
 
+                if (!isMounted) return;
+
                 await html5QrCode.start(
                     cameraSelection,
                     config,
                     (decodedText) => {
+                        if (!isMounted) return;
                         const now = Date.now();
                         if (now - lastScanTimeRef.current < delayBetweenScans) return;
 
@@ -200,26 +230,46 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         onScanSuccess(decodedText);
 
                         if (!continuous) {
-                            cleanup().then(() => onClose());
+                            cleanup().then(() => {
+                                if (isMounted) onClose();
+                            });
                         }
                     },
                     (errorMessage) => {
+                        if (!isMounted) return;
                         // Suppress noisy frame errors
-                        if (onScanError && !errorMessage.includes("No barcode or QR code detected")) {
+                        const isNoisyError =
+                            errorMessage.includes("No barcode or QR code detected") ||
+                            errorMessage.includes("NotFoundException") ||
+                            errorMessage.includes("parse error");
+
+                        if (onScanError && !isNoisyError) {
                             onScanError(errorMessage);
                         }
                     }
                 );
 
-                isRunningRef.current = true;
-                setIsInitializing(false);
+                if (isMounted) {
+                    isRunningRef.current = true;
+                    setIsInitializing(false);
 
-                // Check for torch capability
-                const capabilities = html5QrCode.getRunningTrackCapabilities();
-                if ((capabilities as any).torch) {
-                    setHasTorch(true);
+                    // Check for torch capability
+                    try {
+                        const capabilities = html5QrCode.getRunningTrackCapabilities();
+                        if ((capabilities as any).torch) {
+                            setHasTorch(true);
+                        }
+                    } catch (e) {
+                        // ignore capability check errors
+                    }
+                } else {
+                    // If we unmounted during start, clean up immediately
+                    // This is critical because start() is async and might finish after unmount
+                    cleanup();
                 }
+
             } catch (err) {
+                if (!isMounted) return;
                 console.error("Error starting scanner:", err);
                 setError("Failed to start camera. Please ensure permissions are granted and no other app is using it.");
                 setIsInitializing(false);
@@ -229,6 +279,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
         const timer = setTimeout(initScanner, 300);
 
         return () => {
+            isMounted = false;
             clearTimeout(timer);
             cleanup();
         };

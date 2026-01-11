@@ -69,6 +69,7 @@ const DetailItem: React.FC<{
 const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelete, onBack }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showActionMenu, setShowActionMenu] = useState(false);
+    const [deleteConfirmation, setDeleteConfirmation] = useState('');
 
     const getRoleIcon = (role: User['role']) => {
         switch (role) {
@@ -101,9 +102,14 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
     };
 
     const handleDelete = () => {
-        if (window.confirm(`Are you sure you want to delete the user "${user.name}"? This action cannot be undone.`)) {
+        if (deleteConfirmation === 'DELETE') {
             onDelete(user.id);
         }
+    };
+
+    const closeDeleteModal = () => {
+        setShowDeleteConfirm(false);
+        setDeleteConfirmation('');
     };
 
     const formatPermissions = () => {
@@ -206,17 +212,36 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                                 <p className="text-gray-500 mb-6">
                                     Are you sure you want to delete <span className="font-semibold text-gray-900">{user.name}</span>? This action cannot be undone.
                                 </p>
+
+                                <div className="mb-6 text-left">
+                                    <label htmlFor="confirm-delete" className="block text-sm font-medium text-gray-700 mb-2">
+                                        Type <span className="font-mono font-bold text-red-600">DELETE</span> to confirm
+                                    </label>
+                                    <input
+                                        type="text"
+                                        id="confirm-delete"
+                                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                                        placeholder="Type DELETE"
+                                        value={deleteConfirmation}
+                                        onChange={(e) => setDeleteConfirmation(e.target.value)}
+                                        autoComplete="off"
+                                    />
+                                </div>
                             </div>
                             <div className="flex gap-3">
                                 <button
-                                    onClick={() => setShowDeleteConfirm(false)}
+                                    onClick={closeDeleteModal}
                                     className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 active:bg-red-800 transition-colors"
+                                    disabled={deleteConfirmation !== 'DELETE'}
+                                    className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-colors ${deleteConfirmation === 'DELETE'
+                                            ? 'bg-red-600 text-white hover:bg-red-700 active:bg-red-800'
+                                            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        }`}
                                 >
                                     Delete User
                                 </button>
