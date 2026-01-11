@@ -24,6 +24,7 @@ import {
     SparklesIcon
 } from './icons';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
+import logo from '../assets/logo.png';
 
 interface SidebarProps {
     user: User;
@@ -385,16 +386,12 @@ export default function Sidebar({
                 }}
             >
                 {/* Desktop Logo */}
-                <div className="flex h-16 items-center px-6 border-b border-gray-200">
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                            <BuildingStorefrontIcon className="w-6 h-6 text-white" />
-                        </div>
-                        <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'opacity-100 w-auto' : 'opacity-0 w-0'}`}>
-                            <h1 className="text-xl font-bold text-gray-900 whitespace-nowrap">SalePilot</h1>
-                            <p className="text-xs text-gray-500 whitespace-nowrap">Business Suite</p>
-                        </div>
-                    </div>
+                <div className={`flex h-16 items-center border-b border-gray-200 transition-all duration-300 ${isExpanded ? 'px-6' : 'px-0 justify-center'}`}>
+                    <img
+                        src={logo}
+                        alt="SalePilot"
+                        className={`transition-all duration-300 object-contain ${isExpanded ? 'h-8 w-auto' : 'h-10 w-10'}`}
+                    />
                 </div>
 
                 {/* Mode Switcher */}

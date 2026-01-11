@@ -147,7 +147,11 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                         <button
                             type="submit"
                             disabled={isInvalid}
-                            className="w-full sm:w-auto px-8 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/10 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className={`w-full sm:w-auto px-8 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/10 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                            onClick={() => {
+                                // simple click handler protection if form submit doesn't catch it
+                                if (isInvalid) return;
+                            }}
                         >
                             <CurrencyDollarIcon className="w-5 h-5" />
                             Record Payment

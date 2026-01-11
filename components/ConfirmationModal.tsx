@@ -29,7 +29,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
 
     if (variant === 'floating') {
         return (
-            <div className="fixed inset-0 z-[100] flex items-start justify-end p-4 pointer-events-none">
+            <div className="fixed inset-0 z-[200] flex items-start justify-end p-4 pointer-events-none">
                 <div className="absolute inset-0 bg-slate-900/5 pointer-events-auto" onClick={onClose} />
                 <div className="relative w-full max-w-sm bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden animate-fade-in-up pointer-events-auto mt-14 sm:mt-2">
                     <div className="p-6">
@@ -71,7 +71,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[200] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-lg m-0 sm:m-4">
                 <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div className="sm:flex sm:items-start">

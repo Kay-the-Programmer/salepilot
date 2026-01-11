@@ -59,6 +59,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [appliedStoreCredit, setAppliedStoreCredit] = useState(0);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
     const [cashReceived, setCashReceived] = useState<string>('');
+    const [isProcessing, setIsProcessing] = useState(false);
     const cashInputRef = useRef<HTMLInputElement | null>(null);
 
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
@@ -318,54 +319,64 @@ const SalesPage: React.FC<SalesPageProps> = ({
             return;
         }
 
-        const baseSaleData = {
-            cart: cart.map(item => ({ ...item, returnedQuantity: 0 })),
-            total,
-            subtotal,
-            tax: taxAmount,
-            discount: discountAmount,
-            storeCreditUsed: finalAppliedCredit,
-            customerId: selectedCustomer?.id,
-            customerName: selectedCustomer?.name,
-            refundStatus: 'none' as const,
-        };
+        if (isProcessing) return;
+        setIsProcessing(true);
 
-        let saleData: Partial<Sale>;
-
-        if (type === 'invoice') {
-            const dueDate = new Date();
-            dueDate.setDate(dueDate.getDate() + 30);
-            saleData = {
-                ...baseSaleData,
-                paymentStatus: 'unpaid',
-                amountPaid: 0,
-                dueDate: dueDate.toISOString(),
-                payments: [],
+        try {
+            const baseSaleData = {
+                cart: cart.map(item => ({ ...item, returnedQuantity: 0 })),
+                total,
+                subtotal,
+                tax: taxAmount,
+                discount: discountAmount,
+                storeCreditUsed: finalAppliedCredit,
+                customerId: selectedCustomer?.id,
+                customerName: selectedCustomer?.name,
+                refundStatus: 'none' as const,
             };
-        } else {
-            saleData = {
-                ...baseSaleData,
-                paymentStatus: 'paid',
-                amountPaid: total,
-                payments: [{
-                    amount: total,
-                    method: selectedPaymentMethod,
-                    id: Date.now().toString(),
-                    date: new Date().toISOString()
-                } as Payment]
-            };
-        }
 
-        const newSale = await onProcessSale(saleData as Sale);
+            let saleData: Partial<Sale>;
 
-        if (newSale) {
             if (type === 'invoice') {
-                showSnackbar(`Invoice created for ${selectedCustomer?.name}`, 'success');
+                const dueDate = new Date();
+                dueDate.setDate(dueDate.getDate() + 30);
+                saleData = {
+                    ...baseSaleData,
+                    paymentStatus: 'unpaid',
+                    amountPaid: 0,
+                    dueDate: dueDate.toISOString(),
+                    payments: [],
+                };
             } else {
-                setLastSale(newSale);
-                setShowReceiptModal(true);
+                saleData = {
+                    ...baseSaleData,
+                    paymentStatus: 'paid',
+                    amountPaid: total,
+                    payments: [{
+                        amount: total,
+                        method: selectedPaymentMethod,
+                        id: Date.now().toString(),
+                        date: new Date().toISOString()
+                    } as Payment]
+                };
             }
-            clearCart();
+
+            const newSale = await onProcessSale(saleData as Sale);
+
+            if (newSale) {
+                if (type === 'invoice') {
+                    showSnackbar(`Invoice created for ${selectedCustomer?.name}`, 'success');
+                } else {
+                    setLastSale(newSale);
+                    setShowReceiptModal(true);
+                }
+                clearCart();
+            }
+        } catch (error) {
+            console.error('Transaction failed:', error);
+            showSnackbar('Transaction failed. Please try again.', 'error');
+        } finally {
+            setIsProcessing(false);
         }
     };
 
@@ -916,20 +927,28 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 </button>
                                                 <button
                                                     onClick={() => processTransaction('paid')}
-                                                    disabled={cart.length === 0 || total < 0 || (isCashMethod && cashReceivedNumber < total)}
+                                                    disabled={cart.length === 0 || total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
                                                     className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30"
                                                 >
-                                                    <CreditCardIcon className="w-5 h-5" />
-                                                    Complete Sale
+                                                    {isProcessing ? (
+                                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    ) : (
+                                                        <CreditCardIcon className="w-5 h-5" />
+                                                    )}
+                                                    {isProcessing ? 'Processing...' : 'Complete Sale'}
                                                 </button>
                                             </div>
                                             <button
                                                 onClick={() => processTransaction('invoice')}
-                                                disabled={cart.length === 0 || total < 0 || !selectedCustomer}
+                                                disabled={cart.length === 0 || total < 0 || !selectedCustomer || isProcessing}
                                                 className="w-full py-3 px-4 bg-white text-slate-900 font-semibold rounded-lg border-2 border-slate-200 hover:border-blue-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center gap-2"
                                             >
-                                                <DocumentPlusIcon className="w-5 h-5" />
-                                                Charge to Account
+                                                {isProcessing ? (
+                                                    <div className="w-5 h-5 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                                                ) : (
+                                                    <DocumentPlusIcon className="w-5 h-5" />
+                                                )}
+                                                {isProcessing ? 'Processing...' : 'Charge to Account'}
                                             </button>
                                         </div>
 
@@ -1225,20 +1244,28 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     </button>
                                     <button
                                         onClick={() => processTransaction('paid')}
-                                        disabled={total < 0 || (isCashMethod && cashReceivedNumber < total)}
+                                        disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
                                         className="py-3 bg-blue-600 text-white rounded-lg font-bold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
                                     >
-                                        <CreditCardIcon className="w-5 h-5" />
-                                        Pay {formatCurrency(total, storeSettings)}
+                                        {isProcessing ? (
+                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                        ) : (
+                                            <CreditCardIcon className="w-5 h-5" />
+                                        )}
+                                        {isProcessing ? 'Processing' : `Pay ${formatCurrency(total, storeSettings)}`}
                                     </button>
                                 </div>
                                 <button
                                     onClick={() => processTransaction('invoice')}
-                                    disabled={cart.length === 0 || total < 0 || !selectedCustomer}
+                                    disabled={cart.length === 0 || total < 0 || !selectedCustomer || isProcessing}
                                     className="w-full py-3 px-4 bg-slate-100 text-slate-900 font-semibold rounded-lg border border-slate-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
                                 >
-                                    <DocumentPlusIcon className="w-5 h-5" />
-                                    Charge to Account
+                                    {isProcessing ? (
+                                        <div className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                                    ) : (
+                                        <DocumentPlusIcon className="w-5 h-5" />
+                                    )}
+                                    {isProcessing ? 'Processing...' : 'Charge to Account'}
                                 </button>
                             </div>
                         </div>
