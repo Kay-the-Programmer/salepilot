@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Supplier, Product } from '../types';
+import { Supplier, Product, StoreSettings } from '../types';
 import Header from '../components/Header';
 import SupplierList from '../components/suppliers/SupplierList';
 import SupplierFormModal from '../components/suppliers/SupplierFormModal';
@@ -14,6 +14,7 @@ interface SuppliersPageProps {
     onDeleteSupplier: (supplierId: string) => void;
     isLoading: boolean;
     error: string | null;
+    storeSettings: StoreSettings;
 }
 
 const SuppliersPage: React.FC<SuppliersPageProps> = ({
@@ -23,6 +24,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
     onDeleteSupplier,
     isLoading,
     error,
+    storeSettings,
 }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
@@ -101,6 +103,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                         supplier={selectedSupplier}
                         products={supplierProducts}
                         onEdit={handleOpenEditModal}
+                        storeSettings={storeSettings}
                     />
                 </main>
                 <SupplierFormModal

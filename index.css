@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
 
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Minimal global styles to ensure consistent layout and icon sizing even if Tailwind CDN is slow or offline. */
 
 /* Box sizing and base reset */

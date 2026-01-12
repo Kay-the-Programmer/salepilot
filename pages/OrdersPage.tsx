@@ -9,6 +9,7 @@ import Header from '../components/Header';
 import RecordOrderPaymentModal from '../components/orders/RecordOrderPaymentModal';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
 import ConfirmationModal from '../components/ConfirmationModal';
+import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 import { formatCurrency } from '../utils/currency';
 
 const styles = `
@@ -46,15 +47,22 @@ interface OrdersPageProps {
     onOpenSidebar?: () => void;
     storeSettings: StoreSettings;
     showSnackbar: (message: string, type: 'success' | 'error' | 'info' | 'sync') => void;
+    onDataRefresh?: () => void;
 }
 
-export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPageProps) {
+export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh }: OrdersPageProps) {
     const [orders, setOrders] = useState<Sale[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedOrder, setSelectedOrder] = useState<Sale | null>(null);
     const [paymentOrder, setPaymentOrder] = useState<Sale | null>(null);
+
+    // Pagination state
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(20);
+    const [total, setTotal] = useState(0);
+
     const [confirmModal, setConfirmModal] = useState<{
         isOpen: boolean;
         title: string;
@@ -69,6 +77,11 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
 
     useEffect(() => {
         fetchOrders();
+    }, [filterStatus, page, pageSize]);
+
+    // Reset page when filter changes
+    useEffect(() => {
+        setPage(1);
     }, [filterStatus]);
 
     const fetchOrders = async () => {
@@ -79,9 +92,17 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
                 queryParams.append('fulfillmentStatus', filterStatus);
             }
 
+            queryParams.append('page', String(page));
+            queryParams.append('limit', String(pageSize));
+
             const response = await api.get<any>(`/sales?${queryParams.toString()}`);
-            const data = Array.isArray(response) ? response : response.items;
-            setOrders(data);
+            if (Array.isArray(response)) {
+                setOrders(response);
+                setTotal(response.length);
+            } else {
+                setOrders(response.items);
+                setTotal(response.total);
+            }
         } catch (error) {
             console.error('Error fetching orders:', error);
             showSnackbar('Failed to fetch orders', 'error');
@@ -112,6 +133,7 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
             }
             setPaymentOrder(null);
             showSnackbar('Payment recorded successfully!', 'success');
+            onDataRefresh?.();
         } catch (error: any) {
             const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to record payment';
             showSnackbar(errorMessage, 'error');
@@ -127,6 +149,7 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
                 setSelectedOrder({ ...selectedOrder, fulfillmentStatus: newStatus });
             }
             showSnackbar(`Order marked as ${newStatus}!`, 'success');
+            onDataRefresh?.();
         } catch (error: any) {
             const errorMessage = error.body?.error || error.body?.message || error.message || 'Failed to update status';
             showSnackbar(errorMessage, 'error');
@@ -169,23 +192,23 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
     }, [orders, searchTerm]);
 
     const stats = useMemo(() => ({
-        total: orders.length,
-        pending: orders.filter(o => o.fulfillmentStatus === 'pending').length,
+        total: total || orders.length,
+        pending: orders.filter(o => o.fulfillmentStatus === 'pending').length, // Note: This only counts pending in current page/fetch if not supported by API stats endpoint
         revenue: orders.reduce((sum, o) => sum + (o.paymentStatus === 'paid' ? Number(o.total) : 0), 0),
         avgOrderValue: orders.length > 0 ?
             orders.reduce((sum, o) => sum + Number(o.total), 0) / orders.length : 0
-    }), [orders]);
+    }), [orders, total]);
 
     return (
         <div className="flex flex-col h-full bg-[#f8fafc]">
             <style>{styles}</style>
             {/* Desktop Header */}
-            <div className="hidden md:flex items-center justify-between px-6 py-4 bg-white border-b border-slate-200 sticky top-0 z-30">
+            <div className="hidden md:flex  items-center justify-between px-6 py-4 bg-gray-50 sticky top-0 z-30">
                 <div className="flex w-full justify-between">
                     <h1 className="text-xl font-bold text-slate-900">Online Orders</h1>
 
                     {/* Status Pills */}
-                    <div className="flex bg-slate-100/80 p-1 rounded-xl shrink-0">
+                    <div className="flex bg-slate-100/80 border border-white shadow-lg p-1 rounded-3xl shrink-0">
                         {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map((status) => {
                             const isActive = filterStatus === status;
                             const label = status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
@@ -193,7 +216,7 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
                                 <button
                                     key={status}
                                     onClick={() => setFilterStatus(status)}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all duration-200 ${isActive
+                                    className={`px-4 py-1.5 rounded-2xl text-sm font-bold transition-all duration-200 ${isActive
                                         ? 'bg-white text-slate-900 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700'
                                         }`}
@@ -213,11 +236,11 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
                 className="md:hidden"
             />
 
-            <main className="flex-1 overflow-hidden flex flex-col">
+            <main className="flex-1 overflow-hidden p-0 flex flex-col">
                 {/* Metrics Bar */}
-                <div className="px-6 py-4 border-b border-slate-200 bg-white/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="overflow-x-auto no-scrollbar w-full md:w-auto">
-                        <div className="flex items-center gap-4 min-w-max">
+                <div className="px-6 py-4 border-slate-200 bg-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="overflow-x-auto no-scrollbar shadow-lg rounded-2xl p-1  w-full md:w-auto">
+                        <div className="flex items-center  gap-4 min-w-max">
                             {[
                                 { label: 'Total', value: stats.total, color: 'slate' },
                                 { label: 'Pending', value: stats.pending, color: 'amber' },
@@ -233,13 +256,13 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
                     </div>
 
                     {/* Search Input - Desktop Only */}
-                    <div className="hidden md:flex relative w-64 shrink-0">
+                    <div className="hidden md:flex relative w-64 shrink-0 shadow-lg p-1 rounded-3xl">
                         <input
                             type="text"
                             placeholder="Search orders..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
+                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-3xl text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
                         />
                         <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     </div>
@@ -318,6 +341,64 @@ export default function OrdersPage({ storeSettings, showSnackbar }: OrdersPagePr
                                 ))
                             )}
                         </div>
+
+                        {/* Pagination Controls */}
+                        {total > 0 && (
+                            <div className="p-4 border-t border-slate-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-10">
+                                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                                    {/* Page Info */}
+                                    <div className="text-sm text-slate-500 font-medium">
+                                        Showing <span className="text-slate-900 font-bold">{(page - 1) * pageSize + 1}</span> - <span className="text-slate-900 font-bold">{Math.min(page * pageSize, total)}</span> of <span className="text-slate-900 font-bold">{total}</span> orders
+                                    </div>
+
+                                    {/* Controls */}
+                                    <div className="flex items-center gap-3">
+                                        {/* Rows per page */}
+                                        <div className="flex items-center gap-2">
+                                            <label className="text-sm text-slate-500 font-medium hidden sm:block">Rows:</label>
+                                            <div className="relative">
+                                                <select
+                                                    value={pageSize}
+                                                    onChange={(e) => {
+                                                        setPageSize(parseInt(e.target.value, 10));
+                                                        setPage(1);
+                                                    }}
+                                                    className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-slate-200 bg-white text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all hover:border-slate-300"
+                                                >
+                                                    {[10, 20, 50, 100].map(sz => (
+                                                        <option key={sz} value={sz}>{sz}</option>
+                                                    ))}
+                                                </select>
+                                                <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                    <ChevronDownIcon className="w-4 h-4 text-slate-400" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Pagination Buttons */}
+                                        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                                            <button
+                                                className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-600 transition-all"
+                                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                                disabled={page <= 1}
+                                            >
+                                                Prev
+                                            </button>
+                                            <div className="px-3 py-1.5 text-sm font-bold text-slate-900 min-w-[30px] text-center">
+                                                {page}
+                                            </div>
+                                            <button
+                                                className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-600 hover:bg-white hover:text-indigo-600 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-600 transition-all"
+                                                onClick={() => setPage(p => (p * pageSize < total ? p + 1 : p))}
+                                                disabled={page * pageSize >= total}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </main>

@@ -69,6 +69,7 @@ export { default as RestoreIcon } from './RestoreIcon';
 export { default as ScaleIcon } from './ScaleIcon';
 export { default as SearchIcon } from './SearchIcon';
 export { default as ShieldCheckIcon } from './ShieldCheckIcon';
+export { default as ShoppingBagIcon } from './ShoppingBagIcon';
 export { default as ShoppingCartIcon } from './ShoppingCartIcon';
 export { default as SortIcon } from './SortIcon';
 export { default as SparklesIcon } from './SparklesIcon';

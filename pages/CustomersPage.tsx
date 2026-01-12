@@ -8,6 +8,7 @@ import PlusIcon from '../components/icons/PlusIcon';
 import PencilIcon from '../components/icons/PencilIcon';
 import SearchIcon from '../components/icons/SearchIcon';
 import { Customer, Sale, StoreSettings, User } from '../types';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 // Inline CSS for mobile responsiveness
 const styles = `
@@ -257,6 +258,16 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     const [detailedCustomer, setDetailedCustomer] = useState<Customer | null>(null);
     const [detailIsLoading, setDetailIsLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
+    const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
+
+
+
+    const confirmDelete = () => {
+        if (customerToDelete) {
+            onDeleteCustomer(customerToDelete);
+            setCustomerToDelete(null);
+        }
+    };
 
     const canManageCustomers = currentUser.role === 'admin';
 
@@ -361,77 +372,70 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     // Desktop Layout - Split View
     if (isDesktop && selectedCustomerId) {
         return (
-            <div className="flex flex-col h-screen bg-gray-50">
+            <div className="flex flex-col h-screen bg-white">
                 <style>{styles}</style>
 
-                {/* Desktop Header - Simplified */}
-                <header className="sticky top-0 z-40 bg-white border-b border-gray-100 shadow-sm">
-                    <div className="px-8 flex items-center h-16 justify-between">
-                        <div className="flex items-center gap-2">
-                            <h1 className="text-sm font-black text-gray-400 uppercase tracking-widest">Customers</h1>
-                            <div className="h-1 w-1 rounded-full bg-gray-300" />
-                            <span className="text-sm font-bold text-gray-900">{filteredCustomers.length} Total</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                            <div className="relative group">
-                                <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Global Search..."
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-64 text-sm font-medium transition-all"
-                                />
-                            </div>
-                        </div>
+                {/* Desktop Header - Minimal */}
+                <header className="sticky top-0 z-40 bg-white border-b border-gray-200 h-16 flex items-center justify-between px-6">
+                    <div className="flex items-center gap-4">
+                        <h1 className="text-xl font-bold text-gray-900">Customers</h1>
+                        <span className="text-gray-300">|</span>
+                        <span className="text-sm text-gray-500">{filteredCustomers.length} Total</span>
+                    </div>
+
+                    <div className="relative">
+                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        <input
+                            type="text"
+                            placeholder="Global Search..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-9 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-64 text-sm transition-all"
+                        />
                     </div>
                 </header>
 
                 {/* Split View */}
                 <main className="flex flex-1 overflow-hidden">
                     {/* Left Panel - Customer List */}
-                    <div className={`${isLargeDesktop ? 'w-[400px]' : 'w-[350px]'} flex-shrink-0 border-r border-gray-200 bg-white flex flex-col`}>
-                        <div className="p-6 border-b border-gray-100">
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <h2 className="text-xl font-black text-gray-900 uppercase tracking-tighter">Directory</h2>
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">
-                                        {filteredCustomers.length} Total Customers
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => setViewMode(viewMode === 'az' ? 'recent' : 'az')}
-                                    className="p-2 rounded-xl bg-gray-50 text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-all"
-                                    title="Toggle Sort"
-                                >
-                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div className="flex items-center justify-between gap-2">
-                                <div className="relative flex-1">
-                                    <input
-                                        type="text"
-                                        placeholder="Search directory..."
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all text-xs font-bold"
-                                    />
-                                    <SearchIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                                </div>
+                    <div className={`${isLargeDesktop ? 'w-[360px]' : 'w-[320px]'} flex-shrink-0 border-r border-gray-200 bg-white flex flex-col`}>
+                        <div className="p-4 border-b border-gray-100 flex flex-col gap-3">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-sm font-semibold text-gray-900">Directory</h2>
                                 {canManageCustomers && (
                                     <button
                                         onClick={handleOpenAddModal}
-                                        className="p-2.5 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95"
+                                        className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm"
                                         title="Add New Customer"
                                     >
-                                        <PlusIcon className="w-5 h-5" />
+                                        <PlusIcon className="w-4 h-4" />
                                     </button>
                                 )}
                             </div>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    placeholder="Filter list..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+                                />
+                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                            </div>
+
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => setViewMode(viewMode === 'az' ? 'recent' : 'az')}
+                                    className="text-xs text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                                >
+                                    <span>{viewMode === 'az' ? 'Sorted A-Z' : 'Sorted Recently'}</span>
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                        <div className="flex-1 overflow-y-auto desktop-scrollbar p-4">
+                        <div className="flex-1 overflow-y-auto desktop-scrollbar p-3">
                             <CustomerList
                                 customers={filteredCustomers}
                                 onSelectCustomer={handleSelectCustomer}
@@ -444,49 +448,41 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                     </div>
 
                     {/* Right Panel - Customer Detail */}
-                    <div className="flex-1 overflow-y-auto bg-gray-50 desktop-scrollbar">
-                        <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md border-b border-gray-100 px-8 py-6">
+                    <div className="flex-1 overflow-y-auto bg-gray-50/50 desktop-scrollbar">
+                        <div className="sticky top-0 z-10 bg-white/90 backdrop-blur-sm border-b border-gray-200 px-8 py-5">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-14 w-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-200">
-                                        <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                                        </svg>
+                                    <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-lg border border-blue-100">
+                                        {detailedCustomer ? detailedCustomer.name.substring(0, 2).toUpperCase() : '??'}
                                     </div>
                                     <div>
-                                        <h1 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">
+                                        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
                                             {detailIsLoading ? 'Loading...' : detailedCustomer?.name}
                                         </h1>
                                         {detailedCustomer && (
-                                            <p className="text-xs font-bold text-blue-600 uppercase tracking-widest mt-0.5">Verified Customer Account</p>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 text-gray-600 uppercase tracking-wide">Customer</span>
+                                                <span className="text-sm text-gray-400">•</span>
+                                                <span className="text-sm text-gray-500">ID: {detailedCustomer.id.substring(0, 8)}</span>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
                                 {detailedCustomer && canManageCustomers && (
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                                            className="inline-flex items-center px-4 py-2.5 bg-blue-600 text-white rounded-xl shadow-md shadow-blue-100 text-sm font-black hover:bg-blue-700 transition-all uppercase tracking-widest active:scale-[0.98]"
+                                            className="inline-flex items-center px-3 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-all shadow-sm"
                                         >
-                                            <PencilIcon className="w-4 h-4 mr-2" />
+                                            <PencilIcon className="w-4 h-4 mr-2 text-gray-500" />
                                             Edit
                                         </button>
 
                                         <button
-                                            onClick={() => {/* Implement Export Logic */ }}
-                                            className="inline-flex items-center px-4 py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-black hover:bg-gray-50 transition-all uppercase tracking-widest active:scale-[0.98]"
+                                            onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
+                                            className="inline-flex items-center px-3 py-2 bg-white border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 transition-all shadow-sm"
                                         >
-                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                            </svg>
-                                            Export
-                                        </button>
-
-                                        <button
-                                            onClick={() => onDeleteCustomer(detailedCustomer.id)}
-                                            className="inline-flex items-center px-4 py-2.5 bg-white border border-red-100 text-red-600 rounded-xl text-sm font-black hover:bg-red-50 transition-all uppercase tracking-widest active:scale-[0.98]"
-                                        >
-                                            <TrashIcon className="w-4 h-4 mr-2" />
+                                            <TrashIcon className="w-4 h-4 mr-2 pointer-events-none" />
                                             Delete
                                         </button>
                                     </div>
@@ -494,7 +490,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                             </div>
                         </div>
 
-                        <div className="p-6">
+                        <div className="p-8 max-w-5xl mx-auto">
                             {detailIsLoading ? (
                                 <LoadingSpinner message="Loading customer details..." />
                             ) : detailError ? (
@@ -518,6 +514,16 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                         customerToEdit={editingCustomer}
                     />
                 )}
+
+                <ConfirmationModal
+                    isOpen={!!customerToDelete}
+                    onClose={() => setCustomerToDelete(null)}
+                    onConfirm={confirmDelete}
+                    title="Delete Customer"
+                    message="Are you sure you want to delete this customer? This action cannot be undone."
+                    confirmText="Delete Customer"
+                    confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+                />
             </div>
         );
     }
@@ -574,20 +580,11 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                             Edit
                         </button>
                         <button
-                            onClick={() => {/* Implement Export Logic */ }}
-                            className="flex-1 py-4 px-4 bg-white border border-gray-100 text-gray-700 font-black rounded-2xl hover:bg-gray-50 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
-                        >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Export
-                        </button>
-                        <button
-                            onClick={() => onDeleteCustomer(detailedCustomer.id)}
+                            onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
                             className="p-4 bg-red-50 text-red-600 rounded-2xl hover:bg-red-100 active:scale-[0.98] transition-all"
                             aria-label="Delete Customer"
                         >
-                            <TrashIcon className="w-5 h-5" />
+                            <TrashIcon className="w-5 h-5 pointer-events-none" />
                         </button>
                     </div>
                 )}
@@ -600,6 +597,16 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                         customerToEdit={editingCustomer}
                     />
                 )}
+
+                <ConfirmationModal
+                    isOpen={!!customerToDelete}
+                    onClose={() => setCustomerToDelete(null)}
+                    onConfirm={confirmDelete}
+                    title="Delete Customer"
+                    message="Are you sure you want to delete this customer? This action cannot be undone."
+                    confirmText="Delete Customer"
+                    confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+                />
             </div>
         );
     }
@@ -792,6 +799,16 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                     customerToEdit={editingCustomer}
                 />
             )}
+
+            <ConfirmationModal
+                isOpen={!!customerToDelete}
+                onClose={() => setCustomerToDelete(null)}
+                onConfirm={confirmDelete}
+                title="Delete Customer"
+                message="Are you sure you want to delete this customer? This action cannot be undone."
+                confirmText="Delete Customer"
+                confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+            />
         </div>
     );
 };

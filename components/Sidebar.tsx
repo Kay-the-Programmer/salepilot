@@ -449,7 +449,7 @@ export default function Sidebar({
                                     w-full flex items-center gap-3 px-4 py-3 rounded-xl
                                     transition-all duration-200 group relative
                                     ${isActive
-                                        ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-500 active-link'
+                                        ? 'bg-blue-100 text-blue-700 active-link'
                                         : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                                     }
                                     ${!isExpanded && 'justify-center'}

@@ -110,7 +110,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <style>{styles}</style>
-            
+
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-900/70 backdrop-blur-sm transition-all duration-300"
@@ -229,8 +229,18 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                 <div className="p-6 bg-gradient-to-r from-slate-50 to-white border-t border-slate-100 space-y-3">
                                     <div className="flex justify-between items-center text-sm text-slate-600">
                                         <span>Subtotal</span>
-                                        <span className="font-medium">{formatCurrency(order.total, storeSettings)}</span>
+                                        <span className="font-medium">{formatCurrency(order.subtotal, storeSettings)}</span>
                                     </div>
+                                    <div className="flex justify-between items-center text-sm text-slate-600">
+                                        <span>Tax</span>
+                                        <span className="font-medium">{formatCurrency(order.tax, storeSettings)}</span>
+                                    </div>
+                                    {order.discount > 0 && (
+                                        <div className="flex justify-between items-center text-sm text-green-600">
+                                            <span>Discount</span>
+                                            <span className="font-medium">-{formatCurrency(order.discount, storeSettings)}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between items-center text-base font-bold text-slate-900 pt-3 border-t border-slate-200">
                                         <span>Total Amount</span>
                                         <span className="text-lg">{formatCurrency(order.total, storeSettings)}</span>
@@ -253,8 +263,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                                 <span className="text-slate-400">/ {formatCurrency(order.total, storeSettings)}</span>
                                             </div>
                                         </div>
-                                        <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border ${order.paymentStatus === 'paid' 
-                                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
+                                        <div className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider border ${order.paymentStatus === 'paid'
+                                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
                                             : 'bg-amber-500/20 text-amber-300 border-amber-500/30'}`}>
                                             {formatStatusString(order.paymentStatus)}
                                         </div>
@@ -264,8 +274,8 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                     <div className="mb-4">
                                         <div className="h-3 w-full bg-white/10 rounded-full overflow-hidden">
                                             <div
-                                                className={`h-full transition-all duration-1000 ${order.paymentStatus === 'paid' 
-                                                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500' 
+                                                className={`h-full transition-all duration-1000 ${order.paymentStatus === 'paid'
+                                                    ? 'bg-gradient-to-r from-emerald-400 to-emerald-500'
                                                     : 'bg-gradient-to-r from-amber-400 to-amber-500'}`}
                                                 style={{ width: `${paymentProgress}%` }}
                                             />
@@ -335,17 +345,19 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                 </h4>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-600">Items Total</span>
-                                        <span className="font-medium text-slate-900">{formatCurrency(order.total, storeSettings)}</span>
+                                        <span className="text-slate-600">Subtotal</span>
+                                        <span className="font-medium text-slate-900">{formatCurrency(order.subtotal, storeSettings)}</span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-600">Tax & Fees</span>
-                                        <span className="font-medium text-slate-900">{formatCurrency(0, storeSettings)}</span>
+                                        <span className="text-slate-600">Tax</span>
+                                        <span className="font-medium text-slate-900">{formatCurrency(order.tax, storeSettings)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-sm">
-                                        <span className="text-slate-600">Shipping</span>
-                                        <span className="font-medium text-slate-900">{formatCurrency(0, storeSettings)}</span>
-                                    </div>
+                                    {order.discount > 0 && (
+                                        <div className="flex justify-between items-center text-sm text-green-700">
+                                            <span className="font-medium">Discount</span>
+                                            <span className="font-medium">-{formatCurrency(order.discount, storeSettings)}</span>
+                                        </div>
+                                    )}
                                     <div className="pt-3 border-t border-blue-200/50">
                                         <div className="flex justify-between items-center">
                                             <span className="font-bold text-slate-900">Total Paid</span>
@@ -364,7 +376,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <div className="text-sm text-slate-500 font-medium">
                             Last updated: {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </div>
-                        
+
                         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                             {order.paymentStatus === 'paid' && (order.fulfillmentStatus === 'shipped' || order.fulfillmentStatus === 'cancelled') ? (
                                 <div className="px-6 py-3 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 rounded-xl border border-emerald-200 font-medium flex items-center justify-center gap-2">
@@ -382,7 +394,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                             Record Payment
                                         </button>
                                     )}
-                                    
+
                                     {order.fulfillmentStatus === 'pending' && (
                                         <button
                                             onClick={() => onUpdateStatus(order.transactionId, 'fulfilled')}
@@ -392,7 +404,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                             Fulfill Order
                                         </button>
                                     )}
-                                    
+
                                     {order.fulfillmentStatus === 'fulfilled' && (
                                         <button
                                             onClick={() => onUpdateStatus(order.transactionId, 'shipped')}

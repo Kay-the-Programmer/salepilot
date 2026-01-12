@@ -669,21 +669,17 @@ export default function Dashboard() {
     };
 
     const handleDeleteCustomer = async (customerId: string) => {
-        if (window.confirm('Are you sure you want to delete this customer? This action cannot be undone.')) {
-            try {
-                const result = await api.delete(`/customers/${customerId}`);
-                if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-            } catch (err: any) { showSnackbar(err.message, 'error'); }
-        }
+        try {
+            const result = await api.delete(`/customers/${customerId}`);
+            if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+        } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
 
     const handleDeleteSupplier = async (supplierId: string) => {
-        if (window.confirm('Are you sure you want to delete this supplier? This may affect linked products.')) {
-            try {
-                const result = await api.delete(`/suppliers/${supplierId}`);
-                if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-            } catch (err: any) { showSnackbar(err.message, 'error'); }
-        }
+        try {
+            const result = await api.delete(`/suppliers/${supplierId}`);
+            if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
+        } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
 
     const handleDeletePurchaseOrder = async (poId: string) => {
@@ -695,9 +691,58 @@ export default function Dashboard() {
 
     const handleReceivePOItems = async (poId: string, receivedItems: { productId: string, quantity: number }[]) => {
         try {
-            const result = await api.post(`/purchase-orders/${poId}/receive`, receivedItems);
-            if ((result as any).offline) { showSnackbar('Offline: Stock reception queued.', 'info'); } else { fetchData(); }
-        } catch (err: any) { showSnackbar(err.message, 'error'); }
+            // Find the PO locally first to calculate new state
+            const existingPO = purchaseOrders.find(p => p.id === poId);
+            if (!existingPO) throw new Error('Purchase Order not found');
+
+            // Create updated PO object
+            const updatedItems = existingPO.items.map(item => {
+                const receivedItem = receivedItems.find(r => r.productId === item.productId);
+                if (receivedItem) {
+                    const newReceived = (item.receivedQuantity || 0) + receivedItem.quantity;
+                    return { ...item, receivedQuantity: newReceived };
+                }
+                return item;
+            });
+
+            // Calculate new status
+            const allReceived = updatedItems.every(item => (item.receivedQuantity || 0) >= item.quantity);
+            const someReceived = updatedItems.some(item => (item.receivedQuantity || 0) > 0);
+            const newStatus: PurchaseOrder['status'] = allReceived ? 'received' : (someReceived ? 'partially_received' : 'ordered');
+
+            const updatedPO: PurchaseOrder = {
+                ...existingPO,
+                items: updatedItems,
+                status: newStatus
+            };
+
+            // Update PO
+            const result = await api.put<PurchaseOrder>(`/purchase-orders/${poId}`, updatedPO);
+
+            // Also update product stock for each received item
+            // Note: This logic assumes the backend /receive endpoint was doing both. 
+            // Since we are now manually updating the PO, we must also manually update the stock.
+            // However, InventoryPage already handles stock updates via onReceivePOItems? 
+            // NO. InventoryPage calls onReceivePOItems inside handleLinkToPO and DOES NOT call onAdjustStock there.
+            // So we MUST update stock here.
+
+            for (const item of receivedItems) {
+                // We use PATCH for stock updates
+                await api.patch(`/products/${item.productId}/stock`, {
+                    newQuantity: item.quantity,
+                    reason: 'Receiving Stock'
+                });
+            }
+
+            if ((result as any).offline) {
+                showSnackbar('Offline: Stock reception queued.', 'info');
+            } else {
+                showSnackbar('Purchase Order updated.', 'success');
+                fetchData();
+            }
+        } catch (err: any) {
+            showSnackbar(err.message, 'error');
+        }
     };
 
     const handleStartStockTake = async () => {
@@ -926,13 +971,13 @@ export default function Dashboard() {
             case 'sales-history':
                 return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
             case 'orders':
-                return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} showSnackbar={showSnackbar} />;
+                return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
             case 'returns':
                 return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
             case 'customers':
                 return <CustomersPage customers={customers} sales={sales} onSaveCustomer={handleSaveCustomer} onDeleteCustomer={handleDeleteCustomer} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
             case 'suppliers':
-                return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} />;
+                return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
             case 'purchase-orders':
                 return <PurchaseOrdersPage purchaseOrders={purchaseOrders} suppliers={suppliers} products={products} onSave={handleSavePurchaseOrder} onDelete={handleDeletePurchaseOrder} onReceiveItems={handleReceivePOItems} showSnackbar={showSnackbar} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
             case 'categories':
@@ -967,7 +1012,7 @@ export default function Dashboard() {
             case 'marketing':
                 return <MarketingPage />;
             case 'inventory':
-                return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
+                return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
             default:
                 return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
         }

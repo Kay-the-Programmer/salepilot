@@ -1031,7 +1031,7 @@ export default function PurchaseOrdersPage({
                                     <span className="sm:hidden">Edit</span>
                                 </button>
                             )}
-                            {(po.status === 'ordered' || po.status === 'partially_received') && (
+                            {(po.status === 'ordered' || po.status === 'partially_received' || (po.status === 'received' && po.items.some(i => i.receivedQuantity < i.quantity))) && (
                                 <button
                                     onClick={() => handleReceiveStock(po)}
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700"

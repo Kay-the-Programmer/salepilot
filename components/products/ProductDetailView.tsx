@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Product, Category, Supplier, StoreSettings, User } from '@/types.ts';
 import { formatCurrency } from '@/utils/currency.ts';
 import PencilIcon from '../icons/PencilIcon';
@@ -18,32 +18,68 @@ import InformationCircleIcon from '../icons/InformationCircleIcon';
 import { buildAssetUrl } from '@/services/api';
 import ArrowLeftIcon from '../icons/ArrowLeftIcon';
 import EllipsisVerticalIcon from '../icons/EllipsisVerticalIcon';
+import XMarkIcon from '../icons/XMarkIcon';
+import ChevronRightIcon from '../icons/ChevronRightIcon';
 
 interface InfoCardProps {
     title: string;
     children: React.ReactNode;
     icon?: React.ReactNode;
-    variant?: 'default' | 'highlight';
+    variant?: 'default' | 'highlight' | 'glass';
     className?: string;
+    collapsible?: boolean;
+    defaultOpen?: boolean;
 }
 
-const InfoCard: React.FC<InfoCardProps> = ({ title, children, icon, variant = 'default', className }) => (
-    <div className={`bg-white rounded-3xl border ${variant === 'highlight' ? 'border-blue-100 shadow-xl shadow-blue-500/5' : 'border-slate-200/60'} overflow-hidden h-full transition-all duration-300 hover:shadow-md ${className}`}>
-        <div className="px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100/60 bg-slate-50/30">
-            <div className="flex items-center gap-3">
-                {icon && (
-                    <div className={`p-2 rounded-2xl ${variant === 'highlight' ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 shadow-sm border border-slate-100'}`}>
-                        {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'w-4 h-4' }) : icon}
+const InfoCard: React.FC<InfoCardProps> = ({
+    title,
+    children,
+    icon,
+    variant = 'default',
+    className = '',
+    collapsible = false,
+    defaultOpen = true
+}) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+
+    const variantStyles = {
+        default: 'bg-white border-slate-200/70 shadow-sm',
+        highlight: 'bg-gradient-to-br from-blue-50/80 to-white border-blue-200 shadow-md shadow-blue-500/5',
+        glass: 'bg-white/80 backdrop-blur-sm border-white/50 shadow-lg'
+    };
+
+    return (
+        <div className={`rounded-3xl border overflow-hidden h-fit transition-all duration-300 hover:shadow-lg ${variantStyles[variant]} ${className}`}>
+            <div className={`px-5 py-4 sm:px-6 sm:py-5 border-b border-slate-100/60 ${variant === 'highlight' ? 'bg-blue-50/50' : 'bg-slate-50/30'}`}>
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        {icon && (
+                            <div className={`p-2 rounded-2xl ${variant === 'highlight'
+                                ? 'bg-gradient-to-br from-blue-600 to-blue-500 text-white shadow-sm'
+                                : 'bg-white text-slate-600 shadow-xs border border-slate-100'}`}>
+                                {React.isValidElement(icon) ?
+                                    React.cloneElement(icon as React.ReactElement<any>, { className: 'w-4 h-4' }) : icon}
+                            </div>
+                        )}
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">{title}</h3>
                     </div>
-                )}
-                <h3 className="text-sm sm:text-base font-black text-slate-900 tracking-tight uppercase">{title}</h3>
+                    {collapsible && (
+                        <button
+                            onClick={() => setIsOpen(!isOpen)}
+                            className="p-1.5 rounded-lg hover:bg-slate-100 transition-colors"
+                            aria-label={isOpen ? "Collapse section" : "Expand section"}
+                        >
+                            <ChevronRightIcon className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+                        </button>
+                    )}
+                </div>
+            </div>
+            <div className={`p-5 sm:p-6 transition-all duration-300 ${isOpen ? 'block' : 'hidden'}`}>
+                {children}
             </div>
         </div>
-        <div className="p-5 sm:p-6">
-            {children}
-        </div>
-    </div>
-);
+    );
+};
 
 const DetailItem: React.FC<{
     label: string;
@@ -51,21 +87,23 @@ const DetailItem: React.FC<{
     icon?: React.ReactNode;
     highlight?: boolean;
     truncate?: boolean;
-}> = ({ label, value, icon, highlight = false, truncate = false }) => (
-    <div className="flex items-center justify-between py-3.5 border-b border-slate-100/60 last:border-b-0 group hover:bg-slate-50/50 px-2 -mx-2 rounded-2xl transition-all duration-200">
+    className?: string;
+}> = ({ label, value, icon, highlight = false, truncate = false, className = '' }) => (
+    <div className={`flex items-center justify-between py-3.5 border-b border-slate-100/60 last:border-b-0 group hover:bg-slate-50/50 px-2 -mx-2 rounded-xl transition-all duration-200 ${className}`}>
         <div className="flex items-center gap-3 min-w-0">
             {icon && (
                 <div className="flex-shrink-0">
-                    <div className="p-1.5 bg-slate-100/80 rounded-xl group-hover:bg-white transition-colors border border-transparent group-hover:border-slate-100">
-                        {React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3.5 h-3.5' }) : icon}
+                    <div className="p-1.5 bg-slate-100/70 rounded-xl group-hover:bg-white transition-colors border border-transparent group-hover:border-slate-100">
+                        {React.isValidElement(icon) ?
+                            React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3.5 h-3.5 text-slate-500' }) : icon}
                     </div>
                 </div>
             )}
-            <div className="text-[11px] font-black text-slate-500 uppercase tracking-widest truncate">
+            <div className="text-xs font-semibold text-slate-500 tracking-wide truncate">
                 {label}
             </div>
         </div>
-        <div className={`text-sm font-bold text-right ml-4 ${highlight ? 'text-blue-600' : 'text-slate-900'} ${truncate ? 'truncate max-w-[150px] sm:max-w-[200px]' : ''}`}>
+        <div className={`text-sm font-semibold text-right ml-4 ${highlight ? 'text-blue-600' : 'text-slate-900'} ${truncate ? 'truncate max-w-[120px] sm:max-w-[180px] lg:max-w-[200px]' : ''}`}>
             {value}
         </div>
     </div>
@@ -90,6 +128,9 @@ const ProductDetailView: React.FC<{
     const [mainImage, setMainImage] = useState('');
     const [imageLoaded, setImageLoaded] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState<'overview' | 'specs' | 'inventory'>('overview');
+    const desktopMenuRef = useRef<HTMLDivElement>(null);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
     const canManage = user.role === 'admin' || user.role === 'inventory_manager';
 
     const rawImageUrls = useMemo(() => (product.imageUrls || []).map((url: string) => url.replace(/[{}]/g, '')), [product.imageUrls]);
@@ -107,13 +148,17 @@ const ProductDetailView: React.FC<{
     // Close menu when clicking outside
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (isMenuOpen && !(event.target as Element).closest('.menu-trigger') && !(event.target as Element).closest('.menu-content')) {
+            const target = event.target as Node;
+            const inDesktop = desktopMenuRef.current && desktopMenuRef.current.contains(target);
+            const inMobile = mobileMenuRef.current && mobileMenuRef.current.contains(target);
+
+            if (!inDesktop && !inMobile) {
                 setIsMenuOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isMenuOpen]);
+    }, []);
 
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
     const costPrice = typeof product.costPrice === 'string' ? parseFloat(product.costPrice || '0') : (product.costPrice || 0);
@@ -128,23 +173,25 @@ const ProductDetailView: React.FC<{
     const StatusBadge: React.FC<{ status: Product['status'] }> = ({ status }) => {
         const statusConfig = {
             active: {
-                color: 'from-emerald-500 to-green-500',
+                color: 'from-emerald-500 to-emerald-600',
                 bg: 'bg-emerald-50',
                 text: 'text-emerald-700',
-                label: 'Active'
+                label: 'Active',
+                iconColor: 'text-emerald-500'
             },
             archived: {
-                color: 'from-slate-400 to-slate-500',
+                color: 'from-slate-500 to-slate-600',
                 bg: 'bg-slate-100',
                 text: 'text-slate-700',
-                label: 'Archived'
+                label: 'Archived',
+                iconColor: 'text-slate-500'
             },
         };
         const config = statusConfig[status] || statusConfig.active;
 
         return (
-            <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${config.bg} ${config.text} border border-slate-200/50`}>
-                <div className={`w-1.5 h-1.5 rounded-full bg-gradient-to-br ${config.color}`}></div>
+            <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${config.bg} ${config.text} border ${status === 'active' ? 'border-emerald-200' : 'border-slate-200'}`}>
+                <div className={`w-2 h-2 rounded-full bg-gradient-to-br ${config.color}`}></div>
                 {config.label}
             </span>
         );
@@ -153,14 +200,14 @@ const ProductDetailView: React.FC<{
     const Tags = () => (
         <div className="flex flex-wrap items-center gap-2">
             {category && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-blue-50 text-blue-700 border border-blue-100">
-                    <TagIcon className="w-3 h-3" />
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    <TagIcon className="w-3.5 h-3.5" />
                     {category.name}
                 </span>
             )}
             {product.brand && (
-                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter bg-purple-50 text-purple-700 border border-purple-100">
-                    <CubeIcon className="w-3 h-3" />
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">
+                    <CubeIcon className="w-3.5 h-3.5" />
                     {product.brand}
                 </span>
             )}
@@ -176,35 +223,35 @@ const ProductDetailView: React.FC<{
         return (
             <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Available Inventory</span>
-                        <div className="flex items-baseline gap-1">
-                            <span className={`text-4xl font-black tracking-tighter ${isOutOfStock ? 'text-red-600' : isLowStock ? 'text-amber-600' : 'text-slate-900'}`}>
+                    <div className="space-y-1">
+                        <span className="text-xs font-semibold text-slate-600">Available Inventory</span>
+                        <div className="flex items-baseline gap-2">
+                            <span className={`text-3xl font-bold tracking-tight ${isOutOfStock ? 'text-red-600' : isLowStock ? 'text-amber-600' : 'text-slate-900'}`}>
                                 {product.stock}
                             </span>
-                            <span className="text-sm font-bold text-slate-400 uppercase">{product.unitOfMeasure || 'Units'}</span>
+                            <span className="text-sm font-medium text-slate-500">{product.unitOfMeasure || 'Units'}</span>
                         </div>
                     </div>
                     {isLowStock && !isOutOfStock && (
-                        <div className="px-3 py-1 bg-amber-50 rounded-lg border border-amber-100 animate-pulse">
-                            <span className="text-[10px] font-black text-amber-700 uppercase tracking-tighter">Low Stock Alert</span>
+                        <div className="px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 rounded-lg border border-amber-200 animate-pulse">
+                            <span className="text-xs font-semibold text-amber-700">Low Stock</span>
                         </div>
                     )}
                 </div>
 
                 <div className="space-y-2">
-                    <div className="relative h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+                    <div className="relative h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
                         <div
                             className={`absolute left-0 top-0 h-full transition-all duration-700 ease-out ${isOutOfStock ? 'w-0' :
                                 isLowStock ? 'bg-gradient-to-r from-amber-400 to-orange-500' :
-                                    'bg-gradient-to-r from-emerald-400 to-green-600'
+                                    'bg-gradient-to-r from-emerald-400 to-green-500'
                                 }`}
                             style={{
                                 width: `${Math.min(100, (product.stock / (Math.max(lowStockThreshold * 2, product.stock || 1))) * 100)}%`
                             }}
                         />
                     </div>
-                    <div className="flex items-center justify-between text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">
+                    <div className="flex items-center justify-between text-xs text-slate-500 font-medium">
                         <span>Reorder at {lowStockThreshold}</span>
                         <span>Safety: {product.safetyStock || 0}</span>
                     </div>
@@ -213,388 +260,624 @@ const ProductDetailView: React.FC<{
         );
     };
 
-    return (
-        <div className="min-h-screen bg-[#f8fafc] pb-20 sm:pb-12">
-            {/* Header Section */}
-            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm px-4 py-3 sm:px-6 sm:py-4">
-                <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 min-w-0">
-                        {onBack && (
-                            <button
-                                onClick={onBack}
-                                className="p-2.5 rounded-2xl bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all border border-slate-200/50"
-                            >
-                                <ArrowLeftIcon className="w-5 h-5" />
-                            </button>
-                        )}
-                        <div className="min-w-0">
-                            <h1 className="text-lg sm:text-2xl font-black text-slate-900 truncate tracking-tight">
-                                {product.name}
-                            </h1>
-                            <div className="hidden sm:block mt-1">
-                                <Tags />
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                        <div className="relative">
-                            <button
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                className="menu-trigger flex items-center gap-2 px-3 py-2.5 sm:px-4 rounded-2xl bg-slate-900 text-white hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/10 focus:outline-none"
-                            >
-                                <span className="hidden sm:inline text-xs font-black uppercase tracking-widest">Manage</span>
-                                <EllipsisVerticalIcon className="w-5 h-5" />
-                            </button>
-
-                            {isMenuOpen && (
-                                <div className="menu-content absolute right-0 mt-3 w-64 bg-white rounded-3xl shadow-2xl border border-slate-100 z-50 overflow-hidden animate-scale-up origin-top-right ring-1 ring-black/5">
-                                    <div className="p-2 space-y-1">
-                                        {canManage && (
-                                            <>
-                                                <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Actions</div>
+    const MobileBottomBar = () => (
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 px-4 py-3 z-50 lg:hidden">
+            <div className="flex items-center justify-between gap-2 max-w-7xl mx-auto">
+                <div className="flex-1">
+                    <div className="text-sm font-semibold text-slate-900 truncate">{product.name}</div>
+                    <div className="text-xs text-slate-500">{formatCurrency(price, storeSettings)}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => onEdit(product)}
+                        className="p-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                        aria-label="Edit"
+                    >
+                        <PencilIcon className="w-5 h-5" />
+                    </button>
+                    <div className="relative" ref={mobileMenuRef}>
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="p-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                            aria-label="More options"
+                        >
+                            <EllipsisVerticalIcon className="w-5 h-5" />
+                        </button>
+                        {isMenuOpen && (
+                            <div className="absolute bottom-full right-0 mb-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 animate-scale-up origin-bottom-right">
+                                <div className="p-2 space-y-1">
+                                    {canManage && (
+                                        <>
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onAdjustStock(product); }}
+                                                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-3"
+                                            >
+                                                <AdjustmentsHorizontalIcon className="w-4 h-4 text-slate-500" />
+                                                Adjust Stock
+                                            </button>
+                                            {onPersonalUse && (
                                                 <button
-                                                    onClick={() => { setIsMenuOpen(false); onEdit(product); }}
-                                                    className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 rounded-2xl hover:bg-blue-50 hover:text-blue-700 transition-all flex items-center gap-3 group"
+                                                    onClick={() => { setIsMenuOpen(false); onPersonalUse(product); }}
+                                                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all flex items-center gap-3"
                                                 >
-                                                    <PencilIcon className="w-4 h-4 text-blue-500" />
-                                                    Edit Details
+                                                    <ShoppingCartIcon className="w-4 h-4 text-emerald-500" />
+                                                    Personal Use
                                                 </button>
+                                            )}
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onPrintLabel(product); }}
+                                                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-3"
+                                            >
+                                                <PrinterIcon className="w-4 h-4 text-slate-500" />
+                                                Print Label
+                                            </button>
+                                            {product.status === 'active' ? (
                                                 <button
-                                                    onClick={() => { setIsMenuOpen(false); onAdjustStock(product); }}
-                                                    className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3 group"
+                                                    onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
+                                                    className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-3"
                                                 >
-                                                    <AdjustmentsHorizontalIcon className="w-4 h-4 text-slate-500" />
-                                                    Inventory Adjustment
+                                                    <ArchiveBoxIcon className="w-4 h-4 text-slate-500" />
+                                                    Archive
                                                 </button>
-                                                {onPersonalUse && (
-                                                    <button
-                                                        onClick={() => { setIsMenuOpen(false); onPersonalUse(product); }}
-                                                        className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 rounded-2xl hover:bg-emerald-50 hover:text-emerald-700 transition-all flex items-center gap-3 group"
-                                                    >
-                                                        <ShoppingCartIcon className="w-4 h-4 text-emerald-500" />
-                                                        Personal Use
-                                                    </button>
-                                                )}
-                                                <div className="h-px bg-slate-100 my-2 mx-2"></div>
-                                                <div className="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Utilities</div>
+                                            ) : (
                                                 <button
-                                                    onClick={() => { setIsMenuOpen(false); onPrintLabel(product); }}
-                                                    className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 rounded-2xl hover:bg-slate-50 transition-all flex items-center gap-3 group"
+                                                    onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
+                                                    className="w-full text-left px-4 py-3 text-sm font-medium text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all flex items-center gap-3"
                                                 >
-                                                    <PrinterIcon className="w-4 h-4 text-slate-500" />
-                                                    Print Product Label
+                                                    <RestoreIcon className="w-4 h-4 text-emerald-500" />
+                                                    Restore
                                                 </button>
-                                                {product.status === 'active' ? (
-                                                    <button
-                                                        onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
-                                                        className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 rounded-2xl hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-3 group"
-                                                    >
-                                                        <ArchiveBoxIcon className="w-4 h-4 text-slate-500" />
-                                                        Archive Item
-                                                    </button>
-                                                ) : (
-                                                    <button
-                                                        onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
-                                                        className="w-full text-left px-4 py-3 text-sm font-bold text-emerald-600 rounded-2xl hover:bg-emerald-50 transition-all flex items-center gap-3 group"
-                                                    >
-                                                        <RestoreIcon className="w-4 h-4 text-emerald-500" />
-                                                        Restore to Active
-                                                    </button>
-                                                )}
-                                                <div className="h-px bg-slate-100 my-2 mx-2"></div>
-                                                <button
-                                                    onClick={() => { setIsMenuOpen(false); onDelete(product); }}
-                                                    className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 rounded-2xl hover:bg-red-50 transition-all flex items-center gap-3 group"
-                                                >
-                                                    <TrashIcon className="w-4 h-4 text-red-500" />
-                                                    Delete permanently
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
+                                            )}
+                                            <div className="h-px bg-slate-100 my-2 mx-2"></div>
+                                            <button
+                                                onClick={() => { setIsMenuOpen(false); onDelete(product); }}
+                                                className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-all flex items-center gap-3"
+                                            >
+                                                <TrashIcon className="w-4 h-4 text-red-500" />
+                                                Delete
+                                            </button>
+                                        </>
+                                    )}
                                 </div>
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
+        </div>
+    );
 
-            <div className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 animate-fade-in">
-                {/* Mobile Tags Display */}
-                <div className="sm:hidden mb-2">
-                    <Tags />
+    const DesktopActionMenu = () => (
+        <div className="hidden lg:flex lg:items-center lg:gap-3">
+            <button
+                onClick={() => onEdit(product)}
+                className="px-4 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors text-sm font-semibold flex items-center gap-2 shadow-sm"
+            >
+                <PencilIcon className="w-4 h-4" />
+                Edit
+            </button>
+            <div className="relative" ref={desktopMenuRef}>
+                <button
+                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                    className="p-2.5 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                    aria-label="More options"
+                >
+                    <EllipsisVerticalIcon className="w-5 h-5" />
+                </button>
+                {isMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-xl border border-slate-200 z-50 animate-scale-up origin-top-right">
+                        <div className="p-2 space-y-1">
+                            {canManage && (
+                                <>
+                                    <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wide">Actions</div>
+                                    <button
+                                        onClick={() => { setIsMenuOpen(false); onAdjustStock(product); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-3"
+                                    >
+                                        <AdjustmentsHorizontalIcon className="w-4 h-4 text-slate-500" />
+                                        Adjust Stock
+                                    </button>
+                                    {onPersonalUse && (
+                                        <button
+                                            onClick={() => { setIsMenuOpen(false); onPersonalUse(product); }}
+                                            className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-emerald-50 hover:text-emerald-700 transition-all flex items-center gap-3"
+                                        >
+                                            <ShoppingCartIcon className="w-4 h-4 text-emerald-500" />
+                                            Personal Use
+                                        </button>
+                                    )}
+                                    <div className="h-px bg-slate-100 my-2 mx-2"></div>
+                                    <div className="px-3 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wide">Utilities</div>
+                                    <button
+                                        onClick={() => { setIsMenuOpen(false); onPrintLabel(product); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-slate-50 transition-all flex items-center gap-3"
+                                    >
+                                        <PrinterIcon className="w-4 h-4 text-slate-500" />
+                                        Print Label
+                                    </button>
+                                    {product.status === 'active' ? (
+                                        <button
+                                            onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
+                                            className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 rounded-xl hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-3"
+                                        >
+                                            <ArchiveBoxIcon className="w-4 h-4 text-slate-500" />
+                                            Archive
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
+                                            className="w-full text-left px-4 py-3 text-sm font-medium text-emerald-600 rounded-xl hover:bg-emerald-50 transition-all flex items-center gap-3"
+                                        >
+                                            <RestoreIcon className="w-4 h-4 text-emerald-500" />
+                                            Restore
+                                        </button>
+                                    )}
+                                    <div className="h-px bg-slate-100 my-2 mx-2"></div>
+                                    <button
+                                        onClick={() => { setIsMenuOpen(false); onDelete(product); }}
+                                        className="w-full text-left px-4 py-3 text-sm font-medium text-red-600 rounded-xl hover:bg-red-50 transition-all flex items-center gap-3"
+                                    >
+                                        <TrashIcon className="w-4 h-4 text-red-500" />
+                                        Delete
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-slate-50/50 to-white pb-24 lg:pb-12">
+            {/* Header Section */}
+            <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-xl border-b border-slate-200/60 shadow-sm transition-all duration-200">
+                <div className="px-4 py-3 lg:px-6 lg:py-4">
+                    <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                            {onBack && (
+                                <button
+                                    onClick={onBack}
+                                    className="p-2.5 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 transition-all border border-slate-200/50 flex-shrink-0 active:scale-95"
+                                    aria-label="Go back"
+                                >
+                                    <ArrowLeftIcon className="w-5 h-5" />
+                                </button>
+                            )}
+                            <div className="min-w-0 flex-1">
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                                    <h1 className="text-lg lg:text-xl font-bold text-slate-900 truncate">
+                                        {product.name}
+                                    </h1>
+                                    <div className="hidden sm:flex items-center gap-2">
+                                        <Tags />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <DesktopActionMenu />
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8">
-                    {/* Left Panel: Primary Content */}
-                    <div className="lg:col-span-12 xl:col-span-8 flex flex-col gap-6 sm:gap-8">
+                {/* Mobile Tabs - Sticky & Segmented (Integrated in Header) */}
+                <div className="lg:hidden px-4 pb-3">
+                    <div className="flex p-1 bg-slate-100 rounded-xl overflow-hidden">
+                        {['overview', 'specs', 'inventory'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab as any)}
+                                className={`flex-1 py-1.5 text-xs font-bold uppercase tracking-wide rounded-lg transition-all duration-200 ${activeTab === tab
+                                    ? 'bg-white text-slate-900 shadow-sm ring-1 ring-black/5'
+                                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </header>
 
-                        {/* Main Media Section */}
-                        <div className="bg-white rounded-[2.5rem] border border-slate-200/60 shadow-sm overflow-hidden flex flex-col md:flex-row">
-                            <div className="md:w-3/5 p-4 sm:p-8">
-                                <div className="relative aspect-square sm:aspect-video md:aspect-square w-full rounded-[2rem] overflow-hidden bg-slate-50 border border-slate-100 group">
-                                    {mainImage ? (
-                                        <>
-                                            <img
-                                                src={mainImage}
-                                                alt={product.name}
-                                                className={`w-full h-full object-contain transition-all duration-700 ease-in-out ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
-                                                onLoad={() => setImageLoaded(true)}
-                                            />
-                                            {!imageLoaded && (
-                                                <div className="absolute inset-0 flex items-center justify-center">
-                                                    <div className="w-12 h-12 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300">
-                                            <div className="w-24 h-24 mb-4 rounded-full bg-white flex items-center justify-center shadow-inner border border-slate-50">
-                                                <ShoppingCartIcon className="w-12 h-12" />
-                                            </div>
-                                            <p className="text-xs font-black uppercase tracking-widest">No Visual Data</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="md:w-2/5 p-6 sm:p-8 flex flex-col gap-6 bg-slate-50/50 border-t md:border-t-0 md:border-l border-slate-100">
-                                <div className="space-y-6">
-                                    <div className="space-y-1">
-                                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Financial Overview</span>
-                                        <div className="flex flex-col gap-1">
-                                            <div className="text-4xl font-black text-slate-900 tracking-tighter">
-                                                {formatCurrency(price, storeSettings)}
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] sm:text-xs font-bold text-slate-500 line-through opacity-50">
-                                                    {formatCurrency(price * 1.2, storeSettings)}
-                                                </span>
-                                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-[10px] font-black rounded-md uppercase tracking-tighter">
-                                                    MSRP Ref
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-200/60">
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Cost</span>
-                                            <div className="text-lg font-black text-slate-700">{formatCurrency(costPrice, storeSettings)}</div>
-                                        </div>
-                                        <div className="space-y-1">
-                                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Margin</span>
-                                            <div className={`text-lg font-black ${profitMargin && profitMargin > 20 ? 'text-emerald-600' : 'text-blue-600'}`}>
-                                                {profitMargin !== null ? `${profitMargin.toFixed(1)}%` : 'N/A'}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-4 mt-auto">
-                                        {imageUrls.length > 1 && (
-                                            <div className="space-y-3">
-                                                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gallery Assets</span>
-                                                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                                                    {imageUrls.map((url: string, idx: number) => (
-                                                        <button
-                                                            key={idx}
-                                                            onClick={() => setMainImage(url)}
-                                                            className={`relative shrink-0 w-14 h-14 rounded-2xl overflow-hidden border-2 transition-all ${mainImage === url
-                                                                ? 'border-blue-600'
-                                                                : 'border-white hover:border-slate-300'
-                                                                }`}
-                                                        >
-                                                            <img src={url} alt="" className="w-full h-full object-cover" />
-                                                        </button>
+            <main className="p-4 lg:p-6 xl:p-8 max-w-7xl mx-auto space-y-6 lg:space-y-8 pb-32 lg:pb-8">
+                {/* Main Content Grid */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+                    {/* Left Panel - Main Content */}
+                    <div className="lg:col-span-8 flex flex-col gap-6 lg:gap-8">
+                        {/* Media & Pricing Card */}
+                        <div className="bg-white rounded-3xl border border-slate-200/60 shadow-sm overflow-hidden">
+                            <div className="p-4 sm:p-6 lg:p-8">
+                                <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+                                    {/* Product Image Gallery */}
+                                    <div className="lg:w-2/5">
+                                        {/* Mobile Swipeable Gallery */}
+                                        <div className="lg:hidden mb-6 -mx-4 sm:mx-0">
+                                            <div className="relative aspect-square sm:aspect-video bg-slate-50 overflow-hidden">
+                                                <div className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide h-full">
+                                                    {(imageUrls.length > 0 ? imageUrls : ['']).map((url, idx) => (
+                                                        <div key={idx} className="min-w-full snap-center flex items-center justify-center relative">
+                                                            {url ? (
+                                                                <img
+                                                                    src={url}
+                                                                    alt={`${product.name} - View ${idx + 1}`}
+                                                                    className="w-full h-full object-contain"
+                                                                    loading={idx === 0 ? 'eager' : 'lazy'}
+                                                                />
+                                                            ) : (
+                                                                <div className="flex flex-col items-center justify-center text-slate-300">
+                                                                    <ShoppingCartIcon className="w-12 h-12 mb-2" />
+                                                                    <p className="text-xs font-medium">No image</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     ))}
                                                 </div>
+                                                {/* Dots Indicator */}
+                                                {imageUrls.length > 1 && (
+                                                    <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1.5 z-10">
+                                                        {imageUrls.map((_, idx) => (
+                                                            <div
+                                                                key={idx}
+                                                                className={`w-1.5 h-1.5 rounded-full transition-all ${
+                                                                    // Simple active check based on scroll could be complex, 
+                                                                    // for now simplistic or just visual indication of count
+                                                                    'bg-slate-900/40 backdrop-blur-sm'
+                                                                    }`}
+                                                            />
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                <div className="absolute top-3 right-3 px-2 py-1 bg-black/50 backdrop-blur-md rounded-full text-white text-[10px] font-bold">
+                                                    {imageUrls.length || 0} Photos
+                                                </div>
                                             </div>
-                                        )}
+                                        </div>
+
+                                        {/* Desktop Gallery */}
+                                        <div className="hidden lg:block relative aspect-square rounded-2xl overflow-hidden bg-gradient-to-br from-slate-50 to-white border border-slate-200/60 group">
+                                            {mainImage ? (
+                                                <>
+                                                    <img
+                                                        src={mainImage}
+                                                        alt={product.name}
+                                                        className={`w-full h-full object-contain transition-all duration-500 ${imageLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}
+                                                        onLoad={() => setImageLoaded(true)}
+                                                        onError={() => setImageLoaded(true)}
+                                                    />
+                                                    {!imageLoaded && (
+                                                        <div className="absolute inset-0 flex items-center justify-center">
+                                                            <div className="w-12 h-12 border-4 border-slate-200 border-t-blue-600 rounded-full animate-spin"></div>
+                                                        </div>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 p-8">
+                                                    <div className="w-20 h-20 mb-4 rounded-full bg-white flex items-center justify-center shadow-inner border border-slate-100">
+                                                        <ShoppingCartIcon className="w-10 h-10" />
+                                                    </div>
+                                                    <p className="text-sm font-medium text-slate-400">No image available</p>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Thumbnail Gallery (Desktop) */}
+                                        <div className="hidden lg:block">
+                                            {imageUrls.length > 1 && (
+                                                <div className="mt-4">
+                                                    <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                                        {imageUrls.map((url: string, idx: number) => (
+                                                            <button
+                                                                key={idx}
+                                                                onClick={() => setMainImage(url)}
+                                                                className={`relative shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all ${mainImage === url
+                                                                    ? 'border-blue-600 ring-2 ring-blue-200'
+                                                                    : 'border-slate-200 hover:border-slate-300'
+                                                                    }`}
+                                                            >
+                                                                <img
+                                                                    src={url}
+                                                                    alt=""
+                                                                    className="w-full h-full object-cover"
+                                                                    loading="lazy"
+                                                                />
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Pricing & Quick Info */}
+                                    <div className="lg:w-3/5">
+                                        <div className="space-y-6">
+                                            <div>
+                                                <div className="text-sm font-medium text-slate-500 mb-2">Price</div>
+                                                <div className="flex items-baseline gap-3">
+                                                    <span className="text-3xl lg:text-4xl font-bold text-slate-900">
+                                                        {formatCurrency(price, storeSettings)}
+                                                    </span>
+                                                    {profitMargin !== null && profitMargin > 20 && (
+                                                        <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-semibold rounded-lg">
+                                                            {profitMargin.toFixed(0)}% margin
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="bg-slate-50 rounded-xl p-4">
+                                                    <div className="text-xs font-medium text-slate-500 mb-1">Cost</div>
+                                                    <div className="text-lg font-semibold text-slate-900">
+                                                        {formatCurrency(costPrice, storeSettings)}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-slate-50 rounded-xl p-4">
+                                                    <div className="text-xs font-medium text-slate-500 mb-1">Profit</div>
+                                                    <div className={`text-lg font-semibold ${profitAmount > 0 ? 'text-emerald-600' : 'text-slate-900'}`}>
+                                                        {formatCurrency(profitAmount, storeSettings)}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Quick Stats */}
+                                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                                                <div className="bg-gradient-to-br from-blue-50 to-white p-3 rounded-xl border border-blue-100">
+                                                    <div className="text-xs font-medium text-blue-600 mb-1">SKU</div>
+                                                    <div className="font-mono text-sm font-semibold text-slate-900 truncate">
+                                                        {product.sku}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-slate-50 to-white p-3 rounded-xl border border-slate-100">
+                                                    <div className="text-xs font-medium text-slate-600 mb-1">Barcode</div>
+                                                    <div className="font-mono text-sm font-semibold text-slate-900 truncate">
+                                                        {product.barcode || 'N/A'}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-slate-50 to-white p-3 rounded-xl border border-slate-100">
+                                                    <div className="text-xs font-medium text-slate-600 mb-1">Unit</div>
+                                                    <div className="text-sm font-semibold text-slate-900">
+                                                        {product.unitOfMeasure || 'Unit'}
+                                                    </div>
+                                                </div>
+                                                <div className="bg-gradient-to-br from-slate-50 to-white p-3 rounded-xl border border-slate-100">
+                                                    <div className="text-xs font-medium text-slate-600 mb-1">Weight</div>
+                                                    <div className="text-sm font-semibold text-slate-900">
+                                                        {product.weight ? `${product.weight} kg` : 'N/A'}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Description & Core Details */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+                        {/* Description & Details */}
+                        <div className={`${activeTab !== 'overview' && 'lg:hidden hidden'}`}>
                             <InfoCard
-                                title="Insights & Story"
+                                title="Product Description"
                                 icon={<InformationCircleIcon />}
+                                variant="glass"
                             >
-                                <p className="text-sm font-medium text-slate-600 leading-relaxed whitespace-pre-wrap italic">
-                                    {product.description || 'No detailed documentation has been recorded for this asset yet.'}
+                                <p className="text-slate-600 leading-relaxed whitespace-pre-wrap">
+                                    {product.description || 'No description available for this product.'}
                                 </p>
                             </InfoCard>
+                        </div>
 
+                        {/* Specifications */}
+                        <div className={`${activeTab !== 'specs' && 'lg:hidden hidden'}`}>
                             <InfoCard
-                                title="Technical Specifications"
+                                title="Specifications"
                                 icon={<CubeIcon />}
+                                collapsible
                             >
-                                <div className="space-y-1">
-                                    <DetailItem
-                                        label="System SKU"
-                                        value={<code className="font-mono text-[11px] bg-slate-100 px-2 py-1 rounded-md">{product.sku}</code>}
-                                        icon={<BarcodeIcon />}
-                                    />
-                                    <DetailItem
-                                        label="Barcode ID"
-                                        value={product.barcode || 'Not Assigned'}
-                                        icon={<BarcodeIcon />}
-                                    />
-                                    <DetailItem
-                                        label="Unit Logic"
-                                        value={isKgUoM(product.unitOfMeasure) ? 'Weighted (KG)' : 'Unit Count'}
-                                        icon={<ScaleIcon />}
-                                    />
-                                    <DetailItem
-                                        label="Weight Ref"
-                                        value={product.weight ? `${product.weight} kg` : 'N/A'}
-                                        icon={<ScaleIcon />}
-                                    />
+                                <div className="space-y-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <DetailItem
+                                                label="SKU"
+                                                value={product.sku}
+                                                icon={<BarcodeIcon />}
+                                            />
+                                            <DetailItem
+                                                label="Barcode"
+                                                value={product.barcode || 'Not assigned'}
+                                                icon={<BarcodeIcon />}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <DetailItem
+                                                label="Unit Type"
+                                                value={isKgUoM(product.unitOfMeasure) ? 'Weight-based' : 'Unit-based'}
+                                                icon={<ScaleIcon />}
+                                            />
+                                            <DetailItem
+                                                label="Dimensions"
+                                                value={product.dimensions || 'N/A'}
+                                                icon={<CubeIcon />}
+                                            />
+                                        </div>
+                                    </div>
                                 </div>
                             </InfoCard>
                         </div>
 
-                        {/* Variants Panel */}
-                        {Array.isArray(product.variants) && product.variants.length > 0 && (
-                            <div className="space-y-4">
-                                <div className="flex items-center gap-3 px-2">
-                                    <div className="p-1.5 bg-slate-900 text-white rounded-lg">
-                                        <CubeIcon className="w-4 h-4" />
-                                    </div>
-                                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest">Available Variations</h3>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {product.variants.map((v, idx) => (
-                                        <div key={idx} className="bg-white rounded-[2rem] p-5 border border-slate-200/60 hover:border-blue-300 hover:shadow-xl hover:shadow-blue-500/5 transition-all group">
-                                            <div className="flex justify-between items-start mb-4">
-                                                <div className="min-w-0">
-                                                    <h4 className="font-black text-slate-900 text-sm truncate">{v.name || `Var-${idx + 1}`}</h4>
-                                                    <span className="text-[10px] font-mono text-slate-400 uppercase mt-0.5 block">{v.sku}</span>
-                                                </div>
-                                                <div className="text-sm font-black text-blue-600">
-                                                    {formatCurrency(typeof v.price === 'string' ? parseFloat(v.price) : (v.price ?? 0), storeSettings)}
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center justify-between mt-auto">
-                                                <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${v.stock <= 0 ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-700'}`}>
-                                                    {v.stock} in stock
-                                                </div>
-                                                <span className="text-[10px] font-bold text-slate-400 uppercase">{v.unitOfMeasure || 'U'}</span>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Right Panel: Sidebars Content */}
-                    <div className="lg:col-span-12 xl:col-span-4 flex flex-col gap-6 sm:gap-8">
-
-                        {/* Status & Supply Section */}
-                        <div className="flex flex-col gap-6">
+                        {/* Inventory & Stock */}
+                        <div className={`${activeTab !== 'inventory' && 'lg:hidden hidden'}`}>
                             <InfoCard
-                                title="Supply Velocity"
-                                icon={<TruckIcon />}
+                                title="Inventory Status"
+                                icon={<CubeIcon />}
+                                variant="highlight"
                             >
-                                <div className="space-y-4">
-                                    <DetailItem
-                                        label="Primary Partner"
-                                        value={supplier?.name || 'In-House'}
-                                        icon={<TruckIcon />}
-                                        truncate
-                                    />
-                                    {supplier && (
-                                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col gap-2">
-                                            <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Supplier Intel</div>
-                                            <div className="text-sm font-bold text-slate-900">{supplier.contactPerson}</div>
-                                            <div className="text-xs text-slate-500">{supplier.email}</div>
-                                        </div>
-                                    )}
-                                </div>
-                            </InfoCard>
-
-                            <InfoCard
-                                title="Store Positioning"
-                                icon={<TagIcon />}
-                            >
-                                <div className="space-y-1">
-                                    <DetailItem
-                                        label="Categorization"
-                                        value={category?.name || 'General'}
-                                        icon={<TagIcon />}
-                                    />
-                                    <DetailItem
-                                        label="Brand Auth"
-                                        value={product.brand || 'Universal'}
-                                        icon={<CubeIcon />}
-                                    />
-                                    <DetailItem
-                                        label="Dimension Ref"
-                                        value={product.dimensions || 'Dynamic'}
-                                        icon={<CubeIcon />}
-                                    />
-                                </div>
-                            </InfoCard>
-
-                            <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 border border-slate-200/60 shadow-sm overflow-hidden relative group">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50/50 rounded-full -translate-y-16 translate-x-16 group-hover:scale-110 transition-transform duration-500"></div>
                                 <StockIndicator />
-                            </div>
+                            </InfoCard>
+                        </div>
 
-                            {/* Attribute Grid */}
-                            {attributes.length > 0 && (
+                        {/* Variants Section - Always visible on desktop */}
+                        <div className="hidden lg:block">
+                            {Array.isArray(product.variants) && product.variants.length > 0 && (
                                 <InfoCard
-                                    title="Dynamic Matrix"
-                                    icon={<TagIcon />}
+                                    title="Product Variants"
+                                    icon={<CubeIcon />}
+                                    collapsible
                                 >
-                                    <div className="grid grid-cols-1 gap-3">
-                                        {attributes.map(attr => (
-                                            <div key={attr.name} className="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-blue-200 transition-all shadow-sm">
-                                                <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                                    {attr.name}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {product.variants.map((v, idx) => (
+                                            <div key={idx} className="bg-slate-50 rounded-2xl p-4 border border-slate-200 hover:border-blue-300 transition-colors group">
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <h4 className="font-semibold text-slate-900 text-sm truncate">{v.name || `Variant ${idx + 1}`}</h4>
+                                                        <span className="text-xs text-slate-500 font-mono mt-0.5 block">{v.sku}</span>
+                                                    </div>
+                                                    <div className="text-sm font-semibold text-blue-600">
+                                                        {formatCurrency(typeof v.price === 'string' ? parseFloat(v.price) : (v.price ?? 0), storeSettings)}
+                                                    </div>
                                                 </div>
-                                                <div className="text-xs font-black text-slate-900 uppercase">
-                                                    {attr.value}
+                                                <div className="flex items-center justify-between">
+                                                    <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${v.stock <= 0 ? 'bg-red-100 text-red-700' : 'bg-slate-100 text-slate-700'}`}>
+                                                        {v.stock} in stock
+                                                    </div>
+                                                    <span className="text-xs font-medium text-slate-500">{v.unitOfMeasure || 'Unit'}</span>
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
                                 </InfoCard>
                             )}
+                        </div>
+                    </div>
 
-                            {/* Profitability Index */}
-                            <div className="bg-slate-950 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-24 translate-x-12 group-hover:scale-105 transition-transform duration-700"></div>
-                                <div className="relative z-10 space-y-6">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-xs font-black">AI</div>
-                                        <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-400">Profitability Index</h3>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-8">
-                                        <div>
-                                            <div className="text-3xl font-black tracking-tighter">{profitAmount < 0 ? 'N/A' : formatCurrency(profitAmount, storeSettings)}</div>
-                                            <div className="text-[10px] text-slate-500 font-bold uppercase mt-1">Net Per Unit</div>
+                    {/* Right Panel - Sidebar Info */}
+                    <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8">
+                        {/* Inventory Status - Desktop */}
+                        <div className="hidden lg:block">
+                            <InfoCard
+                                title="Stock Status"
+                                icon={<CubeIcon />}
+                                variant="highlight"
+                            >
+                                <StockIndicator />
+                            </InfoCard>
+                        </div>
+
+                        {/* Supplier Information */}
+                        <InfoCard
+                            title="Supplier Information"
+                            icon={<TruckIcon />}
+                        >
+                            <div className="space-y-4">
+                                <div className="flex items-start justify-between">
+                                    <div className="space-y-1">
+                                        <div className="text-sm font-semibold text-slate-900">
+                                            {supplier?.name || 'No supplier'}
                                         </div>
-                                        <div>
-                                            <div className={`text-3xl font-black tracking-tighter ${profitMargin && profitMargin > 30 ? 'text-emerald-400' : 'text-blue-400'}`}>
-                                                {profitMargin !== null ? `${profitMargin.toFixed(0)}%` : '0%'}
+                                        {supplier?.contactPerson && (
+                                            <div className="text-xs text-slate-600">{supplier.contactPerson}</div>
+                                        )}
+                                    </div>
+                                    {supplier?.email && (
+                                        <a
+                                            href={`mailto:${supplier.email}`}
+                                            className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                        >
+                                            Contact
+                                        </a>
+                                    )}
+                                </div>
+                                {supplier?.phone && (
+                                    <div className="text-xs text-slate-500">
+                                        📞 {supplier.phone}
+                                    </div>
+                                )}
+                            </div>
+                        </InfoCard>
+
+                        {/* Category & Brand */}
+                        <InfoCard
+                            title="Classification"
+                            icon={<TagIcon />}
+                        >
+                            <div className="space-y-3">
+                                <DetailItem
+                                    label="Category"
+                                    value={category?.name || 'Uncategorized'}
+                                    icon={<TagIcon />}
+                                />
+                                <DetailItem
+                                    label="Brand"
+                                    value={product.brand || 'Generic'}
+                                    icon={<CubeIcon />}
+                                />
+                                <DetailItem
+                                    label="Status"
+                                    value={<StatusBadge status={product.status} />}
+                                    icon={product.status === 'active' ? undefined : <ArchiveBoxIcon />}
+                                />
+                            </div>
+                        </InfoCard>
+
+                        {/* Attributes */}
+                        {attributes.length > 0 && (
+                            <InfoCard
+                                title="Attributes"
+                                icon={<TagIcon />}
+                                collapsible
+                                defaultOpen={false}
+                            >
+                                <div className="grid grid-cols-1 gap-2">
+                                    {attributes.map(attr => (
+                                        <div key={attr.name} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                                            <div className="text-xs font-medium text-slate-600">
+                                                {attr.name}
                                             </div>
-                                            <div className="text-[10px] text-slate-500 font-bold uppercase mt-1">Return Ratio</div>
+                                            <div className="text-sm font-semibold text-slate-900">
+                                                {attr.value}
+                                            </div>
                                         </div>
+                                    ))}
+                                </div>
+                            </InfoCard>
+                        )}
+
+                        {/* Profitability Summary */}
+                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-6 text-white overflow-hidden relative">
+                            <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-12 translate-x-12"></div>
+                            <div className="relative z-10 space-y-6">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center">
+                                        <CurrencyDollarIcon className="w-5 h-5" />
                                     </div>
-                                    <div className="pt-4 border-t border-white/10 flex items-center gap-3">
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                                        <span className="text-[10px] font-bold text-slate-400 uppercase">System healthy: high margin asset</span>
+                                    <h3 className="text-sm font-semibold">Profitability</h3>
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <div className="text-2xl font-bold tracking-tight">
+                                            {profitAmount > 0 ? formatCurrency(profitAmount, storeSettings) : 'N/A'}
+                                        </div>
+                                        <div className="text-xs text-slate-400 font-medium mt-1">Net per unit</div>
+                                    </div>
+                                    <div>
+                                        <div className={`text-2xl font-bold tracking-tight ${profitMargin && profitMargin > 30 ? 'text-emerald-400' : 'text-blue-300'}`}>
+                                            {profitMargin !== null ? `${profitMargin.toFixed(0)}%` : '0%'}
+                                        </div>
+                                        <div className="text-xs text-slate-400 font-medium mt-1">Margin</div>
                                     </div>
                                 </div>
+                                {profitMargin && profitMargin > 30 && (
+                                    <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+                                        <span className="text-xs font-medium text-emerald-200">High-margin product</span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </main>
+
+            <MobileBottomBar />
         </div>
     );
 }

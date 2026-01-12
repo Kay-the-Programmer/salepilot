@@ -79,12 +79,12 @@ export const RevenueChart: React.FC<ChartProps & { title?: string, barKey?: stri
     );
 };
 
-export const PromotionalSalesChart: React.FC<{ value: number; total: number; label: string }> = ({ value, total, label }) => {
+export const SalesChannelChart: React.FC<{ online: number; inStore: number; total: number }> = ({ online, inStore, total }) => {
     const data = [
-        { name: 'Promotional', value: value },
-        { name: 'Regular', value: Math.max(0, total - value) },
+        { name: 'Online', value: online },
+        { name: 'In-Store', value: inStore },
     ];
-    const COLORS = ['#6366f1', '#fb923c']; // Violet and Orange
+    const COLORS = ['#3b82f6', '#fb923c']; // Blue for Online, Orange for In-Store
 
     return (
         <div className="relative w-full h-[250px] flex items-center justify-center">
@@ -105,11 +105,15 @@ export const PromotionalSalesChart: React.FC<{ value: number; total: number; lab
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                     </Pie>
+                    <Tooltip
+                        formatter={(value: any) => [value.toFixed(2), 'Revenue']}
+                        contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                    />
                 </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-sm font-medium text-gray-500">{label}</span>
-                <span className="text-2xl font-bold text-gray-900">{((value / (total || 1)) * 100).toFixed(1)}%</span>
+                <span className="text-sm font-medium text-gray-500">Online</span>
+                <span className="text-2xl font-bold text-gray-900">{((online / (total || 1)) * 100).toFixed(1)}%</span>
             </div>
         </div>
     );

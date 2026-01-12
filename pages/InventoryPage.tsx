@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Product, Category, Supplier, StoreSettings, User, Account } from '../types';
+import { Product, Category, Supplier, StoreSettings, User, Account, PurchaseOrder } from '../types';
 
 import ProductList from '../components/ProductList';
 import ProductFormModal from '../components/ProductFormModal';
@@ -10,10 +10,11 @@ import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { FiFilter, FiGrid, FiList, FiPlusCircle, FiCamera, FiX } from 'react-icons/fi';
+import { FiFilter, FiGrid, FiList, FiCamera, FiX } from 'react-icons/fi';
 import Header from '../components/Header';
 import GridIcon from '../components/icons/GridIcon';
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
+import LinkToPOModal from '../components/LinkToPOModal';
 import CubeIcon from '../components/icons/CubeIcon';
 import TagIcon from '../components/icons/TagIcon';
 import PlusIcon from '../components/icons/PlusIcon';
@@ -24,11 +25,14 @@ interface InventoryPageProps {
     categories: Category[];
     suppliers: Supplier[];
     accounts?: Account[];
+    purchaseOrders: PurchaseOrder[];
     onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
     onDeleteProduct: (productId: string) => void;
     onArchiveProduct: (productId: string) => void;
     onStockChange: (productId: string, newStock: number) => void;
     onAdjustStock: (productId: string, newQuantity: number, reason: string) => void;
+    onReceivePOItems?: (poId: string, items: { productId: string, quantity: number }[]) => void;
+    onSavePurchaseOrder?: (po: PurchaseOrder) => void;
     onSaveCategory?: (category: Category) => void;
     onDeleteCategory?: (categoryId: string) => void;
     isLoading: boolean;
@@ -42,11 +46,14 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     categories,
     suppliers,
     accounts = [],
+    purchaseOrders = [],
     onSaveProduct,
     onDeleteProduct,
     onArchiveProduct,
     onStockChange,
     onAdjustStock,
+    onReceivePOItems,
+    onSavePurchaseOrder,
     onSaveCategory,
     onDeleteCategory,
     isLoading,
@@ -67,6 +74,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+
+    // Link to PO State
+    const [isLinkPOModalOpen, setIsLinkPOModalOpen] = useState(false);
+    const [linkPOProduct, setLinkPOProduct] = useState<Product | null>(null);
+    const [linkPOQuantity, setLinkPOQuantity] = useState<number>(0);
 
 
     // Category Management State
@@ -172,6 +184,26 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     };
 
     const handleSaveStockAdjustment = (productId: string, newQuantity: number, reason: string) => {
+        console.log('handleSaveStockAdjustment called', { productId, newQuantity, reason });
+        console.log('Props checks', { hasOnReceive: !!onReceivePOItems, hasOnSavePO: !!onSavePurchaseOrder });
+
+        // Intercept "Receiving Stock" reason to check for POs
+        if (reason === 'Receiving Stock' && onReceivePOItems && onSavePurchaseOrder) {
+            const product = products.find(p => p.id === productId);
+            if (product) {
+                // Check if stock is increasing (it should be for receiving)
+                // For "Receiving Stock", newQuantity is the adjustment amount (delta), not the total stock
+                if (newQuantity > 0) {
+                    setLinkPOProduct(product);
+                    setLinkPOQuantity(newQuantity);
+                    // Close stock modal first, then open link modal
+                    handleCloseStockModal();
+                    setIsLinkPOModalOpen(true);
+                    return;
+                }
+            }
+        }
+
         onAdjustStock(productId, newQuantity, reason);
         if (detailedProduct && detailedProduct.id === productId) {
             setDetailedProduct(prev => {
@@ -186,6 +218,71 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             });
         }
         handleCloseStockModal();
+    };
+
+    const handleLinkToPO = (po: PurchaseOrder) => {
+        if (!linkPOProduct) return;
+
+        if (onReceivePOItems) {
+            onReceivePOItems(po.id, [{ productId: linkPOProduct.id, quantity: linkPOQuantity }]);
+        }
+
+        setIsLinkPOModalOpen(false);
+        setLinkPOProduct(null);
+        setLinkPOQuantity(0);
+    };
+
+    const handleCreateNewPO = () => {
+        if (!linkPOProduct || !onSavePurchaseOrder) return;
+
+        // Create a new PO with "Received" status
+        const newPO: PurchaseOrder = {
+            id: `new_${Date.now()}`,
+            poNumber: `PO-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
+            supplierId: linkPOProduct.supplierId || suppliers[0]?.id || '',
+            supplierName: linkPOProduct.supplierId ? (suppliers.find(s => s.id === linkPOProduct.supplierId)?.name || 'Unknown Supplier') : (suppliers[0]?.name || 'Unknown Supplier'),
+            status: 'received',
+            items: [{
+                productId: linkPOProduct.id,
+                productName: linkPOProduct.name,
+                sku: linkPOProduct.sku,
+                quantity: linkPOQuantity,
+                costPrice: linkPOProduct.costPrice || 0,
+                receivedQuantity: linkPOQuantity
+            }],
+            createdAt: new Date().toISOString(),
+            orderedAt: new Date().toISOString(),
+            receivedAt: new Date().toISOString(),
+            subtotal: (linkPOProduct.costPrice || 0) * linkPOQuantity,
+            shippingCost: 0,
+            tax: 0,
+            total: (linkPOProduct.costPrice || 0) * linkPOQuantity,
+        };
+
+        onSavePurchaseOrder(newPO);
+        // Also update the stock
+        onAdjustStock(linkPOProduct.id, linkPOProduct.stock + linkPOQuantity, 'Receiving Stock');
+
+        setIsLinkPOModalOpen(false);
+        setLinkPOProduct(null);
+        setLinkPOQuantity(0);
+    };
+
+    const handleSkipLinkPO = () => {
+        if (!linkPOProduct) return;
+        // Just proceed with standard stock adjustment
+        const newStock = linkPOProduct.stock + linkPOQuantity;
+
+        onAdjustStock(linkPOProduct.id, newStock, 'Receiving Stock');
+
+        // Update local detail state if needed
+        if (detailedProduct && detailedProduct.id === linkPOProduct.id) {
+            setDetailedProduct({ ...detailedProduct, stock: newStock });
+        }
+
+        setIsLinkPOModalOpen(false);
+        setLinkPOProduct(null);
+        setLinkPOQuantity(0);
     };
 
     const handleOpenAddCategoryModal = () => {
@@ -454,6 +551,17 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         }
                     }}
                 />
+                {linkPOProduct && (
+                    <LinkToPOModal
+                        isOpen={isLinkPOModalOpen}
+                        onClose={() => setIsLinkPOModalOpen(false)}
+                        product={linkPOProduct}
+                        purchaseOrders={purchaseOrders}
+                        onLink={handleLinkToPO}
+                        onCreateNew={handleCreateNewPO}
+                        onSkip={handleSkipLinkPO}
+                    />
+                )}
             </>
         )
     }
@@ -696,19 +804,31 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 </div>
             )}
 
-            <main className="flex-1 overflow-x-hidden overflow-y-auto">
+            <main className="flex-1 overflow-x-hidden overflow-y-auto relative">
                 {activeTab === 'products' ? (
                     <>
-                        {/* Collapsible Filters Section */}
+                        {/* Floating Filter Popup */}
                         {showFilters && (
-                            <div className="bg-white border-b border-gray-100 px-4 py-4 animate-slideDown">
-                                <div className="space-y-4">
-                                    <div className="flex flex-col sm:flex-row gap-4">
-                                        <div className="flex-1">
-                                            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5 block">Sort By</label>
-                                            <div className="flex gap-2">
+                            <div className="absolute top-6 right-6 z-20 w-80 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-100 p-6 animate-in fade-in zoom-in-95 duration-200">
+                                <div className="space-y-5">
+                                    {/* Header */}
+                                    <div className="flex items-center justify-between">
+                                        <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Configuration</span>
+                                        <button
+                                            onClick={() => setShowFilters(false)}
+                                            className="text-gray-400 hover:text-gray-600 transition-colors"
+                                        >
+                                            <FiX className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    {/* Sort Controls */}
+                                    <div>
+                                        <label className="text-sm font-bold text-gray-900 mb-2 block">Sort Products</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
                                                 <select
-                                                    className="flex-1 form-select block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-lg"
+                                                    className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 font-medium py-2.5 pl-3 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
                                                     value={sortBy}
                                                     onChange={(e) => setSortBy(e.target.value as any)}
                                                 >
@@ -717,42 +837,59 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                                     <option value="stock">Stock</option>
                                                     <option value="category">Category</option>
                                                 </select>
-                                                <button
-                                                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                                    className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600"
-                                                >
-                                                    {sortOrder === 'asc' ? '↑' : '↓'}
-                                                </button>
+                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                </div>
                                             </div>
+                                            <button
+                                                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                                                className="px-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 text-gray-600 transition-all active:scale-95"
+                                                title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
+                                            >
+                                                {sortOrder === 'asc' ? (
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                                                ) : (
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path></svg>
+                                                )}
+                                            </button>
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                                        <label className="flex items-center text-sm text-gray-700 cursor-pointer">
-                                            <input
-                                                type="checkbox"
-                                                className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500 mr-2"
-                                                checked={showArchived}
-                                                onChange={(e) => setShowArchived(e.target.checked)}
-                                            />
-                                            Show Archived
-                                        </label>
+                                    <div className="h-px bg-gray-100" />
 
-                                        {/* View Mode Toggle moved here */}
-                                        <div className="flex bg-gray-100 rounded-lg p-0.5">
-                                            <button
-                                                onClick={() => setViewMode('grid')}
-                                                className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
-                                            >
-                                                <FiGrid className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => setViewMode('list')}
-                                                className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
-                                            >
-                                                <FiList className="w-4 h-4" />
-                                            </button>
+                                    {/* View Options */}
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm font-bold text-gray-900">Layout</span>
+                                            <div className="flex bg-gray-100 p-1 rounded-xl">
+                                                <button
+                                                    onClick={() => setViewMode('grid')}
+                                                    className={`p-2 rounded-lg transition-all shadow-sm ${viewMode === 'grid' ? 'bg-white text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                                >
+                                                    <FiGrid className="w-4 h-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setViewMode('list')}
+                                                    className={`p-2 rounded-lg transition-all shadow-sm ${viewMode === 'list' ? 'bg-white text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
+                                                >
+                                                    <FiList className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </div>
+
+                                        <label className="flex items-center justify-between group cursor-pointer">
+                                            <span className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Show Archived</span>
+                                            <div className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showArchived ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    setShowArchived(!showArchived);
+                                                }}
+                                            >
+                                                <span
+                                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showArchived ? 'translate-x-5' : 'translate-x-0'}`}
+                                                />
+                                            </div>
+                                        </label>
                                     </div>
                                 </div>
                             </div>
@@ -892,6 +1029,17 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     }
                 }}
             />
+            {linkPOProduct && (
+                <LinkToPOModal
+                    isOpen={isLinkPOModalOpen}
+                    onClose={() => setIsLinkPOModalOpen(false)}
+                    product={linkPOProduct}
+                    purchaseOrders={purchaseOrders}
+                    onLink={handleLinkToPO}
+                    onCreateNew={handleCreateNewPO}
+                    onSkip={handleSkipLinkPO}
+                />
+            )}
         </div >
     );
 };

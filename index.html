@@ -13,7 +13,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>SalePilot - POS & Inventory</title>
-  <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
     @keyframes fadeIn {
@@ -41,7 +40,20 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js?v=8').then(registration => {
+        // Unregister SW in development to prevent caching interfering with HMR
+        const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+        if (isDev) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+              registration.unregister();
+              console.log('Service Worker unregistered for development');
+            }
+          });
+          return;
+        }
+
+        navigator.serviceWorker.register('/sw.js?v=9').then(registration => {
           console.log('SW registered: ', registration);
         }).catch(registrationError => {
           console.log('SW registration failed: ', registrationError);

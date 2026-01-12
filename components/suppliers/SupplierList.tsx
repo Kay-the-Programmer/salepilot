@@ -7,6 +7,7 @@ import EnvelopeIcon from '../icons/EnvelopeIcon';
 import PhoneIcon from '../icons/PhoneIcon';
 import PlusIcon from '../icons/PlusIcon';
 import SearchIcon from '../icons/SearchIcon';
+import ConfirmationModal from '../ConfirmationModal';
 import Swipeable from './Swipeable';
 
 interface SupplierListProps {
@@ -30,10 +31,22 @@ const SupplierList: React.FC<SupplierListProps> = ({
 }) => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+    const [supplierToDelete, setSupplierToDelete] = useState<string | null>(null);
+
+    const handleDeleteClick = (supplierId: string) => {
+        setSupplierToDelete(supplierId);
+    };
+
+    const confirmDelete = () => {
+        if (supplierToDelete) {
+            onDelete(supplierToDelete);
+            setSupplierToDelete(null);
+        }
+    };
 
     const handleSwipe = (direction: 'left' | 'right', supplierId: string) => {
         if (direction === 'left') {
-            onDelete(supplierId);
+            handleDeleteClick(supplierId);
         }
     };
 
@@ -156,7 +169,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onDelete(supplier.id);
+                                handleDeleteClick(supplier.id);
                             }}
                             className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg border border-red-100 hover:bg-white hover:border-red-200 active:bg-red-50 transition-all"
                         >
@@ -255,6 +268,16 @@ const SupplierList: React.FC<SupplierListProps> = ({
                     </div>
                 )}
             </div>
+
+            <ConfirmationModal
+                isOpen={!!supplierToDelete}
+                onClose={() => setSupplierToDelete(null)}
+                onConfirm={confirmDelete}
+                title="Delete Supplier"
+                message="Are you sure you want to delete this supplier? This action cannot be undone and may affect linked products."
+                confirmText="Delete Supplier"
+                confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+            />
         </div>
     );
 };

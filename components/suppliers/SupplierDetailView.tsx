@@ -1,5 +1,5 @@
 import React from 'react';
-import { Supplier, Product } from '../../types';
+import { Supplier, Product, StoreSettings } from '../../types';
 import PencilIcon from '../icons/PencilIcon';
 import ShoppingCartIcon from '../icons/ShoppingCartIcon';
 import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
@@ -13,15 +13,17 @@ import { buildAssetUrl } from '@/services/api';
 import ArrowTrendingUpIcon from '../icons/ArrowTrendingUpIcon';
 import CurrencyDollarIcon from '../icons/CurrencyDollarIcon';
 import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
+import { formatCurrency } from '../../utils/currency';
 
 interface SupplierDetailViewProps {
     supplier: Supplier;
     products: Product[];
     onEdit: (supplier: Supplier) => void;
+    storeSettings: StoreSettings;
 }
 
-const InfoCard: React.FC<{ 
-    title: string; 
+const InfoCard: React.FC<{
+    title: string;
     children: React.ReactNode;
     icon?: React.ReactNode;
     variant?: 'default' | 'products';
@@ -68,10 +70,10 @@ const DetailItem: React.FC<{
     </div>
 );
 
-const ProductItem: React.FC<{ product: Product }> = ({ product }) => {
+const ProductItem: React.FC<{ product: Product; storeSettings: StoreSettings }> = ({ product, storeSettings }) => {
     const numericStock = typeof product.stock === 'number' ? product.stock : (parseFloat(String(product.stock)) || 0);
     const isLowStock = numericStock <= (product.reorderPoint || 10);
-    
+
     return (
         <div className="px-6 py-4 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors group">
             <div className="flex items-start gap-4">
@@ -79,8 +81,8 @@ const ProductItem: React.FC<{ product: Product }> = ({ product }) => {
                 <div className="flex-shrink-0">
                     {product.imageUrls?.[0] ? (
                         <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50">
-                            <img 
-                                src={buildAssetUrl(product.imageUrls[0])} 
+                            <img
+                                src={buildAssetUrl(product.imageUrls[0])}
                                 alt={product.name}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             />
@@ -91,7 +93,7 @@ const ProductItem: React.FC<{ product: Product }> = ({ product }) => {
                         </div>
                     )}
                 </div>
-                
+
                 {/* Product Info */}
                 <div className="flex-grow min-w-0">
                     <div className="flex items-start justify-between mb-2">
@@ -103,15 +105,12 @@ const ProductItem: React.FC<{ product: Product }> = ({ product }) => {
                         </div>
                         <div className="text-right">
                             <div className="text-sm font-bold text-slate-900">
-                                ${product.price.toLocaleString('en-US', { 
-                                    minimumFractionDigits: 2, 
-                                    maximumFractionDigits: 2 
-                                })}
+                                {formatCurrency(product.price, storeSettings)}
                             </div>
                             <div className="text-xs text-slate-500">Unit price</div>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1.5">
@@ -149,12 +148,12 @@ const ProductItem: React.FC<{ product: Product }> = ({ product }) => {
     );
 };
 
-const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, products, onEdit }) => {
+const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, products, onEdit, storeSettings }) => {
     const totalProductValue = products.reduce((sum, product) => {
         const stock = typeof product.stock === 'number' ? product.stock : (parseFloat(String(product.stock)) || 0);
         return sum + (stock * product.price);
     }, 0);
-    
+
     const activeProducts = products.filter(p => p.status === 'active').length;
     const lowStockProducts = products.filter(p => {
         const stock = typeof p.stock === 'number' ? p.stock : (parseFloat(String(p.stock)) || 0);
@@ -189,7 +188,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                     {/* Left Column - Supplier Details */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Supplier Information Card */}
-                        <InfoCard 
+                        <InfoCard
                             title="Supplier Information"
                             icon={<BuildingOfficeIcon className="w-5 h-5" />}
                         >
@@ -226,7 +225,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                         {/* Financial & Additional Information */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Financial Details */}
-                            <InfoCard 
+                            <InfoCard
                                 title="Financial Details"
                                 icon={<BanknotesIcon className="w-5 h-5" />}
                             >
@@ -251,7 +250,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                             </InfoCard>
 
                             {/* Additional Information */}
-                            <InfoCard 
+                            <InfoCard
                                 title="Additional Information"
                                 icon={<DocumentTextIcon className="w-5 h-5" />}
                             >
@@ -287,7 +286,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                                         <ShoppingCartIcon className="w-6 h-6 text-blue-600" />
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-emerald-100">
                                     <div>
                                         <div className="text-sm font-medium text-slate-600">Active Products</div>
@@ -299,7 +298,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-amber-100">
                                     <div>
                                         <div className="text-sm font-medium text-slate-600">Low Stock</div>
@@ -311,15 +310,12 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <div className="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-purple-100">
                                     <div>
                                         <div className="text-sm font-medium text-slate-600">Inventory Value</div>
                                         <div className="text-2xl font-bold text-purple-700">
-                                            ${totalProductValue.toLocaleString('en-US', { 
-                                                minimumFractionDigits: 2, 
-                                                maximumFractionDigits: 2 
-                                            })}
+                                            {formatCurrency(totalProductValue, storeSettings)}
                                         </div>
                                     </div>
                                     <div className="p-2 bg-purple-100 rounded-lg">
@@ -330,7 +326,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                         </div>
 
                         {/* Products Card */}
-                        <InfoCard 
+                        <InfoCard
                             title="Products from this Supplier"
                             icon={<ShoppingCartIcon className="w-5 h-5" />}
                             variant="products"
@@ -338,7 +334,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                             {products.length > 0 ? (
                                 <div className="divide-y divide-slate-100">
                                     {products.map((product) => (
-                                        <ProductItem key={product.id} product={product} />
+                                        <ProductItem key={product.id} product={product} storeSettings={storeSettings} />
                                     ))}
                                 </div>
                             ) : (

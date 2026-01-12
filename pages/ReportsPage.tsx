@@ -25,7 +25,7 @@ import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import GridIcon from '../components/icons/GridIcon';
 import ShoppingCartIcon from '../components/icons/ShoppingCartIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
-import { RevenueChart, PromotionalSalesChart, StatSparkline } from '../components/reports/DashboardCharts';
+import { RevenueChart, SalesChannelChart, StatSparkline } from '../components/reports/DashboardCharts';
 import HomeIcon from '../components/icons/HomeIcon';
 
 interface ReportsPageProps {
@@ -472,10 +472,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                             {formatCurrency(sales.totalRevenue, storeSettings)}
                                         </div>
                                     </div>
-                                    <div className="flex items-center text-emerald-600 text-xs font-bold bg-emerald-50 px-2 py-1 rounded-full">
-                                        <TrendingUpIcon className="w-3 h-3 mr-1" />
-                                        <span>+12.5%</span> {/* Mock growth for demo */}
-                                    </div>
                                 </div>
                                 <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
                                     <StatSparkline data={revenueSpark} color="#10b981" height={60} storeSettings={storeSettings} />
@@ -495,10 +491,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                         <div className="text-2xl font-bold text-slate-900 mt-2">
                                             {sales.totalTransactions}
                                         </div>
-                                    </div>
-                                    <div className="flex items-center text-orange-600 text-xs font-bold bg-orange-50 px-2 py-1 rounded-full">
-                                        <TrendingUpIcon className="w-3 h-3 mr-1" />
-                                        <span>+5.2%</span>
                                     </div>
                                 </div>
                                 <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
@@ -520,10 +512,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                             {customersStats.totalCustomers}
                                         </div>
                                     </div>
-                                    <div className="flex items-center text-indigo-600 text-xs font-bold bg-indigo-50 px-2 py-1 rounded-full">
-                                        <TrendingUpIcon className="w-3 h-3 mr-1" />
-                                        <span>+2.4%</span>
-                                    </div>
                                 </div>
                                 <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
                                     <StatSparkline data={customerSpark} color="#6366f1" height={60} storeSettings={storeSettings} />
@@ -543,10 +531,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                         <div className="text-2xl font-bold text-slate-900 mt-2">
                                             {formatCurrency(sales.totalProfit, storeSettings)}
                                         </div>
-                                    </div>
-                                    <div className="flex items-center text-blue-600 text-xs font-bold bg-blue-50 px-2 py-1 rounded-full">
-                                        <TrendingUpIcon className="w-3 h-3 mr-1" />
-                                        <span>+8.1%</span>
                                     </div>
                                 </div>
                                 <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
@@ -577,21 +561,30 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                 />
                             </div>
 
-                            {/* Promotional Sales (Donut) & List - Takes 1 col */}
+                            {/* Sales Channel (Donut) & List - Takes 1 col */}
                             <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col">
                                 <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-slate-900 text-lg">Promotional Sales</h3>
+                                    <h3 className="font-bold text-slate-900 text-lg">Sales Channels</h3>
                                 </div>
                                 <div className="flex-1 flex items-center justify-center">
-                                    {/* Mock promotional data: assume 30% of sales are promo for demo */}
-                                    <PromotionalSalesChart value={sales.totalRevenue * 0.3} total={sales.totalRevenue} label="Store" />
+                                    {(() => {
+                                        const online = sales.salesByChannel?.find((c: any) => c.channel === 'online')?.revenue || 0;
+                                        const inStore = sales.salesByChannel?.find((c: any) => c.channel === 'pos')?.revenue || (sales.totalRevenue - online);
+                                        return (
+                                            <SalesChannelChart
+                                                online={online}
+                                                inStore={inStore}
+                                                total={sales.totalRevenue}
+                                            />
+                                        );
+                                    })()}
                                 </div>
                                 <div className="mt-4 flex justify-center gap-6">
                                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <span className="w-3 h-3 rounded-full bg-indigo-500"></span> Promotional
+                                        <span className="w-3 h-3 rounded-full bg-blue-500"></span> Online
                                     </div>
                                     <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <span className="w-3 h-3 rounded-full bg-orange-400"></span> Regular
+                                        <span className="w-3 h-3 rounded-full bg-orange-400"></span> In-Store
                                     </div>
                                 </div>
                             </div>
@@ -1072,7 +1065,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
         <div className="flex flex-col h-full w-full bg-gray-50 relative">
 
             {/* Header */}
-            <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3">
+            <div className="sticky top-0 z-40 bg-gray-50 px-4 py-3">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center">
                         {onClose && (
@@ -1099,13 +1092,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                     </div>
 
                     {/* Desktop Tabs (Moved to Header) */}
-                    <div className="hidden md:flex items-center gap-3 mx-6">
-                        <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                    <div className="hidden md:flex  shadow-lg rounded-3xl border border-white items-center gap-3 mx-6">
+                        <div className="flex bg-gray-100/80 p-1 rounded-3xl shrink-0">
                             {tabs.map((tab) => (
                                 <button
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id
+                                    className={`px-4 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${activeTab === tab.id
                                         ? 'bg-white text-gray-900 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
                                         }`}
@@ -1116,11 +1109,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         </div>
                     </div>
 
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center  p-1 rounded-xl space-x-2">
                         {/* Mobile Menu Button - New */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 rounded-lg active:bg-gray-200 text-gray-600"
+                            className="md:hidden p-2 px-4 rounded-3xl bg-white shadow-lg flex items-center gap-2  active:bg-gray-200 text-gray-600"
                             aria-label="Menu"
                         >
                             <GridIcon className="w-5 h-5" />
@@ -1129,7 +1122,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         <div className="relative" ref={filterMenuRef}>
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`p-2 rounded-lg active:bg-gray-200 transition-colors ${showFilters ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
+                                className={`p-2 flex items-center gap-2 bg-white shadow-lg rounded-3xl px-4 active:bg-gray-200 transition-colors ${showFilters ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
                                 aria-label="Filter options"
                             >
                                 <FunnelIcon className="w-5 h-5" />
