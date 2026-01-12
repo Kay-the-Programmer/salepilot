@@ -59,6 +59,7 @@ export default function App() {
             <Route path="/customer/login" element={<Dashboard />} />
             <Route path="/customer/register" element={<Dashboard />} />
             <Route path="/customer/dashboard" element={<Dashboard />} />
+            <Route path="/customer/orders" element={<Dashboard />} />
             <Route path="/directory/request/:requestId" element={<Dashboard />} />
 
             {/* Fallback */}

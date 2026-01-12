@@ -7,9 +7,9 @@ import DocumentTextIcon from '../icons/DocumentTextIcon';
 import BanknotesIcon from '../icons/BanknotesIcon';
 import CreditCardIcon from '../icons/CreditCardIcon';
 import CalendarIcon from '../icons/CalendarIcon';
-import ChevronRightIcon from '../icons/ChevronRightIcon';
 import UserCircleIcon from '../icons/UserCircleIcon';
 import { formatCurrency } from '../../utils/currency';
+import { HiOutlineShoppingBag } from 'react-icons/hi2';
 
 interface CustomerDetailViewProps {
     customer: Customer;
@@ -30,6 +30,28 @@ const InfoCard: React.FC<{ title: string; children: React.ReactNode; icon?: Reac
 const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales, storeSettings }) => {
     const unpaidInvoices = sales.filter(s => s.paymentStatus !== 'paid');
     const paidSales = sales.filter(s => s.paymentStatus === 'paid');
+
+    // Sort by timestamp descending to get recent orders
+    const recentOrders = [...sales].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
+
+    const getStatusStyles = (status?: string) => {
+        switch (status) {
+            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200';
+            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200';
+            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+        }
+    };
+
+    const getPaymentStatusStyles = (status?: string) => {
+        switch (status) {
+            case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
+            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200';
+            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+        }
+    };
 
     return (
         <div className="space-y-6">
@@ -86,6 +108,44 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
 
                 {/* Right Column: Invoices & History */}
                 <div className="lg:col-span-2 space-y-6">
+                    <InfoCard title="Recent Orders" icon={<HiOutlineShoppingBag className="w-5 h-5" />}>
+                        {recentOrders.length > 0 ? (
+                            <div className="space-y-3">
+                                {recentOrders.map((sale) => (
+                                    <div key={sale.transactionId} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                                        <div className="flex items-center gap-3">
+                                            <div className="p-2 bg-gray-50 rounded-lg text-gray-500">
+                                                <DocumentTextIcon className="w-5 h-5" />
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-semibold text-gray-900">#{sale.transactionId.slice(-4)}</span>
+                                                    <span className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleDateString()}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1 mt-1">
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getStatusStyles(sale.fulfillmentStatus)}`}>
+                                                        {sale.fulfillmentStatus?.replace('_', ' ') || 'pending'}
+                                                    </span>
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPaymentStatusStyles(sale.paymentStatus)}`}>
+                                                        {sale.paymentStatus === 'paid' ? 'Paid' : (sale.paymentStatus === 'partially_paid' ? 'Partial' : 'Unpaid')}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="block text-sm font-bold text-gray-900">{formatCurrency(sale.total, storeSettings)}</span>
+                                            <span className="text-xs text-gray-500">{sale.cart.length} items</span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-8">
+                                <p className="text-sm text-gray-500">No recent orders.</p>
+                            </div>
+                        )}
+                    </InfoCard>
+
                     {unpaidInvoices.length > 0 && (
                         <InfoCard title="Outstanding Invoices" icon={<CreditCardIcon />}>
                             <div className="space-y-3">

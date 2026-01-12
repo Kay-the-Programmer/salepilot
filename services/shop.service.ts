@@ -1,7 +1,5 @@
-import axios from 'axios';
+import { api } from './api';
 import { Product, Category } from '../types';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export interface ShopInfo {
     id: string;
@@ -23,31 +21,29 @@ export interface ShopInfo {
 
 export const shopService = {
     getShopInfo: async (storeId: string): Promise<ShopInfo> => {
-        const response = await axios.get(`${API_URL}/shop/${storeId}/info`);
-        return response.data;
+        return api.get<ShopInfo>(`/shop/${storeId}/info`);
     },
 
     getProducts: async (storeId: string, categoryId?: string, search?: string): Promise<Product[]> => {
-        const params: any = {};
-        if (categoryId) params.categoryId = categoryId;
-        if (search) params.search = search;
+        const params = new URLSearchParams();
+        if (categoryId) params.append('categoryId', categoryId);
+        if (search) params.append('search', search);
 
-        const response = await axios.get(`${API_URL}/shop/${storeId}/products`, { params });
-        return response.data;
+        const queryString = params.toString();
+        const endpoint = `/shop/${storeId}/products${queryString ? `?${queryString}` : ''}`;
+
+        return api.get<Product[]>(endpoint);
     },
 
     getProductById: async (storeId: string, productId: string): Promise<Product> => {
-        const response = await axios.get(`${API_URL}/shop/${storeId}/products/${productId}`);
-        return response.data;
+        return api.get<Product>(`/shop/${storeId}/products/${productId}`);
     },
 
     getCategories: async (storeId: string): Promise<Category[]> => {
-        const response = await axios.get(`${API_URL}/shop/${storeId}/categories`);
-        return response.data;
+        return api.get<Category[]>(`/shop/${storeId}/categories`);
     },
 
     createOrder: async (storeId: string, orderData: { cart: any[], customerDetails: any }) => {
-        const response = await axios.post(`${API_URL}/shop/${storeId}/orders`, orderData);
-        return response.data;
+        return api.post(`/shop/${storeId}/orders`, orderData);
     }
 };

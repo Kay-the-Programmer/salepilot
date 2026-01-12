@@ -27,7 +27,8 @@ import OrdersPage from './pages/OrdersPage';
 import NotificationsPage from './pages/NotificationsPage';
 import SuperAdminPage from './pages/SuperAdminPage';
 import MarketplacePage from './pages/shop/MarketplacePage';
-import CustomerDashboard from './pages/customers/CustomerDashboard';
+import MarketplaceDashboard from './pages/shop/CustomerDashboard'; // The Marketplace Portal
+import CustomerOrdersPage from './pages/customers/CustomerDashboard'; // The My Orders Page
 import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
 import MarketingPage from './pages/MarketingPage';
 import MarketplaceRequestActionPage from './pages/MarketplaceRequestActionPage';
@@ -54,7 +55,7 @@ const PERMISSIONS: Record<User['role'], string[]> = {
     admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
     staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory'],
     inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory'],
-    customer: ['profile', 'notifications', 'directory', 'customer']
+    customer: ['profile', 'notifications', 'directory', 'customer', 'customer/dashboard', 'customer/orders']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
@@ -950,7 +951,11 @@ export default function Dashboard() {
         }
 
         if (pagePath === 'customer/dashboard') {
-            return <CustomerDashboard />;
+            return <MarketplaceDashboard />;
+        }
+
+        if (pagePath === 'customer/orders') {
+            return <CustomerOrdersPage />;
         }
 
         switch (page) {

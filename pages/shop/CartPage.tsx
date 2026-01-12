@@ -13,6 +13,7 @@ import {
 import { buildAssetUrl } from '../../services/api';
 import { ShopInfo, shopService } from '../../services/shop.service';
 import { formatCurrency } from '../../utils/currency';
+import { getCurrentUser } from '../../services/authService';
 
 const CartPage: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
@@ -35,6 +36,18 @@ const CartPage: React.FC = () => {
     useEffect(() => {
         if (!storeId) return;
         loadCart();
+
+        // Pre-fill user details if logged in
+        const user = getCurrentUser();
+        if (user) {
+            setCustomerDetails(prev => ({
+                ...prev,
+                name: user.name,
+                email: user.email,
+                phone: user.phone || '',
+                address: '' // User object might not have address in basic profile, but if it does, add it here
+            }));
+        }
 
         window.addEventListener('cart-updated', loadCart);
         return () => window.removeEventListener('cart-updated', loadCart);
@@ -86,14 +99,22 @@ const CartPage: React.FC = () => {
         if (!storeId) return;
 
         try {
-            const response = await shopService.createOrder(storeId, {
+            const user = getCurrentUser();
+            const payload: any = {
                 cart: cartItems.map(item => ({
                     id: item.id,
                     quantity: item.quantity,
                     price: item.price
                 })),
                 customerDetails
-            });
+            };
+
+            if (user) {
+                payload.customerId = user.id;
+                payload.userId = user.id; // Send both to ensure backend linkage
+            }
+
+            const response = await shopService.createOrder(storeId, payload);
 
             setOrderData(response);
             setOrderComplete(true);

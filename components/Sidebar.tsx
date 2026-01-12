@@ -56,9 +56,16 @@ const NAV_ITEMS = [
         badge: null
     },
     {
-        name: 'My Orders',
+        name: 'Dashboard',
         page: 'customer/dashboard',
         icon: HomeIcon,
+        roles: ['customer'],
+        badge: null
+    },
+    {
+        name: 'My Orders',
+        page: 'customer/orders',
+        icon: ShoppingCartIcon,
         roles: ['customer'],
         badge: null
     },
