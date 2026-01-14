@@ -151,21 +151,6 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                                 <p className="text-3xl font-bold text-gray-900 mt-1">{product.stock}</p>
                                 <p className="text-xs text-gray-500 mt-1">{product.unitOfMeasure}</p>
                             </div>
-                            <div className="text-right">
-                                <p className="text-sm font-medium text-gray-600">After Adjustment</p>
-                                <p className={`text-3xl font-bold mt-1 ${isIncrease ? 'text-green-600' :
-                                    isDecrease ? 'text-red-600' :
-                                        'text-gray-900'
-                                    }`}>
-                                    {isNaN(newStock) ? '--' : newStock}
-                                </p>
-                                {!isNaN(newStock) && newStock !== product.stock && (
-                                    <p className={`text-sm font-medium ${isIncrease ? 'text-green-600' : 'text-red-600'
-                                        }`}>
-                                        {isIncrease ? '+' : ''}{newStock - product.stock}
-                                    </p>
-                                )}
-                            </div>
                         </div>
                     </div>
 

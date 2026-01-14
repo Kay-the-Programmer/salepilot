@@ -23,8 +23,8 @@ interface OrderDetailsModalProps {
     orders: Sale[];
     order: Sale | null;
     storeSettings: StoreSettings;
-    onRecordPayment: (order: Sale) => void;
-    onUpdateStatus: (orderId: string, status: NonNullable<Sale['fulfillmentStatus']>) => void;
+    onRecordPayment?: (order: Sale) => void;
+    onUpdateStatus?: (orderId: string, status: NonNullable<Sale['fulfillmentStatus']>) => void;
 }
 
 const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
@@ -385,7 +385,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                 </div>
                             ) : (
                                 <>
-                                    {order.paymentStatus !== 'paid' && (
+                                    {order.paymentStatus !== 'paid' && onRecordPayment && (
                                         <button
                                             onClick={() => onRecordPayment(order)}
                                             className="px-6 py-3.5 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 hover:shadow-emerald-300 transition-all duration-200 flex items-center justify-center gap-2"
@@ -395,7 +395,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                         </button>
                                     )}
 
-                                    {order.fulfillmentStatus === 'pending' && (
+                                    {order.fulfillmentStatus === 'pending' && onUpdateStatus && (
                                         <button
                                             onClick={() => onUpdateStatus(order.transactionId, 'fulfilled')}
                                             className="px-6 py-3.5 bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transition-all duration-200 flex items-center justify-center gap-2"
@@ -405,7 +405,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                         </button>
                                     )}
 
-                                    {order.fulfillmentStatus === 'fulfilled' && (
+                                    {order.fulfillmentStatus === 'fulfilled' && onUpdateStatus && (
                                         <button
                                             onClick={() => onUpdateStatus(order.transactionId, 'shipped')}
                                             className="px-6 py-3.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-bold shadow-lg shadow-blue-200 hover:shadow-blue-300 transition-all duration-200 flex items-center justify-center gap-2"

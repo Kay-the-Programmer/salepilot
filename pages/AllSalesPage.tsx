@@ -538,12 +538,12 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
     return (
         <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-gray-50 to-white relative">
             {/* Desktop Header */}
-            <div className="hidden md:flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 sticky top-0 z-30">
+            <div className="hidden md:flex items-center justify-between px-6 py-4 sticky top-0 z-30">
                 <div className="flex justify-between w-full">
                     <h1 className="text-xl font-bold text-gray-900">Sales History</h1>
 
                     {/* Status Pills */}
-                    <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                    <div className="flex bg-gray-100/80 p-1 rounded-3xl shadow-lg border-white shrink-0">
                         {['', 'paid', 'unpaid', 'partially_paid'].map((status) => {
                             const isActive = selectedStatus === status;
                             const label = status === '' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -551,7 +551,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                 <button
                                     key={status}
                                     onClick={() => setSelectedStatus(status)}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                                    className={`px-4 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${isActive
                                         ? 'bg-white text-gray-900 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
                                         }`}
@@ -911,9 +911,23 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                                 {total} sale{total !== 1 ? 's' : ''} found
                                             </p>
                                         </div>
-                                        <div className="text-sm text-gray-600">
-                                            {formatCurrency(stats.avgSaleValue, storeSettings)} avg. sale
-                                        </div>
+                                        
+                                        {/* Summary Header */}
+                                        {enrichedSales.length > 0 && (
+                                            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                                <div className="flex items-center gap-6">
+                                                    <div className="text-right">
+                                                        <div className="text-sm text-slate-600">Total Sales Value</div>
+                                                        <div className="text-xl font-bold text-slate-900">
+                                                            {formatCurrency(
+                                                                enrichedSales.reduce((sum, sale) => sum + sale.total, 0),
+                                                                storeSettings
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
 

@@ -812,8 +812,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             <div className="absolute top-6 right-6 z-20 w-80 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-100 p-6 animate-in fade-in zoom-in-95 duration-200">
                                 <div className="space-y-5">
                                     {/* Header */}
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Configuration</span>
+                                    <div className="flex items-center justify-end">
                                         <button
                                             onClick={() => setShowFilters(false)}
                                             className="text-gray-400 hover:text-gray-600 transition-colors"

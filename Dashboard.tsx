@@ -996,7 +996,7 @@ export default function Dashboard() {
             case 'audit-trail':
                 return <AuditLogPage logs={auditLogs} users={users} />;
             case 'profile':
-                return <ProfilePage user={currentUser} onLogout={handleLogout} onInstall={handleInstall} installPrompt={installPrompt} onUpdateProfile={handleUpdateProfile} onChangePassword={handleChangePassword} />;
+                return <ProfilePage user={currentUser} storeSettings={storeSettings!} onLogout={handleLogout} onInstall={handleInstall} installPrompt={installPrompt} onUpdateProfile={handleUpdateProfile} onChangePassword={handleChangePassword} />;
             case 'settings':
                 return <SettingsPage settings={storeSettings!} onSave={handleSaveSettings} />;
             case 'users':

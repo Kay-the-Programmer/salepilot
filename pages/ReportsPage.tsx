@@ -1126,6 +1126,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                 aria-label="Filter options"
                             >
                                 <FunnelIcon className="w-5 h-5" />
+                                <span className="text-xs font-semibold text-gray-500 tracking-wider">Filter</span>
                             </button>
 
                             {/* Floating Filter Popup */}

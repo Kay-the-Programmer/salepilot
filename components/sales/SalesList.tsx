@@ -180,7 +180,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
 
             {/* Desktop/Tablet View */}
             <div className="hidden md:block">
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="bg-white border border-slate-200 shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-slate-200">
                             <thead className="bg-gradient-to-r from-slate-50 to-slate-100">
@@ -262,9 +262,9 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                                         <div className="text-sm font-medium text-slate-900 truncate max-w-[200px]">
                                                             {sale.customerName || 'Walk-in Customer'}
                                                         </div>
-                                                        <div className="text-xs text-slate-500 truncate max-w-[200px]">
+                                                        {/* <div className="text-xs text-slate-500 truncate max-w-[200px]">
                                                             ID: {sale.transactionId}
-                                                        </div>
+                                                        </div> */}
                                                     </div>
                                                 </div>
                                             </td>
@@ -343,35 +343,6 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                         </table>
                     </div>
                 </div>
-
-                {/* Summary Footer */}
-                {sales.length > 0 && (
-                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                        <div className="text-sm text-slate-600">
-                            Showing <span className="font-semibold text-slate-900">{sales.length}</span> sales
-                        </div>
-                        <div className="flex items-center gap-6">
-                            <div className="text-right">
-                                <div className="text-sm text-slate-600">Total Sales Value</div>
-                                <div className="text-xl font-bold text-slate-900">
-                                    {formatCurrency(
-                                        sales.reduce((sum, sale) => sum + sale.total, 0),
-                                        storeSettings
-                                    )}
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <div className="text-sm text-slate-600">Average Sale</div>
-                                <div className="text-xl font-bold text-slate-900">
-                                    {formatCurrency(
-                                        sales.reduce((sum, sale) => sum + sale.total, 0) / sales.length,
-                                        storeSettings
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );

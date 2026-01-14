@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { User } from '../types';
+import { api } from '../services/api';
+import { User, StoreSettings, Sale } from '../types';
 import UserCircleIcon from '../components/icons/UserCircleIcon';
 import PencilIcon from '../components/icons/PencilIcon';
 import ArrowLeftOnRectangleIcon from '../components/icons/ArrowLeftOnRectangleIcon';
@@ -11,9 +12,13 @@ import GridIcon from '../components/icons/GridIcon';
 import EditProfileModal from '../components/EditProfileModal';
 import ChangePasswordModal from '../components/ChangePasswordModal';
 import Header from "@/components/Header.tsx";
+import OrderDetailsModal from '../components/orders/OrderDetailsModal';
+import { HiOutlineShoppingBag } from 'react-icons/hi2';
+import { formatCurrency } from '../utils/currency';
 
 interface ProfilePageProps {
     user: User;
+    storeSettings: StoreSettings;
     onLogout: () => void;
     installPrompt: any | null;
     onInstall: () => void;
@@ -32,8 +37,8 @@ const InfoCard: React.FC<{
         <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
                 {icon && (
-                    <div className={`p-3 rounded-xl transition-all duration-300 ${variant === 'danger' 
-                        ? 'bg-red-50 text-red-600 group-hover:bg-red-100' 
+                    <div className={`p-3 rounded-xl transition-all duration-300 ${variant === 'danger'
+                        ? 'bg-red-50 text-red-600 group-hover:bg-red-100'
                         : 'bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 group-hover:from-blue-100 group-hover:to-indigo-100'}`}>
                         {icon}
                     </div>
@@ -53,6 +58,7 @@ const InfoCard: React.FC<{
 
 const ProfilePage: React.FC<ProfilePageProps> = ({
     user,
+    storeSettings,
     onLogout,
     installPrompt,
     onInstall,
@@ -61,8 +67,42 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 }) => {
     const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
     const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'info' | 'security' | 'app'>('info');
+    const [activeTab, setActiveTab] = useState<'info' | 'orders' | 'security' | 'app'>('info');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // Order History State
+    const [orders, setOrders] = useState<Sale[]>([]);
+    const [selectedOrder, setSelectedOrder] = useState<Sale | null>(null);
+    const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+    React.useEffect(() => {
+        const fetchOrders = async () => {
+            if (!user.email) return;
+            setIsLoadingOrders(true);
+            try {
+                // Fetch orders for this customer (filtered by email or customerId if available)
+                // Assuming backend supports filtering by email or we filter client side if needed
+                // Using a generic search/filter capability if available, or just getting all sales and filtering
+                const response = await api.get<Sale[]>('/sales');
+                const myOrders = response.filter(order =>
+                    order.customerId === user.id ||
+                    (order.customerDetails?.email && order.customerDetails.email.toLowerCase() === user.email.toLowerCase())
+                );
+
+                // Sort by date desc
+                myOrders.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+                setOrders(myOrders);
+            } catch (error) {
+                console.error("Failed to fetch orders", error);
+            } finally {
+                setIsLoadingOrders(false);
+            }
+        };
+
+        if (activeTab === 'orders') {
+            fetchOrders();
+        }
+    }, [activeTab, user.id, user.email]);
 
     // Platform detection for install guidance
     const ua = typeof window !== 'undefined' ? (window.navigator.userAgent || '') : '';
@@ -107,7 +147,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                 <main className="px-4 sm:px-6 lg:px-8 py-8">
                     <div className="max-w-6xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                            
+
                             {/* Left Column - Profile Summary */}
                             <div className="lg:col-span-1">
                                 <div className="bg-white rounded-2xl p-6 lg:p-8 sticky top-8 transition-all duration-300 hover:shadow-xl border border-gray-200 shadow-sm">
@@ -169,8 +209,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                     <div className="flex space-x-1 rounded-xl bg-gray-100 p-1">
                                         <button
                                             onClick={() => setActiveTab('info')}
-                                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === 'info' 
-                                                ? 'bg-white text-gray-900 shadow-sm' 
+                                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === 'info'
+                                                ? 'bg-white text-gray-900 shadow-sm'
                                                 : 'text-gray-600 hover:text-gray-900'}`}
                                         >
                                             <div className="flex items-center justify-center gap-2">
@@ -179,9 +219,20 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                             </div>
                                         </button>
                                         <button
+                                            onClick={() => setActiveTab('orders')}
+                                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === 'orders'
+                                                ? 'bg-white text-gray-900 shadow-sm'
+                                                : 'text-gray-600 hover:text-gray-900'}`}
+                                        >
+                                            <div className="flex items-center justify-center gap-2">
+                                                <HiOutlineShoppingBag className="w-4 h-4" />
+                                                <span>Orders</span>
+                                            </div>
+                                        </button>
+                                        <button
                                             onClick={() => setActiveTab('security')}
-                                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === 'security' 
-                                                ? 'bg-white text-gray-900 shadow-sm' 
+                                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === 'security'
+                                                ? 'bg-white text-gray-900 shadow-sm'
                                                 : 'text-gray-600 hover:text-gray-900'}`}
                                         >
                                             <div className="flex items-center justify-center gap-2">
@@ -191,8 +242,8 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                         </button>
                                         <button
                                             onClick={() => setActiveTab('app')}
-                                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === 'app' 
-                                                ? 'bg-white text-gray-900 shadow-sm' 
+                                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold transition-all duration-200 ${activeTab === 'app'
+                                                ? 'bg-white text-gray-900 shadow-sm'
                                                 : 'text-gray-600 hover:text-gray-900'}`}
                                         >
                                             <div className="flex items-center justify-center gap-2">
@@ -237,6 +288,58 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                     </p>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </InfoCard>
+                                </div>
+
+                                {/* Order History */}
+                                <div className={`${activeTab === 'orders' ? 'block' : 'hidden lg:block'}`}>
+                                    <InfoCard
+                                        title="Order History"
+                                        icon={<HiOutlineShoppingBag className="w-5 h-5" />}
+                                    >
+                                        <div className="space-y-4">
+                                            {isLoadingOrders ? (
+                                                <div className="p-8 text-center text-gray-500">Loading orders...</div>
+                                            ) : orders.length === 0 ? (
+                                                <div className="p-8 text-center">
+                                                    <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                        <HiOutlineShoppingBag className="w-8 h-8 text-gray-300" />
+                                                    </div>
+                                                    <p className="text-gray-500">No recent orders found.</p>
+                                                </div>
+                                            ) : (
+                                                <div className="grid gap-3">
+                                                    {orders.map((order: Sale) => (
+                                                        <button
+                                                            key={order.transactionId}
+                                                            onClick={() => setSelectedOrder(order)}
+                                                            className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group flex items-center justify-between"
+                                                        >
+                                                            <div className="flex items-center gap-4">
+                                                                <div className="w-12 h-12 rounded-lg bg-gray-50 text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-white group-hover:text-indigo-600 group-hover:shadow-sm transition-all">
+                                                                    #{order.transactionId.slice(-4)}
+                                                                </div>
+                                                                <div>
+                                                                    <p className="font-bold text-gray-900">{formatCurrency(order.total, storeSettings)}</p>
+                                                                    <p className="text-xs text-gray-500">
+                                                                        {new Date(order.timestamp).toLocaleDateString()} • {order.cart.length} items
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                            <div className="flex flex-col items-end gap-1.5">
+                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${order.fulfillmentStatus === 'fulfilled' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                                    order.fulfillmentStatus === 'shipped' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                                                                        order.fulfillmentStatus === 'cancelled' ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                                                                            'bg-amber-50 text-amber-700 border-amber-200'
+                                                                    }`}>
+                                                                    {order.fulfillmentStatus || 'Pending'}
+                                                                </span>
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
                                     </InfoCard>
                                 </div>
@@ -401,9 +504,10 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                             className="absolute top-[70px] right-4 left-auto w-56 bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up border border-gray-200 p-3"
                             onClick={e => e.stopPropagation()}
                         >
-                            <div className="grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-2 gap-2">
                                 {[
                                     { id: 'info', icon: UserCircleIcon, label: 'Info' },
+                                    { id: 'orders', icon: HiOutlineShoppingBag, label: 'Orders' },
                                     { id: 'security', icon: KeyIcon, label: 'Security' },
                                     { id: 'app', icon: DevicePhoneMobileIcon, label: 'App' }
                                 ].map((item) => (
@@ -450,6 +554,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     isOpen={isChangePasswordModalOpen}
                     onClose={() => setIsChangePasswordModalOpen(false)}
                     onSave={onChangePassword}
+                />
+                <OrderDetailsModal
+                    isOpen={!!selectedOrder}
+                    onClose={() => setSelectedOrder(null)}
+                    order={selectedOrder}
+                    orders={orders}
+                    storeSettings={storeSettings}
                 />
             </div>
         </>

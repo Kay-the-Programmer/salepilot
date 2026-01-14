@@ -13,8 +13,14 @@ const RUNTIME_BASE = (typeof window !== 'undefined' && (window as any).__API_URL
   (typeof document !== 'undefined' ? document.querySelector('meta[name="app:apiUrl"]')?.getAttribute('content') || undefined : undefined);
 
 // Ensure BASE_URL is set. If VITE_API_URL is provided, use it; otherwise fallback to localhost (dev).
+// Ensure BASE_URL is set. If VITE_API_URL is provided, use it; otherwise fallback to localhost (dev).
 // NOTE: VITE_API_URL should define the full path to api, e.g. "https://backend.com/api"
-const BASE_URL = (RUNTIME_BASE || ENV_BASE || LOCAL_BACKEND).replace(/\/+$/, '');
+// AUTO-FIX: We now enforce the /api suffix if it's missing, to avoid 404s when user only provides the domain.
+let rawBase = (RUNTIME_BASE || ENV_BASE || LOCAL_BACKEND).replace(/\/+$/, '');
+if (!rawBase.endsWith('/api')) {
+  rawBase += '/api';
+}
+const BASE_URL = rawBase;
 
 // Storage key used by authService
 const CURRENT_USER_KEY = 'salePilotUser';

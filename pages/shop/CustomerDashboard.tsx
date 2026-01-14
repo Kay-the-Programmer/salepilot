@@ -110,40 +110,13 @@ export default function CustomerDashboard() {
                 <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-indigo-50/50 rounded-full blur-[120px]"></div>
             </div>
 
-            {/* Premium Header */}
-            <header className="glass-effect border-b border-slate-200/60 sticky top-0 z-[60] h-20 flex items-center">
-                <div className="max-w-7xl mx-auto px-6 w-full flex items-center justify-between">
-                    <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/directory')}>
-                        <div className="bg-slate-900 p-2.5 rounded-2xl shadow-xl shadow-slate-200 ring-4 ring-slate-50 group-hover:scale-110 transition-transform duration-500">
-                            <HiOutlineBuildingStorefront className="h-6 w-6 text-white" />
-                        </div>
-                        <h1 className="text-xl font-black text-slate-900 tracking-tight">SalePilot <span className="text-indigo-600">Portal</span></h1>
-                    </div>
-
-                    <div className="flex items-center gap-4">
-                        <div className="hidden sm:flex flex-col items-end mr-2">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Signed in as</p>
-                            <p className="font-black text-slate-900 leading-none">{user?.name}</p>
-                        </div>
-                        <button
-                            onClick={handleLogout}
-                            className="p-3 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded-2xl transition-all active:scale-95 border border-transparent"
-                            title="Sign Out"
-                        >
-                            <HiOutlineArrowLeftOnRectangle className="w-6 h-6" />
-                        </button>
-                    </div>
-                </div>
-            </header>
+           
 
             <main className="flex-grow max-w-7xl mx-auto px-6 w-full py-20 animate-fadeIn">
                 {/* Hero Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20">
                     <div className="max-w-2xl">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-full text-indigo-600 text-[10px] font-bold uppercase tracking-[0.2em] mb-8">
-                            <HiOutlineBolt className="w-4 h-4" />
-                            Customer Ecosystem
-                        </div>
+                        
                         <h2 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tighter leading-[0.9] mb-6">
                             Hello, <br />
                             <span className="text-transparent bg-clip-text bg-gradient-to-br from-indigo-600 to-indigo-900">{user?.name.split(' ')[0]}.</span>
@@ -264,18 +237,6 @@ export default function CustomerDashboard() {
                     )}
                 </div>
             </main>
-
-            <footer className="py-20 text-center border-t border-slate-100 bg-white">
-                <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-6">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-slate-900 p-2 rounded-xl">
-                            <HiOutlineBuildingStorefront className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="text-xl font-black text-slate-900 tracking-tight">SalePilot Portal</span>
-                    </div>
-                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">The OS for modern commerce</p>
-                </div>
-            </footer>
 
             {snackbar && (
                 <Snackbar
