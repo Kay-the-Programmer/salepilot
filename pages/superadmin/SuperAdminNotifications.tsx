@@ -75,7 +75,7 @@ const SuperAdminNotifications: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-[calc(100vh-4rem)] flex flex-col lg:flex-row gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 h-auto lg:h-[calc(100vh-4rem)] flex flex-col lg:flex-row gap-6">
 
             {/* Create Broadcast Sequi */}
             <div className="lg:w-1/3">
@@ -91,7 +91,7 @@ const SuperAdminNotifications: React.FC = () => {
                     </div>
                 </div>
 
-                <form onSubmit={handleSend} className="space-y-4">
+                <form onSubmit={handleSend} className="space-y-4 pt-4 lg:pt-0">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                         <input
@@ -124,7 +124,7 @@ const SuperAdminNotifications: React.FC = () => {
             </div>
 
             {/* History List */}
-            <div className="lg:w-2/3 flex flex-col h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="lg:w-2/3 flex flex-col min-h-[500px] lg:min-h-0 lg:h-full bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
                     <h2 className="text-lg font-bold text-gray-900">Broadcast History</h2>
                 </div>
@@ -168,32 +168,34 @@ const SuperAdminNotifications: React.FC = () => {
                                 </button>
                             </div>
                             <div className="p-0 overflow-y-auto flex-1">
-                                <table className="min-w-full divide-y divide-gray-100">
-                                    <thead className="bg-gray-50 sticky top-0">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Store</th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-100">
-                                        {selectedNotif.statuses.map((s, i) => (
-                                            <tr key={i}>
-                                                <td className="px-6 py-4 text-sm text-gray-900">{s.storeName}</td>
-                                                <td className="px-6 py-4 text-sm">
-                                                    {s.isRead ? (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-100">
-                                                            Read
-                                                        </span>
-                                                    ) : (
-                                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
-                                                            Unseen
-                                                        </span>
-                                                    )}
-                                                </td>
+                                <div className="overflow-x-auto">
+                                    <table className="min-w-full divide-y divide-gray-100">
+                                        <thead className="bg-gray-50 sticky top-0">
+                                            <tr>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Store</th>
+                                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody className="bg-white divide-y divide-gray-100">
+                                            {selectedNotif.statuses.map((s, i) => (
+                                                <tr key={i}>
+                                                    <td className="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{s.storeName}</td>
+                                                    <td className="px-6 py-4 text-sm whitespace-nowrap">
+                                                        {s.isRead ? (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-50 text-green-700 border border-green-100">
+                                                                Read
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200">
+                                                                Unseen
+                                                            </span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>

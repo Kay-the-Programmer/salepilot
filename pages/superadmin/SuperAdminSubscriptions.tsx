@@ -78,14 +78,14 @@ const SuperAdminSubscriptions: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Subscription Management</h1>
                     <p className="text-sm text-gray-500 mt-1">Monitor billing status and record offline payments</p>
                 </div>
                 <button
                     onClick={() => openPaymentModal(stores[0]?.id || '')}
-                    className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition"
+                    className="flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition w-full sm:w-auto"
                 >
                     <CreditCardIcon className="w-5 h-5" />
                     Record New Payment
@@ -95,42 +95,44 @@ const SuperAdminSubscriptions: React.FC = () => {
             {/* Quick Stats Row could go here */}
 
             <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-                <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Store</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Current Plan Status</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">Expiration</th>
-                            <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100">
-                        {subStores.map(s => (
-                            <tr key={s.id} className="hover:bg-gray-50">
-                                <td className="px-6 py-4 text-sm font-medium text-gray-900">{s.name}</td>
-                                <td className="px-6 py-4">
-                                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize 
-                                        ${s.subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' :
-                                            s.subscriptionStatus === 'trial' ? 'bg-purple-100 text-purple-800' :
-                                                s.subscriptionStatus === 'past_due' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600'}`}>
-                                        {s.subscriptionStatus.replace('_', ' ')}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-sm text-gray-500">
-                                    {s.subscriptionEndsAt ? new Date(s.subscriptionEndsAt).toLocaleDateString() : '—'}
-                                </td>
-                                <td className="px-6 py-4 text-right">
-                                    <button
-                                        onClick={() => openPaymentModal(s.id)}
-                                        className="text-indigo-600 hover:text-indigo-900 text-sm font-medium hover:underline"
-                                    >
-                                        Extend / Pay
-                                    </button>
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Store</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Current Plan Status</th>
+                                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Expiration</th>
+                                <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase whitespace-nowrap">Actions</th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {subStores.map(s => (
+                                <tr key={s.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{s.name}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize 
+                                            ${s.subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' :
+                                                s.subscriptionStatus === 'trial' ? 'bg-purple-100 text-purple-800' :
+                                                    s.subscriptionStatus === 'past_due' ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-600'}`}>
+                                            {s.subscriptionStatus.replace('_', ' ')}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+                                        {s.subscriptionEndsAt ? new Date(s.subscriptionEndsAt).toLocaleDateString() : '—'}
+                                    </td>
+                                    <td className="px-6 py-4 text-right whitespace-nowrap">
+                                        <button
+                                            onClick={() => openPaymentModal(s.id)}
+                                            className="text-indigo-600 hover:text-indigo-900 text-sm font-medium hover:underline"
+                                        >
+                                            Extend / Pay
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             {/* Payment Modal */}

@@ -123,28 +123,30 @@ const SuperAdminDashboard: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-6">Revenue Performance</h2>
                 {/* Simple Bar Chart Visualization */}
-                <div className="h-64 flex items-end justify-between gap-2">
-                    {revSummary?.byMonth.slice(0, 12).map((m, i) => {
-                        const max = Math.max(...revSummary.byMonth.map(x => x.amount), 1);
-                        const height = (m.amount / max) * 100;
-                        return (
-                            <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
-                                <div className="w-full bg-indigo-50 rounded-t-lg relative h-full flex items-end overflow-hidden">
-                                    <div
-                                        style={{ height: `${height}%` }}
-                                        className="w-full bg-indigo-500 rounded-t-lg transition-all duration-500 group-hover:bg-indigo-600"
-                                    ></div>
-                                    <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
-                                        ${Number(m.amount).toFixed(2)}
+                <div className="overflow-x-auto">
+                    <div className="h-64 flex items-end justify-between gap-2 min-w-[600px]">
+                        {revSummary?.byMonth.slice(0, 12).map((m, i) => {
+                            const max = Math.max(...revSummary.byMonth.map(x => x.amount), 1);
+                            const height = (m.amount / max) * 100;
+                            return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-2 group">
+                                    <div className="w-full bg-indigo-50 rounded-t-lg relative h-full flex items-end overflow-hidden">
+                                        <div
+                                            style={{ height: `${height}%` }}
+                                            className="w-full bg-indigo-500 rounded-t-lg transition-all duration-500 group-hover:bg-indigo-600"
+                                        ></div>
+                                        <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
+                                            ${Number(m.amount).toFixed(2)}
+                                        </div>
                                     </div>
+                                    <span className="text-xs text-gray-500 font-medium truncate w-full text-center">{m.month}</span>
                                 </div>
-                                <span className="text-xs text-gray-500 font-medium truncate w-full text-center">{m.month}</span>
-                            </div>
-                        )
-                    })}
-                    {(!revSummary?.byMonth || revSummary.byMonth.length === 0) && (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No revenue data available</div>
-                    )}
+                            )
+                        })}
+                        {(!revSummary?.byMonth || revSummary.byMonth.length === 0) && (
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">No revenue data available</div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
