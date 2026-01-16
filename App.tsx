@@ -48,7 +48,15 @@ export default function App() {
             <Route path="/notifications" element={<Dashboard />} />
             <Route path="/profile" element={<Dashboard />} />
             <Route path="/settings" element={<Dashboard />} />
+            <Route path="/settings" element={<Dashboard />} />
+
+            {/* Super Admin Routes */}
             <Route path="/superadmin" element={<Dashboard />} />
+            <Route path="/superadmin/stores" element={<Dashboard />} />
+            <Route path="/superadmin/notifications" element={<Dashboard />} />
+            <Route path="/superadmin/subscriptions" element={<Dashboard />} />
+
+            <Route path="/marketing" element={<Dashboard />} />
             <Route path="/marketing" element={<Dashboard />} />
             <Route path="/directory" element={<MarketplacePage />} />
             <Route path="/directory/request/:requestId" element={<Dashboard />} />

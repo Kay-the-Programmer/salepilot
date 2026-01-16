@@ -25,7 +25,10 @@ import AllSalesPage from './pages/AllSalesPage';
 import AuditLogPage from './pages/AuditLogPage';
 import OrdersPage from './pages/OrdersPage';
 import NotificationsPage from './pages/NotificationsPage';
-import SuperAdminPage from './pages/SuperAdminPage';
+import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
+import SuperAdminStores from './pages/superadmin/SuperAdminStores';
+import SuperAdminNotifications from './pages/superadmin/SuperAdminNotifications';
+import SuperAdminSubscriptions from './pages/superadmin/SuperAdminSubscriptions';
 import MarketplacePage from './pages/shop/MarketplacePage';
 import MarketplaceDashboard from './pages/shop/CustomerDashboard'; // The Marketplace Portal
 import CustomerOrdersPage from './pages/customers/CustomerDashboard'; // The My Orders Page
@@ -38,6 +41,8 @@ import Bars3Icon from './components/icons/Bars3Icon';
 import BellAlertIcon from './components/icons/BellAlertIcon';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useNavigate, useLocation } from 'react-router-dom';
+import SystemNotificationModal from './components/SystemNotificationModal';
+import TourGuide from './components/TourGuide';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -51,7 +56,7 @@ type SnackbarState = {
 };
 
 const PERMISSIONS: Record<User['role'], string[]> = {
-    superadmin: ['superadmin', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
+    superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
     admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory'],
     staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory'],
     inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory'],
@@ -108,6 +113,30 @@ export default function Dashboard() {
     const [isOnline, setIsOnline] = useState(getOnlineStatus());
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSync, setLastSync] = useState<number | null>(null);
+
+    // System Priority Notification State
+    const [priorityNotification, setPriorityNotification] = useState<Announcement | null>(null);
+
+    useEffect(() => {
+        // Check for unread system priority notifications
+        // We pick the first one we find. If there are multiple, they will appear one after another as they are acknowledged.
+        const priority = announcements.find(a => !a.isRead && (a.type === 'system_priority' || a.type === 'admin_broadcast'));
+        setPriorityNotification(priority || null);
+    }, [announcements]);
+
+    const handleAcknowledgeNotification = async () => {
+        if (!priorityNotification) return;
+        try {
+            await api.patch(`/notifications/${priorityNotification.id}/read`, {});
+            // Optimistically update local state to hide the modal and potentially show the next one
+            setAnnouncements(prev => prev.map(a => a.id === priorityNotification.id ? { ...a, isRead: true } : a));
+            setPriorityNotification(null);
+            showSnackbar('Notification acknowledged', 'success');
+        } catch (err: any) {
+            console.error('Failed to mark notification as read:', err);
+            showSnackbar('Failed to acknowledge notification', 'error');
+        }
+    };
 
     const showSnackbar = useCallback((message: string, type: SnackbarType = 'info') => {
         setSnackbar({ message, type });
@@ -279,6 +308,33 @@ export default function Dashboard() {
         };
         initSyncStatus();
     }, []);
+
+    // Notification Polling (every 30 seconds)
+    useEffect(() => {
+        if (!currentUser?.currentStoreId) return;
+
+        const pollNotifications = async () => {
+            if (!getOnlineStatus()) return;
+            try {
+                const freshAnnouncements = await api.get<Announcement[]>(`/notifications/stores/${currentUser.currentStoreId}`);
+                setAnnouncements(prev => {
+                    // Simple check to avoid unnecessary re-renders if length/IDs haven't changed
+                    // Since specific content change is less likely to soft-update than "new item arrived"
+                    const prevIds = prev.map(a => a.id).join(',');
+                    const newIds = freshAnnouncements.map(a => a.id).join(',');
+                    if (prevIds !== newIds) {
+                        return freshAnnouncements;
+                    }
+                    return prev;
+                });
+            } catch (err) {
+                console.warn('Background notification poll failed:', err);
+            }
+        };
+
+        const intervalId = setInterval(pollNotifications, 30000); // 30 seconds
+        return () => clearInterval(intervalId);
+    }, [currentUser?.currentStoreId]);
 
     useEffect(() => {
         const checkSession = async () => {
@@ -1012,8 +1068,13 @@ export default function Dashboard() {
 
             case 'track':
                 return <CustomerRequestTrackingPage />;
-            case 'superadmin':
-                return <SuperAdminPage />;
+            case 'superadmin': {
+                const subPath = location.pathname.split('/')[2];
+                if (subPath === 'stores') return <SuperAdminStores />;
+                if (subPath === 'notifications') return <SuperAdminNotifications />;
+                if (subPath === 'subscriptions') return <SuperAdminSubscriptions />;
+                return <SuperAdminDashboard />;
+            }
             case 'marketing':
                 return <MarketingPage />;
             case 'inventory':
@@ -1046,14 +1107,14 @@ export default function Dashboard() {
                     user={currentUser}
                     onLogout={handleLogout}
                     isOnline={isOnline}
-                    allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? ['superadmin'] : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]}
+                    allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]}
                     superMode={currentUser.role === 'superadmin' ? superMode : undefined}
                     onChangeSuperMode={(mode) => {
                         setSuperMode(mode);
                         try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
                         // Redirect to appropriate default page if current is no longer permitted
                         const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
-                        const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin'] : PERMISSIONS[effectiveRole];
+                        const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS[effectiveRole];
                         const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
                         if (!allowed.includes(page)) {
                             const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
@@ -1128,6 +1189,17 @@ export default function Dashboard() {
 
             {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
             <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
+            <TourGuide user={currentUser} />
+
+            {priorityNotification && (
+                <SystemNotificationModal
+                    isOpen={true}
+                    title={priorityNotification.title}
+                    message={priorityNotification.message}
+                    date={priorityNotification.createdAt}
+                    onAcknowledge={handleAcknowledgeNotification}
+                />
+            )}
         </div>
     );
 }

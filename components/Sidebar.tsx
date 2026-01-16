@@ -21,7 +21,8 @@ import {
     ClipboardDocumentListIcon,
     SwatchIcon,
     BellAlertIcon,
-    SparklesIcon
+    SparklesIcon,
+    CreditCardIcon
 } from './icons';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 import logo from '../assets/logo.png';
@@ -168,11 +169,32 @@ const NAV_ITEMS = [
         badge: null
     },
     {
-        name: 'Superadmin',
+        name: 'Overview',
         page: 'superadmin',
-        icon: UserIcon,
+        icon: HomeIcon,
         roles: ['superadmin'],
-        badge: 'Pro'
+        badge: null
+    },
+    {
+        name: 'Stores',
+        page: 'superadmin/stores',
+        icon: BuildingStorefrontIcon,
+        roles: ['superadmin'],
+        badge: null
+    },
+    {
+        name: 'Broadcasts',
+        page: 'superadmin/notifications',
+        icon: BellAlertIcon,
+        roles: ['superadmin'],
+        badge: null
+    },
+    {
+        name: 'Billing',
+        page: 'superadmin/subscriptions',
+        icon: CreditCardIcon,
+        roles: ['superadmin'],
+        badge: null
     },
     {
         name: 'Profile',
@@ -450,8 +472,10 @@ export default function Sidebar({
 
                         return (
                             <NavLink
+                                id={`sidebar-nav-${item.page.replace('/', '-')}`}
                                 key={item.page}
                                 to={`/${item.page}`}
+                                end={item.page === 'superadmin'}
                                 className={({ isActive }) => `
                                     w-full flex items-center gap-3 px-4 py-3 rounded-xl
                                     transition-all duration-200 group relative
@@ -484,6 +508,7 @@ export default function Sidebar({
                 <div className="px-3 py-4 border-t border-gray-200 space-y-4">
                     {/* User Profile */}
                     <NavLink
+                        id="sidebar-profile-section"
                         to="/profile"
                         className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isActive ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
                         role="button"

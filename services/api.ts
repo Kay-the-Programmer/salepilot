@@ -250,8 +250,8 @@ export const api = {
     }
   },
 
-  async post<T>(endpoint: string, body?: any): Promise<T | (T & { offline: true })> {
-    const options: RequestInit = {
+  async post<T>(endpoint: string, body?: any, options: { useCache?: boolean; store?: string; skipQueue?: boolean } = {}): Promise<T | (T & { offline: true })> {
+    const reqOptions: RequestInit = {
       method: 'POST',
       body: body instanceof FormData ? body : JSON.stringify(body ?? {}),
       // For FormData, let the browser set the correct multipart headers
@@ -259,17 +259,21 @@ export const api = {
     };
 
     if (!getOnlineStatus()) {
+      if (options.skipQueue) {
+        throw new Error('No internet connection');
+      }
       const tempId = await applyOptimisticUpdate(endpoint, 'POST', body);
-      if (tempId) (options as any)._tempId = tempId;
-      return queueAndReturn<T>(endpoint, options, body);
+      if (tempId) (reqOptions as any)._tempId = tempId;
+      return queueAndReturn<T>(endpoint, reqOptions, body);
     }
 
     try {
-      return await request<T>(endpoint, options);
+      return await request<T>(endpoint, reqOptions);
     } catch (err: any) {
       // Network errors -> queue; server errors should bubble up
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
-        return queueAndReturn<T>(endpoint, options, body);
+        if (options.skipQueue) throw err;
+        return queueAndReturn<T>(endpoint, reqOptions, body);
       }
       throw err;
     }
