@@ -29,6 +29,8 @@ import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 import Bars3BottomLeftIcon from '../components/icons/Bars3BottomLeftIcon';
 
 import Bars3Icon from '../components/icons/Bars3Icon';
+import GridIcon from '../components/icons/GridIcon';
+import ListIcon from '../components/icons/ListIcon';
 import logo from '../assets/logo.png';
 
 interface SalesPageProps {
@@ -69,6 +71,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
     const lastScrollY = useRef(0);
+
+    // View Mode State (grid or list)
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+        const saved = localStorage.getItem('pos-view-mode');
+        return (saved === 'list' || saved === 'grid') ? saved : 'grid';
+    });
 
     // Cart Actions Tab State
     const [cartActionTab, setCartActionTab] = useState<'customer' | 'summary' | 'payment'>('payment');
@@ -115,6 +123,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const [showQuickActions, setShowQuickActions] = useState<boolean>(false);
 
+    // Persist view mode to localStorage
+    useEffect(() => {
+        localStorage.setItem('pos-view-mode', viewMode);
+    }, [viewMode]);
 
     // Quick actions for popular products
     const quickActions = useMemo(() => {
@@ -593,12 +605,35 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 className="w-full md:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
+                                        {/* View Toggle (Desktop Only) */}
+                                        <div className="hidden md:flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                                            <button
+                                                onClick={() => setViewMode('grid')}
+                                                className={`p-1.5 rounded transition-colors ${viewMode === 'grid'
+                                                        ? 'bg-white text-blue-600 shadow-sm'
+                                                        : 'text-slate-500 hover:text-slate-700'
+                                                    }`}
+                                                title="Grid view"
+                                            >
+                                                <GridIcon className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => setViewMode('list')}
+                                                className={`p-1.5 rounded transition-colors ${viewMode === 'list'
+                                                        ? 'bg-white text-blue-600 shadow-sm'
+                                                        : 'text-slate-500 hover:text-slate-700'
+                                                    }`}
+                                                title="List view"
+                                            >
+                                                <ListIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
 
-                            {/* Products Grid */}
+                            {/* Products Grid/List */}
                             <div className="flex-1 overflow-y-auto p-4 scroll-smooth">
                                 {isLoading ? (
                                     <div className="max-w-7xl mx-auto w-full">
@@ -610,103 +645,209 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     </div>
                                 ) : (
                                     <div className="max-w-7xl mx-auto w-full">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                                            {paginatedProducts.map(product => {
-                                                const numericStock = typeof (product as any).stock === 'number'
-                                                    ? (product as any).stock
-                                                    : (parseFloat(String((product as any).stock)) || 0);
-                                                const isSoldOut = numericStock === 0;
-                                                const lowStockThreshold = product.reorderPoint || storeSettings.lowStockThreshold;
-                                                const isLowStock = numericStock > 0 && numericStock <= lowStockThreshold;
-                                                const cartItem = cart.find(item => item.productId === product.id);
+                                        {viewMode === 'grid' ? (
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                                                {paginatedProducts.map(product => {
+                                                    const numericStock = typeof (product as any).stock === 'number'
+                                                        ? (product as any).stock
+                                                        : (parseFloat(String((product as any).stock)) || 0);
+                                                    const isSoldOut = numericStock === 0;
+                                                    const lowStockThreshold = product.reorderPoint || storeSettings.lowStockThreshold;
+                                                    const isLowStock = numericStock > 0 && numericStock <= lowStockThreshold;
+                                                    const cartItem = cart.find(item => item.productId === product.id);
 
-                                                return (
-                                                    <div
-                                                        key={product.id}
-                                                        onClick={() => !isSoldOut && addToCart(product)}
-                                                        className={`
-                                    group relative bg-white rounded-xl border border-slate-200 
-                                    transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden cursor-pointer
-                                    ${isSoldOut ? 'opacity-60 grayscale' : ''}
-                                    ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
-                                `}
-                                                    >
-                                                        {/* Image Container */}
-                                                        <div className="aspect-square bg-slate-100 relative overflow-hidden">
-                                                            {product.imageUrls?.[0] ? (
-                                                                <img
-                                                                    src={buildAssetUrl(product.imageUrls[0])}
-                                                                    alt={product.name}
-                                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                                                />
-                                                            ) : (
-                                                                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                                                                    <ShoppingCartIcon className="w-12 h-12 opacity-20" />
+                                                    return (
+                                                        <div
+                                                            key={product.id}
+                                                            onClick={() => !isSoldOut && addToCart(product)}
+                                                            className={`
+                                        group relative bg-white rounded-xl border border-slate-200 
+                                        transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden cursor-pointer
+                                        ${isSoldOut ? 'opacity-60 grayscale' : ''}
+                                        ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
+                                    `}
+                                                        >
+                                                            {/* Image Container */}
+                                                            <div className="aspect-square bg-slate-100 relative overflow-hidden">
+                                                                {product.imageUrls?.[0] ? (
+                                                                    <img
+                                                                        src={buildAssetUrl(product.imageUrls[0])}
+                                                                        alt={product.name}
+                                                                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                                                        <ShoppingCartIcon className="w-12 h-12 opacity-20" />
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Stock Badge */}
+                                                                <div className="absolute top-2 right-2">
+                                                                    {isSoldOut ? (
+                                                                        <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                                                                            Sold Out
+                                                                        </div>
+                                                                    ) : isLowStock ? (
+                                                                        <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                                                                            {numericStock} left
+                                                                        </div>
+                                                                    ) : null}
                                                                 </div>
-                                                            )}
 
-                                                            {/* Stock Badge */}
-                                                            <div className="absolute top-2 right-2">
-                                                                {isSoldOut ? (
-                                                                    <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                                                                        Sold Out
+                                                                {/* Quick Add Overlay */}
+                                                                <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${cartItem ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                                                                    <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
+                                                                        {cartItem ? (
+                                                                            <span className="font-bold text-blue-600 text-lg">{cartItem.quantity}</span>
+                                                                        ) : (
+                                                                            <PlusIcon className="w-6 h-6 text-slate-900" />
+                                                                        )}
                                                                     </div>
-                                                                ) : isLowStock ? (
-                                                                    <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                                                                        {numericStock} left
-                                                                    </div>
-                                                                ) : null}
+                                                                </div>
                                                             </div>
 
-                                                            {/* Quick Add Overlay */}
-                                                            <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${cartItem ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                                                                <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
-                                                                    {cartItem ? (
-                                                                        <span className="font-bold text-blue-600 text-lg">{cartItem.quantity}</span>
-                                                                    ) : (
-                                                                        <PlusIcon className="w-6 h-6 text-slate-900" />
+                                                            {/* Product Details */}
+                                                            <div className="p-3">
+                                                                <h3 className="font-medium text-slate-900 text-sm line-clamp-2 h-10 mb-1 leading-snug group-hover:text-blue-600 transition-colors">
+                                                                    {product.name}
+                                                                </h3>
+                                                                <div className="flex items-end justify-between">
+                                                                    <div>
+                                                                        <p className="text-xs text-slate-500 mb-0.5">{product.sku}</p>
+                                                                        <div className="font-bold text-slate-900 text-base">
+                                                                            {formatCurrency(product.price, storeSettings)}
+                                                                        </div>
+                                                                    </div>
+
+                                                                    {/* Quantity Controls Overlay (only visible if in cart) */}
+                                                                    {cartItem && (
+                                                                        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                                                            <button
+                                                                                onClick={() => updateQuantity(product.id, cartItem.quantity - getStepFor(product.unitOfMeasure))}
+                                                                                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                                                            >
+                                                                                -
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => updateQuantity(product.id, cartItem.quantity + getStepFor(product.unitOfMeasure))}
+                                                                                className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                                                            >
+                                                                                +
+                                                                            </button>
+                                                                        </div>
                                                                     )}
                                                                 </div>
                                                             </div>
                                                         </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {paginatedProducts.map(product => {
+                                                    const numericStock = typeof (product as any).stock === 'number'
+                                                        ? (product as any).stock
+                                                        : (parseFloat(String((product as any).stock)) || 0);
+                                                    const isSoldOut = numericStock === 0;
+                                                    const lowStockThreshold = product.reorderPoint || storeSettings.lowStockThreshold;
+                                                    const isLowStock = numericStock > 0 && numericStock <= lowStockThreshold;
+                                                    const cartItem = cart.find(item => item.productId === product.id);
 
-                                                        {/* Product Details */}
-                                                        <div className="p-3">
-                                                            <h3 className="font-medium text-slate-900 text-sm line-clamp-2 h-10 mb-1 leading-snug group-hover:text-blue-600 transition-colors">
-                                                                {product.name}
-                                                            </h3>
-                                                            <div className="flex items-end justify-between">
-                                                                <div>
-                                                                    <p className="text-xs text-slate-500 mb-0.5">{product.sku}</p>
-                                                                    <div className="font-bold text-slate-900 text-base">
+                                                    return (
+                                                        <div
+                                                            key={product.id}
+                                                            onClick={() => !isSoldOut && addToCart(product)}
+                                                            className={`
+                                        group bg-white rounded-xl border border-slate-200 p-3
+                                        transition-all duration-200 hover:shadow-md cursor-pointer flex items-center gap-4
+                                        ${isSoldOut ? 'opacity-60 grayscale' : ''}
+                                        ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
+                                    `}
+                                                        >
+                                                            {/* Image */}
+                                                            <div className="w-20 h-20 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden relative">
+                                                                {product.imageUrls?.[0] ? (
+                                                                    <img
+                                                                        src={buildAssetUrl(product.imageUrls[0])}
+                                                                        alt={product.name}
+                                                                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-slate-300">
+                                                                        <ShoppingCartIcon className="w-8 h-8 opacity-20" />
+                                                                    </div>
+                                                                )}
+                                                                {cartItem && (
+                                                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                                                                        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
+                                                                            <span className="font-bold text-blue-600 text-sm">{cartItem.quantity}</span>
+                                                                        </div>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            {/* Product Info */}
+                                                            <div className="flex-1 min-w-0">
+                                                                <h3 className="font-semibold text-slate-900 text-sm mb-1 group-hover:text-blue-600 transition-colors truncate">
+                                                                    {product.name}
+                                                                </h3>
+                                                                <p className="text-xs text-slate-500 mb-1">{product.sku}</p>
+                                                                <div className="flex items-center gap-2">
+                                                                    {isSoldOut ? (
+                                                                        <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded">
+                                                                            Sold Out
+                                                                        </span>
+                                                                    ) : isLowStock ? (
+                                                                        <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                                                                            {numericStock} left
+                                                                        </span>
+                                                                    ) : (
+                                                                        <span className="text-xs text-slate-500">
+                                                                            {numericStock} in stock
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Price and Actions */}
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="text-right">
+                                                                    <div className="font-bold text-slate-900 text-lg">
                                                                         {formatCurrency(product.price, storeSettings)}
                                                                     </div>
                                                                 </div>
-
-                                                                {/* Quantity Controls Overlay (only visible if in cart) */}
-                                                                {cartItem && (
-                                                                    <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                                                {cartItem ? (
+                                                                    <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                                                         <button
                                                                             onClick={() => updateQuantity(product.id, cartItem.quantity - getStepFor(product.unitOfMeasure))}
-                                                                            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                                                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
                                                                         >
                                                                             -
                                                                         </button>
                                                                         <button
                                                                             onClick={() => updateQuantity(product.id, cartItem.quantity + getStepFor(product.unitOfMeasure))}
-                                                                            className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                                                            className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
                                                                         >
                                                                             +
                                                                         </button>
                                                                     </div>
+                                                                ) : (
+                                                                    <button
+                                                                        className="w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 flex items-center justify-center text-blue-600 transition-colors opacity-0 group-hover:opacity-100"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            !isSoldOut && addToCart(product);
+                                                                        }}
+                                                                    >
+                                                                        <PlusIcon className="w-5 h-5" />
+                                                                    </button>
                                                                 )}
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
 
                                         {filteredProducts.length === 0 && (
                                             <div className="text-center py-12">

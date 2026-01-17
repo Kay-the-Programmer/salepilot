@@ -7,7 +7,6 @@ import XMarkIcon from './icons/XMarkIcon';
 import CameraIcon from './icons/CameraIcon';
 import CameraCaptureModal from './CameraCaptureModal';
 import ArrowUpTrayIcon from './icons/ArrowUpTrayIcon';
-import { toSnakeCase } from "@/utils/helpers.ts";
 import SupplierFormModal from './suppliers/SupplierFormModal';
 import UnifiedScannerModal from './UnifiedScannerModal';
 import { InputField } from './ui/InputField';
@@ -139,19 +138,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         setProduct(prev => ({ ...prev, barcode: prev.sku }));
     };
 
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        setImageFiles(prev => [...prev, ...files]);
-    };
-
-    const removeSelectedFile = (index: number) => {
-        setImageFiles(prev => prev.filter((_, i) => i !== index));
-    };
-
-    const markImageForDeletion = (imageUrl: string) => {
-        setImagesToDelete(prev => [...prev, imageUrl]);
-        setImages(prev => prev.filter(url => url !== imageUrl));
-    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -187,7 +173,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
             formData.append('custom_attributes', JSON.stringify(product.customAttributes || {}));
 
             const dataUrlImages = images.filter(url => url.startsWith('data:'));
-            const serverImages = images.filter(url => !url.startsWith('data:'));
 
             const imagesToKeep = productToEdit
                 ? productToEdit.imageUrls.filter(url =>
@@ -267,17 +252,46 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         const files = event.target.files;
         if (files) {
             const newFiles = Array.from(files);
-            setImageFiles(prev => [...prev, ...newFiles]);
 
-            newFiles.forEach(file => {
+            // Clear any previous errors
+            setError('');
+
+            // Validate file types and sizes
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+            const validFiles = newFiles.filter(file => {
+                if (!file.type.startsWith('image/')) {
+                    setError('Please select only image files');
+                    return false;
+                }
+                if (file.size > MAX_FILE_SIZE) {
+                    setError(`Image ${file.name} is too large. Maximum size is 5MB`);
+                    return false;
+                }
+                return true;
+            });
+
+            if (validFiles.length === 0) {
+                event.target.value = '';
+                return;
+            }
+
+            setImageFiles(prev => [...prev, ...validFiles]);
+
+            validFiles.forEach(file => {
                 const reader = new FileReader();
                 reader.onloadend = () => {
                     if (typeof reader.result === 'string') {
                         setImages(prev => [...prev, reader.result as string]);
                     }
                 };
+                reader.onerror = () => {
+                    setError(`Failed to read file: ${file.name}`);
+                };
                 reader.readAsDataURL(file);
             });
+
+            // Reset the input value to allow selecting the same file again
+            event.target.value = '';
         }
     };
 
@@ -314,10 +328,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         setIsCameraModalOpen(false);
     };
 
-    const handleBarcodeScan = (code: string) => {
-        setProduct(prev => ({ ...prev, barcode: code }));
-        setIsBarcodeScannerOpen(false);
-    };
 
     const handleCreateSupplier = async (newSupplier: Supplier) => {
         try {
@@ -361,26 +371,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         { id: 'images', label: 'Images', icon: '🖼️' },
     ];
 
-    const renderMobileSectionNav = () => (
-        <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-10">
-            <div className="flex overflow-x-auto hide-scrollbar">
-                {mobileSections.map((section) => (
-                    <button
-                        key={section.id}
-                        type="button"
-                        onClick={() => setActiveSection(section.id)}
-                        className={`flex-1 min-w-0 px-3 py-3 flex flex-col items-center justify-center transition-colors ${activeSection === section.id
-                            ? 'bg-blue-50 text-blue-600 border-t-2 border-blue-600'
-                            : 'text-gray-600 hover:bg-gray-50'
-                            }`}
-                    >
-                        <span className="text-lg mb-1">{section.icon}</span>
-                        <span className="text-xs font-medium">{section.label}</span>
-                    </button>
-                ))}
-            </div>
-        </div>
-    );
 
     const renderMobileSectionContent = () => {
         switch (activeSection) {
@@ -820,14 +810,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <span className="text-sm font-medium text-gray-600">Camera</span>
                                 </button>
                             </div>
-                            <input
-                                type="file"
-                                ref={fileInputRef}
-                                onChange={handleImageUpload}
-                                className="hidden"
-                                accept="image/*"
-                                multiple
-                            />
                             <p className="text-xs text-gray-500">The first image will be the primary display image.</p>
                         </div>
 
@@ -1385,6 +1367,15 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 </div>
                             </div>
                         </div>
+
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            className="hidden"
+                            accept="image/*"
+                            multiple
+                        />
 
                         {/* Footer */}
                         <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6">
