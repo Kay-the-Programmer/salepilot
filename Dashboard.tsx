@@ -29,6 +29,7 @@ import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
 import SuperAdminStores from './pages/superadmin/SuperAdminStores';
 import SuperAdminNotifications from './pages/superadmin/SuperAdminNotifications';
 import SuperAdminSubscriptions from './pages/superadmin/SuperAdminSubscriptions';
+import SuperAdminStoreDetails from './pages/superadmin/SuperAdminStoreDetails';
 import MarketplacePage from './pages/shop/MarketplacePage';
 import MarketplaceDashboard from './pages/shop/CustomerDashboard'; // The Marketplace Portal
 import CustomerOrdersPage from './pages/customers/CustomerDashboard'; // The My Orders Page
@@ -37,8 +38,11 @@ import MarketingPage from './pages/MarketingPage';
 import MarketplaceRequestActionPage from './pages/MarketplaceRequestActionPage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
-import Bars3Icon from './components/icons/Bars3Icon';
-import BellAlertIcon from './components/icons/BellAlertIcon';
+import {
+    Bars3Icon,
+    BellAlertIcon,
+    BuildingStorefrontIcon
+} from './components/icons';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SystemNotificationModal from './components/SystemNotificationModal';
@@ -399,6 +403,8 @@ export default function Dashboard() {
     useEffect(() => {
         if (currentUser?.currentStoreId) {
             fetchData();
+        } else {
+            setIsLoading(false);
         }
     }, [currentUser?.currentStoreId, fetchData]);
 
@@ -991,6 +997,15 @@ export default function Dashboard() {
         }
 
         if (!storeSettings && !isLoading) {
+            if (currentUser.role === 'superadmin' && !currentUser.currentStoreId) {
+                return (
+                    <div className="flex flex-col h-screen items-center justify-center p-8 text-center text-gray-500 space-y-4">
+                        <BuildingStorefrontIcon className="w-16 h-16 text-gray-300" />
+                        <p className="text-xl font-medium text-gray-700">No Store Selected</p>
+                        <p className="max-w-md">Please select a store from the sidebar menu to view its dashboard and data.</p>
+                    </div>
+                );
+            }
             return <div className="flex h-screen items-center justify-center p-8 text-center text-red-500">Could not load store settings. The application cannot start. Please check your connection or local data.</div>;
         }
     }
@@ -1069,8 +1084,14 @@ export default function Dashboard() {
             case 'track':
                 return <CustomerRequestTrackingPage />;
             case 'superadmin': {
-                const subPath = location.pathname.split('/')[2];
-                if (subPath === 'stores') return <SuperAdminStores />;
+                const parts = location.pathname.split('/');
+                const subPath = parts[2];
+                const id = parts[3];
+
+                if (subPath === 'stores') {
+                    if (id) return <SuperAdminStoreDetails storeId={id} />;
+                    return <SuperAdminStores />;
+                }
                 if (subPath === 'notifications') return <SuperAdminNotifications />;
                 if (subPath === 'subscriptions') return <SuperAdminSubscriptions />;
                 return <SuperAdminDashboard />;
