@@ -90,14 +90,13 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4" onClick={onClose}>
             {/* Backdrop with blur */}
             <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
-                onClick={onClose}
+                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity -z-10"
             />
 
-            <div className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up max-h-[90vh]">
+            <div className="relative z-10 bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     <div className="px-6 py-5 border-b border-slate-200">
                         <div className="flex items-center justify-between">
