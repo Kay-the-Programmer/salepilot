@@ -299,6 +299,21 @@ export interface SupplierInvoice {
     payments: SupplierPayment[];
 }
 
+export interface Expense {
+    id: string;
+    date: string;
+    description: string;
+    amount: number;
+    expenseAccountId: string;
+    expenseAccountName: string;
+    paymentAccountId: string;
+    paymentAccountName: string;
+    category?: string;
+    reference?: string;
+    createdBy: string;
+    createdAt: string;
+}
+
 
 export interface Announcement {
     id: string;

@@ -1,10 +1,7 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import JsBarcode from 'jsbarcode';
 import { Sale, StoreSettings } from '@/types.ts';
 import { SnackbarType } from '../../App';
-import EnvelopeIcon from '../icons/EnvelopeIcon';
-import DevicePhoneMobileIcon from '../icons/DevicePhoneMobileIcon';
-import LinkIcon from '../icons/LinkIcon';
 import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
 import { formatCurrency } from '@/utils/currency.ts';
@@ -22,9 +19,6 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
     const { transactionId, timestamp, cart, total, subtotal, tax, discount, customerName, storeCreditUsed } = saleData;
     const modalPrintAreaRef = useRef<HTMLDivElement>(null);
     const barcodeRef = useRef<HTMLCanvasElement>(null);
-    const [email, setEmail] = useState('');
-    const [sms, setSms] = useState('');
-    const [isSending, setIsSending] = useState(false);
 
     useEffect(() => {
         if (isOpen && transactionId && barcodeRef.current) {
@@ -131,43 +125,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         }, 250);
     };
 
-    const handleShare = async (type: 'email' | 'sms') => {
-        setIsSending(true);
 
-        try {
-            if (type === 'email') {
-                if (!email.trim()) {
-                    showSnackbar('Please enter an email address.', 'error');
-                    return;
-                }
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 500));
-                showSnackbar(`Receipt sent to ${email}`, 'success');
-                setEmail('');
-            } else {
-                if (!sms.trim()) {
-                    showSnackbar('Please enter a phone number.', 'error');
-                    return;
-                }
-                // Simulate API call
-                await new Promise(resolve => setTimeout(resolve, 500));
-                showSnackbar(`Receipt sent to ${sms}`, 'success');
-                setSms('');
-            }
-        } finally {
-            setIsSending(false);
-        }
-    };
-
-    const handleCopyLink = async () => {
-        const receiptLink = `${window.location.origin}/receipt/${transactionId}`;
-        try {
-            await navigator.clipboard.writeText(receiptLink);
-            showSnackbar('Receipt link copied to clipboard.', 'success');
-        } catch (err) {
-            showSnackbar('Failed to copy link', 'error');
-        }
-    };
 
     return (
         <div
@@ -294,90 +252,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                         </div>
                     </div>
 
-                    {/* Share options */}
-                    <div className="px-6 pb-6 border-t border-gray-200 pt-6">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">Share Receipt</h4>
 
-                        {/* Email */}
-                        <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="p-2 bg-blue-50 rounded-lg">
-                                    <EnvelopeIcon className="w-5 h-5 text-blue-600" />
-                                </div>
-                                <label htmlFor="email" className="text-sm font-medium text-gray-700">Email</label>
-                            </div>
-                            <div className="flex gap-2">
-                                <input
-                                    id="email"
-                                    type="email"
-                                    placeholder="customer@example.com"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                    className="flex-1 block w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                                    disabled={isSending}
-                                />
-                                <Button
-                                    onClick={() => handleShare('email')}
-                                    disabled={isSending || !email.trim()}
-                                    variant="primary"
-                                    className="bg-blue-600 hover:bg-blue-700 active:bg-blue-800"
-                                >
-                                    {isSending ? '...' : 'Send'}
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* SMS */}
-                        <div className="mb-4">
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="p-2 bg-green-50 rounded-lg">
-                                    <DevicePhoneMobileIcon className="w-5 h-5 text-green-600" />
-                                </div>
-                                <label htmlFor="sms" className="text-sm font-medium text-gray-700">SMS</label>
-                            </div>
-                            <div className="flex gap-2">
-                                <input
-                                    id="sms"
-                                    type="tel"
-                                    placeholder="+1 (555) 123-4567"
-                                    value={sms}
-                                    onChange={e => setSms(e.target.value)}
-                                    className="flex-1 block w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                                    disabled={isSending}
-                                />
-                                <Button
-                                    onClick={() => handleShare('sms')}
-                                    disabled={isSending || !sms.trim()}
-                                    variant="success"
-                                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 text-white"
-                                >
-                                    {isSending ? '...' : 'Send'}
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Copy Link */}
-                        <div className="p-4 bg-gray-50 rounded-xl">
-                            <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-50 rounded-lg">
-                                        <LinkIcon className="w-5 h-5 text-purple-600" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-medium text-gray-900">Shareable Link</p>
-                                        <p className="text-xs text-gray-500">Copy to clipboard</p>
-                                    </div>
-                                </div>
-                                <Button
-                                    onClick={handleCopyLink}
-                                    variant="secondary"
-                                    className="bg-purple-600 text-white hover:bg-purple-700 active:bg-purple-800 border-none"
-                                >
-                                    Copy
-                                </Button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 {/* Fixed action buttons */}

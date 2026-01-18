@@ -6,7 +6,7 @@ import ShopHomePage from './pages/shop/ShopHomePage';
 import ShopProductList from './pages/shop/ShopProductList';
 import ShopProductDetail from './pages/shop/ShopProductDetail';
 import CartPage from './pages/shop/CartPage';
-import LandingPage from './pages/LandingPage';
+
 import MarketplacePage from './pages/shop/MarketplacePage';
 import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
 import TitleBar from './components/TitleBar';
@@ -17,10 +17,10 @@ export default function App() {
             <TitleBar />
             <div className="flex-1 overflow-auto">
                 <Routes>
-                    {/* Public Landing Page - Bypassed in Electron to start at Login */}
+                    {/* Default route starts at Login/Dashboard */}
                     <Route
                         path="/"
-                        element={typeof window !== 'undefined' && (window as any).electronAPI ? <Dashboard /> : <LandingPage />}
+                        element={<Dashboard />}
                     />
 
                     {/* Public Online Store Routes */}

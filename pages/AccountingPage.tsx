@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Account, JournalEntry, StoreSettings, AccountType, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier } from '../types';
+import { Account, JournalEntry, StoreSettings, AccountType, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier, Expense } from '../types';
 import Header from '../components/Header';
 import { formatCurrency } from '../utils/currency';
 import PlusIcon from '../components/icons/PlusIcon';
@@ -32,6 +32,9 @@ import EyeIcon from '../components/icons/EyeIcon';
 import CalendarDaysIcon from '../components/icons/CalendarDaysIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
 import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
+import ExpenseFormModal from '../components/accounting/ExpenseFormModal';
+import AccountAdjustmentModal from '../components/accounting/AccountAdjustmentModal';
+import ScaleIcon from '../components/icons/Scale';
 
 // --- Subcomponents for AccountingPage ---
 const AccountingDashboard: React.FC<{ accounts: Account[], journalEntries: JournalEntry[], storeSettings: StoreSettings }> = ({ accounts, journalEntries, storeSettings }) => {
@@ -365,7 +368,8 @@ const ChartOfAccountsView: React.FC<{
     storeSettings: StoreSettings,
     onSaveAccount: (account: Account) => void,
     onDeleteAccount: (accountId: string) => void,
-}> = ({ accounts, storeSettings, onSaveAccount, onDeleteAccount }) => {
+    onAdjustAccount: (account: Account) => void,
+}> = ({ accounts, storeSettings, onSaveAccount, onDeleteAccount, onAdjustAccount }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -456,6 +460,13 @@ const ChartOfAccountsView: React.FC<{
 
                                         {/* Desktop Actions */}
                                         <div className="hidden md:flex items-center gap-1">
+                                            <button
+                                                onClick={() => onAdjustAccount(account)}
+                                                className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                                title="Adjust Balance"
+                                            >
+                                                <ScaleIcon className="w-4 h-4" />
+                                            </button>
                                             <button onClick={() => handleEdit(account)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                                                 <PencilIcon className="w-4 h-4" />
                                             </button>
@@ -479,6 +490,13 @@ const ChartOfAccountsView: React.FC<{
                                                 <>
                                                     <div className="fixed inset-0 z-30" onClick={() => setActiveActionMenu(null)}></div>
                                                     <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-scale-up">
+                                                        <button
+                                                            onClick={() => { onAdjustAccount(account); setActiveActionMenu(null); }}
+                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-purple-600 hover:bg-purple-50"
+                                                        >
+                                                            <ScaleIcon className="w-4 h-4" />
+                                                            Adjust Balance
+                                                        </button>
                                                         <button
                                                             onClick={() => handleEdit(account)}
                                                             className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
@@ -2145,12 +2163,18 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     const [invoiceToPayAP, setInvoiceToPayAP] = React.useState<SupplierInvoice | null>(null);
     const [isRecordARPaymentOpen, setIsRecordARPaymentOpen] = React.useState(false);
     const [invoiceToPayAR, setInvoiceToPayAR] = React.useState<Sale | null>(null);
+    const [isAdjustmentModalOpen, setIsAdjustmentModalOpen] = React.useState(false);
+    const [accountToAdjust, setAccountToAdjust] = React.useState<Account | null>(null);
+    const [isExpenseFormOpen, setIsExpenseFormOpen] = React.useState(false);
+    const [editingExpense, setEditingExpense] = React.useState<Expense | null>(null);
+    const [expenses, setExpenses] = React.useState<Expense[]>([]);
 
     const availableTabs = React.useRef<string[]>([
         'dashboard',
         'reports',
         'ar_management',
         'ap_management',
+        'expenses',
         'taxes',
         'chart_of_accounts',
         'journal',
@@ -2191,6 +2215,42 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         // The implementation plan checklist just said "Enable the button".
         // Let's close the detail modal to focus on payment.
         setViewingARInvoice(null);
+    };
+
+    const handleAdjustAccount = async (
+        accountId: string,
+        adjustmentAmount: number,
+        offsetAccountId: string,
+        offsetAccountName: string,
+        description: string
+    ) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/accounting/accounts/${accountId}/adjust`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    adjustmentAmount,
+                    offsetAccountId,
+                    offsetAccountName,
+                    description
+                })
+            });
+
+            if (response.ok) {
+                // Trigger a page reload to refresh data
+                window.location.reload();
+            } else {
+                const data = await response.json();
+                alert(data.message || 'Error adjusting account balance');
+            }
+        } catch (error) {
+            console.error('Error adjusting account:', error);
+            alert('Error adjusting account balance');
+        }
     };
 
     const renderContent = () => {
@@ -2236,9 +2296,42 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                     onOpenInvoiceForm={() => { setEditingSupplierInvoice(null); setIsSupplierInvoiceFormOpen(true); }}
                 />
             case 'chart_of_accounts':
-                return <ChartOfAccountsView accounts={accounts} storeSettings={storeSettings} onSaveAccount={onSaveAccount} onDeleteAccount={onDeleteAccount} />;
+                return <ChartOfAccountsView
+                    accounts={accounts}
+                    storeSettings={storeSettings}
+                    onSaveAccount={onSaveAccount}
+                    onDeleteAccount={onDeleteAccount}
+                    onAdjustAccount={(account) => {
+                        setAccountToAdjust(account);
+                        setIsAdjustmentModalOpen(true);
+                    }}
+                />;
             case 'journal':
                 return <JournalView entries={journalEntries} accounts={accounts} sales={sales} customers={customers} storeSettings={storeSettings} onAddEntry={onAddManualJournalEntry} />;
+            case 'expenses':
+                return (
+                    <div className="space-y-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-black text-slate-900">Expenses</h2>
+                                <p className="text-sm text-slate-600 mt-1">Record and manage business expenses</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    setEditingExpense(null);
+                                    setIsExpenseFormOpen(true);
+                                }}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all"
+                            >
+                                <PlusIcon className="w-5 h-5" />
+                                <span className="font-bold text-sm">Record Expense</span>
+                            </button>
+                        </div>
+                        <div className="bg-white rounded-xl border border-slate-200 p-6">
+                            <p className="text-center text-slate-500 py-8">Expense recording feature ready. Click "Record Expense" to get started.</p>
+                        </div>
+                    </div>
+                );
             case 'taxes':
                 return <TaxReportView sales={sales} storeSettings={storeSettings} />;
             case 'reports':
@@ -2274,6 +2367,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         { tabName: 'reports', label: 'Reports', shortLabel: 'Reports', icon: <DocumentChartBarIcon className="w-4 h-4" /> },
         { tabName: 'ar_management', label: 'Accounts Receivable', shortLabel: 'A/R', icon: <ArrowTrendingUpIcon className="w-4 h-4" /> },
         { tabName: 'ap_management', label: 'Accounts Payable', shortLabel: 'A/P', icon: <ArrowTrendingDownIcon className="w-4 h-4" /> },
+        { tabName: 'expenses', label: 'Expenses', shortLabel: 'Expenses', icon: <BanknotesIcon className="w-4 h-4" /> },
         { tabName: 'taxes', label: 'Taxes', shortLabel: 'Taxes', icon: <ReceiptPercentIcon className="w-4 h-4" /> },
         { tabName: 'chart_of_accounts', label: 'Chart of Accounts', shortLabel: 'Accounts', icon: <BookOpenIcon className="w-4 h-4" /> },
         { tabName: 'journal', label: 'Journal', shortLabel: 'Journal', icon: <ClipboardDocumentListIcon className="w-4 h-4" /> },
@@ -2397,6 +2491,61 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                     customerName={invoiceToPayAR.customerName || (invoiceToPayAR.customerId ? (customers.find(c => c.id === invoiceToPayAR.customerId)?.name) : undefined) || undefined}
                 />
             )}
+
+            {/* Account Adjustment Modal */}
+            {accountToAdjust && (
+                <AccountAdjustmentModal
+                    isOpen={isAdjustmentModalOpen}
+                    onClose={() => {
+                        setIsAdjustmentModalOpen(false);
+                        setAccountToAdjust(null);
+                    }}
+                    onSave={(amount, offsetId, offsetName, desc) => {
+                        handleAdjustAccount(accountToAdjust.id, amount, offsetId, offsetName, desc);
+                        setIsAdjustmentModalOpen(false);
+                        setAccountToAdjust(null);
+                    }}
+                    account={accountToAdjust}
+                    accounts={accounts}
+                />
+            )}
+
+            {/* Expense Form Modal */}
+            <ExpenseFormModal
+                isOpen={isExpenseFormOpen}
+                onClose={() => {
+                    setIsExpenseFormOpen(false);
+                    setEditingExpense(null);
+                }}
+                onSave={async (expense) => {
+                    try {
+                        const token = localStorage.getItem('token');
+                        const response = await fetch('/api/expenses', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(expense)
+                        });
+
+                        if (response.ok) {
+                            // Reload the page to refresh data
+                            window.location.reload();
+                        } else {
+                            const data = await response.json();
+                            alert(data.message || 'Error recording expense');
+                        }
+                    } catch (error) {
+                        console.error('Error recording expense:', error);
+                        alert('Error recording expense');
+                    }
+                    setIsExpenseFormOpen(false);
+                    setEditingExpense(null);
+                }}
+                expenseToEdit={editingExpense}
+                accounts={accounts}
+            />
         </div>
     );
 };
