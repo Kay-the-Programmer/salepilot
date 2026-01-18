@@ -63,8 +63,8 @@ export const registerCustomer = async (name: string, email: string, password?: s
     return normalized;
 };
 
-export const loginWithGoogle = async (idToken: string): Promise<User> => {
-    const user = await api.post<User>('/auth/google', { idToken: idToken });
+export const loginWithGoogle = async (idToken: string, role?: 'business' | 'customer'): Promise<User> => {
+    const user = await api.post<User>('/auth/google', { idToken: idToken, role: role });
     const normalized = normalizeUser(user);
     if (normalized && normalized.token) {
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));

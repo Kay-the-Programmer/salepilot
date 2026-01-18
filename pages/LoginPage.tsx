@@ -13,6 +13,7 @@ import {
 } from 'react-icons/hi2';
 import { FcGoogle } from 'react-icons/fc';
 import Logo from '../assets/logo.png';
+import GoogleRoleSelectionModal from '../components/GoogleRoleSelectionModal';
 
 interface LoginPageProps {
     onLogin: (user: User) => void;
@@ -36,6 +37,10 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Google role selection state
+    const [showGoogleRoleModal, setShowGoogleRoleModal] = useState(false);
+    const [pendingGoogleUser, setPendingGoogleUser] = useState<{ firebaseUser: any; token: string; userName: string } | null>(null);
 
     // Sync state with URL changes if needed
     useEffect(() => {
@@ -89,9 +94,32 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
         try {
             const firebaseUser = await signInWithGoogle();
             const token = await firebaseUser.getIdToken();
-            const user = await loginWithGoogle(token);
+            const userName = firebaseUser.displayName || firebaseUser.email || 'User';
+
+            // Store pending user data and show role selection modal
+            setPendingGoogleUser({ firebaseUser, token, userName });
+            setShowGoogleRoleModal(true);
+            setIsLoading(false);
+        } catch (err: any) {
+            console.error("Google Login Error", err);
+            const msg = (err && typeof err.message === 'string') ? err.message : 'Google Login failed.';
+            setError(msg);
+            showSnackbar(msg, 'error');
+            setIsLoading(false);
+        }
+    };
+
+    const handleGoogleRoleSelection = async (role: 'business' | 'customer') => {
+        if (!pendingGoogleUser) return;
+
+        setIsLoading(true);
+        setShowGoogleRoleModal(false);
+
+        try {
+            const user = await loginWithGoogle(pendingGoogleUser.token, role);
             onLogin(user);
-            showSnackbar(`Welcome back, ${user.name}!`, 'success');
+            showSnackbar(`Welcome, ${user.name}!`, 'success');
+            setPendingGoogleUser(null);
         } catch (err: any) {
             console.error("Google Login Error", err);
             const msg = (err && typeof err.message === 'string') ? err.message : 'Google Login failed.';
@@ -100,6 +128,12 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleGoogleRoleCancel = () => {
+        setShowGoogleRoleModal(false);
+        setPendingGoogleUser(null);
+        setError(null);
     };
 
     const handleForgotPassword = async () => {
@@ -300,6 +334,14 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                 </div>
 
             </div>
+
+            {/* Google Role Selection Modal */}
+            <GoogleRoleSelectionModal
+                isOpen={showGoogleRoleModal}
+                userName={pendingGoogleUser?.userName || 'User'}
+                onSelectRole={handleGoogleRoleSelection}
+                onCancel={handleGoogleRoleCancel}
+            />
         </div>
     );
 }
