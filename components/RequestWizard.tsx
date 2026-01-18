@@ -18,6 +18,14 @@ const steps = [
         subtext: "We'll use this to introduce you to sellers."
     },
     {
+        id: 'email',
+        question: (name: string) => `Great! What's your email address, ${name}?`,
+        placeholder: "your@email.com",
+        type: 'email',
+        icon: <HiOutlineUser className="w-6 h-6" />,
+        subtext: "We'll send you updates about your request."
+    },
+    {
         id: 'query',
         question: (name: string) => `Nice to meet you, ${name}! What are you looking for today?`,
         placeholder: "e.g., iPhone 15 Pro, Office Chair...",
@@ -47,34 +55,40 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
     const [currentStep, setCurrentStep] = useState(0);
     const [formData, setFormData] = useState({
         customerName: '',
+        customerEmail: '',
         customerPhone: '',
         query: '',
         targetPrice: ''
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (isOpen) {
             const user = getCurrentUser();
             const initialName = user?.name || '';
+            const initialEmail = user?.email || '';
             const initialPhone = user?.phone || '';
 
             setFormData({
                 customerName: initialName,
+                customerEmail: initialEmail,
                 customerPhone: initialPhone,
                 query: '',
                 targetPrice: ''
             });
             setIsSuccess(false);
+            setErrorMessage('');
 
-            // Determine starting step
-            // If name is present, skip step 0 (name)
-            if (initialName) {
-                setCurrentStep(1); // Go to query
+            // Determine starting step - skip steps that are already filled
+            if (initialName && initialEmail) {
+                setCurrentStep(2); // Go to query (skip name and email)
+            } else if (initialName) {
+                setCurrentStep(1); // Go to email (skip name)
             } else {
-                setCurrentStep(0);
+                setCurrentStep(0); // Start from name
             }
 
             setTimeout(() => inputRef.current?.focus(), 500);
@@ -87,12 +101,22 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
 
         if (!value) return;
 
-        // Special logic for skipping phone if already present
+        // Find the next step that needs filling
         let next = currentStep + 1;
-        if (next < steps.length && steps[next].id === 'phone' && formData.customerPhone) {
-            // Already have phone, skip to submit
-            handleSubmit();
-            return;
+        while (next < steps.length) {
+            const nextStepId = steps[next].id;
+
+            // Skip email if already filled
+            if (nextStepId === 'email' && formData.customerEmail) {
+                next++;
+                continue;
+            }
+            // Skip phone if already filled
+            if (nextStepId === 'phone' && formData.customerPhone) {
+                next++;
+                continue;
+            }
+            break;
         }
 
         if (next < steps.length) {
@@ -106,6 +130,7 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
     const getStepValue = (id: string) => {
         switch (id) {
             case 'name': return formData.customerName;
+            case 'email': return formData.customerEmail;
             case 'query': return formData.query;
             case 'targetPrice': return formData.targetPrice;
             case 'phone': return formData.customerPhone;
@@ -116,6 +141,7 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
     const setStepValue = (id: string, value: string) => {
         switch (id) {
             case 'name': setFormData(prev => ({ ...prev, customerName: value })); break;
+            case 'email': setFormData(prev => ({ ...prev, customerEmail: value })); break;
             case 'query': setFormData(prev => ({ ...prev, query: value })); break;
             case 'targetPrice': setFormData(prev => ({ ...prev, targetPrice: value })); break;
             case 'phone': setFormData(prev => ({ ...prev, customerPhone: value })); break;
@@ -124,14 +150,17 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
 
     const handleSubmit = async () => {
         setIsSubmitting(true);
+        setErrorMessage('');
         try {
             await onSubmit(formData);
             setIsSuccess(true);
             setTimeout(() => {
                 onClose();
             }, 3000);
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
+            const message = error?.response?.data?.message || error?.message || 'Failed to submit request. Please try again.';
+            setErrorMessage(message);
         } finally {
             setIsSubmitting(false);
         }
@@ -221,6 +250,12 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
                                     </>
                                 )}
                             </button>
+
+                            {errorMessage && (
+                                <div className="bg-red-500/10 border-2 border-red-500/30 rounded-[24px] px-6 py-4 text-red-300 text-center font-bold animate-in slide-in-from-top-4 fade-in duration-300">
+                                    {errorMessage}
+                                </div>
+                            )}
                         </div>
 
                         <div className="mt-8 flex gap-2">
