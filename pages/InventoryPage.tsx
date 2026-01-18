@@ -637,7 +637,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
                             <div className="h-full flex flex-col">
-                                <div className="flex-1 overflow-y-auto">
+                                <div className="flex-1 overflow-y-auto scroll-smooth">
                                     <ProductList
                                         products={paginatedProducts}
                                         categories={categories}
@@ -682,7 +682,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                 )}
                             </div>
                         ) : (
-                            <div className="h-full overflow-y-auto">
+                            <div className="h-full overflow-y-auto scroll-smooth">
                                 <CategoryList
                                     categories={categories}
                                     searchTerm={searchTerm}
@@ -701,8 +701,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 {/* Resize Handle (Desktop Only) */}
                 {selectedItem && (
                     <div
-                        onMouseDown={() => setIsResizing(true)}
-                        className="hidden md:block w-1 hover:w-1.5 bg-gray-100 hover:bg-blue-400 cursor-col-resize transition-all z-10"
+                        onMouseDown={(e) => {
+                            e.preventDefault();
+                            setIsResizing(true);
+                        }}
+                        className="hidden md:block w-1 hover:w-2 bg-gray-200 hover:bg-blue-500 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600"
                     />
                 )}
 
@@ -712,7 +715,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
                 >
                     {selectedItem ? (
-                        <div className="h-full overflow-y-auto">
+                        <div className="h-full overflow-y-auto scroll-smooth">
                             {activeTab === 'products' ? (
                                 <div className="h-full">
                                     {detailIsLoading ? (
