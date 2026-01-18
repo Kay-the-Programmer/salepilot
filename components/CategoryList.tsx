@@ -15,11 +15,25 @@ interface CategoryListProps {
     onDelete: (categoryId: string) => void;
     isLoading: boolean;
     error: string | null;
+    selectedCategoryId?: string | null;
+    onSelectCategory?: (categoryId: string) => void;
 }
 
-const CategoryList: React.FC<CategoryListProps> = ({ categories, searchTerm, onEdit, onDelete, isLoading, error }) => {
+interface CategoryWithLevel extends Category {
+    level: number;
+}
+
+const CategoryList: React.FC<CategoryListProps> = ({
+    categories,
+    searchTerm,
+    onEdit,
+    onDelete,
+    isLoading,
+    error,
+    selectedCategoryId,
+    onSelectCategory
+}) => {
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
     const toggleExpand = (categoryId: string) => {
@@ -34,9 +48,9 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, searchTerm, onE
         });
     };
 
-    const getCategoryTree = (parentId: string | null, level: number = 0): Category[] => {
+    const getCategoryTree = (parentId: string | null, level: number = 0): CategoryWithLevel[] => {
         const children = categories.filter(c => c.parentId === parentId);
-        let result: Category[] = [];
+        let result: CategoryWithLevel[] = [];
 
         children.forEach(category => {
             result.push({ ...category, level });
@@ -48,7 +62,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, searchTerm, onE
         return result;
     };
 
-    const getFilteredCategories = () => {
+    const getFilteredCategories = (): CategoryWithLevel[] => {
         if (!searchTerm) {
             return getCategoryTree(null);
         }
@@ -137,10 +151,10 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, searchTerm, onE
         );
     }
 
-    const renderCategoryRow = (category: Category & { level: number }) => {
+    const renderCategoryRow = (category: CategoryWithLevel) => {
         const hasChildren = getSubCategoryCount(category.id) > 0;
         const isExpanded = expandedCategories.has(category.id);
-        const isSelected = selectedCategory === category.id;
+        const isSelected = selectedCategoryId === category.id;
         const attributeCount = getAttributeCount(category);
         const subCatCount = getSubCategoryCount(category.id);
 
@@ -149,7 +163,7 @@ const CategoryList: React.FC<CategoryListProps> = ({ categories, searchTerm, onE
                 key={category.id}
                 className={`group border-b border-gray-100 last:border-0 transition-colors ${isSelected ? 'bg-blue-50/50' : 'bg-white hover:bg-gray-50'
                     }`}
-                onClick={() => setSelectedCategory(category.id)}
+                onClick={() => onSelectCategory?.(category.id)}
             >
                 {/* Mobile View: Flexible Stack */}
                 <div className="sm:hidden px-4 py-3 flex items-start gap-3">

@@ -275,20 +275,22 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 return;
             }
 
-            setImageFiles(prev => [...prev, ...validFiles]);
+            // Clear any previous images for single image mode
+            setImageFiles(validFiles.slice(0, 1));
+            setImages([]);
+            setImagesToDelete(productToEdit?.imageUrls || []);
 
-            validFiles.forEach(file => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    if (typeof reader.result === 'string') {
-                        setImages(prev => [...prev, reader.result as string]);
-                    }
-                };
-                reader.onerror = () => {
-                    setError(`Failed to read file: ${file.name}`);
-                };
-                reader.readAsDataURL(file);
-            });
+            const file = validFiles[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                if (typeof reader.result === 'string') {
+                    setImages([reader.result as string]);
+                }
+            };
+            reader.onerror = () => {
+                setError(`Failed to read file: ${file.name}`);
+            };
+            reader.readAsDataURL(file);
 
             // Reset the input value to allow selecting the same file again
             event.target.value = '';
@@ -309,7 +311,8 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
     };
 
     const handleCameraCapture = (imageDataUrl: string) => {
-        setImages(prev => [...prev, imageDataUrl]);
+        setImages([imageDataUrl]);
+        setImagesToDelete(productToEdit?.imageUrls || []);
 
         const byteString = atob(imageDataUrl.split(',')[1]);
         const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
@@ -324,7 +327,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         const fileName = `camera-capture-${Date.now()}.${mimeString.split('/')[1]}`;
         const file = new File([blob], fileName, { type: mimeString });
 
-        setImageFiles(prev => [...prev, file]);
+        setImageFiles([file]);
         setIsCameraModalOpen(false);
     };
 
@@ -775,67 +778,72 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                     <>
                         {renderSectionTitle('Images')}
                         <div>
-                            <div className="grid grid-cols-3 gap-3 mb-4">
-                                {images.map((imgSrc, index) => (
-                                    <div key={index} className="relative group aspect-square">
-                                        <img
-                                            src={buildAssetUrl(imgSrc)}
-                                            alt={`Product image ${index + 1}`}
-                                            className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
-                                        />
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                {images.length > 0 ? (
+                                    images.map((imgSrc, index) => (
+                                        <div key={index} className="relative group aspect-square col-span-2">
+                                            <img
+                                                src={buildAssetUrl(imgSrc)}
+                                                alt="Product image"
+                                                className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImage(index)}
+                                                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-2 shadow-lg hover:bg-red-700 active:scale-95 transition-transform"
+                                                aria-label="Remove image"
+                                            >
+                                                <XMarkIcon className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <>
                                         <button
                                             type="button"
-                                            onClick={() => removeImage(index)}
-                                            className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 shadow-lg hover:bg-red-700 active:scale-95 transition-transform"
-                                            aria-label="Remove image"
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
                                         >
-                                            <XMarkIcon className="w-4 h-4" />
+                                            <ArrowUpTrayIcon className="w-8 h-8 text-gray-400" />
+                                            <span className="text-sm font-medium text-gray-600">Upload</span>
                                         </button>
-                                    </div>
-                                ))}
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                                >
-                                    <ArrowUpTrayIcon className="w-8 h-8 text-gray-400" />
-                                    <span className="text-sm font-medium text-gray-600">Upload</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsCameraModalOpen(true)}
-                                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                                >
-                                    <CameraIcon className="w-8 h-8 text-gray-400" />
-                                    <span className="text-sm font-medium text-gray-600">Camera</span>
-                                </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCameraModalOpen(true)}
+                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                                        >
+                                            <CameraIcon className="w-8 h-8 text-gray-400" />
+                                            <span className="text-sm font-medium text-gray-600">Camera</span>
+                                        </button>
+                                    </>
+                                )}
                             </div>
-                            <p className="text-xs text-gray-500">The first image will be the primary display image.</p>
-                        </div>
+                            <p className="text-xs text-gray-500 mt-2">Only one image allowed per product.</p>
 
-                        <div className="mt-6">
-                            <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">Product Status</label>
-                            <div className="flex gap-2">
-                                <button
-                                    type="button"
-                                    onClick={() => setProduct(prev => ({ ...prev, status: 'active' }))}
-                                    className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'active'
-                                        ? 'bg-green-100 border-green-500 text-green-700'
-                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    Active
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setProduct(prev => ({ ...prev, status: 'archived' }))}
-                                    className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'archived'
-                                        ? 'bg-gray-100 border-gray-500 text-gray-700'
-                                        : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    Archived
-                                </button>
+                            <div className="mt-6">
+                                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-2">Product Status</label>
+                                <div className="flex gap-2">
+                                    <button
+                                        type="button"
+                                        onClick={() => setProduct(prev => ({ ...prev, status: 'active' }))}
+                                        className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'active'
+                                            ? 'bg-green-100 border-green-500 text-green-700'
+                                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        Active
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setProduct(prev => ({ ...prev, status: 'archived' }))}
+                                        className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'archived'
+                                            ? 'bg-gray-100 border-gray-500 text-gray-700'
+                                            : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        Archived
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </>
@@ -1310,42 +1318,47 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 {/* Images */}
                                 {renderSectionTitle('Images')}
                                 <div>
-                                    <div className="grid grid-cols-4 gap-3">
-                                        {images.map((imgSrc, index) => (
-                                            <div key={index} className="relative group aspect-square">
-                                                <img
-                                                    src={buildAssetUrl(imgSrc)}
-                                                    alt={`Product image ${index + 1}`}
-                                                    className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
-                                                />
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {images.length > 0 ? (
+                                            images.map((imgSrc, index) => (
+                                                <div key={index} className="relative group aspect-square col-span-2 max-w-[200px]">
+                                                    <img
+                                                        src={buildAssetUrl(imgSrc)}
+                                                        alt="Product image"
+                                                        className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeImage(index)}
+                                                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 shadow-lg hover:bg-red-700"
+                                                        aria-label="Remove image"
+                                                    >
+                                                        <XMarkIcon className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <>
                                                 <button
                                                     type="button"
-                                                    onClick={() => removeImage(index)}
-                                                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 shadow-lg hover:bg-red-700"
-                                                    aria-label="Remove image"
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-colors"
                                                 >
-                                                    <XMarkIcon className="w-3 h-3" />
+                                                    <ArrowUpTrayIcon className="w-6 h-6 text-gray-400" />
+                                                    <span className="text-xs font-medium text-gray-600">Upload</span>
                                                 </button>
-                                            </div>
-                                        ))}
-                                        <button
-                                            type="button"
-                                            onClick={() => fileInputRef.current?.click()}
-                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                                        >
-                                            <ArrowUpTrayIcon className="w-6 h-6 text-gray-400" />
-                                            <span className="text-xs font-medium text-gray-600">Upload</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsCameraModalOpen(true)}
-                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-colors"
-                                        >
-                                            <CameraIcon className="w-6 h-6 text-gray-400" />
-                                            <span className="text-xs font-medium text-gray-600">Camera</span>
-                                        </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsCameraModalOpen(true)}
+                                                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                                                >
+                                                    <CameraIcon className="w-6 h-6 text-gray-400" />
+                                                    <span className="text-xs font-medium text-gray-600">Camera</span>
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2">The first image will be the primary display image.</p>
+                                    <p className="text-xs text-gray-500 mt-2">Only one image allowed per product.</p>
                                 </div>
 
                                 {/* Status */}
@@ -1374,7 +1387,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             onChange={handleImageUpload}
                             className="hidden"
                             accept="image/*"
-                            multiple
                         />
 
                         {/* Footer */}

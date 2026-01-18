@@ -8,11 +8,14 @@ import CategoryFormModal from '../components/CategoryFormModal';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
+import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { FiFilter, FiGrid, FiList, FiCamera, FiX } from 'react-icons/fi';
+import { FiFilter, FiCamera, FiGrid, FiList } from 'react-icons/fi';
+import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
+import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import Header from '../components/Header';
-import GridIcon from '../components/icons/GridIcon';
+
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import LinkToPOModal from '../components/LinkToPOModal';
 import CubeIcon from '../components/icons/CubeIcon';
@@ -88,9 +91,16 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [isSearchActive, setIsSearchActive] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
-    const [isFilterPopupOpen, setIsFilterPopupOpen] = useState(false);
+
+    // Resizable panel state
+    const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
+        const saved = localStorage.getItem('inventory-panel-width');
+        return saved ? parseFloat(saved) : 60;
+    });
+    const [isResizing, setIsResizing] = useState(false);
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+    const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [detailedProduct, setDetailedProduct] = useState<Product | null>(null);
     const [detailIsLoading, setDetailIsLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
@@ -99,6 +109,38 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const supplierMap = new Map(suppliers.map(s => [s.id, s]));
 
     const canManageProducts = currentUser.role === 'admin' || currentUser.role === 'inventory_manager';
+
+    // Handle resizing
+    useEffect(() => {
+        const handleMouseMove = (e: MouseEvent) => {
+            if (!isResizing) return;
+            const newWidth = (e.clientX / window.innerWidth) * 100;
+            // Constrain between 40% and 75%
+            if (newWidth >= 40 && newWidth <= 75) {
+                setLeftPanelWidth(newWidth);
+            }
+        };
+
+        const handleMouseUp = () => {
+            setIsResizing(false);
+            localStorage.setItem('inventory-panel-width', leftPanelWidth.toString());
+        };
+
+        if (isResizing) {
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        } else {
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+        }
+
+        return () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, [isResizing, leftPanelWidth]);
 
     useEffect(() => {
         if (selectedProductId) {
@@ -140,6 +182,16 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             setDetailedProduct(null);
         }
     }, [selectedProductId, products]);
+
+    const detailedCategory = useMemo(() => {
+        if (!selectedCategoryId) return null;
+        return categories.find(c => c.id === selectedCategoryId) || null;
+    }, [selectedCategoryId, categories]);
+
+    const subcategories = useMemo(() => {
+        if (!selectedCategoryId) return [];
+        return categories.filter(c => c.parentId === selectedCategoryId);
+    }, [selectedCategoryId, categories]);
 
     const handleOpenAddModal = () => {
         setEditingProduct(null);
@@ -339,8 +391,13 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setSelectedProductId(product.id);
     };
 
+    const handleSelectCategory = (categoryId: string) => {
+        setSelectedCategoryId(categoryId);
+    };
+
     const handleBackToList = () => {
         setSelectedProductId(null);
+        setSelectedCategoryId(null);
         setSearchTerm('');
     };
 
@@ -367,8 +424,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     type SortBy = 'name' | 'price' | 'stock' | 'category' | 'sku';
     type SortOrder = 'asc' | 'desc';
-    const [sortBy, setSortBy] = useState<SortBy>('name');
-    const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+    const [sortBy] = useState<SortBy>('name');
+    const [sortOrder] = useState<SortOrder>('asc');
 
     const sortedProducts = useMemo(() => {
         const arr = [...filteredProducts];
@@ -457,118 +514,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return attrs;
     }, [detailedProduct, categories]);
 
-    if (selectedProductId) {
-        return (
-            <>
-                <div className="flex flex-col h-full bg-gradient-to-b from-gray-50 to-white">
-                    <main className="flex-1 overflow-y-auto bg-gray-50/50">
-                        <div className="w-full h-full">
-                            {detailIsLoading && (
-                                <LoadingSpinner fullScreen={false} text="Loading product details..." className="py-20" />
-                            )}
-                            {detailError && (
-                                <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200 m-6">
-                                    <p className="text-red-600 font-medium">Error loading product</p>
-                                    <p className="text-red-500 text-sm mt-1">{detailError}</p>
-                                </div>
-                            )}
-                            {detailedProduct && (
-                                <div className="animate-fadeIn">
-                                    <ProductDetailView
-                                        product={detailedProduct}
-                                        category={selectedProductCategory}
-                                        supplier={selectedProductSupplier}
-                                        attributes={displayedAttributes}
-                                        storeSettings={storeSettings}
-                                        user={currentUser}
-                                        onEdit={handleOpenEditModal}
-                                        onDelete={handleOpenDeleteModal}
-                                        onArchive={onArchiveProduct}
-                                        onPrintLabel={handleOpenPrintModal}
-                                        onAdjustStock={handleOpenStockModal}
-                                        onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
-                                        onBack={handleBackToList}
-                                    />
-                                </div>
-                            )}
-                        </div>
-                    </main>
-                </div>
-                {canManageProducts && isModalOpen && (
-                    <ProductFormModal
-                        isOpen={isModalOpen}
-                        onClose={handleCloseModal}
-                        onSave={handleSave}
-                        productToEdit={editingProduct}
-                        categories={categories}
-                        suppliers={suppliers}
-                        storeSettings={storeSettings}
-                    />
-                )}
-                {canManageProducts && isStockModalOpen && (
-                    <StockAdjustmentModal
-                        isOpen={isStockModalOpen}
-                        onClose={handleCloseStockModal}
-                        onSave={handleSaveStockAdjustment}
-                        product={stockAdjustProduct}
-                        initialReason={stockAdjustInitialReason}
-                    />
-                )}
-                <LabelPrintModal
-                    isOpen={isPrintModalOpen}
-                    onClose={handleClosePrintModal}
-                    product={productToPrint}
-                    storeSettings={storeSettings}
-                />
-                <ConfirmationModal
-                    isOpen={isDeleteModalOpen}
-                    onClose={handleCloseDeleteModal}
-                    onConfirm={handleConfirmDelete}
-                    title="Delete Product"
-                    message={
-                        <p>Are you sure you want to permanently delete "<strong>{productToDelete?.name}</strong>"? This action cannot be undone.</p>
-                    }
-                    confirmText="Delete"
-                />
-                <UnifiedScannerModal
-                    isOpen={isScanModalOpen}
-                    onClose={() => setIsScanModalOpen(false)}
-                    onScanSuccess={(code) => {
-                        // Try to find product by barcode or SKU
-                        const scannedProduct = products.find(p =>
-                            p.sku === code ||
-                            p.barcode === code ||
-                            (p.variants && p.variants.some(v => v.sku === code))
-                        );
-
-                        if (scannedProduct) {
-                            setSelectedProductId(scannedProduct.id);
-                            setIsScanModalOpen(false);
-                        } else {
-                            setSearchTerm(code);
-                            setIsScanModalOpen(false);
-                            // Optional: Show "Product not found" toast or let the search result show "No products found"
-                        }
-                    }}
-                />
-                {linkPOProduct && (
-                    <LinkToPOModal
-                        isOpen={isLinkPOModalOpen}
-                        onClose={() => setIsLinkPOModalOpen(false)}
-                        product={linkPOProduct}
-                        purchaseOrders={purchaseOrders}
-                        onLink={handleLinkToPO}
-                        onCreateNew={handleCreateNewPO}
-                        onSkip={handleSkipLinkPO}
-                    />
-                )}
-            </>
-        )
-    }
+    // Desktop: Two-panel layout with left having header + products, right having full-height details
+    const selectedItem = activeTab === 'products' ? selectedProductId : selectedCategoryId;
 
     return (
-        <div className="flex flex-col h-full bg-gray-50">
-            {/* Custom Header (Desktop) */}
+        <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
+            {/* Desktop Header */}
             <div className="sticky top-0 z-30 bg-white border-b border-gray-200 hidden md:block">
                 <Header
                     title="Inventory"
@@ -583,7 +534,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         <div className="flex items-center gap-3 mr-4">
                             <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
                                 <button
-                                    onClick={() => setActiveTab('products')}
+                                    onClick={() => {
+                                        setActiveTab('products');
+                                        setSearchTerm('');
+                                    }}
                                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'products'
                                         ? 'bg-white text-gray-900 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
@@ -592,7 +546,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     Products
                                 </button>
                                 <button
-                                    onClick={() => setActiveTab('categories')}
+                                    onClick={() => {
+                                        setActiveTab('categories');
+                                        setSearchTerm('');
+                                    }}
                                     className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'categories'
                                         ? 'bg-white text-gray-900 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
@@ -603,401 +560,268 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             </div>
 
                             {activeTab === 'products' && (
-                                <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showFilters || searchTerm || showArchived
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    <FiFilter className="w-4 h-4" />
-                                    Filters
-                                </button>
+                                <>
+                                    <button
+                                        onClick={() => setShowFilters(!showFilters)}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showFilters || searchTerm || showArchived
+                                            ? 'bg-blue-50 border-blue-200 text-blue-700'
+                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        <FiFilter className="w-4 h-4" />
+                                        Filters
+                                    </button>
+
+                                    <div className="flex bg-gray-100/80 p-1 rounded-xl">
+                                        <button
+                                            onClick={() => setViewMode('grid')}
+                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            title="Grid View"
+                                        >
+                                            <FiGrid className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => setViewMode('list')}
+                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                                            title="List View"
+                                        >
+                                            <FiList className="w-4 h-4" />
+                                        </button>
+                                    </div>
+
+                                    <button
+                                        onClick={() => setShowArchived(!showArchived)}
+                                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showArchived
+                                            ? 'bg-amber-50 border-amber-200 text-amber-700'
+                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
+                                            }`}
+                                    >
+                                        {showArchived ? 'Showing Archived' : 'Show Archived'}
+                                    </button>
+                                </>
                             )}
                         </div>
                     }
                 />
             </div>
 
-            {/* Mobile Header (New) */}
-            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 md:hidden">
+            {/* Mobile Header */}
+            <div className={`sticky top-0 z-30 bg-white border-b border-gray-200 md:hidden ${selectedItem ? 'hidden' : ''}`}>
                 <div className="px-4 py-3 flex items-center justify-between">
-                    <h1 className="text-lg font-bold text-gray-900">
-                        {activeTab === 'products' ? 'Products' : 'Categories'}
+                    <h1 className="text-xl font-bold text-gray-900">
+                        {activeTab === 'products' ? 'Inventory' : 'Categories'}
                     </h1>
                     <div className="flex items-center gap-2">
-                        {/* Scan Button */}
                         <button
                             onClick={() => setIsScanModalOpen(true)}
                             className="p-2 rounded-lg text-gray-600 active:bg-gray-100 transition-colors"
-                            aria-label="Scan Barcode"
                         >
                             <FiCamera className="w-6 h-6" />
                         </button>
-                        {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${isMobileMenuOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
-                            aria-label="Menu"
                         >
-                            <GridIcon className="w-6 h-6" />
-                        </button>
-                        {/* Filter Button */}
-                        <button
-                            onClick={() => setIsFilterPopupOpen(true)}
-                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${isFilterPopupOpen ? 'bg-blue-50 text-blue-600' : 'text-gray-600'}`}
-                            aria-label="Filters"
-                        >
-                            <FiFilter className="w-6 h-6" />
+                            <FiGrid className="w-6 h-6" />
                         </button>
                     </div>
                 </div>
             </div>
 
-            {/* Mobile Menu Popup */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div className="absolute inset-0 bg-black/50 animate-fade-in" />
-                    <div
-                        className="absolute top-[60px] right-4 left-auto w-48 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 p-2"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => {
-                                    setActiveTab('products');
-                                    setIsMobileMenuOpen(false);
-                                }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${activeTab === 'products'
-                                    ? 'bg-gray-900 text-white shadow-md'
-                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                                    }`}
-                            >
-                                <CubeIcon className="w-6 h-6 mb-1" />
-                                <span className="text-xs font-semibold">Products</span>
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    setActiveTab('categories');
-                                    setIsMobileMenuOpen(false);
-                                }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${activeTab === 'categories'
-                                    ? 'bg-gray-900 text-white shadow-md'
-                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                                    }`}
-                            >
-                                <TagIcon className="w-6 h-6 mb-1" />
-                                <span className="text-xs font-semibold">Categories</span>
-                            </button>
-
-                            <button
-                                onClick={() => {
-                                    setIsScanModalOpen(true);
-                                    setIsMobileMenuOpen(false);
-                                }}
-                                className="hidden flex-col items-center justify-center p-3 rounded-xl bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all"
-                            >
-                                <FiCamera className="w-6 h-6 mb-1" />
-                                <span className="text-xs font-semibold">Scan Item</span>
-                            </button>
-
-                            {canManageProducts && (
-                                <button
-                                    onClick={() => {
-                                        handleOpenAddModal();
-                                        setIsMobileMenuOpen(false);
-                                    }}
-                                    className="flex flex-col items-center justify-center p-3 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 transition-all"
-                                >
-                                    <PlusIcon className="w-6 h-6 mb-1" />
-                                    <span className="text-xs font-semibold">Add</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Mobile Filter Popup */}
-            {isFilterPopupOpen && (
-                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsFilterPopupOpen(false)}>
-                    <div className="absolute inset-0 bg-black/50 animate-fade-in" />
-                    {/* Position below header roughly or absolute right */}
-                    <div
-                        className="absolute top-[60px] right-4 left-auto w-64 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 p-4"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-bold text-gray-900">Filter Options</h3>
-                            <button onClick={() => setIsFilterPopupOpen(false)} className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg">
-                                <FiX className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4">
-                            {/* Sort */}
-                            <div>
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
-                                <div className="grid grid-cols-2 gap-2">
-                                    {['name', 'price', 'stock', 'category'].map((option) => (
-                                        <button
-                                            key={option}
-                                            onClick={() => setSortBy(option as any)}
-                                            className={`px-3 py-2 text-sm rounded-lg border transition-all ${sortBy === option
-                                                ? 'bg-blue-50 border-blue-200 text-blue-700 font-medium'
-                                                : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
-                                        >
-                                            {option.charAt(0).toUpperCase() + option.slice(1)}
-                                        </button>
-                                    ))}
-                                </div>
-                                <button
-                                    onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                    className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg border border-gray-200 bg-gray-50 text-gray-600"
-                                >
-                                    <span>Order: {sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
-                                    <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                                </button>
-                            </div>
-
-                            {/* View Mode */}
-                            <div>
-                                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">View Mode</label>
-                                <div className="flex bg-gray-100 rounded-lg p-1">
-                                    <button
-                                        onClick={() => setViewMode('grid')}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'grid' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
-                                    >
-                                        <FiGrid className="w-4 h-4" /> Grid
-                                    </button>
-                                    <button
-                                        onClick={() => setViewMode('list')}
-                                        className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'list' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'}`}
-                                    >
-                                        <FiList className="w-4 h-4" /> List
-                                    </button>
-                                </div>
-                            </div>
-
-                            {/* Archived Toggle */}
-                            <label className="flex items-center justify-between text-sm font-medium text-gray-700 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                <span>Show Archived</span>
-                                <div className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${showArchived ? 'bg-blue-600' : 'bg-gray-200'}`}
-                                    onClick={() => setShowArchived(!showArchived)}
-                                >
-                                    <span
-                                        aria-hidden="true"
-                                        className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showArchived ? 'translate-x-4' : 'translate-x-0'}`}
+            <div className="flex-1 flex overflow-hidden">
+                {/* Left Panel: List View */}
+                <div
+                    className={`flex flex-col h-full border-r border-gray-200 bg-white transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '400px' : 'none' }}
+                >
+                    <div className="flex-1 overflow-hidden relative">
+                        {activeTab === 'products' ? (
+                            <div className="h-full flex flex-col">
+                                <div className="flex-1 overflow-y-auto">
+                                    <ProductList
+                                        products={paginatedProducts}
+                                        categories={categories}
+                                        onSelectProduct={handleSelectProduct}
+                                        onStockChange={onStockChange}
+                                        onAdjustStock={handleOpenStockModal}
+                                        isLoading={isLoading}
+                                        error={error}
+                                        storeSettings={storeSettings}
+                                        userRole={currentUser.role as any}
+                                        viewMode={viewMode}
+                                        selectedProductId={selectedProductId}
                                     />
                                 </div>
-                            </label>
-
-                            <button
-                                onClick={() => setIsFilterPopupOpen(false)}
-                                className="w-full py-3 bg-gray-900 text-white rounded-xl font-medium text-sm shadow-sm hover:bg-gray-800 active:scale-[0.98] transition-transform"
-                            >
-                                Done
-                            </button>
-                        </div>
+                                {sortedProducts.length > 0 && (
+                                    <div className="flex-none p-4 border-t border-gray-100 bg-white sticky bottom-0 z-10">
+                                        <div className="flex items-center justify-between">
+                                            <div className="text-xs text-gray-500">
+                                                <span className="font-medium">{(page - 1) * pageSize + 1}-{Math.min(page * pageSize, sortedProducts.length)}</span> of <span className="font-medium">{sortedProducts.length}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                                                    disabled={page <= 1}
+                                                    className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                                                >
+                                                    <ChevronLeftIcon className="w-4 h-4" />
+                                                </button>
+                                                <span className="text-xs font-medium text-gray-700 mx-1">
+                                                    {page} / {totalPages}
+                                                </span>
+                                                <button
+                                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                                                    disabled={page >= totalPages}
+                                                    className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                                                >
+                                                    <ChevronRightIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="h-full overflow-y-auto">
+                                <CategoryList
+                                    categories={categories}
+                                    searchTerm={searchTerm}
+                                    onEdit={handleOpenEditCategoryModal}
+                                    onDelete={onDeleteCategory || (() => { })}
+                                    isLoading={isLoading}
+                                    error={error}
+                                    selectedCategoryId={selectedCategoryId}
+                                    onSelectCategory={handleSelectCategory}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
+
+                {/* Resize Handle (Desktop Only) */}
+                {selectedItem && (
+                    <div
+                        onMouseDown={() => setIsResizing(true)}
+                        className="hidden md:block w-1 hover:w-1.5 bg-gray-100 hover:bg-blue-400 cursor-col-resize transition-all z-10"
+                    />
+                )}
+
+                {/* Right Panel: Detail View */}
+                <div
+                    className={`flex-1 flex flex-col bg-white h-full relative ${!selectedItem ? 'hidden md:flex md:bg-gray-50' : 'flex w-full overflow-hidden'}`}
+                    style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
+                >
+                    {selectedItem ? (
+                        <div className="h-full overflow-y-auto">
+                            {activeTab === 'products' ? (
+                                <div className="h-full">
+                                    {detailIsLoading ? (
+                                        <LoadingSpinner fullScreen={false} text="Loading product details..." className="py-20" />
+                                    ) : detailError ? (
+                                        <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200 m-6">
+                                            <p className="text-red-600 font-medium">Error loading product</p>
+                                            <p className="text-red-500 text-sm mt-1">{detailError}</p>
+                                        </div>
+                                    ) : detailedProduct ? (
+                                        <ProductDetailView
+                                            product={detailedProduct}
+                                            category={selectedProductCategory}
+                                            supplier={selectedProductSupplier}
+                                            attributes={displayedAttributes}
+                                            storeSettings={storeSettings}
+                                            user={currentUser}
+                                            onEdit={handleOpenEditModal}
+                                            onDelete={handleOpenDeleteModal}
+                                            onArchive={onArchiveProduct}
+                                            onPrintLabel={handleOpenPrintModal}
+                                            onAdjustStock={handleOpenStockModal}
+                                            onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
+                                            onBack={handleBackToList}
+                                        />
+                                    ) : null}
+                                </div>
+                            ) : (
+                                <div className="h-full">
+                                    {detailedCategory ? (
+                                        <CategoryDetailView
+                                            category={detailedCategory}
+                                            subcategories={subcategories}
+                                            storeSettings={storeSettings}
+                                            user={currentUser}
+                                            onEdit={handleOpenEditCategoryModal}
+                                            onDelete={(cat) => onDeleteCategory?.(cat.id)}
+                                            onBack={handleBackToList}
+                                        />
+                                    ) : (
+                                        <div className="flex items-center justify-center h-full text-gray-400 italic">
+                                            Category not found
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="hidden md:flex flex-col items-center justify-center h-full text-gray-400 p-8 text-center">
+                            <div className="p-4 bg-white rounded-3xl shadow-sm mb-4 border border-gray-100">
+                                {activeTab === 'products' ? (
+                                    <CubeIcon className="w-12 h-12 text-gray-300" />
+                                ) : (
+                                    <TagIcon className="w-12 h-12 text-gray-300" />
+                                )}
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 mb-1">
+                                No {activeTab === 'products' ? 'Product' : 'Category'} Selected
+                            </h3>
+                            <p className="text-sm text-gray-500 max-w-xs">
+                                Select {activeTab === 'products' ? 'a product' : 'a category'} from the list on the left to view and manage its details here.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Modals */}
+            {canManageProducts && isModalOpen && (
+                <ProductFormModal
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onSave={handleSave}
+                    productToEdit={editingProduct}
+                    categories={categories}
+                    suppliers={suppliers}
+                    storeSettings={storeSettings}
+                    onAddCategory={handleOpenAddCategoryModal}
+                />
             )}
 
-            <main className="flex-1 overflow-x-hidden overflow-y-auto relative">
-                {activeTab === 'products' ? (
-                    <>
-                        {/* Floating Filter Popup */}
-                        {showFilters && (
-                            <div className="absolute top-6 right-6 z-20 w-80 bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-gray-100 p-6 animate-in fade-in zoom-in-95 duration-200">
-                                <div className="space-y-5">
-                                    {/* Header */}
-                                    <div className="flex items-center justify-end">
-                                        <button
-                                            onClick={() => setShowFilters(false)}
-                                            className="text-gray-400 hover:text-gray-600 transition-colors"
-                                        >
-                                            <FiX className="w-4 h-4" />
-                                        </button>
-                                    </div>
+            {canManageProducts && isStockModalOpen && (
+                <StockAdjustmentModal
+                    isOpen={isStockModalOpen}
+                    onClose={handleCloseStockModal}
+                    onSave={handleSaveStockAdjustment}
+                    product={stockAdjustProduct}
+                    initialReason={stockAdjustInitialReason}
+                />
+            )}
 
-                                    {/* Sort Controls */}
-                                    <div>
-                                        <label className="text-sm font-bold text-gray-900 mb-2 block">Sort Products</label>
-                                        <div className="flex gap-2">
-                                            <div className="relative flex-1">
-                                                <select
-                                                    className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 font-medium py-2.5 pl-3 pr-8 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
-                                                    value={sortBy}
-                                                    onChange={(e) => setSortBy(e.target.value as any)}
-                                                >
-                                                    <option value="name">Name</option>
-                                                    <option value="price">Price</option>
-                                                    <option value="stock">Stock</option>
-                                                    <option value="category">Category</option>
-                                                </select>
-                                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                                                className="px-3 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 text-gray-600 transition-all active:scale-95"
-                                                title={`Order: ${sortOrder === 'asc' ? 'Ascending' : 'Descending'}`}
-                                            >
-                                                {sortOrder === 'asc' ? (
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
-                                                ) : (
-                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4"></path></svg>
-                                                )}
-                                            </button>
-                                        </div>
-                                    </div>
+            {canManageProducts && (
+                <CategoryFormModal
+                    isOpen={isCategoryModalOpen}
+                    onClose={handleCloseCategoryModal}
+                    onSave={handleSaveCategoryInternal}
+                    categoryToEdit={editingCategory}
+                    allCategories={categories}
+                    accounts={accounts}
+                />
+            )}
 
-                                    <div className="h-px bg-gray-100" />
-
-                                    {/* View Options */}
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-sm font-bold text-gray-900">Layout</span>
-                                            <div className="flex bg-gray-100 p-1 rounded-xl">
-                                                <button
-                                                    onClick={() => setViewMode('grid')}
-                                                    className={`p-2 rounded-lg transition-all shadow-sm ${viewMode === 'grid' ? 'bg-white text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
-                                                >
-                                                    <FiGrid className="w-4 h-4" />
-                                                </button>
-                                                <button
-                                                    onClick={() => setViewMode('list')}
-                                                    className={`p-2 rounded-lg transition-all shadow-sm ${viewMode === 'list' ? 'bg-white text-blue-600' : 'text-gray-400 hover:text-gray-600'}`}
-                                                >
-                                                    <FiList className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        <label className="flex items-center justify-between group cursor-pointer">
-                                            <span className="text-sm font-bold text-gray-700 group-hover:text-gray-900 transition-colors">Show Archived</span>
-                                            <div className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${showArchived ? 'bg-blue-600' : 'bg-gray-200'}`}
-                                                onClick={(e) => {
-                                                    e.preventDefault();
-                                                    setShowArchived(!showArchived);
-                                                }}
-                                            >
-                                                <span
-                                                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showArchived ? 'translate-x-5' : 'translate-x-0'}`}
-                                                />
-                                            </div>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        <ProductList
-                            products={paginatedProducts}
-                            categories={categories}
-                            onSelectProduct={handleSelectProduct}
-                            onStockChange={onStockChange}
-                            onAdjustStock={handleOpenStockModal}
-                            isLoading={isLoading}
-                            error={error}
-                            storeSettings={storeSettings}
-                            userRole={currentUser.role as any}
-                            viewMode={viewMode}
-                        />
-
-                        {/* Pagination - Simplified for mobile */}
-                        {sortedProducts.length > 0 && (
-                            <div className="px-4 py-6 pb-24 sm:pb-6">
-                                <div className="flex flex-col items-center gap-4">
-                                    <span className="text-sm text-gray-500">
-                                        {sortedProducts.length} Products • Page {page} of {totalPages}
-                                    </span>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                                            disabled={page <= 1}
-                                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50"
-                                        >
-                                            Previous
-                                        </button>
-                                        <button
-                                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                            disabled={page >= totalPages}
-                                            className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium disabled:opacity-50 hover:bg-gray-50"
-                                        >
-                                            Next
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Floating Action Button */}
-                        {/* FAB removed - moved to header */}
-                    </>
-                ) : (
-                    <div className="px-4 py-6">
-                        <CategoryList
-                            categories={categories}
-                            searchTerm={searchTerm}
-                            onEdit={handleOpenEditCategoryModal}
-                            onDelete={onDeleteCategory || (() => { })}
-                            isLoading={isLoading}
-                            error={error}
-                        />
-                        {/* FAB for Categories */}
-                        {/* FAB removed - moved to header */}
-                    </div>
-                )}
-            </main>
-
-            {
-                canManageProducts && isModalOpen && (
-                    <ProductFormModal
-                        isOpen={isModalOpen}
-                        onClose={handleCloseModal}
-                        onSave={handleSave}
-                        productToEdit={editingProduct}
-                        categories={categories}
-                        suppliers={suppliers}
-                        storeSettings={storeSettings}
-                        onAddCategory={handleOpenAddCategoryModal}
-                    />
-                )
-            }
-
-            {
-                canManageProducts && isStockModalOpen && (
-                    <StockAdjustmentModal
-                        isOpen={isStockModalOpen}
-                        onClose={handleCloseStockModal}
-                        onSave={handleSaveStockAdjustment}
-                        product={stockAdjustProduct}
-                        initialReason={stockAdjustInitialReason}
-                    />
-                )
-            }
-
-            {
-                canManageProducts && (
-                    <CategoryFormModal
-                        isOpen={isCategoryModalOpen}
-                        onClose={handleCloseCategoryModal}
-                        onSave={handleSaveCategoryInternal}
-                        categoryToEdit={editingCategory}
-                        allCategories={categories}
-                        accounts={accounts}
-                    />
-                )
-            }
             <LabelPrintModal
                 isOpen={isPrintModalOpen}
                 onClose={handleClosePrintModal}
                 product={productToPrint}
                 storeSettings={storeSettings}
             />
+
             <ConfirmationModal
                 isOpen={isDeleteModalOpen}
                 onClose={handleCloseDeleteModal}
@@ -1008,11 +832,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 }
                 confirmText="Delete"
             />
+
             <UnifiedScannerModal
                 isOpen={isScanModalOpen}
                 onClose={() => setIsScanModalOpen(false)}
                 onScanSuccess={(code) => {
-                    // Try to find product by barcode or SKU
                     const scannedProduct = products.find(p =>
                         p.sku === code ||
                         p.barcode === code ||
@@ -1028,6 +852,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     }
                 }}
             />
+
             {linkPOProduct && (
                 <LinkToPOModal
                     isOpen={isLinkPOModalOpen}
@@ -1039,7 +864,41 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     onSkip={handleSkipLinkPO}
                 />
             )}
-        </div >
+
+            {/* Mobile Menu Popup */}
+            {isMobileMenuOpen && (
+                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+                    <div className="absolute inset-0 bg-black/50" />
+                    <div className="absolute top-[60px] right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 p-2" onClick={e => e.stopPropagation()}>
+                        <div className="grid grid-cols-2 gap-2">
+                            <button
+                                onClick={() => { setActiveTab('products'); setIsMobileMenuOpen(false); }}
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl ${activeTab === 'products' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-700'}`}
+                            >
+                                <CubeIcon className="w-6 h-6 mb-1" />
+                                <span className="text-xs font-semibold">Products</span>
+                            </button>
+                            <button
+                                onClick={() => { setActiveTab('categories'); setIsMobileMenuOpen(false); }}
+                                className={`flex flex-col items-center justify-center p-3 rounded-xl ${activeTab === 'categories' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-700'}`}
+                            >
+                                <TagIcon className="w-6 h-6 mb-1" />
+                                <span className="text-xs font-semibold">Categories</span>
+                            </button>
+                            {canManageProducts && (
+                                <button
+                                    onClick={() => { handleOpenAddModal(); setIsMobileMenuOpen(false); }}
+                                    className="col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-blue-50 text-blue-700"
+                                >
+                                    <PlusIcon className="w-5 h-5" />
+                                    <span className="text-sm font-semibold">Add New Item</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 };
 

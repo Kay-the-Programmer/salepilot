@@ -31,6 +31,7 @@ import Bars3BottomLeftIcon from '../components/icons/Bars3BottomLeftIcon';
 import Bars3Icon from '../components/icons/Bars3Icon';
 import GridIcon from '../components/icons/GridIcon';
 import ListIcon from '../components/icons/ListIcon';
+import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 import logo from '../assets/logo.png';
 
 interface SalesPageProps {
@@ -169,10 +170,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Auto-select first payment method
     useEffect(() => {
         const methods = storeSettings.paymentMethods || [];
-        if (methods.length > 0) {
-            setSelectedPaymentMethod(methods[0].name);
+        const fallbacks = [{ id: 'pm_cash', name: 'Cash' }, { id: 'pm_card', name: 'Card' }];
+        const allMethods = methods.length > 0 ? methods : fallbacks;
+
+        if (allMethods.length > 0 && !selectedPaymentMethod) {
+            setSelectedPaymentMethod(allMethods[0].name);
         }
-    }, [storeSettings.paymentMethods]);
+    }, [storeSettings.paymentMethods, selectedPaymentMethod]);
 
     // Reset cash when payment method changes
     useEffect(() => {
@@ -610,8 +614,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                             <button
                                                 onClick={() => setViewMode('grid')}
                                                 className={`p-1.5 rounded transition-colors ${viewMode === 'grid'
-                                                        ? 'bg-white text-blue-600 shadow-sm'
-                                                        : 'text-slate-500 hover:text-slate-700'
+                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700'
                                                     }`}
                                                 title="Grid view"
                                             >
@@ -620,8 +624,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                             <button
                                                 onClick={() => setViewMode('list')}
                                                 className={`p-1.5 rounded transition-colors ${viewMode === 'list'
-                                                        ? 'bg-white text-blue-600 shadow-sm'
-                                                        : 'text-slate-500 hover:text-slate-700'
+                                                    ? 'bg-white text-blue-600 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700'
                                                     }`}
                                                 title="List view"
                                             >
@@ -1154,19 +1158,30 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
                                                     Payment Method
                                                 </label>
-                                                <div className="relative">
+                                                <div className="relative group">
                                                     <select
                                                         value={selectedPaymentMethod}
                                                         onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all"
+                                                        className="w-full pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100"
                                                     >
-                                                        {(storeSettings.paymentMethods || []).map(method => (
-                                                            <option key={method.id} value={method.name}>
-                                                                {method.name}
-                                                            </option>
-                                                        ))}
+                                                        {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
+                                                            ? storeSettings.paymentMethods.map(method => (
+                                                                <option key={method.id} value={method.name}>
+                                                                    {method.name}
+                                                                </option>
+                                                            ))
+                                                            : [
+                                                                { id: 'pm_cash', name: 'Cash' },
+                                                                { id: 'pm_card', name: 'Card' }
+                                                            ].map(method => (
+                                                                <option key={method.id} value={method.name}>
+                                                                    {method.name}
+                                                                </option>
+                                                            ))
+                                                        }
                                                     </select>
-                                                    <CreditCardIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500 pointer-events-none" />
+                                                    <CreditCardIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
+                                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
                                                 </div>
                                             </div>
 
@@ -1487,15 +1502,30 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                                     <div className="pt-4 border-t border-slate-100">
                                         <label className="block text-sm font-medium text-slate-900 mb-2">Payment Method</label>
-                                        <select
-                                            value={selectedPaymentMethod}
-                                            onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                                            className="w-full p-2 border border-slate-300 rounded-lg"
-                                        >
-                                            {(storeSettings.paymentMethods || []).map(method => (
-                                                <option key={method.id} value={method.name}>{method.name}</option>
-                                            ))}
-                                        </select>
+                                        <div className="relative group">
+                                            <select
+                                                value={selectedPaymentMethod}
+                                                onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                                                className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100"
+                                            >
+                                                {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
+                                                    ? storeSettings.paymentMethods.map(method => (
+                                                        <option key={method.id} value={method.name}>
+                                                            {method.name}
+                                                        </option>
+                                                    ))
+                                                    : [
+                                                        { id: 'pm_cash', name: 'Cash' },
+                                                        { id: 'pm_card', name: 'Card' }
+                                                    ].map(method => (
+                                                        <option key={method.id} value={method.name}>
+                                                            {method.name}
+                                                        </option>
+                                                    ))
+                                                }
+                                            </select>
+                                            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
+                                        </div>
                                     </div>
 
                                     {isCashMethod && (

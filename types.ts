@@ -30,6 +30,8 @@ export interface Product {
     variants?: ProductVariant[];
     status: 'active' | 'archived';
     customAttributes?: { [attributeId: string]: string };
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 export interface User {
