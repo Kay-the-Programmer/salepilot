@@ -11,11 +11,12 @@ import {
     HiOutlineBolt
 } from 'react-icons/hi2';
 import { api } from '../../services/api';
-import { getCurrentUser, logout } from '../../services/authService';
+import { getCurrentUser } from '../../services/authService';
 import { formatCurrency } from '../../utils/currency';
 import RequestWizard from '../../components/RequestWizard';
 import Snackbar from '../../components/Snackbar';
 import { SnackbarType } from '../../App';
+import SalePilotLogo from '../../assets/salepilot.png';
 
 
 // interface PublicStore {
@@ -144,15 +145,12 @@ export default function MarketplacePage() {
             </div>
 
             {/* Main Header */}
-            <header className="bg-[#1a1b2e] text-white sticky top-0 z-50">
+            <header className="bg-[#0A2E5C] text-white sticky top-0 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
                     {/* Logo & Category Toggle */}
                     <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/directory')}>
-                            <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
-                                <HiOutlineBuildingStorefront className="text-white w-5 h-5" />
-                            </div>
-                            <span className="text-xl font-bold tracking-tight">Motta</span>
+                        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate('/directory')}>
+                            <img src={SalePilotLogo} alt="SalePilot" className="h-10 w-auto object-contain" />
                         </div>
 
                         <div className="hidden lg:flex items-center gap-2 px-4 py-2 bg-white/10 rounded-full cursor-pointer hover:bg-white/20 transition-colors">
@@ -170,7 +168,7 @@ export default function MarketplacePage() {
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
-                        <button className="absolute right-1 top-1 bottom-1 w-12 bg-indigo-600 rounded-full flex items-center justify-center hover:bg-indigo-700 transition-colors">
+                        <button className="absolute right-1 top-1 bottom-1 w-12 bg-[#FF7F27] rounded-full flex items-center justify-center hover:bg-[#E66B1F] transition-colors">
                             <HiOutlineMagnifyingGlass className="w-5 h-5 text-white" />
                         </button>
                     </div>
@@ -202,14 +200,6 @@ export default function MarketplacePage() {
                     </div>
                 </div>
 
-                {/* Sub Navigation */}
-                <div className="border-t border-white/10 hidden md:block">
-                    <div className="max-w-[1400px] mx-auto px-6 h-12 flex items-center gap-8">
-                        {['Daily Deals', 'Top Items', 'Gift Cards', 'Sell on Motta', 'Help Center'].map((item) => (
-                            <a key={item} href="#" className="text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white transition-colors">{item}</a>
-                        ))}
-                    </div>
-                </div>
             </header>
 
             {/* Hero Section */}
@@ -217,17 +207,17 @@ export default function MarketplacePage() {
                 {/* Main Slider */}
                 <div className="lg:col-span-8 bg-slate-100 rounded-3xl overflow-hidden relative min-h-[400px] flex items-center px-12">
                     <div className="relative z-10 max-w-lg">
-                        <span className="px-3 py-1 bg-white/80 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-widest text-indigo-600 mb-4 inline-block">Motta Week</span>
+                        <span className="px-3 py-1 bg-white/80 backdrop-blur rounded-lg text-[10px] font-black uppercase tracking-widest text-[#FF7F27] mb-4 inline-block">SalePilot Deals</span>
                         <h2 className="text-5xl md:text-6xl font-black text-slate-900 leading-[0.9] mb-6 tracking-tight">
                             Performance <br /> Meets Design
                         </h2>
-                        <button onClick={() => { }} className="px-8 py-4 bg-slate-900 text-white rounded-full font-bold uppercase text-xs tracking-widest hover:bg-indigo-600 transition-colors">
+                        <button onClick={() => { }} className="px-8 py-4 bg-slate-900 text-white rounded-full font-bold uppercase text-xs tracking-widest hover:bg-[#0A2E5C] transition-colors">
                             Shop Now
                         </button>
                     </div>
-                    <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l from-indigo-100 to-transparent pointer-events-none" />
+                    <div className="absolute right-0 top-0 bottom-0 w-1/2 bg-gradient-to-l from-orange-100 to-transparent pointer-events-none" />
                     {/* Abstract shape or image placeholder */}
-                    <div className="absolute right-10 top-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
+                    <div className="absolute right-10 top-1/2 -translate-y-1/2 w-80 h-80 bg-[#FF7F27]/10 rounded-full blur-3xl pointer-events-none" />
                 </div>
 
                 {/* Right Banners */}
@@ -362,15 +352,15 @@ export default function MarketplacePage() {
                         <p className="text-slate-400 text-lg mb-10">Post a request and let our network of sellers come to you with their best offers.</p>
                         <button
                             onClick={() => setIsRequestModalOpen(true)}
-                            className="px-10 py-5 bg-white text-slate-900 rounded-full font-black uppercase text-sm tracking-widest hover:bg-indigo-500 hover:text-white transition-all shadow-xl shadow-white/10"
+                            className="px-10 py-5 bg-white text-slate-900 rounded-full font-black uppercase text-sm tracking-widest hover:bg-[#FF7F27] hover:text-white transition-all shadow-xl shadow-white/10"
                         >
                             <HiOutlinePlus className="inline w-5 h-5 mr-2 -mt-0.5" />
                             Post a Request
                         </button>
                     </div>
                     {/* Abstract Circles */}
-                    <div className="absolute top-0 left-0 w-64 h-64 bg-indigo-500/20 rounded-full blur-[100px]" />
-                    <div className="absolute bottom-0 right-0 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
+                    <div className="absolute top-0 left-0 w-64 h-64 bg-[#0A2E5C]/20 rounded-full blur-[100px]" />
+                    <div className="absolute bottom-0 right-0 w-80 h-80 bg-[#FF7F27]/20 rounded-full blur-[100px]" />
                 </div>
             </section>
 
@@ -391,10 +381,7 @@ export default function MarketplacePage() {
                 <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-12">
                     <div>
                         <div className="flex items-center gap-2 mb-6">
-                            <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center">
-                                <HiOutlineBuildingStorefront className="text-white w-4 h-4" />
-                            </div>
-                            <span className="text-xl font-bold tracking-tight">Motta</span>
+                            <img src={SalePilotLogo} alt="SalePilot" className="h-10 w-auto object-contain" />
                         </div>
                         <p className="text-sm text-slate-500 leading-relaxed font-medium">The most trusted marketplace for verified local businesses and global brands.</p>
                     </div>
@@ -414,7 +401,7 @@ export default function MarketplacePage() {
                     ))}
                 </div>
                 <div className="max-w-[1400px] mx-auto px-6 mt-20 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                    <p>&copy; 2026 SalePilot Motta. All rights reserved.</p>
+                    <p>&copy; 2026 SalePilot. All rights reserved.</p>
                     <div className="flex gap-6">
                         <span>Visa</span>
                         <span>Mastercard</span>
@@ -428,7 +415,7 @@ export default function MarketplacePage() {
             <div className="fixed bottom-6 right-6 z-50 md:hidden">
                 <button
                     onClick={() => setIsRequestModalOpen(true)}
-                    className="w-14 h-14 bg-indigo-600 rounded-full flex items-center justify-center text-white shadow-xl shadow-indigo-500/30 hover:scale-110 active:scale-95 transition-all"
+                    className="w-14 h-14 bg-[#FF7F27] rounded-full flex items-center justify-center text-white shadow-xl shadow-orange-500/30 hover:scale-110 active:scale-95 transition-all"
                 >
                     <HiOutlinePlus className="w-6 h-6" />
                 </button>
