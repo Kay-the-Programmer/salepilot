@@ -13,7 +13,7 @@ import TitleBar from './components/TitleBar';
 
 export default function App() {
     return (
-        <div className="flex flex-col h-screen overflow-hidden">
+        <div className="flex flex-col h-screen overflow-hidden glass-app">
             <TitleBar />
             <div className="flex-1 overflow-auto">
                 <Routes>
@@ -84,5 +84,4 @@ export default function App() {
         </div>
     );
 };
-
 
