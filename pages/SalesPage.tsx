@@ -1366,7 +1366,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         </button>
                         <div className="relative mx-2">
                             <button
-                                onClick={() => setIsScannerOpen(true)}
+                                onClick={() => {
+                                    setIsScannerOpen(true);
+                                    setActiveTab('cart');
+                                }}
                                 className="w-16 h-16 -mt-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center"
                             >
                                 <QrCodeIcon className="w-6 h-6" />
@@ -1552,189 +1555,212 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     ))}
                                 </div>
 
-                                {/* Customer Select */}
-                                <div className="bg-white p-4 rounded-xl border border-slate-200">
-                                    <label className="block text-sm font-medium text-slate-900 mb-2">Customer</label>
-                                    <CustomerSelect
-                                        customers={customers}
-                                        selectedCustomer={selectedCustomer}
-                                        onSelectCustomer={(c) => {
-                                            setSelectedCustomer(c);
-                                            setAppliedStoreCredit(0);
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Summary & Payment */}
-                                <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
-                                    <div className="space-y-2 text-sm">
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-600">Subtotal</span>
-                                            <span className="font-medium">{formatCurrency(subtotal, storeSettings)}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-slate-600">Discount</span>
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-xs">{storeSettings.currency.symbol}</span>
-                                                <input
-                                                    type="number"
-                                                    value={discount}
-                                                    onChange={(e) => setDiscount(e.target.value)}
-                                                    className="w-20 px-2 py-1 border border-slate-300 rounded text-right text-sm"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-slate-600">Tax</span>
-                                            <span className="font-medium">{formatCurrency(taxAmount, storeSettings)}</span>
-                                        </div>
-                                        <div className="flex justify-between pt-2 border-t border-slate-100">
-                                            <span className="font-bold text-slate-900">Total</span>
-                                            <span className="font-bold text-lg text-slate-900">{formatCurrency(total, storeSettings)}</span>
-                                        </div>
-                                    </div>
-
-                                    <div className="pt-4 border-t border-slate-100">
-                                        <label className="block text-sm font-medium text-slate-900 mb-2">Payment Method</label>
-                                        <div className="relative group">
-                                            <select
-                                                value={selectedPaymentMethod}
-                                                onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                                                className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100"
+                                {/* Scanner / Checkout Toggle for Mobile */}
+                                {isScannerOpen ? (
+                                    <div className="bg-white p-4 rounded-xl border border-slate-200">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+                                                Scanning
+                                            </h3>
+                                            <button
+                                                onClick={() => setIsScannerOpen(false)}
+                                                className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm font-bold border border-red-100"
                                             >
-                                                {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
-                                                    ? storeSettings.paymentMethods.map(method => (
-                                                        <option key={method.id} value={method.name}>
-                                                            {method.name}
-                                                        </option>
-                                                    ))
-                                                    : [
-                                                        { id: 'pm_cash', name: 'Cash' },
-                                                        { id: 'pm_card', name: 'Card' }
-                                                    ].map(method => (
-                                                        <option key={method.id} value={method.name}>
-                                                            {method.name}
-                                                        </option>
-                                                    ))
-                                                }
-                                            </select>
-                                            <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
+                                                Stop Scanning
+                                            </button>
+                                        </div>
+                                        <div className="aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 relative">
+                                            <UnifiedScannerModal
+                                                isOpen={true}
+                                                variant="embedded"
+                                                onClose={() => setIsScannerOpen(false)}
+                                                onScanSuccess={handleContinuousScan}
+                                                onScanError={handleScanError}
+                                                continuous={true}
+                                                delayBetweenScans={1500}
+                                            />
                                         </div>
                                     </div>
-
-                                    {isCashMethod && (
-                                        <div className="pt-2">
-                                            <label className="block text-sm font-medium text-slate-900 mb-2">Cash Received</label>
-                                            <input
-                                                type="number"
-                                                value={cashReceived}
-                                                onChange={(e) => setCashReceived(e.target.value)}
-                                                className="w-full p-2 border border-slate-300 rounded-lg font-bold text-lg"
-                                                placeholder="0.00"
+                                ) : (
+                                    <>
+                                        {/* Customer Select */}
+                                        <div className="bg-white p-4 rounded-xl border border-slate-200">
+                                            <label className="block text-sm font-medium text-slate-900 mb-2">Customer</label>
+                                            <CustomerSelect
+                                                customers={customers}
+                                                selectedCustomer={selectedCustomer}
+                                                onSelectCustomer={(c) => {
+                                                    setSelectedCustomer(c);
+                                                    setAppliedStoreCredit(0);
+                                                }}
                                             />
-                                            {changeDue > 0 && (
-                                                <div className="mt-2 text-emerald-700 text-sm font-medium">
-                                                    Change Due: {formatCurrency(changeDue, storeSettings)}
+                                        </div>
+
+                                        {/* Summary & Payment */}
+                                        <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
+                                            <div className="space-y-2 text-sm">
+                                                <div className="flex justify-between">
+                                                    <span className="text-slate-600">Subtotal</span>
+                                                    <span className="font-medium">{formatCurrency(subtotal, storeSettings)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center">
+                                                    <span className="text-slate-600">Discount</span>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="text-xs">{storeSettings.currency.symbol}</span>
+                                                        <input
+                                                            type="number"
+                                                            value={discount}
+                                                            onChange={(e) => setDiscount(e.target.value)}
+                                                            className="w-20 px-2 py-1 border border-slate-300 rounded text-right text-sm"
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-slate-600">Tax</span>
+                                                    <span className="font-medium">{formatCurrency(taxAmount, storeSettings)}</span>
+                                                </div>
+                                                <div className="flex justify-between pt-2 border-t border-slate-100">
+                                                    <span className="font-bold text-slate-900">Total</span>
+                                                    <span className="font-bold text-lg text-slate-900">{formatCurrency(total, storeSettings)}</span>
+                                                </div>
+                                            </div>
+
+                                            <div className="pt-4 border-t border-slate-100">
+                                                <label className="block text-sm font-medium text-slate-900 mb-2">Payment Method</label>
+                                                <div className="relative group">
+                                                    <select
+                                                        value={selectedPaymentMethod}
+                                                        onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                                                        className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100"
+                                                    >
+                                                        {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
+                                                            ? storeSettings.paymentMethods.map(method => (
+                                                                <option key={method.id} value={method.name}>
+                                                                    {method.name}
+                                                                </option>
+                                                            ))
+                                                            : [
+                                                                { id: 'pm_cash', name: 'Cash' },
+                                                                { id: 'pm_card', name: 'Card' }
+                                                            ].map(method => (
+                                                                <option key={method.id} value={method.name}>
+                                                                    {method.name}
+                                                                </option>
+                                                            ))
+                                                        }
+                                                    </select>
+                                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
+                                                </div>
+                                            </div>
+
+                                            {isCashMethod && (
+                                                <div className="pt-2">
+                                                    <label className="block text-sm font-medium text-slate-900 mb-2">Cash Received</label>
+                                                    <input
+                                                        type="number"
+                                                        value={cashReceived}
+                                                        onChange={(e) => setCashReceived(e.target.value)}
+                                                        className="w-full p-2 border border-slate-300 rounded-lg font-bold text-lg"
+                                                        placeholder="0.00"
+                                                    />
+                                                    {changeDue > 0 && (
+                                                        <div className="mt-2 text-emerald-700 text-sm font-medium">
+                                                            Change Due: {formatCurrency(changeDue, storeSettings)}
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
-                                        </div>
-                                    )}
 
-                                    <div className="grid grid-cols-2 gap-3 pt-4">
-                                        <button
-                                            onClick={handleHoldSale}
-                                            className="py-3 bg-orange-100 text-orange-700 rounded-lg font-medium flex items-center justify-center gap-2"
-                                        >
-                                            <ClockIcon className="w-5 h-5" />
-                                            Hold
-                                        </button>
-                                        <button
-                                            onClick={() => processTransaction('paid')}
-                                            disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
-                                            className="py-3 bg-blue-600 text-white rounded-lg font-bold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
-                                        >
-                                            {isProcessing ? (
-                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            ) : (
-                                                <CreditCardIcon className="w-5 h-5" />
-                                            )}
-                                            {isProcessing ? 'Processing' : `Pay ${formatCurrency(total, storeSettings)}`}
-                                        </button>
+                                            <div className="grid grid-cols-2 gap-3 pt-4">
+                                                <button
+                                                    onClick={handleHoldSale}
+                                                    className="py-3 bg-orange-100 text-orange-700 rounded-lg font-medium flex items-center justify-center gap-2"
+                                                >
+                                                    <ClockIcon className="w-5 h-5" />
+                                                    Hold
+                                                </button>
+                                                <button
+                                                    onClick={() => processTransaction('paid')}
+                                                    disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
+                                                    className="py-3 bg-blue-600 text-white rounded-lg font-bold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                                                >
+                                                    {isProcessing ? (
+                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                    ) : (
+                                                        <CreditCardIcon className="w-5 h-5" />
+                                                    )}
+                                                    {isProcessing ? 'Processing' : `Pay ${formatCurrency(total, storeSettings)}`}
+                                                </button>
+                                            </div>
+                                            <button
+                                                onClick={() => processTransaction('invoice')}
+                                                disabled={cart.length === 0 || total < 0 || !selectedCustomer || isProcessing}
+                                                className="w-full py-3 px-4 bg-slate-100 text-slate-900 font-semibold rounded-lg border border-slate-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+                                            >
+                                                {isProcessing ? (
+                                                    <div className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                                                ) : (
+                                                    <DocumentPlusIcon className="w-5 h-5" />
+                                                )}
+                                                {isProcessing ? 'Processing...' : 'Charge to Account'}
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={() => processTransaction('invoice')}
-                                        disabled={cart.length === 0 || total < 0 || !selectedCustomer || isProcessing}
-                                        className="w-full py-3 px-4 bg-slate-100 text-slate-900 font-semibold rounded-lg border border-slate-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
-                                    >
-                                        {isProcessing ? (
-                                            <div className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
-                                        ) : (
-                                            <DocumentPlusIcon className="w-5 h-5" />
-                                        )}
-                                        {isProcessing ? 'Processing...' : 'Charge to Account'}
-                                    </button>
-                                </div>
+                                )
+                            }
                             </div>
                         )
                     }
                 </div>
-            </div>
 
-            {/* Modals */}
-            <FloatingActionButtons />
-            <UnifiedScannerModal
-                isOpen={isScannerOpen}
-                onClose={() => setIsScannerOpen(false)}
-                onScanSuccess={handleContinuousScan}
-                onScanError={handleScanError}
-                continuous={true}
-                title="Scan Products"
-            />
+                {/* Modals */}
+                <FloatingActionButtons />
 
-            <HeldSalesModal
-                isOpen={showHeldPanel}
-                onClose={() => setShowHeldPanel(false)}
-                heldSales={heldSales}
-                onRecallSale={handleRecallSale}
-                storeSettings={storeSettings}
-            />
-            {
-                showReceiptModal && lastSale && (
-                    <ReceiptModal
-                        isOpen={showReceiptModal}
-                        onClose={() => setShowReceiptModal(false)}
-                        saleData={lastSale}
-                        showSnackbar={showSnackbar}
-                        storeSettings={storeSettings}
-                    />
-                )
-            }
+                <HeldSalesModal
+                    isOpen={showHeldPanel}
+                    onClose={() => setShowHeldPanel(false)}
+                    heldSales={heldSales}
+                    onRecallSale={handleRecallSale}
+                    storeSettings={storeSettings}
+                />
+                {
+                    showReceiptModal && lastSale && (
+                        <ReceiptModal
+                            isOpen={showReceiptModal}
+                            onClose={() => setShowReceiptModal(false)}
+                            saleData={lastSale}
+                            showSnackbar={showSnackbar}
+                            storeSettings={storeSettings}
+                        />
+                    )
+                }
 
-            <ProductFormModal
-                isOpen={isProductFormOpen}
-                onClose={() => {
-                    setIsProductFormOpen(false);
-                    setInitialProductValues(undefined);
-                }}
-                onSave={async (newProduct) => {
-                    try {
-                        const savedProduct = await onSaveProduct(newProduct);
-                        addToCart(savedProduct);
+                <ProductFormModal
+                    isOpen={isProductFormOpen}
+                    onClose={() => {
                         setIsProductFormOpen(false);
                         setInitialProductValues(undefined);
-                        showSnackbar('Product added to catalog and cart!', 'success');
-                    } catch (error) {
-                        console.error("Failed to save product:", error);
-                    }
-                }}
+                    }}
+                    onSave={async (newProduct) => {
+                        try {
+                            const savedProduct = await onSaveProduct(newProduct);
+                            addToCart(savedProduct);
+                            setIsProductFormOpen(false);
+                            setInitialProductValues(undefined);
+                            showSnackbar('Product added to catalog and cart!', 'success');
+                        } catch (error) {
+                            console.error("Failed to save product:", error);
+                        }
+                    }}
 
-                categories={categories}
-                suppliers={suppliers}
-                storeSettings={storeSettings}
-                initialValues={initialProductValues}
-            />
-        </div >
-    );
+                    categories={categories}
+                    suppliers={suppliers}
+                    storeSettings={storeSettings}
+                    initialValues={initialProductValues}
+                />
+            </div >
+            );
 };
 
-export default SalesPage;
+            export default SalesPage;
