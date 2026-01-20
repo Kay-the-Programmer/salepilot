@@ -12,6 +12,7 @@ interface UnifiedScannerModalProps {
     title?: string;
     continuous?: boolean;
     delayBetweenScans?: number; // ms
+    variant?: 'modal' | 'embedded';
 }
 
 const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
@@ -21,7 +22,8 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     onScanError,
     title = "Scan Barcode",
     continuous = false,
-    delayBetweenScans = 1500
+    delayBetweenScans = 1500,
+    variant = 'modal'
 }) => {
     const [error, setError] = useState<string | null>(null);
     const [isTorchOn, setIsTorchOn] = useState(false);
@@ -338,6 +340,101 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     }, [isOpen, onScanSuccess, onClose, continuous, delayBetweenScans, cleanup, provideFeedback, facingMode, onScanError]);
 
     if (!isOpen) return null;
+
+    if (!isOpen) return null;
+
+    if (variant === 'embedded') {
+        return (
+            <div className="w-full h-full flex flex-col bg-white overflow-hidden rounded-xl border border-slate-200 shadow-inner relative">
+                {/* Scanner Area */}
+                <div className="relative bg-black flex-1 w-full overflow-hidden">
+                    {isInitializing && !error && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black">
+                            <div className="w-8 h-8 border-4 border-white/20 border-t-white rounded-full animate-spin mb-3"></div>
+                            <p className="text-white/60 text-xs font-medium">Initializing...</p>
+                        </div>
+                    )}
+
+                    {error ? (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 bg-slate-50">
+                            <div className="w-10 h-10 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2">
+                                <FiX className="w-5 h-5" />
+                            </div>
+                            <h4 className="font-bold text-slate-900 text-sm mb-1">Camera Error</h4>
+                            <p className="text-slate-500 text-xs leading-relaxed mb-3 break-words max-w-full px-2">{error}</p>
+                            <button
+                                onClick={onClose}
+                                className="px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold text-xs shadow-sm active:scale-95 transition-all"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    ) : (
+                        <>
+                            <video
+                                ref={videoRef}
+                                className="w-full h-full object-cover"
+                                playsInline
+                                muted
+                            />
+
+                            {!isInitializing && (
+                                <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
+                                    <div className={`absolute inset-0 bg-white transition-opacity duration-150 ${isFlashing ? 'opacity-40' : 'opacity-0'}`}></div>
+
+                                    {/* Simplified Box for embedded view */}
+                                    <div className="absolute border-2 border-blue-500/80 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)]" style={{
+                                        width: '80%',
+                                        height: '60%',
+                                    }}>
+                                        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-white rounded-tl-lg"></div>
+                                        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-white rounded-tr-lg"></div>
+                                        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-white rounded-bl-lg"></div>
+                                        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-white rounded-br-lg"></div>
+                                    </div>
+
+                                    {/* Interactive Controls */}
+                                    {hasMultipleCameras && (
+                                        <button
+                                            onClick={handleCameraSwitch}
+                                            disabled={isInitializing}
+                                            className="absolute bottom-3 left-3 pointer-events-auto p-2 rounded-full backdrop-blur-md bg-black/30 text-white border border-white/20 hover:bg-black/50 transition-all active:scale-90 disabled:opacity-50"
+                                            title="Switch Camera"
+                                        >
+                                            <FiRefreshCw className={`w-4 h-4 ${isInitializing ? 'animate-spin' : ''}`} />
+                                        </button>
+                                    )}
+
+                                    {hasTorch && (
+                                        <button
+                                            onClick={handleTorchToggle}
+                                            className={`absolute bottom-3 right-3 pointer-events-auto p-2 rounded-full backdrop-blur-md transition-all active:scale-90 ${isTorchOn
+                                                ? 'bg-yellow-400 text-white shadow-lg shadow-yellow-400/20'
+                                                : 'bg-black/30 text-white border border-white/20 hover:bg-black/50'
+                                                }`}
+                                            title="Toggle Flashlight"
+                                        >
+                                            {isTorchOn ? <FiZapOff className="w-4 h-4" /> : <FiZap className="w-4 h-4" />}
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </>
+                    )}
+                </div>
+                <style>{`
+                    @keyframes scan-line {
+                        0% { top: 0; }
+                        100% { top: 100%; }
+                    }
+                    .animate-scan-line {
+                        animation: scan-line 2s linear infinite;
+                    }
+                `}</style>
+            </div>
+        );
+    }
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in">
