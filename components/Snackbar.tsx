@@ -48,7 +48,7 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
 
     return (
         <div
-            className={`fixed top-20 md:top-4 right-4 z-[200] max-w-sm rounded-md border-l-4 shadow-lg p-4 ${typeClasses[type]} animate-slide-in-right transition-all duration-300 ease-out transform`}
+            className={`fixed bottom-20 md:bottom-4 left-4 z-[200] max-w-sm rounded-md border-l-4 shadow-lg p-4 ${typeClasses[type]} animate-slide-in-left transition-all duration-300 ease-out transform`}
             role="alert"
         >
             <div className="flex">

@@ -36,6 +36,7 @@ import GridIcon from '../components/icons/GridIcon';
 import ListIcon from '../components/icons/ListIcon';
 import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 import logo from '../assets/logo.png';
+import { ArrowLeftIcon } from '@/components/icons';
 
 interface SalesPageProps {
     products: Product[];
@@ -120,7 +121,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
             document.body.style.cursor = 'default';
         };
 
-        if (/* condition to add listeners only when relevant? No, just add global */ true) {
+        if (/* condition to add listeners only when relevant and global */ true) {
             window.addEventListener('mousemove', handleMouseMove);
             window.addEventListener('mouseup', handleMouseUp);
         }
@@ -140,7 +141,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 18; // Fixed for desktop grid 3x6 or similar
+    const itemsPerPage = 18; // Fixed for desktop grid 3x6 
 
     const [showQuickActions, setShowQuickActions] = useState<boolean>(false);
 
@@ -524,19 +525,19 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     // Floating Action Buttons
     const FloatingActionButtons = () => (
-        <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
+        <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-transparent/1 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
             <button
                 onClick={() => {
                     setIsScannerOpen(true);
                     setActiveTab('cart');
                 }}
-                className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-all"
+                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-all"
             >
                 <QrCodeIcon className="w-6 h-6" />
             </button>
             <button
                 onClick={() => setActiveTab(prev => prev === 'products' ? 'cart' : 'products')}
-                className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-lg flex items-center justify-center active:scale-95 transition-all"
+                className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-lg flex items-center justify-center active:scale-95 transition-all"
             >
                 <ShoppingCartIcon className="w-6 h-6" />
                 {cart.length > 0 && (
@@ -548,7 +549,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
             <button
                 onClick={() => setShowHeldPanel(true)}
-                className="relative w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-all"
+                className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-all"
             >
                 <ClockIcon className="w-6 h-6" />
                 {heldSales.length > 0 && (
@@ -563,16 +564,45 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Header Actions for Desktop
     const headerActions = (
         <div className="hidden md:flex items-center gap-3">
-            <button
-                onClick={() => setShowQuickActions(!showQuickActions)}
-                className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-700 text-sm font-medium rounded-lg border border-blue-200 flex items-center gap-2 hover:border-blue-300 transition-colors"
-            >
-                <BoltIcon className="w-4 h-4" />
-                Quick Add
-            </button>
+            <div className="flex items-center gap-2 w-full md:w-auto ml-4 md:ml-0">
+                <div className="relative flex-1 md:flex-none">
+                    <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <input
+                        type="text"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search products..."
+                        className="w-full md:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-3xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                </div>
+                {/* View Toggle (Desktop Only) */}
+                <div className="hidden md:flex items-center gap-1 bg-white rounded-xl p-0">
+                    <button
+                        onClick={() => setViewMode('grid')}
+                        className={`p-1.5 rounded-xl transition-colors ${viewMode === 'grid'
+                            ? 'bg-white text-blue-600'
+                            : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        title="Grid view"
+                    >
+                        <GridIcon className="w-4 h-4" />
+                    </button>
+                    <div className="w-px h-4 bg-slate-200" />
+                    <button
+                        onClick={() => setViewMode('list')}
+                        className={`p-1.5 rounded-xl transition-colors ${viewMode === 'list'
+                            ? 'bg-white text-blue-600 shadow-sm'
+                            : 'text-slate-500 hover:text-slate-700'
+                            }`}
+                        title="List view"
+                    >
+                        <ListIcon className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
             <button
                 onClick={() => setShowHeldPanel(true)}
-                className="px-3 py-1.5 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 text-sm font-medium rounded-lg border border-amber-200 flex items-center gap-2 hover:border-amber-300 transition-colors relative"
+                className="px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 text-sm font-medium rounded-xl border border-amber-200 flex items-center gap-2 hover:border-amber-300 transition-colors relative"
             >
                 <ClockIcon className="w-4 h-4" />
                 Held Sales
@@ -581,13 +611,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         {heldSales.length}
                     </span>
                 )}
-            </button>
-            <button
-                onClick={() => setIsScannerOpen(true)}
-                className="px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-green-50 text-emerald-700 text-sm font-medium rounded-lg border border-emerald-200 flex items-center gap-2 hover:border-emerald-300 transition-colors"
-            >
-                <QrCodeIcon className="w-4 h-4" />
-                Scan
             </button>
         </div>
     );
@@ -609,104 +632,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 </div>
 
-
-
-                {/* Quick Actions Panel */}
-                {
-                    showQuickActions && (
-                        <div className="flex-none px-4 py-3 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 border-b border-blue-100">
-                            <div className="max-w-7xl mx-auto">
-                                <div className="flex items-center justify-between mb-2">
-                                    <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                                        <BoltIcon className="w-4 h-4 text-blue-600" />
-                                        Quick Add Products
-                                    </h3>
-                                    <button
-                                        onClick={() => setShowQuickActions(false)}
-                                        className="text-slate-500 hover:text-slate-700"
-                                    >
-                                        <XMarkIcon className="w-4 h-4" />
-                                    </button>
-                                </div>
-                                <div className="flex gap-2 overflow-x-auto pb-2">
-                                    {quickActions.map(product => (
-                                        <button
-                                            key={product.id}
-                                            onClick={() => addToCart(product)}
-                                            className="flex-shrink-0 px-3 py-2 bg-white rounded-lg border border-slate-200 hover:border-blue-300 hover:shadow-md transition-all flex items-center gap-2 group"
-                                        >
-                                            <div className="w-8 h-8 bg-gradient-to-br from-blue-100 to-blue-200 rounded flex items-center justify-center">
-                                                <PlusIcon className="w-3 h-3 text-blue-600" />
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="text-sm font-medium text-slate-900 truncate max-w-[120px]">
-                                                    {product.name}
-                                                </div>
-                                                <div className="text-xs text-slate-600">
-                                                    {formatCurrency(product.price, storeSettings)}
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )
-                }
-
-                <div className="flex-1 overflow-hidden">
+                <div className="flex-1 overflow-hidden bg-gray-100">
                     <div className="h-full flex flex-col">
                         {/* Left Column - Products */}
                         <div className="flex-1 flex flex-col h-full min-w-0">
-                            {/* Products Header */}
-                            <div className="flex-none p-4 border-b border-slate-100 bg-white/80 backdrop-blur-sm z-10">
-                                <div className="flex items-center justify-between max-w-7xl mx-auto w-full">
-                                    <div>
-                                        <div className="flex items-center">
-                                            <h2 className="text-lg font-bold text-slate-900 hidden md:block">Products</h2>
-                                            <img src={logo} alt="SalePilot" className="h-8 md:hidden" />
-                                        </div>
-                                        <p className="text-sm text-slate-600 hidden md:block">Select items to add to cart</p>
-                                    </div>
-                                    <div className="flex items-center gap-2 w-full md:w-auto ml-4 md:ml-0">
-                                        <div className="relative flex-1 md:flex-none">
-                                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                            <input
-                                                type="text"
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                                placeholder="Search products..."
-                                                className="w-full md:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
-                                        </div>
-                                        {/* View Toggle (Desktop Only) */}
-                                        <div className="hidden md:flex items-center gap-1 bg-slate-100 rounded-lg p-1">
-                                            <button
-                                                onClick={() => setViewMode('grid')}
-                                                className={`p-1.5 rounded transition-colors ${viewMode === 'grid'
-                                                    ? 'bg-white text-blue-600 shadow-sm'
-                                                    : 'text-slate-500 hover:text-slate-700'
-                                                    }`}
-                                                title="Grid view"
-                                            >
-                                                <GridIcon className="w-4 h-4" />
-                                            </button>
-                                            <button
-                                                onClick={() => setViewMode('list')}
-                                                className={`p-1.5 rounded transition-colors ${viewMode === 'list'
-                                                    ? 'bg-white text-blue-600 shadow-sm'
-                                                    : 'text-slate-500 hover:text-slate-700'
-                                                    }`}
-                                                title="List view"
-                                            >
-                                                <ListIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-
                             {/* Products Grid/List */}
                             <div className="flex-1 overflow-y-auto p-4 scroll-smooth">
                                 {isLoading ? (
@@ -742,7 +671,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     `}
                                                         >
                                                             {/* Image Container */}
-                                                            <div className="aspect-square bg-slate-100 relative overflow-hidden">
+                                                            <div className="aspect-square bg-white relative overflow-hidden">
                                                                 {product.imageUrls?.[0] ? (
                                                                     <img
                                                                         src={buildAssetUrl(product.imageUrls[0])}
@@ -787,7 +716,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                                 </h3>
                                                                 <div className="flex items-end justify-between">
                                                                     <div>
-                                                                        <p className="text-xs text-slate-500 mb-0.5">{product.sku}</p>
                                                                         <div className="font-bold text-slate-900 text-base">
                                                                             {formatCurrency(product.price, storeSettings)}
                                                                         </div>
@@ -832,11 +760,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                             key={product.id}
                                                             onClick={() => !isSoldOut && addToCart(product)}
                                                             className={`
-                                        group bg-white rounded-xl border border-slate-200 p-3
-                                        transition-all duration-200 hover:shadow-md cursor-pointer flex items-center gap-4
-                                        ${isSoldOut ? 'opacity-60 grayscale' : ''}
-                                        ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
-                                    `}
+                                                                group bg-white rounded-xl border border-slate-200 p-3
+                                                                transition-all duration-200 hover:shadow-md cursor-pointer flex items-center gap-4
+                                                                ${isSoldOut ? 'opacity-60 grayscale' : ''}
+                                                                ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
+                                                            `}
                                                         >
                                                             {/* Image */}
                                                             <div className="w-20 h-20 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden relative">
@@ -865,7 +793,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                                 <h3 className="font-semibold text-slate-900 text-sm mb-1 group-hover:text-blue-600 transition-colors truncate">
                                                                     {product.name}
                                                                 </h3>
-                                                                <p className="text-xs text-slate-500 mb-1">{product.sku}</p>
                                                                 <div className="flex items-center gap-2">
                                                                     {isSoldOut ? (
                                                                         <span className="text-xs font-medium text-red-600 bg-red-50 px-2 py-0.5 rounded">
@@ -937,7 +864,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             {/* Pagination Footer */}
                             {
                                 !isLoading && filteredProducts.length > 0 && (
-                                    <div className="flex-none p-4 border-t border-slate-200 bg-white/80 backdrop-blur top-shadow z-10">
+                                    <div className="flex-none p-4 border-t border-slate-200 bg-white/5 backdrop-blur top-shadow z-10">
                                         <div className="flex items-center justify-between max-w-7xl mx-auto">
                                             <div className="text-sm text-slate-600">
                                                 Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredProducts.length)}</span> of <span className="font-medium">{filteredProducts.length}</span> products
@@ -966,25 +893,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 )
                             }
                         </div>
-
-
-
-
                     </div>
                 </div>
             </div>
 
             {/* Right Column - Cart & Checkout */}
-            <div className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-white shadow-xl z-20 border-l border-slate-200" >
+            <div className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-gray-50 z-20 " >
                 {/* Cart Header */}
-                <div className="flex-none p-4 border-b border-slate-100 bg-gradient-to-r from-blue-50/50 to-indigo-50/50" >
+                <div className="flex-none p-4 py-2 border-b border-slate-100 shadow-sm bg-transparent" >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-md">
-                                <ShoppingCartIcon className="w-5 h-5 text-white" />
-                            </div>
                             <div>
-                                <h2 className="font-bold text-lg text-slate-900">Shopping Cart</h2>
+                                <h2 className="font-bold text-lg text-slate-700">Shopping Cart</h2>
                                 <div className="flex items-center gap-2 text-sm text-slate-600">
                                     <span>{cart.length} items</span>
                                     {cart.length > 0 && (
@@ -1012,16 +932,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     {
                         cart.length === 0 ? (
                             <div className="p-8 text-center h-full flex flex-col items-center justify-center">
-                                <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <div className="w-16 h-16  from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
                                     <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
                                 </div>
                                 <p className="text-slate-700 font-medium mb-2">Your cart is empty</p>
-                                <p className="text-sm text-slate-500">Add products to get started</p>
                             </div>
                         ) : (
                             <div className="divide-y divide-slate-100">
                                 {cart.map(item => (
-                                    <div key={item.productId} className="p-4 hover:bg-slate-50/50 transition-colors group">
+                                    <div key={item.productId} className="px-2 py-4 hover:bg-slate-50/50 transition-colors group">
                                         <div className="flex items-start justify-between">
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-start justify-between mb-2">
@@ -1081,19 +1000,19 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                 {/* Cart Summary & Actions (Fixed Bottom) - Now Resizable */}
                 <div
-                    className="flex-none bg-white border-t border-slate-100 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative flex flex-col transition-all duration-75 ease-linear"
+                    className="flex-none bg-gray-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative flex flex-col transition-all duration-75 ease-linear"
                     style={{ height: `${actionsPanelHeight}px` }}
                 >
                     {/* Drag Handle */}
                     <div
-                        className="bg-slate-50 border-b border-slate-200 cursor-ns-resize flex items-center justify-center py-1 absolute top-0 left-0 right-0 z-10"
+                        className="bg-slate-50 border-b border-slate-200 cursor-ns-resize flex items-center justify-center py-0 absolute top-0 left-0 right-0 z-10"
                         onMouseDown={startResizing}
                     >
-                        <div className="w-12 h-1.5 bg-slate-300 rounded-full"></div>
+                        <div className="w-12 h-1.5 bg-slate-300 "></div>
                     </div>
 
                     {/* Scanner Toggle / Header */}
-                    <div className="flex items-center justify-between px-4 py-2 mt-3 z-10">
+                    <div className="flex items-center justify-between px-4 py-0 mt-2 z-10">
                         <h3 className="font-bold text-slate-800 flex items-center gap-2">
                             {isScannerOpen ? (
                                 <>
@@ -1148,7 +1067,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     ) : (
                         <>
                             {/* Tab Navigation */}
-                            <div className="flex border-b border-slate-200 bg-white z-10 flex-none px-4">
+                            <div className="flex border-b border-slate-200 bg-gray-50 z-10 flex-none px-4">
                                 <button
                                     onClick={() => setCartActionTab('customer')}
                                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${cartActionTab === 'customer'
@@ -1273,9 +1192,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         {cartActionTab === 'payment' && (
                                             <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
                                                 {/* Big Total Display */}
-                                                <div className="text-center py-4 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20 text-white">
+                                                <div className="text-center py-2 bg-gradient-to-br flex justify-between px-4 m-auto from-blue-500 to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20 text-white">
                                                     <p className="text-blue-100 text-sm font-medium uppercase tracking-wider mb-1">Total to Pay</p>
-                                                    <p className="text-4xl font-bold tracking-tight">{formatCurrency(total, storeSettings)}</p>
+                                                    <p className="text-3xl font-bold tracking-tight">{formatCurrency(total, storeSettings)}</p>
                                                 </div>
 
                                                 <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-4">
@@ -1387,48 +1306,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     )}
                 </div>
 
-                {/* Mobile Tab Navigation */}
-                <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 z-40">
-                    <div className="flex items-center px-4 py-2">
-                        <button
-                            onClick={() => setActiveTab('products')}
-                            className={`flex-1 flex flex-col items-center justify-center py-3 rounded-xl transition-all ${activeTab === 'products' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
-                        >
-                            <ShoppingCartIcon className="w-6 h-6 mb-1" />
-                            <span className="text-xs font-medium">Products</span>
-                        </button>
-                        <div className="relative mx-2">
-                            <button
-                                onClick={() => {
-                                    setIsScannerOpen(true);
-                                    setActiveTab('cart');
-                                }}
-                                className="w-16 h-16 -mt-6 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center"
-                            >
-                                <QrCodeIcon className="w-6 h-6" />
-                            </button>
-                        </div>
-                        <button
-                            onClick={() => setActiveTab('cart')}
-                            className={`flex-1 flex flex-col items-center justify-center py-3 rounded-xl transition-all ${activeTab === 'cart' ? 'bg-blue-50 text-blue-600' : 'text-slate-600'}`}
-                        >
-                            <div className="relative">
-                                <ShoppingCartIcon className="w-6 h-6 mb-1" />
-                                {cart.length > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                                        {cart.length}
-                                    </span>
-                                )}
-                            </div>
-                            <span className="text-xs font-medium">Cart</span>
-                        </button>
-                    </div>
-                </div>
-
                 {/* Mobile Product View */}
-                <div className={`md:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 ${activeTab === 'products' ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className={`md:hidden fixed inset-0 bg-transparent/1 backdrop-blur-2xl z-50 transition-transform duration-300 overflow-y-auto ${activeTab === 'products' ? 'translate-x-0' : 'translate-x-full'}`}>
                     {/* Mobile Products Header */}
-                    <div className="sticky top-0 bg-white border-b border-slate-200 z-10 p-4">
+                    <div className="sticky top-0 bg-transparent/1 backdrop-blur-sm border-b border-slate-200 z-10 p-4">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center gap-2">
                                 {onOpenSidebar && (
@@ -1436,7 +1317,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         onClick={onOpenSidebar}
                                         className="p-2 -ml-2 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none"
                                     >
-                                        <Bars3Icon className="w-6 h-6" />
+                                        <GridIcon className="w-6 h-6" />
                                     </button>
                                 )}
                                 <h2 className="text-lg font-bold text-slate-900 hidden md:block">Products</h2>
@@ -1456,25 +1337,25 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 )}
                             </button>
                         </div>
-                        <div className="relative">
-                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <div className="relative ">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 " />
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 placeholder="Search products..."
-                                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-3xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
                             />
                         </div>
                     </div>
                     {/* Mobile Products Grid */}
-                    <div className="p-4 overflow-y-auto h-[calc(100vh-140px)]">
+                    <div className="p-4 pb-24">
                         <div className="grid grid-cols-2 gap-3">
                             {filteredProducts.slice(0, 20).map(product => (
                                 <button
                                     key={product.id}
                                     onClick={() => addToCart(product)}
-                                    className="bg-white rounded-xl border border-slate-200 p-3 text-left"
+                                    className="bg-white rounded-xl border border-slate-200 p-1 text-left"
                                 >
                                     <div className="aspect-square bg-slate-100 rounded-lg mb-2 overflow-hidden relative">
                                         {product.imageUrls?.[0] ? (
@@ -1511,7 +1392,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             onClick={() => setActiveTab('products')}
                             className="p-2 -ml-2 rounded-xl text-slate-600 hover:bg-slate-50 active:scale-95 transition-all"
                         >
-                            <ChevronLeftIcon className="w-6 h-6" />
+                            <ArrowLeftIcon className="w-6 h-6" />
                         </button>
                         <h2 className="text-lg font-bold text-slate-900">Cart ({cart.length})</h2>
                         {cart.length > 0 && (

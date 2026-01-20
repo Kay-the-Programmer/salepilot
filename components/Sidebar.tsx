@@ -329,7 +329,7 @@ export default function Sidebar({
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden w-full max-w-sm bg-white rounded-3xl shadow-2xl flex flex-col max-h-[85vh] pointer-events-auto animate-fade-in-up mx-4 overflow-hidden"
+                    className="md:hidden w-full max-w-sm bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl flex flex-col max-h-[85vh] pointer-events-auto animate-fade-in-up mx-4 overflow-hidden"
                 >
 
                     {/* Grid Content */}

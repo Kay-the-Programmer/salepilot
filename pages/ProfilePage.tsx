@@ -33,13 +33,13 @@ const InfoCard: React.FC<{
     actions?: React.ReactNode;
     variant?: 'default' | 'danger';
 }> = ({ title, icon, children, actions, variant = 'default' }) => (
-    <div className={`group bg-white rounded-2xl shadow-sm border ${variant === 'danger' ? 'border-red-100 hover:border-red-200' : 'border-gray-200 hover:border-gray-300'} p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5`}>
+    <div className={`group bg-white rounded-2xl shadow-sm  ${variant === 'danger' ? 'border-red-100 hover:border-red-200' : 'border-gray-200 hover:border-gray-300'} p-6 transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5`}>
         <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-3">
                 {icon && (
                     <div className={`p-3 rounded-xl transition-all duration-300 ${variant === 'danger'
-                        ? 'bg-red-50 text-red-600 group-hover:bg-red-100'
-                        : 'bg-gradient-to-br from-blue-50 to-indigo-50 text-blue-600 group-hover:from-blue-100 group-hover:to-indigo-100'}`}>
+                        ? ' text-red-600 group-hover:bg-red-100'
+                        : ' text-blue-600 group-hover:from-blue-100 group-hover:to-indigo-100'}`}>
                         {icon}
                     </div>
                 )}
@@ -120,7 +120,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
     return (
         <>
-            <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white md:min-h-0 md:h-full md:overflow-y-auto">
+            <div className="min-h-screen bg-gray-100 from-gray-50 to-white md:min-h-0 md:h-full md:overflow-y-auto">
                 <Header
                     title="Profile"
                     showSearch={false}
@@ -150,11 +150,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
                             {/* Left Column - Profile Summary */}
                             <div className="lg:col-span-1">
-                                <div className="bg-white rounded-2xl p-6 lg:p-8 sticky top-8 transition-all duration-300 hover:shadow-xl border border-gray-200 shadow-sm">
+                                <div className="bg-white rounded-2xl p-6 lg:p-8 sticky top-8 transition-all duration-300 hover:shadow-xl  border-gray-200 shadow-sm">
                                     <div className="flex flex-col items-center text-center">
                                         <div className="relative group/avatar mb-4">
                                             <div className="relative">
-                                                <div className="w-32 h-32 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 rounded-full flex items-center justify-center shadow-inner border border-blue-100">
+                                                <div className="w-32 h-32 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 rounded-full flex items-center justify-center shadow-inner  border-blue-100">
                                                     <UserCircleIcon className="w-20 h-20 text-blue-600" />
                                                 </div>
                                                 <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg border-2 border-white">
@@ -167,7 +167,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                             <h2 className="text-2xl font-bold text-gray-900">{user.name}</h2>
                                             <p className="text-sm text-gray-500 break-all px-4">{user.email}</p>
                                             <div className="mt-4">
-                                                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800 border border-blue-200 shadow-sm">
+                                                <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800  border-blue-200 shadow-sm">
                                                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                                                     {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
                                                 </span>
@@ -262,14 +262,14 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                     >
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div className="space-y-6">
-                                                <div className="p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-100">
+                                                <div className="p-4 bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl  border-blue-100">
                                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Full Name</label>
                                                     <p className="mt-2 text-lg text-gray-900 font-bold">{user.name}</p>
                                                 </div>
-                                                <div className="p-4 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 rounded-xl border border-emerald-100">
+                                                <div className="p-4 bg-gradient-to-br from-emerald-50/50 to-teal-50/50 rounded-xl  border-emerald-100">
                                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Account Status</label>
                                                     <p className="mt-2">
-                                                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-900 border border-emerald-200">
+                                                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-900  border-emerald-200">
                                                             <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                                                             Active Session
                                                         </span>
@@ -277,11 +277,11 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                 </div>
                                             </div>
                                             <div className="space-y-6">
-                                                <div className="p-4 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl border border-purple-100">
+                                                <div className="p-4 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-xl  border-purple-100">
                                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Email Address</label>
                                                     <p className="mt-2 text-lg text-gray-900 font-bold break-all">{user.email}</p>
                                                 </div>
-                                                <div className="p-4 bg-gradient-to-br from-amber-50/50 to-orange-50/50 rounded-xl border border-amber-100">
+                                                <div className="p-4 bg-gradient-to-br from-amber-50/50 to-orange-50/50 rounded-xl  border-amber-100">
                                                     <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Account Role</label>
                                                     <p className="mt-2 text-lg text-gray-900 font-bold">
                                                         {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
@@ -314,7 +314,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                         <button
                                                             key={order.transactionId}
                                                             onClick={() => setSelectedOrder(order)}
-                                                            className="w-full text-left p-4 rounded-xl border border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group flex items-center justify-between"
+                                                            className="w-full text-left p-4 rounded-xl  border-gray-100 hover:border-indigo-100 hover:bg-indigo-50/30 transition-all group flex items-center justify-between"
                                                         >
                                                             <div className="flex items-center gap-4">
                                                                 <div className="w-12 h-12 rounded-lg bg-gray-50 text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-white group-hover:text-indigo-600 group-hover:shadow-sm transition-all">
@@ -328,7 +328,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                                                 </div>
                                                             </div>
                                                             <div className="flex flex-col items-end gap-1.5">
-                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${order.fulfillmentStatus === 'fulfilled' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider  ${order.fulfillmentStatus === 'fulfilled' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
                                                                     order.fulfillmentStatus === 'shipped' ? 'bg-blue-50 text-blue-700 border-blue-200' :
                                                                         order.fulfillmentStatus === 'cancelled' ? 'bg-rose-50 text-rose-700 border-rose-200' :
                                                                             'bg-amber-50 text-amber-700 border-amber-200'
@@ -348,13 +348,13 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                 <div className={`${activeTab === 'app' ? 'block' : 'hidden lg:block'}`}>
                                     <InfoCard
                                         title="Install Application"
-                                        icon={<DevicePhoneMobileIcon className="w-5 h-5" />}
+                                        icon={<DevicePhoneMobileIcon className="w-5 h-5" />
+                                            
+                                        }
                                     >
                                         <div className="space-y-6">
-                                            <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 rounded-xl border border-blue-100">
-                                                <div className="flex-shrink-0 p-3 bg-white rounded-xl shadow-sm border border-blue-200">
-                                                    <ArrowDownTrayIcon className="w-6 h-6 text-blue-600" />
-                                                </div>
+                                            <div className="flex items-start gap-4 p-6 bg-gradient-to-r from-blue-50 via-indigo-50 to-blue-50 rounded-xl  border-blue-100">
+                                                
                                                 <div className="flex-1">
                                                     <p className="text-base font-bold text-gray-900 mb-2">
                                                         {isStandalone
@@ -373,7 +373,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                             </div>
 
                                             {!isStandalone && (
-                                                <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl border border-gray-200 overflow-hidden">
+                                                <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl  border-gray-200 overflow-hidden">
                                                     <div className="p-5 border-b border-gray-200">
                                                         <h4 className="text-sm font-bold text-gray-900 mb-3 flex items-center gap-2">
                                                             <span className="w-2 h-2 bg-blue-500 rounded-full"></span>
@@ -447,19 +447,12 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                         icon={<KeyIcon className="w-5 h-5" />}
                                     >
                                         <div className="space-y-4">
-                                            <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl border border-blue-100 p-5">
-                                                <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                                    <KeyIcon className="w-4 h-4 text-blue-600" />
-                                                    Account Security
-                                                </h4>
+                                            <div className="bg-gradient-to-br from-blue-50/50 to-indigo-50/50 rounded-xl p-0">
                                                 <button
                                                     onClick={() => setIsChangePasswordModalOpen(true)}
-                                                    className="w-full flex items-center justify-between p-4 rounded-xl bg-white border border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
+                                                    className="w-full flex items-center justify-between p-4 rounded-xl bg-white  border-gray-200 hover:border-blue-300 hover:shadow-md transition-all duration-300 group"
                                                 >
                                                     <div className="flex items-center gap-3">
-                                                        <div className="p-2.5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg group-hover:from-blue-100 group-hover:to-indigo-100 transition-all duration-300">
-                                                            <KeyIcon className="w-4 h-4 text-blue-600" />
-                                                        </div>
                                                         <div className="text-left">
                                                             <p className="text-sm font-bold text-gray-900">Change Password</p>
                                                             <p className="text-xs text-gray-500">Update your login credentials securely</p>
@@ -470,7 +463,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                             </div>
 
                                             {/* Logout Section */}
-                                            <div className="bg-gradient-to-br from-red-50/50 to-pink-50/50 rounded-xl border border-red-100 p-5">
+                                            <div className="bg-gradient-to-br from-red-50/50 to-pink-50/50 rounded-xl  border-red-100 p-5">
                                                 <h4 className="text-sm font-bold text-gray-900 mb-4 flex items-center gap-2">
                                                     <ArrowLeftOnRectangleIcon className="w-4 h-4 text-red-600" />
                                                     Session Management
@@ -501,7 +494,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
                         <div className="absolute inset-0 bg-black/50 animate-fade-in" />
                         <div
-                            className="absolute top-[70px] right-4 left-auto w-56 bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up border border-gray-200 p-3"
+                            className="absolute top-[70px] right-4 left-auto w-56 bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up  border-gray-200 p-3"
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="grid grid-cols-2 gap-2">
