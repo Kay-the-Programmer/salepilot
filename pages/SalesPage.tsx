@@ -903,7 +903,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 {/* Cart Header */}
                 <div className="flex-none p-4 py-2 border-b border-slate-100 shadow-sm bg-transparent" >
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                        <div className="hidden md:flex items-center gap-3">
                             <div>
                                 <h2 className="font-bold text-lg text-slate-700">Shopping Cart</h2>
                                 <div className="flex items-center gap-2 text-sm text-slate-600">
@@ -929,7 +929,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 </div>
 
                 {/* Cart Items */}
-                <div className="flex-1 overflow-y-auto" >
+                <div className="hidden md:flex flex-1 overflow-y-auto" >
                     {
                         cart.length === 0 ? (
                             <div className="p-8 text-center h-full flex flex-col items-center justify-center">
@@ -1001,7 +1001,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                 {/* Cart Summary & Actions (Fixed Bottom) - Now Resizable */}
                 <div
-                    className="flex-none bg-gray-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative flex flex-col transition-all duration-75 ease-linear"
+                    className="hidden md:flex flex-none bg-gray-50 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] relative flex flex-col transition-all duration-75 ease-linear"
                     style={{ height: `${actionsPanelHeight}px` }}
                 >
                     {/* Drag Handle */}
@@ -1308,11 +1308,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 </div>
 
                 {/* Mobile Product View */}
-                <div className={`md:hidden fixed inset-0 bg-transparent/1 backdrop-blur-2xl z-50 transition-transform duration-300 overflow-y-auto ${activeTab === 'products' ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 overflow-y-auto ${activeTab === 'products' ? 'translate-x-0' : 'translate-x-full'}`}>
                     {/* Mobile Products Header */}
                     <div className="sticky top-0 z-10">
                         {/* Top Bar (Menu, Logo, Notification) */}
-                        <div className="bg-white/50 backdrop-blur-xl border-b border-slate-200/50 p-4 pb-2">
+                        <div className="bg-transparent/1 backdrop-blur-sm border-b border-slate-200/50 p-4 pb-2">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     {onOpenSidebar && (
