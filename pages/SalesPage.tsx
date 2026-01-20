@@ -1473,21 +1473,21 @@ const SalesPage: React.FC<SalesPageProps> = ({
             </div>
 
             {/* Mobile Cart View */}
-            <div className={`md:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 ${activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'}`}>
+            <div className={`md:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 flex flex-col ${activeTab === 'cart' ? 'translate-x-0' : 'translate-x-full'}`}>
                 {/* Mobile Cart Header */}
-                <div className="sticky top-0 bg-white border-b border-slate-200 z-10 p-4">
-                    <div className="flex items-center justify-between mb-4">
+                <div className="flex-none bg-white border-b border-slate-200 z-10 px-4 py-3">
+                    <div className="flex items-center justify-between">
                         <button
                             onClick={() => setActiveTab('products')}
-                            className="p-2"
+                            className="p-2 -ml-2 rounded-xl text-slate-600 hover:bg-slate-50 active:scale-95 transition-all"
                         >
-                            <ChevronLeftIcon className="w-6 h-6 text-slate-700" />
+                            <ChevronLeftIcon className="w-6 h-6" />
                         </button>
-                        <h2 className="text-xl font-bold text-slate-900">Cart ({cart.length})</h2>
+                        <h2 className="text-lg font-bold text-slate-900">Cart ({cart.length})</h2>
                         {cart.length > 0 && (
                             <button
                                 onClick={clearCart}
-                                className="text-sm font-medium text-red-600"
+                                className="px-3 py-1.5 text-xs font-bold bg-red-50 text-red-600 rounded-lg"
                             >
                                 Clear
                             </button>
@@ -1496,12 +1496,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 </div>
 
                 {/* Mobile Cart Content - Animated Flex Layout */}
-                <div className="flex flex-col h-[calc(100vh-140px)] safe-area-bottom pb-24 transition-all duration-300">
+                <div className="flex-1 flex flex-col min-h-0 relative bg-slate-50/50">
 
                     {/* Slot 1: Scrollable Content (Empty State or List + Checkout) */}
                     <div className={`
-                        overflow-y-auto scroll-smooth transition-all duration-500 ease-in-out
-                        ${(cart.length === 0 && isScannerOpen) ? 'basis-0 h-0 opacity-0 overflow-hidden' : 'flex-1 opacity-100'}
+                        flex-1 overflow-y-auto scroll-smooth no-scrollbar transition-all duration-500 ease-in-out
+                        ${(cart.length === 0 && isScannerOpen) ? 'basis-0 opacity-0 overflow-hidden' : 'opacity-100'}
                     `}>
                         {cart.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center p-8">
@@ -1706,9 +1706,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                     {/* Slot 2: Scanner Area - Animates height/flex based on state */}
                     <div className={`
-                         transition-all duration-500 ease-in-out bg-white z-10 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] overflow-hidden
+                         transition-all duration-300 ease-out bg-black z-20 flex flex-col shadow-[0_-4px_20px_-5px_rgba(0,0,0,0.2)] overflow-hidden
                          ${isScannerOpen
-                            ? (cart.length === 0 ? 'flex-1 min-h-[250px] border-t-0' : 'h-52 flex-none border-t border-slate-200')
+                            ? (cart.length === 0 ? 'flex-1 min-h-[200px] border-t-0' : 'h-48 flex-none border-t border-slate-800')
                             : 'h-0 border-none'}
                     `}>
                         {isScannerOpen && (
@@ -1735,11 +1735,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                     {/* Slot 3: Fixed Footer (Toggle Button) */}
                     {(cart.length > 0 || isScannerOpen) && (
-                        <div className="flex-none p-4 bg-white border-t border-slate-200 z-20">
+                        <div className="flex-none p-4 bg-white border-t border-slate-200 z-30 pb-[env(safe-area-inset-bottom)] md:pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                             {isScannerOpen ? (
                                 <button
                                     onClick={() => setIsScannerOpen(false)}
-                                    className="w-full py-4 bg-white text-red-600 rounded-xl font-bold border-2 border-red-100 hover:bg-red-50 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
+                                    className="w-full py-3.5 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
                                 >
                                     <XMarkIcon className="w-5 h-5" />
                                     Stop Scanning
@@ -1747,12 +1747,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             ) : (
                                 <button
                                     onClick={() => setIsScannerOpen(true)}
-                                    className="w-full py-4 bg-slate-50 text-slate-700 rounded-xl font-bold border-2 border-dashed border-slate-300 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-3 group active:scale-95"
+                                    className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-3 group active:scale-95"
                                 >
-                                    <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
-                                        <QrCodeIcon className="w-5 h-5 text-slate-500 group-hover:text-blue-600" />
-                                    </div>
-                                    <span>Tap to Scan Product</span>
+                                    <QrCodeIcon className="w-5 h-5 text-white/90" />
+                                    <span>Scan Product</span>
                                 </button>
                             )}
                         </div>
