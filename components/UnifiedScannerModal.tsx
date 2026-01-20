@@ -276,6 +276,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                         if (!scanningRef.current || !isMounted) return;
 
+                        if (pausedRef.current) {
+                            setTimeout(decode, 500);
+                            return;
+                        }
+
                         const now = Date.now();
                         if (now - lastScanTimeRef.current < delayBetweenScans) {
                             // Too soon, schedule next decode
