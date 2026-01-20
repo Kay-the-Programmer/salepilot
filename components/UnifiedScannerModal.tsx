@@ -176,13 +176,13 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 const html5QrCode = new Html5Qrcode(readerId, false);
                 scannerRef.current = html5QrCode;
 
-                // Configure scanner for high performance reading
+                // Configure scanner optimized for mobile devices, especially iOS
                 const config = {
-                    fps: 20, // Increased from 10/15 for faster capture on mobile
+                    fps: 10, // Lower FPS for better iOS compatibility and battery life
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-                        // Wide rectangular box is better for 1D barcodes common in POS
-                        const width = Math.min(viewfinderWidth * 0.8, 400);
-                        const height = Math.min(viewfinderHeight * 0.3, 200);
+                        // Larger scanning box for better barcode detection on mobile
+                        const width = Math.min(viewfinderWidth * 0.9, 500);
+                        const height = Math.min(viewfinderHeight * 0.4, 250);
                         return { width, height };
                     },
                     aspectRatio: 1.0,
@@ -196,48 +196,49 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         Html5QrcodeSupportedFormats.QR_CODE
                     ],
                     experimentalFeatures: {
-                        // Hardware acceleration is buggy on some iOS versions, use library optimized path
+                        // Hardware acceleration is buggy on iOS, use library optimized path
                         useBarCodeDetectorIfSupported: false
-                    }
+                    },
+                    // Additional settings for better detection
+                    rememberLastUsedCamera: true,
+                    showTorchButtonIfSupported: true
                 };
 
-                // Redefining config to use Enum values properly (need to update imports)
-                // For now, let's assume we update imports in the next step or I use the integer values carefully.
-                // Safest to NOT use magic numbers if possible. I will modify imports first.
-
-                // Wait, I cannot modify imports in this same tool call easily if they are far apart.
-                // I will proceed with this block but ask to update imports in a separate call or modify the whole file at once if small enough.
-                // The file is 419 lines. It's better to do a multi-replace or just be careful.
-
-                // Let's stick to the logic for now.
-
-                // Determine camera selection
-                // Priority 1: Constraints (optimized for iOS/Mobile)
+                // Determine camera selection optimized for iOS Safari/Chrome
+                // Use lower resolution for better iOS compatibility
                 let cameraSelection: any = {
                     facingMode: { ideal: facingMode },
-                    width: { ideal: 1920 }, // Try for 1080p for sharper barcode details
-                    height: { ideal: 1080 }
+                    width: { ideal: 1280 }, // 720p max for iOS compatibility
+                    height: { ideal: 720 },
+                    // Request auto-focus for better barcode detection
+                    focusMode: { ideal: 'continuous' }
                 };
 
+                // Try to enumerate cameras, but don't rely on it for iOS
                 try {
                     const devices = await Html5Qrcode.getCameras();
                     if (isMounted && devices && devices.length > 0) {
                         setHasMultipleCameras(devices.length > 1);
 
-                        // Priority 2: If we have multiple cameras and labels, find a specific match
-                        // This helps on some hybrid devices or PCs with multiple external webcams
-                        const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
-                        const frontCamera = devices.find(d => /front|user|selfie/i.test(d.label));
+                        // On desktop, we can try to use specific camera IDs
+                        // On mobile (especially iOS), facingMode is more reliable
+                        const isDesktop = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-                        if (facingMode === 'environment' && backCamera) {
-                            cameraSelection = backCamera.id;
-                        } else if (facingMode === 'user' && frontCamera) {
-                            cameraSelection = frontCamera.id;
+                        if (isDesktop) {
+                            // Only use device ID selection on desktop
+                            const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
+                            const frontCamera = devices.find(d => /front|user|selfie/i.test(d.label));
+
+                            if (facingMode === 'environment' && backCamera) {
+                                cameraSelection = backCamera.id;
+                            } else if (facingMode === 'user' && frontCamera) {
+                                cameraSelection = frontCamera.id;
+                            }
                         }
-                        // If no clear label match, we fall back to Priority 1 (facingMode constraint)
+                        // On mobile, stick with facingMode constraint which is more reliable
                     }
                 } catch (e) {
-                    console.warn("Could not fetch camera list, falling back to facingMode constraint:", e);
+                    console.warn("Could not fetch camera list, using facingMode constraint:", e);
                 }
 
                 if (!isMounted) return;
@@ -297,10 +298,25 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     cleanup();
                 }
 
-            } catch (err) {
+            } catch (err: any) {
                 if (!isMounted) return;
                 console.error("Error starting scanner:", err);
-                setError("Failed to start camera. Please ensure permissions are granted and no other app is using it.");
+
+                // Provide more specific error messages
+                let errorMsg = "Failed to start camera.";
+                const errString = err?.toString() || '';
+
+                if (errString.includes('NotAllowedError') || errString.includes('Permission')) {
+                    errorMsg = "Camera permission denied. Please allow camera access in your browser settings.";
+                } else if (errString.includes('NotFoundError') || errString.includes('Camera not found')) {
+                    errorMsg = "No camera found on this device.";
+                } else if (errString.includes('NotReadableError') || errString.includes('in use')) {
+                    errorMsg = "Camera is in use by another app. Please close other apps using the camera.";
+                } else {
+                    errorMsg = "Failed to start camera. Please ensure permissions are granted and try again.";
+                }
+
+                setError(errorMsg);
                 setIsInitializing(false);
             }
         };
