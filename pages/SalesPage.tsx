@@ -335,6 +335,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
 
     const handleContinuousScan = async (decodedText: string) => {
+        if (isScannerPaused || showScanActionModal) return;
+
         const trimmed = decodedText.trim();
         const product = products.find(p =>
             p.status === 'active' &&

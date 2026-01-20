@@ -41,10 +41,20 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     const lastScanTimeRef = useRef<number>(0);
     const scanningRef = useRef<boolean>(false);
     const pausedRef = useRef<boolean>(paused);
+    const onScanSuccessRef = useRef(onScanSuccess);
+    const onScanErrorRef = useRef(onScanError);
 
     useEffect(() => {
         pausedRef.current = paused;
     }, [paused]);
+
+    useEffect(() => {
+        onScanSuccessRef.current = onScanSuccess;
+    }, [onScanSuccess]);
+
+    useEffect(() => {
+        onScanErrorRef.current = onScanError;
+    }, [onScanError]);
 
     // Initialize beep sound
     useEffect(() => {
@@ -290,7 +300,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                         lastScanTimeRef.current = now;
                         provideFeedback();
-                        onScanSuccess(result.getText());
+                        if (onScanSuccessRef.current) {
+                            onScanSuccessRef.current(result.getText());
+                        }
 
                         if (continuous && scanningRef.current) {
                             // Continue scanning
@@ -312,8 +324,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                         // Real error
                         console.error('Decode error:', err);
-                        if (onScanError) {
-                            onScanError(err.message);
+                        console.error('Decode error:', err);
+                        if (onScanErrorRef.current) {
+                            onScanErrorRef.current(err.message);
                         }
 
                         // Continue trying
@@ -354,11 +367,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
             clearTimeout(timer);
             cleanup();
         };
-    }, [isOpen, onScanSuccess, onClose, continuous, delayBetweenScans, cleanup, provideFeedback, facingMode, onScanError]);
+    }, [isOpen, onClose, continuous, delayBetweenScans, cleanup, provideFeedback, facingMode]);
 
-    if (!isOpen) return null;
 
-    if (!isOpen) return null;
 
     if (variant === 'embedded') {
         return (
