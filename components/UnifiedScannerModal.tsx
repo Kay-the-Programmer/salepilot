@@ -173,8 +173,12 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     BarcodeFormat.EAN_8,
                     BarcodeFormat.CODE_128,
                     BarcodeFormat.CODE_39,
+                    BarcodeFormat.CODE_93,
+                    BarcodeFormat.CODABAR,
+                    BarcodeFormat.ITF,
                     BarcodeFormat.QR_CODE
                 ]);
+                hints.set(DecodeHintType.TRY_HARDER, true);
 
                 const codeReader = new BrowserMultiFormatReader(hints);
                 codeReaderRef.current = codeReader;
@@ -226,7 +230,13 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     }
                 };
 
-                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                // Add timeout for camera initialization
+                const streamPromise = navigator.mediaDevices.getUserMedia(constraints);
+                const timeoutPromise = new Promise<never>((_, reject) =>
+                    setTimeout(() => reject(new Error('Camera initialization timed out')), 8000)
+                );
+
+                const stream = await Promise.race([streamPromise, timeoutPromise]);
                 streamRef.current = stream;
 
                 if (!isMounted) {
@@ -351,6 +361,8 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     errorMsg = "No camera found on this device.";
                 } else if (errString.includes('NotReadableError') || errString.includes('in use')) {
                     errorMsg = "Camera is in use by another app. Please close other apps using the camera.";
+                } else if (errString.includes('timed out')) {
+                    errorMsg = "Camera took too long to start. Please restart the app or device.";
                 } else {
                     errorMsg = "Failed to start camera. Please ensure permissions are granted and try again.";
                 }
