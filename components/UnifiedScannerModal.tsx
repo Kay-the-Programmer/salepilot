@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { FiX, FiZap, FiZapOff, FiRefreshCw } from 'react-icons/fi';
 import XMarkIcon from './icons/XMarkIcon';
 
@@ -30,15 +30,14 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     const [facingMode, setFacingMode] = useState<"environment" | "user">("environment");
     const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
 
-    const scannerRef = useRef<Html5Qrcode | null>(null);
-    const isRunningRef = useRef<boolean>(false);
+    const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
+    const videoRef = useRef<HTMLVideoElement | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const lastScanTimeRef = useRef<number>(0);
-    const readerId = "unified-scanner-reader";
+    const scanningRef = useRef<boolean>(false);
 
     // Initialize beep sound
     useEffect(() => {
-        // Simple beep sound using Web Audio API or a small base64 wav
-        // Using a synthesized beep for reliability
         const context = new (window.AudioContext || (window as any).webkitAudioContext)();
 
         const playBeep = () => {
@@ -65,8 +64,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     useEffect(() => {
         if (!isOpen) return;
 
-        Html5Qrcode.getCameras().then(devices => {
-            setHasMultipleCameras(devices && devices.length > 1);
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+            const videoDevices = devices.filter(device => device.kind === 'videoinput');
+            setHasMultipleCameras(videoDevices.length > 1);
         }).catch(err => {
             console.error("Error checking cameras:", err);
             setHasMultipleCameras(false);
@@ -90,14 +90,19 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     }, []);
 
     const handleTorchToggle = async () => {
-        if (!scannerRef.current || !isRunningRef.current) return;
+        if (!streamRef.current) return;
 
         try {
-            const newState = !isTorchOn;
-            await scannerRef.current.applyVideoConstraints({
-                advanced: [{ torch: newState }] as any
-            });
-            setIsTorchOn(newState);
+            const track = streamRef.current.getVideoTracks()[0];
+            const capabilities = track.getCapabilities() as any;
+
+            if (capabilities.torch) {
+                const newState = !isTorchOn;
+                await track.applyConstraints({
+                    advanced: [{ torch: newState }] as any
+                });
+                setIsTorchOn(newState);
+            }
         } catch (err) {
             console.error("Failed to toggle torch:", err);
         }
@@ -109,46 +114,21 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     };
 
     const cleanup = useCallback(async () => {
-        // Prevent concurrent cleanups or cleanup if already cleaned
-        if (!scannerRef.current) return;
+        scanningRef.current = false;
 
-        const scanner = scannerRef.current;
-        // Don't nullify scannerRef immediately if we need it for stop()
-        // But we can mark it as null to prevent other operations?
-        // Actually, let's keep the ref until we are done, but use a local to operate on.
-
-        try {
-            // Check state if possible, or just try/catch the stop
-            // Html5Qrcode doesn't expose a clean Sync getState in all versions, 
-            // but isRunningRef helps us track our local intent.
-            if (isRunningRef.current) {
-                // Determine if it is actually running to avoid "not running" error
-                // Some versions of library throw if you stop() when not scanning.
-                try {
-                    await scanner.stop();
-                } catch (e: any) {
-                    // Ignore "not running" errors specifically
-                    const msg = e?.message || "";
-                    if (!msg.includes("not running") && !msg.includes("not started")) {
-                        console.warn("Scanner stop warning:", e);
-                    }
-                }
-                isRunningRef.current = false;
-            }
-            setIsTorchOn(false);
-        } catch (e) {
-            console.error("Failed to stop scanner", e);
-        } finally {
-            // Always clear internal details and nullify ref
-            try {
-                scanner.clear();
-            } catch (e) {
-                // ignore clear errors
-            }
-            if (scannerRef.current === scanner) {
-                scannerRef.current = null;
-            }
+        // Stop the stream
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
         }
+
+        // Reset the code reader
+        if (codeReaderRef.current) {
+            codeReaderRef.current.reset();
+        }
+
+        setIsTorchOn(false);
+        setHasTorch(false);
     }, []);
 
     useEffect(() => {
@@ -162,147 +142,169 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
             setError(null);
             setHasTorch(false);
 
-            const element = document.getElementById(readerId);
-            if (!element) {
-                if (isMounted) setTimeout(initScanner, 100);
-                return;
-            }
-
             await cleanup();
             if (!isMounted) return;
 
             try {
-                // Use verbose=false for production to reduce console noise
-                const html5QrCode = new Html5Qrcode(readerId, false);
-                scannerRef.current = html5QrCode;
+                // Create ZXing reader with barcode format hints
+                const hints = new Map();
+                hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+                    BarcodeFormat.UPC_A,
+                    BarcodeFormat.UPC_E,
+                    BarcodeFormat.EAN_13,
+                    BarcodeFormat.EAN_8,
+                    BarcodeFormat.CODE_128,
+                    BarcodeFormat.CODE_39,
+                    BarcodeFormat.QR_CODE
+                ]);
+                hints.set(DecodeHintType.TRY_HARDER, true);
 
-                // Configure scanner optimized for mobile devices, especially iOS
-                const config = {
-                    fps: 10, // Lower FPS for better iOS compatibility and battery life
-                    qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-                        // Larger scanning box for better barcode detection on mobile
-                        const width = Math.min(viewfinderWidth * 0.9, 500);
-                        const height = Math.min(viewfinderHeight * 0.4, 250);
-                        return { width, height };
-                    },
-                    aspectRatio: 1.0,
-                    formatsToSupport: [
-                        Html5QrcodeSupportedFormats.UPC_A,
-                        Html5QrcodeSupportedFormats.UPC_E,
-                        Html5QrcodeSupportedFormats.EAN_13,
-                        Html5QrcodeSupportedFormats.EAN_8,
-                        Html5QrcodeSupportedFormats.CODE_128,
-                        Html5QrcodeSupportedFormats.CODE_39,
-                        Html5QrcodeSupportedFormats.QR_CODE
-                    ],
-                    experimentalFeatures: {
-                        // Hardware acceleration is buggy on iOS, use library optimized path
-                        useBarCodeDetectorIfSupported: false
-                    },
-                    // Additional settings for better detection
-                    rememberLastUsedCamera: true,
-                    showTorchButtonIfSupported: true
-                };
+                const codeReader = new BrowserMultiFormatReader(hints);
+                codeReaderRef.current = codeReader;
 
-                // Determine camera selection optimized for iOS Safari/Chrome
-                // Use lower resolution for better iOS compatibility
-                let cameraSelection: any = {
-                    facingMode: { ideal: facingMode },
-                    width: { ideal: 1280 }, // 720p max for iOS compatibility
-                    height: { ideal: 720 },
-                    // Request auto-focus for better barcode detection
-                    focusMode: { ideal: 'continuous' }
-                };
+                // Get video devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
 
-                // Try to enumerate cameras, but don't rely on it for iOS
-                try {
-                    const devices = await Html5Qrcode.getCameras();
-                    if (isMounted && devices && devices.length > 0) {
-                        setHasMultipleCameras(devices.length > 1);
+                if (videoDevices.length === 0) {
+                    throw new Error('No camera found');
+                }
 
-                        // On desktop, we can try to use specific camera IDs
-                        // On mobile (especially iOS), facingMode is more reliable
-                        const isDesktop = !/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                // Select camera based on facing mode
+                let selectedDeviceId = videoDevices[0].deviceId;
 
-                        if (isDesktop) {
-                            // Only use device ID selection on desktop
-                            const backCamera = devices.find(d => /back|rear|environment/i.test(d.label));
-                            const frontCamera = devices.find(d => /front|user|selfie/i.test(d.label));
-
-                            if (facingMode === 'environment' && backCamera) {
-                                cameraSelection = backCamera.id;
-                            } else if (facingMode === 'user' && frontCamera) {
-                                cameraSelection = frontCamera.id;
-                            }
-                        }
-                        // On mobile, stick with facingMode constraint which is more reliable
+                if (facingMode === 'environment') {
+                    // Try to find back camera
+                    const backCamera = videoDevices.find(device =>
+                        /back|rear|environment/i.test(device.label)
+                    );
+                    if (backCamera) {
+                        selectedDeviceId = backCamera.deviceId;
+                    } else if (videoDevices.length > 1) {
+                        // Usually the second camera is the back camera on mobile
+                        selectedDeviceId = videoDevices[1].deviceId;
                     }
-                } catch (e) {
-                    console.warn("Could not fetch camera list, using facingMode constraint:", e);
+                } else {
+                    // Try to find front camera
+                    const frontCamera = videoDevices.find(device =>
+                        /front|user|selfie|face/i.test(device.label)
+                    );
+                    if (frontCamera) {
+                        selectedDeviceId = frontCamera.deviceId;
+                    }
+                }
+
+                // Get video element
+                if (!videoRef.current) {
+                    throw new Error('Video element not ready');
+                }
+
+                // Start decoding with constraints optimized for mobile
+                const constraints: MediaStreamConstraints = {
+                    video: {
+                        deviceId: selectedDeviceId,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: facingMode
+                    }
+                };
+
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                streamRef.current = stream;
+
+                if (!isMounted) {
+                    stream.getTracks().forEach(track => track.stop());
+                    return;
+                }
+
+                // Attach stream to video
+                videoRef.current.srcObject = stream;
+                await videoRef.current.play();
+
+                // Check for torch capability
+                const track = stream.getVideoTracks()[0];
+                const capabilities = track.getCapabilities() as any;
+                if (capabilities.torch) {
+                    setHasTorch(true);
+                }
+
+                // Try to enable continuous autofocus
+                try {
+                    if (capabilities.focusMode?.includes('continuous')) {
+                        await track.applyConstraints({
+                            advanced: [{ focusMode: 'continuous' }] as any
+                        });
+                    }
+                } catch (err) {
+                    console.log('Continuous focus not available');
                 }
 
                 if (!isMounted) return;
+                setIsInitializing(false);
+                scanningRef.current = true;
 
-                await html5QrCode.start(
-                    cameraSelection,
-                    config,
-                    (decodedText) => {
-                        if (!isMounted) return;
+                // Start continuous decoding
+                const decode = async () => {
+                    if (!scanningRef.current || !videoRef.current || !codeReaderRef.current) {
+                        return;
+                    }
+
+                    try {
+                        const result = await codeReaderRef.current.decodeOnceFromVideoDevice(
+                            selectedDeviceId,
+                            videoRef.current
+                        );
+
+                        if (!scanningRef.current || !isMounted) return;
+
                         const now = Date.now();
-                        if (now - lastScanTimeRef.current < delayBetweenScans) return;
+                        if (now - lastScanTimeRef.current < delayBetweenScans) {
+                            // Too soon, schedule next decode
+                            setTimeout(decode, 100);
+                            return;
+                        }
 
                         lastScanTimeRef.current = now;
                         provideFeedback();
-                        onScanSuccess(decodedText);
+                        onScanSuccess(result.getText());
 
-                        if (!continuous) {
+                        if (continuous && scanningRef.current) {
+                            // Continue scanning
+                            setTimeout(decode, delayBetweenScans);
+                        } else {
+                            // Single scan mode - close after success
                             cleanup().then(() => {
                                 if (isMounted) onClose();
                             });
                         }
-                    },
-                    (errorMessage) => {
-                        if (!isMounted) return;
-                        // Suppress noisy frame errors
-                        const isNoisyError =
-                            errorMessage.includes("No barcode or QR code detected") ||
-                            errorMessage.includes("NotFoundException") ||
-                            errorMessage.includes("parse error");
+                    } catch (err: any) {
+                        if (!scanningRef.current || !isMounted) return;
 
-                        if (onScanError && !isNoisyError) {
-                            onScanError(errorMessage);
+                        // These are normal "no barcode found" errors, continue scanning
+                        if (err?.name === 'NotFoundException' || err?.message?.includes('No barcode')) {
+                            setTimeout(decode, 100);
+                            return;
                         }
+
+                        // Real error
+                        console.error('Decode error:', err);
+                        if (onScanError) {
+                            onScanError(err.message);
+                        }
+
+                        // Continue trying
+                        setTimeout(decode, 100);
                     }
-                );
+                };
 
-                if (isMounted) {
-                    isRunningRef.current = true;
-                    setIsInitializing(false);
-
-                    // Check for torch capability
-                    try {
-                        const capabilities = html5QrCode.getRunningTrackCapabilities();
-                        if ((capabilities as any).torch) {
-                            setHasTorch(true);
-                        }
-                        // Try to apply continuous focus if supported
-                        if ((capabilities as any).focusMode?.includes('continuous')) {
-                            await html5QrCode.applyVideoConstraints({
-                                advanced: [{ focusMode: 'continuous' }] as any
-                            });
-                        }
-                    } catch (e) {
-                        // ignore capability check errors
-                    }
-                } else {
-                    cleanup();
-                }
+                // Start decoding loop
+                decode();
 
             } catch (err: any) {
                 if (!isMounted) return;
                 console.error("Error starting scanner:", err);
 
-                // Provide more specific error messages
+                // Provide specific error messages
                 let errorMsg = "Failed to start camera.";
                 const errString = err?.toString() || '';
 
@@ -328,7 +330,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
             clearTimeout(timer);
             cleanup();
         };
-    }, [isOpen, onScanSuccess, onClose, continuous, delayBetweenScans, cleanup, provideFeedback, facingMode]);
+    }, [isOpen, onScanSuccess, onClose, continuous, delayBetweenScans, cleanup, provideFeedback, facingMode, onScanError]);
 
     if (!isOpen) return null;
 
@@ -379,7 +381,13 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         </div>
                     ) : (
                         <>
-                            <div id={readerId} className="w-full h-full scanner-container"></div>
+                            {/* Video Element */}
+                            <video
+                                ref={videoRef}
+                                className="w-full h-full object-cover"
+                                playsInline
+                                muted
+                            />
 
                             {/* Scanning Overlay UI */}
                             {!isInitializing && (
@@ -389,6 +397,20 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                                     {/* Visual Haptic Flash */}
                                     <div className={`absolute inset-0 bg-white transition-opacity duration-150 ${isFlashing ? 'opacity-40' : 'opacity-0'}`}></div>
+
+                                    {/* Scanning Box */}
+                                    <div className="absolute border-4 border-blue-500 rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.5)]" style={{
+                                        width: '90%',
+                                        height: '40%',
+                                        maxWidth: '500px',
+                                        maxHeight: '250px'
+                                    }}>
+                                        {/* Corner indicators */}
+                                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
+                                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
+                                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
+                                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl"></div>
+                                    </div>
 
                                     {/* Vignette effect */}
                                     <div className="absolute inset-0 bg-black/20"></div>
@@ -442,21 +464,6 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 }
                 .animate-scan-line {
                     animation: scan-line 3s linear infinite;
-                }
-                .scanner-container video {
-                    object-fit: cover !important;
-                    width: 100% !important;
-                    height: 100% !important;
-                    display: block !important;
-                }
-                #unified-scanner-reader {
-                    border: none !important;
-                }
-                #unified-scanner-reader__scan_region {
-                    background: transparent !important;
-                }
-                #unified-scanner-reader__dashboard {
-                    display: none !important;
                 }
             `}</style>
         </div>

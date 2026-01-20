@@ -47,6 +47,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SystemNotificationModal from './components/SystemNotificationModal';
 import TourGuide from './components/TourGuide';
+import { OnboardingProvider } from './contexts/OnboardingContext';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -1106,122 +1107,124 @@ export default function Dashboard() {
     };
 
     return (
-        <div className="flex h-screen bg-gray-100 font-sans">
-            {/* Mobile overlay/backdrop */}
-            {isSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/40 z-[55] md:hidden"
-                    onClick={() => setIsSidebarOpen(false)}
-                    aria-hidden="true"
-                />
-            )}
-
-            {/* Sidebar container: modal on mobile, static on desktop */}
-            <div id="app-sidebar" className={`
-                z-[60] md:static md:block
-                ${isSidebarOpen
-                    ? 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none'
-                    : 'hidden md:block'
-                }
-            `}>
-                <Sidebar
-                    user={currentUser}
-                    onLogout={handleLogout}
-                    isOnline={isOnline}
-                    allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]}
-                    superMode={currentUser.role === 'superadmin' ? superMode : undefined}
-                    onChangeSuperMode={(mode) => {
-                        setSuperMode(mode);
-                        try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
-                        // Redirect to appropriate default page if current is no longer permitted
-                        const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
-                        const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS[effectiveRole];
-                        const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
-                        if (!allowed.includes(page)) {
-                            const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
-                            navigate(`/${next}`);
-                            try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
-                        }
-                    }}
-                    storesForSelect={currentUser.role === 'superadmin' ? systemStores : undefined}
-                    selectedStoreId={currentUser.currentStoreId}
-                    onSelectStore={async (storeId) => {
-                        if (!storeId) return;
-                        try {
-                            await api.patch('/users/me/current-store', { storeId });
-                            const stored = getCurrentUser();
-                            if (stored) {
-                                const merged = { ...stored, currentStoreId: storeId } as User as any;
-                                localStorage.setItem('salePilotUser', JSON.stringify(merged));
-                                setCurrentUser(merged);
-                                showSnackbar('Store context updated.', 'success');
-                            }
-                        } catch (err: any) {
-                            showSnackbar(err.message || 'Failed to set current store', 'error');
-                        }
-                    }}
-                    showOnMobile={isSidebarOpen}
-                    onMobileClose={() => setIsSidebarOpen(false)}
-                    storeSettings={storeSettings}
-                    lastSync={lastSync}
-                    isSyncing={isSyncing}
-                    installPrompt={installPrompt}
-                    onInstall={handleInstall}
-                    unreadNotificationsCount={announcements.filter(a => !a.isRead).length}
-                    pendingMatchesCount={pendingMatches.length}
-                />
-            </div>
-
-            {/* Main content */}
-            <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
-                {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
-                {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
-                {location.pathname !== '/sales' && (
-                    <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
-                        <button
-                            onClick={() => setIsSidebarOpen(true)}
-                            className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            aria-label="Open menu"
-                            aria-controls="app-sidebar"
-                            aria-expanded={isSidebarOpen}
-                        >
-                            <Bars3Icon className="w-6 h-6" />
-                        </button>
-
-                        <div className="flex items-center justify-center flex-1">
-                            <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
-                        </div>
-
-                        <button
-                            onClick={() => navigate('/notifications')}
-                            className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
-                            aria-label="Notifications"
-                        >
-                            <BellAlertIcon className="w-6 h-6" />
-                            {announcements.some(a => !a.isRead) && (
-                                <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
-                            )}
-                        </button>
-                    </div>
+        <OnboardingProvider user={currentUser}>
+            <div className="flex h-screen bg-gray-100 font-sans">
+                {/* Mobile overlay/backdrop */}
+                {isSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/40 z-[55] md:hidden"
+                        onClick={() => setIsSidebarOpen(false)}
+                        aria-hidden="true"
+                    />
                 )}
 
-                {renderPage(currentPage)}
+                {/* Sidebar container: modal on mobile, static on desktop */}
+                <div id="app-sidebar" className={`
+                z-[60] md:static md:block
+                ${isSidebarOpen
+                        ? 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none'
+                        : 'hidden md:block'
+                    }
+            `}>
+                    <Sidebar
+                        user={currentUser}
+                        onLogout={handleLogout}
+                        isOnline={isOnline}
+                        allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]}
+                        superMode={currentUser.role === 'superadmin' ? superMode : undefined}
+                        onChangeSuperMode={(mode) => {
+                            setSuperMode(mode);
+                            try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
+                            // Redirect to appropriate default page if current is no longer permitted
+                            const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
+                            const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS[effectiveRole];
+                            const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
+                            if (!allowed.includes(page)) {
+                                const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
+                                navigate(`/${next}`);
+                                try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
+                            }
+                        }}
+                        storesForSelect={currentUser.role === 'superadmin' ? systemStores : undefined}
+                        selectedStoreId={currentUser.currentStoreId}
+                        onSelectStore={async (storeId) => {
+                            if (!storeId) return;
+                            try {
+                                await api.patch('/users/me/current-store', { storeId });
+                                const stored = getCurrentUser();
+                                if (stored) {
+                                    const merged = { ...stored, currentStoreId: storeId } as User as any;
+                                    localStorage.setItem('salePilotUser', JSON.stringify(merged));
+                                    setCurrentUser(merged);
+                                    showSnackbar('Store context updated.', 'success');
+                                }
+                            } catch (err: any) {
+                                showSnackbar(err.message || 'Failed to set current store', 'error');
+                            }
+                        }}
+                        showOnMobile={isSidebarOpen}
+                        onMobileClose={() => setIsSidebarOpen(false)}
+                        storeSettings={storeSettings}
+                        lastSync={lastSync}
+                        isSyncing={isSyncing}
+                        installPrompt={installPrompt}
+                        onInstall={handleInstall}
+                        unreadNotificationsCount={announcements.filter(a => !a.isRead).length}
+                        pendingMatchesCount={pendingMatches.length}
+                    />
+                </div>
+
+                {/* Main content */}
+                <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
+                    {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
+                    {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
+                    {location.pathname !== '/sales' && (
+                        <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
+                            <button
+                                onClick={() => setIsSidebarOpen(true)}
+                                className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                aria-label="Open menu"
+                                aria-controls="app-sidebar"
+                                aria-expanded={isSidebarOpen}
+                            >
+                                <Bars3Icon className="w-6 h-6" />
+                            </button>
+
+                            <div className="flex items-center justify-center flex-1">
+                                <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
+                            </div>
+
+                            <button
+                                onClick={() => navigate('/notifications')}
+                                className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
+                                aria-label="Notifications"
+                            >
+                                <BellAlertIcon className="w-6 h-6" />
+                                {announcements.some(a => !a.isRead) && (
+                                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
+                                )}
+                            </button>
+                        </div>
+                    )}
+
+                    {renderPage(currentPage)}
+                </div>
+
+                {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
+                <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
+                <TourGuide user={currentUser} />
+
+                {priorityNotification && (
+                    <SystemNotificationModal
+                        isOpen={true}
+                        title={priorityNotification.title}
+                        message={priorityNotification.message}
+                        date={priorityNotification.createdAt}
+                        onAcknowledge={handleAcknowledgeNotification}
+                    />
+                )}
             </div>
-
-            {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
-            <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
-            <TourGuide user={currentUser} />
-
-            {priorityNotification && (
-                <SystemNotificationModal
-                    isOpen={true}
-                    title={priorityNotification.title}
-                    message={priorityNotification.message}
-                    date={priorityNotification.createdAt}
-                    onAcknowledge={handleAcknowledgeNotification}
-                />
-            )}
-        </div>
+        </OnboardingProvider>
     );
 }
 
