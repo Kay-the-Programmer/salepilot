@@ -13,6 +13,7 @@ interface UnifiedScannerModalProps {
     continuous?: boolean;
     delayBetweenScans?: number; // ms
     variant?: 'modal' | 'embedded';
+    paused?: boolean;
 }
 
 const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
@@ -23,7 +24,8 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     title = "Scan Barcode",
     continuous = false,
     delayBetweenScans = 1500,
-    variant = 'modal'
+    variant = 'modal',
+    paused = false
 }) => {
     const [error, setError] = useState<string | null>(null);
     const [isTorchOn, setIsTorchOn] = useState(false);
@@ -38,6 +40,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     const streamRef = useRef<MediaStream | null>(null);
     const lastScanTimeRef = useRef<number>(0);
     const scanningRef = useRef<boolean>(false);
+    const pausedRef = useRef<boolean>(paused);
+
+    useEffect(() => {
+        pausedRef.current = paused;
+    }, [paused]);
 
     // Initialize beep sound
     useEffect(() => {
@@ -249,6 +256,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 // Start continuous decoding
                 const decode = async () => {
                     if (!scanningRef.current || !videoRef.current || !codeReaderRef.current) {
+                        return;
+                    }
+
+                    if (pausedRef.current) {
+                        setTimeout(decode, 500);
                         return;
                     }
 

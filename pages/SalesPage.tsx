@@ -13,6 +13,7 @@ import CustomerSelect from '../components/sales/CustomerSelect';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
 import ProductFormModal from '../components/ProductFormModal';
+import ScanActionModal from '../components/sales/ScanActionModal';
 import { api } from '@/services/api';
 import { formatCurrency } from '../utils/currency';
 import DocumentPlusIcon from '../components/icons/DocumentPlusIcon';
@@ -28,7 +29,7 @@ import BoltIcon from '../components/icons/BoltIcon';
 import ClockIcon from '../components/icons/ClockIcon';
 
 import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
-import Bars3BottomLeftIcon from '../components/icons/Bars3BottomLeftIcon';
+
 
 import Bars3Icon from '../components/icons/Bars3Icon';
 import GridIcon from '../components/icons/GridIcon';
@@ -80,6 +81,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // External Product Lookup State
     const [isProductFormOpen, setIsProductFormOpen] = useState(false);
     const [initialProductValues, setInitialProductValues] = useState<Partial<Product> | undefined>(undefined);
+
+    // Scan Action State
+    const [showScanActionModal, setShowScanActionModal] = useState(false);
+    const [lastScannedProductName, setLastScannedProductName] = useState('');
+    const [isScannerPaused, setIsScannerPaused] = useState(false);
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
@@ -336,6 +342,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
         );
         if (product) {
             addToCart(product);
+            setLastScannedProductName(product.name);
+            setIsScannerPaused(true);
+            setShowScanActionModal(true);
         } else {
             // Try external lookup
             try {
@@ -1721,6 +1730,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     onScanError={handleScanError}
                                     continuous={true}
                                     delayBetweenScans={1500}
+                                    paused={isScannerPaused}
                                 />
                                 {cart.length === 0 && (
                                     <div className="absolute inset-x-0 bottom-8 text-center pointer-events-none">
@@ -1783,6 +1793,22 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 )
             }
+
+            <ScanActionModal
+                isOpen={showScanActionModal}
+                productName={lastScannedProductName}
+                onContinue={() => {
+                    setShowScanActionModal(false);
+                    setIsScannerPaused(false);
+                }}
+                onProceed={() => {
+                    setShowScanActionModal(false);
+                    setIsScannerPaused(false);
+                    setIsScannerOpen(false);
+                    setActiveTab('cart');
+                    setCartActionTab('payment');
+                }}
+            />
 
             <ProductFormModal
                 isOpen={isProductFormOpen}
