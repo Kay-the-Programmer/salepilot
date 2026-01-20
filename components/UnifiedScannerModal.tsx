@@ -176,25 +176,28 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 const html5QrCode = new Html5Qrcode(readerId, false);
                 scannerRef.current = html5QrCode;
 
-                // Configure scanner
+                // Configure scanner for high performance reading
                 const config = {
-                    fps: 10, // lowered from 15 to 10 for better performance on mobile
+                    fps: 20, // Increased from 10/15 for faster capture on mobile
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-                        // Rectangular scanning region is often better for 1D barcodes
-                        const width = Math.floor(viewfinderWidth * 0.8);
-                        const height = Math.floor(viewfinderHeight * 0.4);
+                        // Wide rectangular box is better for 1D barcodes common in POS
+                        const width = Math.min(viewfinderWidth * 0.8, 400);
+                        const height = Math.min(viewfinderHeight * 0.3, 200);
                         return { width, height };
                     },
-                    // Removed fixed aspectRatio to allow full camera field of view
+                    aspectRatio: 1.0,
                     formatsToSupport: [
                         Html5QrcodeSupportedFormats.UPC_A,
                         Html5QrcodeSupportedFormats.UPC_E,
                         Html5QrcodeSupportedFormats.EAN_13,
                         Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.CODE_128,
+                        Html5QrcodeSupportedFormats.CODE_39,
                         Html5QrcodeSupportedFormats.QR_CODE
                     ],
                     experimentalFeatures: {
-                        useBarCodeDetectorIfSupported: true
+                        // Hardware acceleration is buggy on some iOS versions, use library optimized path
+                        useBarCodeDetectorIfSupported: false
                     }
                 };
 
@@ -209,12 +212,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 // Let's stick to the logic for now.
 
                 // Determine camera selection
-                // Priority 1: Constraints (usually most reliable for mobile browsers)
+                // Priority 1: Constraints (optimized for iOS/Mobile)
                 let cameraSelection: any = {
-                    facingMode: facingMode,
-                    width: { min: 640, ideal: 1280, max: 1920 },
-                    height: { min: 480, ideal: 720, max: 1080 },
-                    focusMode: "continuous" // Vital for iOS 
+                    facingMode: { ideal: facingMode },
+                    width: { ideal: 1920 }, // Try for 1080p for sharper barcode details
+                    height: { ideal: 1080 }
                 };
 
                 try {
@@ -281,6 +283,12 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         const capabilities = html5QrCode.getRunningTrackCapabilities();
                         if ((capabilities as any).torch) {
                             setHasTorch(true);
+                        }
+                        // Try to apply continuous focus if supported
+                        if ((capabilities as any).focusMode?.includes('continuous')) {
+                            await html5QrCode.applyVideoConstraints({
+                                advanced: [{ focusMode: 'continuous' }] as any
+                            });
                         }
                     } catch (e) {
                         // ignore capability check errors
@@ -421,6 +429,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 }
                 .scanner-container video {
                     object-fit: cover !important;
+                    width: 100% !important;
+                    height: 100% !important;
+                    display: block !important;
                 }
                 #unified-scanner-reader {
                     border: none !important;

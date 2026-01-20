@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { SnackbarType } from '../App';
 import { registerStoreAndRefreshUser } from '../services/storesService';
-import { useNavigate } from 'react-router-dom';
 import { User } from '../types';
 
 interface StoreSetupPageProps {
@@ -11,14 +10,35 @@ interface StoreSetupPageProps {
 
 const MIN_LEN = 2;
 
+const BUSINESS_TYPES = [
+  { id: 'retail_grocery', label: 'Grocery & Supermarket', icon: '🛒' },
+  { id: 'retail_fashion', label: 'Fashion & Apparel', icon: '👗' },
+  { id: 'retail_electronics', label: 'Electronics & Gadgets', icon: '📱' },
+  { id: 'food_beverage', label: 'Restaurant / Cafe', icon: '☕' },
+  { id: 'pharmacy', label: 'Pharmacy & Health', icon: '💊' },
+  { id: 'hardware', label: 'Hardware & Auto', icon: '🔧' },
+  { id: 'other', label: 'Other', icon: '✨' }
+];
+
 const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackbar }) => {
-  const navigate = useNavigate();
   const [name, setName] = useState('');
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const trimmedName = useMemo(() => name.replace(/\s+/g, ' ').trim(), [name]);
-  const isValid = trimmedName.length >= MIN_LEN;
+  const isValid = trimmedName.length >= MIN_LEN && selectedTypes.length > 0;
+
+  const toggleType = (id: string) => {
+    setSelectedTypes(prev => {
+      if (prev.includes(id)) return prev.filter(t => t !== id);
+      // For now, let's allow multiple selection, or maybe restrict to 1 main type?
+      // User request implies "business type" (singular or plural).
+      // Let's allow multiple for flexibility, but usually businesses have one primary.
+      // Actually backend logic supports multiple.
+      return [...prev, id];
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,7 +50,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
     setError(null);
 
     try {
-      const { store, user } = await registerStoreAndRefreshUser(trimmedName);
+      const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes);
       // Persist updated user immediately (ensure token unchanged and currentStoreId present)
       localStorage.setItem('salePilotUser', JSON.stringify(user));
       showSnackbar(`Store "${store.name}" created! You're now the admin.`, 'success');
@@ -84,6 +104,38 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                 </span>
                 <span className={`tabular-nums ${isValid ? 'text-gray-400' : 'text-red-600'}`}>{trimmedName.length}/{MIN_LEN}+</span>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">What does your business sell?</label>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                {BUSINESS_TYPES.map((type) => (
+                  <button
+                    key={type.id}
+                    type="button"
+                    onClick={() => toggleType(type.id)}
+                    className={`
+                      relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200
+                      ${selectedTypes.includes(type.id)
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm scale-[1.02]'
+                        : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200 hover:bg-white'
+                      }
+                    `}
+                  >
+                    <span className="text-2xl mb-1">{type.icon}</span>
+                    <span className="text-xs font-semibold text-center leading-tight">{type.label}</span>
+
+                    {selectedTypes.includes(type.id) && (
+                      <div className="absolute top-1.5 right-1.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-2 text-xs text-gray-500">Select one or more categories that best describe your store.</p>
             </div>
 
             {/* Process helper */}
