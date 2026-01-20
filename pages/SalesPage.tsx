@@ -1492,27 +1492,42 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     </div>
                 </div>
 
-                {/* Mobile Cart Content */}
-                <div className="p-4 overflow-y-auto h-[calc(100vh-140px)] safe-area-bottom pb-24">
-                    {
-                        cart.length === 0 ? (
+                {/* Mobile Cart Content - Animated Flex Layout */}
+                <div className="flex flex-col h-[calc(100vh-140px)] safe-area-bottom pb-24 transition-all duration-300">
+
+                    {/* Slot 1: Scrollable Content (Empty State or List + Checkout) */}
+                    <div className={`
+                        overflow-y-auto scroll-smooth transition-all duration-500 ease-in-out
+                        ${(cart.length === 0 && isScannerOpen) ? 'basis-0 h-0 opacity-0 overflow-hidden' : 'flex-1 opacity-100'}
+                    `}>
+                        {cart.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                                <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mb-4">
-                                    <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
+                                <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mb-6 shadow-sm">
+                                    <ShoppingCartIcon className="w-10 h-10 text-blue-500" />
                                 </div>
-                                <h3 className="text-lg font-medium text-slate-900 mb-1">Your cart is empty</h3>
-                                <p className="text-sm text-slate-500 mb-6">Add products to start a sale</p>
-                                <button
-                                    onClick={() => setActiveTab('products')}
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium"
-                                >
-                                    Browse Products
-                                </button>
+                                <h3 className="text-xl font-bold text-slate-900 mb-2">Cart is Empty</h3>
+                                <p className="text-slate-500 mb-8 max-w-[200px] leading-relaxed">Scan a product or browse the catalog to start selling</p>
+
+                                <div className="flex flex-col gap-3 w-full max-w-xs">
+                                    <button
+                                        onClick={() => setIsScannerOpen(true)}
+                                        className="w-full px-6 py-4 bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+                                    >
+                                        <QrCodeIcon className="w-6 h-6" />
+                                        Scan Barcode
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('products')}
+                                        className="w-full px-6 py-4 bg-white text-slate-700 rounded-xl font-bold border border-slate-200 hover:bg-slate-50 active:scale-95 transition-all"
+                                    >
+                                        Browse Products
+                                    </button>
+                                </div>
                             </div>
                         ) : (
-                            <div className="space-y-6">
+                            <div>
                                 {/* Items List */}
-                                <div className="space-y-4">
+                                <div className="p-4 space-y-4">
                                     {cart.map(item => (
                                         <div key={item.productId} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                                             <div className="flex justify-between items-start mb-4">
@@ -1555,35 +1570,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     ))}
                                 </div>
 
-                                {/* Scanner / Checkout Toggle for Mobile */}
-                                {isScannerOpen ? (
-                                    <div className="bg-white p-4 rounded-xl border border-slate-200">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-bold text-slate-800 flex items-center gap-2">
-                                                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                                                Scanning
-                                            </h3>
-                                            <button
-                                                onClick={() => setIsScannerOpen(false)}
-                                                className="px-3 py-1 bg-red-50 text-red-600 rounded-lg text-sm font-bold border border-red-100"
-                                            >
-                                                Stop Scanning
-                                            </button>
-                                        </div>
-                                        <div className="aspect-[4/3] rounded-lg overflow-hidden border border-slate-200 relative">
-                                            <UnifiedScannerModal
-                                                isOpen={true}
-                                                variant="embedded"
-                                                onClose={() => setIsScannerOpen(false)}
-                                                onScanSuccess={handleContinuousScan}
-                                                onScanError={handleScanError}
-                                                continuous={true}
-                                                delayBetweenScans={1500}
-                                            />
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <>
+                                {/* Checkout Actions (Only if scanner is closed) */}
+                                {!isScannerOpen && (
+                                    <div className="px-4 pb-4 space-y-6">
                                         {/* Customer Select */}
                                         <div className="bg-white p-4 rounded-xl border border-slate-200">
                                             <label className="block text-sm font-medium text-slate-900 mb-2">Customer</label>
@@ -1706,17 +1695,74 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 {isProcessing ? 'Processing...' : 'Charge to Account'}
                                             </button>
                                         </div>
-                                    </>
-                                )
-                                }
+                                    </div>
+                                )}
                             </div>
-                        )
-                    }
+                        )}
+                    </div>
+
+                    {/* Slot 2: Scanner Area - Animates height/flex based on state */}
+                    <div className={`
+                         transition-all duration-500 ease-in-out bg-white z-10 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] overflow-hidden
+                         ${isScannerOpen
+                            ? (cart.length === 0 ? 'flex-1 min-h-[300px] border-t-0' : 'h-72 flex-none border-t border-slate-200')
+                            : 'h-0 border-none'}
+                    `}>
+                        {isScannerOpen && (
+                            <div className="flex-1 w-full relative bg-slate-900">
+                                <UnifiedScannerModal
+                                    isOpen={true}
+                                    variant="embedded"
+                                    onClose={() => setIsScannerOpen(false)}
+                                    onScanSuccess={handleContinuousScan}
+                                    onScanError={handleScanError}
+                                    continuous={true}
+                                    delayBetweenScans={1500}
+                                />
+                                {cart.length === 0 && (
+                                    <div className="absolute inset-x-0 bottom-8 text-center pointer-events-none">
+                                        <p className="inline-block px-4 py-2 rounded-full bg-black/50 backdrop-blur-md text-white font-medium text-sm border border-white/10">
+                                            Align barcode within frame
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Slot 3: Fixed Footer (Toggle Button) */}
+                    {(cart.length > 0 || isScannerOpen) && (
+                        <div className="flex-none p-4 bg-white border-t border-slate-200 z-20">
+                            {isScannerOpen ? (
+                                <button
+                                    onClick={() => setIsScannerOpen(false)}
+                                    className="w-full py-4 bg-white text-red-600 rounded-xl font-bold border-2 border-red-100 hover:bg-red-50 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
+                                >
+                                    <XMarkIcon className="w-5 h-5" />
+                                    Stop Scanning
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => setIsScannerOpen(true)}
+                                    className="w-full py-4 bg-slate-50 text-slate-700 rounded-xl font-bold border-2 border-dashed border-slate-300 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all flex items-center justify-center gap-3 group active:scale-95"
+                                >
+                                    <div className="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                                        <QrCodeIcon className="w-5 h-5 text-slate-500 group-hover:text-blue-600" />
+                                    </div>
+                                    <span>Tap to Scan Product</span>
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
+
+
+
+
             </div>
 
             {/* Modals */}
-            <FloatingActionButtons />
+            {activeTab !== 'cart' && <FloatingActionButtons />}
 
             <HeldSalesModal
                 isOpen={showHeldPanel}
