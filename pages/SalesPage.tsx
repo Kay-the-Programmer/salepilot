@@ -496,7 +496,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const FloatingActionButtons = () => (
         <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-2xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
             <button
-                onClick={() => setIsScannerOpen(true)}
+                onClick={() => {
+                    setIsScannerOpen(true);
+                    setActiveTab('cart');
+                }}
                 className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-all"
             >
                 <QrCodeIcon className="w-6 h-6" />
@@ -1705,7 +1708,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     <div className={`
                          transition-all duration-500 ease-in-out bg-white z-10 flex flex-col shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] overflow-hidden
                          ${isScannerOpen
-                            ? (cart.length === 0 ? 'flex-1 min-h-[300px] border-t-0' : 'h-72 flex-none border-t border-slate-200')
+                            ? (cart.length === 0 ? 'flex-1 min-h-[250px] border-t-0' : 'h-52 flex-none border-t border-slate-200')
                             : 'h-0 border-none'}
                     `}>
                         {isScannerOpen && (

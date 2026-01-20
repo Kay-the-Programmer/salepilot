@@ -112,6 +112,29 @@ const ShopLayout: React.FC = () => {
                 <Outlet context={{ shopInfo }} />
             </main>
 
+            {/* Floating Cart Button (Mobile) */}
+            <button
+                onClick={() => navigate(`/shop/${storeId}/cart`)}
+                className={`
+                    md:hidden fixed bottom-6 right-6 z-50 
+                    w-14 h-14 bg-indigo-600 text-white rounded-full 
+                    shadow-lg shadow-indigo-500/30 
+                    flex items-center justify-center 
+                    transition-all duration-300 transform active:scale-95
+                    ${cartCount > 0 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}
+                `}
+                aria-label="View Cart"
+            >
+                <div className="relative">
+                    <HiOutlineShoppingBag className="w-6 h-6" />
+                    {cartCount > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-indigo-600">
+                            {cartCount}
+                        </span>
+                    )}
+                </div>
+            </button>
+
             {/* Footer */}
             <footer className="bg-gray-900 text-white mt-auto">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
