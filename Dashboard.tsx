@@ -1119,7 +1119,7 @@ export default function Dashboard() {
 
     return (
         <OnboardingProvider user={currentUser}>
-            <div className="flex h-screen bg-transparent font-sans">
+            <div className="flex h-screen bg-gray-100 font-sans">
                 {/* Mobile overlay/backdrop */}
                 {isSidebarOpen && (
                     <div
@@ -1190,7 +1190,7 @@ export default function Dashboard() {
                     {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                     {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                     {location.pathname !== '/sales' && (
-                        <div className="md:hidden h-14 glass-panel border-b border-white/40 flex items-center px-4 justify-between transition-all duration-200">
+                        <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
                                 className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1238,4 +1238,5 @@ export default function Dashboard() {
         </OnboardingProvider>
     );
 }
+
 
