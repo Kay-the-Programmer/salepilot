@@ -403,7 +403,7 @@ export default function Sidebar({
             <aside
                 className={`
                     hidden md:flex
-                    bg-gradient-to-b from-gray-50 to-white border-r border-gray-200/50
+                    bg-gray-100 
                     h-screen flex-col transition-all duration-300 ease-in-out z-50
                     relative translate-x-0
                     ${isExpanded ? 'w-64' : 'w-20'}
@@ -460,7 +460,7 @@ export default function Sidebar({
                 )}
 
                 {/* Navigation Items */}
-                <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
+                <nav className="custom-scrollbar flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
                     {navItems.map(item => {
                         const IconComponent = item.icon;
 
@@ -474,8 +474,8 @@ export default function Sidebar({
                                     w-full flex items-center gap-3 px-4 py-3 rounded-xl
                                     transition-all duration-200 group relative
                                     ${isActive
-                                        ? 'bg-blue-100 text-blue-700 active-link'
-                                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                        ? 'bg-gray-200 text-gray-700 active-link font-bold'
+                                        : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
                                     }
                                     ${!isExpanded && 'justify-center'}
                                 `}

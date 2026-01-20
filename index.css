@@ -79,6 +79,34 @@ textarea {
   display: none;
 }
 
+/* Custom scrollbar for Sidebar and other areas */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+  /* scrollbar-color: thumb track */
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  /* gray-300 */
+  border-radius: 20px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 /* Desktop app feel for Reports dashboard */
 .app-window {
   /* on desktop, give subtle window look */

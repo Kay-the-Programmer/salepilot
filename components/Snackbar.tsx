@@ -5,6 +5,7 @@ import CheckCircleIcon from './icons/CheckCircleIcon';
 import XCircleIcon from './icons/XCircleIcon';
 import InformationCircleIcon from './icons/InformationCircleIcon';
 import XMarkIcon from './icons/XMarkIcon';
+import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
 
 
 interface SnackbarProps {
@@ -36,6 +37,7 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
         success: 'bg-green-100 border-green-400 text-green-700',
         error: 'bg-red-100 border-red-400 text-red-700',
         info: 'bg-blue-100 border-blue-400 text-blue-700',
+        warning: 'bg-yellow-100 border-yellow-400 text-yellow-700',
         sync: 'bg-gray-100 border-gray-400 text-gray-700',
     };
 
@@ -43,6 +45,7 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
         success: <CheckCircleIcon className="h-5 w-5 text-green-500" />,
         error: <XCircleIcon className="h-5 w-5 text-red-500" />,
         info: <InformationCircleIcon className="h-5 w-5 text-blue-500" />,
+        warning: <ExclamationTriangleIcon className="h-5 w-5 text-yellow-500" />,
         sync: <SyncIcon />,
     }[type];
 
@@ -63,8 +66,9 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
                             onClick={onClose}
                             className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${type === 'success' ? 'bg-green-100 text-green-500 hover:bg-green-200 focus:ring-green-600 focus:ring-offset-green-100' :
                                 type === 'error' ? 'bg-red-100 text-red-500 hover:bg-red-200 focus:ring-red-600 focus:ring-offset-red-100' :
-                                    type === 'sync' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 focus:ring-gray-600 focus:ring-offset-gray-100' :
-                                        'bg-blue-100 text-blue-500 hover:bg-blue-200 focus:ring-blue-600 focus:ring-offset-blue-100'
+                                    type === 'warning' ? 'bg-yellow-100 text-yellow-500 hover:bg-yellow-200 focus:ring-yellow-600 focus:ring-offset-yellow-100' :
+                                        type === 'sync' ? 'bg-gray-100 text-gray-500 hover:bg-gray-200 focus:ring-gray-600 focus:ring-offset-gray-100' :
+                                            'bg-blue-100 text-blue-500 hover:bg-blue-200 focus:ring-blue-600 focus:ring-offset-blue-100'
                                 }`}
                             aria-label="Dismiss"
                         >
