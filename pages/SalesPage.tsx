@@ -29,6 +29,7 @@ import BoltIcon from '../components/icons/BoltIcon';
 import ClockIcon from '../components/icons/ClockIcon';
 
 import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
+import BellAlertIcon from '../components/icons/BellAlertIcon';
 
 
 import Bars3Icon from '../components/icons/Bars3Icon';
@@ -1309,43 +1310,42 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 {/* Mobile Product View */}
                 <div className={`md:hidden fixed inset-0 bg-transparent/1 backdrop-blur-2xl z-50 transition-transform duration-300 overflow-y-auto ${activeTab === 'products' ? 'translate-x-0' : 'translate-x-full'}`}>
                     {/* Mobile Products Header */}
-                    <div className="sticky top-0 bg-transparent/1 backdrop-blur-sm border-b border-slate-200 z-10 p-4">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-2">
-                                {onOpenSidebar && (
-                                    <button
-                                        onClick={onOpenSidebar}
-                                        className="p-2 -ml-2 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none"
-                                    >
-                                        <GridIcon className="w-6 h-6" />
-                                    </button>
-                                )}
-                                <h2 className="text-lg font-bold text-slate-900 hidden md:block">Products</h2>
+                    <div className="sticky top-0 z-10">
+                        {/* Top Bar (Menu, Logo, Notification) */}
+                        <div className="bg-white/50 backdrop-blur-xl border-b border-slate-200/50 p-4 pb-2">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    {onOpenSidebar && (
+                                        <button
+                                            onClick={onOpenSidebar}
+                                            className="p-2 -ml-2 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none"
+                                        >
+                                            <GridIcon className="w-6 h-6" />
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2">
+                                    <img src={logo} alt="SalePilot" className="h-8" />
+                                </div>
+                                <button className="p-2 rounded-full hover:bg-slate-100 relative">
+                                    <BellAlertIcon className="w-6 h-6 text-slate-700" />
+                                    {/* Optional: Add notification badge here if needed */}
+                                </button>
                             </div>
-                            <div className="md:hidden absolute left-1/2 transform -translate-x-1/2">
-                                <img src={logo} alt="SalePilot" className="h-8" />
-                            </div>
-                            <button
-                                onClick={() => setActiveTab('cart')}
-                                className="relative p-2"
-                            >
-                                <ShoppingCartIcon className="w-6 h-6 text-slate-700" />
-                                {cart.length > 0 && (
-                                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                                        {cart.length}
-                                    </span>
-                                )}
-                            </button>
                         </div>
-                        <div className="relative ">
-                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 " />
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                placeholder="Search products..."
-                                className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-3xl bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent "
-                            />
+
+                        {/* Search Bar (Sticky) */}
+                        <div className="bg-transparent/1 backdrop-blur-sm border-b border-slate-200 px-4 pb-4 pt-2">
+                            <div className="relative">
+                                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Search products..."
+                                    className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-3xl bg-slate-50/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                />
+                            </div>
                         </div>
                     </div>
                     {/* Mobile Products Grid */}
