@@ -57,13 +57,13 @@ const ShopLayout: React.FC = () => {
     }
 
     if (!shopInfo) {
-        return <div className="min-h-screen flex items-center justify-center bg-gray-50">Store not found</div>;
+        return <div className="min-h-screen flex items-center justify-center bg-transparent">Store not found</div>;
     }
 
     // Check if store is enabled
     if (shopInfo.settings.isOnlineStoreEnabled === false) { // Explicit check as undefined should default to true or be handled safely
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-transparent p-4 text-center">
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-6">
                     <HiOutlineShoppingBag className="w-8 h-8 text-gray-400" />
                 </div>
@@ -74,9 +74,9 @@ const ShopLayout: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+        <div className="min-h-screen bg-transparent flex flex-col font-sans text-gray-900">
             {/* Header */}
-            <header className="bg-white shadow-sm sticky top-0 z-50">
+            <header className="glass-panel sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link to={`/shop/${storeId}`} className="flex items-center gap-2">
                         {/* Placeholder for Logo */}
@@ -108,7 +108,7 @@ const ShopLayout: React.FC = () => {
             </header>
 
             {/* Main Content */}
-            <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="flex-grow w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 glass-panel rounded-3xl">
                 <Outlet context={{ shopInfo }} />
             </main>
 
@@ -136,7 +136,7 @@ const ShopLayout: React.FC = () => {
             </button>
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-white mt-auto">
+            <footer className="glass-panel-dark text-white mt-auto">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
                         <h3 className="text-lg font-bold mb-4">{shopInfo.settings.name || shopInfo.name}</h3>

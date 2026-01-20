@@ -43,7 +43,7 @@ const TitleBar: React.FC = () => {
     const handleClose = () => window.electronAPI?.close();
 
     return (
-        <div className="flex items-center justify-between h-8 bg-gray-900 text-white select-none overflow-hidden" style={{ WebkitAppRegion: 'drag' } as any}>
+        <div className="flex items-center justify-between h-8 glass-panel-dark text-white select-none overflow-hidden" style={{ WebkitAppRegion: 'drag' } as any}>
             <div className="flex items-center px-3 gap-2">
                 <img src="/vite.svg" alt="SalePilot" className="w-4 h-4" />
                 <span className="text-xs font-medium opacity-80">SalePilot</span>

@@ -31,6 +31,51 @@ body {
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.8), transparent 55%),
+    radial-gradient(circle at top right, rgba(255, 240, 229, 0.85), transparent 50%),
+    radial-gradient(circle at bottom right, rgba(226, 232, 255, 0.9), transparent 55%),
+    linear-gradient(120deg, rgba(240, 249, 255, 0.9), rgba(248, 250, 252, 0.9));
+  color: #0f172a;
+}
+
+#root {
+  min-height: 100%;
+}
+
+.glass-app {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18);
+  backdrop-filter: blur(26px);
+  -webkit-backdrop-filter: blur(26px);
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.glass-panel-dark {
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.35);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+body.glass-theme .bg-white:not(button):not(input):not(textarea):not(select),
+body.glass-theme .bg-gray-50:not(button):not(input):not(textarea):not(select),
+body.glass-theme .bg-gray-100:not(button):not(input):not(textarea):not(select),
+body.glass-theme .bg-slate-50:not(button):not(input):not(textarea):not(select),
+body.glass-theme .bg-slate-100:not(button):not(input):not(textarea):not(select) {
+  background-color: rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 /* Images and SVGs behave nicely by default */
