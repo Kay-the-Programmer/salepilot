@@ -143,17 +143,17 @@ const ProductDetailView: React.FC<{
     );
   };
 
-  const ActionMenu = ({ mobile = false }: { mobile?: boolean }) => (
-    <div className={`relative ${mobile ? 'block lg:hidden' : 'hidden lg:block'}`} ref={menuRef}>
+  const ActionMenu = () => (
+    <div className="relative block" ref={menuRef}>
       <button
         onClick={() => setIsMenuOpen(!isMenuOpen)}
-        className={`p-2 rounded-lg hover:bg-slate-100 ${mobile ? '' : 'border'}`}
+        className="p-2 rounded-lg hover:bg-slate-100 border"
         aria-label="More options"
       >
         <EllipsisVerticalIcon className="w-5 h-5 text-slate-600" />
       </button>
       {isMenuOpen && (
-        <div className={`absolute ${mobile ? 'bottom-full right-0 mb-2' : 'right-0 top-full mt-2'} w-56 bg-white rounded-lg shadow-lg border z-50`}>
+        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border z-50">
           <div className="p-2 space-y-1">
             {canManage && (
               <>
