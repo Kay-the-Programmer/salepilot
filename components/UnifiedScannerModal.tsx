@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { FiX, FiZap, FiZapOff, FiRefreshCw } from 'react-icons/fi';
 import XMarkIcon from './icons/XMarkIcon';
 
@@ -172,27 +172,50 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
             if (!isMounted) return;
 
             try {
-                const html5QrCode = new Html5Qrcode(readerId);
+                // Use verbose=false for production to reduce console noise
+                const html5QrCode = new Html5Qrcode(readerId, false);
                 scannerRef.current = html5QrCode;
 
                 // Configure scanner
                 const config = {
-                    fps: 15,
+                    fps: 10, // lowered from 15 to 10 for better performance on mobile
                     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-                        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                        const size = Math.floor(minEdge * 0.75);
-                        return { width: size, height: size };
+                        // Rectangular scanning region is often better for 1D barcodes
+                        const width = Math.floor(viewfinderWidth * 0.8);
+                        const height = Math.floor(viewfinderHeight * 0.4);
+                        return { width, height };
                     },
-                    aspectRatio: 1.0,
-                    disableFlip: facingMode === 'environment', // Flip for front camera (natural), don't flip for back
+                    // Removed fixed aspectRatio to allow full camera field of view
+                    formatsToSupport: [
+                        Html5QrcodeSupportedFormats.UPC_A,
+                        Html5QrcodeSupportedFormats.UPC_E,
+                        Html5QrcodeSupportedFormats.EAN_13,
+                        Html5QrcodeSupportedFormats.EAN_8,
+                        Html5QrcodeSupportedFormats.QR_CODE
+                    ],
                     experimentalFeatures: {
                         useBarCodeDetectorIfSupported: true
                     }
                 };
 
+                // Redefining config to use Enum values properly (need to update imports)
+                // For now, let's assume we update imports in the next step or I use the integer values carefully.
+                // Safest to NOT use magic numbers if possible. I will modify imports first.
+
+                // Wait, I cannot modify imports in this same tool call easily if they are far apart.
+                // I will proceed with this block but ask to update imports in a separate call or modify the whole file at once if small enough.
+                // The file is 419 lines. It's better to do a multi-replace or just be careful.
+
+                // Let's stick to the logic for now.
+
                 // Determine camera selection
                 // Priority 1: Constraints (usually most reliable for mobile browsers)
-                let cameraSelection: any = { facingMode: facingMode };
+                let cameraSelection: any = {
+                    facingMode: facingMode,
+                    width: { min: 640, ideal: 1280, max: 1920 },
+                    height: { min: 480, ideal: 720, max: 1080 },
+                    focusMode: "continuous" // Vital for iOS 
+                };
 
                 try {
                     const devices = await Html5Qrcode.getCameras();
@@ -263,8 +286,6 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         // ignore capability check errors
                     }
                 } else {
-                    // If we unmounted during start, clean up immediately
-                    // This is critical because start() is async and might finish after unmount
                     cleanup();
                 }
 
