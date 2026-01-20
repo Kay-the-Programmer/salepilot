@@ -371,6 +371,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
 
 
+    // If not open, don't render anything
+    if (!isOpen) return null;
+
     if (variant === 'embedded') {
         return (
             <div className="w-full h-full flex flex-col bg-white overflow-hidden rounded-xl border border-slate-200 shadow-inner relative">
