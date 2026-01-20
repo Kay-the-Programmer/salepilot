@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { BrowserMultiFormatReader, DecodeHintType, BarcodeFormat } from '@zxing/library';
+import { BrowserMultiFormatReader } from '@zxing/browser';
+import { DecodeHintType, BarcodeFormat } from '@zxing/library';
 import { FiX, FiZap, FiZapOff, FiRefreshCw } from 'react-icons/fi';
 import XMarkIcon from './icons/XMarkIcon';
 
@@ -123,9 +124,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
         }
 
         // Reset the code reader
-        if (codeReaderRef.current) {
-            codeReaderRef.current.reset();
-        }
+
 
         setIsTorchOn(false);
         setHasTorch(false);
@@ -157,7 +156,6 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     BarcodeFormat.CODE_39,
                     BarcodeFormat.QR_CODE
                 ]);
-                hints.set(DecodeHintType.TRY_HARDER, true);
 
                 const codeReader = new BrowserMultiFormatReader(hints);
                 codeReaderRef.current = codeReader;
@@ -203,8 +201,8 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 const constraints: MediaStreamConstraints = {
                     video: {
                         deviceId: selectedDeviceId,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 },
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
                         facingMode: facingMode
                     }
                 };
@@ -219,7 +217,10 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                 // Attach stream to video
                 videoRef.current.srcObject = stream;
-                await videoRef.current.play();
+                // Only play if not already playing to avoid error
+                if (videoRef.current.paused) {
+                    await videoRef.current.play();
+                }
 
                 // Check for torch capability
                 const track = stream.getVideoTracks()[0];
@@ -250,8 +251,12 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     }
 
                     try {
-                        const result = await codeReaderRef.current.decodeOnceFromVideoDevice(
-                            selectedDeviceId,
+                        if (!streamRef.current) return;
+
+                        // Use decodeFromStream to support our manual stream management (with torch/constraints)
+                        // @ts-ignore - decodeOnceFromStream is available in newer versions but might be missing in types
+                        const result = await codeReaderRef.current.decodeOnceFromStream(
+                            streamRef.current,
                             videoRef.current
                         );
 
@@ -260,7 +265,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         const now = Date.now();
                         if (now - lastScanTimeRef.current < delayBetweenScans) {
                             // Too soon, schedule next decode
-                            setTimeout(decode, 100);
+                            setTimeout(decode, 300);
                             return;
                         }
 
@@ -282,7 +287,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                         // These are normal "no barcode found" errors, continue scanning
                         if (err?.name === 'NotFoundException' || err?.message?.includes('No barcode')) {
-                            setTimeout(decode, 100);
+                            setTimeout(decode, 300);
                             return;
                         }
 
@@ -293,7 +298,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         }
 
                         // Continue trying
-                        setTimeout(decode, 100);
+                        setTimeout(decode, 300);
                     }
                 };
 

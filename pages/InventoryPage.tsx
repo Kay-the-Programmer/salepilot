@@ -26,6 +26,9 @@ import { useOnboarding } from '../contexts/OnboardingContext';
 import { ONBOARDING_ACTIONS, ONBOARDING_HELPERS } from '../services/onboardingService';
 import OnboardingHelper from '../components/onboarding/OnboardingHelper';
 
+import { barcodeService } from '../services/barcodeService';
+import BarcodeLookupModal from '../components/BarcodeLookupModal';
+
 interface InventoryPageProps {
     products: Product[];
     categories: Category[];
@@ -80,6 +83,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+    const [isManualLookupOpen, setIsManualLookupOpen] = useState(false);
+    const [initialFormValues, setInitialFormValues] = useState<Partial<Omit<Product, 'id'>> | undefined>(undefined);
 
     // Link to PO State
     const [isLinkPOModalOpen, setIsLinkPOModalOpen] = useState(false);
@@ -209,6 +214,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingProduct(null);
+        setInitialFormValues(undefined);
     };
 
     const handleSave = async (productData: Product | Omit<Product, 'id'>) => {
@@ -565,6 +571,15 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             {activeTab === 'products' && (
                                 <>
                                     <button
+                                        onClick={() => setIsManualLookupOpen(true)}
+                                        className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-colors text-sm"
+                                        title="Manually enter barcode"
+                                    >
+                                        <span role="img" aria-label="barcode">⌨️</span>
+                                        Lookup Barcode
+                                    </button>
+
+                                    <button
                                         onClick={() => setShowFilters(!showFilters)}
                                         className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showFilters || searchTerm || showArchived
                                             ? 'bg-blue-50 border-blue-200 text-blue-700'
@@ -806,7 +821,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     categories={categories}
                     suppliers={suppliers}
                     storeSettings={storeSettings}
+
                     onAddCategory={handleOpenAddCategoryModal}
+                    initialValues={initialFormValues}
                 />
             )}
 
@@ -852,7 +869,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             <UnifiedScannerModal
                 isOpen={isScanModalOpen}
                 onClose={() => setIsScanModalOpen(false)}
-                onScanSuccess={(code) => {
+                onScanSuccess={async (code) => {
                     const scannedProduct = products.find(p =>
                         p.sku === code ||
                         p.barcode === code ||
@@ -863,8 +880,89 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         setSelectedProductId(scannedProduct.id);
                         setIsScanModalOpen(false);
                     } else {
-                        setSearchTerm(code);
+                        // Product not found locally, try to look it up using API
                         setIsScanModalOpen(false);
+                        try {
+                            const scannedData = await barcodeService.lookupProduct(code);
+
+                            if (scannedData) {
+                                // Product found in API, open add modal with prefilled data
+                                setInitialFormValues({
+                                    name: scannedData.name || '',
+                                    description: scannedData.description || '',
+                                    barcode: code,
+                                    imageUrls: scannedData.imageUrls || [],
+                                    brand: scannedData.brand || '',
+                                    weight: scannedData.weight || 0,
+                                    unitOfMeasure: scannedData.unitOfMeasure || 'unit',
+                                    // Try to match category tags if possible, otherwise leave empty
+                                });
+                                setIsModalOpen(true);
+                            } else {
+                                // Product not found in API either, open add modal with just barcode
+                                setInitialFormValues({
+                                    barcode: code
+                                });
+                                setIsModalOpen(true);
+                            }
+                        } catch (error) {
+                            console.error("Error looking up barcode:", error);
+                            // Fallback to just opening modal with barcode
+                            setInitialFormValues({
+                                barcode: code
+                            });
+                            setIsModalOpen(true);
+                        }
+                    }
+                }}
+            />
+
+            <BarcodeLookupModal
+                isOpen={isManualLookupOpen}
+                onClose={() => setIsManualLookupOpen(false)}
+                onSearch={async (code) => {
+                    // Logic duplicates scan success
+                    const scannedProduct = products.find(p =>
+                        p.sku === code ||
+                        p.barcode === code ||
+                        (p.variants && p.variants.some(v => v.sku === code))
+                    );
+
+                    if (scannedProduct) {
+                        setSelectedProductId(scannedProduct.id);
+                        setIsManualLookupOpen(false);
+                    } else {
+                        // Product not found locally, try to look it up using API
+                        setIsManualLookupOpen(false);
+                        try {
+                            const scannedData = await barcodeService.lookupProduct(code);
+
+                            if (scannedData) {
+                                // Product found in API, open add modal with prefilled data
+                                setInitialFormValues({
+                                    name: scannedData.name || '',
+                                    description: scannedData.description || '',
+                                    barcode: code,
+                                    imageUrls: scannedData.imageUrls || [],
+                                    brand: scannedData.brand || '',
+                                    weight: scannedData.weight || 0,
+                                    unitOfMeasure: scannedData.unitOfMeasure || 'unit',
+                                });
+                                setIsModalOpen(true);
+                            } else {
+                                // Product not found in API either, open add modal with just barcode
+                                setInitialFormValues({
+                                    barcode: code
+                                });
+                                setIsModalOpen(true);
+                            }
+                        } catch (error) {
+                            console.error("Error looking up barcode:", error);
+                            setInitialFormValues({
+                                barcode: code
+                            });
+                            setIsModalOpen(true);
+                        }
                     }
                 }}
             />

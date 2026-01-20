@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Product, CartItem, Sale, Customer, StoreSettings, Payment } from '../types';
+import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Supplier } from '../types';
 import { SnackbarType } from '../App';
 import PlusIcon from '../components/icons/PlusIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
@@ -12,6 +12,8 @@ import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import CustomerSelect from '../components/sales/CustomerSelect';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
+import ProductFormModal from '../components/ProductFormModal';
+import { api } from '@/services/api';
 import { formatCurrency } from '../utils/currency';
 import DocumentPlusIcon from '../components/icons/DocumentPlusIcon';
 import { buildAssetUrl } from '@/services/api';
@@ -42,6 +44,9 @@ interface SalesPageProps {
     showSnackbar: (message: string, type?: SnackbarType) => void;
     storeSettings: StoreSettings;
     onOpenSidebar?: () => void;
+    categories: Category[];
+    suppliers: Supplier[];
+    onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
 }
 
 const SalesPage: React.FC<SalesPageProps> = ({
@@ -51,7 +56,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
     isLoading,
     showSnackbar,
     storeSettings,
-    onOpenSidebar
+    onOpenSidebar,
+    categories,
+    suppliers,
+    onSaveProduct
 }) => {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
@@ -68,6 +76,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const cashInputRef = useRef<HTMLInputElement | null>(null);
 
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
+
+    // External Product Lookup State
+    const [isProductFormOpen, setIsProductFormOpen] = useState(false);
+    const [initialProductValues, setInitialProductValues] = useState<Partial<Product> | undefined>(undefined);
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
@@ -316,7 +328,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
 
 
-    const handleContinuousScan = (decodedText: string) => {
+    const handleContinuousScan = async (decodedText: string) => {
         const trimmed = decodedText.trim();
         const product = products.find(p =>
             p.status === 'active' &&
@@ -325,7 +337,32 @@ const SalesPage: React.FC<SalesPageProps> = ({
         if (product) {
             addToCart(product);
         } else {
-            showSnackbar('No product found for scanned code', 'error');
+            // Try external lookup
+            try {
+                // Check if we already have this product in local state to avoid re-fetching if just added (though products prop should update)
+                const response = await api.get<any>(`/products/external-lookup/${trimmed}`);
+                if (response) {
+                    setInitialProductValues({
+                        ...response,
+                        stock: 0,
+                        price: 0,
+                        costPrice: 0,
+                        categoryId: undefined
+                    });
+                    setIsProductFormOpen(true);
+                    setIsScannerOpen(false); // Close scanner to focus on modal
+                    showSnackbar('Product found online! Please confirm details.', 'success');
+                } else {
+                    showSnackbar('No product found for scanned code', 'error');
+                }
+            } catch (err: any) {
+                // 404 from backend means not found externally either
+                if (err.message && err.message.includes('404')) {
+                    showSnackbar('No product found locally or online', 'error');
+                } else {
+                    showSnackbar('No product found for scanned code', 'error');
+                }
+            }
         }
     };
 
@@ -1615,6 +1652,30 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 )
             }
+
+            <ProductFormModal
+                isOpen={isProductFormOpen}
+                onClose={() => {
+                    setIsProductFormOpen(false);
+                    setInitialProductValues(undefined);
+                }}
+                onSave={async (newProduct) => {
+                    try {
+                        const savedProduct = await onSaveProduct(newProduct);
+                        addToCart(savedProduct);
+                        setIsProductFormOpen(false);
+                        setInitialProductValues(undefined);
+                        showSnackbar('Product added to catalog and cart!', 'success');
+                    } catch (error) {
+                        console.error("Failed to save product:", error);
+                    }
+                }}
+
+                categories={categories}
+                suppliers={suppliers}
+                storeSettings={storeSettings}
+                initialValues={initialProductValues}
+            />
         </div>
     );
 };

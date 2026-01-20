@@ -1044,7 +1044,18 @@ export default function Dashboard() {
                     />
                 );
             case 'sales':
-                return <SalesPage products={products} customers={customers} onProcessSale={handleProcessSale} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} />;
+                return <SalesPage
+                    products={products}
+                    customers={customers}
+                    categories={categories}
+                    suppliers={suppliers}
+                    onProcessSale={handleProcessSale}
+                    onSaveProduct={handleSaveProduct}
+                    isLoading={isLoading}
+                    showSnackbar={showSnackbar}
+                    storeSettings={storeSettings!}
+                    onOpenSidebar={() => setIsSidebarOpen(true)}
+                />;
             case 'sales-history':
                 return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
             case 'orders':

@@ -22,9 +22,10 @@ interface ProductFormModalProps {
     storeSettings: StoreSettings;
     onAddCategory?: () => void;
     storeId?: string;
+    initialValues?: Partial<Omit<Product, 'id'>>;
 }
 
-const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, onSave, productToEdit, categories, suppliers, storeSettings, onAddCategory, storeId }) => {
+const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, onSave, productToEdit, categories, suppliers, storeSettings, onAddCategory, storeId, initialValues }) => {
     const getInitialProductState = (): Omit<Product, 'id'> => ({
         name: '',
         description: '',
@@ -70,6 +71,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
             if (productToEdit) {
                 setProduct({ ...getInitialProductState(), ...productToEdit });
                 setImages(productToEdit.imageUrls || []);
+            } else if (initialValues) {
+                setProduct({ ...getInitialProductState(), ...initialValues });
+                setImages(initialValues.imageUrls || []);
             } else {
                 setProduct(getInitialProductState());
                 setImages([]);
