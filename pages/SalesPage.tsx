@@ -77,6 +77,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const cashInputRef = useRef<HTMLInputElement | null>(null);
 
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
+    const [shouldFocusCashInput, setShouldFocusCashInput] = useState(false);
+    const mobileCashInputRef = useRef<HTMLInputElement | null>(null);
 
     // External Product Lookup State
     const [isProductFormOpen, setIsProductFormOpen] = useState(false);
@@ -215,6 +217,23 @@ const SalesPage: React.FC<SalesPageProps> = ({
     useEffect(() => {
         setCurrentPage(1);
     }, [searchTerm]);
+
+    // Auto-focus cash input when proceeding to payment
+    useEffect(() => {
+        if (shouldFocusCashInput) {
+            // Small delay to allow tab switching animation to complete
+            const timer = setTimeout(() => {
+                // Try mobile ref first if visible (based on window width or just existence)
+                if (window.innerWidth < 768 && mobileCashInputRef.current) {
+                    mobileCashInputRef.current.focus();
+                } else if (cashInputRef.current) {
+                    cashInputRef.current.focus();
+                }
+                setShouldFocusCashInput(false);
+            }, 300); // Wait for animations
+            return () => clearTimeout(timer);
+        }
+    }, [shouldFocusCashInput]);
 
     const taxRate = storeSettings.taxRate / 100;
 
@@ -1661,6 +1680,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 <div className="pt-2">
                                                     <label className="block text-sm font-medium text-slate-900 mb-2">Cash Received</label>
                                                     <input
+                                                        ref={mobileCashInputRef}
                                                         type="number"
                                                         value={cashReceived}
                                                         onChange={(e) => setCashReceived(e.target.value)}
@@ -1809,6 +1829,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     setIsScannerOpen(false);
                     setActiveTab('cart');
                     setCartActionTab('payment');
+                    setShouldFocusCashInput(true);
                 }}
             />
 
