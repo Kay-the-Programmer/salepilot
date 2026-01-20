@@ -1706,61 +1706,62 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 {isProcessing ? 'Processing...' : 'Charge to Account'}
                                             </button>
                                         </div>
-                                    </div>
+                                    </>
                                 )
-                            }
+                                }
                             </div>
                         )
                     }
                 </div>
+            </div>
 
-                {/* Modals */}
-                <FloatingActionButtons />
+            {/* Modals */}
+            <FloatingActionButtons />
 
-                <HeldSalesModal
-                    isOpen={showHeldPanel}
-                    onClose={() => setShowHeldPanel(false)}
-                    heldSales={heldSales}
-                    onRecallSale={handleRecallSale}
-                    storeSettings={storeSettings}
-                />
-                {
-                    showReceiptModal && lastSale && (
-                        <ReceiptModal
-                            isOpen={showReceiptModal}
-                            onClose={() => setShowReceiptModal(false)}
-                            saleData={lastSale}
-                            showSnackbar={showSnackbar}
-                            storeSettings={storeSettings}
-                        />
-                    )
-                }
+            <HeldSalesModal
+                isOpen={showHeldPanel}
+                onClose={() => setShowHeldPanel(false)}
+                heldSales={heldSales}
+                onRecallSale={handleRecallSale}
+                storeSettings={storeSettings}
+            />
+            {
+                showReceiptModal && lastSale && (
+                    <ReceiptModal
+                        isOpen={showReceiptModal}
+                        onClose={() => setShowReceiptModal(false)}
+                        saleData={lastSale}
+                        showSnackbar={showSnackbar}
+                        storeSettings={storeSettings}
+                    />
+                )
+            }
 
-                <ProductFormModal
-                    isOpen={isProductFormOpen}
-                    onClose={() => {
+            <ProductFormModal
+                isOpen={isProductFormOpen}
+                onClose={() => {
+                    setIsProductFormOpen(false);
+                    setInitialProductValues(undefined);
+                }}
+                onSave={async (newProduct) => {
+                    try {
+                        const savedProduct = await onSaveProduct(newProduct);
+                        addToCart(savedProduct);
                         setIsProductFormOpen(false);
                         setInitialProductValues(undefined);
-                    }}
-                    onSave={async (newProduct) => {
-                        try {
-                            const savedProduct = await onSaveProduct(newProduct);
-                            addToCart(savedProduct);
-                            setIsProductFormOpen(false);
-                            setInitialProductValues(undefined);
-                            showSnackbar('Product added to catalog and cart!', 'success');
-                        } catch (error) {
-                            console.error("Failed to save product:", error);
-                        }
-                    }}
+                        showSnackbar('Product added to catalog and cart!', 'success');
+                    } catch (error) {
+                        console.error("Failed to save product:", error);
+                    }
+                }}
 
-                    categories={categories}
-                    suppliers={suppliers}
-                    storeSettings={storeSettings}
-                    initialValues={initialProductValues}
-                />
-            </div >
-            );
+                categories={categories}
+                suppliers={suppliers}
+                storeSettings={storeSettings}
+                initialValues={initialProductValues}
+            />
+        </div >
+    );
 };
 
-            export default SalesPage;
+export default SalesPage;
