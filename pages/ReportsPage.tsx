@@ -1211,7 +1211,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
             {/* Mobile Grid Menu Popup */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-500 backdrop-blur-3xl bg-gray-900/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+                <div className="fixed inset-0 z-50 backdrop-blur-3xl bg-gray-900/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
                     {/* Position slightly below header */}
                     <div
                         className="absolute top-[70px] right-4 left-4 bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100"
