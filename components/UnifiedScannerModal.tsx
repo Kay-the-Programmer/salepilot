@@ -480,10 +480,10 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-fade-in">
-            <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-slide-up ring-1 ring-white/20">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4 animate-fade-in">
+            <div className="bg-white/95 backdrop-blur-md rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-slide-up ring-1 ring-white/20 border border-white/10">
                 {/* Header */}
-                <div className="p-5 border-b border-gray-100 flex items-center justify-between bg-white">
+                <div className="p-5 border-b border-gray-100/50 flex items-center justify-between bg-white/50 backdrop-blur-sm">
                     <div>
                         <h3 className="font-bold text-gray-900 text-lg leading-tight">{title}</h3>
                         {continuous && (
@@ -590,8 +590,8 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 </div>
 
                 {/* Footer Info */}
-                <div className="p-6 bg-gray-50 border-t border-gray-100">
-                    <div className="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="p-6 bg-gray-50/50 border-t border-gray-100/50 backdrop-blur-sm">
+                    <div className="bg-white/60 p-4 rounded-2xl border border-gray-200/50 shadow-sm backdrop-blur-sm">
                         <p className="text-center text-gray-600 text-sm font-medium">
                             {continuous
                                 ? "Items will be added automatically as you scan."

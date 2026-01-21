@@ -95,7 +95,7 @@ export interface Sale {
     tax: number;
     discount: number;
     storeCreditUsed?: number;
-    refundStatus: 'none' | 'partially_refunded' | 'fully_refunded';
+    refundStatus: 'none' | 'partially_refunded' | 'fully_refunded' | 'returned' | 'partially_returned';
     customerId?: string;
     customerName?: string;
     // New fields for invoicing
@@ -111,6 +111,9 @@ export interface Sale {
     amountPaid: number;
     dueDate?: string;
     payments?: Payment[];
+    // UI helper fields
+    itemsCount?: number;
+    paymentMethod?: string;
 }
 
 export interface Return {

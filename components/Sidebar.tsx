@@ -15,14 +15,14 @@ import {
     DocumentMagnifyingGlassIcon,
     UserIcon,
     Cog6ToothIcon,
-    ChevronDoubleLeftIcon,
     ArrowLeftOnRectangleIcon,
     BuildingStorefrontIcon,
     ClipboardDocumentListIcon,
     SwatchIcon,
     BellAlertIcon,
     SparklesIcon,
-    CreditCardIcon
+    CreditCardIcon,
+    Bars3Icon
 } from './icons';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 import logo from '../assets/logo.png';
@@ -329,7 +329,7 @@ export default function Sidebar({
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden w-full max-w-sm bg-white/80 backdrop-blur-2xl rounded-3xl shadow-2xl flex flex-col max-h-[85vh] pointer-events-auto animate-fade-in-up mx-4 overflow-hidden"
+                    className="md:hidden w-full max-w-sm glass-effect border border-gray-200/40 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] pointer-events-auto animate-fade-in-up mx-4 overflow-hidden"
                 >
 
                     {/* Grid Content */}
@@ -415,11 +415,20 @@ export default function Sidebar({
                 }}
             >
                 {/* Desktop Logo */}
-                <div className={`flex h-16 items-center border-b border-gray-200 transition-all duration-300 ${isExpanded ? 'px-6' : 'px-0 justify-center'}`}>
+                <div className={`flex h-16 items-center border-b border-gray-200 transition-all duration-300 ${isExpanded ? 'px-6 justify-between' : 'px-0 justify-center'}`}>
+                    {/* Collapse/Expand Toggle (Top Left) */}
+                    <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className={`p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-200 transition-colors ${!isExpanded && 'absolute left-1/2 -translate-x-1/2'}`}
+                        aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
+                    >
+                        <Bars3Icon className="w-6 h-6" />
+                    </button>
+
                     <img
                         src={logo}
                         alt="SalePilot"
-                        className={`transition-all duration-300 object-contain ${isExpanded ? 'h-8 w-auto' : 'h-10 w-10'}`}
+                        className={`transition-all duration-300 object-contain ${isExpanded ? 'h-8 w-auto' : 'hidden'}`}
                     />
                 </div>
 
@@ -602,15 +611,8 @@ export default function Sidebar({
                             )}
                         </div>
 
-                        {/* Collapse/Expand Toggle */}
-                        <button
-                            onClick={() => setIsExpanded(!isExpanded)}
-                            className="p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-                            aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-                        >
-                            <ChevronDoubleLeftIcon className={`w-5 h-5 transition-transform duration-300 ${!isExpanded && 'rotate-180'}`} />
-                        </button>
                     </div>
+
                 </div>
             </aside>
         </>

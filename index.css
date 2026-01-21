@@ -101,6 +101,16 @@ textarea {
   border-radius: 20px;
 }
 
+.glass-effect {
+  @apply bg-white/10 backdrop-blur-sm;
+}
+
+@supports (backdrop-filter: blur(4px)) {
+  .glass-effect {
+    @apply bg-white/30;
+  }
+}
+
 .custom-scrollbar::-webkit-scrollbar-button {
   display: none;
   width: 0;

@@ -129,14 +129,14 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
+            className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-md flex items-end sm:items-center justify-center animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
             onClick={onClose}
         >
             <div
-                className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
+                className="bg-white/95 backdrop-blur-xl w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md border border-white/20"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -145,7 +145,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 </div>
 
                 {/* Header with close button */}
-                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
+                <div className="sticky top-0 bg-white/80 backdrop-blur-md px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200/50 z-10">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-xl font-semibold text-gray-900">Receipt</h3>
@@ -256,7 +256,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 </div>
 
                 {/* Fixed action buttons */}
-                <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
+                <div className="sticky bottom-0 bg-white/80 backdrop-blur-md px-4 py-4 sm:px-6 border-t border-gray-200/50">
                     <div className="flex flex-col sm:flex-row justify-end gap-3">
                         <Button
                             type="button"

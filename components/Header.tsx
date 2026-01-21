@@ -56,7 +56,7 @@ export default function Header({
     };
 
     return (
-        <header className={`bg-gray-100 sticky top-0 z-30 ${className}`}>
+        <header className={`glass-effect border-b border-gray-200/40 sticky top-0 z-30 transition-all duration-300 ${className}`}>
             <div className="px-4 h-16 flex items-center justify-between">
                 {isSearchActive ? (
                     <div className="flex items-center w-full animate-fadeIn transition-all duration-200">
@@ -70,7 +70,7 @@ export default function Header({
                                 type="text"
                                 autoFocus
                                 placeholder="Search..."
-                                className="w-full py-2 pl-10 pr-4 bg-gray-100 border-none rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                className="w-full py-2 pl-10 pr-4 bg-gray-100/50 border-none rounded-lg focus:ring-2 focus:ring-blue-500 text-sm backdrop-blur-sm"
                                 value={searchTerm || ''}
                                 onChange={(e) => {
                                     if (setSearchTerm) setSearchTerm(e.target.value);

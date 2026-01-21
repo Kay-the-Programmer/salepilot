@@ -13,7 +13,7 @@ interface SalesListProps {
     storeSettings: StoreSettings;
 }
 
-const PaymentStatusBadge: React.FC<{ status: Sale['paymentStatus'] }> = ({ status }) => {
+const PaymentStatusBadge: React.FC<{ status: Sale['paymentStatus'] | Sale['refundStatus'] }> = ({ status }) => {
     const statusConfig = {
         paid: {
             color: 'from-emerald-500 to-green-500',
@@ -36,6 +36,42 @@ const PaymentStatusBadge: React.FC<{ status: Sale['paymentStatus'] }> = ({ statu
             icon: '~',
             label: 'Partial'
         },
+        returned: {
+            color: 'from-slate-500 to-slate-600',
+            bg: 'bg-gradient-to-r from-slate-50 to-slate-100',
+            text: 'text-slate-700',
+            icon: '↩',
+            label: 'Returned'
+        },
+        partially_returned: {
+            color: 'from-orange-400 to-red-400',
+            bg: 'bg-gradient-to-r from-orange-50 to-red-50',
+            text: 'text-orange-700',
+            icon: '↩',
+            label: 'Partially Returned'
+        },
+        // Legacy support
+        fully_refunded: {
+            color: 'from-slate-500 to-slate-600',
+            bg: 'bg-gradient-to-r from-slate-50 to-slate-100',
+            text: 'text-slate-700',
+            icon: '↩',
+            label: 'Returned'
+        },
+        partially_refunded: {
+            color: 'from-orange-400 to-red-400',
+            bg: 'bg-gradient-to-r from-orange-50 to-red-50',
+            text: 'text-orange-700',
+            icon: '↩',
+            label: 'Partially Returned'
+        },
+        none: {
+            color: 'from-slate-400 to-slate-500',
+            bg: 'bg-slate-100',
+            text: 'text-slate-600',
+            icon: '-',
+            label: 'None'
+        }
     };
 
     if (!status) {
@@ -80,8 +116,11 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                     const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
                     const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
 
-                    let derivedStatus = sale.paymentStatus;
-                    if (balanceDue <= 0.01) {
+                    let derivedStatus: string = sale.paymentStatus;
+                    // Prioritize refund status if present and not 'none'
+                    if (sale.refundStatus && sale.refundStatus !== 'none') {
+                        derivedStatus = sale.refundStatus;
+                    } else if (balanceDue <= 0.01) {
                         derivedStatus = 'paid';
                     } else if (calculatedAmountPaid > 0) {
                         derivedStatus = 'partially_paid';
@@ -106,7 +145,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                             <div className="px-2.5 py-1 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 text-xs font-medium rounded-full">
                                                 {sale.transactionId.substring(0, 8)}
                                             </div>
-                                            <PaymentStatusBadge status={derivedStatus} />
+                                            <PaymentStatusBadge status={derivedStatus as any} />
                                             {isOverdue && (
                                                 <span className="px-2 py-1 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-xs font-medium rounded-full">
                                                     Overdue
@@ -216,8 +255,11 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                     const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
                                     const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
 
-                                    let derivedStatus = sale.paymentStatus;
-                                    if (balanceDue <= 0.01) {
+                                    let derivedStatus: string = sale.paymentStatus;
+                                    // Prioritize refund status if present and not 'none'
+                                    if (sale.refundStatus && sale.refundStatus !== 'none') {
+                                        derivedStatus = sale.refundStatus;
+                                    } else if (balanceDue <= 0.01) {
                                         derivedStatus = 'paid';
                                     } else if (calculatedAmountPaid > 0) {
                                         derivedStatus = 'partially_paid';
@@ -272,7 +314,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                                             {/* Status */}
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="flex flex-col items-center gap-2">
-                                                    <PaymentStatusBadge status={derivedStatus} />
+                                                    <PaymentStatusBadge status={derivedStatus as any} />
                                                     {isOverdue && (
                                                         <span className="px-2 py-0.5 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-xs font-medium rounded-full">
                                                             Overdue

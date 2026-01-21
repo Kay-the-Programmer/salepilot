@@ -526,7 +526,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     // Floating Action Buttons
     const FloatingActionButtons = () => (
-        <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-transparent/1 backdrop-blur-sm border border-slate-200 rounded-3xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
+        <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-white/20 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
             <button
                 onClick={() => {
                     setIsScannerOpen(true);

@@ -367,7 +367,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
     // Stats
     const stats = useMemo(() => {
-        const totalRevenue = enrichedSales.reduce((sum, sale) => sum + (sale.total || 0), 0);
+        const totalRevenue = enrichedSales.reduce((sum, sale) => sum + (Number(sale.total) || 0), 0);
         const totalSales = enrichedSales.length;
         const avgSaleValue = totalSales > 0 ? totalRevenue / totalSales : 0;
         const paidSales = enrichedSales.filter(s => s.paymentStatus === 'paid').length;
@@ -911,7 +911,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                                 {total} sale{total !== 1 ? 's' : ''} found
                                             </p>
                                         </div>
-                                        
+
                                         {/* Summary Header */}
                                         {enrichedSales.length > 0 && (
                                             <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
@@ -920,7 +920,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                                         <div className="text-sm text-slate-600">Total Sales Value</div>
                                                         <div className="text-xl font-bold text-slate-900">
                                                             {formatCurrency(
-                                                                enrichedSales.reduce((sum, sale) => sum + sale.total, 0),
+                                                                enrichedSales.reduce((sum, sale) => sum + Number(sale.total), 0),
                                                                 storeSettings
                                                             )}
                                                         </div>

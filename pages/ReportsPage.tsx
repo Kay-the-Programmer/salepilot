@@ -49,7 +49,7 @@ const StatCard: React.FC<{
     noWrap?: boolean;
     compact?: boolean;
 }> = ({ title, value, icon, color, noWrap = false, compact = false }) => (
-    <div className={`relative overflow-hidden rounded-2xl bg-white p-4 shadow-lg border border-gray-100 
+    <div className={`relative overflow-hidden rounded-2xl glass-effect p-4 shadow-lg border border-gray-100/50 
         ${compact ? 'p-3' : 'p-4 sm:p-5'} 
         transition-all duration-200 hover:shadow-xl active:scale-[0.99]`}>
         <div className={`absolute -top-6 -right-6 h-20 w-20 rounded-full ${color} opacity-10`}></div>

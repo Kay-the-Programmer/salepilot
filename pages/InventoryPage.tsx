@@ -540,8 +540,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     buttonText={canManageProducts ? (activeTab === 'products' ? 'Add Product' : 'Add Category') : undefined}
                     onButtonClick={canManageProducts ? (activeTab === 'products' ? handleOpenAddModal : handleOpenAddCategoryModal) : undefined}
                     searchLeftContent={
-                        <div className="flex items-center gap-3 mr-4">
-                            <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                        <div className="flex items-center gap-3 mr-4 bg-white/50 backdrop-blur-sm p-1.5 rounded-2xl border border-gray-100/50">
+                            <div className="flex bg-gray-100/60 p-1 rounded-xl shrink-0">
                                 <button
                                     onClick={() => {
                                         setActiveTab('products');
