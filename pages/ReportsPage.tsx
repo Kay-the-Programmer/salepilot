@@ -1211,7 +1211,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
             {/* Mobile Grid Menu Popup */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 backdrop-blur-3xl bg-gray-900/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+                <div className="fixed inset-0 z-500 backdrop-blur-3xl bg-gray-900/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
                     {/* Position slightly below header */}
                     <div
                         className="absolute top-[70px] right-4 left-4 bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100"
@@ -1229,7 +1229,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                         }}
                                         className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
                                             ? 'bg-gray-900/90 text-white shadow-lg'
-                                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                            : 'bg-gray-50/90 text-gray-600 hover:bg-gray-100'
                                             }`}
                                     >
                                         <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
