@@ -30,8 +30,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     if (variant === 'floating') {
         return (
             <div className="fixed inset-0 z-[200] flex items-start justify-end p-4 pointer-events-none">
-                <div className="absolute inset-0 bg-slate-900/10 backdrop-blur-[2px] pointer-events-auto" onClick={onClose} />
-                <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden animate-fade-in-up pointer-events-auto mt-14 sm:mt-2">
+                <div className="absolute inset-0 glass-effect backdrop-blur-[2px] pointer-events-auto" onClick={onClose} />
+                <div className="relative w-full max-w-sm glass-effect backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 overflow-hidden animate-fade-in-up pointer-events-auto mt-14 sm:mt-2">
                     <div className="p-6">
                         <div className="flex items-start gap-4">
                             <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl bg-amber-50">

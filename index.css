@@ -102,12 +102,12 @@ textarea {
 }
 
 .glass-effect {
-  @apply bg-white/10 backdrop-blur-sm;
+  @apply bg-white/20 backdrop-blur-lg;
 }
 
 @supports (backdrop-filter: blur(4px)) {
   .glass-effect {
-    @apply bg-white/30;
+    @apply bg-white/20;
   }
 }
 
