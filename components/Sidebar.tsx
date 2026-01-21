@@ -22,7 +22,8 @@ import {
     BellAlertIcon,
     SparklesIcon,
     CreditCardIcon,
-    Bars3Icon
+    Bars3Icon,
+    XMarkIcon
 } from './icons';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 import logo from '../assets/logo.png';
@@ -329,8 +330,19 @@ export default function Sidebar({
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden w-full max-w-sm glass-effect border border-gray-200/40 rounded-3xl shadow-2xl flex flex-col max-h-[85vh] pointer-events-auto animate-fade-in-up mx-4 overflow-hidden"
+                    className="md:hidden fixed inset-0 w-full h-full glass-effect backdrop-blur-md z-[70] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
                 >
+                    {/* Header with Close Button */}
+                    <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                        <h2 className="text-lg font-bold text-gray-800">Menu</h2>
+                        <button
+                            onClick={onMobileClose}
+                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                            aria-label="Close menu"
+                        >
+                            <XMarkIcon className="w-6 h-6 text-gray-500 hover:text-gray-700" />
+                        </button>
+                    </div>
 
                     {/* Grid Content */}
                     <div className="flex-1 overflow-y-auto p-4">
