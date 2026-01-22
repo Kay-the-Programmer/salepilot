@@ -9,6 +9,19 @@ interface TourGuideProps {
 
 export default function TourGuide({ user }: TourGuideProps) {
     const [run, setRun] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        // specific check for mobile screens
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     useEffect(() => {
         // Check if user has seen the tour
@@ -28,7 +41,7 @@ export default function TourGuide({ user }: TourGuideProps) {
         }
     };
 
-    const steps: Step[] = [
+    const desktopSteps: Step[] = [
         {
             target: 'body',
             content: (
@@ -105,9 +118,43 @@ export default function TourGuide({ user }: TourGuideProps) {
         },
     ];
 
+    const mobileSteps: Step[] = [
+        {
+            target: 'body',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Welcome to SalePilot! 🚀</h3>
+                    <p>Let's take a quick tour to help you get started with your new POS and Inventory management system.</p>
+                </div>
+            ),
+            placement: 'center',
+            disableBeacon: true,
+        },
+        {
+            target: '#mobile-menu-toggle',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Main Menu</h3>
+                    <p>Tap here to access all modules including Dashboard, POS, Inventory, and Settings.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: 'body',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">You're All Set!</h3>
+                    <p>Tap the menu button to start exploring features. Enjoy using SalePilot!</p>
+                </div>
+            ),
+            placement: 'center',
+        },
+    ];
+
     return (
         <Joyride
-            steps={steps}
+            steps={isMobile ? mobileSteps : desktopSteps}
             run={run}
             continuous
             showProgress

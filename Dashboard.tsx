@@ -69,7 +69,8 @@ const PERMISSIONS: Record<User['role'], string[]> = {
     admin: ['reports', 'sales', 'sales-history', 'orders', 'logistics', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory', 'subscription', 'user-guide'],
     staff: ['sales', 'sales-history', 'orders', 'logistics', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory', 'user-guide'],
     inventory_manager: ['reports', 'logistics', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory', 'user-guide'],
-    customer: ['profile', 'notifications', 'directory', 'customer', 'customer/dashboard', 'customer/orders', 'user-guide']
+    customer: ['profile', 'notifications', 'directory', 'customer', 'customer/dashboard', 'customer/orders', 'user-guide'],
+    supplier: ['profile', 'notifications', 'directory', 'supplier/dashboard', 'supplier/orders', 'user-guide']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
@@ -77,8 +78,12 @@ const DEFAULT_PAGES: Record<User['role'], string> = {
     admin: 'reports',
     staff: 'sales',
     inventory_manager: 'inventory',
-    customer: 'customer/dashboard'
+    customer: 'customer/dashboard',
+    supplier: 'supplier/dashboard'
 };
+
+import SupplierDashboard from './pages/supplier/SupplierDashboard';
+import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
 
 export default function Dashboard() {
     const [products, setProducts] = useState<Product[]>([]);
@@ -1079,6 +1084,13 @@ export default function Dashboard() {
             return <CustomerOrdersPage />;
         }
 
+        if (pagePath === 'supplier/orders') {
+            return <SupplierOrdersPage />;
+        }
+        if (pagePath === 'supplier/dashboard') {
+            return <SupplierDashboard />;
+        }
+
         switch (page) {
             case 'setup-store':
                 return (
@@ -1246,6 +1258,7 @@ export default function Dashboard() {
                         <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
                             <button
                                 onClick={() => setIsSidebarOpen(true)}
+                                id="mobile-menu-toggle"
                                 className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 aria-label="Open menu"
                                 aria-controls="app-sidebar"

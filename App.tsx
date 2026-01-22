@@ -85,6 +85,10 @@ export default function App() {
                     <Route path="/directory/request/:requestId" element={<Dashboard />} />
                     <Route path="/register-supplier" element={<SupplierRegisterPage />} />
 
+                    {/* Supplier Routes - Protected by Dashboard logic */}
+                    <Route path="/supplier/dashboard" element={<Dashboard />} />
+                    <Route path="/supplier/orders" element={<Dashboard />} />
+
                     {/* Fallback */}
                     <Route path="*" element={<Dashboard />} />
                 </Routes>

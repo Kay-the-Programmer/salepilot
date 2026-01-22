@@ -237,7 +237,7 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
     );
 };
 
-export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings }: {
+export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings, initialSupplierId }: {
     poToEdit?: PurchaseOrder;
     suppliers: Supplier[];
     products: Product[];
@@ -245,12 +245,16 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
     onCancel: () => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
     storeSettings: StoreSettings;
+    initialSupplierId?: string;
 }) {
     const [po, setPo] = useState<Omit<PurchaseOrder, 'id' | 'poNumber' | 'createdAt'>>(() => {
         if (poToEdit) return { ...poToEdit };
+        // Pre-fill supplier if provided
+        const prefillSupplier = initialSupplierId ? suppliers.find(s => s.id === initialSupplierId) : null;
+
         return {
-            supplierId: '',
-            supplierName: '',
+            supplierId: prefillSupplier?.id || '',
+            supplierName: prefillSupplier?.name || '',
             status: 'draft',
             items: [],
             notes: '',
@@ -259,6 +263,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
             tax: 0,
             total: 0,
             expectedAt: undefined,
+            isMarketplaceOrder: !!prefillSupplier?.linkedStoreId
         };
     });
 
@@ -703,6 +708,10 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
     );
 };
 
+import { useNavigate, useLocation } from 'react-router-dom';
+
+// ... (existing imports, but make sure to remove duplicates if I added useLocation separately)
+
 export default function PurchaseOrdersPage({
     purchaseOrders,
     suppliers,
@@ -720,6 +729,25 @@ export default function PurchaseOrdersPage({
     const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+    // New state for pre-filling
+    const [initialSupplierId, setInitialSupplierId] = useState<string | undefined>(undefined);
+
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        // Check for incoming navigation state
+        if (location.state && (location.state as any).action === 'create_po') {
+            const state = location.state as any;
+            if (state.supplierId) {
+                setInitialSupplierId(state.supplierId);
+                setView({ mode: 'form' });
+                // Clear state so we don't reopen on refresh/back (optional, but good practice)
+                window.history.replaceState({}, document.title);
+            }
+        }
+    }, [location]);
 
     useEffect(() => {
         if (view.mode === 'detail') {
@@ -740,7 +768,10 @@ export default function PurchaseOrdersPage({
         return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }, [purchaseOrders, statusFilter]);
 
-    const handleCreateNew = () => setView({ mode: 'form' });
+    const handleCreateNew = () => {
+        setInitialSupplierId(undefined); // Reset
+        setView({ mode: 'form' });
+    };
     const handleSelectPO = (po: PurchaseOrder) => setView({ mode: 'detail', po });
     const handleEditPO = (po: PurchaseOrder) => setView({ mode: 'form', po });
     const handleBackToList = () => {

@@ -38,7 +38,7 @@ export interface User {
     id: string;
     name: string;
     email: string;
-    role: 'superadmin' | 'admin' | 'staff' | 'inventory_manager' | 'customer';
+    role: 'superadmin' | 'admin' | 'staff' | 'inventory_manager' | 'customer' | 'supplier';
     phone?: string;
     token?: string; // JWT returned on login (stored client-side)
     currentStoreId?: string; // Multi-tenant: currently selected store
@@ -172,6 +172,7 @@ export interface Supplier {
     paymentTerms?: string;
     bankingDetails?: string;
     notes?: string;
+    linkedStoreId?: string; // If this supplier is a registered store in the system
 }
 
 export interface POItem {
@@ -209,6 +210,8 @@ export interface PurchaseOrder {
     tax: number;
     total: number;
     receptions?: ReceptionEvent[];
+    isMarketplaceOrder?: boolean;
+    marketplaceOrderId?: string; // ID of the Sale in the supplier's store
 }
 
 export interface StoreSettings {

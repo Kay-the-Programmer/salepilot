@@ -1,33 +1,70 @@
 import { useEffect, useState } from 'react';
 import { api } from '../../../services/api';
-import { HiOutlineUserCircle } from 'react-icons/hi2';
+import { HiOutlineUserCircle, HiShoppingCart } from 'react-icons/hi2';
+import { useNavigate } from 'react-router-dom';
+import { Supplier } from '../../../types';
 
 export default function SuppliersView() {
-    // In a real app, this would fetch users with role 'supplier'
-    // For now, we'll fetch all users and filter client-side or assume an endpoint exists
-    const [suppliers, setSuppliers] = useState<any[]>([]);
+    const navigate = useNavigate();
+    const [suppliers, setSuppliers] = useState<any[]>([]); // These are Users with role 'supplier'
+    const [mySuppliers, setMySuppliers] = useState<Supplier[]>([]); // Current store's linked suppliers
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const fetchSuppliers = async () => {
+        const fetchData = async () => {
             try {
-                // Assuming we can filter by role or backend support
-                // Just fetching all users for now and filtering mostly for demo
-                // Ideally backend should have /users?role=supplier
-                const data = await api.get<any[]>('/users'); // This might fail if not admin; ideally we need a public "suppliers" endpoint
-                // If /users is restricted, we'll need to create a public endpoint for marketplace suppliers
-                // Fallback to mock data if API fails or returns empty for demo purposes if needed
-                const supplierUsers = data.filter(u => u.role === 'supplier');
+                const [usersRes, mySuppliersRes] = await Promise.all([
+                    api.get<any[]>('/users'), // Ideally /marketplace/suppliers
+                    api.get<Supplier[]>('/suppliers')
+                ]);
+
+                const supplierUsers = usersRes.filter(u => u.role === 'supplier');
                 setSuppliers(supplierUsers);
+                setMySuppliers(mySuppliersRes);
             } catch (error) {
-                console.error("Failed to fetch suppliers", error);
-                // Fallback / Placeholder
+                console.error("Failed to fetch data", error);
             } finally {
                 setLoading(false);
             }
         };
-        fetchSuppliers();
+        fetchData();
     }, []);
+
+    const handleBuyFromSupplier = async (supplierUser: any) => {
+        try {
+            // 1. Check if already linked
+            let targetSupplier = mySuppliers.find(s =>
+                s.linkedStoreId === supplierUser.currentStoreId ||
+                (s.email === supplierUser.email && s.name === supplierUser.name)
+            );
+
+            // 2. If not, create a local Supplier record
+            if (!targetSupplier) {
+                const newSupplierPayload = {
+                    name: supplierUser.name,
+                    email: supplierUser.email,
+                    phone: supplierUser.phone,
+                    contactPerson: supplierUser.name,
+                    linkedStoreId: supplierUser.currentStoreId || 'unknown_store_id',
+                    notes: 'Added from Marketplace'
+                };
+
+                targetSupplier = await api.post<Supplier>('/suppliers', newSupplierPayload);
+            }
+
+            // 3. Navigate to PO creation
+            navigate('/purchase-orders', {
+                state: {
+                    action: 'create_po',
+                    supplierId: targetSupplier.id
+                }
+            });
+
+        } catch (error) {
+            console.error("Failed to link supplier", error);
+            alert("Failed to proceed with order. Please try again.");
+        }
+    };
 
     return (
         <div className="max-w-[1400px] mx-auto px-6 py-8">
@@ -44,7 +81,7 @@ export default function SuppliersView() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {suppliers.map(supplier => (
-                        <div key={supplier.id} className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
+                        <div key={supplier.id} className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow flex flex-col">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xl">
                                     {supplier.name.charAt(0)}
@@ -54,13 +91,24 @@ export default function SuppliersView() {
                                     <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full font-bold uppercase tracking-wider">Supplier</span>
                                 </div>
                             </div>
-                            <div className="space-y-2 text-sm text-slate-500">
+                            <div className="space-y-2 text-sm text-slate-500 flex-1">
                                 <p>Email: {supplier.email}</p>
                                 {supplier.phone && <p>Phone: {supplier.phone}</p>}
+                                {supplier.currentStoreId && <p className="text-xs text-slate-400 mt-2">Store ID: {supplier.currentStoreId}</p>}
                             </div>
-                            <button className="mt-6 w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-colors">
-                                View Profile
-                            </button>
+
+                            <div className="mt-6 flex gap-3">
+                                <button className="flex-1 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                                    View Profile
+                                </button>
+                                <button
+                                    onClick={() => handleBuyFromSupplier(supplier)}
+                                    className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    <HiShoppingCart className="w-4 h-4" />
+                                    Order Now
+                                </button>
+                            </div>
                         </div>
                     ))}
                 </div>
