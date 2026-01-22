@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useId } from 'react';
 
 interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement> {
     label?: string;
@@ -31,6 +31,9 @@ export function InputField({
     const isControlled = value !== undefined;
     const safeValue = isControlled ? (value ?? '') : undefined;
 
+    // Generate unique ID for helper text
+    const helperId = useId();
+
     return (
         <div className="mb-4">
             {label && (
@@ -50,12 +53,16 @@ export function InputField({
                         value={safeValue as string}
                         rows={rows}
                         className={baseInputClasses}
+                        aria-invalid={hasError}
+                        aria-describedby={helperText ? helperId : undefined}
                     />
                 ) : (
                     <input
                         {...(props as React.InputHTMLAttributes<HTMLInputElement>)}
                         value={safeValue as string | number | string[]}
                         className={baseInputClasses}
+                        aria-invalid={hasError}
+                        aria-describedby={helperText ? helperId : undefined}
                     />
                 )}
                 {rightElement && (
@@ -65,7 +72,10 @@ export function InputField({
                 )}
             </div>
             {helperText && (
-                <p className={`mt-1 text-sm ${hasError ? 'text-red-500' : 'text-gray-500'}`}>
+                <p
+                    id={helperId}
+                    className={`mt-1 text-sm ${hasError ? 'text-red-500' : 'text-gray-500'}`}
+                >
                     {helperText}
                 </p>
             )}
