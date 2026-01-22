@@ -2,7 +2,7 @@ import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-lea
 import { useState, useMemo, useRef, useEffect } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { HiOutlineMapPin, HiOutlineMagnifyingGlass, HiOutlineLocateHorizontal } from 'react-icons/hi2';
+import { HiOutlineMapPin, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
 
 // Fix Leaflet's default icon path issues in React
 // @ts-ignore
@@ -157,7 +157,7 @@ const LocationPicker = ({ initialLat, initialLng, onLocationSelect }: LocationPi
                     className="h-10 w-10 bg-white rounded-lg flex items-center justify-center shadow-lg text-slate-600 hover:text-indigo-600 hover:bg-slate-50 transition-colors"
                     title="Use my location"
                 >
-                    {isSearching ? <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" /> : <HiOutlineLocateHorizontal className="w-6 h-6" />}
+                    {isSearching ? <div className="w-4 h-4 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" /> : <HiOutlineMapPin className="w-6 h-6" />}
                 </button>
             </div>
 

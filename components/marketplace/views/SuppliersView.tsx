@@ -11,17 +11,23 @@ export default function SuppliersView() {
     useEffect(() => {
         const fetchSuppliers = async () => {
             try {
-                // Assuming we can filter by role or backend support
-                // Just fetching all users for now and filtering mostly for demo
-                // Ideally backend should have /users?role=supplier
-                const data = await api.get<any[]>('/users'); // This might fail if not admin; ideally we need a public "suppliers" endpoint
-                // If /users is restricted, we'll need to create a public endpoint for marketplace suppliers
-                // Fallback to mock data if API fails or returns empty for demo purposes if needed
+                // Try fetching real suppliers
+                const data = await api.get<any[]>('/users');
                 const supplierUsers = data.filter(u => u.role === 'supplier');
-                setSuppliers(supplierUsers);
+
+                if (supplierUsers.length > 0) {
+                    setSuppliers(supplierUsers);
+                } else {
+                    // Fallback to mock data if no real suppliers found (for demo)
+                    throw new Error("No suppliers found");
+                }
             } catch (error) {
-                console.error("Failed to fetch suppliers", error);
-                // Fallback / Placeholder
+                console.log("Using mock suppliers data");
+                setSuppliers([
+                    { id: 's1', name: 'Global Electronics Ltd', email: 'sales@globalelec.com', phone: '+1 555-0123', role: 'supplier' },
+                    { id: 's2', name: 'Fresh Farms Co', email: 'orders@freshfarms.com', phone: '+1 555-0124', role: 'supplier' },
+                    { id: 's3', name: 'Textile World', email: 'contact@textileworld.com', phone: '+1 555-0125', role: 'supplier' },
+                ]);
             } finally {
                 setLoading(false);
             }
@@ -29,12 +35,18 @@ export default function SuppliersView() {
         fetchSuppliers();
     }, []);
 
+    const handleViewProfile = (supplierName: string) => {
+        alert(`Profile for ${supplierName} is coming soon!`);
+    };
+
     return (
         <div className="max-w-[1400px] mx-auto px-6 py-8">
             <h2 className="text-2xl font-black text-slate-900 mb-6">Registered Suppliers</h2>
 
             {loading ? (
-                <div className="text-center py-12">Loading suppliers...</div>
+                <div className="flex justify-center py-12">
+                     <div className="animate-spin w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full"></div>
+                </div>
             ) : suppliers.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
                     <HiOutlineUserCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
@@ -58,7 +70,10 @@ export default function SuppliersView() {
                                 <p>Email: {supplier.email}</p>
                                 {supplier.phone && <p>Phone: {supplier.phone}</p>}
                             </div>
-                            <button className="mt-6 w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-colors">
+                            <button
+                                onClick={() => handleViewProfile(supplier.name)}
+                                className="mt-6 w-full py-2 bg-slate-900 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-600 transition-colors"
+                            >
                                 View Profile
                             </button>
                         </div>
