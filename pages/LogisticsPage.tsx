@@ -83,9 +83,9 @@ export default function LogisticsPage() {
     };
 
     return (
-        <div className="p-6 h-full flex flex-col">
+        <div className="p-4 sm:p-6 h-full flex flex-col">
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 gap-4">
                 <div className="flex items-center gap-3">
                     <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
                         <TruckIcon className="w-8 h-8" />
@@ -95,14 +95,14 @@ export default function LogisticsPage() {
                         <p className="text-sm text-gray-500">Track and manage your shipments</p>
                     </div>
                 </div>
-                <Button onClick={handleOpenModal} icon={<PlusIcon className="w-5 h-5" />}>
+                <Button onClick={handleOpenModal} icon={<PlusIcon className="w-5 h-5" />} className="w-full sm:w-auto">
                     New Shipment
                 </Button>
             </div>
 
             {/* Search Bar */}
             <div className="mb-6">
-                <div className="relative max-w-md">
+                <div className="relative max-w-md w-full">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <SearchIcon className="h-5 w-5 text-gray-400" />
                     </div>
@@ -117,8 +117,55 @@ export default function LogisticsPage() {
             </div>
 
             {/* Shipments List */}
-            <div className="flex-1 overflow-auto bg-white rounded-lg shadow border border-gray-200">
-                <table className="min-w-full divide-y divide-gray-200">
+            <div className="flex-1 overflow-auto bg-transparent sm:bg-white rounded-lg sm:shadow sm:border border-gray-200">
+                {/* Mobile Cards */}
+                <div className="block md:hidden space-y-4">
+                    {filteredShipments.length === 0 ? (
+                        <div className="text-center py-10 text-gray-500 bg-white rounded-lg shadow-sm">
+                            No shipments found.
+                        </div>
+                    ) : (
+                        filteredShipments.map((shipment) => (
+                            <div key={shipment.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">{shipment.shippingCompany}</p>
+                                        <h3 className="text-lg font-bold text-gray-900">{shipment.trackingNumber}</h3>
+                                    </div>
+                                    <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full
+                                        ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
+                                          shipment.status === 'in_transit' ? 'bg-blue-100 text-blue-800' :
+                                          shipment.status === 'returned' ? 'bg-red-100 text-red-800' :
+                                          'bg-yellow-100 text-yellow-800'}`}>
+                                        {shipment.status.replace('_', ' ').toUpperCase()}
+                                    </span>
+                                </div>
+
+                                <div className="space-y-2 text-sm text-gray-600 mb-3">
+                                    <div className="flex justify-between">
+                                        <span>Contact:</span>
+                                        <span className="font-medium text-gray-900">{shipment.contactName}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <span>Date:</span>
+                                        <span>{new Date(shipment.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                </div>
+
+                                {shipment.parcelImageUrl && (
+                                    <div className="mt-3 pt-3 border-t border-gray-100">
+                                        <a href={shipment.parcelImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center justify-center gap-2">
+                                            <CameraIcon className="w-4 h-4" /> View Parcel Image
+                                        </a>
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop Table */}
+                <table className="min-w-full divide-y divide-gray-200 hidden md:table">
                     <thead className="bg-gray-50">
                         <tr>
                             <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tracking Number</th>
