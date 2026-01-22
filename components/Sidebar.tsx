@@ -534,17 +534,17 @@ export default function Sidebar({
                         <div className="relative">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
                                 <span className="text-white font-semibold">
-                                    {user.name.charAt(0).toUpperCase()}
+                                    {(user?.name || 'User').charAt(0).toUpperCase()}
                                 </span>
                             </div>
                             <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                         </div>
                         <div className={`flex-1 min-w-0 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                            <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
+                            <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'Guest User'}</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleColor(user.role)}`}>
-                                    <span className="mr-1">{getRoleIcon(user.role)}</span>
-                                    {user.role.replace('_', ' ')}
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleColor(user?.role || 'staff')}`}>
+                                    <span className="mr-1">{getRoleIcon(user?.role || 'staff')}</span>
+                                    {(user?.role || 'staff').replace('_', ' ')}
                                 </span>
                             </div>
                         </div>

@@ -802,7 +802,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                         value={currentSettings.skuPrefix || ''}
                                         onChange={handleChange}
                                         className={inputFieldClasses}
-                                        placeholder="e.g., STORE-"
+                                        placeholder="SP-"
                                         maxLength={10}
                                     />
                                     <p className="text-xs text-slate-500 mt-2">
@@ -851,16 +851,37 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                             </div>
                         )}
                     </SettingsCard>
+
+                    {/* Subscription & Plans */}
+                    <div className="relative bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition-shadow">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-100">
+                                    <CreditCardIcon className="w-6 h-6" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">Subscription & Billing</h3>
+                                    <p className="text-sm text-slate-500">Manage your subscription plan and billing details</p>
+                                </div>
+                            </div>
+                            <a
+                                href="/subscription"
+                                className="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
+                            >
+                                Manage Subscription
+                            </a>
+                        </div>
+                    </div>
                 </div>
-            </main >
-        </div >
+            </main>
+        </div>
     );
 };
 
 // Add missing icon components
 const EnvelopeIcon = ({ className }: { className?: string }) => (
     <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
     </svg>
 );
 

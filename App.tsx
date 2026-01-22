@@ -10,6 +10,7 @@ import CartPage from './pages/shop/CartPage';
 import MarketplacePage from './pages/shop/MarketplacePage';
 import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
 import TitleBar from './components/TitleBar';
+import SubscriptionPage from './pages/SubscriptionPage';
 
 export default function App() {
     return (
@@ -55,6 +56,7 @@ export default function App() {
                     <Route path="/notifications" element={<Dashboard />} />
                     <Route path="/profile" element={<Dashboard />} />
                     <Route path="/settings" element={<Dashboard />} />
+                    <Route path="/subscription" element={<SubscriptionPage />} />
                     <Route path="/settings" element={<Dashboard />} />
 
                     {/* Super Admin Routes */}
