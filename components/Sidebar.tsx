@@ -23,6 +23,7 @@ import {
     SparklesIcon,
     CreditCardIcon,
     Bars3Icon,
+    BookOpenIcon,
     XMarkIcon
 } from './icons';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
@@ -217,6 +218,13 @@ const NAV_ITEMS = [
         icon: SparklesIcon,
         roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
         badge: 'New'
+    },
+    {
+        name: 'User Guide',
+        page: 'user-guide',
+        icon: BookOpenIcon,
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer'],
+        badge: null
     },
 ];
 

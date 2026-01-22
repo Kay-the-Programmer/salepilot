@@ -57,7 +57,7 @@ export default function App() {
                     <Route path="/profile" element={<Dashboard />} />
                     <Route path="/settings" element={<Dashboard />} />
                     <Route path="/subscription" element={<SubscriptionPage />} />
-                    <Route path="/settings" element={<Dashboard />} />
+                    <Route path="/user-guide" element={<Dashboard />} />
 
                     {/* Super Admin Routes */}
                     <Route path="/superadmin" element={<Dashboard />} />
