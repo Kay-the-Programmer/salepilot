@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import SocketService from './services/socketService';
 import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
 import Logo from './assets/logo.png';
@@ -353,6 +354,34 @@ export default function Dashboard() {
         const intervalId = setInterval(pollNotifications, 30000); // 30 seconds
         return () => clearInterval(intervalId);
     }, [currentUser?.currentStoreId]);
+
+    // Real-time Request Notifications (Sellers)
+    useEffect(() => {
+        if (!currentUser || currentUser.role === 'customer') return;
+
+        const socketService = SocketService.getInstance(); // Ensure import
+        const socket = socketService.getSocket();
+
+        // Join sellers room
+        socket.emit('join_sellers');
+
+        const handleNewRequest = (data: any) => {
+            showSnackbar(`New Request: ${data.title} - ${data.description?.substring(0, 30)}...`, 'info');
+            // Play notification sound if desired
+            if (Notification.permission === 'granted') {
+                new Notification('New Deal Request', {
+                    body: data.title,
+                    icon: Logo
+                });
+            }
+        };
+
+        socket.on('new_request', handleNewRequest);
+
+        return () => {
+            socket.off('new_request', handleNewRequest);
+        };
+    }, [currentUser, showSnackbar]);
 
     useEffect(() => {
         const checkSession = async () => {

@@ -9,6 +9,7 @@ import CartPage from './pages/shop/CartPage';
 
 import MarketplacePage from './pages/shop/MarketplacePage';
 import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
+import OfferLiveTracking from './components/offers/OfferLiveTracking';
 import TitleBar from './components/TitleBar';
 import SubscriptionPage from './pages/SubscriptionPage';
 
@@ -72,6 +73,7 @@ export default function App() {
                     <Route path="/directory/request/:requestId" element={<Dashboard />} />
                     <Route path="/marketplace" element={<MarketplacePage />} />
                     <Route path="/marketplace/track/:requestId" element={<CustomerRequestTrackingPage />} />
+                    <Route path="/offers/track/:id" element={<OfferLiveTracking />} />
 
                     {/* Customer Dashboard - Protected by Dashboard logic */}
                     <Route path="/customer/login" element={<Dashboard />} />

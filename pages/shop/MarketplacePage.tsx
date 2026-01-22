@@ -13,102 +13,28 @@ import {
 import { api } from '../../services/api';
 import { getCurrentUser } from '../../services/authService';
 import { formatCurrency } from '../../utils/currency';
-import RequestWizard from '../../components/RequestWizard';
+import PostOfferModal from '../../components/offers/PostOfferModal'; // Import
 import Snackbar from '../../components/Snackbar';
 import { SnackbarType } from '../../App';
 import SalePilotLogo from '../../assets/salepilot.png';
 
-
-// interface PublicStore {
-//     id: string;
-//     name: string;
-//     status: string;
-//     address?: string;
-//     phone?: string;
-//     email?: string;
-//     website?: string;
-//     currency?: { code: string; symbol: string };
-// }
-
-interface PublicProduct {
-    id: string;
-    name: string;
-    description: string;
-    price: number;
-    storeId: string;
-    storeName: string;
-    imageUrls?: string[];
-    currency?: { code: string; symbol: string; position?: 'before' | 'after' };
-}
+// ... (interfaces)
 
 export default function MarketplacePage() {
-    // const [stores, setStores] = useState<PublicStore[]>([]);
-    const [products, setProducts] = useState<PublicProduct[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchTerm, setSearchTerm] = useState('');
-    // const [activeTab, setActiveTab] = useState<'stores' | 'products'>('stores');
+    // ... (state)
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-    // const [apiError, setApiError] = useState<string | null>(null);
-    // const [recentRequests, setRecentRequests] = useState<any[]>([]);
-    const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+    // ...
 
-    const navigate = useNavigate();
-    const currentUser = getCurrentUser();
+    // ... (fetch functions)
 
-    const showSnackbar = (message: string, type: SnackbarType = 'success') => {
-        setSnackbar({ message, type });
+    const handleOfferCreated = (offer: any) => {
+        showSnackbar('Offer posted successfully!', 'success');
+        setTimeout(() => {
+            navigate(`/offers/track/${offer.id}`);
+        }, 1500);
     };
 
-    useEffect(() => {
-        // if (activeTab === 'stores') fetchStores();
-        // else 
-        fetchGlobalProducts();
-    }, []);
-
-    // const fetchStores = async () => {
-    //     setLoading(true);
-    //     // setApiError(null);
-    //     try {
-    //         const data = await api.get<PublicStore[]>('/shop/stores');
-    //         setStores(data || []);
-    //     } catch (error: any) {
-    //         console.error('Failed to fetch stores', error);
-    //         setStores([]);
-    //     } finally {
-    //         setLoading(false);
-    //     }
-    // };
-
-    const fetchGlobalProducts = async () => {
-        setLoading(true);
-        // setApiError(null);
-        try {
-            const data = await api.get<PublicProduct[]>('/shop/global-products');
-            setProducts(data || []);
-        } catch (error: any) {
-            console.error('Failed to fetch products', error);
-            setProducts([]);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleRequestSubmit = async (formData: any) => {
-        try {
-            const response = await api.post<{ id: string }>('/marketplace/requests', {
-                ...formData,
-                targetPrice: parseFloat(formData.targetPrice)
-            });
-            showSnackbar('Broadcasting your request...', 'success');
-            setTimeout(() => {
-                if (response && response.id) navigate(`/marketplace/track/${response.id}`);
-            }, 1500);
-            // fetchRecentRequests();
-        } catch (error) {
-            console.error('Error submitting request:', error);
-            throw error;
-        }
-    };
+    // Removed handleRequestSubmit or kept unused if strictly replacing behavior
 
     // const fetchRecentRequests = async () => {
     //     try {
@@ -421,10 +347,10 @@ export default function MarketplacePage() {
                 </button>
             </div>
 
-            <RequestWizard
+            <PostOfferModal
                 isOpen={isRequestModalOpen}
                 onClose={() => setIsRequestModalOpen(false)}
-                onSubmit={handleRequestSubmit}
+                onOfferCreated={handleOfferCreated}
             />
 
             {snackbar && (
