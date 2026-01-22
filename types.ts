@@ -370,3 +370,19 @@ export interface AuditLog {
     details: string; // e.g., "Product: 'Coffee Mug' (SKU: 12345)"
     storeId?: string; // tenant scope
 }
+
+export interface Shipment {
+    id: string;
+    trackingNumber: string;
+    shippingCompany: string;
+    status: 'pending' | 'in_transit' | 'delivered' | 'returned' | 'cancelled';
+    contactName: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    parcelImageUrl?: string;
+    createdAt: string;
+    updatedAt?: string;
+    storeId?: string;
+    customerId?: string;
+    orderId?: string; // Optional link to a Sale/Order
+}

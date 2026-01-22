@@ -80,6 +80,13 @@ const NAV_ITEMS = [
         badge: null
     },
     {
+        name: 'Logistics',
+        page: 'logistics',
+        icon: TruckIcon,
+        roles: ['admin', 'staff', 'inventory_manager'],
+        badge: null
+    },
+    {
         name: 'Sales History',
         page: 'sales-history',
         icon: ClockIcon,
