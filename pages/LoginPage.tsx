@@ -302,6 +302,17 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             )}
                         </div>
 
+                        <div className="text-center mt-4">
+                            <span className="text-xs text-slate-400">Want to sell to retailers? </span>
+                            <button
+                                type="button"
+                                onClick={() => navigate('/register-supplier')}
+                                className="text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                            >
+                                Register as Supplier
+                            </button>
+                        </div>
+
                         <button
                             type="submit"
                             disabled={isLoading}

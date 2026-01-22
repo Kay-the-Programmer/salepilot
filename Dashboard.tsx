@@ -366,6 +366,13 @@ export default function Dashboard() {
         socket.emit('join_sellers');
 
         const handleNewRequest = (data: any) => {
+            // Only show if the notification is relevant to this store (if storeId is provided)
+            // If data.storeId is missing, it might be a global broadcast, so we show it (fallthrough)
+            // But if it is present, it must match our currentStoreId
+            if (data.storeId && currentUser?.currentStoreId && data.storeId !== currentUser.currentStoreId) {
+                return;
+            }
+
             showSnackbar(`New Request: ${data.title} - ${data.description?.substring(0, 30)}...`, 'info');
             // Play notification sound if desired
             if (Notification.permission === 'granted') {
