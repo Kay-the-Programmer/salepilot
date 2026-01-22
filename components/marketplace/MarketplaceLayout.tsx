@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HiOutlineBuildingStorefront, HiOutlineLightningBolt, HiOutlineUserGroup } from 'react-icons/hi';
+import { HiOutlineLightningBolt, HiOutlineUserGroup } from 'react-icons/hi';
+import { HiOutlineBuildingStorefront } from 'react-icons/hi2';
 
 interface MarketplaceLayoutProps {
     children: React.ReactNode;
