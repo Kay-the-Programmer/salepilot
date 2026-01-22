@@ -165,9 +165,6 @@ async function applyOptimisticUpdate(endpoint: string, method: string, body: any
     } else if (method === 'DELETE') {
       // For delete, we might want to hide it rather than actually delete if it's pending sync
       // but for now, let's just delete it from cache
-      const id = endpoint.split('/').pop();
-      if (id) await dbService.deleteQueuedMutation(Number(id)); // Wait, this is for syncQueue. 
-      // Correct logic for deleting from entity store:
       const entityId = endpoint.split('/').pop();
       if (entityId) {
         // We can't easily "undo" this if sync fails, but better than nothing.
