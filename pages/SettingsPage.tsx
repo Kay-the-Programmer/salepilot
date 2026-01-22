@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../types';
 import PencilIcon from '../components/icons/PencilIcon';
 import BuildingStorefrontIcon from '../components/icons/BuildingStorefrontIcon';
+import LocationPicker from '../components/LocationPicker';
 import BanknotesIcon from '../components/icons/BanknotesIcon';
 import ReceiptPercentIcon from '../components/icons/ReceiptPercentIcon';
 import ArchiveBoxIcon from '../components/icons/ArchiveBoxIcon';
@@ -138,6 +139,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
     const [currentSettings, setCurrentSettings] = useState(settings);
     const [newPaymentMethod, setNewPaymentMethod] = useState('');
     const [newSupplierPaymentMethod, setNewSupplierPaymentMethod] = useState('');
+    const [isMapOpen, setIsMapOpen] = useState(false);
 
     // Enhanced input styles
     const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white hover:bg-slate-50/50 focus:bg-white";
@@ -347,6 +349,32 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                             className={inputFieldClasses}
                                             placeholder="123 Main Street, City, State 12345"
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsMapOpen(true)}
+                                            className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                        >
+                                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            Pick from Map
+                                        </button>
+
+                                        {isMapOpen && (
+                                            <LocationPicker
+                                                onClose={() => setIsMapOpen(false)}
+                                                onLocationSelect={(loc) => {
+                                                    if (loc.address) {
+                                                        setCurrentSettings(prev => ({
+                                                            ...prev,
+                                                            address: loc.address || ''
+                                                        }));
+                                                    }
+                                                    setIsMapOpen(false);
+                                                }}
+                                            />
+                                        )}
                                     </div>
                                 </div>
                             </div>
