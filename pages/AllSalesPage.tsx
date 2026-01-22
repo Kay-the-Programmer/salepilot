@@ -240,19 +240,24 @@ function SimpleAreaChart({
         [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
         , [data]);
 
-    const maxVal = Math.max(...sortedData.map(d => d.totalRevenue)) || 1;
+    // Memoize chart geometry so hover state changes don't recompute paths or points.
+    // Expected impact: avoids O(n) path/point recalculation on every hover move.
+    const { points, pathD, lineD } = useMemo(() => {
+        const maxVal = Math.max(...sortedData.map(d => d.totalRevenue)) || 1;
+        const computedPoints = sortedData.map((d, i) => {
+            const x = (i / (sortedData.length - 1 || 1)) * width;
+            const normalizedY = (d.totalRevenue / maxVal);
+            const y = height - (normalizedY * (height - padding.top - padding.bottom)) - padding.bottom;
+            return { x, y, ...d };
+        });
 
-    const points = sortedData.map((d, i) => {
-        const x = (i / (sortedData.length - 1 || 1)) * width;
-        const normalizedY = (d.totalRevenue / maxVal);
-        const y = height - (normalizedY * (height - padding.top - padding.bottom)) - padding.bottom;
-        return { x, y, ...d };
-    });
+        const computedPathD = `M0,${height} ` + computedPoints.map(p => `L${p.x},${p.y}`).join(' ') + ` L${width},${height} Z`;
+        const computedLineD = computedPoints.length === 1
+            ? `M0,${computedPoints[0].y} L${width},${computedPoints[0].y}`
+            : `M${computedPoints[0].x},${computedPoints[0].y} ` + computedPoints.slice(1).map(p => `L${p.x},${p.y}`).join(' ');
 
-    const pathD = `M0,${height} ` + points.map(p => `L${p.x},${p.y}`).join(' ') + ` L${width},${height} Z`;
-    const lineD = points.length === 1
-        ? `M0,${points[0].y} L${width},${points[0].y}`
-        : `M${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L${p.x},${p.y}`).join(' ');
+        return { points: computedPoints, pathD: computedPathD, lineD: computedLineD };
+    }, [sortedData, height, padding.bottom, padding.top, width]);
 
     return (
         <div className="relative w-full h-full" onMouseLeave={() => setHoveredIndex(null)}>
