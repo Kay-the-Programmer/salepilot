@@ -37,6 +37,7 @@ import CustomerOrdersPage from './pages/customers/CustomerDashboard'; // The My 
 import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
 import MarketingPage from './pages/MarketingPage';
 import MarketplaceRequestActionPage from './pages/MarketplaceRequestActionPage';
+import LogisticsPage from './pages/LogisticsPage';
 import UserGuidePage from './pages/UserGuidePage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
@@ -64,9 +65,9 @@ type SnackbarState = {
 
 const PERMISSIONS: Record<User['role'], string[]> = {
     superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory', 'subscription', 'user-guide'],
-    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory', 'subscription', 'user-guide'],
-    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory', 'user-guide'],
-    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory', 'user-guide'],
+    admin: ['reports', 'sales', 'sales-history', 'orders', 'logistics', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'directory', 'subscription', 'user-guide'],
+    staff: ['sales', 'sales-history', 'orders', 'logistics', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'directory', 'user-guide'],
+    inventory_manager: ['reports', 'logistics', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'directory', 'user-guide'],
     customer: ['profile', 'notifications', 'directory', 'customer', 'customer/dashboard', 'customer/orders', 'user-guide']
 };
 
@@ -128,7 +129,7 @@ export default function Dashboard() {
     useEffect(() => {
         // Check for unread system priority notifications
         // We pick the first one we find. If there are multiple, they will appear one after another as they are acknowledged.
-        const priority = announcements.find(a => !a.isRead && (a.type === 'system_priority' || a.type === 'admin_broadcast'));
+        const priority = (announcements || []).find(a => !a.isRead && (a.type === 'system_priority' || a.type === 'admin_broadcast'));
         setPriorityNotification(priority || null);
     }, [announcements]);
 
@@ -1122,6 +1123,8 @@ export default function Dashboard() {
             }
             case 'marketing':
                 return <MarketingPage />;
+            case 'logistics':
+                return <LogisticsPage />;
             case 'inventory':
                 return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
             case 'user-guide':
@@ -1194,8 +1197,8 @@ export default function Dashboard() {
                         isSyncing={isSyncing}
                         installPrompt={installPrompt}
                         onInstall={handleInstall}
-                        unreadNotificationsCount={announcements.filter(a => !a.isRead).length}
-                        pendingMatchesCount={pendingMatches.length}
+                        unreadNotificationsCount={(announcements || []).filter(a => !a.isRead).length}
+                        pendingMatchesCount={(pendingMatches || []).length}
                     />
                 </div>
 
@@ -1225,7 +1228,7 @@ export default function Dashboard() {
                                 aria-label="Notifications"
                             >
                                 <BellAlertIcon className="w-6 h-6" />
-                                {announcements.some(a => !a.isRead) && (
+                                {(announcements || []).some(a => !a.isRead) && (
                                     <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
                                 )}
                             </button>
