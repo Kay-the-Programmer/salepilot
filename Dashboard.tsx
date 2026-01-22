@@ -19,6 +19,7 @@ import ProfilePage from './pages/ProfilePage';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
 import SettingsPage from './pages/SettingsPage';
+import StoreCompletionModal from './components/StoreCompletionModal';
 import UsersPage from './pages/UsersPage';
 import AccountingPage from './pages/AccountingPage';
 import AllSalesPage from './pages/AllSalesPage';
@@ -100,6 +101,7 @@ export default function Dashboard() {
     const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
     const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [isStoreCompletionModalOpen, setIsStoreCompletionModalOpen] = useState(false);
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Mobile sidebar state
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -247,6 +249,15 @@ export default function Dashboard() {
             setAuditLogs(mapResult(results[12], [] as AuditLog[]));
             setStockTakeSession(mapResult(results[13], null as any));
             setAnnouncements(mapResult(results[14], [] as Announcement[]));
+
+            // Check for incomplete store settings (Address & Phone are mandatory)
+            const settings = mapResult(results[10], null as any) as StoreSettings | null;
+            if (settings) {
+                // If address OR phone is missing, trigger the modal
+                if (!settings.address?.trim() || !settings.phone?.trim()) {
+                    setIsStoreCompletionModalOpen(true);
+                }
+            }
 
             // Fetch pending marketplace matches separately to avoid blocking
             if (currentUser?.currentStoreId) {
@@ -1224,6 +1235,18 @@ export default function Dashboard() {
                 {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
                 <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
                 <TourGuide user={currentUser} />
+
+                <StoreCompletionModal
+                    isOpen={isStoreCompletionModalOpen}
+                    initialSettings={storeSettings}
+                    onSave={async (address, phone) => {
+                        if (!storeSettings) return;
+                        const updatedSettings = { ...storeSettings, address, phone };
+                        // We reuse handleSaveSettings but we want to await it and ensure we close modal on success
+                        await handleSaveSettings(updatedSettings);
+                        setIsStoreCompletionModalOpen(false);
+                    }}
+                />
 
                 {priorityNotification && (
                     <SystemNotificationModal

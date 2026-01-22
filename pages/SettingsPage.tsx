@@ -295,7 +295,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                         placeholder: "Your Store Name"
                                     })}
                                     {renderInput("Contact Email", "email", "email", {
-                                        placeholder: "contact@example.com"
+                                        placeholder: "contact@example.com",
+                                        readOnly: true,
+                                        className: `${inputFieldClasses} bg-slate-100 text-slate-500 cursor-not-allowed`
                                     })}
                                     {renderInput("Website", "website", "url", {
                                         placeholder: "https://example.com"
@@ -466,7 +468,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                                 value={currentSettings.currency.symbol}
                                                 onChange={handleChange}
                                                 className={inputFieldClasses}
-                                                placeholder="$"
+                                                placeholder="K"
                                                 maxLength={3}
                                             />
                                         </div>
@@ -479,7 +481,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                                 value={currentSettings.currency.code}
                                                 onChange={handleChange}
                                                 className={inputFieldClasses}
-                                                placeholder="USD"
+                                                placeholder="ZMW"
                                                 maxLength={3}
                                             />
                                         </div>

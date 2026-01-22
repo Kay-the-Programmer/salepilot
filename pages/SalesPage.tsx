@@ -941,58 +941,78 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         ) : (
                             <div className="divide-y divide-slate-100">
                                 {cart.map(item => (
-                                    <div key={item.productId} className="px-2 py-4 hover:bg-slate-50/50 transition-colors group">
-                                        <div className="flex items-start justify-between">
+                                    <div 
+                                        key={item.productId} 
+                                        className="px-4 py-4 sm:py-5 hover:bg-slate-50/50 transition-colors duration-200 border-b border-slate-100 last:border-b-0 group"
+                                        >
+                                        <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+                                            {/* Product Info Section */}
                                             <div className="flex-1 min-w-0">
-                                                <div className="flex items-start justify-between mb-2">
-                                                    <div>
-                                                        <p className="font-semibold text-sm text-slate-900 truncate">
-                                                            {item.name}
-                                                        </p>
-                                                        <p className="text-xs text-slate-500 mt-1">
-                                                            {formatCurrency(item.price, storeSettings)} each
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <p className="font-bold text-sm text-slate-900">
-                                                            {formatCurrency(item.price * item.quantity, storeSettings)}
-                                                        </p>
-                                                        <p className="text-xs text-slate-500 mt-1">
-                                                            {item.quantity}{item.unitOfMeasure === 'kg' ? 'kg' : ''}
-                                                        </p>
-                                                    </div>
+                                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                                                {/* Product Name & Price */}
+                                                <div className="flex-1 min-w-0">
+                                                <h3 className="font-semibold text-slate-900 text-base sm:text-sm truncate leading-tight">
+                                                    {item.name}
+                                                </h3>
+                                                <p className="text-slate-500 text-sm sm:text-xs mt-1 sm:mt-1.5">
+                                                    {formatCurrency(item.price, storeSettings)} each
+                                                </p>
                                                 </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => updateQuantity(item.productId, item.quantity - getStepFor(item.unitOfMeasure))}
-                                                        className="w-8 h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 flex items-center justify-center transition-colors"
-                                                    >
-                                                        <span className="font-bold text-slate-700">-</span>
-                                                    </button>
-                                                    <input
-                                                        type="number"
-                                                        value={item.quantity}
-                                                        onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
-                                                        className="w-16 px-2 py-1 border border-slate-300 rounded-lg text-center text-sm font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                                        min="0"
-                                                        step={item.unitOfMeasure === 'kg' ? '0.1' : '1'}
-                                                    />
-                                                    <button
-                                                        onClick={() => updateQuantity(item.productId, item.quantity + getStepFor(item.unitOfMeasure))}
-                                                        className="w-8 h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 flex items-center justify-center transition-colors"
-                                                    >
-                                                        <span className="font-bold text-slate-700">+</span>
-                                                    </button>
-                                                    <button
-                                                        onClick={() => removeFromCart(item.productId)}
-                                                        className="ml-auto p-1.5 hover:bg-red-50 rounded-lg transition-colors group-hover:opacity-100 opacity-0"
-                                                    >
-                                                        <XMarkIcon className="w-4 h-4 text-slate-400 hover:text-red-600 transition-colors" />
-                                                    </button>
+                                                
+                                                {/* Total & Quantity */}
+                                                <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end sm:gap-1">
+                                                <p className="font-bold text-slate-900 text-lg sm:text-base">
+                                                    {formatCurrency(item.price * item.quantity, storeSettings)}
+                                                </p>
+                                                <p className="text-slate-500 text-sm sm:text-xs">
+                                                    {item.quantity}{item.unitOfMeasure === 'kg' ? 'kg' : ''}
+                                                </p>
                                                 </div>
                                             </div>
+                                            </div>
+
+                                            {/* Controls Section */}
+                                            <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-start sm:gap-4">
+                                            {/* Quantity Controls */}
+                                            <div className="flex items-center gap-2 sm:gap-3">
+                                                <button
+                                                onClick={() => updateQuantity(item.productId, item.quantity - getStepFor(item.unitOfMeasure))}
+                                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center transition-all duration-150 active:scale-95"
+                                                aria-label="Decrease quantity"
+                                                >
+                                                <span className="font-bold text-slate-700 text-lg">−</span>
+                                                </button>
+                                                
+                                                <input
+                                                type="number"
+                                                value={item.quantity}
+                                                onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
+                                                className="w-16 sm:w-14 px-2 py-2 sm:py-1.5 border border-slate-300 rounded-lg text-center text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                                                min="0"
+                                                step={item.unitOfMeasure === 'kg' ? '0.1' : '1'}
+                                                aria-label={`Quantity of ${item.name}`}
+                                                />
+                                                
+                                                <button
+                                                onClick={() => updateQuantity(item.productId, item.quantity + getStepFor(item.unitOfMeasure))}
+                                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center transition-all duration-150 active:scale-95"
+                                                aria-label="Increase quantity"
+                                                >
+                                                <span className="font-bold text-slate-700 text-lg">+</span>
+                                                </button>
+                                            </div>
+                                            
+                                            {/* Remove Button */}
+                                            <button
+                                                onClick={() => removeFromCart(item.productId)}
+                                                className="p-2.5 sm:p-1.5 hover:bg-red-50 active:bg-red-100 rounded-lg transition-all duration-150 group-hover:opacity-100 opacity-0 sm:opacity-100 sm:group-hover:opacity-100"
+                                                aria-label={`Remove ${item.name} from cart`}
+                                            >
+                                                <XMarkIcon className="w-5 h-5 sm:w-4 sm:h-4 text-slate-400 hover:text-red-600 transition-colors" />
+                                            </button>
+                                            </div>
                                         </div>
-                                    </div>
+                                        </div>
                                 ))}
                             </div>
                         )
