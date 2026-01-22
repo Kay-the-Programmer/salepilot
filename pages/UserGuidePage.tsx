@@ -1,7 +1,10 @@
 import React from 'react';
-import { BookOpenIcon, ShoppingCartIcon, ArchiveBoxIcon, UsersIcon, CalculatorIcon, HomeIcon } from '../components/icons';
+import { useNavigate } from 'react-router-dom';
+import { BookOpenIcon, ShoppingCartIcon, ArchiveBoxIcon, UsersIcon, CalculatorIcon, HomeIcon, ArrowRightIcon } from '../components/icons';
 
 const UserGuidePage: React.FC = () => {
+    const navigate = useNavigate();
+
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-8 animate-fade-in-up">
             <div className="flex items-center gap-4 mb-8">
@@ -61,6 +64,14 @@ const UserGuidePage: React.FC = () => {
                             <li><strong>Sales Chart:</strong> Visualize your sales trends over time.</li>
                             <li><strong>Recent Activity:</strong> See the latest actions taken by your staff.</li>
                         </ul>
+                        <div className="pt-2">
+                            <button
+                                onClick={() => navigate('/')}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                            >
+                                Go to Dashboard <ArrowRightIcon className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -89,6 +100,14 @@ const UserGuidePage: React.FC = () => {
                                 </p>
                             </div>
                         </div>
+                        <div className="pt-2">
+                            <button
+                                onClick={() => navigate('/sales')}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                            >
+                                Open POS Terminal <ArrowRightIcon className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -106,6 +125,14 @@ const UserGuidePage: React.FC = () => {
                             <li><strong>Low Stock Alerts:</strong> Set minimum stock levels to receive alerts when items are running low.</li>
                             <li><strong>Barcodes:</strong> Assign barcodes to products for quick scanning at the POS.</li>
                         </ul>
+                        <div className="pt-2">
+                            <button
+                                onClick={() => navigate('/inventory')}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                            >
+                                Manage Inventory <ArrowRightIcon className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -123,6 +150,14 @@ const UserGuidePage: React.FC = () => {
                             <li><strong>Store Credit:</strong> Manage store credit for returns or loyalty rewards.</li>
                             <li><strong>Account Balance:</strong> Track outstanding balances for customers with credit accounts.</li>
                         </ul>
+                        <div className="pt-2">
+                            <button
+                                onClick={() => navigate('/customers')}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                            >
+                                View Customers <ArrowRightIcon className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -140,6 +175,14 @@ const UserGuidePage: React.FC = () => {
                             <li><strong>Supplier Invoices:</strong> Track bills from your suppliers and record payments.</li>
                             <li><strong>Reports:</strong> Generate financial reports to understand your profitability.</li>
                         </ul>
+                        <div className="pt-2">
+                            <button
+                                onClick={() => navigate('/accounting')}
+                                className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                            >
+                                Go to Accounting <ArrowRightIcon className="w-4 h-4" />
+                            </button>
+                        </div>
                     </div>
                 </section>
             </div>
