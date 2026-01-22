@@ -104,14 +104,16 @@ export default function CustomerDashboard() {
       await api.put(`/marketplace/orders/${selectedOrder.transactionId}/cancel`, {});
 
       // Update the order in the local state
-      setOrders(orders.map(order =>
+      setOrders(prevOrders => prevOrders.map(order =>
         order.transactionId === selectedOrder.transactionId
           ? { ...order, fulfillmentStatus: 'cancelled' }
           : order
       ));
 
       // Update selected order
-      setSelectedOrder({ ...selectedOrder, fulfillmentStatus: 'cancelled' });
+      setSelectedOrder(prevSelected =>
+        prevSelected ? { ...prevSelected, fulfillmentStatus: 'cancelled' } : prevSelected
+      );
 
       setShowCancelConfirm(false);
       alert('Order cancelled successfully');
