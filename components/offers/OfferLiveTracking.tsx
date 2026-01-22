@@ -1,6 +1,11 @@
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import SocketService from '../../services/socketService';
+import OfferChat from './OfferChat';
 import { Offer, offersService } from '../../services/offersService';
-import { User } from 'lucide-react'; // This was unused as logic, but maybe icon? No, I used lucide-react in OfferChat.
-// Actually, I don't use User icon in OfferLiveTracking.
 
 // Custom icons
 const createIcon = (color: string) => new L.Icon({
@@ -47,8 +52,9 @@ export default function OfferLiveTracking() {
         socket.joinOffer(id);
 
         // Track my location
+        let watchId: number;
         if (navigator.geolocation) {
-            const watchId = navigator.geolocation.watchPosition(
+            watchId = navigator.geolocation.watchPosition(
                 (pos) => {
                     const { latitude, longitude } = pos.coords;
                     setMyPosition({ lat: latitude, lng: longitude });
@@ -57,18 +63,23 @@ export default function OfferLiveTracking() {
                 (err) => console.error(err),
                 { enableHighAccuracy: true }
             );
-
-            return () => navigator.geolocation.clearWatch(watchId);
         }
 
-        socket.onLocationReceive((data) => {
+        const handleLocation = (data: any) => {
             if (data.userId !== currentUserId) {
                 setOtherPosition({ lat: data.lat, lng: data.lng });
             }
-        });
+        };
+
+        socket.onLocationReceive(handleLocation);
 
         return () => {
-            socket.disconnect();
+            if (watchId) navigator.geolocation.clearWatch(watchId);
+            // socket.disconnect() is too aggressive if shared singleton, 
+            // maybe just leave room or remove listener?
+            // For now, let's just remove the specific listener if possible or do nothing if singleton persists.
+            // Ideally we should have a `leaveOffer` method.
+            // socket.disconnect(); 
         };
     }, [id, currentUserId]);
 
@@ -78,7 +89,7 @@ export default function OfferLiveTracking() {
     const isCustomer = currentUserId === offer.user_id;
 
     return (
-        <div className="flex flex-col h-screen md:flex-row">
+        <div className="flex flex-col h-[100dvh] md:h-screen md:flex-row">
             {/* Map Area */}
             <div className="flex-1 h-1/2 md:h-full relative z-0">
                 <MapContainer

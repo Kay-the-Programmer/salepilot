@@ -12,6 +12,7 @@ import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPag
 import OfferLiveTracking from './components/offers/OfferLiveTracking';
 import TitleBar from './components/TitleBar';
 import SubscriptionPage from './pages/SubscriptionPage';
+import SupplierRegisterPage from './pages/auth/SupplierRegisterPage';
 
 export default function App() {
     return (
@@ -80,7 +81,9 @@ export default function App() {
                     <Route path="/customer/register" element={<Dashboard />} />
                     <Route path="/customer/dashboard" element={<Dashboard />} />
                     <Route path="/customer/orders" element={<Dashboard />} />
+                    <Route path="/customer/orders" element={<Dashboard />} />
                     <Route path="/directory/request/:requestId" element={<Dashboard />} />
+                    <Route path="/register-supplier" element={<SupplierRegisterPage />} />
 
                     {/* Fallback */}
                     <Route path="*" element={<Dashboard />} />

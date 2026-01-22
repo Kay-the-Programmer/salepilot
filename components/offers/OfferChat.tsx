@@ -76,7 +76,7 @@ export default function OfferChat({ offerId, currentUserId }: OfferChatProps) {
     };
 
     return (
-        <div className="flex flex-col h-[500px] bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-200">
             <div className="p-3 border-b border-gray-200 font-medium">Chat</div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
