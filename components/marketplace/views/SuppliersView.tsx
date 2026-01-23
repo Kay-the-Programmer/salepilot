@@ -66,12 +66,18 @@ export default function SuppliersView() {
         }
     };
 
+    const handleViewProfile = (supplierName: string) => {
+        alert(`Profile for ${supplierName} is coming soon!`);
+    };
+
     return (
         <div className="max-w-[1400px] mx-auto px-6 py-8">
             <h2 className="text-2xl font-black text-slate-900 mb-6">Registered Suppliers</h2>
 
             {loading ? (
-                <div className="text-center py-12">Loading suppliers...</div>
+                <div className="flex justify-center py-12">
+                    <div className="animate-spin w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full"></div>
+                </div>
             ) : suppliers.length === 0 ? (
                 <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
                     <HiOutlineUserCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
@@ -98,7 +104,9 @@ export default function SuppliersView() {
                             </div>
 
                             <div className="mt-6 flex gap-3">
-                                <button className="flex-1 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                                <button
+                                    onClick={() => handleViewProfile(supplier.name)}
+                                    className="flex-1 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors">
                                     View Profile
                                 </button>
                                 <button

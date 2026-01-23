@@ -198,11 +198,13 @@ const LocationPicker = ({ initialLat, initialLng, onLocationSelect }: LocationPi
                     className="h-12 w-12 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center shadow-lg text-slate-600 hover:text-indigo-600 hover:bg-white transition-all ring-1 ring-slate-200 pointer-events-auto"
                     title="Locate Me"
                 >
-                    {isSearching ? (
-                        <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                        <HiOutlineCursorArrowRays className="w-6 h-6" />
-                    )}
+                    {
+                        isSearching ? (
+                            <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                            <HiOutlineCursorArrowRays className="w-6 h-6" />
+                        )
+                    }
                 </button>
             </div>
 

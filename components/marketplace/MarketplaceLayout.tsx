@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HiOutlineLightningBolt, HiOutlineUserGroup } from 'react-icons/hi';
+import { HiOutlineLightningBolt, HiOutlineUserGroup, HiOutlineInbox, HiOutlineClipboardList } from 'react-icons/hi';
 import { HiOutlineBuildingStorefront } from 'react-icons/hi2';
 
 interface MarketplaceLayoutProps {
@@ -17,6 +17,8 @@ export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) 
 
     const tabs = [
         { id: 'quick-offers', label: 'Quick Offers', icon: HiOutlineLightningBolt },
+        { id: 'requests', label: 'Requests', icon: HiOutlineInbox },
+        { id: 'activity', label: 'Activity', icon: HiOutlineClipboardList },
         { id: 'suppliers', label: 'Suppliers', icon: HiOutlineUserGroup },
         { id: 'retailers', label: 'Retailers', icon: HiOutlineBuildingStorefront },
     ];
