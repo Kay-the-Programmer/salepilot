@@ -1,0 +1,34 @@
+﻿On branch main
+Your branch and 'origin/main' have diverged,
+and have 2 and 2 different commits each, respectively.
+  (use "git pull" if you want to integrate the remote branch with yours)
+
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
+
+Changes to be committed:
+	modified:   vite.config.ts
+
+Unmerged paths:
+  (use "git add <file>..." to mark resolution)
+	both modified:   App.tsx
+	both modified:   Dashboard.tsx
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   pages/LoginPage.tsx
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	components/NotificationDropdown.tsx
+	contexts/NotificationContext.tsx
+	contexts/ToastContext.tsx
+	git_stash_list.txt
+	git_status.txt
+	git_status_utf8.txt
+	pages/ForgotPasswordPage.tsx
+	pages/ResetPasswordPage.tsx
+	pages/VerifyEmailPage.tsx
+

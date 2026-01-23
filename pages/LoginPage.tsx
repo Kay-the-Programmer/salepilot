@@ -276,7 +276,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                         <div className="flex items-center justify-between px-2 pt-1">
                             <button
                                 type="button"
-                                onClick={handleForgotPassword}
+                                onClick={() => navigate('/forgot-password')}
                                 className="text-[10px] font-black text-slate-400 hover:text-slate-600 uppercase tracking-wider transition-colors"
                             >
                                 Forgot?
