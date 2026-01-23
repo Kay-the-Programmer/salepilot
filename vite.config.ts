@@ -16,6 +16,34 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, '.'),
       }
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('node_modules')) {
+              if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+                return 'react-vendor';
+              }
+              if (id.includes('firebase')) {
+                return 'firebase-vendor';
+              }
+              if (id.includes('leaflet') || id.includes('react-leaflet')) {
+                return 'map-vendor';
+              }
+              if (id.includes('recharts')) {
+                return 'chart-vendor';
+              }
+              if (id.includes('jspdf')) {
+                return 'pdf-vendor';
+              }
+              if (id.includes('@headlessui') || id.includes('react-icons') || id.includes('lucide-react')) {
+                return 'ui-vendor';
+              }
+            }
+          }
+        }
+      }
+    },
     server: {
       proxy: {
         '/api': {
