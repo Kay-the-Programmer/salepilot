@@ -4,42 +4,45 @@ import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
 import Logo from './assets/logo.png';
 import Sidebar from './components/Sidebar';
-import InventoryPage from './pages/InventoryPage';
-import SalesPage from './pages/SalesPage';
-import CategoriesPage from './pages/CategoriesPage';
-import StockTakePage from './pages/StockTakePage';
-import ReturnsPage from './pages/ReturnsPage';
-import CustomersPage from './pages/CustomersPage';
-import SuppliersPage from './pages/SuppliersPage';
-import PurchaseOrdersPage from './pages/PurchaseOrdersPage';
-import ReportsPage from './pages/ReportsPage';
+import { lazy, Suspense } from 'react';
+
+const InventoryPage = lazy(() => import('./pages/InventoryPage'));
+const SalesPage = lazy(() => import('./pages/SalesPage'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const StockTakePage = lazy(() => import('./pages/StockTakePage'));
+const ReturnsPage = lazy(() => import('./pages/ReturnsPage'));
+const CustomersPage = lazy(() => import('./pages/CustomersPage'));
+const SuppliersPage = lazy(() => import('./pages/SuppliersPage'));
+const PurchaseOrdersPage = lazy(() => import('./pages/PurchaseOrdersPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const StoreSetupPage = lazy(() => import('./pages/StoreSetupPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const UsersPage = lazy(() => import('./pages/UsersPage'));
+const AccountingPage = lazy(() => import('./pages/AccountingPage'));
+const AllSalesPage = lazy(() => import('./pages/AllSalesPage'));
+const AuditLogPage = lazy(() => import('./pages/AuditLogPage'));
+const OrdersPage = lazy(() => import('./pages/OrdersPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
+const SuperAdminStores = lazy(() => import('./pages/superadmin/SuperAdminStores'));
+const SuperAdminNotifications = lazy(() => import('./pages/superadmin/SuperAdminNotifications'));
+const SuperAdminSubscriptions = lazy(() => import('./pages/superadmin/SuperAdminSubscriptions'));
+const SuperAdminStoreDetails = lazy(() => import('./pages/superadmin/SuperAdminStoreDetails'));
+const MarketplacePage = lazy(() => import('./pages/shop/MarketplacePage'));
+const MarketplaceDashboard = lazy(() => import('./pages/shop/CustomerDashboard')); // The Marketplace Portal
+const CustomerOrdersPage = lazy(() => import('./pages/customers/CustomerDashboard')); // The My Orders Page
+const CustomerRequestTrackingPage = lazy(() => import('./pages/shop/CustomerRequestTrackingPage'));
+const MarketingPage = lazy(() => import('./pages/MarketingPage'));
+const MarketplaceRequestActionPage = lazy(() => import('./pages/MarketplaceRequestActionPage'));
+const LogisticsPage = lazy(() => import('./pages/LogisticsPage'));
+const UserGuidePage = lazy(() => import('./pages/UserGuidePage'));
+
 import Snackbar from './components/Snackbar';
-import LoginPage from './pages/LoginPage';
-import StoreSetupPage from './pages/StoreSetupPage';
-import ProfilePage from './pages/ProfilePage';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
-import SettingsPage from './pages/SettingsPage';
 import StoreCompletionModal from './components/StoreCompletionModal';
-import UsersPage from './pages/UsersPage';
-import AccountingPage from './pages/AccountingPage';
-import AllSalesPage from './pages/AllSalesPage';
-import AuditLogPage from './pages/AuditLogPage';
-import OrdersPage from './pages/OrdersPage';
-import NotificationsPage from './pages/NotificationsPage';
-import SuperAdminDashboard from './pages/superadmin/SuperAdminDashboard';
-import SuperAdminStores from './pages/superadmin/SuperAdminStores';
-import SuperAdminNotifications from './pages/superadmin/SuperAdminNotifications';
-import SuperAdminSubscriptions from './pages/superadmin/SuperAdminSubscriptions';
-import SuperAdminStoreDetails from './pages/superadmin/SuperAdminStoreDetails';
-import MarketplacePage from './pages/shop/MarketplacePage';
-import MarketplaceDashboard from './pages/shop/CustomerDashboard'; // The Marketplace Portal
-import CustomerOrdersPage from './pages/customers/CustomerDashboard'; // The My Orders Page
-import CustomerRequestTrackingPage from './pages/shop/CustomerRequestTrackingPage';
-import MarketingPage from './pages/MarketingPage';
-import MarketplaceRequestActionPage from './pages/MarketplaceRequestActionPage';
-import LogisticsPage from './pages/LogisticsPage';
-import UserGuidePage from './pages/UserGuidePage';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import {
@@ -1071,103 +1074,111 @@ export default function Dashboard() {
             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
         }
 
-        if (pagePath === 'customer/dashboard') {
-            return <MarketplaceDashboard />;
-        }
-
-        if (pagePath === 'customer/orders') {
-            return <CustomerOrdersPage />;
-        }
-
-        switch (page) {
-            case 'setup-store':
-                return (
-                    <StoreSetupPage
-                        onCompleted={(user) => {
-                            const token = currentUser.token;
-                            const merged = token ? { ...user, token } : user;
-                            setCurrentUser(merged as User);
-                            navigate(`/${DEFAULT_PAGES[merged.role]}`);
-                        }}
-                        showSnackbar={showSnackbar}
-                    />
-                );
-            case 'sales':
-                return <SalesPage
-                    products={products}
-                    customers={customers}
-                    categories={categories}
-                    suppliers={suppliers}
-                    onProcessSale={handleProcessSale}
-                    onSaveProduct={handleSaveProduct}
-                    isLoading={isLoading}
-                    showSnackbar={showSnackbar}
-                    storeSettings={storeSettings!}
-                    onOpenSidebar={() => setIsSidebarOpen(true)}
-                />;
-            case 'sales-history':
-                return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
-            case 'orders':
-                return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
-            case 'returns':
-                return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
-            case 'customers':
-                return <CustomersPage customers={customers} sales={sales} onSaveCustomer={handleSaveCustomer} onDeleteCustomer={handleDeleteCustomer} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
-            case 'suppliers':
-                return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
-            case 'purchase-orders':
-                return <PurchaseOrdersPage purchaseOrders={purchaseOrders} suppliers={suppliers} products={products} onSave={handleSavePurchaseOrder} onDelete={handleDeletePurchaseOrder} onReceiveItems={handleReceivePOItems} showSnackbar={showSnackbar} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
-            case 'categories':
-                return <CategoriesPage categories={categories} accounts={accounts} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} />;
-            case 'stock-takes':
-                return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
-            case 'reports':
-                return <ReportsPage storeSettings={storeSettings!} />;
-            case 'accounting':
-                return <AccountingPage accounts={accounts} journalEntries={journalEntries} sales={sales} customers={customers} suppliers={suppliers} supplierInvoices={supplierInvoices} purchaseOrders={purchaseOrders} onSaveAccount={handleSaveAccount} onDeleteAccount={handleDeleteAccount} onAddManualJournalEntry={handleAddManualJournalEntry} onRecordPayment={handleRecordPayment} onSaveSupplierInvoice={handleSaveSupplierInvoice} onRecordSupplierPayment={handleRecordSupplierPayment} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
-            case 'audit-trail':
-                return <AuditLogPage logs={auditLogs} users={users} />;
-            case 'profile':
-                return <ProfilePage user={currentUser} storeSettings={storeSettings!} onLogout={handleLogout} onInstall={handleInstall} installPrompt={installPrompt} onUpdateProfile={handleUpdateProfile} onChangePassword={handleChangePassword} />;
-            case 'settings':
-                return <SettingsPage settings={storeSettings!} onSave={handleSaveSettings} />;
-            case 'users':
-                return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
-            case 'notifications':
-                return <NotificationsPage announcements={announcements} onRefresh={fetchData} />;
-            case 'directory':
-            case 'marketplace':
-                if (parts[1] === 'request' && parts[2]) {
-                    return <MarketplaceRequestActionPage requestId={parts[2]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} showSnackbar={showSnackbar} />;
-                }
-                return <MarketplacePage />;
-
-            case 'track':
-                return <CustomerRequestTrackingPage />;
-            case 'superadmin': {
-                const parts = location.pathname.split('/');
-                const subPath = parts[2];
-                const id = parts[3];
-
-                if (subPath === 'stores') {
-                    if (id) return <SuperAdminStoreDetails storeId={id} />;
-                    return <SuperAdminStores />;
-                }
-                if (subPath === 'notifications') return <SuperAdminNotifications />;
-                if (subPath === 'subscriptions') return <SuperAdminSubscriptions />;
-                return <SuperAdminDashboard />;
+        const renderContent = () => {
+            if (pagePath === 'customer/dashboard') {
+                return <MarketplaceDashboard />;
             }
-            case 'marketing':
-                return <MarketingPage />;
-            case 'logistics':
-                return <LogisticsPage />;
-            case 'inventory':
-                return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
-            case 'user-guide':
-                return <UserGuidePage />;
-            default:
-                return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
-        }
+
+            if (pagePath === 'customer/orders') {
+                return <CustomerOrdersPage />;
+            }
+
+            switch (page) {
+                case 'setup-store':
+                    return (
+                        <StoreSetupPage
+                            onCompleted={(user) => {
+                                const token = currentUser.token;
+                                const merged = token ? { ...user, token } : user;
+                                setCurrentUser(merged as User);
+                                navigate(`/${DEFAULT_PAGES[merged.role]}`);
+                            }}
+                            showSnackbar={showSnackbar}
+                        />
+                    );
+                case 'sales':
+                    return <SalesPage
+                        products={products}
+                        customers={customers}
+                        categories={categories}
+                        suppliers={suppliers}
+                        onProcessSale={handleProcessSale}
+                        onSaveProduct={handleSaveProduct}
+                        isLoading={isLoading}
+                        showSnackbar={showSnackbar}
+                        storeSettings={storeSettings!}
+                        onOpenSidebar={() => setIsSidebarOpen(true)}
+                    />;
+                case 'sales-history':
+                    return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
+                case 'orders':
+                    return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
+                case 'returns':
+                    return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
+                case 'customers':
+                    return <CustomersPage customers={customers} sales={sales} onSaveCustomer={handleSaveCustomer} onDeleteCustomer={handleDeleteCustomer} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
+                case 'suppliers':
+                    return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
+                case 'purchase-orders':
+                    return <PurchaseOrdersPage purchaseOrders={purchaseOrders} suppliers={suppliers} products={products} onSave={handleSavePurchaseOrder} onDelete={handleDeletePurchaseOrder} onReceiveItems={handleReceivePOItems} showSnackbar={showSnackbar} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
+                case 'categories':
+                    return <CategoriesPage categories={categories} accounts={accounts} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} />;
+                case 'stock-takes':
+                    return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
+                case 'reports':
+                    return <ReportsPage storeSettings={storeSettings!} />;
+                case 'accounting':
+                    return <AccountingPage accounts={accounts} journalEntries={journalEntries} sales={sales} customers={customers} suppliers={suppliers} supplierInvoices={supplierInvoices} purchaseOrders={purchaseOrders} onSaveAccount={handleSaveAccount} onDeleteAccount={handleDeleteAccount} onAddManualJournalEntry={handleAddManualJournalEntry} onRecordPayment={handleRecordPayment} onSaveSupplierInvoice={handleSaveSupplierInvoice} onRecordSupplierPayment={handleRecordSupplierPayment} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
+                case 'audit-trail':
+                    return <AuditLogPage logs={auditLogs} users={users} />;
+                case 'profile':
+                    return <ProfilePage user={currentUser} storeSettings={storeSettings!} onLogout={handleLogout} onInstall={handleInstall} installPrompt={installPrompt} onUpdateProfile={handleUpdateProfile} onChangePassword={handleChangePassword} />;
+                case 'settings':
+                    return <SettingsPage settings={storeSettings!} onSave={handleSaveSettings} />;
+                case 'users':
+                    return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
+                case 'notifications':
+                    return <NotificationsPage announcements={announcements} onRefresh={fetchData} />;
+                case 'directory':
+                case 'marketplace':
+                    if (parts[1] === 'request' && parts[2]) {
+                        return <MarketplaceRequestActionPage requestId={parts[2]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} showSnackbar={showSnackbar} />;
+                    }
+                    return <MarketplacePage />;
+
+                case 'track':
+                    return <CustomerRequestTrackingPage />;
+                case 'superadmin': {
+                    const parts = location.pathname.split('/');
+                    const subPath = parts[2];
+                    const id = parts[3];
+
+                    if (subPath === 'stores') {
+                        if (id) return <SuperAdminStoreDetails storeId={id} />;
+                        return <SuperAdminStores />;
+                    }
+                    if (subPath === 'notifications') return <SuperAdminNotifications />;
+                    if (subPath === 'subscriptions') return <SuperAdminSubscriptions />;
+                    return <SuperAdminDashboard />;
+                }
+                case 'marketing':
+                    return <MarketingPage />;
+                case 'logistics':
+                    return <LogisticsPage />;
+                case 'inventory':
+                    return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
+                case 'user-guide':
+                    return <UserGuidePage />;
+                default:
+                    return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
+            }
+        };
+
+        return (
+            <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                {renderContent()}
+            </Suspense>
+        );
     };
 
     return (
