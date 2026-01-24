@@ -23,6 +23,7 @@ const normalizeUser = (u: any): User => ({
     role: normalizeRole(u.role),
     token: u.token,
     currentStoreId: u.currentStoreId,
+    isVerified: u.isVerified || u.is_verified,
 });
 
 const updateStoredUser = (updatedFields: Partial<User>): User | null => {
@@ -122,4 +123,16 @@ export const verifySession = async (): Promise<User> => {
 
 export const changePassword = (passwordData: { currentPassword: string, newPassword: string }): Promise<void> => {
     return api.post('/auth/change-password', passwordData);
+};
+
+export const verifyEmail = async (token: string): Promise<void> => {
+    await api.post('/auth/verify-email', { token });
+};
+
+export const resendVerificationEmail = async (email?: string): Promise<void> => {
+    await api.post('/auth/resend-verification', { email });
+};
+
+export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+    await api.post('/auth/reset-password', { token, newPassword });
 };

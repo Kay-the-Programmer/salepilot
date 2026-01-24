@@ -25,6 +25,7 @@ import ShoppingCartIcon from '../components/icons/ShoppingCartIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import { RevenueChart, SalesChannelChart, StatSparkline } from '../components/reports/DashboardCharts';
 import HomeIcon from '../components/icons/HomeIcon';
+import { AiSummaryCard } from '../components/reports/AiSummaryCard';
 
 interface ReportsPageProps {
     storeSettings: StoreSettings;
@@ -224,6 +225,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
     const [showFilters, setShowFilters] = useState(false);
     const [datePreset, setDatePreset] = useState<'7d' | '30d' | 'month' | 'custom'>('30d');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [recentOrdersTab, setRecentOrdersTab] = useState<'all' | 'online' | 'pos'>('all');
 
     const [reportData, setReportData] = useState<any | null>(null);
     const [dailySales, setDailySales] = useState<any[] | null>(null);
@@ -452,8 +454,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                 const ordersSpark = revenueSpark.map(d => ({ ...d, value: d.value * 0.1 }));
                 const customerSpark = revenueSpark.map(d => ({ ...d, value: d.value * 0.05 }));
 
+                // Get user name from local storage or context if available (mocking for now or safe fallback)
+                const userJson = localStorage.getItem('salePilotUser');
+                const userName = userJson ? JSON.parse(userJson).name : undefined;
+
                 return (
                     <div className="space-y-6 animate-fade-in pb-10">
+                        {/* AI Summary Card */}
+                        <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={userName} />
+
                         {/* Row 1: Stats Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             {/* Card 1: Total Earnings */}
@@ -592,7 +601,23 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                             {/* Recent Orders - 2 Cols */}
                             <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                                <h3 className="font-bold text-slate-900 text-lg mb-4">Recent Orders</h3>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="font-bold text-slate-900 text-lg">Recent Orders</h3>
+                                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                                        {(['all', 'online', 'pos'] as const).map((tab) => (
+                                            <button
+                                                key={tab}
+                                                onClick={() => setRecentOrdersTab(tab)}
+                                                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${recentOrdersTab === tab
+                                                    ? 'bg-white text-slate-900 shadow-sm'
+                                                    : 'text-slate-500 hover:text-slate-700'
+                                                    }`}
+                                            >
+                                                {tab === 'all' ? 'All' : tab === 'online' ? 'Online' : 'In-Store'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-left border-collapse">
                                         <thead>
@@ -604,34 +629,38 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-50">
-                                            {/* We don't have individual recent orders in reportData, so we'll leave empty or use placeholders if data missing.
-                                                Actually, reportData usually aggregates. Let's check if we can fetch recent sales or use mock placeholders based on Top Products.
-                                                For this purely visual refactor, I will reuse Top Products as if they were recent orders for the demo appearance.
-                                            */}
-                                            {reportData.sales.topProductsByRevenue.slice(0, 5).map((p: any, i: number) => (
-                                                <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                                    <td className="py-3 text-sm text-slate-600 font-medium">#{1000 + i}</td>
-                                                    <td className="py-3 text-sm text-slate-900 flex items-center gap-2">
-                                                        <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                                                            {p.name.charAt(0)}
-                                                        </div>
-                                                        {p.name}
-                                                    </td>
-                                                    <td className="py-3 text-sm text-slate-900 font-bold">
-                                                        {formatCurrency(p.revenue, storeSettings)}
-                                                    </td>
-                                                    <td className="py-3">
-                                                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${i % 2 === 0 ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                                            {i % 2 === 0 ? 'Paid' : 'Pending'}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {reportData.sales.topProductsByRevenue.length === 0 && (
-                                                <tr>
-                                                    <td colSpan={4} className="py-8 text-center text-slate-400">No recent orders found</td>
-                                                </tr>
-                                            )}
+                                            {reportData.sales.recentOrders
+                                                ?.filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab)
+                                                .slice(0, 5)
+                                                .map((order: any, i: number) => (
+                                                    <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                                        <td className="py-3 text-sm text-slate-600 font-medium truncate max-w-[100px]" title={order.transactionId}>
+                                                            #{order.transactionId.substring(0, 8)}...
+                                                        </td>
+                                                        <td className="py-3 text-sm text-slate-900 flex items-center gap-2">
+                                                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                                                                {(order.customerName || 'W').charAt(0)}
+                                                            </div>
+                                                            {order.customerName || 'Walk-in Customer'}
+                                                        </td>
+                                                        <td className="py-3 text-sm text-slate-900 font-bold">
+                                                            {formatCurrency(order.total, storeSettings)}
+                                                        </td>
+                                                        <td className="py-3">
+                                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                                {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            {(!reportData.sales.recentOrders || reportData.sales.recentOrders
+                                                .filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab).length === 0) && (
+                                                    <tr>
+                                                        <td colSpan={4} className="py-8 text-center text-slate-400">
+                                                            No recent {recentOrdersTab === 'all' ? '' : recentOrdersTab === 'online' ? 'online' : 'in-store'} orders found
+                                                        </td>
+                                                    </tr>
+                                                )}
                                         </tbody>
                                     </table>
                                 </div>

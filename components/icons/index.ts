@@ -56,6 +56,7 @@ export { default as KeyIcon } from './KeyIcon';
 export { default as LinkIcon } from './LinkIcon';
 export { default as ListIcon } from './ListIcon';
 export { default as LockIcon } from './LockIcon';
+export { default as MapPinIcon } from './MapPinIcon';
 export { default as MinusCircleIcon } from './MinusCircleIcon';
 export { default as PencilIcon } from './PencilIcon';
 export { default as PersonIcon } from './PersonIcon';

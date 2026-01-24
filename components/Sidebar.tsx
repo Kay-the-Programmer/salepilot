@@ -52,6 +52,13 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
     {
+        name: 'Quick View',
+        page: 'quick-view',
+        icon: SparklesIcon,
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer', 'supplier'],
+        badge: null
+    },
+    {
         name: 'Dashboard',
         page: 'reports',
         icon: HomeIcon,

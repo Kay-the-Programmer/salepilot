@@ -1,21 +1,22 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Announcement } from '../types';
 import { api } from '../services/api';
-import { notificationService } from '../services/notificationService';
 
-interface NotificationsPageProps {
-    announcements: Announcement[];
-    onRefresh?: () => void;
-}
 
-const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, onRefresh }) => {
+const NotificationsPage: React.FC<{
+    announcements: import('../types').Announcement[];
+    onRefresh: () => Promise<void>;
+}> = ({ announcements = [], onRefresh }) => {
     const navigate = useNavigate();
     const [isPushEnabled, setIsPushEnabled] = React.useState(false);
     const [isSupported, setIsSupported] = React.useState(true);
 
+    const unreadCount = announcements.filter(n => !n.isRead).length;
+
     React.useEffect(() => {
         const checkStatus = async () => {
+            const { notificationService } = await import('../services/notificationService');
+
             const status = await notificationService.getSubscriptionStatus();
             setIsPushEnabled(status);
 
@@ -26,6 +27,7 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, on
     }, []);
 
     const togglePush = async () => {
+        const { notificationService } = await import('../services/notificationService');
         if (isPushEnabled) {
             await notificationService.unsubscribeUser();
             setIsPushEnabled(false);
@@ -42,12 +44,23 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, on
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    const handleMarkAsRead = async (id: string) => {
+    const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
+        if (e) e.stopPropagation();
         try {
             await api.patch(`/notifications/${id}/read`, {});
-            onRefresh?.();
+            onRefresh();
         } catch (error) {
-            console.error('Failed to mark as read:', error);
+            console.error('Failed to mark notification as read:', error);
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            const unread = announcements.filter(n => !n.isRead);
+            await Promise.all(unread.map(n => api.patch(`/notifications/${n.id}/read`, {})));
+            onRefresh();
+        } catch (error) {
+            console.error('Failed to mark all as read:', error);
         }
     };
 
@@ -57,6 +70,16 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({ announcements, on
             <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <h1 className="text-xl font-bold text-gray-900 tracking-tight">Notifications</h1>
+                    <div className="flex gap-2">
+                        {unreadCount > 0 && (
+                            <button
+                                onClick={handleMarkAllAsRead}
+                                className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+                            >
+                                Mark all as read
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
 

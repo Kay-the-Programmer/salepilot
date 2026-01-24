@@ -1,5 +1,13 @@
 
 
+
+export interface VerificationDocument {
+    id: string;
+    name: string;
+    url: string;
+    uploadedAt: string;
+}
+
 export interface ProductVariant {
     name?: string; // e.g., size/color label
     sku: string;
@@ -47,6 +55,7 @@ export interface User {
         dismissedHelpers: string[];
         lastUpdated?: string;
     };
+    isVerified?: boolean;
 }
 
 export interface CartItem {
@@ -374,18 +383,38 @@ export interface AuditLog {
     storeId?: string; // tenant scope
 }
 
+
+export interface Courier {
+    id: string;
+    name: string;
+    type: 'courier' | 'bus' | 'private_fleet';
+    contactPerson?: string;
+    phone?: string;
+    email?: string;
+    vehicleDetails?: {
+        licensePlate?: string;
+        routeInfo?: string;
+    };
+    isActive: boolean;
+}
+
 export interface Shipment {
     id: string;
     trackingNumber: string;
-    shippingCompany: string;
-    status: 'pending' | 'in_transit' | 'delivered' | 'returned' | 'cancelled';
-    contactName: string;
-    contactPhone?: string;
-    contactEmail?: string;
-    parcelImageUrl?: string;
+    courierId: string;
+    courierName?: string; // helpers for UI
+    status: 'pending' | 'confirmed' | 'shipped' | 'in_transit' | 'delivered' | 'failed' | 'returned';
+    recipientDetails: {
+        name: string;
+        phone: string;
+        address: string;
+        instructions?: string;
+    };
+    shippingCost: number;
+    imageUrl?: string;
+    notes?: string;
     createdAt: string;
     updatedAt?: string;
     storeId?: string;
-    customerId?: string;
-    orderId?: string; // Optional link to a Sale/Order
+    saleId?: string;
 }

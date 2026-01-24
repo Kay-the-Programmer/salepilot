@@ -2,6 +2,25 @@ import { useState } from 'react';
 import PlusIcon from './icons/PlusIcon';
 import XMarkIcon from './icons/XMarkIcon';
 import Bars3Icon from './icons/Bars3Icon';
+import { useNotifications } from '../contexts/NotificationContext';
+import NotificationDropdown from './NotificationDropdown';
+import { useNavigate } from 'react-router-dom';
+
+// Wrapper for bell in header
+const HeaderNotificationBell = () => {
+    const navigate = useNavigate();
+    // Safety check: try catch doesn't work for hooks.
+    // We assume Header is always inside NotificationProvider (which we ensured).
+    const { notifications, markAsRead } = useNotifications();
+    return (
+        <NotificationDropdown
+            notifications={notifications}
+            onMarkAsRead={markAsRead}
+            onViewAll={() => navigate('/notifications')}
+        />
+    );
+};
+
 
 interface HeaderProps {
     title: string;
@@ -133,6 +152,10 @@ export default function Header({
 
                             {searchLeftContent}
                             {rightContent}
+                            <div className="mr-2">
+                                <HeaderNotificationBell />
+                            </div>
+
 
                             {showSearch && (
                                 <button

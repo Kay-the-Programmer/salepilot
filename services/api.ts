@@ -197,7 +197,9 @@ const ENDPOINT_TO_STORE: Record<string, string> = {
   '/settings': 'settings',
   '/shop/stores': 'marketStores',
   '/shop/global-products': 'marketProducts',
-  '/marketplace/requests/recent': 'marketRequests'
+  '/marketplace/requests/recent': 'marketRequests',
+  '/logistics/couriers': 'couriers',
+  '/logistics/shipments': 'shipments'
 };
 
 export const api = {
