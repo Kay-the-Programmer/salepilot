@@ -3,6 +3,7 @@ import { User } from '../types';
 import { SparklesIcon, ChartBarIcon, CubeIcon, SearchIcon } from '../components/icons';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import ReactMarkdown from 'react-markdown';
 
 interface QuickViewProps {
     user: User | null;
@@ -256,7 +257,13 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                             ? 'bg-indigo-600 text-white rounded-tr-sm'
                                             : 'bg-white border border-gray-200 text-gray-800 rounded-tl-sm'}
                                     `}>
-                                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                                        {msg.role === 'assistant' ? (
+                                            <div className="prose prose-sm max-w-none prose-p:my-2 prose-strong:text-gray-900 prose-strong:font-semibold">
+                                                <ReactMarkdown>{msg.content}</ReactMarkdown>
+                                            </div>
+                                        ) : (
+                                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                                        )}
                                     </div>
                                 </div>
                             ))}
