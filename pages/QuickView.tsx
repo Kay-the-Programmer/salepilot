@@ -104,6 +104,17 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                 { label: 'Profit Margins', query: 'What\'s my profit margin?' },
                 { label: 'Best Customers', query: 'Who are my best customers?' },
             ]
+        },
+        {
+            category: 'Strategy',
+            chips: [
+                { label: 'Improve Business', query: 'What strategies can I use to improve my business?' },
+                { label: 'Increase Sales', query: 'How can I increase my sales?' },
+                { label: 'Marketing Ideas', query: 'What marketing strategies should I use?' },
+                { label: 'Customer Retention', query: 'How can I retain more customers?' },
+                { label: 'Growth Opportunities', query: 'What are growth opportunities for my business?' },
+                { label: 'Competitive Edge', query: 'How can I compete better with larger businesses?' },
+            ]
         }
     ];
 
