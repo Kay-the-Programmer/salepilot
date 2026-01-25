@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../types';
-import { SparklesIcon, ChartBarIcon, CubeIcon } from '../components/icons';
+import { SparklesIcon, ChartBarIcon, CubeIcon, SearchIcon } from '../components/icons';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 
@@ -142,40 +142,62 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                             </p>
                         </div>
 
-                        {/* Search Input Mock (Visual Only - real input triggers same action) */}
-                        <div className="w-full max-w-2xl mb-12 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                        {/* AI Search Component */}
+                        <div className="w-full max-w-3xl mb-16 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                             <div className="relative group">
-                                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-200"></div>
-                                <div className="relative bg-white rounded-xl shadow-lg border border-gray-100 flex items-center p-2">
+                                {/* Enhanced gradient glow with animation */}
+                                <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500 rounded-full opacity-20 group-hover:opacity-30 blur-xl transition-all duration-500 group-focus-within:opacity-40 group-focus-within:blur-2xl group-focus-within:scale-105"></div>
+                                <div className="relative bg-gradient-to-br from-white to-gray-50/80 rounded-3xl shadow-xl border border-gray-200/50 backdrop-blur-sm flex items-center p-2.5 transition-all duration-300 group-hover:shadow-2xl group-hover:border-indigo-100 group-focus-within:border-indigo-200">
+                                    <div className="pl-4 pr-3 text-indigo-400 group-focus-within:text-indigo-600 transition-colors">
+                                        <SearchIcon className="w-5 h-5" />
+                                    </div>
                                     <input
                                         type="text"
                                         value={aiQuery}
                                         onChange={(e) => setAiQuery(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && handleAiSubmit(e)}
-                                        placeholder="Ask about sales, inventory, or customers..."
-                                        className="flex-1 pl-4 py-3 bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400 text-lg"
+                                        placeholder="Ask about sales trends, inventory status, or customer insights..."
+                                        className="flex-1 pl-2 py-4 bg-transparent border-none focus:ring-0 text-gray-900 placeholder-gray-400/70 text-lg rounded-3xl focus:outline-none"
+                                        aria-label="AI Assistant Search"
                                     />
                                     <button
                                         onClick={handleAiSubmit}
                                         disabled={!aiQuery.trim()}
-                                        className="p-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                                        className="ml-2 p-3.5 bg-gradient-to-r from-indigo-500 to-violet-500 text-white rounded-2xl hover:from-indigo-600 hover:to-violet-600 transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed hover:shadow-lg hover:scale-105 active:scale-95 group-focus-within:ring-2 group-focus-within:ring-indigo-200"
+                                        aria-label="Submit query"
                                     >
                                         <SparklesIcon className="w-5 h-5" />
                                     </button>
                                 </div>
                             </div>
 
-                            {/* Suggestion Chips */}
-                            <div className="mt-8 flex flex-wrap justify-center gap-3">
-                                {chipCategories.flatMap(c => c.chips).slice(0, 5).map((chip, idx) => (
-                                    <button
-                                        key={idx}
-                                        onClick={() => handleChipClick(chip.query)}
-                                        className="px-4 py-2 bg-white border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 text-gray-600 hover:text-indigo-700 text-sm font-medium rounded-full transition-all shadow-sm hover:shadow active:scale-95"
-                                    >
-                                        {chip.label}
-                                    </button>
-                                ))}
+                            {/* Enhanced Suggestion Chips with category grouping */}
+                            <div className="mt-10">
+                                <p className="text-center text-gray-500 text-sm font-medium mb-4 tracking-wide">
+                                    Try asking about:
+                                </p>
+                                <div className="flex flex-wrap justify-center gap-3">
+                                    {chipCategories.flatMap(c => c.chips).slice(0, 6).map((chip, idx) => (
+                                        <button
+                                            key={idx}
+                                            onClick={() => handleChipClick(chip.query)}
+                                            className="group relative px-5 py-2.5 bg-white/80 backdrop-blur-sm border border-gray-200/60 hover:border-indigo-300 hover:bg-gradient-to-r hover:from-indigo-50/80 hover:to-violet-50/80 text-gray-700 hover:text-indigo-700 text-sm font-medium rounded-full transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-indigo-100 active:scale-95"
+                                        >
+                                            <span className="relative z-10">{chip.label}</span>
+                                            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-indigo-500/0 to-violet-500/0 group-hover:from-indigo-500/5 group-hover:to-violet-500/5 transition-all duration-300"></div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Optional: Show categories */}
+                                <div className="mt-6 flex justify-center gap-4">
+                                    {chipCategories.slice(0, 3).map((category, idx) => (
+                                        <div key={idx} className="flex items-center gap-2">
+                                            <div className={`w-2 h-2 rounded-full ${category.color || 'bg-indigo-400'}`}></div>
+                                            <span className="text-xs text-gray-400 font-medium">{category.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
 
