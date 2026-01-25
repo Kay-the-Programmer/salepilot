@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { PurchaseOrder, Supplier, Product, POItem, StoreSettings } from '../types';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
 import PencilIcon from '../components/icons/PencilIcon';
@@ -13,6 +14,7 @@ import PackageIcon from '../components/icons/PackageIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
+import InformationCircleIcon from '../components/icons/InformationCircleIcon';
 
 import GridIcon from '../components/icons/GridIcon';
 import { formatCurrency } from '../utils/currency';
@@ -21,7 +23,7 @@ interface PurchaseOrdersPageProps {
     purchaseOrders: PurchaseOrder[];
     suppliers: Supplier[];
     products: Product[];
-    onSave: (po: PurchaseOrder) => void;
+    onSave: (po: PurchaseOrder) => Promise<void> | void;
     onDelete: (poId: string) => void;
     onReceiveItems: (poId: string, receivedItems: { productId: string, quantity: number }[]) => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
@@ -237,7 +239,7 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
     );
 };
 
-export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings, initialSupplierId }: {
+export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings }: {
     poToEdit?: PurchaseOrder;
     suppliers: Supplier[];
     products: Product[];
@@ -245,7 +247,6 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
     onCancel: () => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
     storeSettings: StoreSettings;
-    initialSupplierId?: string;
 }) {
     const [po, setPo] = useState<Omit<PurchaseOrder, 'id' | 'poNumber' | 'createdAt'>>(() => {
         if (poToEdit) return { ...poToEdit };
@@ -306,6 +307,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
             ...prev,
             items: prev.items.filter(item => item.productId !== productId)
         }));
+        showSnackbar("Item removed from order", "info");
     };
 
     useEffect(() => {
@@ -396,7 +398,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
             <div className="p-4 sm:p-6 max-w-6xl mx-auto">
                 <div className="space-y-6">
                     {/* Supplier Selection */}
-                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                    <div id="po-supplier-select" className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                             <TruckIcon className="w-5 h-5 text-gray-500" />
                             Supplier Selection
@@ -429,7 +431,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                     {po.supplierId && (
                         <div className="space-y-6">
                             {/* Add Products */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div id="po-available-products" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Available Products */}
                                 <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
                                     <div className="flex items-center justify-between mb-4">
@@ -688,17 +690,21 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                     </div>
 
                     {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-3 justify-end">
+                    <div id="po-save-actions" className="flex flex-col sm:flex-row gap-3 justify-end">
                         <button
                             onClick={() => handleSaveAndExit(false)}
-                            className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            disabled={isLoading}
+                            className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
+                            {isLoading && <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />}
                             Save as Draft
                         </button>
                         <button
                             onClick={() => handleSaveAndExit(true)}
-                            className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
+                            disabled={isLoading}
+                            className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
+                            {isLoading && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                             Place Order
                         </button>
                     </div>
@@ -708,9 +714,6 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
     );
 };
 
-import { useNavigate, useLocation } from 'react-router-dom';
-
-// ... (existing imports, but make sure to remove duplicates if I added useLocation separately)
 
 export default function PurchaseOrdersPage({
     purchaseOrders,
@@ -730,25 +733,6 @@ export default function PurchaseOrdersPage({
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    // New state for pre-filling
-    const [initialSupplierId, setInitialSupplierId] = useState<string | undefined>(undefined);
-
-    const location = useLocation();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        // Check for incoming navigation state
-        if (location.state && (location.state as any).action === 'create_po') {
-            const state = location.state as any;
-            if (state.supplierId) {
-                setInitialSupplierId(state.supplierId);
-                setView({ mode: 'form' });
-                // Clear state so we don't reopen on refresh/back (optional, but good practice)
-                window.history.replaceState({}, document.title);
-            }
-        }
-    }, [location]);
-
     useEffect(() => {
         if (view.mode === 'detail') {
             const updatedPO = purchaseOrders.find(p => p.id === view.po.id);
@@ -757,6 +741,89 @@ export default function PurchaseOrdersPage({
             }
         }
     }, [purchaseOrders, view]);
+
+    useEffect(() => {
+        // Main tour check
+        if (view.mode === 'list' && !localStorage.getItem('salePilot.poMainTourSeen')) {
+            setRunMainTour(true);
+        }
+    }, [view.mode]);
+
+    useEffect(() => {
+        // Form tour check
+        if (view.mode === 'form' && !localStorage.getItem('salePilot.poFormTourSeen')) {
+            const timer = setTimeout(() => setRunFormTour(true), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [view.mode]);
+
+    const handleJoyrideCallback = (data: CallBackProps, tour: 'main' | 'form') => {
+        const { status } = data;
+        const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+
+        if (finishedStatuses.includes(status)) {
+            if (tour === 'main') {
+                setRunMainTour(false);
+                localStorage.setItem('salePilot.poMainTourSeen', 'true');
+            } else {
+                setRunFormTour(false);
+                localStorage.setItem('salePilot.poFormTourSeen', 'true');
+            }
+        }
+    };
+
+    const mainTourSteps: Step[] = [
+        {
+            target: 'body',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Purchase Orders 📦</h3>
+                    <p>Welcome to the PO management screen! Here you can track all your supplier orders.</p>
+                </div>
+            ),
+            placement: 'center',
+            disableBeacon: true,
+        },
+        {
+            target: '#po-stats',
+            content: 'View quick stats about your orders, including drafts, pending orders, and total value.',
+            placement: 'bottom',
+        },
+        {
+            target: '#po-filters',
+            content: 'Filter your orders by status to find what you need quickly.',
+            placement: 'bottom',
+        },
+        {
+            target: '#po-new-btn',
+            content: 'Click here to create a new Purchase Order.',
+            placement: 'left',
+        },
+        {
+            target: '#po-help-btn',
+            content: 'Need to see this tour again? Click here anytime.',
+            placement: 'left',
+        }
+    ];
+
+    const formTourSteps: Step[] = [
+        {
+            target: '#po-supplier-select',
+            content: 'First, select the supplier you want to order from.',
+            placement: 'bottom',
+            disableBeacon: true,
+        },
+        {
+            target: '#po-available-products',
+            content: 'Add products from the available list or use the "Suggested Products" to quickly restock low items.',
+            placement: 'right',
+        },
+        {
+            target: '#po-save-actions',
+            content: 'Save as a draft to work on it later, or "Place Order" to finalize it.',
+            placement: 'top',
+        }
+    ];
 
     const filteredPOs = useMemo(() => {
         let filtered = purchaseOrders;
@@ -779,17 +846,32 @@ export default function PurchaseOrdersPage({
         setView({ mode: 'list' });
     };
 
-    const handleSavePO = (po: PurchaseOrder, placeOrder: boolean) => {
-        let finalPO = { ...po };
-        if (placeOrder && finalPO.status === 'draft') {
-            finalPO.status = 'ordered';
-            finalPO.orderedAt = new Date().toISOString();
-        }
-        onSave(finalPO);
-        if (placeOrder || finalPO.status !== 'draft') {
-            setView({ mode: 'detail', po: finalPO });
-        } else {
-            setView({ mode: 'list' });
+    const handleSavePO = async (po: PurchaseOrder, placeOrder: boolean) => {
+        setIsSaving(true);
+        try {
+            let finalPO = { ...po };
+            if (placeOrder && finalPO.status === 'draft') {
+                finalPO.status = 'ordered';
+                finalPO.orderedAt = new Date().toISOString();
+            }
+            await onSave(finalPO);
+
+            if (placeOrder) {
+                showSnackbar("Purchase Order placed successfully!", "success");
+            } else {
+                showSnackbar("Purchase Order saved as draft.", "success");
+            }
+
+            if (placeOrder || finalPO.status !== 'draft') {
+                setView({ mode: 'detail', po: finalPO });
+            } else {
+                setView({ mode: 'list' });
+            }
+        } catch (err) {
+            console.error(err);
+            showSnackbar("Failed to save purchase order", "error");
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -809,15 +891,25 @@ export default function PurchaseOrdersPage({
         return (
             <div className="min-h-screen bg-gray-50">
                 {/* Header */}
-                {/* Header */}
                 <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-2">
                             <h1 className="text-xl font-bold text-gray-900">Purchase Orders</h1>
+                            <button
+                                id="po-help-btn"
+                                onClick={() => {
+                                    localStorage.removeItem('salePilot.poMainTourSeen');
+                                    setRunMainTour(true);
+                                }}
+                                className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                                title="Start Tour"
+                            >
+                                <InformationCircleIcon className="w-5 h-5" />
+                            </button>
                         </div>
 
                         {/* Desktop Tabs (Pills) */}
-                        <div className="hidden md:flex items-center gap-3 mx-6">
+                        <div id="po-filters" className="hidden md:flex items-center gap-3 mx-6">
                             <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
                                 {['all', 'draft', 'ordered', 'received', 'canceled'].map((status) => (
                                     <button
@@ -845,8 +937,9 @@ export default function PurchaseOrdersPage({
                             </button>
 
                             <button
+                                id="po-new-btn"
                                 onClick={handleCreateNew}
-                                className="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className={`ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${purchaseOrders.length === 0 ? 'animate-pulse' : ''}`}
                             >
                                 <PlusIcon className="w-5 h-5 mr-1" />
                                 <span className="hidden sm:inline">New PO</span>
@@ -891,7 +984,7 @@ export default function PurchaseOrdersPage({
 
                 {/* Stats Cards */}
                 <div className="px-4 py-4 sm:px-6">
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+                    <div id="po-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
                             <div className="text-sm font-medium text-gray-500">Draft</div>
                             <div className="text-2xl font-bold text-gray-900">{stats.draft}</div>
@@ -965,11 +1058,12 @@ export default function PurchaseOrdersPage({
 
                             {/* POs List */}
                             <div className="divide-y divide-gray-200">
-                                {filteredPOs.map(po => (
+                                {filteredPOs.map((po, index) => (
                                     <div
                                         key={po.id}
                                         onClick={() => handleSelectPO(po)}
-                                        className="p-4 sm:p-6 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer"
+                                        className="p-4 sm:p-6 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer animate-fade-in-up"
+                                        style={{ animationDelay: `${index * 50}ms` }}
                                     >
                                         {/* Mobile View */}
                                         <div className="sm:hidden">
@@ -1024,227 +1118,6 @@ export default function PurchaseOrdersPage({
         );
     };
 
-    const renderDetailView = (po: PurchaseOrder) => {
-        const totalItems = po.items.reduce((sum, item) => sum + item.quantity, 0);
-        const receivedItems = po.items.reduce((sum, item) => sum + item.receivedQuantity, 0);
-        const progress = totalItems > 0 ? (receivedItems / totalItems) * 100 : 0;
-
-        return (
-            <div className="min-h-screen bg-gray-50">
-                {/* Header */}
-                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 sm:px-6">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                            <button
-                                onClick={handleBackToList}
-                                className="p-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                            >
-                                <ArrowLeftIcon className="w-6 h-6" />
-                            </button>
-                            <div className="ml-3">
-                                <h1 className="text-xl font-semibold text-gray-900">
-                                    {po.poNumber}
-                                </h1>
-                                <p className="text-sm text-gray-500">
-                                    Supplier: {po.supplierName}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <StatusBadge status={po.status} />
-                            {po.status === 'draft' && (
-                                <button
-                                    onClick={() => handleEditPO(po)}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm"
-                                >
-                                    <PencilIcon className="w-5 h-5" />
-                                    <span className="hidden sm:inline">Continue Editing</span>
-                                    <span className="sm:hidden">Edit</span>
-                                </button>
-                            )}
-                            {(po.status === 'ordered' || po.status === 'partially_received' || (po.status === 'received' && po.items.some(i => i.receivedQuantity < i.quantity))) && (
-                                <button
-                                    onClick={() => handleReceiveStock(po)}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700"
-                                >
-                                    <ArrowDownTrayIcon className="w-5 h-5" />
-                                    <span className="hidden sm:inline">Receive Stock</span>
-                                    <span className="sm:hidden">Receive</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Progress Bar */}
-                {(po.status === 'partially_received' || po.status === 'received') && (
-                    <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
-                        <div className="max-w-6xl mx-auto">
-                            <div className="flex items-center justify-between mb-2 text-sm">
-                                <span className="font-medium text-blue-900">Receiving Progress</span>
-                                <span className="font-semibold text-blue-900">
-                                    {receivedItems} / {totalItems} items ({Math.round(progress)}%)
-                                </span>
-                            </div>
-                            <div className="w-full bg-blue-200 rounded-full h-2">
-                                <div
-                                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                    style={{ width: `${progress}%` }}
-                                ></div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
-                <main className="p-4 sm:p-6">
-                    <div className="max-w-6xl mx-auto">
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Left Column - Items */}
-                            <div className="lg:col-span-2 space-y-6">
-                                {/* Items Card */}
-                                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                                    <div className="px-5 py-4 border-b border-gray-200">
-                                        <h3 className="text-lg font-semibold text-gray-900">
-                                            Items ({po.items.length})
-                                        </h3>
-                                    </div>
-                                    <div className="divide-y divide-gray-200">
-                                        {po.items.map(item => (
-                                            <div key={item.productId} className="p-5 hover:bg-gray-50 transition-colors">
-                                                <div className="flex items-start justify-between mb-4">
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="font-semibold text-gray-900">
-                                                            {item.productName}
-                                                        </h4>
-                                                        <p className="text-sm text-gray-500 mt-1">
-                                                            SKU: {item.sku}
-                                                        </p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="font-semibold text-gray-900">
-                                                            {formatCurrency(item.costPrice * item.quantity, storeSettings)}
-                                                        </div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {formatCurrency(item.costPrice, storeSettings)} each
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="grid grid-cols-3 gap-4">
-                                                    <div>
-                                                        <div className="text-sm font-medium text-gray-500">Ordered</div>
-                                                        <div className="text-lg font-semibold text-gray-900 mt-1">
-                                                            {item.quantity}
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-medium text-gray-500">Received</div>
-                                                        <div className="text-lg font-semibold text-green-600 mt-1">
-                                                            {item.receivedQuantity}
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div className="text-sm font-medium text-gray-500">Remaining</div>
-                                                        <div className="text-lg font-semibold text-blue-600 mt-1">
-                                                            {item.quantity - item.receivedQuantity}
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Notes Card */}
-                                {po.notes && (
-                                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-3">Notes</h3>
-                                        <p className="text-gray-600 whitespace-pre-wrap">
-                                            {po.notes}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Right Column - Summary */}
-                            <div className="space-y-6">
-                                {/* Timeline Card */}
-                                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Timeline</h3>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-500">Created</div>
-                                            <div className="text-gray-900">
-                                                {new Date(po.createdAt).toLocaleString()}
-                                            </div>
-                                        </div>
-                                        {po.orderedAt && (
-                                            <div>
-                                                <div className="text-sm font-medium text-gray-500">Ordered</div>
-                                                <div className="text-gray-900">
-                                                    {new Date(po.orderedAt).toLocaleString()}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {po.expectedAt && (
-                                            <div>
-                                                <div className="text-sm font-medium text-gray-500">Expected Delivery</div>
-                                                <div className="text-gray-900">
-                                                    {new Date(po.expectedAt).toLocaleDateString()}
-                                                </div>
-                                            </div>
-                                        )}
-                                        {po.receivedAt && (
-                                            <div>
-                                                <div className="text-sm font-medium text-gray-500">Last Received</div>
-                                                <div className="text-gray-900">
-                                                    {new Date(po.receivedAt).toLocaleString()}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Costs Card */}
-                                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Cost Summary</h3>
-                                    <div className="space-y-3">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600">Subtotal</span>
-                                            <span className="font-medium text-gray-900">
-                                                {formatCurrency(po.subtotal, storeSettings)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600">Shipping</span>
-                                            <span className="font-medium text-gray-900">
-                                                {formatCurrency(po.shippingCost, storeSettings)}
-                                            </span>
-                                        </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600">Tax</span>
-                                            <span className="font-medium text-gray-900">
-                                                {formatCurrency(po.tax, storeSettings)}
-                                            </span>
-                                        </div>
-                                        <div className="pt-3 border-t border-gray-200">
-                                            <div className="flex justify-between">
-                                                <span className="text-lg font-semibold text-gray-900">Total</span>
-                                                <span className="text-xl font-bold text-blue-600">
-                                                    {formatCurrency(po.total, storeSettings)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </main>
-            </div>
-        );
-    };
-
     const renderCurrentView = () => {
         switch (view.mode) {
             case 'detail':
@@ -1259,6 +1132,7 @@ export default function PurchaseOrdersPage({
                         onCancel={handleBackToList}
                         showSnackbar={showSnackbar}
                         storeSettings={storeSettings}
+                        isLoading={isLoading || isSaving}
                     />
                 );
             case 'list':
@@ -1269,6 +1143,34 @@ export default function PurchaseOrdersPage({
 
     return (
         <>
+            <Joyride
+                steps={mainTourSteps}
+                run={runMainTour}
+                continuous
+                showProgress
+                showSkipButton
+                callback={(data) => handleJoyrideCallback(data, 'main')}
+                styles={{
+                    options: {
+                        primaryColor: '#2563EB', // blue-600
+                        zIndex: 10000,
+                    }
+                }}
+            />
+            <Joyride
+                steps={formTourSteps}
+                run={runFormTour}
+                continuous
+                showProgress
+                showSkipButton
+                callback={(data) => handleJoyrideCallback(data, 'form')}
+                styles={{
+                    options: {
+                        primaryColor: '#2563EB', // blue-600
+                        zIndex: 10000,
+                    }
+                }}
+            />
             {renderCurrentView()}
             {selectedPO && (
                 <ReceiveStockModal
