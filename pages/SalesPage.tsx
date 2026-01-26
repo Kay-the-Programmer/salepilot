@@ -7,8 +7,7 @@ import ShoppingCartIcon from '../components/icons/ShoppingCartIcon';
 
 import ReceiptModal from '../components/sales/ReceiptModal';
 import QrCodeIcon from '../components/icons/QrCodeIcon';
-import UnifiedScannerModal from '../components/UnifiedScannerModal';
-
+import LoadingSpinner from '../components/LoadingSpinner';
 import CustomerSelect from '../components/sales/CustomerSelect';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
@@ -22,15 +21,11 @@ import Header from "@/components/Header.tsx";
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import CreditCardIcon from '../components/icons/CreditCardIcon';
-
-
-
+import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import BoltIcon from '../components/icons/BoltIcon';
 import ClockIcon from '../components/icons/ClockIcon';
-
 import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 import BellAlertIcon from '../components/icons/BellAlertIcon';
-
 
 import Bars3Icon from '../components/icons/Bars3Icon';
 import GridIcon from '../components/icons/GridIcon';
@@ -38,6 +33,8 @@ import ListIcon from '../components/icons/ListIcon';
 import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 import logo from '../assets/logo.png';
 import { ArrowLeftIcon } from '@/components/icons';
+import LencoPayButton from '../components/shop/LencoPayButton';
+import PaymentChoiceModal from '../components/sales/PaymentChoiceModal';
 
 interface SalesPageProps {
     products: Product[];
@@ -81,6 +78,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
     const [shouldFocusCashInput, setShouldFocusCashInput] = useState(false);
     const mobileCashInputRef = useRef<HTMLInputElement | null>(null);
+    const [mobileMoneyNumber, setMobileMoneyNumber] = useState('');
 
     // External Product Lookup State
     const [isProductFormOpen, setIsProductFormOpen] = useState(false);
@@ -90,6 +88,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [showScanActionModal, setShowScanActionModal] = useState(false);
     const [lastScannedProductName, setLastScannedProductName] = useState('');
     const [isScannerPaused, setIsScannerPaused] = useState(false);
+    const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
+    const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
@@ -203,6 +203,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Reset cash when payment method changes
     useEffect(() => {
         setCashReceived('');
+        setMobileMoneyNumber('');
     }, [selectedPaymentMethod]);
 
     // Close cart panel on mobile when cart is cleared
@@ -457,7 +458,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
     };
 
-    const processTransaction = async (type: 'paid' | 'invoice') => {
+    const processTransaction = async (type: 'paid' | 'invoice', reference?: string) => {
         if (cart.length === 0) {
             showSnackbar('Cart is empty', 'error');
             return;
@@ -492,6 +493,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     payments: [],
                 };
             } else {
+                // Intercept Mobile Money for Modal Choice
+                if (!reference) {
+                    const isMobileMoney = (selectedPaymentMethod || '').toLowerCase().includes('mobile') ||
+                        (selectedPaymentMethod || '').toLowerCase().includes('lenco') ||
+                        (selectedPaymentMethod || '').toLowerCase().includes('mtn') ||
+                        (selectedPaymentMethod || '').toLowerCase().includes('airtel');
+
+                    if (isMobileMoney) {
+                        setShowPaymentChoiceModal(true);
+                        setIsProcessing(false);
+                        return;
+                    }
+                }
+
                 saleData = {
                     ...baseSaleData,
                     paymentStatus: 'paid',
@@ -500,7 +515,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         amount: total,
                         method: selectedPaymentMethod,
                         id: Date.now().toString(),
-                        date: new Date().toISOString()
+                        date: new Date().toISOString(),
+                        reference: reference
                     } as Payment]
                 };
             }
@@ -941,78 +957,78 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         ) : (
                             <div className="divide-y divide-slate-100">
                                 {cart.map(item => (
-                                    <div 
-                                        key={item.productId} 
+                                    <div
+                                        key={item.productId}
                                         className="px-4 py-4 sm:py-5 hover:bg-slate-50/50 transition-colors duration-200 border-b border-slate-100 last:border-b-0 group"
-                                        >
+                                    >
                                         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                                             {/* Product Info Section */}
                                             <div className="flex-1 min-w-0">
-                                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
-                                                {/* Product Name & Price */}
-                                                <div className="flex-1 min-w-0">
-                                                <h3 className="font-semibold text-slate-900 text-base sm:text-sm truncate leading-tight">
-                                                    {item.name}
-                                                </h3>
-                                                <p className="text-slate-500 text-sm sm:text-xs mt-1 sm:mt-1.5">
-                                                    {formatCurrency(item.price, storeSettings)} each
-                                                </p>
+                                                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
+                                                    {/* Product Name & Price */}
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-semibold text-slate-900 text-base sm:text-sm truncate leading-tight">
+                                                            {item.name}
+                                                        </h3>
+                                                        <p className="text-slate-500 text-sm sm:text-xs mt-1 sm:mt-1.5">
+                                                            {formatCurrency(item.price, storeSettings)} each
+                                                        </p>
+                                                    </div>
+
+                                                    {/* Total & Quantity */}
+                                                    <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end sm:gap-1">
+                                                        <p className="font-bold text-slate-900 text-lg sm:text-base">
+                                                            {formatCurrency(item.price * item.quantity, storeSettings)}
+                                                        </p>
+                                                        <p className="text-slate-500 text-sm sm:text-xs">
+                                                            {item.quantity}{item.unitOfMeasure === 'kg' ? 'kg' : ''}
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                                
-                                                {/* Total & Quantity */}
-                                                <div className="flex items-center justify-between sm:justify-end sm:flex-col sm:items-end sm:gap-1">
-                                                <p className="font-bold text-slate-900 text-lg sm:text-base">
-                                                    {formatCurrency(item.price * item.quantity, storeSettings)}
-                                                </p>
-                                                <p className="text-slate-500 text-sm sm:text-xs">
-                                                    {item.quantity}{item.unitOfMeasure === 'kg' ? 'kg' : ''}
-                                                </p>
-                                                </div>
-                                            </div>
                                             </div>
 
                                             {/* Controls Section */}
                                             <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-start sm:gap-4">
-                                            {/* Quantity Controls */}
-                                            <div className="flex items-center gap-2 sm:gap-3">
+                                                {/* Quantity Controls */}
+                                                <div className="flex items-center gap-2 sm:gap-3">
+                                                    <button
+                                                        onClick={() => updateQuantity(item.productId, item.quantity - getStepFor(item.unitOfMeasure))}
+                                                        className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center transition-all duration-150 active:scale-95"
+                                                        aria-label="Decrease quantity"
+                                                    >
+                                                        <span className="font-bold text-slate-700 text-lg">−</span>
+                                                    </button>
+
+                                                    <input
+                                                        type="number"
+                                                        value={item.quantity}
+                                                        onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
+                                                        className="w-16 sm:w-14 px-2 py-2 sm:py-1.5 border border-slate-300 rounded-lg text-center text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                                                        min="0"
+                                                        step={item.unitOfMeasure === 'kg' ? '0.1' : '1'}
+                                                        aria-label={`Quantity of ${item.name}`}
+                                                    />
+
+                                                    <button
+                                                        onClick={() => updateQuantity(item.productId, item.quantity + getStepFor(item.unitOfMeasure))}
+                                                        className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center transition-all duration-150 active:scale-95"
+                                                        aria-label="Increase quantity"
+                                                    >
+                                                        <span className="font-bold text-slate-700 text-lg">+</span>
+                                                    </button>
+                                                </div>
+
+                                                {/* Remove Button */}
                                                 <button
-                                                onClick={() => updateQuantity(item.productId, item.quantity - getStepFor(item.unitOfMeasure))}
-                                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center transition-all duration-150 active:scale-95"
-                                                aria-label="Decrease quantity"
+                                                    onClick={() => removeFromCart(item.productId)}
+                                                    className="p-2.5 sm:p-1.5 hover:bg-red-50 active:bg-red-100 rounded-lg transition-all duration-150 group-hover:opacity-100 opacity-0 sm:opacity-100 sm:group-hover:opacity-100"
+                                                    aria-label={`Remove ${item.name} from cart`}
                                                 >
-                                                <span className="font-bold text-slate-700 text-lg">−</span>
-                                                </button>
-                                                
-                                                <input
-                                                type="number"
-                                                value={item.quantity}
-                                                onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
-                                                className="w-16 sm:w-14 px-2 py-2 sm:py-1.5 border border-slate-300 rounded-lg text-center text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
-                                                min="0"
-                                                step={item.unitOfMeasure === 'kg' ? '0.1' : '1'}
-                                                aria-label={`Quantity of ${item.name}`}
-                                                />
-                                                
-                                                <button
-                                                onClick={() => updateQuantity(item.productId, item.quantity + getStepFor(item.unitOfMeasure))}
-                                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 bg-white hover:bg-slate-50 active:bg-slate-100 flex items-center justify-center transition-all duration-150 active:scale-95"
-                                                aria-label="Increase quantity"
-                                                >
-                                                <span className="font-bold text-slate-700 text-lg">+</span>
+                                                    <XMarkIcon className="w-5 h-5 sm:w-4 sm:h-4 text-slate-400 hover:text-red-600 transition-colors" />
                                                 </button>
                                             </div>
-                                            
-                                            {/* Remove Button */}
-                                            <button
-                                                onClick={() => removeFromCart(item.productId)}
-                                                className="p-2.5 sm:p-1.5 hover:bg-red-50 active:bg-red-100 rounded-lg transition-all duration-150 group-hover:opacity-100 opacity-0 sm:opacity-100 sm:group-hover:opacity-100"
-                                                aria-label={`Remove ${item.name} from cart`}
-                                            >
-                                                <XMarkIcon className="w-5 h-5 sm:w-4 sm:h-4 text-slate-400 hover:text-red-600 transition-colors" />
-                                            </button>
-                                            </div>
                                         </div>
-                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         )
@@ -1577,6 +1593,19 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 </div>
                                             </div>
 
+                                            {(selectedPaymentMethod?.toLowerCase().includes('mobile') || selectedPaymentMethod?.toLowerCase().includes('lenco') || selectedPaymentMethod?.toLowerCase().includes('mtn') || selectedPaymentMethod?.toLowerCase().includes('airtel')) && (
+                                                <div className="pt-2">
+                                                    <label className="block text-sm font-medium text-slate-900 mb-2">Payer Mobile Number</label>
+                                                    <input
+                                                        type="text"
+                                                        value={mobileMoneyNumber}
+                                                        onChange={(e) => setMobileMoneyNumber(e.target.value)}
+                                                        className="w-full p-2 border border-slate-300 rounded-lg font-bold text-lg"
+                                                        placeholder="e.g. 0961111111"
+                                                    />
+                                                </div>
+                                            )}
+
                                             {isCashMethod && (
                                                 <div className="pt-2">
                                                     <label className="block text-sm font-medium text-slate-900 mb-2">Cash Received</label>
@@ -1604,6 +1633,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                     <ClockIcon className="w-5 h-5" />
                                                     Hold
                                                 </button>
+
                                                 <button
                                                     onClick={() => processTransaction('paid')}
                                                     disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
@@ -1757,6 +1787,52 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 storeSettings={storeSettings}
                 initialValues={initialProductValues}
             />
+
+            <PaymentChoiceModal
+                isOpen={showPaymentChoiceModal}
+                onClose={() => setShowPaymentChoiceModal(false)}
+                totalAmount={total} // Using the memoized total instead of re-calculating
+                customerEmail={selectedCustomer?.email || 'guest@salepilot.com'}
+                customerName={selectedCustomer?.name || 'Guest'}
+                customerPhone={mobileMoneyNumber || selectedCustomer?.phone || ''}
+                storeSettings={storeSettings}
+                onLencoSuccess={async (response) => {
+                    setIsVerifyingPayment(true);
+                    try {
+                        console.log('Verifying Lenco payment with reference:', response.reference);
+                        const verificationResult = await api.post<any>('/payments/lenco/verify', { reference: response.reference });
+
+                        if (verificationResult.status) {
+                            showSnackbar('Payment verified successfully!', 'success');
+                            setShowPaymentChoiceModal(false);
+                            processTransaction('paid', response.reference);
+                        } else {
+                            showSnackbar(verificationResult.message || 'Payment verification failed', 'error');
+                        }
+                    } catch (err: any) {
+                        console.error('Lenco verification error:', err);
+                        showSnackbar('Failed to verify payment. Please contact support.', 'error');
+                    } finally {
+                        setIsVerifyingPayment(false);
+                    }
+                }}
+                onManualConfirm={() => {
+                    setShowPaymentChoiceModal(false);
+                    processTransaction('paid', 'manual-verfication');
+                }}
+            />
+
+            {/* Verification Loading Overlay */}
+            {isVerifyingPayment && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
+                        <LoadingSpinner size="lg" fullScreen={false} text="" />
+                        <p className="font-semibold text-slate-900">Verifying Payment...</p>
+                        <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
+                    </div>
+                </div>
+            )}
+
         </div >
     );
 };

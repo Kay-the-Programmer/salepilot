@@ -4,16 +4,24 @@ interface LoadingSpinnerProps {
     fullScreen?: boolean;
     text?: string;
     className?: string;
+    size?: 'sm' | 'md' | 'lg';
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
     fullScreen = true,
     text = 'Loading...',
-    className = ''
+    className = '',
+    size = 'md'
 }) => {
+    const sizeClasses = {
+        sm: 'w-6 h-6',
+        md: 'w-12 h-12',
+        lg: 'w-16 h-16'
+    };
+
     const spinner = (
         <div className={`flex flex-col items-center justify-center space-y-4 ${className}`}>
-            <div className="relative w-12 h-12">
+            <div className={`relative ${sizeClasses[size]}`}>
                 <div className="absolute top-0 left-0 w-full h-full border-4 border-gray-200 rounded-full"></div>
                 <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
             </div>
