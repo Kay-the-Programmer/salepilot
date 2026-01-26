@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
-import CreditCardIcon from '../components/icons/CreditCardIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import { getCurrentUser } from '../services/authService';
 import { NotificationProvider } from '../contexts/NotificationContext';
@@ -14,6 +13,7 @@ const PLANS = [
         id: 'plan_basic',
         name: 'Basic',
         price: 'K99',
+        amount: 99,
         interval: '/month',
         description: 'Essential features for small businesses',
         features: [
@@ -28,6 +28,7 @@ const PLANS = [
         id: 'plan_pro',
         name: 'Pro',
         price: 'K249',
+        amount: 249,
         interval: '/month',
         description: 'Advanced tools for growing stores',
         features: [
@@ -43,6 +44,7 @@ const PLANS = [
         id: 'plan_enterprise',
         name: 'Enterprise',
         price: 'K599',
+        amount: 599,
         interval: '/month',
         description: 'Complete solution for large operations',
         features: [
@@ -56,18 +58,24 @@ const PLANS = [
     }
 ];
 
+declare global {
+    interface Window {
+        LencoPay: any;
+    }
+}
+
 const SubscriptionPage: React.FC = () => {
     const navigate = useNavigate();
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-    const [phoneNumber, setPhoneNumber] = useState('');
     const [loading, setLoading] = useState(false);
     const [storeId, setStoreId] = useState<string | null>(null);
+    const [userEmail, setUserEmail] = useState<string | null>(null);
 
     useEffect(() => {
         const user = getCurrentUser();
         if (user) {
             setStoreId(user.currentStoreId || null);
+            setUserEmail(user.email || null);
         } else {
             navigate('/login');
         }
@@ -75,18 +83,21 @@ const SubscriptionPage: React.FC = () => {
 
     const handleSelectPlan = (planId: string) => {
         setSelectedPlan(planId);
-        setIsPaymentModalOpen(true);
+        const plan = PLANS.find(p => p.id === planId);
+        if (!plan) return;
+
+        handlePayment(plan);
     };
 
-    const handlePayment = async () => {
-        if (!storeId || !selectedPlan) {
-            alert('Store ID or Plan missing');
+    const handlePayment = async (plan: any) => {
+        if (!storeId || !userEmail) {
+            alert('Store ID or User Email missing');
             return;
         }
 
         setLoading(true);
         try {
-            // Call Backend API
+            // 1. Initiate payment on backend to get reference
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/subscriptions/pay`, {
                 method: 'POST',
                 headers: {
@@ -95,23 +106,74 @@ const SubscriptionPage: React.FC = () => {
                 },
                 body: JSON.stringify({
                     storeId,
-                    planId: selectedPlan,
-                    method: 'mobile_money',
-                    phoneNumber
+                    planId: plan.id,
+                    method: 'mobile-money'
                 })
             });
 
             if (!response.ok) {
-                throw new Error('Payment failed');
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to initiate payment');
             }
 
-            await response.json();
-            alert('Payment Successful! Your subscription is now active.');
-            setIsPaymentModalOpen(false);
-            navigate('/settings');
-        } catch (error) {
+            const { reference } = await response.json();
+
+            // 2. Open Lenco Popup
+            const lencoKey = import.meta.env.VITE_LENCO_PUBLIC_KEY;
+
+            if (!window.LencoPay) {
+                throw new Error('Lenco SDK not loaded');
+            }
+
+            window.LencoPay.getPaid({
+                key: lencoKey,
+                reference: reference,
+                email: userEmail,
+                amount: plan.amount,
+                currency: "ZMW",
+                channels: ["mobile-money", "card"],
+                onSuccess: async (response: any) => {
+                    console.log('Lenco Success:', response);
+                    await verifyPayment(reference);
+                },
+                onClose: () => {
+                    setLoading(false);
+                },
+                onConfirmationPending: () => {
+                    alert('Your payment is being confirmed. Please wait.');
+                },
+            });
+
+        } catch (error: any) {
             console.error('Payment Error:', error);
-            alert('Failed to process payment. Please try again.');
+            alert(error.message || 'Failed to process payment. Please try again.');
+            setLoading(false);
+        }
+    };
+
+    const verifyPayment = async (reference: string) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/subscriptions/verify/${reference}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error('Verification failed');
+            }
+
+            const data = await response.json();
+            if (data.success) {
+                alert('Payment Successful! Your subscription is now active.');
+                navigate('/settings');
+            } else {
+                alert(data.message || 'Verification pending. Please check your settings later.');
+            }
+        } catch (error) {
+            console.error('Verification Error:', error);
+            alert('Failed to verify payment. If you were charged, please contact support.');
         } finally {
             setLoading(false);
         }
@@ -132,7 +194,6 @@ const SubscriptionPage: React.FC = () => {
                     isOnline={navigator.onLine}
                 />
                 <div className="flex-1 flex flex-col overflow-hidden">
-
                     <Header title="Subscription Plans" />
 
                     <main className="flex-1 overflow-y-auto p-6 md:p-8">
@@ -207,73 +268,17 @@ const SubscriptionPage: React.FC = () => {
 
                                         <button
                                             onClick={() => handleSelectPlan(plan.id)}
+                                            disabled={loading}
                                             className={`w-full py-3.5 px-6 rounded-xl text-sm font-semibold transition-all duration-300 text-center flex items-center justify-center gap-2 ${plan.highlight
                                                 ? 'bg-white text-blue-900 hover:bg-blue-50 shadow-lg'
                                                 : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md hover:shadow-lg'
-                                                }`}
+                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                                         >
-                                            Get Started
+                                            {loading && selectedPlan === plan.id ? 'Processing...' : 'Get Started'}
                                         </button>
                                     </div>
                                 ))}
                             </div>
-
-                            {/* Payment Modal */}
-                            {isPaymentModalOpen && (
-                                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-                                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                        <div className="p-6">
-                                            <div className="flex items-center justify-between mb-6">
-                                                <h3 className="text-xl font-bold text-slate-900">Confirm Payment</h3>
-                                                <button
-                                                    onClick={() => setIsPaymentModalOpen(false)}
-                                                    className="text-slate-400 hover:text-slate-500"
-                                                >
-                                                    <span className="sr-only">Close</span>
-                                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                    </svg>
-                                                </button>
-                                            </div>
-
-                                            <div className="space-y-4">
-                                                <div className="p-4 bg-blue-50 rounded-xl flex items-center gap-4">
-                                                    <div className="p-2 bg-white rounded-lg shadow-sm">
-                                                        <CreditCardIcon className="w-6 h-6 text-blue-600" />
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-slate-900">Airtel Money</p>
-                                                        <p className="text-xs text-slate-500">Secure mobile payment</p>
-                                                    </div>
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                                                        Mobile Number
-                                                    </label>
-                                                    <input
-                                                        type="tel"
-                                                        value={phoneNumber}
-                                                        onChange={(e) => setPhoneNumber(e.target.value)}
-                                                        placeholder="097xxxxxxx"
-                                                        className="w-full rounded-xl border-slate-200 focus:border-blue-500 focus:ring-blue-500"
-                                                    />
-                                                </div>
-
-                                                <div className="pt-4">
-                                                    <button
-                                                        onClick={handlePayment}
-                                                        disabled={loading || !phoneNumber}
-                                                        className="w-full py-3.5 px-6 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-blue-500/20"
-                                                    >
-                                                        {loading ? 'Processing...' : `Pay ${PLANS.find(p => p.id === selectedPlan)?.price}`}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </main>
                 </div>
