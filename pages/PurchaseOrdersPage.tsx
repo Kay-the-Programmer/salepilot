@@ -239,7 +239,7 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
     );
 };
 
-export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings }: {
+export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCancel, showSnackbar, storeSettings, initialSupplierId, isLoading }: {
     poToEdit?: PurchaseOrder;
     suppliers: Supplier[];
     products: Product[];
@@ -247,6 +247,8 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
     onCancel: () => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
     storeSettings: StoreSettings;
+    initialSupplierId?: string;
+    isLoading: boolean;
 }) {
     const [po, setPo] = useState<Omit<PurchaseOrder, 'id' | 'poNumber' | 'createdAt'>>(() => {
         if (poToEdit) return { ...poToEdit };
@@ -733,6 +735,12 @@ export default function PurchaseOrdersPage({
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    // Missing states
+    const [runMainTour, setRunMainTour] = useState(false);
+    const [runFormTour, setRunFormTour] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const [initialSupplierId, setInitialSupplierId] = useState<string | undefined>(undefined);
+
     useEffect(() => {
         if (view.mode === 'detail') {
             const updatedPO = purchaseOrders.find(p => p.id === view.po.id);
@@ -1132,6 +1140,7 @@ export default function PurchaseOrdersPage({
                         onCancel={handleBackToList}
                         showSnackbar={showSnackbar}
                         storeSettings={storeSettings}
+                        initialSupplierId={initialSupplierId}
                         isLoading={isLoading || isSaving}
                     />
                 );

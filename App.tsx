@@ -70,7 +70,7 @@ export default function App() {
                             <Route path="/audit-trail" element={<Dashboard />} />
                             <Route path="/users" element={<Dashboard />} />
                             <Route path="/notifications" element={<Dashboard />} />
-                            <Route path="/logistics" element={<Dashboard />} />
+                            {/* <Route path="/logistics" element={<Dashboard />} /> */}
                             <Route path="/profile" element={<Dashboard />} />
                             <Route path="/settings" element={<Dashboard />} />
                             <Route path="/subscription" element={<SubscriptionPage />} />
@@ -84,18 +84,18 @@ export default function App() {
 
                             <Route path="/marketing" element={<Dashboard />} />
                             <Route path="/marketing" element={<Dashboard />} />
-                            <Route path="/directory" element={<MarketplacePage />} />
+                            {/* <Route path="/directory" element={<MarketplacePage />} />
                             <Route path="/directory/request/:requestId" element={<Dashboard />} />
                             <Route path="/marketplace" element={<MarketplacePage />} />
-                            <Route path="/marketplace/track/:requestId" element={<CustomerRequestTrackingPage />} />
+                            <Route path="/marketplace/track/:requestId" element={<CustomerRequestTrackingPage />} /> */}
                             <Route path="/offers/track/:id" element={<OfferLiveTracking />} />
 
                             {/* Customer Dashboard - Protected by Dashboard logic */}
-                            <Route path="/customer/login" element={<Dashboard />} />
+                            {/* <Route path="/customer/login" element={<Dashboard />} />
                             <Route path="/customer/register" element={<Dashboard />} />
                             <Route path="/customer/dashboard" element={<Dashboard />} />
                             <Route path="/customer/orders" element={<Dashboard />} />
-                            <Route path="/register-supplier" element={<SupplierRegisterPage />} />
+                            <Route path="/register-supplier" element={<SupplierRegisterPage />} /> */}
 
                             {/* Supplier Routes - Protected by Dashboard logic */}
                             <Route path="/supplier/dashboard" element={<Dashboard />} />

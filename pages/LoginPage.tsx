@@ -96,9 +96,8 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
             const token = await firebaseUser.getIdToken();
             const userName = firebaseUser.displayName || firebaseUser.email || 'User';
 
-            // Store pending user data and show role selection modal
-            setPendingGoogleUser({ firebaseUser, token, userName });
-            setShowGoogleRoleModal(true);
+            // Auto-select 'business' role and skip modal for now
+            handleGoogleRoleSelection('business', { firebaseUser, token, userName });
             setIsLoading(false);
         } catch (err: any) {
             console.error("Google Login Error", err);
@@ -109,17 +108,18 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
         }
     };
 
-    const handleGoogleRoleSelection = async (role: 'business' | 'customer') => {
-        if (!pendingGoogleUser) return;
+    const handleGoogleRoleSelection = async (role: 'business' | 'customer', googleUser?: { firebaseUser: any; token: string; userName: string }) => {
+        const userToProcess = googleUser || pendingGoogleUser;
+        if (!userToProcess) return;
 
         setIsLoading(true);
         setShowGoogleRoleModal(false);
 
         try {
-            const user = await loginWithGoogle(pendingGoogleUser.token, role);
+            const user = await loginWithGoogle(userToProcess.token, role);
             onLogin(user);
             showSnackbar(`Welcome, ${user.name}!`, 'success');
-            setPendingGoogleUser(null);
+            if (!googleUser) setPendingGoogleUser(null);
         } catch (err: any) {
             console.error("Google Login Error", err);
             const msg = (err && typeof err.message === 'string') ? err.message : 'Google Login failed.';
@@ -195,6 +195,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                         {view === 'register' && (
                             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
                                 {/* Account Type Selector */}
+                                {/* Hide Account Type Selector for now - focused on Business Admin
                                 <div className="flex justify-center gap-6 mb-4">
                                     <label className="flex items-center gap-2 cursor-pointer group select-none">
                                         <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${accountType === 'business' ? 'border-blue-600' : 'border-slate-300 group-hover:border-blue-400'}`}>
@@ -211,6 +212,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                         <span className={`text-xs font-bold leading-none ${accountType === 'customer' ? 'text-slate-700' : 'text-slate-400'}`}>Customer</span>
                                     </label>
                                 </div>
+                                */}
 
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
@@ -302,6 +304,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             )}
                         </div>
 
+                        {/* 
                         <div className="text-center mt-4">
                             <span className="text-xs text-slate-400">Want to sell to retailers? </span>
                             <button
@@ -312,6 +315,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                 Register as Supplier
                             </button>
                         </div>
+                        */}
 
                         <button
                             type="submit"
