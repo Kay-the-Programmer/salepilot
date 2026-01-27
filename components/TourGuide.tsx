@@ -129,7 +129,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
         },
     ];
 
-    const salesSteps: Step[] = [
+    const desktopSalesSteps: Step[] = [
         {
             target: 'body',
             content: (
@@ -253,6 +253,70 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
         },
     ];
 
+    const mobileSalesSteps: Step[] = [
+        {
+            target: 'body',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">POS Mobile Tour 🛒</h3>
+                    <p>Welcome! This terminal is optimized for your mobile device.</p>
+                </div>
+            ),
+            placement: 'center',
+            disableBeacon: true,
+        },
+        {
+            target: '#pos-mobile-search',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Find Products</h3>
+                    <p>Search for items quickly using the search bar.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: '#pos-mobile-product-list',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Product Grid</h3>
+                    <p>Tap products to add them to your cart instantly.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-mobile-scanner-fab',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Quick Scan</h3>
+                    <p>Use your camera to scan barcodes and add products even faster.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-mobile-cart-fab',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">View Cart</h3>
+                    <p>Tap here to review your items, adjust quantities, and proceed to checkout.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-mobile-held-fab',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Held Sales</h3>
+                    <p>Access your paused transactions here on mobile.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+    ];
+
     const mobileSteps: Step[] = [
         {
             target: 'body',
@@ -288,7 +352,9 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
     ];
 
     const getSteps = () => {
-        if (page === 'sales') return salesSteps;
+        if (page === 'sales') {
+            return isMobile ? mobileSalesSteps : desktopSalesSteps;
+        }
         return isMobile ? mobileSteps : desktopSteps;
     };
 

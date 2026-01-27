@@ -546,6 +546,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const FloatingActionButtons = () => (
         <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-white/20 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
             <button
+                id="pos-mobile-scanner-fab"
                 onClick={() => {
                     setIsScannerOpen(true);
                     setActiveTab('cart');
@@ -555,6 +556,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 <QrCodeIcon className="w-6 h-6" />
             </button>
             <button
+                id="pos-mobile-cart-fab"
                 onClick={() => setActiveTab(prev => prev === 'products' ? 'cart' : 'products')}
                 className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-lg flex items-center justify-center active:scale-95 transition-all"
             >
@@ -567,6 +569,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
             </button>
 
             <button
+                id="pos-mobile-held-fab"
                 onClick={() => setShowHeldPanel(true)}
                 className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-all"
             >
@@ -1399,6 +1402,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             <div className="relative">
                                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input
+                                    id="pos-mobile-search"
                                     type="text"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -1409,7 +1413,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         </div>
                     </div>
                     {/* Mobile Products Grid */}
-                    <div className="p-4 pb-24">
+                    <div id="pos-mobile-product-list" className="p-4 pb-24">
                         <div className="grid grid-cols-2 gap-3">
                             {filteredProducts.slice(0, 20).map(product => (
                                 <button
@@ -1499,7 +1503,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 </div>
                             </div>
                         ) : (
-                            <div>
+                            <div id="pos-mobile-cart-items">
                                 {/* Items List */}
                                 <div className="p-4 space-y-4">
                                     {cart.map(item => (
