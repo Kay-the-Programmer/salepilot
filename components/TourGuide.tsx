@@ -269,8 +269,18 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: '#pos-mobile-header',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Navigation</h3>
-                    <p>Access your menu and help guides from the top header.</p>
+                    <h3 className="font-bold text-lg mb-2">App Menu</h3>
+                    <p>Tap here to access the main navigation and switch between modules.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: '#pos-mobile-help-btn',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Help Guide</h3>
+                    <p>Tap this icon anytime to restart this tour and learn about POS features.</p>
                 </div>
             ),
             placement: 'bottom',

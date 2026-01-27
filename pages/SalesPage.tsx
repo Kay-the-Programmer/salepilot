@@ -1373,17 +1373,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 <div className="absolute left-1/2 transform -translate-x-1/2">
                                     <img src={logo} alt="SalePilot" className="h-8" />
                                 </div>
-                                <button
-                                    onClick={() => setRunTour(true)}
-                                    className="p-2 rounded-full hover:bg-slate-100"
-                                    title="Help Guide"
-                                >
-                                    <QuestionMarkCircleIcon className="w-6 h-6 text-slate-700" />
-                                </button>
-                                <button className="p-2 rounded-full hover:bg-slate-100 relative">
-                                    <BellAlertIcon className="w-6 h-6 text-slate-700" />
-                                    {/* Optional: Add notification badge here if needed */}
-                                </button>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        id="pos-mobile-help-btn"
+                                        onClick={() => setRunTour(true)}
+                                        className="p-2 rounded-full hover:bg-slate-100"
+                                        title="Help Guide"
+                                    >
+                                        <QuestionMarkCircleIcon className="w-6 h-6 text-slate-700" />
+                                    </button>
+                                    <button className="p-2 rounded-full hover:bg-slate-100 relative">
+                                        <BellAlertIcon className="w-6 h-6 text-slate-700" />
+                                        {/* Optional: Add notification badge here if needed */}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
