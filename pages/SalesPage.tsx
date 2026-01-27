@@ -146,20 +146,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 18; // Fixed for desktop grid 3x6 
 
-    const [showQuickActions, setShowQuickActions] = useState<boolean>(false);
-
     // Persist view mode to localStorage
     useEffect(() => {
         localStorage.setItem('pos-view-mode', viewMode);
     }, [viewMode]);
-
-    // Quick actions for popular products
-    const quickActions = useMemo(() => {
-        return products
-            .filter(p => p.status === 'active')
-            .sort((a, b) => ((b as any).stock || 0) - ((a as any).stock || 0))
-            .slice(0, 4);
-    }, [products]);
 
     // Scroll behavior for FAB
     useEffect(() => {
@@ -1370,7 +1360,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         {/* Top Bar (Menu, Logo, Notification) */}
                         <div className="bg-transparent/1 backdrop-blur-sm border-b border-slate-200/50 p-4 pb-2">
                             <div className="flex items-center justify-between">
-                                <div className="flex items-center gap-2">
+                                <div id="pos-mobile-header" className="flex items-center gap-2">
                                     {onOpenSidebar && (
                                         <button
                                             onClick={onOpenSidebar}
@@ -1655,6 +1645,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                                             <div className="grid grid-cols-2 gap-3 pt-4">
                                                 <button
+                                                    id="pos-mobile-hold-btn"
                                                     onClick={handleHoldSale}
                                                     className="py-3 bg-orange-100 text-orange-700 rounded-lg font-medium flex items-center justify-center gap-2"
                                                 >
@@ -1663,6 +1654,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 </button>
 
                                                 <button
+                                                    id="pos-mobile-pay-btn"
                                                     onClick={() => processTransaction('paid')}
                                                     disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
                                                     className="py-3 bg-blue-600 text-white rounded-lg font-bold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"

@@ -266,6 +266,16 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             disableBeacon: true,
         },
         {
+            target: '#pos-mobile-header',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Navigation</h3>
+                    <p>Access your menu and help guides from the top header.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
             target: '#pos-mobile-search',
             content: (
                 <div>
@@ -380,8 +390,13 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 },
                 buttonBack: {
                     color: '#3B82F6',
+                },
+                spotlight: {
+                    borderRadius: 12,
                 }
             }}
+            spotlightPadding={5}
+            spotlightClicks={true}
             floaterProps={{
                 disableAnimation: true,
             }}
