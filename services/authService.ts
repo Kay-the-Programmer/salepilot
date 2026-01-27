@@ -1,5 +1,6 @@
 import { User } from '../types';
 import { api } from './api';
+import { sendResetEmail } from './firebase/auth';
 
 const CURRENT_USER_KEY = 'salePilotUser';
 
@@ -92,7 +93,7 @@ export const getCurrentUser = (): User | null => {
 };
 
 export const forgotPassword = async (email: string): Promise<void> => {
-    await api.post('/auth/forgot-password', { email });
+    await sendResetEmail(email);
 };
 
 export const getUsers = async (): Promise<User[]> => {
