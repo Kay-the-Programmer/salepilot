@@ -26,6 +26,7 @@ import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import { RevenueChart, SalesChannelChart, StatSparkline } from '../components/reports/DashboardCharts';
 import HomeIcon from '../components/icons/HomeIcon';
 import { AiSummaryCard } from '../components/reports/AiSummaryCard';
+import { OnboardingTaskList } from '../components/reports/OnboardingTaskList';
 
 interface ReportsPageProps {
     storeSettings: StoreSettings;
@@ -460,239 +461,254 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
                 return (
                     <div className="space-y-6 animate-fade-in pb-10">
+                        {/* Onboarding Task List for new users */}
+                        {reportData.sales.totalRevenue === 0 && (
+                            <OnboardingTaskList
+                                stats={{
+                                    totalUnits: reportData.inventory.totalUnits,
+                                    totalSuppliers: reportData.customers.totalSuppliers,
+                                    totalCustomers: reportData.customers.totalCustomers,
+                                }}
+                            />
+                        )}
+
                         {/* AI Summary Card */}
                         <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={userName} />
 
-                        {/* Row 1: Stats Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            {/* Card 1: Total Earnings */}
-                            <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                <div className="flex justify-between items-start z-10">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                                <CurrencyDollarIcon className="w-5 h-5" />
+                        {reportData.sales.totalRevenue > 0 && (
+                            <>
+                                {/* Row 1: Stats Cards */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    {/* Card 1: Total Earnings */}
+                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
+                                        <div className="flex justify-between items-start z-10">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                                                        <CurrencyDollarIcon className="w-5 h-5" />
+                                                    </div>
+                                                    <span className="text-slate-500 font-medium text-sm">Total Earnings</span>
+                                                </div>
+                                                <div className="text-2xl font-bold text-slate-900 mt-2">
+                                                    {formatCurrency(sales.totalRevenue, storeSettings)}
+                                                </div>
                                             </div>
-                                            <span className="text-slate-500 font-medium text-sm">Total Earnings</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-slate-900 mt-2">
-                                            {formatCurrency(sales.totalRevenue, storeSettings)}
+                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
+                                            <StatSparkline data={revenueSpark} color="#10b981" height={60} storeSettings={storeSettings} />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                    <StatSparkline data={revenueSpark} color="#10b981" height={60} storeSettings={storeSettings} />
-                                </div>
-                            </div>
 
-                            {/* Card 2: Total Orders */}
-                            <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                <div className="flex justify-between items-start z-10">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-                                                <ShoppingCartIcon className="w-5 h-5" />
+                                    {/* Card 2: Total Orders */}
+                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
+                                        <div className="flex justify-between items-start z-10">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
+                                                        <ShoppingCartIcon className="w-5 h-5" />
+                                                    </div>
+                                                    <span className="text-slate-500 font-medium text-sm">Total Orders</span>
+                                                </div>
+                                                <div className="text-2xl font-bold text-slate-900 mt-2">
+                                                    {sales.totalTransactions}
+                                                </div>
                                             </div>
-                                            <span className="text-slate-500 font-medium text-sm">Total Orders</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-slate-900 mt-2">
-                                            {sales.totalTransactions}
+                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
+                                            <StatSparkline data={ordersSpark} color="#f97316" height={60} storeSettings={storeSettings} />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                    <StatSparkline data={ordersSpark} color="#f97316" height={60} storeSettings={storeSettings} />
-                                </div>
-                            </div>
 
-                            {/* Card 3: Customers */}
-                            <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                <div className="flex justify-between items-start z-10">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                                <UsersIcon className="w-5 h-5" />
+                                    {/* Card 3: Customers */}
+                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
+                                        <div className="flex justify-between items-start z-10">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                                                        <UsersIcon className="w-5 h-5" />
+                                                    </div>
+                                                    <span className="text-slate-500 font-medium text-sm">Customers</span>
+                                                </div>
+                                                <div className="text-2xl font-bold text-slate-900 mt-2">
+                                                    {customersStats.totalCustomers}
+                                                </div>
                                             </div>
-                                            <span className="text-slate-500 font-medium text-sm">Customers</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-slate-900 mt-2">
-                                            {customersStats.totalCustomers}
+                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
+                                            <StatSparkline data={customerSpark} color="#6366f1" height={60} storeSettings={storeSettings} />
                                         </div>
                                     </div>
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                    <StatSparkline data={customerSpark} color="#6366f1" height={60} storeSettings={storeSettings} />
-                                </div>
-                            </div>
 
-                            {/* Card 4: My Balance (Using Cashflow or Net Profit) */}
-                            <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                <div className="flex justify-between items-start z-10">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                                <DocumentTextIcon className="w-5 h-5" />
+                                    {/* Card 4: My Balance (Using Cashflow or Net Profit) */}
+                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
+                                        <div className="flex justify-between items-start z-10">
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                                        <DocumentTextIcon className="w-5 h-5" />
+                                                    </div>
+                                                    <span className="text-slate-500 font-medium text-sm">Net Profit</span>
+                                                </div>
+                                                <div className="text-2xl font-bold text-slate-900 mt-2">
+                                                    {formatCurrency(sales.totalProfit, storeSettings)}
+                                                </div>
                                             </div>
-                                            <span className="text-slate-500 font-medium text-sm">Net Profit</span>
                                         </div>
-                                        <div className="text-2xl font-bold text-slate-900 mt-2">
-                                            {formatCurrency(sales.totalProfit, storeSettings)}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                    <StatSparkline data={revenueSpark} color="#3b82f6" height={60} storeSettings={storeSettings} />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Row 2: Charts */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            {/* Revenue Chart - Takes 2 cols */}
-                            <div className="lg:col-span-2 glass-effect rounded-2xl p-5 shadow-sm border border-slate-100">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h3 className="font-bold text-slate-900 text-lg">Revenue</h3>
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                                            <span className="w-2 h-2 rounded-full bg-orange-400"></span> Revenue
-                                        </div>
-                                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                                            <span className="w-2 h-2 rounded-full bg-violet-500"></span> Profit
+                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
+                                            <StatSparkline data={revenueSpark} color="#3b82f6" height={60} storeSettings={storeSettings} />
                                         </div>
                                     </div>
                                 </div>
 
-                                <RevenueChart
-                                    data={salesTrend.map(d => ({ date: new Date(d.date).getDate(), revenue: d.value1, profit: d.value2 }))}
-                                    storeSettings={storeSettings}
-                                />
-                            </div>
+                                {/* Row 2: Charts */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    {/* Revenue Chart - Takes 2 cols */}
+                                    <div className="lg:col-span-2 glass-effect rounded-2xl p-5 shadow-sm border border-slate-100">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <h3 className="font-bold text-slate-900 text-lg">Revenue</h3>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-1 text-xs text-slate-500">
+                                                    <span className="w-2 h-2 rounded-full bg-orange-400"></span> Revenue
+                                                </div>
+                                                <div className="flex items-center gap-1 text-xs text-slate-500">
+                                                    <span className="w-2 h-2 rounded-full bg-violet-500"></span> Profit
+                                                </div>
+                                            </div>
+                                        </div>
 
-                            {/* Sales Channel (Donut) & List - Takes 1 col */}
-                            <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-slate-900 text-lg">Sales Channels</h3>
-                                </div>
-                                <div className="flex-1 flex items-center justify-center">
-                                    {(() => {
-                                        const online = sales.salesByChannel?.find((c: any) => c.channel === 'online')?.revenue || 0;
-                                        const inStore = sales.salesByChannel?.find((c: any) => c.channel === 'pos')?.revenue || (sales.totalRevenue - online);
-                                        return (
-                                            <SalesChannelChart
-                                                online={online}
-                                                inStore={inStore}
-                                                total={sales.totalRevenue}
-                                            />
-                                        );
-                                    })()}
-                                </div>
-                                <div className="mt-4 flex justify-center gap-6">
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <span className="w-3 h-3 rounded-full bg-blue-500"></span> Online
+                                        <RevenueChart
+                                            data={salesTrend.map(d => ({ date: new Date(d.date).getDate(), revenue: d.value1, profit: d.value2 }))}
+                                            storeSettings={storeSettings}
+                                        />
                                     </div>
-                                    <div className="flex items-center gap-2 text-sm text-slate-600">
-                                        <span className="w-3 h-3 rounded-full bg-orange-400"></span> In-Store
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Row 3: Recent Orders & Top Sales */}
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                            {/* Recent Orders - 2 Cols */}
-                            <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h3 className="font-bold text-slate-900 text-lg">Recent Orders</h3>
-                                    <div className="flex bg-slate-100 p-1 rounded-lg">
-                                        {(['all', 'online', 'pos'] as const).map((tab) => (
-                                            <button
-                                                key={tab}
-                                                onClick={() => setRecentOrdersTab(tab)}
-                                                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${recentOrdersTab === tab
-                                                    ? 'bg-white text-slate-900 shadow-sm'
-                                                    : 'text-slate-500 hover:text-slate-700'
-                                                    }`}
-                                            >
-                                                {tab === 'all' ? 'All' : tab === 'online' ? 'Online' : 'In-Store'}
-                                            </button>
-                                        ))}
+                                    {/* Sales Channel (Donut) & List - Takes 1 col */}
+                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-bold text-slate-900 text-lg">Sales Channels</h3>
+                                        </div>
+                                        <div className="flex-1 flex items-center justify-center">
+                                            {(() => {
+                                                const online = sales.salesByChannel?.find((c: any) => c.channel === 'online')?.revenue || 0;
+                                                const inStore = sales.salesByChannel?.find((c: any) => c.channel === 'pos')?.revenue || (sales.totalRevenue - online);
+                                                return (
+                                                    <SalesChannelChart
+                                                        online={online}
+                                                        inStore={inStore}
+                                                        total={sales.totalRevenue}
+                                                    />
+                                                );
+                                            })()}
+                                        </div>
+                                        <div className="mt-4 flex justify-center gap-6">
+                                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                                                <span className="w-3 h-3 rounded-full bg-blue-500"></span> Online
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-slate-600">
+                                                <span className="w-3 h-3 rounded-full bg-orange-400"></span> In-Store
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-left border-collapse">
-                                        <thead>
-                                            <tr>
-                                                <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product ID</th>
-                                                <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
-                                                <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
-                                                <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-slate-50">
-                                            {reportData.sales.recentOrders
-                                                ?.filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab)
-                                                .slice(0, 5)
-                                                .map((order: any, i: number) => (
-                                                    <tr key={i} className="hover:bg-slate-50 transition-colors">
-                                                        <td className="py-3 text-sm text-slate-600 font-medium truncate max-w-[100px]" title={order.transactionId}>
-                                                            #{order.transactionId.substring(0, 8)}...
-                                                        </td>
-                                                        <td className="py-3 text-sm text-slate-900 flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
-                                                                {(order.customerName || 'W').charAt(0)}
-                                                            </div>
-                                                            {order.customerName || 'Walk-in Customer'}
-                                                        </td>
-                                                        <td className="py-3 text-sm text-slate-900 font-bold">
-                                                            {formatCurrency(order.total, storeSettings)}
-                                                        </td>
-                                                        <td className="py-3">
-                                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
-                                                                {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
-                                                            </span>
-                                                        </td>
-                                                    </tr>
+
+                                {/* Row 3: Recent Orders & Top Sales */}
+                                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                    {/* Recent Orders - 2 Cols */}
+                                    <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <h3 className="font-bold text-slate-900 text-lg">Recent Orders</h3>
+                                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                                {(['all', 'online', 'pos'] as const).map((tab) => (
+                                                    <button
+                                                        key={tab}
+                                                        onClick={() => setRecentOrdersTab(tab)}
+                                                        className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${recentOrdersTab === tab
+                                                            ? 'bg-white text-slate-900 shadow-sm'
+                                                            : 'text-slate-500 hover:text-slate-700'
+                                                            }`}
+                                                    >
+                                                        {tab === 'all' ? 'All' : tab === 'online' ? 'Online' : 'In-Store'}
+                                                    </button>
                                                 ))}
-                                            {(!reportData.sales.recentOrders || reportData.sales.recentOrders
-                                                .filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab).length === 0) && (
-                                                    <tr>
-                                                        <td colSpan={4} className="py-8 text-center text-slate-400">
-                                                            No recent {recentOrdersTab === 'all' ? '' : recentOrdersTab === 'online' ? 'online' : 'in-store'} orders found
-                                                        </td>
-                                                    </tr>
-                                                )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                            {/* Top Sale - 1 Col */}
-                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                                <div className="flex justify-between items-center mb-4">
-                                    <h3 className="font-bold text-slate-900 text-lg">Top Sales</h3>
-                                </div>
-                                <div className="space-y-4">
-                                    {reportData.sales.topProductsByRevenue.slice(0, 5).map((p: any, i: number) => (
-                                        <div key={i} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-all">
-                                            <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                                                <ShoppingCartIcon className="w-6 h-6 text-slate-400" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="font-medium text-slate-900 text-sm truncate">{p.name}</h4>
-                                                <p className="text-xs text-slate-500">{formatCurrency(p.revenue / p.quantity, storeSettings)}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="font-bold text-slate-900 text-sm">{p.quantity} Sold</div>
-                                                <div className="text-xs text-emerald-600 font-medium">Top #{i + 1}</div>
                                             </div>
                                         </div>
-                                    ))}
-                                    {reportData.sales.topProductsByRevenue.length === 0 && (
-                                        <div className="text-center py-8 text-slate-400">No data available</div>
-                                    )}
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr>
+                                                        <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Product ID</th>
+                                                        <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Customer</th>
+                                                        <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Amount</th>
+                                                        <th className="py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-slate-50">
+                                                    {reportData.sales.recentOrders
+                                                        ?.filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab)
+                                                        .slice(0, 5)
+                                                        .map((order: any, i: number) => (
+                                                            <tr key={i} className="hover:bg-slate-50 transition-colors">
+                                                                <td className="py-3 text-sm text-slate-600 font-medium truncate max-w-[100px]" title={order.transactionId}>
+                                                                    #{order.transactionId.substring(0, 8)}...
+                                                                </td>
+                                                                <td className="py-3 text-sm text-slate-900 flex items-center gap-2">
+                                                                    <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                                                                        {(order.customerName || 'W').charAt(0)}
+                                                                    </div>
+                                                                    {order.customerName || 'Walk-in Customer'}
+                                                                </td>
+                                                                <td className="py-3 text-sm text-slate-900 font-bold">
+                                                                    {formatCurrency(order.total, storeSettings)}
+                                                                </td>
+                                                                <td className="py-3">
+                                                                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                                                        {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    {(!reportData.sales.recentOrders || reportData.sales.recentOrders
+                                                        .filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab).length === 0) && (
+                                                            <tr>
+                                                                <td colSpan={4} className="py-8 text-center text-slate-400">
+                                                                    No recent {recentOrdersTab === 'all' ? '' : recentOrdersTab === 'online' ? 'online' : 'in-store'} orders found
+                                                                </td>
+                                                            </tr>
+                                                        )}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    {/* Top Sale - 1 Col */}
+                                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                                        <div className="flex justify-between items-center mb-4">
+                                            <h3 className="font-bold text-slate-900 text-lg">Top Sales</h3>
+                                        </div>
+                                        <div className="space-y-4">
+                                            {reportData.sales.topProductsByRevenue.slice(0, 5).map((p: any, i: number) => (
+                                                <div key={i} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-all">
+                                                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
+                                                        <ShoppingCartIcon className="w-6 h-6 text-slate-400" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="font-medium text-slate-900 text-sm truncate">{p.name}</h4>
+                                                        <p className="text-xs text-slate-500">{formatCurrency(p.revenue / p.quantity, storeSettings)}</p>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <div className="font-bold text-slate-900 text-sm">{p.quantity} Sold</div>
+                                                        <div className="text-xs text-emerald-600 font-medium">Top #{i + 1}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                            {reportData.sales.topProductsByRevenue.length === 0 && (
+                                                <div className="text-center py-8 text-slate-400">No data available</div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </>
+                        )}
                     </div>
                 );
             }

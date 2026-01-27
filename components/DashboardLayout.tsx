@@ -353,7 +353,10 @@ export default function DashboardLayout() {
                         setIsLogoutModalOpen(false);
                         navigate('/login');
                     }} />
-                    <TourGuide user={currentUser} />
+                    <TourGuide
+                        user={currentUser}
+                        run={!isStoreCompletionModalOpen && !priorityNotification && storeSettings !== null}
+                    />
 
                     <StoreCompletionModal
                         isOpen={isStoreCompletionModalOpen}

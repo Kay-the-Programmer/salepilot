@@ -15,6 +15,8 @@ import DocumentTextIcon from '../components/icons/DocumentTextIcon';
 import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import InformationCircleIcon from '../components/icons/InformationCircleIcon';
+import ConfirmationModal from '../components/ConfirmationModal';
+
 
 import GridIcon from '../components/icons/GridIcon';
 import { formatCurrency } from '../utils/currency';
@@ -24,7 +26,7 @@ interface PurchaseOrdersPageProps {
     suppliers: Supplier[];
     products: Product[];
     onSave: (po: PurchaseOrder) => Promise<void> | void;
-    onDelete: (poId: string) => void;
+    onDelete: (poId: string) => Promise<void> | void;
     onReceiveItems: (poId: string, receivedItems: { productId: string, quantity: number }[]) => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
     isLoading: boolean;
@@ -397,7 +399,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
             </div>
 
             {/* Form Content */}
-            <div className="p-4 sm:p-6 max-w-6xl mx-auto">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-6xl mx-auto custom-scrollbar" style={{ maxHeight: 'calc(100vh - 140px)' }}>
                 <div className="space-y-6">
                     {/* Supplier Selection */}
                     <div id="po-supplier-select" className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
@@ -722,7 +724,7 @@ export default function PurchaseOrdersPage({
     suppliers,
     products,
     onSave,
-
+    onDelete,
     onReceiveItems,
     showSnackbar,
     isLoading,
@@ -739,7 +741,13 @@ export default function PurchaseOrdersPage({
     const [runMainTour, setRunMainTour] = useState(false);
     const [runFormTour, setRunFormTour] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [deleteError, setDeleteError] = useState<string | null>(null);
     const [initialSupplierId, setInitialSupplierId] = useState<string | undefined>(undefined);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [poToDelete, setPoToDelete] = useState<PurchaseOrder | null>(null);
+
+
 
     useEffect(() => {
         if (view.mode === 'detail') {
@@ -882,6 +890,33 @@ export default function PurchaseOrdersPage({
             setIsSaving(false);
         }
     };
+
+    const handleOpenDeleteModal = (po: PurchaseOrder) => {
+        setPoToDelete(po);
+        setDeleteError(null);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleConfirmDelete = async () => {
+        if (!poToDelete) return;
+        setIsDeleting(true);
+        setDeleteError(null);
+        try {
+            await onDelete(poToDelete.id);
+            showSnackbar("Purchase Order deleted successfully", "success");
+            setIsDeleteModalOpen(false);
+            setPoToDelete(null);
+            handleBackToList();
+        } catch (err: any) {
+            console.error(err);
+            setDeleteError(err.message || "Failed to delete purchase order");
+            // Error snackbar is already shown by Dashboard.tsx, but we want to show it in the modal too
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+
 
     const handleReceiveStock = (po: PurchaseOrder) => {
         setSelectedPO(po);
@@ -1126,6 +1161,209 @@ export default function PurchaseOrdersPage({
         );
     };
 
+    const renderDetailView = (po: PurchaseOrder) => {
+        return (
+            <div className="min-h-screen bg-gray-50 pb-20">
+                {/* Header */}
+                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 sm:px-6">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <button
+                                onClick={handleBackToList}
+                                className="p-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                            >
+                                <ArrowLeftIcon className="w-6 h-6" />
+                            </button>
+                            <div className="ml-3">
+                                <div className="flex items-center gap-2">
+                                    <h1 className="text-xl font-semibold text-gray-900">
+                                        PO #{po.poNumber}
+                                    </h1>
+                                    <StatusBadge status={po.status} />
+                                </div>
+                                <p className="text-sm text-gray-500">
+                                    Created on {new Date(po.createdAt).toLocaleDateString()}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            {po.status === 'draft' && (
+                                <button
+                                    onClick={() => handleEditPO(po)}
+                                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Edit PO"
+                                >
+                                    <PencilIcon className="w-5 h-5" />
+                                </button>
+                            )}
+                            {(po.status === 'ordered' || po.status === 'partially_received') && (
+                                <button
+                                    onClick={() => handleReceiveStock(po)}
+                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-all"
+                                >
+                                    <PackageIcon className="w-4 h-4 mr-2" />
+                                    Receive Stock
+                                </button>
+                            )}
+                            <button
+                                onClick={() => handleOpenDeleteModal(po)}
+                                className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete PO"
+                            >
+                                <TrashIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-blue-50 rounded-lg">
+                                    <TruckIcon className="w-5 h-5 text-blue-600" />
+                                </div>
+                                <h3 className="font-semibold text-gray-900">Supplier</h3>
+                            </div>
+                            <div className="space-y-1">
+                                <div className="text-lg font-bold text-gray-900">{po.supplierName}</div>
+                                {po.isMarketplaceOrder && (
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        Marketplace Order
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-yellow-50 rounded-lg">
+                                    <InformationCircleIcon className="w-5 h-5 text-yellow-600" />
+                                </div>
+                                <h3 className="font-semibold text-gray-900">Dates</h3>
+                            </div>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Ordered:</span>
+                                    <span className="text-gray-900 font-medium">
+                                        {po.orderedAt ? new Date(po.orderedAt).toLocaleString() : 'Not ordered yet'}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Expected:</span>
+                                    <span className="text-gray-900 font-medium">
+                                        {po.expectedAt ? new Date(po.expectedAt).toLocaleDateString() : 'N/A'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="p-2 bg-green-50 rounded-lg">
+                                    <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
+                                </div>
+                                <h3 className="font-semibold text-gray-900">Financials</h3>
+                            </div>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Total Amount:</span>
+                                    <span className="text-lg font-bold text-gray-900">
+                                        {formatCurrency(po.total, storeSettings)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Items:</span>
+                                    <span className="text-gray-900 font-medium">{po.items.length} products</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Items Table */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900">Order Items</h3>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Received</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Line Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {po.items.map((item) => (
+                                        <tr key={item.productId} className="hover:bg-gray-50">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium text-gray-900">{item.productName}</div>
+                                                <div className="text-xs text-gray-500">SKU: {item.sku}</div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 font-semibold">
+                                                {item.quantity}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
+                                                <span className={`font-bold ${item.receivedQuantity >= item.quantity ? 'text-green-600' : 'text-blue-600'}`}>
+                                                    {item.receivedQuantity}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
+                                                {formatCurrency(item.costPrice, storeSettings)}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                                {formatCurrency(item.quantity * item.costPrice, storeSettings)}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* Financial Summary and Notes */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                <DocumentTextIcon className="w-5 h-5 text-gray-400" />
+                                Notes
+                            </h3>
+                            <div className="text-gray-600 text-sm italic bg-gray-50 p-4 rounded-xl border border-dashed border-gray-200">
+                                {po.notes || 'No notes provided for this order.'}
+                            </div>
+                        </div>
+
+                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h3>
+                            <div className="space-y-3">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Subtotal</span>
+                                    <span className="font-medium text-gray-900">{formatCurrency(po.subtotal, storeSettings)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Shipping</span>
+                                    <span className="font-medium text-gray-900">{formatCurrency(po.shippingCost, storeSettings)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Tax ({storeSettings.taxRate}%)</span>
+                                    <span className="font-medium text-gray-900">{formatCurrency(po.tax, storeSettings)}</span>
+                                </div>
+                                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
+                                    <span className="text-base font-bold text-gray-900">Total</span>
+                                    <span className="text-xl font-bold text-blue-600">{formatCurrency(po.total, storeSettings)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
     const renderCurrentView = () => {
         switch (view.mode) {
             case 'detail':
@@ -1158,6 +1396,7 @@ export default function PurchaseOrdersPage({
                 continuous
                 showProgress
                 showSkipButton
+                locale={{ last: 'Okay' }}
                 callback={(data) => handleJoyrideCallback(data, 'main')}
                 styles={{
                     options: {
@@ -1172,6 +1411,7 @@ export default function PurchaseOrdersPage({
                 continuous
                 showProgress
                 showSkipButton
+                locale={{ last: 'Okay' }}
                 callback={(data) => handleJoyrideCallback(data, 'form')}
                 styles={{
                     options: {
@@ -1181,6 +1421,35 @@ export default function PurchaseOrdersPage({
                 }}
             />
             {renderCurrentView()}
+            {isDeleteModalOpen && poToDelete && (
+                <ConfirmationModal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => {
+                        setIsDeleteModalOpen(false);
+                        setPoToDelete(null);
+                    }}
+                    onConfirm={handleConfirmDelete}
+                    title="Delete Purchase Order"
+                    message={
+                        <div className="space-y-3">
+                            <p>
+                                Are you sure you want to delete <strong>PO #{poToDelete.poNumber}</strong>? This action cannot be undone.
+                            </p>
+                            {deleteError && (
+                                <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 animate-shake">
+                                    <XMarkIcon className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+                                    <p className="text-sm text-red-700 font-medium">
+                                        {deleteError}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    }
+                    confirmText={isDeleting ? "Deleting..." : "Delete"}
+
+                    confirmButtonClass="bg-red-600 hover:bg-red-700"
+                />
+            )}
             {selectedPO && (
                 <ReceiveStockModal
                     isOpen={isReceiveModalOpen}

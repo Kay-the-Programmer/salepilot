@@ -42,8 +42,20 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 message += `Your top performer is **${topProduct.name}**, contributing significantly to your bottom line. Keep stocking it!`;
             }
         } else {
+            const invStats = reportData.inventory || {};
+            const custStats = reportData.customers || {};
+
             title = `${greeting}${name}. Ready to sell?`;
-            message = "Your dashboard is quiet today. Add some new products or check your marketing campaigns to kickstart sales!";
+
+            if (invStats.totalUnits === 0) {
+                message = "Your dashboard is quiet because you haven't added any products yet. **Add your first product** to start tracking inventory and making sales!";
+            } else if (custStats.totalSuppliers === 0) {
+                message = "Great job adding products! Now, **add your first supplier** to manage your inventory sources and purchase orders.";
+            } else if (custStats.totalCustomers === 0) {
+                message = "You're almost there! **Add your first customer** or process a walk-in sale to see your reports come to life.";
+            } else {
+                message = "Everything is set up! Your dashboard is quiet today. Check your marketing campaigns or start processing sales to see your growth.";
+            }
             tone = 'quiet';
         }
 

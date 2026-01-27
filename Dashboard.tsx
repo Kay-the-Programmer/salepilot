@@ -812,7 +812,11 @@ export default function Dashboard() {
         try {
             const result = await api.delete(`/purchase-orders/${poId}`);
             if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-        } catch (err: any) { showSnackbar(err.message, 'error'); }
+            return result;
+        } catch (err: any) {
+            showSnackbar(err.message, 'error');
+            throw err;
+        }
     };
 
     const handleReceivePOItems = async (poId: string, receivedItems: { productId: string, quantity: number }[]) => {
@@ -1117,6 +1121,7 @@ export default function Dashboard() {
                     );
                 case 'sales':
                     return <SalesPage
+                        user={currentUser}
                         products={products}
                         customers={customers}
                         categories={categories}

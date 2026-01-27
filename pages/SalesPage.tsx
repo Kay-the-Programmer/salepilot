@@ -1,42 +1,42 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Supplier } from '../types';
+import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Supplier, User } from '../types';
 import { SnackbarType } from '../App';
-import PlusIcon from '../components/icons/PlusIcon';
-import XMarkIcon from '../components/icons/XMarkIcon';
-import ShoppingCartIcon from '../components/icons/ShoppingCartIcon';
-
-import ReceiptModal from '../components/sales/ReceiptModal';
-import QrCodeIcon from '../components/icons/QrCodeIcon';
+import { api, buildAssetUrl } from '@/services/api';
+import { formatCurrency } from '../utils/currency';
+import {
+    ClockIcon,
+    MagnifyingGlassIcon,
+    BellAlertIcon,
+    QuestionMarkCircleIcon,
+    GridIcon,
+    ListIcon,
+    ChevronDownIcon,
+    CreditCardIcon,
+    PlusIcon,
+    XMarkIcon,
+    ShoppingCartIcon,
+    QrCodeIcon,
+    DocumentPlusIcon,
+    ChevronLeftIcon,
+    ChevronRightIcon,
+    ArrowLeftIcon
+} from '../components/icons';
+import TourGuide from '../components/TourGuide';
+import logo from '../assets/logo.png';
+import PaymentChoiceModal from '../components/sales/PaymentChoiceModal';
 import LoadingSpinner from '../components/LoadingSpinner';
+
+import Header from "@/components/Header.tsx";
+import ReceiptModal from '../components/sales/ReceiptModal';
 import CustomerSelect from '../components/sales/CustomerSelect';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
 import ProductFormModal from '../components/ProductFormModal';
 import ScanActionModal from '../components/sales/ScanActionModal';
-import { api } from '@/services/api';
-import { formatCurrency } from '../utils/currency';
-import DocumentPlusIcon from '../components/icons/DocumentPlusIcon';
-import { buildAssetUrl } from '@/services/api';
-import Header from "@/components/Header.tsx";
-import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
-import ChevronRightIcon from '../components/icons/ChevronRightIcon';
-import CreditCardIcon from '../components/icons/CreditCardIcon';
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
-import BoltIcon from '../components/icons/BoltIcon';
-import ClockIcon from '../components/icons/ClockIcon';
-import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
-import BellAlertIcon from '../components/icons/BellAlertIcon';
-
-import Bars3Icon from '../components/icons/Bars3Icon';
-import GridIcon from '../components/icons/GridIcon';
-import ListIcon from '../components/icons/ListIcon';
-import ChevronDownIcon from '../components/icons/ChevronDownIcon';
-import logo from '../assets/logo.png';
-import { ArrowLeftIcon } from '@/components/icons';
-import LencoPayButton from '../components/shop/LencoPayButton';
-import PaymentChoiceModal from '../components/sales/PaymentChoiceModal';
 
 interface SalesPageProps {
+    user: User;
     products: Product[];
     customers: Customer[];
     onProcessSale: (sale: Sale) => Promise<Sale | null>;
@@ -50,6 +50,7 @@ interface SalesPageProps {
 }
 
 const SalesPage: React.FC<SalesPageProps> = ({
+    user,
     products,
     customers,
     onProcessSale,
@@ -90,6 +91,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [isScannerPaused, setIsScannerPaused] = useState(false);
     const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+    const [runTour, setRunTour] = useState(false);
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
@@ -585,6 +587,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 <div className="relative flex-1 md:flex-none">
                     <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
+                        id="pos-search"
                         type="text"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
@@ -593,7 +596,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 </div>
                 {/* View Toggle (Desktop Only) */}
-                <div className="hidden md:flex items-center gap-1 bg-white rounded-xl p-0">
+                <div id="pos-view-toggle" className="hidden md:flex items-center gap-1 bg-white rounded-xl p-0">
                     <button
                         onClick={() => setViewMode('grid')}
                         className={`p-1.5 rounded-xl transition-colors ${viewMode === 'grid'
@@ -618,6 +621,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 </div>
             </div>
             <button
+                id="pos-held-btn"
                 onClick={() => setShowHeldPanel(true)}
                 className="px-3 py-2 bg-gradient-to-r from-amber-50 to-orange-50 text-amber-700 text-sm font-medium rounded-xl border border-amber-200 flex items-center gap-2 hover:border-amber-300 transition-colors relative"
             >
@@ -628,6 +632,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         {heldSales.length}
                     </span>
                 )}
+            </button>
+            <button
+                onClick={() => setRunTour(true)}
+                className="p-2 text-slate-500 hover:text-blue-600 transition-colors"
+                title="Help Guide"
+            >
+                <QuestionMarkCircleIcon className="w-6 h-6" />
             </button>
         </div>
     );
@@ -654,7 +665,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         {/* Left Column - Products */}
                         <div className="flex-1 flex flex-col h-full min-w-0">
                             {/* Products Grid/List */}
-                            <div className="flex-1 overflow-y-auto p-4 scroll-smooth">
+                            <div id="pos-product-list" className="flex-1 overflow-y-auto p-4 scroll-smooth">
                                 {isLoading ? (
                                     <div className="max-w-7xl mx-auto w-full">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
@@ -945,7 +956,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 </div>
 
                 {/* Cart Items */}
-                <div className="hidden md:flex flex-1 overflow-y-auto" >
+                <div id="pos-cart-items" className="hidden md:flex flex-1 overflow-y-auto" >
                     {
                         cart.length === 0 ? (
                             <div className="p-8 text-center h-full flex flex-col items-center justify-center">
@@ -1064,6 +1075,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             )}
                         </h3>
                         <button
+                            id="pos-scanner-btn"
                             onClick={() => setIsScannerOpen(!isScannerOpen)}
                             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${isScannerOpen
                                 ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
@@ -1106,6 +1118,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             {/* Tab Navigation */}
                             <div className="flex border-b border-slate-200 bg-gray-50 z-10 flex-none px-4">
                                 <button
+                                    id="pos-tab-customer"
                                     onClick={() => setCartActionTab('customer')}
                                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${cartActionTab === 'customer'
                                         ? 'border-blue-600 text-blue-600 bg-blue-50/50'
@@ -1115,6 +1128,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     Customer
                                 </button>
                                 <button
+                                    id="pos-tab-summary"
                                     onClick={() => setCartActionTab('summary')}
                                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${cartActionTab === 'summary'
                                         ? 'border-blue-600 text-blue-600 bg-blue-50/50'
@@ -1124,6 +1138,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     Summary
                                 </button>
                                 <button
+                                    id="pos-tab-payment"
                                     onClick={() => setCartActionTab('payment')}
                                     className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${cartActionTab === 'payment'
                                         ? 'border-blue-600 text-blue-600 bg-blue-50/50'
@@ -1299,6 +1314,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 {/* Primary Actions */}
                                                 <div className="grid grid-cols-2 gap-3 pt-2">
                                                     <button
+                                                        id="pos-hold-btn"
                                                         onClick={handleHoldSale}
                                                         className="py-3.5 px-4 bg-white border-2 border-amber-100 text-amber-700 font-bold rounded-xl hover:bg-amber-50 hover:border-amber-200 transition-all flex items-center justify-center gap-2 active:scale-95"
                                                     >
@@ -1306,6 +1322,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                         Hold
                                                     </button>
                                                     <button
+                                                        id="pos-pay-btn"
                                                         onClick={() => processTransaction('paid')}
                                                         disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
                                                         className="py-3.5 px-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-95 transform"
@@ -1363,6 +1380,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 <div className="absolute left-1/2 transform -translate-x-1/2">
                                     <img src={logo} alt="SalePilot" className="h-8" />
                                 </div>
+                                <button
+                                    onClick={() => setRunTour(true)}
+                                    className="p-2 rounded-full hover:bg-slate-100"
+                                    title="Help Guide"
+                                >
+                                    <QuestionMarkCircleIcon className="w-6 h-6 text-slate-700" />
+                                </button>
                                 <button className="p-2 rounded-full hover:bg-slate-100 relative">
                                     <BellAlertIcon className="w-6 h-6 text-slate-700" />
                                     {/* Optional: Add notification badge here if needed */}
@@ -1832,6 +1856,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     </div>
                 </div>
             )}
+
+            <TourGuide
+                user={user}
+                page="sales"
+                run={runTour}
+                onTourEnd={() => setRunTour(false)}
+            />
 
         </div >
     );

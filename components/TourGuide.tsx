@@ -4,10 +4,12 @@ import { User } from '../types';
 
 interface TourGuideProps {
     user: User;
-    run?: boolean; // Optional prop to force run, though we'll mainly use local state
+    run?: boolean; // Optional prop to force run
+    page?: 'dashboard' | 'sales'; // New prop to differentiate tours
+    onTourEnd?: () => void;
 }
 
-export default function TourGuide({ user }: TourGuideProps) {
+export default function TourGuide({ user, run: propsRun, page = 'dashboard', onTourEnd }: TourGuideProps) {
     const [run, setRun] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -24,12 +26,19 @@ export default function TourGuide({ user }: TourGuideProps) {
     }, []);
 
     useEffect(() => {
-        // Check if user has seen the tour
-        const hasSeenTour = localStorage.getItem(`salePilot.tourSeen.${user.id}`);
-        if (!hasSeenTour) {
+        // Check if user has seen the tour for this specific page
+        const tourKey = page === 'dashboard' ? `salePilot.tourSeen.${user.id}` : `salePilot.tourSeen.${page}.${user.id}`;
+        const hasSeenTour = localStorage.getItem(tourKey);
+
+        // If propsRun is explicitly provided, it takes precedence
+        if (propsRun) {
             setRun(true);
+        } else if (!hasSeenTour) {
+            setRun(true);
+        } else {
+            setRun(false);
         }
-    }, [user.id]);
+    }, [user.id, propsRun, page]);
 
     const handleJoyrideCallback = (data: CallBackProps) => {
         const { status } = data;
@@ -37,7 +46,9 @@ export default function TourGuide({ user }: TourGuideProps) {
 
         if (finishedStatuses.includes(status)) {
             setRun(false);
-            localStorage.setItem(`salePilot.tourSeen.${user.id}`, 'true');
+            const tourKey = page === 'dashboard' ? `salePilot.tourSeen.${user.id}` : `salePilot.tourSeen.${page}.${user.id}`;
+            localStorage.setItem(tourKey, 'true');
+            if (onTourEnd) onTourEnd();
         }
     };
 
@@ -118,6 +129,130 @@ export default function TourGuide({ user }: TourGuideProps) {
         },
     ];
 
+    const salesSteps: Step[] = [
+        {
+            target: 'body',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Point of Sale Tour 🛒</h3>
+                    <p>Welcome to the POS terminal. This is where you process sales and manage transactions.</p>
+                </div>
+            ),
+            placement: 'center',
+            disableBeacon: true,
+        },
+        {
+            target: '#pos-search',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Find Products</h3>
+                    <p>Search for products by name, SKU, or barcode here.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: '#pos-view-toggle',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">View Toggle</h3>
+                    <p>Switch between Grid and List view based on your preference.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: '#pos-product-list',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Product Catalog</h3>
+                    <p>Tap any product to add it to your shopping cart.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-cart-items',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Shopping Cart</h3>
+                    <p>View all items currently in the cart. You can adjust quantities or remove items here.</p>
+                </div>
+            ),
+            placement: 'left',
+        },
+        {
+            target: '#pos-scanner-btn',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Barcode Scanner</h3>
+                    <p>Enable the camera to scan product barcodes directly into the cart.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-tab-customer',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Customer Selection</h3>
+                    <p>Assign a customer to the sale to track history or apply store credit.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-tab-summary',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Order Summary</h3>
+                    <p>Add discounts and review tax calculations before finalizing.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-tab-payment',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Payment Details</h3>
+                    <p>Select the payment method and enter cash received if applicable.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-pay-btn',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Finalize Sale</h3>
+                    <p>Click here to complete the transaction and generate a receipt.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-hold-btn',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Hold Sale</h3>
+                    <p>Pause this sale for later. You can recall it anytime from the "Held Sales" button.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-held-btn',
+            content: (
+                <div>
+                    <h3 className="font-bold text-lg mb-2">Recall Held Sales</h3>
+                    <p>Access your suspended transactions here.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+    ];
+
     const mobileSteps: Step[] = [
         {
             target: 'body',
@@ -152,13 +287,19 @@ export default function TourGuide({ user }: TourGuideProps) {
         },
     ];
 
+    const getSteps = () => {
+        if (page === 'sales') return salesSteps;
+        return isMobile ? mobileSteps : desktopSteps;
+    };
+
     return (
         <Joyride
-            steps={isMobile ? mobileSteps : desktopSteps}
+            steps={getSteps()}
             run={run}
             continuous
             showProgress
             showSkipButton
+            locale={{ last: 'Okay' }}
             callback={handleJoyrideCallback}
             styles={{
                 options: {
