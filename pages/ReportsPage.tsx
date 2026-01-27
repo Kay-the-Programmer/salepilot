@@ -27,6 +27,10 @@ import { RevenueChart, SalesChannelChart, StatSparkline } from '../components/re
 import HomeIcon from '../components/icons/HomeIcon';
 import { AiSummaryCard } from '../components/reports/AiSummaryCard';
 import { OnboardingTaskList } from '../components/reports/OnboardingTaskList';
+import { FilterableStatCard } from '../components/reports/FilterableStatCard';
+import { FilterableRevenueChart } from '../components/reports/FilterableRevenueChart';
+import { FilterableSalesChannelChart } from '../components/reports/FilterableSalesChannelChart';
+import { FilterableTopSales } from '../components/reports/FilterableTopSales';
 
 interface ReportsPageProps {
     storeSettings: StoreSettings;
@@ -438,23 +442,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
         switch (activeTab) {
             case 'overview': {
                 const sales = reportData.sales;
-                const customersStats = reportData.customers;
-
-                // Prepare mock sparkline data for demo visual effect (in production this would be real trend data)
-                const mockSparkData = (trend: any[], valueKey: string) => {
-                    return trend.map((t, i) => ({
-                        name: i,
-                        value: valueKey === 'revenue' ? t.value1 :
-                            valueKey === 'orders' ? Math.floor(t.value1 / 50) : // Approximate order count from revenue
-                                valueKey === 'customers' ? (t.value1 > 0 ? 1 : 0) : 0 // Active customers proxy
-                    })).slice(-10); // Last 10 points
-                };
-
-                const revenueSpark = mockSparkData(salesTrend, 'revenue');
-                // Reuse revenue trend as proxy for other metrics if real data missing for sparklines
-                const ordersSpark = revenueSpark.map(d => ({ ...d, value: d.value * 0.1 }));
-                const customerSpark = revenueSpark.map(d => ({ ...d, value: d.value * 0.05 }));
-
                 // Get user name from local storage or context if available (mocking for now or safe fallback)
                 const userJson = localStorage.getItem('salePilotUser');
                 const userName = userJson ? JSON.parse(userJson).name : undefined;
@@ -480,135 +467,50 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                 {/* Row 1: Stats Cards */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     {/* Card 1: Total Earnings */}
-                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                                                        <CurrencyDollarIcon className="w-5 h-5" />
-                                                    </div>
-                                                    <span className="text-slate-500 font-medium text-sm">Total Earnings</span>
-                                                </div>
-                                                <div className="text-2xl font-bold text-slate-900 mt-2">
-                                                    {formatCurrency(sales.totalRevenue, storeSettings)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                            <StatSparkline data={revenueSpark} color="#10b981" height={60} storeSettings={storeSettings} />
-                                        </div>
-                                    </div>
+                                    <FilterableStatCard
+                                        title="Total Earnings"
+                                        type="revenue"
+                                        icon={<CurrencyDollarIcon className="w-5 h-5 text-emerald-600" />}
+                                        color="bg-emerald-100"
+                                        sparklineColor="#10b981"
+                                        storeSettings={storeSettings}
+                                    />
 
                                     {/* Card 2: Total Orders */}
-                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">
-                                                        <ShoppingCartIcon className="w-5 h-5" />
-                                                    </div>
-                                                    <span className="text-slate-500 font-medium text-sm">Total Orders</span>
-                                                </div>
-                                                <div className="text-2xl font-bold text-slate-900 mt-2">
-                                                    {sales.totalTransactions}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                            <StatSparkline data={ordersSpark} color="#f97316" height={60} storeSettings={storeSettings} />
-                                        </div>
-                                    </div>
+                                    <FilterableStatCard
+                                        title="Total Orders"
+                                        type="orders"
+                                        icon={<ShoppingCartIcon className="w-5 h-5 text-orange-600" />}
+                                        color="bg-orange-100"
+                                        sparklineColor="#f97316"
+                                        storeSettings={storeSettings}
+                                    />
 
                                     {/* Card 3: Customers */}
-                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                                                        <UsersIcon className="w-5 h-5" />
-                                                    </div>
-                                                    <span className="text-slate-500 font-medium text-sm">Customers</span>
-                                                </div>
-                                                <div className="text-2xl font-bold text-slate-900 mt-2">
-                                                    {customersStats.totalCustomers}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                            <StatSparkline data={customerSpark} color="#6366f1" height={60} storeSettings={storeSettings} />
-                                        </div>
-                                    </div>
+                                    <FilterableStatCard
+                                        title="Customers"
+                                        type="customers"
+                                        icon={<UsersIcon className="w-5 h-5 text-indigo-600" />}
+                                        color="bg-indigo-100"
+                                        sparklineColor="#6366f1"
+                                        storeSettings={storeSettings}
+                                    />
 
-                                    {/* Card 4: My Balance (Using Cashflow or Net Profit) */}
-                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative overflow-hidden group hover:shadow-md transition-all">
-                                        <div className="flex justify-between items-start z-10">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
-                                                        <DocumentTextIcon className="w-5 h-5" />
-                                                    </div>
-                                                    <span className="text-slate-500 font-medium text-sm">Net Profit</span>
-                                                </div>
-                                                <div className="text-2xl font-bold text-slate-900 mt-2">
-                                                    {formatCurrency(sales.totalProfit, storeSettings)}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity">
-                                            <StatSparkline data={revenueSpark} color="#3b82f6" height={60} storeSettings={storeSettings} />
-                                        </div>
-                                    </div>
+                                    {/* Card 4: Net Profit */}
+                                    <FilterableStatCard
+                                        title="Net Profit"
+                                        type="profit"
+                                        icon={<DocumentTextIcon className="w-5 h-5 text-blue-600" />}
+                                        color="bg-blue-100"
+                                        sparklineColor="#3b82f6"
+                                        storeSettings={storeSettings}
+                                    />
                                 </div>
 
                                 {/* Row 2: Charts */}
                                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                                    {/* Revenue Chart - Takes 2 cols */}
-                                    <div className="lg:col-span-2 glass-effect rounded-2xl p-5 shadow-sm border border-slate-100">
-                                        <div className="flex justify-between items-center mb-6">
-                                            <h3 className="font-bold text-slate-900 text-lg">Revenue</h3>
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center gap-1 text-xs text-slate-500">
-                                                    <span className="w-2 h-2 rounded-full bg-orange-400"></span> Revenue
-                                                </div>
-                                                <div className="flex items-center gap-1 text-xs text-slate-500">
-                                                    <span className="w-2 h-2 rounded-full bg-violet-500"></span> Profit
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <RevenueChart
-                                            data={salesTrend.map(d => ({ date: new Date(d.date).getDate(), revenue: d.value1, profit: d.value2 }))}
-                                            storeSettings={storeSettings}
-                                        />
-                                    </div>
-
-                                    {/* Sales Channel (Donut) & List - Takes 1 col */}
-                                    <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h3 className="font-bold text-slate-900 text-lg">Sales Channels</h3>
-                                        </div>
-                                        <div className="flex-1 flex items-center justify-center">
-                                            {(() => {
-                                                const online = sales.salesByChannel?.find((c: any) => c.channel === 'online')?.revenue || 0;
-                                                const inStore = sales.salesByChannel?.find((c: any) => c.channel === 'pos')?.revenue || (sales.totalRevenue - online);
-                                                return (
-                                                    <SalesChannelChart
-                                                        online={online}
-                                                        inStore={inStore}
-                                                        total={sales.totalRevenue}
-                                                    />
-                                                );
-                                            })()}
-                                        </div>
-                                        <div className="mt-4 flex justify-center gap-6">
-                                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                <span className="w-3 h-3 rounded-full bg-blue-500"></span> Online
-                                            </div>
-                                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                <span className="w-3 h-3 rounded-full bg-orange-400"></span> In-Store
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <FilterableRevenueChart storeSettings={storeSettings} />
+                                    <FilterableSalesChannelChart totalRevenue={sales.totalRevenue} />
                                 </div>
 
                                 {/* Row 3: Recent Orders & Top Sales */}
@@ -681,31 +583,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                     </div>
 
                                     {/* Top Sale - 1 Col */}
-                                    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-                                        <div className="flex justify-between items-center mb-4">
-                                            <h3 className="font-bold text-slate-900 text-lg">Top Sales</h3>
-                                        </div>
-                                        <div className="space-y-4">
-                                            {reportData.sales.topProductsByRevenue.slice(0, 5).map((p: any, i: number) => (
-                                                <div key={i} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-all">
-                                                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
-                                                        <ShoppingCartIcon className="w-6 h-6 text-slate-400" />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <h4 className="font-medium text-slate-900 text-sm truncate">{p.name}</h4>
-                                                        <p className="text-xs text-slate-500">{formatCurrency(p.revenue / p.quantity, storeSettings)}</p>
-                                                    </div>
-                                                    <div className="text-right">
-                                                        <div className="font-bold text-slate-900 text-sm">{p.quantity} Sold</div>
-                                                        <div className="text-xs text-emerald-600 font-medium">Top #{i + 1}</div>
-                                                    </div>
-                                                </div>
-                                            ))}
-                                            {reportData.sales.topProductsByRevenue.length === 0 && (
-                                                <div className="text-center py-8 text-slate-400">No data available</div>
-                                            )}
-                                        </div>
-                                    </div>
+                                    <FilterableTopSales storeSettings={storeSettings} />
                                 </div>
                             </>
                         )}
