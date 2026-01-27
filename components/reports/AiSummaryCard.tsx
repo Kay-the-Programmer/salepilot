@@ -106,35 +106,35 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
             />
 
             {/* Modal Content */}
-            <div className={`relative w-full max-w-lg overflow-hidden rounded-3xl shadow-2xl animate-scale-in
+            <div className={`relative w-full max-w-lg overflow-hidden rounded-3xl shadow-2xl animate-scale-in flex flex-col max-h-[90vh]
                 ${summary.tone === 'success' ? 'bg-gradient-to-br from-violet-600 to-indigo-700 text-white' :
                     summary.tone === 'good' ? 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white' :
                         'bg-white border border-gray-200 text-gray-800'}`}>
 
-                {/* Background Decorations */}
+                {/* Background Decorations - Fixed position to stay behind scrolling content */}
                 <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10 blur-3xl pointer-events-none"></div>
                 <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-black opacity-5 blur-3xl pointer-events-none"></div>
 
-                {/* Close Button */}
+                {/* Close Button - Absolute to the container */}
                 <button
                     onClick={() => setIsOpen(false)}
-                    className={`absolute top-4 right-4 p-2 rounded-full transition-colors z-20 
+                    className={`absolute top-4 right-4 p-2 rounded-full transition-colors z-30
                         ${summary.tone === 'quiet' ? 'hover:bg-gray-100 text-gray-500' : 'hover:bg-white/20 text-white/80 hover:text-white'}`}
                 >
                     <XMarkIcon className="w-6 h-6" />
                 </button>
 
-                <div className="relative z-10 p-8">
+                <div className="relative z-10 p-6 md:p-8 overflow-y-auto custom-scrollbar">
                     {/* Header with Icon */}
-                    <div className="flex items-start gap-4 mb-6">
-                        <div className={`p-3 rounded-2xl ${summary.tone === 'quiet' ? 'bg-indigo-50 text-indigo-600' : 'bg-white/20 text-white backdrop-blur-md'}`}>
+                    <div className="flex items-start gap-4 mb-6 pr-8">
+                        <div className={`p-3 rounded-2xl flex-shrink-0 ${summary.tone === 'quiet' ? 'bg-indigo-50 text-indigo-600' : 'bg-white/20 text-white backdrop-blur-md'}`}>
                             <SparklesIcon className="w-8 h-8" />
                         </div>
                         <div className="flex-1 pt-1">
                             <div className={`text-sm font-medium mb-1 ${summary.tone === 'quiet' ? 'text-indigo-600' : 'text-blue-100'}`}>
                                 AI Performance Summary
                             </div>
-                            <h2 className={`text-2xl font-bold leading-tight ${summary.tone === 'quiet' ? 'text-gray-900' : 'text-white'}`}>
+                            <h2 className={`text-xl md:text-2xl font-bold leading-tight ${summary.tone === 'quiet' ? 'text-gray-900' : 'text-white'}`}>
                                 {summary.title}
                             </h2>
                         </div>
@@ -148,10 +148,10 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                     </div>
 
                     {/* Footer / Action */}
-                    <div className="flex justify-end">
+                    <div className="flex justify-end pt-2">
                         <button
                             onClick={() => setIsOpen(false)}
-                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all
+                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all w-full md:w-auto
                                 ${summary.tone === 'quiet'
                                     ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg shadow-gray-200'
                                     : 'bg-white text-indigo-600 hover:bg-blue-50 shadow-lg shadow-indigo-900/20'}`}
