@@ -6,6 +6,7 @@ export type TimeFilter = 'daily' | 'weekly' | 'monthly' | 'yearly';
 export interface TimeRangeFilterProps {
     value: TimeFilter;
     onChange: (value: TimeFilter) => void;
+    onOpenChange?: (isOpen: boolean) => void;
     className?: string;
 }
 
@@ -16,9 +17,13 @@ export const filterLabels: Record<TimeFilter, string> = {
     'yearly': 'This Year'
 };
 
-export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({ value, onChange, className = "" }) => {
+export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({ value, onChange, onOpenChange, className = "" }) => {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        onOpenChange?.(isOpen);
+    }, [isOpen, onOpenChange]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {

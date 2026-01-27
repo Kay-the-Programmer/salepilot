@@ -17,6 +17,7 @@ const toDateInputString = (date: Date): string => {
 
 export const FilterableSalesChannelChart: React.FC<FilterableSalesChannelChartProps> = () => {
     const [filter, setFilter] = useState<TimeFilter>('monthly');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState({ online: 0, inStore: 0, total: 0 });
 
@@ -56,10 +57,10 @@ export const FilterableSalesChannelChart: React.FC<FilterableSalesChannelChartPr
     }, [filter]);
 
     return (
-        <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col min-h-[400px]">
+        <div className={`glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col min-h-[400px] transition-all ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-bold text-slate-900 text-lg">Sales Channels</h3>
-                <TimeRangeFilter value={filter} onChange={setFilter} />
+                <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
             </div>
 
             {loading ? (

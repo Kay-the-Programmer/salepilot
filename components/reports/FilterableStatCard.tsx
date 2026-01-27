@@ -30,6 +30,7 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
     storeSettings
 }) => {
     const [filter, setFilter] = useState<TimeFilter>('monthly');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState<{ value: number | string, trend: any[] }>({ value: 0, trend: [] });
 
@@ -99,7 +100,7 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
     };
 
     return (
-        <div className="glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative group hover:shadow-md transition-all">
+        <div className={`glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-between h-40 relative group hover:shadow-md transition-all ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-start z-10">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
@@ -116,7 +117,7 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
                         )}
                     </div>
                 </div>
-                <TimeRangeFilter value={filter} onChange={setFilter} />
+                <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
             </div>
             <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity rounded-b-2xl overflow-hidden pointer-events-none">
                 {!loading && <StatSparkline data={data.trend} color={sparklineColor} height={60} storeSettings={storeSettings} />}

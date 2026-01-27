@@ -22,6 +22,7 @@ const toDateInputString = (date: Date): string => {
 export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSettings }) => {
     const [timeFilter, setTimeFilter] = useState<TimeFilter>('monthly');
     const [typeFilter, setTypeFilter] = useState<TopSalesType>('products');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [items, setItems] = useState<any[]>([]);
 
@@ -42,14 +43,20 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
                 const startDateStr = toDateInputString(start);
                 const endDateStr = toDateInputString(end);
 
-                // Fetch dashboard data for the period
-                const response = await api.get<any>(`/reports/dashboard?startDate=${startDateStr}&endDate=${endDateStr}`);
-                const sales = response.sales || {};
+                // Fetch dashboard data, products, and categories in parallel
+                const [dashResponse, products, categories] = await Promise.all([
+                    api.get<any>(`/reports/dashboard?startDate=${startDateStr}&endDate=${endDateStr}`),
+                    api.get<any[]>('/products'),
+                    api.get<any[]>('/categories')
+                ]);
+
+                const sales = dashResponse.sales || {};
+                const topProducts = sales.topProductsByRevenue || [];
 
                 let processedItems: any[] = [];
 
                 if (typeFilter === 'products') {
-                    processedItems = (sales.topProductsByRevenue || []).slice(0, 8).map((p: any) => ({
+                    processedItems = topProducts.slice(0, 8).map((p: any) => ({
                         id: p.id || p.name,
                         name: p.name,
                         revenue: p.revenue,
@@ -58,9 +65,7 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
                         valueText: `${p.quantity} Sold`
                     }));
                 } else if (typeFilter === 'units') {
-                    // Assuming we might have topProductsByQuantity or we sort the revenue ones by quantity
-                    const rawProducts = sales.topProductsByRevenue || [];
-                    processedItems = [...rawProducts]
+                    processedItems = [...topProducts]
                         .sort((a, b) => b.quantity - a.quantity)
                         .slice(0, 8)
                         .map((p: any) => ({
@@ -72,16 +77,45 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
                             valueText: `${p.quantity} Units`
                         }));
                 } else if (typeFilter === 'categories') {
-                    // If backend doesn't provide topCategoriesByRevenue, we might need to fallback.
-                    // Let's assume the API might have topCategoriesByRevenue or similar.
-                    processedItems = (sales.topCategoriesByRevenue || []).slice(0, 8).map((c: any) => ({
-                        id: c.id || c.name,
-                        name: c.name,
-                        revenue: c.revenue,
-                        quantity: c.quantity,
-                        subtitle: `${c.quantity || 0} items sold`,
-                        valueText: formatCurrency(c.revenue, storeSettings)
-                    }));
+                    // Client-side aggregation by category
+                    const categoryMap: Record<string, { name: string, revenue: number, quantity: number }> = {};
+
+                    // Initialize with all categories
+                    categories.forEach(cat => {
+                        categoryMap[cat.id] = { name: cat.name, revenue: 0, quantity: 0 };
+                    });
+
+                    // Map products to categories for quick lookup
+                    const productToCategory: Record<string, string> = {};
+                    products.forEach(prod => {
+                        if (prod.categoryId) {
+                            productToCategory[prod.id] = prod.categoryId;
+                            // Also map by name as fallback if API topProducts only has names
+                            productToCategory[prod.name] = prod.categoryId;
+                        }
+                    });
+
+                    // Aggregate
+                    topProducts.forEach((p: any) => {
+                        const catId = p.id ? productToCategory[p.id] : productToCategory[p.name];
+                        if (catId && categoryMap[catId]) {
+                            categoryMap[catId].revenue += p.revenue;
+                            categoryMap[catId].quantity += p.quantity;
+                        }
+                    });
+
+                    processedItems = Object.entries(categoryMap)
+                        .filter(([_, data]) => data.revenue > 0 || data.quantity > 0)
+                        .map(([id, data]) => ({
+                            id,
+                            name: data.name,
+                            revenue: data.revenue,
+                            quantity: data.quantity,
+                            subtitle: `${data.quantity} units across category`,
+                            valueText: formatCurrency(data.revenue, storeSettings)
+                        }))
+                        .sort((a, b) => b.revenue - a.revenue)
+                        .slice(0, 8);
                 }
 
                 setItems(processedItems);
@@ -96,7 +130,7 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
     }, [timeFilter, typeFilter, storeSettings]);
 
     return (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col min-h-[400px]">
+        <div className={`bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col min-h-[400px] transition-all ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-slate-900 text-lg">Top Sales</h3>
                 <div className="flex items-center gap-2">
@@ -114,7 +148,7 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
                             </button>
                         ))}
                     </div>
-                    <TimeRangeFilter value={timeFilter} onChange={setTimeFilter} />
+                    <TimeRangeFilter value={timeFilter} onChange={setTimeFilter} onOpenChange={setIsFilterOpen} />
                 </div>
             </div>
 
