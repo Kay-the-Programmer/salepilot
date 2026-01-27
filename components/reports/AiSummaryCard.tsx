@@ -2,6 +2,7 @@
 import React, { useMemo } from 'react';
 import { StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
+import { SparklesIcon, XMarkIcon } from '../icons';
 
 interface AiSummaryCardProps {
     reportData: any;
@@ -10,6 +11,7 @@ interface AiSummaryCardProps {
 }
 
 export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeSettings, userName }) => {
+    const [isOpen, setIsOpen] = React.useState(false);
 
     const summary = useMemo(() => {
         if (!reportData?.sales) return null;
@@ -64,36 +66,100 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
 
     if (!summary) return null;
 
+
+
+    // Minimized View (Floating Button)
+    if (!isOpen) {
+        return (
+            <div className="fixed bottom-6 right-6 z-40 animate-fade-in-up">
+                <button
+                    onClick={() => setIsOpen(true)}
+                    className={`group flex items-center gap-2 px-4 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 ${summary.tone === 'quiet'
+                        ? 'bg-white text-indigo-600 border border-indigo-100'
+                        : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white'
+                        }`}
+                >
+                    <div className={`p-1 rounded-full ${summary.tone === 'quiet' ? 'bg-indigo-50' : 'bg-white/20'}`}>
+                        <SparklesIcon className="w-5 h-5" />
+                    </div>
+                    <span className="font-bold text-sm pr-1">AI Insights</span>
+
+                    {/* Pulsing content indicator/notification dot if urgent/good news */}
+                    {summary.tone !== 'quiet' && (
+                        <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
+                        </span>
+                    )}
+                </button>
+            </div>
+        );
+    }
+
+    // Expanded View (Modal)
     return (
-        <div className={`relative overflow-hidden rounded-2xl p-6 shadow-lg mb-6 transition-all duration-500
-            ${summary.tone === 'success' ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white' :
-                summary.tone === 'good' ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white' :
-                    'bg-white border border-gray-200 text-gray-800'}`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in"
+                onClick={() => setIsOpen(false)}
+            />
 
-            {/* Background Decorations */}
-            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 rounded-full bg-white opacity-10 blur-2xl"></div>
-            <div className="absolute bottom-0 left-0 -ml-10 -mb-10 w-40 h-40 rounded-full bg-black opacity-5 blur-2xl"></div>
+            {/* Modal Content */}
+            <div className={`relative w-full max-w-lg overflow-hidden rounded-3xl shadow-2xl animate-scale-in
+                ${summary.tone === 'success' ? 'bg-gradient-to-br from-violet-600 to-indigo-700 text-white' :
+                    summary.tone === 'good' ? 'bg-gradient-to-br from-blue-500 to-cyan-600 text-white' :
+                        'bg-white border border-gray-200 text-gray-800'}`}>
 
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex-1">
-                    <h2 className={`text-2xl font-bold mb-2 ${summary.tone === 'quiet' ? 'text-gray-900' : 'text-white'}`}>
-                        {summary.title}
-                    </h2>
-                    <div className={`prose prose-sm max-w-none ${summary.tone === 'quiet' ? 'text-gray-600' : 'text-blue-50'}`}>
+                {/* Background Decorations */}
+                <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10 blur-3xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-black opacity-5 blur-3xl pointer-events-none"></div>
+
+                {/* Close Button */}
+                <button
+                    onClick={() => setIsOpen(false)}
+                    className={`absolute top-4 right-4 p-2 rounded-full transition-colors z-20 
+                        ${summary.tone === 'quiet' ? 'hover:bg-gray-100 text-gray-500' : 'hover:bg-white/20 text-white/80 hover:text-white'}`}
+                >
+                    <XMarkIcon className="w-6 h-6" />
+                </button>
+
+                <div className="relative z-10 p-8">
+                    {/* Header with Icon */}
+                    <div className="flex items-start gap-4 mb-6">
+                        <div className={`p-3 rounded-2xl ${summary.tone === 'quiet' ? 'bg-indigo-50 text-indigo-600' : 'bg-white/20 text-white backdrop-blur-md'}`}>
+                            <SparklesIcon className="w-8 h-8" />
+                        </div>
+                        <div className="flex-1 pt-1">
+                            <div className={`text-sm font-medium mb-1 ${summary.tone === 'quiet' ? 'text-indigo-600' : 'text-blue-100'}`}>
+                                AI Performance Summary
+                            </div>
+                            <h2 className={`text-2xl font-bold leading-tight ${summary.tone === 'quiet' ? 'text-gray-900' : 'text-white'}`}>
+                                {summary.title}
+                            </h2>
+                        </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className={`prose prose-lg max-w-none mb-6 ${summary.tone === 'quiet' ? 'text-gray-600' : 'text-blue-50'}`}>
                         <p dangerouslySetInnerHTML={{
                             __html: summary.message.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold opacity-100">$1</span>')
                         }} />
                     </div>
-                </div>
 
-                {summary.tone !== 'quiet' && (
-                    <div className="flex-shrink-0 bg-white/20 backdrop-blur-sm rounded-xl p-3 flex items-center justify-center">
-                        {/* Simple visual indicator based on tone */}
-                        <div className="text-3xl">
-                            {summary.tone === 'success' ? '🏆' : '📈'}
-                        </div>
+                    {/* Footer / Action */}
+                    <div className="flex justify-end">
+                        <button
+                            onClick={() => setIsOpen(false)}
+                            className={`px-6 py-2.5 rounded-xl font-bold text-sm transition-all
+                                ${summary.tone === 'quiet'
+                                    ? 'bg-gray-900 text-white hover:bg-gray-800 shadow-lg shadow-gray-200'
+                                    : 'bg-white text-indigo-600 hover:bg-blue-50 shadow-lg shadow-indigo-900/20'}`}
+                        >
+                            Got it, thanks!
+                        </button>
                     </div>
-                )}
+                </div>
             </div>
         </div>
     );
