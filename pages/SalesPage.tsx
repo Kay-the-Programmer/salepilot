@@ -1391,7 +1391,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         </div>
 
                         {/* Search Bar (Sticky) */}
-                        <div className="bg-transparent/1 backdrop-blur-sm border-b border-slate-200 px-4 pb-4 pt-2">
+                        <div id="pos-mobile-search-container" className="bg-transparent/1 backdrop-blur-sm border-b border-slate-200 px-4 pb-4 pt-2">
                             <div className="relative">
                                 <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                                 <input

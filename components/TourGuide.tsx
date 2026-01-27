@@ -274,6 +274,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 </div>
             ),
             placement: 'bottom',
+            disableScrolling: true,
         },
         {
             target: '#pos-mobile-help-btn',
@@ -284,9 +285,10 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 </div>
             ),
             placement: 'bottom',
+            disableScrolling: true,
         },
         {
-            target: '#pos-mobile-search',
+            target: '#pos-mobile-search-container',
             content: (
                 <div>
                     <h3 className="font-bold text-lg mb-2">Find Products</h3>
@@ -294,6 +296,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 </div>
             ),
             placement: 'bottom',
+            disableScrolling: true,
         },
         {
             target: '#pos-mobile-product-list',
@@ -314,6 +317,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 </div>
             ),
             placement: 'top',
+            disableScrolling: true,
         },
         {
             target: '#pos-mobile-cart-fab',
@@ -324,6 +328,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 </div>
             ),
             placement: 'top',
+            disableScrolling: true,
         },
         {
             target: '#pos-mobile-held-fab',
@@ -334,6 +339,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 </div>
             ),
             placement: 'top',
+            disableScrolling: true,
         },
     ];
 
