@@ -11,7 +11,6 @@ interface LencoPayProps {
         lastName?: string;
         phone?: string;
     };
-    label?: string; // New prop for custom title
     onSuccess: (response: any) => void;
     onClose?: () => void;
     onConfirmationPending?: (response?: any) => void;
@@ -29,7 +28,6 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
     amount,
     email,
     currency,
-    label,
     reference: providedReference,
     paymentChannel = 'mobile-money',
     customerDetails,
@@ -140,7 +138,6 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
             email: email,
             amount: amount,
             currency: currency,
-            label: label,
             channels: [paymentChannel],
             customer: safeCustomer,
         };

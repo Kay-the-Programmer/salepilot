@@ -7,6 +7,7 @@ import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import { getCurrentUser } from '../services/authService';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { useToast } from '../contexts/ToastContext';
+import CustomPaymentModal from '../components/subscription/CustomPaymentModal';
 
 import { api } from '../services/api';
 
@@ -30,12 +31,13 @@ const SubscriptionPage: React.FC = () => {
     const navigate = useNavigate();
     const { showToast } = useToast();
     const [plans, setPlans] = useState<BackendPlan[]>([]);
+    const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [fetchingPlans, setFetchingPlans] = useState(true);
     const [user, setUser] = useState<any>(null);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [planToPay, setPlanToPay] = useState<BackendPlan | null>(null);
     const [currentReference, setCurrentReference] = useState<string | null>(null);
-    const [isVerifying, setIsVerifying] = useState(false);
     const stopPollingRef = React.useRef(false);
 
     useEffect(() => {
@@ -61,11 +63,12 @@ const SubscriptionPage: React.FC = () => {
     };
 
     const handleSelectPlan = (planId: string) => {
+        setSelectedPlan(planId);
         const plan = plans.find(p => p.id === planId);
         if (!plan) return;
 
         setPlanToPay(plan);
-        handlePayment('mobile-money');
+        setIsPaymentModalOpen(true);
     };
 
     const handlePayment = async (method: 'card' | 'mobile-money', phoneNumber?: string) => {
@@ -111,23 +114,21 @@ const SubscriptionPage: React.FC = () => {
                 email: user.email,
                 amount: planToPay.price,
                 currency: planToPay.currency || "ZMW",
-                label: 'SalePilot Subscription',
-                channels: ['mobile-money'],
+                channels: [method], // Use only the selected method
                 customer: {
                     phone: phoneNumber
                 },
                 onSuccess: async (response: any) => {
                     console.log('Lenco Success:', response);
-                    setIsVerifying(true);
                     await pollVerification(reference);
                 },
                 onClose: () => {
                     setLoading(false);
+                    setIsPaymentModalOpen(false);
                 },
                 onConfirmationPending: () => {
                     console.log('Lenco Confirmation Pending');
                     showToast('Payment prompt sent to your phone. Waiting for confirmation...', 'info');
-                    setIsVerifying(true);
                     pollVerification(reference);
                 },
             });
@@ -152,6 +153,7 @@ const SubscriptionPage: React.FC = () => {
             if (data.success) {
                 showToast('Payment Successful! Your subscription is now active.', 'success');
                 setLoading(false);
+                setIsPaymentModalOpen(false);
                 // Delay navigation slightly to let the user see the success message
                 setTimeout(() => navigate('/reports'), 2000);
             } else if (data.pending) {
@@ -161,10 +163,12 @@ const SubscriptionPage: React.FC = () => {
                 } else {
                     showToast('Payment confirmation is taking longer than expected. Please check back later.', 'warning');
                     setLoading(false);
+                    setIsPaymentModalOpen(false);
                 }
             } else {
                 showToast(data.message || 'Payment verification failed', 'error');
                 setLoading(false);
+                setIsPaymentModalOpen(false);
             }
         } catch (error: any) {
             console.error('Verification Error:', error);
@@ -174,7 +178,7 @@ const SubscriptionPage: React.FC = () => {
             } else {
                 showToast('Failed to verify payment. If you were charged, please contact support.', 'error');
                 setLoading(false);
-                setIsVerifying(false);
+                setIsPaymentModalOpen(false);
             }
         }
     };
@@ -193,12 +197,12 @@ const SubscriptionPage: React.FC = () => {
             } else {
                 showToast(response.message || response.error || 'Error notifying backend of cancellation', 'warning');
             }
-            setIsVerifying(false);
+            setIsPaymentModalOpen(false);
         } catch (err: any) {
             console.error('Error cancelling subscription verification:', err);
             showToast('Failed to cancel. Please check if you have already been charged.', 'error');
             setLoading(false);
-            setIsVerifying(false);
+            setIsPaymentModalOpen(false);
         }
     };
 
@@ -325,7 +329,7 @@ const SubscriptionPage: React.FC = () => {
                                                     : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md hover:shadow-lg'
                                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                                             >
-                                                {loading && planToPay?.id === plan.id ? 'Processing...' :
+                                                {loading && selectedPlan === plan.id ? 'Processing...' :
                                                     user?.subscriptionPlan === plan.id ? 'Current Plan' : 'Get Started'}
                                             </button>
                                         </div>
@@ -337,22 +341,19 @@ const SubscriptionPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Verification Loading Overlay */}
-            {isVerifying && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                        <p className="font-semibold text-slate-900">Verifying Payment</p>
-                        <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
-                        <button
-                            onClick={handleCancelSubscription}
-                            className="mt-4 px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all text-sm"
-                        >
-                            Cancel Transaction
-                        </button>
-                    </div>
-                </div>
-            )}
+            <CustomPaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => {
+                    stopPollingRef.current = true;
+                    setIsPaymentModalOpen(false);
+                }}
+                onConfirm={({ method, phoneNumber }) => handlePayment(method, phoneNumber)}
+                planName={planToPay?.name || ''}
+                amount={planToPay?.price || 0}
+                currency={planToPay?.currency || 'ZMW'}
+                loading={loading}
+                onCancelTransaction={handleCancelSubscription}
+            />
         </NotificationProvider>
     );
 };
