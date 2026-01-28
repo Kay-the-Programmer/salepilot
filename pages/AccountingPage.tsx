@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import { api } from '../services/api';
 import { Account, JournalEntry, StoreSettings, AccountType, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier, Expense } from '../types';
 import Header from '../components/Header';
 import { formatCurrency } from '../utils/currency';
@@ -2225,31 +2226,18 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         description: string
     ) => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`/api/accounting/accounts/${accountId}/adjust`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    adjustmentAmount,
-                    offsetAccountId,
-                    offsetAccountName,
-                    description
-                })
+            await api.post(`/accounting/accounts/${accountId}/adjust`, {
+                adjustmentAmount,
+                offsetAccountId,
+                offsetAccountName,
+                description
             });
 
-            if (response.ok) {
-                // Trigger a page reload to refresh data
-                window.location.reload();
-            } else {
-                const data = await response.json();
-                alert(data.message || 'Error adjusting account balance');
-            }
-        } catch (error) {
+            // Trigger a page reload to refresh data
+            window.location.reload();
+        } catch (error: any) {
             console.error('Error adjusting account:', error);
-            alert('Error adjusting account balance');
+            alert(error.message || 'Error adjusting account balance');
         }
     };
 
@@ -2519,26 +2507,12 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 }}
                 onSave={async (expense) => {
                     try {
-                        const token = localStorage.getItem('token');
-                        const response = await fetch('/api/expenses', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify(expense)
-                        });
-
-                        if (response.ok) {
-                            // Reload the page to refresh data
-                            window.location.reload();
-                        } else {
-                            const data = await response.json();
-                            alert(data.message || 'Error recording expense');
-                        }
-                    } catch (error) {
+                        await api.post('/expenses', expense);
+                        // Reload the page to refresh data
+                        window.location.reload();
+                    } catch (error: any) {
                         console.error('Error recording expense:', error);
-                        alert('Error recording expense');
+                        alert(error.message || 'Error recording expense');
                     }
                     setIsExpenseFormOpen(false);
                     setEditingExpense(null);

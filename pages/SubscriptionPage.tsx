@@ -6,57 +6,20 @@ import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import ShieldCheckIcon from '../components/icons/ShieldCheckIcon';
 import { getCurrentUser } from '../services/authService';
 import { NotificationProvider } from '../contexts/NotificationContext';
+import { useToast } from '../contexts/ToastContext';
+import CustomPaymentModal from '../components/subscription/CustomPaymentModal';
 
-// Mock plans (should fetch from API ideally, but hardcoding for consistent UI first)
-const PLANS = [
-    {
-        id: 'plan_basic',
-        name: 'Basic',
-        price: 'K99',
-        amount: 99,
-        interval: '/month',
-        description: 'Essential features for small businesses',
-        features: [
-            'Up to 100 Products',
-            'Basic Sales Reports',
-            '1 User Account',
-            'Email Support'
-        ],
-        highlight: false
-    },
-    {
-        id: 'plan_pro',
-        name: 'Pro',
-        price: 'K249',
-        amount: 249,
-        interval: '/month',
-        description: 'Advanced tools for growing stores',
-        features: [
-            'Unlimited Products',
-            'Advanced Analytics',
-            'Up to 5 User Accounts',
-            'Inventory Alerts',
-            'Priority Support'
-        ],
-        highlight: true
-    },
-    {
-        id: 'plan_enterprise',
-        name: 'Enterprise',
-        price: 'K599',
-        amount: 599,
-        interval: '/month',
-        description: 'Complete solution for large operations',
-        features: [
-            'Unlimited Everything',
-            'Custom Reports',
-            'Dedicated Account Manager',
-            'API Access',
-            'Multi-store Management'
-        ],
-        highlight: false
-    }
-];
+import { api } from '../services/api';
+
+interface BackendPlan {
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+    interval: string;
+    description: string;
+    features: string[];
+}
 
 declare global {
     interface Window {
@@ -66,126 +29,156 @@ declare global {
 
 const SubscriptionPage: React.FC = () => {
     const navigate = useNavigate();
+    const { showToast } = useToast();
+    const [plans, setPlans] = useState<BackendPlan[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const [storeId, setStoreId] = useState<string | null>(null);
-    const [userEmail, setUserEmail] = useState<string | null>(null);
+    const [fetchingPlans, setFetchingPlans] = useState(true);
+    const [user, setUser] = useState<any>(null);
+    const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [planToPay, setPlanToPay] = useState<BackendPlan | null>(null);
 
     useEffect(() => {
-        const user = getCurrentUser();
-        if (user) {
-            setStoreId(user.currentStoreId || null);
-            setUserEmail(user.email || null);
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+            setUser(currentUser);
+            fetchPlans();
         } else {
             navigate('/login');
         }
     }, [navigate]);
 
-    const handleSelectPlan = (planId: string) => {
-        setSelectedPlan(planId);
-        const plan = PLANS.find(p => p.id === planId);
-        if (!plan) return;
-
-        handlePayment(plan);
+    const fetchPlans = async () => {
+        try {
+            const data = await api.get<BackendPlan[]>('/subscriptions/plans');
+            setPlans(data);
+        } catch (error) {
+            console.error('Error fetching plans:', error);
+            showToast('Failed to load subscription plans', 'error');
+        } finally {
+            setFetchingPlans(false);
+        }
     };
 
-    const handlePayment = async (plan: any) => {
-        if (!storeId || !userEmail) {
-            alert('Store ID or User Email missing');
+    const handleSelectPlan = (planId: string) => {
+        setSelectedPlan(planId);
+        const plan = plans.find(p => p.id === planId);
+        if (!plan) return;
+
+        setPlanToPay(plan);
+        setIsPaymentModalOpen(true);
+    };
+
+    const handlePayment = async (method: 'card' | 'mobile-money', phoneNumber?: string) => {
+        if (!planToPay) return;
+        if (!user?.currentStoreId) {
+            showToast('Store context missing. Please re-login.', 'error');
             return;
         }
 
         setLoading(true);
         try {
             // 1. Initiate payment on backend to get reference
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/subscriptions/pay`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({
-                    storeId,
-                    planId: plan.id,
-                    method: 'mobile-money'
-                })
-            });
+            const response = await api.post<any>('/subscriptions/pay', {
+                storeId: user.currentStoreId,
+                planId: planToPay.id,
+                method: method,
+                phoneNumber: phoneNumber
+            }) as any;
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Failed to initiate payment');
+            const { reference, lencoResult } = response;
+
+            // 2. If it's mobile money and the backend already initiated the charge (lencoResult), 
+            // we don't open the popup, we just start polling.
+            if (method === 'mobile-money' && lencoResult && lencoResult.status) {
+                console.log('Mobile money charge initiated by backend:', lencoResult);
+                showToast('Payment prompt sent to your phone. Waiting for confirmation...', 'info');
+                await pollVerification(reference);
+                return;
             }
 
-            const { reference } = await response.json();
-
-            // 2. Open Lenco Popup
+            // 3. Otherwise (Card payment or mobile-money charge failed to initiate), open Lenco Popup
             const lencoKey = import.meta.env.VITE_LENCO_PUBLIC_KEY;
 
             if (!window.LencoPay) {
-                throw new Error('Lenco SDK not loaded');
+                throw new Error('Lenco SDK not loaded. Please refresh the page.');
             }
 
             window.LencoPay.getPaid({
                 key: lencoKey,
                 reference: reference,
-                email: userEmail,
-                amount: plan.amount,
-                currency: "ZMW",
-                channels: ["mobile-money", "card"],
+                email: user.email,
+                amount: planToPay.price,
+                currency: planToPay.currency || "ZMW",
+                channels: [method], // Use only the selected method
+                customer: {
+                    phone: phoneNumber
+                },
                 onSuccess: async (response: any) => {
                     console.log('Lenco Success:', response);
-                    await verifyPayment(reference);
+                    await pollVerification(reference);
                 },
                 onClose: () => {
                     setLoading(false);
+                    setIsPaymentModalOpen(false);
                 },
                 onConfirmationPending: () => {
-                    alert('Your payment is being confirmed. Please wait.');
+                    console.log('Lenco Confirmation Pending');
+                    showToast('Payment prompt sent to your phone. Waiting for confirmation...', 'info');
+                    pollVerification(reference);
                 },
             });
 
         } catch (error: any) {
             console.error('Payment Error:', error);
-            alert(error.message || 'Failed to process payment. Please try again.');
+            showToast(error.message || 'Failed to process payment. Please try again.', 'error');
             setLoading(false);
         }
     };
 
-    const verifyPayment = async (reference: string) => {
+    const pollVerification = async (reference: string, retries: number = 0) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/subscriptions/verify/${reference}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            console.log(`Verifying subscription payment (attempt ${retries + 1}):`, reference);
+            const data = await api.get<any>(`/subscriptions/verify/${reference}`);
 
-            if (!response.ok) {
-                throw new Error('Verification failed');
-            }
-
-            const data = await response.json();
             if (data.success) {
-                alert('Payment Successful! Your subscription is now active.');
-                navigate('/settings');
+                showToast('Payment Successful! Your subscription is now active.', 'success');
+                setLoading(false);
+                setIsPaymentModalOpen(false);
+                // Delay navigation slightly to let the user see the success message
+                setTimeout(() => navigate('/reports'), 2000);
+            } else if (data.pending) {
+                if (retries < 20) { // Poll for ~1 minute
+                    console.log('Subscription payment still pending, retrying in 3s...');
+                    setTimeout(() => pollVerification(reference, retries + 1), 3000);
+                } else {
+                    showToast('Payment confirmation is taking longer than expected. Please check back later.', 'warning');
+                    setLoading(false);
+                    setIsPaymentModalOpen(false);
+                }
             } else {
-                alert(data.message || 'Verification pending. Please check your settings later.');
+                showToast(data.message || 'Payment verification failed', 'error');
+                setLoading(false);
+                setIsPaymentModalOpen(false);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Verification Error:', error);
-            alert('Failed to verify payment. If you were charged, please contact support.');
-        } finally {
-            setLoading(false);
+            // Don't stop polling on network error, just retry
+            if (retries < 20) {
+                setTimeout(() => pollVerification(reference, retries + 1), 3000);
+            } else {
+                showToast('Failed to verify payment. If you were charged, please contact support.', 'error');
+                setLoading(false);
+                setIsPaymentModalOpen(false);
+            }
         }
     };
-
-    const user = getCurrentUser(); // For provider
 
     return (
         <NotificationProvider user={user}>
             <div className="flex h-screen bg-slate-50">
                 <Sidebar
-                    user={JSON.parse(localStorage.getItem('user') || '{}')}
+                    user={user || {}}
                     onLogout={() => {
                         localStorage.removeItem('token');
                         localStorage.removeItem('user');
@@ -199,14 +192,39 @@ const SubscriptionPage: React.FC = () => {
                     <main className="flex-1 overflow-y-auto p-6 md:p-8">
                         <div className="max-w-6xl mx-auto">
                             <button
-                                onClick={() => navigate('/settings')}
+                                onClick={() => navigate(-1)}
                                 className="mb-6 flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
                             >
                                 <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
-                                Back to Settings
+                                Back
                             </button>
+
+                            {user?.subscriptionStatus && (
+                                <div className="mb-8 p-6 bg-white rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
+                                    <div>
+                                        <h3 className="text-lg font-bold text-slate-900">Current Subscription</h3>
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${user.subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                                }`}>
+                                                {user.subscriptionStatus}
+                                            </span>
+                                            {user.subscriptionPlan && (
+                                                <span className="text-sm font-medium text-slate-600">
+                                                    Plan: <span className="capitalize">{user.subscriptionPlan.replace('plan_', '')}</span>
+                                                </span>
+                                            )}
+                                        </div>
+                                        {user.subscriptionEndsAt && (
+                                            <p className="mt-2 text-xs text-slate-500">
+                                                Expires on {new Date(user.subscriptionEndsAt).toLocaleDateString()}
+                                            </p>
+                                        )}
+                                    </div>
+                                    <ShieldCheckIcon className="w-10 h-10 text-blue-500 opacity-20" />
+                                </div>
+                            )}
 
                             <div className="text-center mb-10">
                                 <h2 className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
@@ -217,72 +235,89 @@ const SubscriptionPage: React.FC = () => {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                                {PLANS.map((plan) => (
-                                    <div
-                                        key={plan.id}
-                                        className={`relative rounded-3xl p-8 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl ${plan.highlight
-                                            ? 'bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl ring-4 ring-blue-500/20'
-                                            : 'bg-white text-slate-900 border border-slate-200 shadow-sm'
-                                            }`}
-                                    >
-                                        {plan.highlight && (
-                                            <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2">
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-blue-500 px-4 py-1.5 text-xs font-semibold text-white shadow-md">
-                                                    <ShieldCheckIcon className="w-3.5 h-3.5" />
-                                                    Most Popular
+                            {fetchingPlans ? (
+                                <div className="flex justify-center items-center h-64">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                    {plans.map((plan) => (
+                                        <div
+                                            key={plan.id}
+                                            className={`relative rounded-3xl p-8 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl ${plan.id === 'plan_pro'
+                                                ? 'bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl ring-4 ring-blue-500/20'
+                                                : 'bg-white text-slate-900 border border-slate-200 shadow-sm'
+                                                }`}
+                                        >
+                                            {plan.id === 'plan_pro' && (
+                                                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2">
+                                                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-500 px-4 py-1.5 text-xs font-semibold text-white shadow-md">
+                                                        <ShieldCheckIcon className="w-3.5 h-3.5" />
+                                                        Most Popular
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            <div className="mb-6">
+                                                <h3 className={`text-xl font-bold ${plan.id === 'plan_pro' ? 'text-white' : 'text-slate-900'}`}>
+                                                    {plan.name}
+                                                </h3>
+                                                <p className={`mt-2 text-sm ${plan.id === 'plan_pro' ? 'text-blue-200' : 'text-slate-500'}`}>
+                                                    {plan.description}
+                                                </p>
+                                            </div>
+
+                                            <div className="flex items-baseline mb-6">
+                                                <span className={`text-4xl font-extrabold tracking-tight ${plan.id === 'plan_pro' ? 'text-white' : 'text-slate-900'}`}>
+                                                    {plan.currency} {plan.price}
+                                                </span>
+                                                <span className={`ml-1 text-sm font-semibold ${plan.id === 'plan_pro' ? 'text-blue-200' : 'text-slate-500'}`}>
+                                                    /{plan.interval}
                                                 </span>
                                             </div>
-                                        )}
 
-                                        <div className="mb-6">
-                                            <h3 className={`text-xl font-bold ${plan.highlight ? 'text-white' : 'text-slate-900'}`}>
-                                                {plan.name}
-                                            </h3>
-                                            <p className={`mt-2 text-sm ${plan.highlight ? 'text-blue-200' : 'text-slate-500'}`}>
-                                                {plan.description}
-                                            </p>
+                                            <ul className="mb-8 space-y-4">
+                                                {plan.features.map((feature, index) => (
+                                                    <li key={index} className="flex items-start">
+                                                        <div className={`p-1 rounded-full mr-3 ${plan.id === 'plan_pro' ? 'bg-blue-700/50' : 'bg-blue-50'}`}>
+                                                            <CheckCircleIcon className={`w-4 h-4 ${plan.id === 'plan_pro' ? 'text-blue-300' : 'text-blue-600'}`} />
+                                                        </div>
+                                                        <span className={`text-sm ${plan.id === 'plan_pro' ? 'text-blue-100' : 'text-slate-600'}`}>
+                                                            {feature}
+                                                        </span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+
+                                            <button
+                                                onClick={() => handleSelectPlan(plan.id)}
+                                                disabled={loading || user?.subscriptionPlan === plan.id}
+                                                className={`w-full py-3.5 px-6 rounded-xl text-sm font-semibold transition-all duration-300 text-center flex items-center justify-center gap-2 ${plan.id === 'plan_pro'
+                                                    ? 'bg-white text-blue-900 hover:bg-blue-50 shadow-lg'
+                                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md hover:shadow-lg'
+                                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                            >
+                                                {loading && selectedPlan === plan.id ? 'Processing...' :
+                                                    user?.subscriptionPlan === plan.id ? 'Current Plan' : 'Get Started'}
+                                            </button>
                                         </div>
-
-                                        <div className="flex items-baseline mb-6">
-                                            <span className={`text-4xl font-extrabold tracking-tight ${plan.highlight ? 'text-white' : 'text-slate-900'}`}>
-                                                {plan.price}
-                                            </span>
-                                            <span className={`ml-1 text-sm font-semibold ${plan.highlight ? 'text-blue-200' : 'text-slate-500'}`}>
-                                                {plan.interval}
-                                            </span>
-                                        </div>
-
-                                        <ul className="mb-8 space-y-4">
-                                            {plan.features.map((feature, index) => (
-                                                <li key={index} className="flex items-start">
-                                                    <div className={`p-1 rounded-full mr-3 ${plan.highlight ? 'bg-blue-700/50' : 'bg-blue-50'}`}>
-                                                        <CheckCircleIcon className={`w-4 h-4 ${plan.highlight ? 'text-blue-300' : 'text-blue-600'}`} />
-                                                    </div>
-                                                    <span className={`text-sm ${plan.highlight ? 'text-blue-100' : 'text-slate-600'}`}>
-                                                        {feature}
-                                                    </span>
-                                                </li>
-                                            ))}
-                                        </ul>
-
-                                        <button
-                                            onClick={() => handleSelectPlan(plan.id)}
-                                            disabled={loading}
-                                            className={`w-full py-3.5 px-6 rounded-xl text-sm font-semibold transition-all duration-300 text-center flex items-center justify-center gap-2 ${plan.highlight
-                                                ? 'bg-white text-blue-900 hover:bg-blue-50 shadow-lg'
-                                                : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md hover:shadow-lg'
-                                                } disabled:opacity-50 disabled:cursor-not-allowed`}
-                                        >
-                                            {loading && selectedPlan === plan.id ? 'Processing...' : 'Get Started'}
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </main>
                 </div>
             </div>
+
+            <CustomPaymentModal
+                isOpen={isPaymentModalOpen}
+                onClose={() => setIsPaymentModalOpen(false)}
+                onConfirm={({ method, phoneNumber }) => handlePayment(method, phoneNumber)}
+                planName={planToPay?.name || ''}
+                amount={planToPay?.price || 0}
+                currency={planToPay?.currency || 'ZMW'}
+                loading={loading}
+            />
         </NotificationProvider>
     );
 };

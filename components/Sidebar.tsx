@@ -185,6 +185,13 @@ const NAV_ITEMS = [
         badge: null
     },
     {
+        name: 'Subscription',
+        page: 'subscription',
+        icon: CreditCardIcon,
+        roles: ['superadmin', 'admin'],
+        badge: null
+    },
+    {
         name: 'Overview',
         page: 'superadmin',
         icon: HomeIcon,

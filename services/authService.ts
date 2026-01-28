@@ -23,8 +23,11 @@ const normalizeUser = (u: any): User => ({
     phone: u.phone,
     role: normalizeRole(u.role),
     token: u.token,
-    currentStoreId: u.currentStoreId,
+    currentStoreId: u.currentStoreId || u.current_store_id,
     isVerified: u.isVerified || u.is_verified,
+    subscriptionStatus: u.subscriptionStatus || u.subscription_status,
+    subscriptionEndsAt: u.subscriptionEndsAt || u.subscription_ends_at,
+    subscriptionPlan: u.subscriptionPlan || u.subscription_plan,
 });
 
 const updateStoredUser = (updatedFields: Partial<User>): User | null => {

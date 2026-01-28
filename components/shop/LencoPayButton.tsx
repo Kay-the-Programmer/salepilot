@@ -4,6 +4,8 @@ interface LencoPayProps {
     amount: number;
     email: string;
     currency?: string;
+    reference?: string; // New prop
+    paymentChannel?: 'card' | 'mobile-money'; // New prop
     customerDetails?: {
         firstName?: string;
         lastName?: string;
@@ -11,6 +13,7 @@ interface LencoPayProps {
     };
     onSuccess: (response: any) => void;
     onClose?: () => void;
+    onConfirmationPending?: (response?: any) => void;
     children?: React.ReactNode;
     className?: string;
 }
@@ -24,43 +27,38 @@ declare global {
 const LencoPayButton: React.FC<LencoPayProps> = ({
     amount,
     email,
-    currency, // Remove hardcoded default here to let parent or store settings decide
+    currency,
+    reference: providedReference,
+    paymentChannel = 'mobile-money',
     customerDetails,
     onSuccess,
     onClose,
+    onConfirmationPending,
     children,
     className,
 }) => {
     const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+    const [isInternalProcessing, setIsInternalProcessing] = useState(false);
 
     useEffect(() => {
+        // ... (existing script loading logic remains same)
         const scriptId = 'lenco-script';
-
         const checkAndEnable = () => {
             if (window.LencoPay) {
-                console.log('window.LencoPay is available:', Object.keys(window.LencoPay));
                 setIsScriptLoaded(true);
                 return true;
             }
             return false;
         };
-
-        // Check if script is already present
         if (document.getElementById(scriptId)) {
-            console.log('Lenco script already in DOM');
             if (!checkAndEnable()) {
-                console.log('waiting for window.LencoPay...');
                 const interval = setInterval(() => {
                     if (checkAndEnable()) clearInterval(interval);
                 }, 500);
-
-                // Timeout after 5s
                 setTimeout(() => clearInterval(interval), 5000);
             }
             return;
         }
-
-        console.log('Loading Lenco script...');
         const script = document.createElement('script');
         script.id = scriptId;
         const isProd = import.meta.env.PROD;
@@ -68,51 +66,69 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
             ? 'https://pay.lenco.co/js/v1/inline.js'
             : 'https://pay.sandbox.lenco.co/js/v1/inline.js';
         script.async = true;
-        script.onload = () => {
-            console.log('Lenco script loaded successfully');
-            // Give it a moment to initialize the global object
-            setTimeout(checkAndEnable, 100);
-        };
-        script.onerror = (e) => {
-            console.error('Failed to load Lenco script', e);
-        };
+        script.onload = () => setTimeout(checkAndEnable, 100);
         document.body.appendChild(script);
-
-        return () => { };
     }, []);
 
-    const handlePayment = () => {
-        console.log('Proceed with Lenco clicked');
+    const handlePayment = async () => {
+        console.log('Proceed with Lenco clicked', { paymentChannel, providedReference });
 
-        if (!isScriptLoaded) {
-            console.error('Lenco script state is NOT loaded');
-            // Try one last check
-            if (window.LencoPay) setIsScriptLoaded(true);
-            else return;
-        }
-
-        if (!window.LencoPay) {
-            console.error('window.LencoPay is undefined');
-            return;
-        }
-
+        const reference = providedReference || 'ref-' + Date.now();
         const publicKey = import.meta.env.VITE_LENCO_PUBLIC_KEY;
-        console.log('Using Public Key:', publicKey ? '***Present***' : 'MISSING');
 
         if (!publicKey) {
-            console.error('VITE_LENCO_PUBLIC_KEY is missing in environment variables');
+            console.error('VITE_LENCO_PUBLIC_KEY is missing');
             alert('Payment configuration error: Public key missing');
             return;
         }
 
-        const reference = 'ref-' + Date.now();
+        // 1. If it's Mobile Money and we have a reference, let's try direct charge via backend first
+        // This avoids the Lenco popup if a reference was already generated server-side
+        if (paymentChannel === 'mobile-money' && providedReference && customerDetails?.phone) {
+            setIsInternalProcessing(true);
+            try {
+                const { api } = await import('@/services/api');
 
-        // Ensure constraints are met (some gateways reject empty strings)
+                // Determine operator
+                let operator = 'airtel';
+                const phone = customerDetails.phone;
+                if (phone.startsWith('096') || phone.startsWith('076') || phone.startsWith('26096') || phone.startsWith('26076')) {
+                    operator = 'mtn';
+                }
+
+                const result = await api.post<any>('/payments/lenco/charge-mobile-money', {
+                    amount,
+                    reference,
+                    phone: customerDetails.phone,
+                    operator
+                });
+
+                if (result.status) {
+                    console.log('Direct mobile money charge successful:', result);
+                    if (onConfirmationPending) {
+                        onConfirmationPending({ reference });
+                    }
+                    setIsInternalProcessing(false);
+                    return; // Exit early, no need for popup
+                } else {
+                    console.warn('Direct charge failed, falling back to Lenco popup:', result.message);
+                }
+            } catch (err) {
+                console.error('Failed to trigger direct charge, falling back to popup:', err);
+            } finally {
+                setIsInternalProcessing(false);
+            }
+        }
+
+        // 2. Fallback to Lenco Popup (or use it for Card)
+        if (!isScriptLoaded || !window.LencoPay) {
+            console.error('Lenco SDK not ready');
+            return;
+        }
+
         const safeCustomer = {
             firstName: customerDetails?.firstName || 'Guest',
-            lastName: (customerDetails?.lastName && customerDetails.lastName.trim() !== '')
-                ? customerDetails.lastName
-                : (customerDetails?.firstName || 'User'), // Fallback to firstname or generic
+            lastName: customerDetails?.lastName || 'User',
             phone: customerDetails?.phone || '',
         };
 
@@ -122,10 +138,9 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
             email: email,
             amount: amount,
             currency: currency,
-            channels: ['card', 'mobile-money'],
+            channels: [paymentChannel],
             customer: safeCustomer,
         };
-        console.log('Initializing Lenco payment with payload:', payload);
 
         try {
             window.LencoPay.getPaid({
@@ -135,26 +150,33 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
                     onSuccess(response);
                 },
                 onClose: () => {
-                    console.log('Lenco modal closed');
                     if (onClose) onClose();
                 },
                 onConfirmationPending: () => {
-                    console.log('Lenco confirmation pending');
-                    alert('Your purchase will be completed when the payment is confirmed');
+                    if (onConfirmationPending) {
+                        onConfirmationPending({ reference });
+                    }
                 },
             });
         } catch (err) {
-            console.error('Error invoking window.LencoPay.getPaid:', err);
+            console.error('Error invoking LencoPay:', err);
         }
     };
 
     return (
         <button
             onClick={handlePayment}
-            disabled={!isScriptLoaded}
+            disabled={!isScriptLoaded || isInternalProcessing}
             className={className || "bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"}
         >
-            {children || "Pay with Lenco"}
+            {isInternalProcessing ? (
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Processing...</span>
+                </div>
+            ) : (
+                children || "Pay with Lenco"
+            )}
         </button>
     );
 };

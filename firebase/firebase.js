@@ -19,7 +19,12 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+let analytics;
+try {
+    analytics = getAnalytics(app);
+} catch (error) {
+    console.warn("Firebase Analytics initialization failed:", error);
+}
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({ prompt: 'select_account' });

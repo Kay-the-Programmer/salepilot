@@ -13,8 +13,10 @@ interface PaymentChoiceModalProps {
     customerName: string;
     customerPhone: string;
     onLencoSuccess: (response: any) => void;
+    onConfirmationPending?: (response: any) => void;
     onManualConfirm: () => void;
-    storeSettings: any; // Using any for simplicity as it's passed through
+    storeSettings: any;
+    reference?: string; // New prop
 }
 
 const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
@@ -25,8 +27,10 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
     customerName,
     customerPhone,
     onLencoSuccess,
+    onConfirmationPending,
     onManualConfirm,
-    storeSettings
+    storeSettings,
+    reference
 }) => {
     if (!isOpen) return null;
 
@@ -70,12 +74,15 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
                                             amount={totalAmount}
                                             email={customerEmail}
                                             currency={storeSettings?.currencySymbol || 'ZMW'}
+                                            reference={reference}
+                                            paymentChannel="mobile-money"
                                             customerDetails={{
                                                 firstName: customerName.split(' ')[0],
                                                 lastName: customerName.split(' ').slice(1).join(' ') || '',
                                                 phone: customerPhone
                                             }}
                                             onSuccess={onLencoSuccess}
+                                            onConfirmationPending={onConfirmationPending}
                                             className="w-full inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:w-auto"
                                         >
                                             Proceed with Lenco

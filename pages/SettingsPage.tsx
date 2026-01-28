@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings, VerificationDocument } from '../types';
-import axios from 'axios';
+import { api } from '../services/api';
 import PencilIcon from '../components/icons/PencilIcon';
 import BuildingStorefrontIcon from '../components/icons/BuildingStorefrontIcon';
 import LocationPicker from '../components/LocationPicker';
@@ -55,13 +55,7 @@ const BusinessVerificationSection: React.FC<BusinessVerificationSectionProps> = 
         setError(null);
 
         try {
-            const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5000/api/verification/upload', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                    Authorization: `Bearer ${token}`
-                }
-            });
+            await api.postFormData('/verification/upload', formData);
             onUploadSuccess();
         } catch (err) {
             console.error('Upload failed', err);
@@ -251,11 +245,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
 
     const fetchVerificationStatus = async () => {
         try {
-            const token = localStorage.getItem('token');
-            const res = await axios.get('http://localhost:5000/api/verification/status', {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            setVerificationStatus(res.data);
+            const res = await api.get<any>('/verification/status');
+            setVerificationStatus(res);
         } catch (error) {
             console.error('Failed to fetch verification status', error);
         }

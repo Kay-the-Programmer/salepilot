@@ -91,7 +91,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [isScannerPaused, setIsScannerPaused] = useState(false);
     const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
+    const [verifyingMessage, setVerifyingMessage] = useState('Verifying Payment...');
     const [runTour, setRunTour] = useState(false);
+    const [lencoReference, setLencoReference] = useState<string | undefined>(undefined);
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
@@ -450,6 +452,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
     };
 
+
     const processTransaction = async (type: 'paid' | 'invoice', reference?: string) => {
         if (cart.length === 0) {
             showSnackbar('Cart is empty', 'error');
@@ -493,7 +496,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         (selectedPaymentMethod || '').toLowerCase().includes('airtel');
 
                     if (isMobileMoney) {
-                        setShowPaymentChoiceModal(true);
+                        try {
+                            // Fetch reference from backend first
+                            const refResponse = await api.post<any>('/payments/lenco/initiate', { prefix: 'SP_SALE' });
+                            if (refResponse.status && refResponse.data.reference) {
+                                setShowPaymentChoiceModal(true);
+                                // We don't return here, we wait for the modal to call processTransaction again with the reference
+                                // But we need to save the reference somewhere. 
+                                // Actually, it's better to just set the reference in the modal or state.
+                                setLencoReference(refResponse.data.reference);
+                            }
+                        } catch (err) {
+                            console.error('Failed to initiate Lenco reference:', err);
+                            showSnackbar('Failed to initiate payment. Please try again.', 'error');
+                        }
                         setIsProcessing(false);
                         return;
                     }
@@ -531,6 +547,44 @@ const SalesPage: React.FC<SalesPageProps> = ({
             setIsProcessing(false);
         }
     };
+
+    const handleLencoVerification = useCallback(async (reference: string, retries: number = 0) => {
+        if (retries === 0) {
+            setIsVerifyingPayment(true);
+            setVerifyingMessage('Initiating verification...');
+            setShowPaymentChoiceModal(false);
+        }
+
+        try {
+            console.log(`Verifying Lenco payment (attempt ${retries + 1}):`, reference);
+            const verificationResult = await api.post<any>('/payments/lenco/verify', { reference });
+
+            if (verificationResult.status) {
+                if (verificationResult.pending) {
+                    if (retries < 20) { // Poll for ~1 minute (3s * 20)
+                        setVerifyingMessage(verificationResult.message || 'Waiting for confirmation...');
+                        console.log('Payment still pending, retrying in 3s...');
+                        setTimeout(() => handleLencoVerification(reference, retries + 1), 3000);
+                    } else {
+                        showSnackbar('Payment confirmation timed out. Please check your transaction history later.', 'warning');
+                        setIsVerifyingPayment(false);
+                    }
+                } else {
+                    setVerifyingMessage('Payment verified!');
+                    showSnackbar('Payment verified successfully!', 'success');
+                    setIsVerifyingPayment(false);
+                    processTransaction('paid', reference);
+                }
+            } else {
+                showSnackbar(verificationResult.message || 'Payment verification failed', 'error');
+                setIsVerifyingPayment(false);
+            }
+        } catch (err: any) {
+            console.error('Lenco verification error:', err);
+            showSnackbar('Failed to verify payment. Please contact support.', 'error');
+            setIsVerifyingPayment(false);
+        }
+    }, [processTransaction, showSnackbar]);
 
     // Floating Action Buttons
     const FloatingActionButtons = () => (
@@ -1273,6 +1327,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                             <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
                                                         </div>
                                                     </div>
+                                                    {(selectedPaymentMethod?.toLowerCase().includes('mobile') || selectedPaymentMethod?.toLowerCase().includes('lenco') || selectedPaymentMethod?.toLowerCase().includes('mtn') || selectedPaymentMethod?.toLowerCase().includes('airtel')) && (
+                                                        <div className="animate-in fade-in zoom-in-95 duration-200">
+                                                            <label className="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                                                                Payer Mobile Number
+                                                            </label>
+                                                            <input
+                                                                type="text"
+                                                                value={mobileMoneyNumber}
+                                                                onChange={(e) => setMobileMoneyNumber(e.target.value)}
+                                                                className="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg text-lg font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                                placeholder="e.g. 0961111111"
+                                                            />
+                                                        </div>
+                                                    )}
 
                                                     {isCashMethod && (
                                                         <div className="animate-in fade-in zoom-in-95 duration-200">
@@ -1819,25 +1887,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 customerName={selectedCustomer?.name || 'Guest'}
                 customerPhone={mobileMoneyNumber || selectedCustomer?.phone || ''}
                 storeSettings={storeSettings}
+                reference={lencoReference}
                 onLencoSuccess={async (response) => {
-                    setIsVerifyingPayment(true);
-                    try {
-                        console.log('Verifying Lenco payment with reference:', response.reference);
-                        const verificationResult = await api.post<any>('/payments/lenco/verify', { reference: response.reference });
-
-                        if (verificationResult.status) {
-                            showSnackbar('Payment verified successfully!', 'success');
-                            setShowPaymentChoiceModal(false);
-                            processTransaction('paid', response.reference);
-                        } else {
-                            showSnackbar(verificationResult.message || 'Payment verification failed', 'error');
-                        }
-                    } catch (err: any) {
-                        console.error('Lenco verification error:', err);
-                        showSnackbar('Failed to verify payment. Please contact support.', 'error');
-                    } finally {
-                        setIsVerifyingPayment(false);
-                    }
+                    handleLencoVerification(response.reference);
+                }}
+                onConfirmationPending={async (response) => {
+                    handleLencoVerification(response.reference);
                 }}
                 onManualConfirm={() => {
                     setShowPaymentChoiceModal(false);
@@ -1850,7 +1905,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
                     <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
                         <LoadingSpinner size="lg" fullScreen={false} text="" />
-                        <p className="font-semibold text-slate-900">Verifying Payment...</p>
+                        <p className="font-semibold text-slate-900">{verifyingMessage}</p>
                         <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
                     </div>
                 </div>

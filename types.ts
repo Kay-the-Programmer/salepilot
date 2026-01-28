@@ -56,6 +56,9 @@ export interface User {
         lastUpdated?: string;
     };
     isVerified?: boolean;
+    subscriptionStatus?: 'trial' | 'active' | 'past_due' | 'canceled';
+    subscriptionEndsAt?: string;
+    subscriptionPlan?: string;
 }
 
 export interface CartItem {
