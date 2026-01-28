@@ -14,6 +14,7 @@ import UsersIcon from '../components/icons/UsersIcon';
 import { formatCurrency } from '../utils/currency';
 import PlusIcon from '../components/icons/PlusIcon';
 import TrendingDownIcon from '../components/icons/TrendingDownIcon';
+import InformationCircleIcon from '../components/icons/InformationCircleIcon';
 import { api } from '../services/api';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
@@ -52,10 +53,19 @@ const StatCard: React.FC<{
     color: string;
     noWrap?: boolean;
     compact?: boolean;
-}> = ({ title, value, icon, color, noWrap = false, compact = false }) => (
-    <div className={`relative overflow-hidden rounded-2xl glass-effect p-4 shadow-lg border border-gray-100/50 
+    tooltip?: string;
+}> = ({ title, value, icon, color, noWrap = false, compact = false, tooltip }) => (
+    <div className={`relative overflow-hidden rounded-2xl glass-effect shadow-lg border border-gray-100/50 
         ${compact ? 'p-3' : 'p-4 sm:p-5'} 
         transition-all duration-200 hover:shadow-xl active:scale-[0.99]`}>
+        {tooltip && (
+            <div className="absolute top-3 right-3 z-10 group/tooltip">
+                <InformationCircleIcon className="w-3.5 h-3.5 text-gray-300 hover:text-blue-500 transition-colors cursor-help" />
+                <div className="absolute bottom-full right-0 mb-2 w-48 p-2 bg-gray-900 text-white text-[10px] rounded-lg opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none shadow-xl z-50">
+                    {tooltip}
+                </div>
+            </div>
+        )}
         <div className={`absolute -top-6 -right-6 h-20 w-20 rounded-full ${color} opacity-10`}></div>
         <div className="flex items-start">
             <div className={`flex-shrink-0 rounded-xl p-2.5 sm:p-3 ${color} bg-opacity-15`}>
@@ -601,24 +611,28 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                 value={formatCurrency(sales.totalRevenue, storeSettings)}
                                 icon={<CurrencyDollarIcon className="h-5 w-5 text-green-600" />}
                                 color="bg-green-100"
+                                tooltip="Total income from sales before any expenses or COGS are deducted."
                             />
                             <StatCard
                                 title="Profit"
                                 value={formatCurrency(sales.totalProfit, storeSettings)}
                                 icon={<TrendingUpIcon className="h-5 w-5 text-blue-600" />}
                                 color="bg-blue-100"
+                                tooltip="Gross Profit (Revenue minus Cost of Goods Sold)."
                             />
                             <StatCard
                                 title="Margin"
                                 value={`${sales.grossMargin.toFixed(1)}%`}
                                 icon={<ReceiptPercentIcon className="h-5 w-5 text-yellow-600" />}
                                 color="bg-yellow-100"
+                                tooltip="Gross Margin percentage ((Profit / Revenue) * 100)."
                             />
                             <StatCard
                                 title="Transactions"
                                 value={`${sales.totalTransactions}`}
                                 icon={<ReceiptTaxIcon className="h-5 w-5 text-indigo-600" />}
                                 color="bg-indigo-100"
+                                tooltip="The total count of individual sales completed in this period."
                             />
                         </div>
 
@@ -818,24 +832,28 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                 value={customers.totalCustomers.toLocaleString()}
                                 icon={<UsersIcon className="h-5 w-5 text-blue-600" />}
                                 color="bg-blue-100"
+                                tooltip="Total number of unique customers registered in your store."
                             />
                             <StatCard
                                 title="Active Customers"
                                 value={customers.activeCustomersInPeriod.toLocaleString()}
                                 icon={<TrendingUpIcon className="h-5 w-5 text-green-600" />}
                                 color="bg-green-100"
+                                tooltip="Customers who made at least one purchase during the selected period."
                             />
                             <StatCard
                                 title="New Customers"
                                 value={customers.newCustomersInPeriod.toLocaleString()}
                                 icon={<PlusIcon className="h-5 w-5 text-indigo-600" />}
                                 color="bg-indigo-100"
+                                tooltip="Customers who registered during the selected period."
                             />
                             <StatCard
                                 title="Store Credit"
                                 value={formatCurrency(customers.totalStoreCreditOwed, storeSettings)}
                                 icon={<CurrencyDollarIcon className="h-5 w-5 text-yellow-600" />}
                                 color="bg-yellow-100"
+                                tooltip="Total outstanding store credit currently held by all customers."
                             />
                         </div>
 
@@ -868,30 +886,54 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                 const cashflow = reportData.cashflow;
                 return (
                     <div className="space-y-6 animate-fade-in pb-10">
+                        <div className="flex items-center justify-between px-1">
+                            <div>
+                                <h3 className="font-bold text-slate-900 text-lg">Cashflow Summary</h3>
+                                <p className="text-xs text-slate-500">Overview of money moving in and out</p>
+                            </div>
+                            <button
+                                onClick={() => {
+                                    // Try to navigate to accounting expenses if possible, 
+                                    // otherwise usually apps have a central state for routing.
+                                    // Given the constraints, we will use hash as a hint.
+                                    window.location.hash = '#expenses';
+                                    if (onClose) onClose();
+                                }}
+                                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all active:scale-95"
+                            >
+                                <PlusIcon className="w-4 h-4" />
+                                <span className="text-sm font-bold">Record Expense</span>
+                            </button>
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                             <StatCard
                                 title="Total Inflow"
                                 value={formatCurrency(cashflow.totalInflow, storeSettings)}
                                 icon={<TrendingUpIcon className="h-5 w-5 text-green-600" />}
                                 color="bg-green-100"
+                                tooltip="Total money received by the business (Sales, Payments, etc.)"
                             />
                             <StatCard
                                 title="Total Outflow"
                                 value={formatCurrency(cashflow.totalOutflow, storeSettings)}
                                 icon={<TrendingDownIcon className="h-5 w-5 text-red-600" />}
                                 color="bg-red-100"
+                                tooltip="Total money spent by the business (Expenses, Supplier Payments, etc.)"
                             />
                             <StatCard
                                 title="Net Cashflow"
                                 value={formatCurrency(cashflow.netCashflow, storeSettings)}
                                 icon={<ScaleIcon className={`h-5 w-5 ${cashflow.netCashflow >= 0 ? 'text-blue-600' : 'text-red-600'}`} />}
                                 color={cashflow.netCashflow >= 0 ? 'bg-blue-100' : 'bg-red-100'}
+                                tooltip="The difference between Total Inflow and Total Outflow. Positive means more money came in than went out."
                             />
                             <StatCard
                                 title="Efficiency"
                                 value={cashflow.totalInflow > 0 ? `${((cashflow.netCashflow / cashflow.totalInflow) * 100).toFixed(1)}%` : '0%'}
                                 icon={<ReceiptPercentIcon className="h-5 w-5 text-purple-600" />}
                                 color="bg-purple-100"
+                                tooltip="Percentage of Inflow that remains after all Outflows. (Net Cashflow / Total Inflow)"
                             />
                         </div>
 
@@ -907,12 +949,47 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                 />
                             </div>
 
-                            <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center items-center text-center">
-                                <ScaleIcon className={`w-16 h-16 mb-4 ${cashflow.netCashflow >= 0 ? 'text-green-200' : 'text-red-200'}`} />
-                                <h3 className="font-bold text-slate-900 text-lg">Financial Position</h3>
-                                <p className="text-sm text-slate-500 mt-2 px-4">
-                                    Your net cashflow is <span className={`font-bold ${cashflow.netCashflow >= 0 ? 'text-green-600' : 'text-red-600'}`}>{cashflow.netCashflow >= 0 ? 'positive' : 'negative'}</span> for this period.
-                                </p>
+                            <div className="space-y-6">
+                                <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+                                    <h3 className="font-bold text-slate-900 text-sm mb-4 uppercase tracking-wider text-slate-400">Where is the money going?</h3>
+                                    <div className="space-y-4">
+                                        {(cashflow.outflowBreakdown || []).slice(0, 5).map((item: any, i: number) => (
+                                            <div key={i} className="flex flex-col gap-1">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-medium text-slate-700">{item.category}</span>
+                                                    <span className="text-sm font-bold text-slate-900">{formatCurrency(item.amount, storeSettings)}</span>
+                                                </div>
+                                                <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="bg-red-500 h-full rounded-full"
+                                                        style={{ width: `${Math.min(100, (item.amount / (cashflow.totalOutflow || 1)) * 100)}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {(!cashflow.outflowBreakdown || cashflow.outflowBreakdown.length === 0) && (
+                                            <div className="text-center py-6 text-slate-400">
+                                                <ScaleIcon className="w-10 h-10 mx-auto mb-2 opacity-20" />
+                                                <p className="text-xs">No outflow data recorded</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 -mr-4 -mt-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
+                                    <h3 className="font-bold text-lg mb-1">Financial Position</h3>
+                                    <p className="text-blue-100 text-xs mb-4">Current performance insight</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-2 rounded-lg ${cashflow.netCashflow >= 0 ? 'bg-green-400/20' : 'bg-red-400/20'}`}>
+                                            <ScaleIcon className="w-5 h-5 text-white" />
+                                        </div>
+                                        <p className="text-sm font-medium leading-tight">
+                                            Your net cashflow is <span className="font-bold underlineDecoration decoration-2">{cashflow.netCashflow >= 0 ? 'positive' : 'negative'}</span>.
+                                            {cashflow.netCashflow >= 0 ? ' Great job maintaining surplus!' : ' Consider reviewing upcoming expenses.'}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
