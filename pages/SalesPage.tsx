@@ -23,7 +23,6 @@ import {
 } from '../components/icons';
 import TourGuide from '../components/TourGuide';
 import logo from '../assets/logo.png';
-import PaymentChoiceModal from '../components/sales/PaymentChoiceModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 import Header from "@/components/Header.tsx";
@@ -501,17 +500,45 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             // Fetch reference from backend first
                             const refResponse = await api.post<any>('/payments/lenco/initiate', { prefix: 'SP_SALE' });
                             if (refResponse.status && refResponse.data.reference) {
-                                setShowPaymentChoiceModal(true);
-                                // We don't return here, we wait for the modal to call processTransaction again with the reference
-                                // But we need to save the reference somewhere. 
-                                // Actually, it's better to just set the reference in the modal or state.
-                                setLencoReference(refResponse.data.reference);
+                                // Directly Launch Lenco Popup
+                                const lencoKey = import.meta.env.VITE_LENCO_PUBLIC_KEY;
+                                if (!window.LencoPay) {
+                                    showSnackbar('Lenco SDK not loaded. Please refresh.', 'error');
+                                    setIsProcessing(false);
+                                    return;
+                                }
+
+                                window.LencoPay.getPaid({
+                                    key: lencoKey,
+                                    reference: refResponse.data.reference,
+                                    email: selectedCustomer?.email || user.email,
+                                    amount: total,
+                                    currency: storeSettings?.currency?.symbol || 'ZMW',
+                                    label: 'SalePilot Checkout',
+                                    channels: ['mobile-money'],
+                                    customer: {
+                                        firstName: selectedCustomer?.name.split(' ')[0] || 'Guest',
+                                        lastName: selectedCustomer?.name.split(' ').slice(1).join(' ') || 'User',
+                                        phone: selectedCustomer?.phone || ''
+                                    },
+                                    onSuccess: (response: any) => {
+                                        console.log('Lenco Sale Success:', response);
+                                        handleLencoVerification(refResponse.data.reference);
+                                    },
+                                    onClose: () => {
+                                        setIsProcessing(false);
+                                    },
+                                    onConfirmationPending: () => {
+                                        showSnackbar('Payment prompt sent. Waiting for confirmation...', 'info');
+                                        handleLencoVerification(refResponse.data.reference);
+                                    }
+                                });
                             }
                         } catch (err) {
                             console.error('Failed to initiate Lenco reference:', err);
                             showSnackbar('Failed to initiate payment. Please try again.', 'error');
+                            setIsProcessing(false);
                         }
-                        setIsProcessing(false);
                         return;
                     }
                 }
@@ -1906,26 +1933,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 initialValues={initialProductValues}
             />
 
-            <PaymentChoiceModal
-                isOpen={showPaymentChoiceModal}
-                onClose={() => setShowPaymentChoiceModal(false)}
-                totalAmount={total} // Using the memoized total instead of re-calculating
-                customerEmail={selectedCustomer?.email || 'guest@salepilot.com'}
-                customerName={selectedCustomer?.name || 'Guest'}
-                customerPhone={mobileMoneyNumber || selectedCustomer?.phone || ''}
-                storeSettings={storeSettings}
-                reference={lencoReference}
-                onLencoSuccess={async (response) => {
-                    handleLencoVerification(response.reference);
-                }}
-                onConfirmationPending={async (response) => {
-                    handleLencoVerification(response.reference);
-                }}
-                onManualConfirm={() => {
-                    setShowPaymentChoiceModal(false);
-                    processTransaction('paid', 'manual-verfication');
-                }}
-            />
+            {/* Removed PaymentChoiceModal */}
 
             {/* Verification Loading Overlay */}
             {isVerifyingPayment && (
