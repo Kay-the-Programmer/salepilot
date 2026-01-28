@@ -603,7 +603,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
             const response = await api.post<any>('/payments/lenco/cancel', { reference: lencoReference });
             if (response.status) {
-                showSnackbar('Transaction cancelled successfully', 'success');
+                showSnackbar('Transaction cancelled successfully. If a USSD prompt appears on your phone, please decline it manually.', 'success');
             } else {
                 showSnackbar(response.message || 'Error notifying backend of cancellation', 'warning');
             }

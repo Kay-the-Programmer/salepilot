@@ -193,7 +193,7 @@ const SubscriptionPage: React.FC = () => {
 
             const response = await api.post<any>(`/subscriptions/cancel/${currentReference}`);
             if (response.success || response.status) {
-                showToast('Transaction cancelled successfully', 'success');
+                showToast('Transaction cancelled successfully. If a USSD prompt appears on your phone, please decline it manually.', 'success');
             } else {
                 showToast(response.message || response.error || 'Error notifying backend of cancellation', 'warning');
             }
