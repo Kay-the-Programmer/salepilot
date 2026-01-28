@@ -70,7 +70,7 @@ export default function App() {
                             <Route path="/audit-trail" element={<Dashboard />} />
                             <Route path="/users" element={<Dashboard />} />
                             <Route path="/notifications" element={<Dashboard />} />
-                            {/* <Route path="/logistics" element={<Dashboard />} /> */}
+                            <Route path="/logistics" element={<Dashboard />} />
                             <Route path="/profile" element={<Dashboard />} />
                             <Route path="/settings" element={<Dashboard />} />
                             <Route path="/subscription" element={<SubscriptionPage />} />

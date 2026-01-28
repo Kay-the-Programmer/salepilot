@@ -96,6 +96,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [lencoReference, setLencoReference] = useState<string | undefined>(undefined);
     const stopPollingRef = useRef(false);
 
+    // Out-of-Stock Modal State
+    const [showOutOfStockModal, setShowOutOfStockModal] = useState(false);
+    const [outOfStockProduct, setOutOfStockProduct] = useState<Product | null>(null);
+
+    // Low Stock Alert Modal State
+    const [showLowStockAlert, setShowLowStockAlert] = useState(false);
+    const [lowStockProduct, setLowStockProduct] = useState<Product | null>(null);
+
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
     const lastScrollY = useRef(0);
@@ -270,7 +278,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 showSnackbar(`Added "${product.name}" to cart`, 'success');
             }
         } else {
-            showSnackbar(`No more "${product.name}" available in stock`, 'error');
+            // Show out-of-stock modal instead of just snackbar
+            setOutOfStockProduct(product);
+            setShowOutOfStockModal(true);
         }
     };
 
@@ -786,16 +796,37 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                                     </div>
                                                                 )}
 
+                                                                {/* Diagonal Strikethrough for Sold Out */}
+                                                                {isSoldOut && (
+                                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                                        <div className="w-full h-1 bg-slate-400/70 transform rotate-[-20deg] shadow-md"></div>
+                                                                    </div>
+                                                                )}
+
                                                                 {/* Stock Badge */}
-                                                                <div className="absolute top-2 right-2">
+                                                                <div className="absolute top-2 right-2 flex gap-1.5">
                                                                     {isSoldOut ? (
                                                                         <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
                                                                             Sold Out
                                                                         </div>
                                                                     ) : isLowStock ? (
-                                                                        <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
-                                                                            {numericStock} left
-                                                                        </div>
+                                                                        <>
+                                                                            <div className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm">
+                                                                                {numericStock} left
+                                                                            </div>
+                                                                            {/* Low Stock Alert Button */}
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setLowStockProduct(product);
+                                                                                    setShowLowStockAlert(true);
+                                                                                }}
+                                                                                className="bg-red-500 hover:bg-red-600 text-white p-1.5 rounded-full shadow-lg transition-all hover:scale-110 active:scale-95"
+                                                                                title="Alert admin about low stock"
+                                                                            >
+                                                                                <BellAlertIcon className="w-3.5 h-3.5" />
+                                                                            </button>
+                                                                        </>
                                                                     ) : null}
                                                                 </div>
 
@@ -881,6 +912,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                                         <ShoppingCartIcon className="w-8 h-8 opacity-20" />
                                                                     </div>
                                                                 )}
+
+                                                                {/* Diagonal Strikethrough for Sold Out */}
+                                                                {isSoldOut && (
+                                                                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                                                        <div className="w-full h-0.5 bg-slate-400/70 transform rotate-[-20deg] shadow-sm"></div>
+                                                                    </div>
+                                                                )}
+
                                                                 {cartItem && (
                                                                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                                                                         <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
@@ -901,9 +940,23 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                                             Sold Out
                                                                         </span>
                                                                     ) : isLowStock ? (
-                                                                        <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-                                                                            {numericStock} left
-                                                                        </span>
+                                                                        <>
+                                                                            <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                                                                                {numericStock} left
+                                                                            </span>
+                                                                            {/* Low Stock Alert Button */}
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setLowStockProduct(product);
+                                                                                    setShowLowStockAlert(true);
+                                                                                }}
+                                                                                className="bg-red-500 hover:bg-red-600 text-white p-1 rounded-full shadow-md transition-all hover:scale-110 active:scale-95"
+                                                                                title="Alert admin about low stock"
+                                                                            >
+                                                                                <BellAlertIcon className="w-3 h-3" />
+                                                                            </button>
+                                                                        </>
                                                                     ) : (
                                                                         <span className="text-xs text-slate-500">
                                                                             {numericStock} in stock
@@ -919,7 +972,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                                         {formatCurrency(product.price, storeSettings)}
                                                                     </div>
                                                                 </div>
-                                                                {cartItem ? (
+                                                                {cartItem && (
                                                                     <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                                                                         <button
                                                                             onClick={() => updateQuantity(product.id, cartItem.quantity - getStepFor(product.unitOfMeasure))}
@@ -934,16 +987,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                                             +
                                                                         </button>
                                                                     </div>
-                                                                ) : (
-                                                                    <button
-                                                                        className="w-9 h-9 rounded-lg bg-blue-50 hover:bg-blue-100 flex items-center justify-center text-blue-600 transition-colors opacity-0 group-hover:opacity-100"
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            !isSoldOut && addToCart(product);
-                                                                        }}
-                                                                    >
-                                                                        <PlusIcon className="w-5 h-5" />
-                                                                    </button>
                                                                 )}
                                                             </div>
                                                         </div>
@@ -1881,6 +1924,178 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     setShouldFocusCashInput(true);
                 }}
             />
+
+            {/* Out of Stock Modal */}
+            {showOutOfStockModal && outOfStockProduct && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-scale-up">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-5 border-b border-red-100">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-red-500 rounded-xl shadow-lg">
+                                    <BellAlertIcon className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">Out of Stock</h3>
+                                    <p className="text-xs text-slate-600 mt-0.5">Product currently unavailable</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6">
+                            <div className="mb-4">
+                                <p className="text-slate-700 font-medium mb-2">
+                                    Sorry, "<span className="font-bold text-slate-900">{outOfStockProduct.name}</span>" is currently out of stock.
+                                </p>
+                                <p className="text-sm text-slate-500">
+                                    Please check back later or contact your admin to reorder this product.
+                                </p>
+                            </div>
+
+                            {/* Product Info Card */}
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                                <div className="flex items-center gap-3">
+                                    {outOfStockProduct.imageUrls?.[0] ? (
+                                        <img
+                                            src={buildAssetUrl(outOfStockProduct.imageUrls[0])}
+                                            alt={outOfStockProduct.name}
+                                            className="w-16 h-16 object-cover rounded-lg"
+                                        />
+                                    ) : (
+                                        <div className="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center">
+                                            <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <h4 className="font-semibold text-slate-900 text-sm">{outOfStockProduct.name}</h4>
+                                        <p className="text-xs text-slate-500 mt-0.5">SKU: {outOfStockProduct.sku || 'N/A'}</p>
+                                        <div className="mt-1">
+                                            <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
+                                                0 in stock
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowOutOfStockModal(false);
+                                    setOutOfStockProduct(null);
+                                }}
+                                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-slate-700 to-slate-800 rounded-xl hover:shadow-lg transition-all duration-200"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Low Stock Alert Modal */}
+            {showLowStockAlert && lowStockProduct && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-scale-up">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-5 border-b border-amber-100">
+                            <div className="flex items-center gap-3">
+                                <div className="p-3 bg-amber-500 rounded-xl shadow-lg">
+                                    <BellAlertIcon className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-900">Low Stock Alert</h3>
+                                    <p className="text-xs text-slate-600 mt-0.5">Notify admin to restock</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6">
+                            <div className="mb-4">
+                                <p className="text-slate-700 font-medium mb-2">
+                                    Send a notification to admin about low stock for:
+                                </p>
+                                <p className="text-sm text-slate-500 mb-4">
+                                    The admin will be notified to reorder "<span className="font-bold text-slate-900">{lowStockProduct.name}</span>".
+                                </p>
+                            </div>
+
+                            {/* Product Info Card */}
+                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                                <div className="flex items-center gap-3">
+                                    {lowStockProduct.imageUrls?.[0] ? (
+                                        <img
+                                            src={buildAssetUrl(lowStockProduct.imageUrls[0])}
+                                            alt={lowStockProduct.name}
+                                            className="w-16 h-16 object-cover rounded-lg"
+                                        />
+                                    ) : (
+                                        <div className="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center">
+                                            <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
+                                        </div>
+                                    )}
+                                    <div className="flex-1">
+                                        <h4 className="font-semibold text-slate-900 text-sm">{lowStockProduct.name}</h4>
+                                        <p className="text-xs text-slate-500 mt-0.5">SKU: {lowStockProduct.sku || 'N/A'}</p>
+                                        <div className="mt-1 flex items-center gap-2">
+                                            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                                {typeof (lowStockProduct as any).stock === 'number'
+                                                    ? (lowStockProduct as any).stock
+                                                    : (parseFloat(String((lowStockProduct as any).stock)) || 0)} left
+                                            </span>
+                                            <span className="text-xs text-slate-500">
+                                                Reorder at: {lowStockProduct.reorderPoint || storeSettings.lowStockThreshold}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
+                            <button
+                                onClick={() => {
+                                    setShowLowStockAlert(false);
+                                    setLowStockProduct(null);
+                                }}
+                                className="flex-1 px-4 py-2.5 text-sm font-bold text-slate-700 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        // Send notification to admin
+                                        await api.post('/notifications/low-stock', {
+                                            productId: lowStockProduct.id,
+                                            productName: lowStockProduct.name,
+                                            currentStock: typeof (lowStockProduct as any).stock === 'number'
+                                                ? (lowStockProduct as any).stock
+                                                : (parseFloat(String((lowStockProduct as any).stock)) || 0),
+                                            reorderPoint: lowStockProduct.reorderPoint || storeSettings.lowStockThreshold,
+                                            requestedBy: user.email || user.name
+                                        });
+                                        showSnackbar(`Admin notified about low stock for "${lowStockProduct.name}"`, 'success');
+                                        setShowLowStockAlert(false);
+                                        setLowStockProduct(null);
+                                    } catch (error) {
+                                        console.error('Failed to send low stock notification:', error);
+                                        showSnackbar('Failed to send notification. Please try again.', 'error');
+                                    }
+                                }}
+                                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl hover:shadow-lg transition-all duration-200"
+                            >
+                                Send Alert
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <ProductFormModal
                 isOpen={isProductFormOpen}

@@ -408,35 +408,39 @@ export interface AuditLog {
 
 export interface Courier {
     id: string;
-    name: string;
-    type: 'courier' | 'bus' | 'private_fleet';
-    contactPerson?: string;
-    phone?: string;
-    email?: string;
-    vehicleDetails?: {
-        licensePlate?: string;
-        routeInfo?: string;
-    };
+    company_name: string;
+    contact_details?: string;
+    receipt_details?: string;
     isActive: boolean;
+    created_at?: string;
+}
+
+export interface Bus {
+    id: string;
+    driver_name: string;
+    vehicle_name?: string;
+    number_plate: string;
+    contact_phone?: string;
+    isActive: boolean;
+    created_at?: string;
 }
 
 export interface Shipment {
     id: string;
-    trackingNumber: string;
-    courierId: string;
-    courierName?: string; // helpers for UI
+    tracking_number: string;
+    method: 'courier' | 'bus';
+    courier_id?: string;
+    bus_id?: string;
+    sale_id?: string;
     status: 'pending' | 'confirmed' | 'shipped' | 'in_transit' | 'delivered' | 'failed' | 'returned';
-    recipientDetails: {
-        name: string;
-        phone: string;
-        address: string;
-        instructions?: string;
-    };
-    shippingCost: number;
-    imageUrl?: string;
+    recipient_name?: string;
+    recipient_phone?: string;
+    recipient_address?: string;
+    destination?: string;
+    shipping_cost: number;
+    image_urls?: string[];
     notes?: string;
-    createdAt: string;
-    updatedAt?: string;
-    storeId?: string;
-    saleId?: string;
+    created_at: string;
+    updated_at: string;
+    store_id: string;
 }
