@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import SocketService from './services/socketService';
 import { SnackbarType } from './App';
-import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement } from './types';
+import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement, Expense, RecurringExpense } from './types';
 import Logo from './assets/logo.png';
 import Sidebar from './components/Sidebar';
 import { lazy, Suspense } from 'react';
@@ -108,6 +108,8 @@ export default function Dashboard() {
     const [announcements, setAnnouncements] = useState<Announcement[]>([]);
     const [pendingMatches, setPendingMatches] = useState<any[]>([]);
     const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
+    const [expenses, setExpenses] = useState<Expense[]>([]);
+    const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -242,6 +244,8 @@ export default function Dashboard() {
                 api.get<Return[]>('/returns'),
                 api.get<AuditLog[]>('/audit'),
                 api.get<StockTakeSession | null>('/stock-takes/active'),
+                api.get<Expense[]>('/expenses'),
+                api.get<RecurringExpense[]>('/recurring-expenses'),
                 currentUser?.currentStoreId ? api.get<Announcement[]>(`/notifications/stores/${currentUser.currentStoreId}`) : Promise.resolve([] as Announcement[])
             ]);
 
@@ -262,7 +266,9 @@ export default function Dashboard() {
             setReturns(mapResult(results[11], [] as Return[]));
             setAuditLogs(mapResult(results[12], [] as AuditLog[]));
             setStockTakeSession(mapResult(results[13], null as any));
-            setAnnouncements(mapResult(results[14], [] as Announcement[]));
+            setExpenses(mapResult(results[14], [] as Expense[]));
+            setRecurringExpenses(mapResult(results[15], [] as RecurringExpense[]));
+            setAnnouncements(mapResult(results[16], [] as Announcement[]));
 
             // Check for incomplete store settings (Address & Phone are mandatory)
             const settings = mapResult(results[10], null as any) as StoreSettings | null;
@@ -784,6 +790,40 @@ export default function Dashboard() {
     const handleSavePurchaseOrder = createSaveHandler('Purchase Order', '/purchase-orders', purchaseOrders);
     const handleSaveAccount = createSaveHandler('Account', '/accounting/accounts', accounts);
     const handleSaveSupplierInvoice = createSaveHandler('Supplier Invoice', '/accounting/supplier-invoices', supplierInvoices);
+    const handleSaveExpense = createSaveHandler('Expense', '/expenses', expenses);
+    const handleSaveRecurringExpense = createSaveHandler('Recurring Expense', '/recurring-expenses', recurringExpenses);
+
+    const handleDeleteExpense = async (expenseId: string) => {
+        if (window.confirm('Are you sure you want to delete this expense? This will also reverse its journal entry.')) {
+            try {
+                const result = await api.delete(`/expenses/${expenseId}`);
+                if ((result as any).offline) {
+                    showSnackbar('Offline: Expense deletion queued.', 'info');
+                } else {
+                    showSnackbar('Expense deleted successfully.', 'success');
+                    fetchData();
+                }
+            } catch (err: any) {
+                showSnackbar(err.message, 'error');
+            }
+        }
+    };
+
+    const handleDeleteRecurringExpense = async (expenseId: string) => {
+        if (window.confirm('Are you sure you want to delete this recurring expense? Future expenses will no longer be generated.')) {
+            try {
+                const result = await api.delete(`/recurring-expenses/${expenseId}`);
+                if ((result as any).offline) {
+                    showSnackbar('Offline: Deletion queued.', 'info');
+                } else {
+                    showSnackbar('Recurring expense deleted.', 'success');
+                    fetchData();
+                }
+            } catch (err: any) {
+                showSnackbar(err.message, 'error');
+            }
+        }
+    };
 
     const handleDeleteCategory = async (categoryId: string) => {
         if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
@@ -1152,7 +1192,30 @@ export default function Dashboard() {
                 case 'reports':
                     return <ReportsPage storeSettings={storeSettings!} />;
                 case 'accounting':
-                    return <AccountingPage accounts={accounts} journalEntries={journalEntries} sales={sales} customers={customers} suppliers={suppliers} supplierInvoices={supplierInvoices} purchaseOrders={purchaseOrders} onSaveAccount={handleSaveAccount} onDeleteAccount={handleDeleteAccount} onAddManualJournalEntry={handleAddManualJournalEntry} onRecordPayment={handleRecordPayment} onSaveSupplierInvoice={handleSaveSupplierInvoice} onRecordSupplierPayment={handleRecordSupplierPayment} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
+                    return <AccountingPage
+                        accounts={accounts}
+                        journalEntries={journalEntries}
+                        sales={sales}
+                        customers={customers}
+                        suppliers={suppliers}
+                        supplierInvoices={supplierInvoices}
+                        purchaseOrders={purchaseOrders}
+                        expenses={expenses}
+                        recurringExpenses={recurringExpenses}
+                        onSaveAccount={handleSaveAccount}
+                        onDeleteAccount={handleDeleteAccount}
+                        onAddManualJournalEntry={handleAddManualJournalEntry}
+                        onRecordPayment={handleRecordPayment}
+                        onSaveSupplierInvoice={handleSaveSupplierInvoice}
+                        onRecordSupplierPayment={handleRecordSupplierPayment}
+                        onSaveExpense={handleSaveExpense as any}
+                        onDeleteExpense={handleDeleteExpense}
+                        onSaveRecurringExpense={handleSaveRecurringExpense as any}
+                        onDeleteRecurringExpense={handleDeleteRecurringExpense}
+                        isLoading={isLoading}
+                        error={error}
+                        storeSettings={storeSettings!}
+                    />;
                 case 'audit-trail':
                     return <AuditLogPage logs={auditLogs} users={users} />;
                 case 'profile':

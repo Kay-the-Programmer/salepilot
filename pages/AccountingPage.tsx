@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { api } from '../services/api';
-import { Account, JournalEntry, StoreSettings, AccountType, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier, Expense } from '../types';
+import { Account, JournalEntry, StoreSettings, AccountType, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier, Expense, RecurringExpense } from '../types';
 import Header from '../components/Header';
 import { formatCurrency } from '../utils/currency';
 import PlusIcon from '../components/icons/PlusIcon';
@@ -36,6 +36,7 @@ import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 import ExpenseFormModal from '../components/accounting/ExpenseFormModal';
 import AccountAdjustmentModal from '../components/accounting/AccountAdjustmentModal';
 import ScaleIcon from '../components/icons/Scale';
+import RecurringExpenseFormModal from '../components/accounting/RecurringExpenseFormModal';
 
 // --- Subcomponents for AccountingPage ---
 const AccountingDashboard: React.FC<{ accounts: Account[], journalEntries: JournalEntry[], storeSettings: StoreSettings }> = ({ accounts, journalEntries, storeSettings }) => {
@@ -370,7 +371,8 @@ const ChartOfAccountsView: React.FC<{
     onSaveAccount: (account: Account) => void,
     onDeleteAccount: (accountId: string) => void,
     onAdjustAccount: (account: Account) => void,
-}> = ({ accounts, storeSettings, onSaveAccount, onDeleteAccount, onAdjustAccount }) => {
+    recurringExpenses: RecurringExpense[],
+}> = ({ accounts, storeSettings, onSaveAccount, onDeleteAccount, onAdjustAccount, recurringExpenses }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingAccount, setEditingAccount] = useState<Account | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -403,6 +405,29 @@ const ChartOfAccountsView: React.FC<{
             account.description?.toLowerCase().includes(term)
         );
     }, [accounts, searchTerm]);
+
+    // Calculate recurring expense commitments per account
+    const recurringCommitments = useMemo(() => {
+        const commitments: Record<string, { count: number; totalAmount: number }> = {};
+
+        recurringExpenses.filter(re => re.status === 'active').forEach(expense => {
+            // Track for expense account (where money is debited)
+            if (!commitments[expense.expenseAccountId]) {
+                commitments[expense.expenseAccountId] = { count: 0, totalAmount: 0 };
+            }
+            commitments[expense.expenseAccountId].count++;
+            commitments[expense.expenseAccountId].totalAmount += expense.amount;
+
+            // Track for payment account (where money is credited)
+            if (!commitments[expense.paymentAccountId]) {
+                commitments[expense.paymentAccountId] = { count: 0, totalAmount: 0 };
+            }
+            commitments[expense.paymentAccountId].count++;
+            commitments[expense.paymentAccountId].totalAmount += expense.amount;
+        });
+
+        return commitments;
+    }, [recurringExpenses]);
 
     const renderAccountList = (type: AccountType, title: string, iconColor: string, accentColor: string) => {
         const typeAccounts = filteredAccounts.filter(a => a.type === type);
@@ -455,8 +480,18 @@ const ChartOfAccountsView: React.FC<{
                                     </div>
 
                                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-                                        <div className={`text-sm md:text-base font-black tracking-tight ${account.balance >= 0 ? 'text-slate-900' : 'text-red-600'}`}>
-                                            {formatCurrency(account.balance, storeSettings)}
+                                        <div className="text-right">
+                                            <div className={`text-sm md:text-base font-black tracking-tight ${account.balance >= 0 ? 'text-slate-900' : 'text-red-600'}`}>
+                                                {formatCurrency(account.balance, storeSettings)}
+                                            </div>
+                                            {recurringCommitments[account.id] && (
+                                                <div className="flex items-center gap-1 mt-1 justify-end">
+                                                    <CalendarDaysIcon className="w-3 h-3 text-indigo-500" />
+                                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-tight">
+                                                        {recurringCommitments[account.id].count} recurring • {formatCurrency(recurringCommitments[account.id].totalAmount, storeSettings)}
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Desktop Actions */}
@@ -1577,6 +1612,372 @@ const APManagementView: React.FC<{
     );
 };
 
+const ExpensesView: React.FC<{
+    expenses: Expense[],
+    accounts: Account[],
+    storeSettings: StoreSettings,
+    onSave: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'>) => void,
+    onDelete: (id: string) => void,
+    onEdit: (expense: Expense) => void,
+    onOpenForm: () => void
+}> = ({ expenses, storeSettings, onDelete, onEdit, onOpenForm }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+    const filteredExpenses = useMemo(() => {
+        return expenses.filter(exp => {
+            const matchesSearch = exp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                exp.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                exp.reference?.toLowerCase().includes(searchTerm.toLowerCase());
+
+            const expenseDate = new Date(exp.date);
+            const matchesStart = !startDate || expenseDate >= new Date(startDate);
+            const matchesEnd = !endDate || expenseDate <= new Date(endDate);
+
+            return matchesSearch && matchesStart && matchesEnd;
+        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }, [expenses, searchTerm, startDate, endDate]);
+
+    const totalExpenseAmount = useMemo(() =>
+        filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0),
+        [filteredExpenses]
+    );
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Expenses</h2>
+                    <p className="text-sm text-slate-600 mt-1">Track and manage your business outflows</p>
+                </div>
+                <button
+                    onClick={onOpenForm}
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white font-black text-sm rounded-2xl hover:shadow-xl hover:shadow-red-500/25 transition-all duration-300"
+                >
+                    <PlusIcon className="w-5 h-5" />
+                    Record Expense
+                </button>
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl border border-red-200 p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white rounded-xl shadow-sm">
+                            <BanknotesIcon className="w-6 h-6 text-red-600" />
+                        </div>
+                        <span className="text-xs font-black text-red-600 uppercase tracking-widest bg-red-200/50 px-2 py-1 rounded-lg">Total Outflow</span>
+                    </div>
+                    <div className="text-3xl font-black text-red-900 tracking-tight">{formatCurrency(totalExpenseAmount, storeSettings)}</div>
+                    <p className="text-sm text-red-700 font-medium mt-1">Based on {filteredExpenses.length} records</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200 p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white rounded-xl shadow-sm">
+                            <CalculatorIcon className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <span className="text-xs font-black text-blue-600 uppercase tracking-widest bg-blue-200/50 px-2 py-1 rounded-lg">Count</span>
+                    </div>
+                    <div className="text-3xl font-black text-blue-900 tracking-tight">{filteredExpenses.length}</div>
+                    <p className="text-sm text-blue-700 font-medium mt-1">Total transactions</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-2xl border border-amber-200 p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white rounded-xl shadow-sm">
+                            <CalendarIcon className="w-6 h-6 text-amber-600" />
+                        </div>
+                        <span className="text-xs font-black text-amber-600 uppercase tracking-widest bg-amber-200/50 px-2 py-1 rounded-lg">Average</span>
+                    </div>
+                    <div className="text-3xl font-black text-amber-900 tracking-tight">
+                        {formatCurrency(filteredExpenses.length > 0 ? totalExpenseAmount / filteredExpenses.length : 0, storeSettings)}
+                    </div>
+                    <p className="text-sm text-amber-700 font-medium mt-1">Per transaction average</p>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                            <MagnifyingGlassIcon className="w-5 h-5" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search description, category, reference..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm font-medium"
+                        />
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                            <CalendarDaysIcon className="w-5 h-5" />
+                        </div>
+                        <input
+                            type="date"
+                            value={startDate}
+                            onChange={e => setStartDate(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm font-medium"
+                        />
+                    </div>
+                    <div className="relative group">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-blue-500 transition-colors">
+                            <CalendarDaysIcon className="w-5 h-5" />
+                        </div>
+                        <input
+                            type="date"
+                            value={endDate}
+                            onChange={e => setEndDate(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all text-sm font-medium"
+                        />
+                    </div>
+                </div>
+            </div>
+
+            {/* Expenses Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Date</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Description</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Amount</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Accounts</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredExpenses.map(exp => (
+                                <tr key={exp.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-sm font-bold text-slate-900">{new Date(exp.date).toLocaleDateString()}</div>
+                                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight mt-0.5">{exp.id.substring(0, 8)}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm font-bold text-slate-900">{exp.description}</div>
+                                        {exp.category && (
+                                            <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-black bg-blue-50 text-blue-700 uppercase tracking-tighter mr-2">
+                                                {exp.category}
+                                            </span>
+                                        )}
+                                        {exp.reference && (
+                                            <span className="inline-flex items-center px-2 py-0.5 mt-1 rounded text-[10px] font-black bg-slate-100 text-slate-600 uppercase tracking-tighter">
+                                                Ref: {exp.reference}
+                                            </span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                                        <div className="text-sm font-black text-red-600 tracking-tight">{formatCurrency(exp.amount, storeSettings)}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
+                                                <span className="text-[11px] font-bold text-slate-600 truncate max-w-[150px]">{exp.expenseAccountName}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
+                                                <span className="text-[11px] font-bold text-slate-600 truncate max-w-[150px]">{exp.paymentAccountName}</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                        <div className="flex justify-end items-center gap-2">
+                                            <button
+                                                onClick={() => onEdit(exp)}
+                                                className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                                                title="Edit Expense"
+                                            >
+                                                <PencilIcon className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => onDelete(exp.id)}
+                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Delete Expense"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {filteredExpenses.length === 0 && (
+                        <div className="text-center py-20 bg-white">
+                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <BanknotesIcon className="w-8 h-8 text-slate-200" />
+                            </div>
+                            <p className="text-slate-500 font-bold">No expenses found matching your filters</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const RecurringExpensesView: React.FC<{
+    expenses: RecurringExpense[],
+    accounts: Account[],
+    storeSettings: StoreSettings,
+    onSave: (expense: Omit<RecurringExpense, 'id' | 'createdBy' | 'createdAt' | 'updatedAt'> & { id?: string }) => void,
+    onDelete: (id: string) => void,
+    onEdit: (expense: RecurringExpense) => void,
+    onOpenForm: () => void
+}> = ({ expenses, storeSettings, onDelete, onEdit, onOpenForm }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const filteredExpenses = useMemo(() => {
+        return expenses.filter(exp => {
+            const matchesSearch = exp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                exp.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                exp.reference?.toLowerCase().includes(searchTerm.toLowerCase());
+
+            return matchesSearch;
+        }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }, [expenses, searchTerm]);
+
+    const totalRecurringAmount = useMemo(() =>
+        filteredExpenses.filter(e => e.status === 'active').reduce((sum, exp) => sum + exp.amount, 0),
+        [filteredExpenses]
+    );
+
+    return (
+        <div className="space-y-6">
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-black text-slate-900 tracking-tight">Recurring Expenses</h2>
+                    <p className="text-sm text-slate-600 mt-1">Manage automated business outflows</p>
+                </div>
+                <button
+                    onClick={onOpenForm}
+                    className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-black text-sm rounded-2xl hover:shadow-xl hover:shadow-indigo-500/25 transition-all duration-300"
+                >
+                    <PlusIcon className="w-5 h-5" />
+                    Set Recurring Expense
+                </button>
+            </div>
+
+            {/* Summary Card */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-2xl border border-indigo-200 p-6 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="p-3 bg-white rounded-xl shadow-sm">
+                            <BanknotesIcon className="w-6 h-6 text-indigo-600" />
+                        </div>
+                        <span className="text-xs font-black text-indigo-600 uppercase tracking-widest bg-indigo-200/50 px-2 py-1 rounded-lg">Monthly Commitment</span>
+                    </div>
+                    <div className="text-3xl font-black text-indigo-900 tracking-tight">{formatCurrency(totalRecurringAmount, storeSettings)}</div>
+                    <p className="text-sm text-indigo-700 font-medium mt-1">From {filteredExpenses.filter(e => e.status === 'active').length} active commitments</p>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+                <div className="relative group">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                        <MagnifyingGlassIcon className="w-5 h-5" />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search description, category, reference..."
+                        value={searchTerm}
+                        onChange={e => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all text-sm font-medium"
+                    />
+                </div>
+            </div>
+
+            {/* Recurring Table */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="bg-slate-50 border-b border-slate-200">
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Description</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Amount</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Schedule</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Next Run</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {filteredExpenses.map(exp => (
+                                <tr key={exp.id} className="hover:bg-slate-50/50 transition-colors group">
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm font-bold text-slate-900">{exp.description}</div>
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {exp.category && (
+                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-blue-50 text-blue-700 uppercase tracking-tighter">
+                                                    {exp.category}
+                                                </span>
+                                            )}
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-600 uppercase tracking-tighter">
+                                                {exp.expenseAccountName}
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                                        <div className="text-sm font-black text-slate-900 tracking-tight">{formatCurrency(exp.amount, storeSettings)}</div>
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <div className="text-xs font-bold text-slate-600 capitalize">{exp.frequency}</div>
+                                        <div className="text-[10px] text-slate-400">Started: {new Date(exp.startDate).toLocaleDateString()}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="text-xs font-bold text-slate-900">{new Date(exp.nextRunDate).toLocaleDateString()}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span className={`px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${exp.status === 'active' ? 'bg-emerald-100 text-emerald-700' :
+                                            exp.status === 'paused' ? 'bg-amber-100 text-amber-700' :
+                                                'bg-red-100 text-red-700'
+                                            }`}>
+                                            {exp.status}
+                                        </span>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                        <div className="flex justify-end items-center gap-2">
+                                            <button
+                                                onClick={() => onEdit(exp)}
+                                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                                title="Edit Commitment"
+                                            >
+                                                <PencilIcon className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => onDelete(exp.id)}
+                                                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                                                title="Delete Commitment"
+                                            >
+                                                <TrashIcon className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {filteredExpenses.length === 0 && (
+                        <div className="text-center py-20 bg-white">
+                            <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                                <CalendarDaysIcon className="w-8 h-8 text-slate-200" />
+                            </div>
+                            <p className="text-slate-500 font-bold">No recurring expenses found</p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const TaxReportView: React.FC<{ sales: Sale[], storeSettings: StoreSettings }> = ({ sales, storeSettings }) => {
     const [startDate, setStartDate] = useState(() => {
         const d = new Date();
@@ -2143,15 +2544,22 @@ interface AccountingPageProps {
     onRecordPayment: (saleId: string, payment: Omit<Payment, 'id'>) => void;
     onSaveSupplierInvoice: (invoice: SupplierInvoice) => void;
     onRecordSupplierPayment: (invoiceId: string, payment: Omit<SupplierPayment, 'id'>) => void;
+    expenses: Expense[];
+    recurringExpenses: RecurringExpense[];
+    onSaveExpense: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'> & { id?: string }) => void;
+    onDeleteExpense: (expenseId: string) => void;
+    onSaveRecurringExpense: (expense: Omit<RecurringExpense, 'id' | 'createdBy' | 'createdAt' | 'updatedAt'> & { id?: string }) => void;
+    onDeleteRecurringExpense: (expenseId: string) => void;
     isLoading: boolean;
     error: string | null;
     storeSettings: StoreSettings;
 }
 
 const AccountingPage: React.FC<AccountingPageProps> = ({
-    accounts, journalEntries, sales, customers, suppliers, supplierInvoices, purchaseOrders,
+    accounts, journalEntries, sales, customers, suppliers, supplierInvoices, purchaseOrders, expenses, recurringExpenses,
     onSaveAccount, onDeleteAccount, onAddManualJournalEntry, onRecordPayment,
-    onSaveSupplierInvoice, onRecordSupplierPayment,
+    onSaveSupplierInvoice, onRecordSupplierPayment, onSaveExpense, onDeleteExpense,
+    onSaveRecurringExpense, onDeleteRecurringExpense,
     isLoading, error, storeSettings
 }) => {
     const [activeTab, setActiveTab] = React.useState('dashboard');
@@ -2168,7 +2576,8 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     const [accountToAdjust, setAccountToAdjust] = React.useState<Account | null>(null);
     const [isExpenseFormOpen, setIsExpenseFormOpen] = React.useState(false);
     const [editingExpense, setEditingExpense] = React.useState<Expense | null>(null);
-    const [expenses, setExpenses] = React.useState<Expense[]>([]);
+    const [isRecurringExpenseFormOpen, setIsRecurringExpenseFormOpen] = React.useState(false);
+    const [editingRecurringExpense, setEditingRecurringExpense] = React.useState<RecurringExpense | null>(null);
 
     const availableTabs = React.useRef<string[]>([
         'dashboard',
@@ -2176,6 +2585,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         'ar_management',
         'ap_management',
         'expenses',
+        'recurring_expenses',
         'taxes',
         'chart_of_accounts',
         'journal',
@@ -2241,6 +2651,16 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         }
     };
 
+    const handleEditExpense = (expense: Expense) => {
+        setEditingExpense(expense);
+        setIsExpenseFormOpen(true);
+    };
+
+    const handleEditRecurringExpense = (expense: RecurringExpense) => {
+        setEditingRecurringExpense(expense);
+        setIsRecurringExpenseFormOpen(true);
+    };
+
     const renderContent = () => {
         if (isLoading) {
             return (
@@ -2293,32 +2713,33 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         setAccountToAdjust(account);
                         setIsAdjustmentModalOpen(true);
                     }}
+                    recurringExpenses={recurringExpenses}
                 />;
             case 'journal':
                 return <JournalView entries={journalEntries} accounts={accounts} sales={sales} customers={customers} storeSettings={storeSettings} onAddEntry={onAddManualJournalEntry} />;
             case 'expenses':
                 return (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="text-2xl font-black text-slate-900">Expenses</h2>
-                                <p className="text-sm text-slate-600 mt-1">Record and manage business expenses</p>
-                            </div>
-                            <button
-                                onClick={() => {
-                                    setEditingExpense(null);
-                                    setIsExpenseFormOpen(true);
-                                }}
-                                className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all"
-                            >
-                                <PlusIcon className="w-5 h-5" />
-                                <span className="font-bold text-sm">Record Expense</span>
-                            </button>
-                        </div>
-                        <div className="bg-white rounded-xl border border-slate-200 p-6">
-                            <p className="text-center text-slate-500 py-8">Expense recording feature ready. Click "Record Expense" to get started.</p>
-                        </div>
-                    </div>
+                    <ExpensesView
+                        expenses={expenses}
+                        accounts={accounts}
+                        storeSettings={storeSettings}
+                        onSave={onSaveExpense}
+                        onDelete={onDeleteExpense}
+                        onEdit={handleEditExpense}
+                        onOpenForm={() => { setEditingExpense(null); setIsExpenseFormOpen(true); }}
+                    />
+                );
+            case 'recurring_expenses':
+                return (
+                    <RecurringExpensesView
+                        expenses={recurringExpenses}
+                        accounts={accounts}
+                        storeSettings={storeSettings}
+                        onSave={onSaveRecurringExpense}
+                        onDelete={onDeleteRecurringExpense}
+                        onEdit={handleEditRecurringExpense}
+                        onOpenForm={() => { setEditingRecurringExpense(null); setIsRecurringExpenseFormOpen(true); }}
+                    />
                 );
             case 'taxes':
                 return <TaxReportView sales={sales} storeSettings={storeSettings} />;
@@ -2356,6 +2777,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         { tabName: 'ar_management', label: 'Accounts Receivable', shortLabel: 'A/R', icon: <ArrowTrendingUpIcon className="w-4 h-4" /> },
         { tabName: 'ap_management', label: 'Accounts Payable', shortLabel: 'A/P', icon: <ArrowTrendingDownIcon className="w-4 h-4" /> },
         { tabName: 'expenses', label: 'Expenses', shortLabel: 'Expenses', icon: <BanknotesIcon className="w-4 h-4" /> },
+        { tabName: 'recurring_expenses', label: 'Recurring', shortLabel: 'Recur', icon: <CalendarDaysIcon className="w-4 h-4" /> },
         { tabName: 'taxes', label: 'Taxes', shortLabel: 'Taxes', icon: <ReceiptPercentIcon className="w-4 h-4" /> },
         { tabName: 'chart_of_accounts', label: 'Chart of Accounts', shortLabel: 'Accounts', icon: <BookOpenIcon className="w-4 h-4" /> },
         { tabName: 'journal', label: 'Journal', shortLabel: 'Journal', icon: <ClipboardDocumentListIcon className="w-4 h-4" /> },
@@ -2505,21 +2927,23 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                     setIsExpenseFormOpen(false);
                     setEditingExpense(null);
                 }}
-                onSave={async (expense) => {
-                    try {
-                        await api.post('/expenses', expense);
-                        // Reload the page to refresh data
-                        window.location.reload();
-                    } catch (error: any) {
-                        console.error('Error recording expense:', error);
-                        alert(error.message || 'Error recording expense');
-                    }
-                    setIsExpenseFormOpen(false);
-                    setEditingExpense(null);
-                }}
+                onSave={onSaveExpense}
                 expenseToEdit={editingExpense}
                 accounts={accounts}
             />
+
+            {isRecurringExpenseFormOpen && (
+                <RecurringExpenseFormModal
+                    isOpen={isRecurringExpenseFormOpen}
+                    onClose={() => {
+                        setIsRecurringExpenseFormOpen(false);
+                        setEditingRecurringExpense(null);
+                    }}
+                    onSave={onSaveRecurringExpense}
+                    expenseToEdit={editingRecurringExpense}
+                    accounts={accounts}
+                />
+            )}
         </div>
     );
 };

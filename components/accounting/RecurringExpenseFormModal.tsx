@@ -1,27 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Account, Expense } from '../../types';
+import { Account, RecurringExpense } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
-import PencilIcon from '../icons/PencilIcon';
 import InformationCircleIcon from '../icons/InformationCircleIcon';
+import CalendarDaysIcon from '../icons/CalendarDaysIcon';
 
-interface ExpenseFormModalProps {
+interface RecurringExpenseFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'> & { id?: string }) => void;
-    expenseToEdit?: Expense | null;
+    onSave: (expense: Omit<RecurringExpense, 'id' | 'createdBy' | 'createdAt' | 'updatedAt' | 'nextRunDate' | 'status'> & { id?: string, status?: string }) => void;
+    expenseToEdit?: RecurringExpense | null;
     accounts: Account[];
 }
 
-const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, onSave, expenseToEdit, accounts }) => {
+const RecurringExpenseFormModal: React.FC<RecurringExpenseFormModalProps> = ({ isOpen, onClose, onSave, expenseToEdit, accounts }) => {
     const [formData, setFormData] = useState({
-        date: new Date().toISOString().split('T')[0],
         description: '',
         amount: '',
         expenseAccountId: '',
         paymentAccountId: '',
         category: '',
-        reference: ''
+        reference: '',
+        frequency: 'monthly',
+        startDate: new Date().toISOString().split('T')[0],
+        status: 'active'
     });
 
     // Filter accounts for dropdowns
@@ -34,27 +36,31 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
         if (isOpen) {
             if (expenseToEdit) {
                 setFormData({
-                    date: expenseToEdit.date.split('T')[0],
                     description: expenseToEdit.description,
                     amount: expenseToEdit.amount.toString(),
                     expenseAccountId: expenseToEdit.expenseAccountId,
                     paymentAccountId: expenseToEdit.paymentAccountId,
                     category: expenseToEdit.category || '',
-                    reference: expenseToEdit.reference || ''
+                    reference: expenseToEdit.reference || '',
+                    frequency: expenseToEdit.frequency,
+                    startDate: expenseToEdit.startDate.split('T')[0],
+                    status: expenseToEdit.status
                 });
             } else {
                 setFormData({
-                    date: new Date().toISOString().split('T')[0],
                     description: '',
                     amount: '',
                     expenseAccountId: '',
                     paymentAccountId: paymentAccounts[0]?.id || '',
                     category: '',
-                    reference: ''
+                    reference: '',
+                    frequency: 'monthly',
+                    startDate: new Date().toISOString().split('T')[0],
+                    status: 'active'
                 });
             }
         }
-    }, [expenseToEdit, isOpen]); // paymentAccounts removed from dependencies to prevent reset on every render
+    }, [expenseToEdit, isOpen, paymentAccounts]);
 
     if (!isOpen) return null;
 
@@ -76,7 +82,6 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
 
         onSave({
             ...(expenseToEdit?.id ? { id: expenseToEdit.id } : {}),
-            date: formData.date,
             description: formData.description,
             amount: parseFloat(formData.amount),
             expenseAccountId: formData.expenseAccountId,
@@ -84,7 +89,10 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
             paymentAccountId: formData.paymentAccountId,
             paymentAccountName: paymentAccount.name,
             category: formData.category || undefined,
-            reference: formData.reference || undefined
+            reference: formData.reference || undefined,
+            frequency: formData.frequency as any,
+            startDate: formData.startDate,
+            status: formData.status as any
         });
 
         onClose();
@@ -93,20 +101,18 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4" onClick={onClose}>
             {/* Backdrop with blur */}
-            <div
-                className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity -z-10"
-            />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity -z-10" />
 
             <div className="relative z-10 bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     <div className="px-6 py-5 border-b border-slate-200">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="p-2 bg-gradient-to-br from-red-50 to-red-100 rounded-lg">
-                                    <PencilIcon className="w-5 h-5 text-red-600" />
+                                <div className="p-2 bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-lg">
+                                    <CalendarDaysIcon className="w-5 h-5 text-indigo-600" />
                                 </div>
                                 <h3 className="text-lg font-black text-slate-900 tracking-tight">
-                                    {expenseToEdit ? 'Edit Expense' : 'Record New Expense'}
+                                    {expenseToEdit ? 'Edit Recurring Expense' : 'Create Recurring Expense'}
                                 </h3>
                             </div>
                             <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 rounded-lg transition-colors">
@@ -115,19 +121,20 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                         </div>
                     </div>
 
-                    <div className="px-6 py-5 space-y-4 overflow-y-auto flex-1">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-1.5">
-                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Date</label>
-                                <input
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                    required
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm font-medium"
-                                />
-                            </div>
+                    <div className="px-6 py-5 space-y-4 overflow-y-auto flex-1 text-left">
+                        <div className="space-y-1.5">
+                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Description</label>
+                            <input
+                                type="text"
+                                value={formData.description}
+                                onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                required
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium"
+                                placeholder="e.g., Monthly Office Rent"
+                            />
+                        </div>
 
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-1.5">
                                 <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Amount</label>
                                 <input
@@ -136,22 +143,53 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                                     value={formData.amount}
                                     onChange={e => setFormData({ ...formData, amount: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm font-medium"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium"
                                     placeholder="0.00"
                                 />
                             </div>
+
+                            <div className="space-y-1.5">
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Frequency</label>
+                                <select
+                                    value={formData.frequency}
+                                    onChange={e => setFormData({ ...formData, frequency: e.target.value as any })}
+                                    required
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium appearance-none"
+                                >
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                    <option value="quarterly">Quarterly</option>
+                                    <option value="yearly">Yearly</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Description</label>
-                            <input
-                                type="text"
-                                value={formData.description}
-                                onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                required
-                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm font-medium"
-                                placeholder="e.g., Office rent for January"
-                            />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Start Date</label>
+                                <input
+                                    type="date"
+                                    value={formData.startDate}
+                                    onChange={e => setFormData({ ...formData, startDate: e.target.value })}
+                                    required
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium"
+                                />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="block text-[11px] font-black text-slate-500 uppercase tracking-widest px-1">Status</label>
+                                <select
+                                    value={formData.status}
+                                    onChange={e => setFormData({ ...formData, status: e.target.value as any })}
+                                    required
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium appearance-none"
+                                >
+                                    <option value="active">Active</option>
+                                    <option value="paused">Paused</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -161,7 +199,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                                     value={formData.expenseAccountId}
                                     onChange={e => setFormData({ ...formData, expenseAccountId: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm font-medium appearance-none"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium appearance-none"
                                 >
                                     <option value="">Select expense type...</option>
                                     {expenseAccounts.map(acc => (
@@ -176,7 +214,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                                     value={formData.paymentAccountId}
                                     onChange={e => setFormData({ ...formData, paymentAccountId: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm font-medium appearance-none"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium appearance-none"
                                 >
                                     <option value="">Select payment source...</option>
                                     {paymentAccounts.map(acc => (
@@ -193,8 +231,8 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                                     type="text"
                                     value={formData.category}
                                     onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm font-medium"
-                                    placeholder="e.g., Utilities, Supplies"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium"
+                                    placeholder="e.g., Utilities, Rent"
                                 />
                             </div>
 
@@ -204,16 +242,16 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                                     type="text"
                                     value={formData.reference}
                                     onChange={e => setFormData({ ...formData, reference: e.target.value })}
-                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm font-medium"
-                                    placeholder="e.g., Invoice #12345"
+                                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all duration-200 text-sm font-medium"
+                                    placeholder="e.g., Rental Agreement"
                                 />
                             </div>
                         </div>
 
-                        <div className="p-3 bg-blue-50/50 rounded-xl border border-blue-100 flex items-start gap-3">
-                            <InformationCircleIcon className="w-4 h-4 text-blue-600 mt-0.5" />
-                            <p className="text-[10px] sm:text-xs font-medium text-blue-700">
-                                This expense will be recorded via a journal entry. The expense account will be debited and the payment account will be credited.
+                        <div className="p-3 bg-indigo-50/50 rounded-xl border border-indigo-100 flex items-start gap-3">
+                            <InformationCircleIcon className="w-4 h-4 text-indigo-600 mt-0.5" />
+                            <p className="text-[10px] sm:text-xs font-medium text-indigo-700">
+                                This recurring expense will automatically create a new expense entry and journal entry on each scheduled date.
                             </p>
                         </div>
                     </div>
@@ -228,9 +266,9 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                         </button>
                         <button
                             type="submit"
-                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-black text-white bg-gradient-to-r from-red-600 to-red-700 rounded-xl hover:shadow-lg hover:shadow-red-500/25 transition-all duration-200"
+                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-black text-white bg-gradient-to-r from-indigo-600 to-indigo-700 rounded-xl hover:shadow-lg hover:shadow-indigo-500/25 transition-all duration-200"
                         >
-                            {expenseToEdit ? 'Update Expense' : 'Record Expense'}
+                            {expenseToEdit ? 'Update Recurring Expense' : 'Create Recurring Expense'}
                         </button>
                     </div>
                 </form>
@@ -240,4 +278,4 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
     );
 };
 
-export default ExpenseFormModal;
+export default RecurringExpenseFormModal;
