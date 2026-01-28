@@ -37,6 +37,8 @@ const SubscriptionPage: React.FC = () => {
     const [user, setUser] = useState<any>(null);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
     const [planToPay, setPlanToPay] = useState<BackendPlan | null>(null);
+    const [currentReference, setCurrentReference] = useState<string | null>(null);
+    const stopPollingRef = React.useRef(false);
 
     useEffect(() => {
         const currentUser = getCurrentUser();
@@ -87,6 +89,8 @@ const SubscriptionPage: React.FC = () => {
             }) as any;
 
             const { reference, lencoResult } = response;
+            setCurrentReference(reference);
+            stopPollingRef.current = false;
 
             // 2. If it's mobile money and the backend already initiated the charge (lencoResult), 
             // we don't open the popup, we just start polling.
@@ -137,6 +141,11 @@ const SubscriptionPage: React.FC = () => {
     };
 
     const pollVerification = async (reference: string, retries: number = 0) => {
+        if (stopPollingRef.current) {
+            console.log('Verification stopped by user');
+            return;
+        }
+
         try {
             console.log(`Verifying subscription payment (attempt ${retries + 1}):`, reference);
             const data = await api.get<any>(`/subscriptions/verify/${reference}`);
@@ -171,6 +180,29 @@ const SubscriptionPage: React.FC = () => {
                 setLoading(false);
                 setIsPaymentModalOpen(false);
             }
+        }
+    };
+
+    const handleCancelSubscription = async () => {
+        if (!currentReference) return;
+
+        try {
+            stopPollingRef.current = true;
+            setLoading(false);
+            showToast('Cancelling transaction...', 'info');
+
+            const response = await api.post<any>(`/subscriptions/cancel/${currentReference}`);
+            if (response.success || response.status) {
+                showToast('Transaction cancelled successfully', 'success');
+            } else {
+                showToast(response.message || response.error || 'Error notifying backend of cancellation', 'warning');
+            }
+            setIsPaymentModalOpen(false);
+        } catch (err: any) {
+            console.error('Error cancelling subscription verification:', err);
+            showToast('Failed to cancel. Please check if you have already been charged.', 'error');
+            setLoading(false);
+            setIsPaymentModalOpen(false);
         }
     };
 
@@ -311,12 +343,16 @@ const SubscriptionPage: React.FC = () => {
 
             <CustomPaymentModal
                 isOpen={isPaymentModalOpen}
-                onClose={() => setIsPaymentModalOpen(false)}
+                onClose={() => {
+                    stopPollingRef.current = true;
+                    setIsPaymentModalOpen(false);
+                }}
                 onConfirm={({ method, phoneNumber }) => handlePayment(method, phoneNumber)}
                 planName={planToPay?.name || ''}
                 amount={planToPay?.price || 0}
                 currency={planToPay?.currency || 'ZMW'}
                 loading={loading}
+                onCancelTransaction={handleCancelSubscription}
             />
         </NotificationProvider>
     );

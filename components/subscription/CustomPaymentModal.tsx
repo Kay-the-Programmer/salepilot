@@ -13,6 +13,7 @@ interface CustomPaymentModalProps {
     amount: number;
     currency: string;
     loading: boolean;
+    onCancelTransaction?: () => void;
 }
 
 const CustomPaymentModal: React.FC<CustomPaymentModalProps> = ({
@@ -22,7 +23,8 @@ const CustomPaymentModal: React.FC<CustomPaymentModalProps> = ({
     planName,
     amount,
     currency,
-    loading
+    loading,
+    onCancelTransaction
 }) => {
     const [method, setMethod] = useState<'card' | 'mobile-money'>('mobile-money');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -63,8 +65,8 @@ const CustomPaymentModal: React.FC<CustomPaymentModalProps> = ({
                             <button
                                 onClick={() => setMethod('mobile-money')}
                                 className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 gap-2 ${method === 'mobile-money'
-                                        ? 'border-blue-600 bg-blue-50/50 text-blue-700'
-                                        : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50'
+                                    ? 'border-blue-600 bg-blue-50/50 text-blue-700'
+                                    : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50'
                                     }`}
                             >
                                 <DevicePhoneMobileIcon className={`w-8 h-8 ${method === 'mobile-money' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -73,8 +75,8 @@ const CustomPaymentModal: React.FC<CustomPaymentModalProps> = ({
                             <button
                                 onClick={() => setMethod('card')}
                                 className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-200 gap-2 ${method === 'card'
-                                        ? 'border-blue-600 bg-blue-50/50 text-blue-700'
-                                        : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50'
+                                    ? 'border-blue-600 bg-blue-50/50 text-blue-700'
+                                    : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200 hover:bg-slate-50'
                                     }`}
                             >
                                 <CreditCardIcon className={`w-8 h-8 ${method === 'card' ? 'text-blue-600' : 'text-slate-400'}`} />
@@ -121,6 +123,15 @@ const CustomPaymentModal: React.FC<CustomPaymentModalProps> = ({
                             `Pay ${currency} ${amount}`
                         )}
                     </Button>
+
+                    {loading && onCancelTransaction && (
+                        <button
+                            onClick={onCancelTransaction}
+                            className="w-full mt-3 py-2 text-center text-sm font-bold text-red-600 hover:text-red-700 transition-colors"
+                        >
+                            Cancel Transaction
+                        </button>
+                    )}
                     <p className="mt-4 text-center text-[10px] text-slate-400 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
                         <ShieldCheckIcon className="w-3.5 h-3.5" />
                         SSL Encrypted Secure Payment

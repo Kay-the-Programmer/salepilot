@@ -94,6 +94,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [verifyingMessage, setVerifyingMessage] = useState('Verifying Payment...');
     const [runTour, setRunTour] = useState(false);
     const [lencoReference, setLencoReference] = useState<string | undefined>(undefined);
+    const stopPollingRef = useRef(false);
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
     const [isFabVisible, setIsFabVisible] = useState(true);
@@ -553,6 +554,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
             setIsVerifyingPayment(true);
             setVerifyingMessage('Initiating verification...');
             setShowPaymentChoiceModal(false);
+            stopPollingRef.current = false;
+        }
+
+        if (stopPollingRef.current) {
+            console.log('Verification stopped by user');
+            return;
         }
 
         try {
@@ -585,6 +592,26 @@ const SalesPage: React.FC<SalesPageProps> = ({
             setIsVerifyingPayment(false);
         }
     }, [processTransaction, showSnackbar]);
+
+    const handleCancelVerification = async () => {
+        if (!lencoReference) return;
+
+        try {
+            stopPollingRef.current = true;
+            setIsVerifyingPayment(false);
+            showSnackbar('Cancelling transaction...', 'info');
+
+            const response = await api.post<any>('/payments/lenco/cancel', { reference: lencoReference });
+            if (response.status) {
+                showSnackbar('Transaction cancelled successfully', 'success');
+            } else {
+                showSnackbar(response.message || 'Error notifying backend of cancellation', 'warning');
+            }
+        } catch (err) {
+            console.error('Error cancelling Lenco verification:', err);
+            // Even if the API call fails, we've already stopped UI polling
+        }
+    };
 
     // Floating Action Buttons
     const FloatingActionButtons = () => (
@@ -1907,6 +1934,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         <LoadingSpinner size="lg" fullScreen={false} text="" />
                         <p className="font-semibold text-slate-900">{verifyingMessage}</p>
                         <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
+                        <button
+                            onClick={handleCancelVerification}
+                            className="mt-4 px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all text-sm"
+                        >
+                            Cancel Transaction
+                        </button>
                     </div>
                 </div>
             )}
