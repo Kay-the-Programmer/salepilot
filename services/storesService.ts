@@ -10,11 +10,11 @@ export type RegisterStoreResponse = {
  * Backend will promote user to admin and set current_store_id.
  * After registration, we fetch /auth/me to get the refreshed user with currentStoreId.
  */
-export async function registerStoreAndRefreshUser(name: string, businessTypes: string[] = []): Promise<{ store: RegisterStoreResponse['store']; user: User }> {
+export async function registerStoreAndRefreshUser(name: string, businessTypes: string[] = [], phone?: string, address?: string): Promise<{ store: RegisterStoreResponse['store']; user: User }> {
   if (!name || name.trim().length < 2) {
     throw new Error('Please provide a valid store name (min 2 characters).');
   }
-  const resp = await api.post<RegisterStoreResponse>('/stores/register', { name: name.trim(), businessTypes }, { skipQueue: true });
+  const resp = await api.post<RegisterStoreResponse>('/stores/register', { name: name.trim(), businessTypes, phone, address }, { skipQueue: true });
   // Store registration cannot be completed offline
   if ((resp as any)?.offline) {
     throw new Error('Cannot create a store while offline. Please connect to the internet and try again.');
@@ -25,4 +25,13 @@ export async function registerStoreAndRefreshUser(name: string, businessTypes: s
   }
   const user = await api.get<User>('/auth/me');
   return { store, user };
+}
+
+/**
+ * Checks if a store name is already taken.
+ */
+export async function checkStoreNameAvailability(name: string): Promise<boolean> {
+  if (!name || name.trim().length < 2) return true;
+  const resp = await api.get<{ exists: boolean }>(`/stores/check-name?name=${encodeURIComponent(name.trim())}`, { skipQueue: true });
+  return !(resp as any)?.exists;
 }

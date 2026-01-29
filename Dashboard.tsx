@@ -46,7 +46,6 @@ const UserGuidePage = lazy(() => import('./pages/UserGuidePage'));
 import Snackbar from './components/Snackbar';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
-import StoreCompletionModal from './components/StoreCompletionModal';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import {
@@ -117,7 +116,6 @@ export default function Dashboard() {
     const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
     const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
-    const [isStoreCompletionModalOpen, setIsStoreCompletionModalOpen] = useState(false);
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Mobile sidebar state
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -270,14 +268,6 @@ export default function Dashboard() {
             setRecurringExpenses(mapResult(results[15], [] as RecurringExpense[]));
             setAnnouncements(mapResult(results[16], [] as Announcement[]));
 
-            // Check for incomplete store settings (Address & Phone are mandatory)
-            const settings = mapResult(results[10], null as any) as StoreSettings | null;
-            if (settings) {
-                // If address OR phone is missing, trigger the modal
-                if (!settings.address?.trim() || !settings.phone?.trim()) {
-                    setIsStoreCompletionModalOpen(true);
-                }
-            }
 
             // Fetch pending marketplace matches separately to avoid blocking
             /* 
@@ -1378,17 +1368,6 @@ export default function Dashboard() {
                     <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
                     <TourGuide user={currentUser} />
 
-                    <StoreCompletionModal
-                        isOpen={isStoreCompletionModalOpen}
-                        initialSettings={storeSettings}
-                        onSave={async (address, phone) => {
-                            if (!storeSettings) return;
-                            const updatedSettings = { ...storeSettings, address, phone };
-                            // We reuse handleSaveSettings but we want to await it and ensure we close modal on success
-                            await handleSaveSettings(updatedSettings);
-                            setIsStoreCompletionModalOpen(false);
-                        }}
-                    />
 
                     {priorityNotification && (
                         <SystemNotificationModal

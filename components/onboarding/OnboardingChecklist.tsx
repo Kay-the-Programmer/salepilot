@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { ONBOARDING_ACTIONS } from '../../services/onboardingService';
 import ChevronDownIcon from '../icons/ChevronDownIcon';
@@ -28,13 +28,6 @@ const ONBOARDING_TASKS: OnboardingTask[] = [
         link: '/sales'
     },
     {
-        id: 'add-customer',
-        title: 'Add a customer',
-        description: 'Track customer information',
-        actionId: ONBOARDING_ACTIONS.ADDED_FIRST_CUSTOMER,
-        link: '/customers'
-    },
-    {
         id: 'create-category',
         title: 'Organize with categories',
         description: 'Create product categories',
@@ -51,7 +44,7 @@ const ONBOARDING_TASKS: OnboardingTask[] = [
 ];
 
 export default function OnboardingChecklist() {
-    const { state, isActionCompleted } = useOnboarding();
+    const { isActionCompleted } = useOnboarding();
     const [isExpanded, setIsExpanded] = useState(true);
 
     const completedCount = ONBOARDING_TASKS.filter(task =>
@@ -103,8 +96,8 @@ export default function OnboardingChecklist() {
                             <div
                                 key={task.id}
                                 className={`flex items-start p-2 rounded-lg mb-1 transition-all ${isCompleted
-                                        ? 'bg-green-50 border border-green-200'
-                                        : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
+                                    ? 'bg-green-50 border border-green-200'
+                                    : 'bg-gray-50 hover:bg-gray-100 border border-transparent'
                                     }`}
                             >
                                 <div className="flex-shrink-0 mt-0.5">

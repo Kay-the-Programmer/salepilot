@@ -1,7 +1,10 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { SnackbarType } from '../App';
-import { registerStoreAndRefreshUser } from '../services/storesService';
+import { registerStoreAndRefreshUser, checkStoreNameAvailability } from '../services/storesService';
 import { User } from '../types';
+import logo from '../assets/salepilot.png';
+import LocationPicker from '../components/common/LocationPicker';
+
 
 interface StoreSetupPageProps {
   onCompleted: (user: User) => void;
@@ -22,12 +25,45 @@ const BUSINESS_TYPES = [
 
 const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackbar }) => {
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingName, setIsCheckingName] = useState(false);
+  const [nameError, setNameError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const trimmedName = useMemo(() => name.replace(/\s+/g, ' ').trim(), [name]);
-  const isValid = trimmedName.length >= MIN_LEN && selectedTypes.length > 0;
+  const isValid = trimmedName.length >= MIN_LEN && selectedTypes.length > 0 && !nameError && !isCheckingName;
+
+  // Real-time name availability check with debouncing
+  useEffect(() => {
+    if (trimmedName.length < MIN_LEN) {
+      setNameError(null);
+      setIsCheckingName(false);
+      return;
+    }
+
+    setIsCheckingName(true);
+    setNameError(null);
+
+    const timer = setTimeout(async () => {
+      try {
+        const isAvailable = await checkStoreNameAvailability(trimmedName);
+        if (!isAvailable) {
+          setNameError('This store name is already taken. Please choose another.');
+        } else {
+          setNameError(null);
+        }
+      } catch (err) {
+        console.error('Check failed', err);
+      } finally {
+        setIsCheckingName(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [trimmedName]);
 
   const toggleType = (id: string) => {
     setSelectedTypes(prev => {
@@ -50,7 +86,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
     setError(null);
 
     try {
-      const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes);
+      const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes, phone, address);
       // Persist updated user immediately (ensure token unchanged and currentStoreId present)
       localStorage.setItem('salePilotUser', JSON.stringify(user));
       showSnackbar(`Store "${store.name}" created! You're now the admin.`, 'success');
@@ -66,15 +102,8 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center items-center gap-3">
-          <div className="p-2 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl">
-            <svg className="h-10 w-auto text-white" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M7 21a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H7zM9 5v2h6V5H9zm0 4v2h6V9H9zm0 4v2h6v-2H9z" />
-            </svg>
-          </div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">SalePilot</h1>
-        </div>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
+        <img src={logo} alt="SalePilot" className="h-16 w-auto object-contain" />
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -92,18 +121,41 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                 minLength={MIN_LEN}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border border-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className={`w-full px-4 py-3 rounded-md border placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${nameError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
                 placeholder="e.g., Acme Market"
-                aria-invalid={!isValid}
+                aria-invalid={!!nameError}
                 aria-describedby="store-name-help"
                 autoFocus
               />
+              {nameError && <p className="mt-1 text-xs text-red-600 font-medium">{nameError}</p>}
+              {isCheckingName && <p className="mt-1 text-xs text-blue-600 animate-pulse">Scanning store name availability...</p>}
               <div id="store-name-help" className="mt-2 text-xs text-gray-600 flex items-center justify-between">
                 <span>
                   Minimum {MIN_LEN} characters. Use your business or branch name. You can change this later in Settings.
                 </span>
                 <span className={`tabular-nums ${isValid ? 'text-gray-400' : 'text-red-600'}`}>{trimmedName.length}/{MIN_LEN}+</span>
               </div>
+            </div>
+
+            <div>
+              <label htmlFor="store-phone" className="block text-sm font-medium text-gray-700 mb-1">Store Phone Number</label>
+              <input
+                id="store-phone"
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-4 py-3 rounded-md border border-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., +260 971 234 567"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Store Location</label>
+              <LocationPicker
+                onLocationPicked={(addr) => setAddress(addr)}
+                initialAddress={address}
+              />
             </div>
 
             <div>
