@@ -1,12 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import CheckCircleIcon from '../icons/CheckCircleIcon';
-import ShoppingCartIcon from '../icons/ShoppingCartIcon';
 import UsersIcon from '../icons/UsersIcon';
 import ArchiveBoxIcon from '../icons/ArchiveBoxIcon';
 import ArrowRightIcon from '../icons/ArrowRightIcon';
-import XMarkIcon from '../icons/XMarkIcon';
 
 interface OnboardingTaskListProps {
     stats: {
@@ -40,72 +38,7 @@ export const OnboardingTaskList: React.FC<OnboardingTaskListProps> = ({ stats })
 
     const allCompleted = tasks.every(t => t.completed);
 
-    const [showSuccessPopup, setShowSuccessPopup] = useState(allCompleted && !localStorage.getItem('onboarding_success_dismissed'));
-
-    const handleDismiss = () => {
-        localStorage.setItem('onboarding_success_dismissed', 'true');
-        setShowSuccessPopup(false);
-    };
-
-    if (allCompleted) {
-        if (!showSuccessPopup) return null;
-
-        return (
-            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
-                <div className="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-2xl p-8 shadow-2xl max-w-2xl w-full text-white relative overflow-hidden animate-slide-up">
-                    {/* Decorative background elements */}
-                    <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10 blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-64 h-64 rounded-full bg-black opacity-5 blur-3xl"></div>
-
-                    <button
-                        onClick={handleDismiss}
-                        className="absolute top-4 right-4 p-2 hover:bg-white/20 rounded-full transition-colors z-20"
-                    >
-                        <XMarkIcon className="w-6 h-6" />
-                    </button>
-
-                    <div className="relative z-10">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-4xl shadow-inner">
-                                🎉
-                            </div>
-                            <div>
-                                <h3 className="text-3xl font-bold">Congratulations!</h3>
-                                <p className="text-emerald-50 opacity-90 text-lg">Your store setup is complete and ready for business.</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 mb-8">
-                            <p className="text-lg font-medium leading-relaxed">
-                                The system is intelligent and fully configured. You are now ready to make your first sale!
-                                Head over to the POS terminal to start processing orders.
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            <button
-                                onClick={() => {
-                                    handleDismiss();
-                                    navigate('/sales');
-                                }}
-                                className="group flex-1 flex items-center justify-center gap-3 bg-white text-emerald-600 px-6 py-4 rounded-xl font-bold hover:bg-emerald-50 transition-all shadow-lg active:scale-95"
-                            >
-                                <ShoppingCartIcon className="w-6 h-6" />
-                                <span>Open POS Terminal</span>
-                                <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                            </button>
-                            <button
-                                onClick={handleDismiss}
-                                className="px-6 py-4 rounded-xl font-bold bg-emerald-600/50 border border-white/30 hover:bg-emerald-600/70 transition-all active:scale-95"
-                            >
-                                View Dashboard
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    }
+    if (allCompleted) return null;
 
     return (
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 mb-6 animate-fade-in">
