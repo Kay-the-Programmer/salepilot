@@ -28,15 +28,13 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
     useEffect(() => {
         // Check if user has seen the tour for this specific page
         const tourKey = page === 'dashboard' ? `salePilot.tourSeen.${user.id}` : `salePilot.tourSeen.${page}.${user.id}`;
-        const hasSeenTour = localStorage.getItem(tourKey);
+        const hasSeenTour = localStorage.getItem(tourKey) === 'true';
 
-        // If propsRun is explicitly provided, it takes precedence
-        if (propsRun) {
-            setRun(true);
-        } else if (!hasSeenTour) {
-            setRun(true);
-        } else {
+        // Respect hasSeenTour first. If not seen, run if propsRun is not explicitly false.
+        if (hasSeenTour) {
             setRun(false);
+        } else {
+            setRun(propsRun !== false);
         }
     }, [user.id, propsRun, page]);
 
