@@ -362,6 +362,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
     // Enriched sales with customer names resolved from the customers list
     const enrichedSales = useMemo(() => {
+        if (!Array.isArray(salesData)) return [];
         return salesData.map(sale => {
             if (sale.customerName) return sale;
             if (!sale.customerId) return sale;
@@ -399,9 +400,9 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                     api.get<{ items: Sale[]; total: number; page: number; limit: number }>(`/sales?${params.toString()}`),
                     startDate && endDate ? api.get<{ daily: any }>(`/reports/daily-sales?startDate=${startDate}&endDate=${endDate}`) : Promise.resolve({ daily: [] as any }),
                 ]);
-                setSalesData(fetchedSales.items);
-                setTotal(fetchedSales.total);
-                setDailySales((daily as any).daily || []);
+                setSalesData(fetchedSales?.items || []);
+                setTotal(fetchedSales?.total || 0);
+                setDailySales((daily as any)?.daily || []);
 
             } catch (err: any) {
                 // Offline fallback

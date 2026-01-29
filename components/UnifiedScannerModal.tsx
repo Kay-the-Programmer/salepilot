@@ -220,12 +220,12 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     throw new Error('Video element not ready');
                 }
 
-                // Start decoding with constraints optimized for mobile
+                // Start decoding with constraints optimized for mobile but preferring higher resolution
                 const constraints: MediaStreamConstraints = {
                     video: {
-                        deviceId: selectedDeviceId,
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
+                        deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
+                        width: { ideal: 1920 },
+                        height: { ideal: 1080 },
                         facingMode: facingMode
                     }
                 };

@@ -189,7 +189,14 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                     <div key={item.productId} className="flex justify-between items-start py-2 border-b border-gray-100 last:border-0">
                                         <div className="flex-1">
                                             <p className="font-medium text-gray-900">{item.name}</p>
-                                            <p className="text-xs text-gray-500">{item.quantity} × {formatCurrency(item.price, storeSettings)}</p>
+                                            <p className="text-xs text-gray-500">
+                                                {item.quantity} × {formatCurrency(item.price, storeSettings)}
+                                                {item.returnedQuantity !== undefined && item.returnedQuantity > 0 && (
+                                                    <span className="text-orange-600 ml-1 font-bold">
+                                                        (Ret: {item.returnedQuantity})
+                                                    </span>
+                                                )}
+                                            </p>
                                         </div>
                                         <p className="font-semibold text-gray-900 ml-2">
                                             {formatCurrency(item.price * item.quantity, storeSettings)}
@@ -227,8 +234,20 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                     <span className="font-medium">{formatCurrency(tax, storeSettings)}</span>
                                 </div>
 
+                                <div className="border-t border-gray-200 pt-2 flex justify-between text-sm">
+                                    <span className="text-gray-600">Original Total</span>
+                                    <span className="font-medium">{formatCurrency(saleData.originalTotal ?? total + (saleData.totalRefunded ?? 0), storeSettings)}</span>
+                                </div>
+
+                                {saleData.totalRefunded !== undefined && saleData.totalRefunded > 0 && (
+                                    <div className="flex justify-between text-orange-600 text-sm">
+                                        <span>Total Refunded</span>
+                                        <span className="font-medium">-{formatCurrency(saleData.totalRefunded, storeSettings)}</span>
+                                    </div>
+                                )}
+
                                 <div className="border-t border-gray-300 pt-3 flex justify-between text-lg font-bold">
-                                    <span>Total</span>
+                                    <span>Net Total</span>
                                     <span>{formatCurrency(total, storeSettings)}</span>
                                 </div>
                             </div>

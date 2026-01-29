@@ -113,7 +113,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
             {/* Mobile View */}
             <div className="md:hidden space-y-3">
                 {sales.map((sale) => {
-                    const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
+                    const calculatedAmountPaid = sale.amountPaid;
                     const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
 
                     let derivedStatus: string = sale.paymentStatus;
@@ -252,7 +252,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                             </thead>
                             <tbody className="bg-white divide-y divide-slate-200">
                                 {sales.map((sale) => {
-                                    const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
+                                    const calculatedAmountPaid = sale.amountPaid;
                                     const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
 
                                     let derivedStatus: string = sale.paymentStatus;

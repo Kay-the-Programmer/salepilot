@@ -110,6 +110,8 @@ export interface Sale {
     refundStatus: 'none' | 'partially_refunded' | 'fully_refunded' | 'returned' | 'partially_returned';
     customerId?: string;
     customerName?: string;
+    totalRefunded?: number;
+    originalTotal?: number;
     // New fields for invoicing
     paymentStatus: 'paid' | 'unpaid' | 'partially_paid';
     fulfillmentStatus?: 'pending' | 'fulfilled' | 'shipped' | 'cancelled';

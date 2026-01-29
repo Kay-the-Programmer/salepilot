@@ -18,17 +18,16 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
 
     if (!isOpen || !sale) return null;
 
-    // Calculate amount paid from payments array if available, as it might be more up-to-date than the static field
-    const calculatedAmountPaid = sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid;
+    // Use the amountPaid from server (which is net) or fallback to calculated if net is somehow missing
+    const calculatedAmountPaid = sale.amountPaid !== undefined ? sale.amountPaid : (sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid);
     const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
 
-    let derivedPaymentStatus = sale.paymentStatus;
-    if (balanceDue <= 0.01) {
+    let derivedPaymentStatus = sale.paymentStatus as string;
+    if (sale.refundStatus && sale.refundStatus !== 'none') {
+        derivedPaymentStatus = sale.refundStatus;
+    } else if (balanceDue <= 0.01) {
         derivedPaymentStatus = 'paid';
     } else if (calculatedAmountPaid > 0) {
-        derivedPaymentStatus = 'partially_paid';
-    } else if (sale.paymentStatus === 'paid' && balanceDue > 0.01) {
-        // Fallback if status says paid but balance is positive (unlikely with correct logic, but safe)
         derivedPaymentStatus = 'partially_paid';
     }
 
@@ -92,7 +91,9 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                                 <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Payment Status</h4>
                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${derivedPaymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
                                     derivedPaymentStatus === 'partially_paid' ? 'bg-blue-100 text-blue-800' :
-                                        'bg-red-100 text-red-800'
+                                        derivedPaymentStatus === 'returned' ? 'bg-slate-100 text-slate-800' :
+                                            derivedPaymentStatus === 'partially_returned' ? 'bg-orange-100 text-orange-800' :
+                                                'bg-red-100 text-red-800'
                                     }`}>
                                     {derivedPaymentStatus?.replace('_', ' ') || 'Unknown'}
                                 </span>
@@ -115,7 +116,14 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                                             </p>
                                         </div>
                                         <div className="flex items-center justify-between text-sm text-gray-600">
-                                            <span>Qty: {item.quantity}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span>Qty: {item.quantity}</span>
+                                                {item.returnedQuantity !== undefined && item.returnedQuantity > 0 && (
+                                                    <span className="text-orange-600 font-medium">
+                                                        (Returned: {item.returnedQuantity})
+                                                    </span>
+                                                )}
+                                            </div>
                                             <span>{formatCurrency(item.price, storeSettings)} each</span>
                                         </div>
                                     </div>
@@ -175,8 +183,20 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                                         </div>
                                     )}
 
-                                    <div className="border-t border-gray-300 pt-2 flex justify-between text-lg font-bold">
-                                        <span>Total</span>
+                                    <div className="border-t border-gray-300 pt-2 flex justify-between">
+                                        <span className="text-gray-600">Original Total</span>
+                                        <span className="font-medium">{formatCurrency(sale.originalTotal ?? sale.total + (sale.totalRefunded ?? 0), storeSettings)}</span>
+                                    </div>
+
+                                    {sale.totalRefunded !== undefined && sale.totalRefunded > 0 && (
+                                        <div className="flex justify-between text-orange-600">
+                                            <span>Total Refunded</span>
+                                            <span className="font-medium">-{formatCurrency(sale.totalRefunded, storeSettings)}</span>
+                                        </div>
+                                    )}
+
+                                    <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-1">
+                                        <span>Net Total</span>
                                         <span>{formatCurrency(sale.total, storeSettings)}</span>
                                     </div>
 

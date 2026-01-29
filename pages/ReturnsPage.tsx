@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sale, Return, StoreSettings } from '../types';
-import { SnackbarType } from '../Dashboard';
+import { SnackbarType } from '../App';
 import Header from '../components/Header';
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import QrCodeIcon from '../components/icons/QrCodeIcon';
 import ArrowUturnLeftIcon from '../components/icons/ArrowUturnLeftIcon';
 import { formatCurrency } from '../utils/currency';
 import ReceiptModal from '../components/sales/ReceiptModal';
+import ReturnDetailsModal from '../components/sales/ReturnDetailsModal';
 import PrinterIcon from '../components/icons/PrinterIcon';
 import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
@@ -14,6 +15,7 @@ import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import PackageIcon from '../components/icons/PackageIcon';
+import { GridIcon, ListIcon } from '../components/icons'; // Ensure these are exported from icons/index or similar
 
 interface ReturnsPageProps {
     sales: Sale[];
@@ -91,6 +93,13 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
     const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [isReceiptModalOpen, setIsReceiptModalOpen] = useState(false);
+
+    // New State for Details Modal, View Mode, and Pagination
+    const [selectedReturnForDetails, setSelectedReturnForDetails] = useState<Return | null>(null);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // using 'card' as grid equivalent or just grid
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const taxRate = storeSettings.taxRate / 100;
 
     // Responsive breakpoints
@@ -224,6 +233,17 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
         setSelectedSale(null); // Go back to lookup screen
     };
 
+    // Pagination Logic
+    const sortedReturns = useMemo(() => [...returns].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()), [returns]);
+    const totalPages = Math.ceil(sortedReturns.length / itemsPerPage);
+    const paginatedReturns = useMemo(() => sortedReturns.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [sortedReturns, currentPage]);
+
+    const handlePageChange = (newPage: number) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
+        }
+    };
+
     if (!selectedSale) {
         return (
             <div className="flex flex-col h-full bg-gray-50">
@@ -273,14 +293,34 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
 
                     {/* Recent Returns Section */}
                     <div className="max-w-4xl mx-auto px-4 py-8">
-                        <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <ArrowUturnLeftIcon className="w-5 h-5 text-blue-600" />
-                                Recent Returns
-                            </h3>
-                            <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Last 10 transactions
-                            </span>
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+                            <div>
+                                <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                    <ArrowUturnLeftIcon className="w-5 h-5 text-blue-600" />
+                                    Recent Returns
+                                </h3>
+                                <div className="text-xs font-medium text-gray-500 uppercase tracking-wider mt-1">
+                                    Total: {returns.length} returns
+                                </div>
+                            </div>
+
+                            {/* View Toggle */}
+                            <div className="flex items-center bg-gray-100 p-1 rounded-lg self-end sm:self-auto">
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                                    title="List View"
+                                >
+                                    <ListIcon className="w-5 h-5" />
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
+                                    title="Grid View"
+                                >
+                                    <GridIcon className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
 
                         {returns.length === 0 ? (
@@ -291,36 +331,122 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                 <p className="text-gray-500">No returns recorded yet.</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {returns.slice(0, 10).map((ret) => (
-                                    <div key={ret.id} className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">{ret.id}</span>
-                                                <h4 className="text-sm font-semibold text-gray-900 mt-0.5">Sale Ref: {ret.originalSaleId}</h4>
-                                            </div>
-                                            <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
-                                                {formatCurrency(ret.refundAmount, storeSettings)}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50 text-sm text-gray-500">
-                                            <div className="flex items-center gap-1.5">
-                                                <CalendarIcon className="w-4 h-4" />
-                                                {new Date(ret.timestamp).toLocaleDateString()}
-                                            </div>
-                                            <div className="flex items-center gap-1.5 font-medium text-gray-700">
-                                                {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items
-                                                <ChevronRightIcon className="w-4 h-4 text-gray-400" />
-                                            </div>
-                                        </div>
+                            <>
+                                {viewMode === 'list' ? (
+                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                                        <table className="min-w-full divide-y divide-gray-200">
+                                            <thead className="bg-gray-50">
+                                                <tr>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return ID</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original Sale</th>
+                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
+                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="bg-white divide-y divide-gray-200">
+                                                {paginatedReturns.map((ret) => (
+                                                    <tr key={ret.id}
+                                                        className="hover:bg-gray-50 transition-colors cursor-pointer"
+                                                        onClick={() => setSelectedReturnForDetails(ret)}
+                                                    >
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{ret.id}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {new Date(ret.timestamp).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ret.originalSaleId}</td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                            {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
+                                                            {formatCurrency(ret.refundAmount, storeSettings)}
+                                                        </td>
+                                                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
+                                                            <button
+                                                                className="text-blue-600 hover:text-blue-900"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    setSelectedReturnForDetails(ret);
+                                                                }}
+                                                            >
+                                                                View
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
                                     </div>
-                                ))}
-                            </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {paginatedReturns.map((ret) => (
+                                            <div
+                                                key={ret.id}
+                                                className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+                                                onClick={() => setSelectedReturnForDetails(ret)}
+                                            >
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div>
+                                                        <span className="text-xs font-bold text-blue-600 uppercase tracking-widest group-hover:underline">{ret.id}</span>
+                                                        <h4 className="text-sm font-semibold text-gray-900 mt-0.5">Sale Ref: {ret.originalSaleId}</h4>
+                                                    </div>
+                                                    <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
+                                                        {formatCurrency(ret.refundAmount, storeSettings)}
+                                                    </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50 text-sm text-gray-500">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <CalendarIcon className="w-4 h-4" />
+                                                        {new Date(ret.timestamp).toLocaleDateString()}
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                        {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items
+                                                        <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Pagination Controls */}
+                                {totalPages > 1 && (
+                                    <div className="flex justify-center items-center mt-8 gap-2">
+                                        <button
+                                            onClick={() => handlePageChange(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                            className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <ChevronRightIcon className="w-5 h-5 transform rotate-180" />
+                                        </button>
+                                        <span className="text-sm font-medium text-gray-700">
+                                            Page {currentPage} of {totalPages}
+                                        </span>
+                                        <button
+                                            onClick={() => handlePageChange(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                            className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            <ChevronRightIcon className="w-5 h-5" />
+                                        </button>
+                                    </div>
+                                )}
+                            </>
                         )}
                     </div>
                 </main>
                 <UnifiedScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={handleScanSuccess} onScanError={(err) => showSnackbar(err, 'error')} />
+
+                {selectedReturnForDetails && (
+                    <ReturnDetailsModal
+                        isOpen={!!selectedReturnForDetails}
+                        onClose={() => setSelectedReturnForDetails(null)}
+                        returnData={selectedReturnForDetails}
+                        storeSettings={storeSettings}
+                    />
+                )}
             </div>
         )
     }
