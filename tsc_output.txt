@@ -1,0 +1,130 @@
+App.tsx(15,7): error TS6133: 'MarketplacePage' is declared but its value is never read.
+App.tsx(16,7): error TS6133: 'CustomerRequestTrackingPage' is declared but its value is never read.
+App.tsx(19,7): error TS6133: 'SupplierRegisterPage' is declared but its value is never read.
+components/accounting/views/AccountingDashboard.tsx(122,102): error TS2339: Property 'reference' does not exist on type 'JournalEntry'.
+components/accounting/views/ChartOfAccountsView.tsx(83,66): error TS6133: 'iconColor' is declared but its value is never read.
+components/accounting/views/JournalView.tsx(172,52): error TS2339: Property 'reference' does not exist on type 'JournalEntry'.
+components/accounting/views/JournalView.tsx(174,65): error TS2339: Property 'reference' does not exist on type 'JournalEntry'.
+components/DashboardLayout.tsx(6,1): error TS6133: 'dbService' is declared but its value is never read.
+components/DashboardLayout.tsx(23,7): error TS6133: 'getLastPageKey' is declared but its value is never read.
+components/DashboardLayout.tsx(62,22): error TS6133: 'setLastSync' is declared but its value is never read.
+components/icons/QuestionMarkCircleIcon.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+components/LabelPrintModal.tsx(4,20): error TS7016: Could not find a declaration file for module 'qrcode'. 'C:/Users/omen/Downloads/salepilot/salepilot-frontend/node_modules/.pnpm/qrcode@1.5.4/node_modules/qrcode/lib/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/qrcode` if it exists or add a new declaration (.d.ts) file containing `declare module 'qrcode';`
+components/landing/ValueProposition.tsx(121,10): error TS6133: 'getUseCases' is declared but its value is never read.
+components/marketing/ProductSelector.tsx(3,1): error TS6133: 'MagnifyingGlassIcon' is declared but its value is never read.
+components/marketing/ProductSelector.tsx(3,37): error TS2307: Cannot find module '@heroicons/react/24/outline' or its corresponding type declarations.
+components/marketplace/MarketplaceHero.tsx(5,11): error TS6133: 'navigate' is declared but its value is never read.
+components/marketplace/views/ActivityView.tsx(2,50): error TS6133: 'HiOutlineShoppingBag' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(1,20): error TS6133: 'useMemo' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(3,10): error TS6133: 'HiOutlineMagnifyingGlass' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(3,110): error TS6133: 'HiOutlinePlus' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(4,1): error TS6133: 'formatCurrency' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(6,1): error TS6133: 'SalePilotLogo' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(9,41): error TS6133: 'currentUser' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(11,12): error TS6133: 'searchTerm' is declared but its value is never read.
+components/marketplace/views/QuickOffersView.tsx(11,24): error TS6133: 'setSearchTerm' is declared but its value is never read.
+components/marketplace/views/RetailersView.tsx(2,1): error TS6133: 'api' is declared but its value is never read.
+components/NotificationDropdown.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+components/onboarding/OnboardingHelper.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+components/products/CategoryDetailView.tsx(21,5): error TS6133: 'storeSettings' is declared but its value is never read.
+components/reports/PersonalUseTab.tsx(3,1): error TS6133: 'formatCurrency' is declared but its value is never read.
+components/sales/CartPanel.tsx(19,5): error TS6133: 'clearCart' is declared but its value is never read.
+components/sales/CheckoutActions.tsx(76,5): error TS6133: 'isScannerPaused' is declared but its value is never read.
+components/sales/ProductCard.tsx(37,11): error TS6133: 'roundQty' is declared but its value is never read.
+components/StockAdjustmentModal.tsx(93,11): error TS6133: 'isIncrease' is declared but its value is never read.
+components/StockAdjustmentModal.tsx(94,11): error TS6133: 'isDecrease' is declared but its value is never read.
+components/StockAdjustmentModal.tsx(183,68): error TS6133: 'color' is declared but its value is never read.
+components/users/UserFormModal.tsx(227,97): error TS6133: 'color' is declared but its value is never read.
+contexts/OnboardingContext.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+Dashboard.tsx(108,28): error TS6133: 'setPendingMatches' is declared but its value is never read.
+Dashboard.tsx(1139,58): error TS2322: Type '{ user: User; sales: Sale[]; products: Product[]; }' is not assignable to type 'IntrinsicAttributes & QuickViewProps'.
+  Property 'sales' does not exist on type 'IntrinsicAttributes & QuickViewProps'.
+Dashboard.tsx(1177,155): error TS2322: Type '(poId: string) => Promise<unknown>' is not assignable to type '(poId: string) => void | Promise<void>'.
+  Type 'Promise<unknown>' is not assignable to type 'void | Promise<void>'.
+    Type 'Promise<unknown>' is not assignable to type 'Promise<void>'.
+      Type 'unknown' is not assignable to type 'void'.
+electron/src/rt/electron-rt.ts(36,39): error TS7006: Parameter 'type' implicitly has an 'any' type.
+electron/src/rt/electron-rt.ts(40,48): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+electron/src/rt/electron-rt.ts(48,35): error TS7006: Parameter '_' implicitly has an 'any' type.
+electron/src/rt/electron-rt.ts(48,38): error TS7019: Rest parameter 'args' implicitly has an 'any[]' type.
+electron/src/setup.ts(22,3): error TS2322: Type 'FSWatcher' is not assignable to type 'null'.
+electron/src/setup.ts(32,22): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(timeout: string | number | Timeout | undefined): void', gave the following error.
+    Argument of type 'null' is not assignable to parameter of type 'string | number | Timeout | undefined'.
+  Overload 2 of 2, '(id: number | undefined): void', gave the following error.
+    Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+electron/src/setup.ts(33,9): error TS2322: Type 'Timeout' is not assignable to type 'null'.
+electron/src/setup.ts(36,24): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(timeout: string | number | Timeout | undefined): void', gave the following error.
+    Argument of type 'null' is not assignable to parameter of type 'string | number | Timeout | undefined'.
+  Overload 2 of 2, '(id: number | undefined): void', gave the following error.
+    Argument of type 'null' is not assignable to parameter of type 'number | undefined'.
+electron/src/setup.ts(58,11): error TS7008: Member 'mainWindowState' implicitly has an 'any' type.
+electron/src/setup.ts(59,11): error TS6133: 'loadWebApp' is declared but its value is never read.
+electron/src/setup.ts(93,5): error TS2322: Type 'BrowserWindow | null' is not assignable to type 'BrowserWindow'.
+  Type 'null' is not assignable to type 'BrowserWindow'.
+electron/src/setup.ts(130,42): error TS2532: Object is possibly 'undefined'.
+electron/src/setup.ts(130,42): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+electron/src/setup.ts(195,12): error TS2531: Object is possibly 'null'.
+electron/src/setup.ts(206,9): error TS2531: Object is possibly 'null'.
+electron/src/setup.ts(209,9): error TS2531: Object is possibly 'null'.
+electron/src/setup.ts(214,7): error TS2531: Object is possibly 'null'.
+electron/src/setup.ts(220,11): error TS2531: Object is possibly 'null'.
+pages/AccountingPage.tsx(1,17): error TS6133: 'useState' is declared but its value is never read.
+pages/AccountingPage.tsx(1,27): error TS6133: 'useMemo' is declared but its value is never read.
+pages/AccountingPage.tsx(1,36): error TS6133: 'useEffect' is declared but its value is never read.
+pages/AccountingPage.tsx(1,47): error TS6133: 'useRef' is declared but its value is never read.
+pages/AccountingPage.tsx(2,1): error TS6133: 'createPortal' is declared but its value is never read.
+pages/AccountingPage.tsx(4,48): error TS6133: 'AccountType' is declared but its value is never read.
+pages/AccountingPage.tsx(6,1): error TS6133: 'formatCurrency' is declared but its value is never read.
+pages/AccountingPage.tsx(7,1): error TS6133: 'PlusIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(8,1): error TS6133: 'PencilIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(9,1): error TS6133: 'TrashIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(10,1): error TS6133: 'XMarkIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(11,1): error TS6133: 'PrinterIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(19,1): error TS6133: 'CalculatorIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(25,1): error TS6133: 'ChevronDownIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(26,1): error TS6133: 'CreditCardIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(27,1): error TS6133: 'UsersIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(28,1): error TS6133: 'BuildingOfficeIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(29,1): error TS6133: 'InformationCircleIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(31,1): error TS6133: 'EllipsisVerticalIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(32,1): error TS6133: 'EyeIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(34,1): error TS6133: 'CalendarIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(35,1): error TS6133: 'MagnifyingGlassIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(38,1): error TS6133: 'ScaleIcon' is declared but its value is never read.
+pages/AccountingPage.tsx(43,1): error TS6133: 'AccountFormModal' is declared but its value is never read.
+pages/AccountingPage.tsx(46,1): error TS6133: 'CustomerStatementModal' is declared but its value is never read.
+pages/AccountingPage.tsx(360,107): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Object literal may only specify known properties, and 'className' does not exist in type 'Partial<unknown> & Attributes'.
+pages/AccountingPage.tsx(473,21): error TS2322: Type '(expense: Omit<RecurringExpense, "id" | "createdAt" | "updatedAt" | "createdBy"> & { id?: string | undefined; }) => void' is not assignable to type '(expense: Omit<RecurringExpense, "id" | "status" | "createdAt" | "updatedAt" | "createdBy" | "nextRunDate"> & { id?: string | undefined; status?: string | undefined; }) => void'.
+  Types of parameters 'expense' and 'expense' are incompatible.
+    Type 'Omit<RecurringExpense, "id" | "status" | "createdAt" | "updatedAt" | "createdBy" | "nextRunDate"> & { id?: string | undefined; status?: string | undefined; }' is not assignable to type 'Omit<RecurringExpense, "id" | "createdAt" | "updatedAt" | "createdBy"> & { id?: string | undefined; }'.
+      Property 'nextRunDate' is missing in type 'Omit<RecurringExpense, "id" | "status" | "createdAt" | "updatedAt" | "createdBy" | "nextRunDate"> & { id?: string | undefined; status?: string | undefined; }' but required in type 'Omit<RecurringExpense, "id" | "createdAt" | "updatedAt" | "createdBy">'.
+pages/AllSalesPage.tsx(224,26): error TS6133: 'color' is declared but its value is never read.
+pages/AllSalesPage.tsx(341,25): error TS6133: 'setShowFilters' is declared but its value is never read.
+pages/CategoriesPage.tsx(49,11): error TS6133: 'filteredCategories' is declared but its value is never read.
+pages/customers/CustomerDashboard.tsx(114,24): error TS7006: Parameter 'prevSelected' implicitly has an 'any' type.
+pages/LoginPage.tsx(35,25): error TS6133: 'setAccountType' is declared but its value is never read.
+pages/LoginPage.tsx(139,11): error TS6133: 'handleForgotPassword' is declared but its value is never read.
+pages/PurchaseOrdersPage.tsx(11,1): error TS6133: 'ArrowDownTrayIcon' is declared but its value is never read.
+pages/QuickView.tsx(208,94): error TS2339: Property 'color' does not exist on type '{ category: string; chips: { label: string; query: string; }[]; }'.
+pages/QuickView.tsx(209,107): error TS2339: Property 'name' does not exist on type '{ category: string; chips: { label: string; query: string; }[]; }'.
+pages/Register.tsx(7,11): error TS6133: 'navigate' is declared but its value is never read.
+pages/Register.tsx(77,57): error TS18046: 'response' is of type 'unknown'.
+pages/Register.tsx(80,47): error TS18046: 'response' is of type 'unknown'.
+pages/ReportsPage.tsx(48,12): error TS6133: 'isExportMenuOpen' is declared but its value is never read.
+pages/ReportsPage.tsx(164,11): error TS6133: 'handleExportCSV' is declared but its value is never read.
+pages/ReportsPage.tsx(199,11): error TS6133: 'handleExportPDF' is declared but its value is never read.
+pages/StockTakePage.tsx(3,28): error TS6133: 'CountedItem' is declared but its value is never read.
+pages/superadmin/SuperAdminDashboard.tsx(8,5): error TS6133: 'ArrowTrendingUpIcon' is declared but its value is never read.
+pages/superadmin/SuperAdminStores.tsx(11,5): error TS6133: 'PencilIcon' is declared but its value is never read.
+pages/UsersPage.tsx(9,10): error TS2614: Module '"../Dashboard"' has no exported member 'SnackbarType'. Did you mean to use 'import SnackbarType from "../Dashboard"' instead?
+services/storesService.ts(35,115): error TS2353: Object literal may only specify known properties, and 'skipQueue' does not exist in type '{ useCache?: boolean | undefined; store?: string | undefined; }'.
+src/hooks/useDashboardData.ts(1,20): error TS6133: 'useMutation' is declared but its value is never read.
+src/hooks/useDashboardData.ts(1,33): error TS6133: 'useQueryClient' is declared but its value is never read.
+src/hooks/useDashboardData.ts(1,55): error TS2307: Cannot find module '@tanstack/react-query' or its corresponding type declarations.
+src/lib/queryClient.ts(1,29): error TS2307: Cannot find module '@tanstack/react-query' or its corresponding type declarations.

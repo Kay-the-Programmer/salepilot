@@ -365,7 +365,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`px-4 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${activeTab === tab.id
-                                        ? 'bg-white text-gray-900 shadow-sm'
+                                        ? 'bg-gray-200 text-gray-900 shadow-sm'
                                         : 'text-gray-500 hover:text-gray-700'
                                         }`}
                                 >

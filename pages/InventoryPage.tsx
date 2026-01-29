@@ -11,20 +11,17 @@ import ProductDetailView from '../components/products/ProductDetailView';
 import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
-import { FiFilter, FiCamera, FiGrid, FiList } from 'react-icons/fi';
+import InventoryHeader from '../components/inventory/InventoryHeader';
+import InventoryMobileHeader from '../components/inventory/InventoryMobileHeader';
+import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
+import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
+import InventoryMobileMenu from '../components/inventory/InventoryMobileMenu';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
-import Header from '../components/Header';
 
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import LinkToPOModal from '../components/LinkToPOModal';
-import CubeIcon from '../components/icons/CubeIcon';
-import TagIcon from '../components/icons/TagIcon';
-import PlusIcon from '../components/icons/PlusIcon';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { useOnboarding } from '../contexts/OnboardingContext';
-import { ONBOARDING_ACTIONS, ONBOARDING_HELPERS } from '../services/onboardingService';
-import OnboardingHelper from '../components/onboarding/OnboardingHelper';
 
 import { barcodeService } from '../services/barcodeService';
 import BarcodeLookupModal from '../components/BarcodeLookupModal';
@@ -529,102 +526,29 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     return (
         <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
             {/* Desktop Header */}
-            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 hidden md:block">
-                <Header
-                    title="Inventory"
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    isSearchActive={isSearchActive}
-                    setIsSearchActive={setIsSearchActive}
-                    className="!static !border-none !shadow-none"
-                    buttonText={canManageProducts ? (activeTab === 'products' ? 'Add Product' : 'Add Category') : undefined}
-                    onButtonClick={canManageProducts ? (activeTab === 'products' ? handleOpenAddModal : handleOpenAddCategoryModal) : undefined}
-                    searchLeftContent={
-                        <div className="flex items-center gap-3 mr-4 bg-white/50 backdrop-blur-sm p-1.5 rounded-2xl border border-gray-100/50">
-                            <div className="flex bg-gray-100/60 p-1 rounded-xl shrink-0">
-                                <button
-                                    onClick={() => {
-                                        setActiveTab('products');
-                                        setSearchTerm('');
-                                    }}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'products'
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                        }`}
-                                >
-                                    Products
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setActiveTab('categories');
-                                        setSearchTerm('');
-                                    }}
-                                    className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'categories'
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                        }`}
-                                >
-                                    Categories
-                                </button>
-                            </div>
-
-                            {activeTab === 'products' && (
-                                <>
-                                    <button
-                                        onClick={() => setIsManualLookupOpen(true)}
-                                        className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-colors text-sm"
-                                        title="Manually enter barcode"
-                                    >
-                                        <span role="img" aria-label="barcode">⌨️</span>
-                                        Lookup Barcode
-                                    </button>
-
-                                    <button
-                                        onClick={() => setShowFilters(!showFilters)}
-                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showFilters || searchTerm || showArchived
-                                            ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        <FiFilter className="w-4 h-4" />
-                                        Filters
-                                    </button>
-
-                                    <div className="flex bg-gray-100/80 p-1 rounded-xl">
-                                        <button
-                                            onClick={() => setViewMode('grid')}
-                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                            title="Grid View"
-                                        >
-                                            <FiGrid className="w-4 h-4" />
-                                        </button>
-                                        <button
-                                            onClick={() => setViewMode('list')}
-                                            className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                            title="List View"
-                                        >
-                                            <FiList className="w-4 h-4" />
-                                        </button>
-                                    </div>
-
-                                    <button
-                                        onClick={() => setShowArchived(!showArchived)}
-                                        className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showArchived
-                                            ? 'bg-amber-50 border-amber-200 text-amber-700'
-                                            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-                                            }`}
-                                    >
-                                        {showArchived ? 'Showing Archived' : 'Show Archived'}
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    }
-                />
-            </div>
+            {/* Desktop Header */}
+            <InventoryHeader
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                isSearchActive={isSearchActive}
+                setIsSearchActive={setIsSearchActive}
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
+                showFilters={showFilters}
+                setShowFilters={setShowFilters}
+                showArchived={showArchived}
+                setShowArchived={setShowArchived}
+                setIsManualLookupOpen={setIsManualLookupOpen}
+                canManageProducts={canManageProducts}
+                onOpenAddProduct={handleOpenAddModal}
+                onOpenAddCategory={handleOpenAddCategoryModal}
+            />
 
             {/* Onboarding Helpers */}
-            <OnboardingHelpers
+            {/* Onboarding Helpers */}
+            <InventoryOnboardingHelpers
                 products={products}
                 categories={categories}
                 suppliers={suppliers}
@@ -634,27 +558,14 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             />
 
             {/* Mobile Header */}
-            <div className={`sticky top-0 z-30 bg-white border-b border-gray-200 md:hidden ${selectedItem ? 'hidden' : ''}`}>
-                <div className="px-4 py-3 flex items-center justify-between">
-                    <h1 className="text-xl font-bold text-gray-900">
-                        {activeTab === 'products' ? 'Inventory' : 'Categories'}
-                    </h1>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={() => setIsScanModalOpen(true)}
-                            className="p-2 rounded-lg text-gray-600 active:bg-gray-100 transition-colors"
-                        >
-                            <FiCamera className="w-6 h-6" />
-                        </button>
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${isMobileMenuOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
-                        >
-                            <FiGrid className="w-6 h-6" />
-                        </button>
-                    </div>
-                </div>
-            </div>
+            {/* Mobile Header */}
+            <InventoryMobileHeader
+                activeTab={activeTab}
+                selectedItem={!!selectedItem}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+                onScanClick={() => setIsScanModalOpen(true)}
+            />
 
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Panel: List View */}
@@ -792,21 +703,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             )}
                         </div>
                     ) : (
-                        <div className="hidden md:flex flex-col items-center justify-center h-full text-gray-400 p-8 text-center">
-                            <div className="p-4 bg-white rounded-3xl shadow-sm mb-4 border border-gray-100">
-                                {activeTab === 'products' ? (
-                                    <CubeIcon className="w-12 h-12 text-gray-300" />
-                                ) : (
-                                    <TagIcon className="w-12 h-12 text-gray-300" />
-                                )}
-                            </div>
-                            <h3 className="text-lg font-medium text-gray-900 mb-1">
-                                No {activeTab === 'products' ? 'Product' : 'Category'} Selected
-                            </h3>
-                            <p className="text-sm text-gray-500 max-w-xs">
-                                Select {activeTab === 'products' ? 'a product' : 'a category'} from the list on the left to view and manage its details here.
-                            </p>
-                        </div>
+                        <InventoryEmptyState activeTab={activeTab} />
                     )}
                 </div>
             </div>
@@ -980,116 +877,20 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             )}
 
             {/* Mobile Menu Popup */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div className="absolute inset-0 bg-black/50" />
-                    <div className="absolute top-[60px] right-4 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 p-2" onClick={e => e.stopPropagation()}>
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => { setActiveTab('products'); setIsMobileMenuOpen(false); }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-xl ${activeTab === 'products' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-700'}`}
-                            >
-                                <CubeIcon className="w-6 h-6 mb-1" />
-                                <span className="text-xs font-semibold">Products</span>
-                            </button>
-                            <button
-                                onClick={() => { setActiveTab('categories'); setIsMobileMenuOpen(false); }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-xl ${activeTab === 'categories' ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-700'}`}
-                            >
-                                <TagIcon className="w-6 h-6 mb-1" />
-                                <span className="text-xs font-semibold">Categories</span>
-                            </button>
-                            {canManageProducts && (
-                                <button
-                                    onClick={() => { handleOpenAddModal(); setIsMobileMenuOpen(false); }}
-                                    className="col-span-2 flex items-center justify-center gap-2 p-3 rounded-xl bg-blue-50 text-blue-700"
-                                >
-                                    <PlusIcon className="w-5 h-5" />
-                                    <span className="text-sm font-semibold">Add New Item</span>
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* Mobile Menu Popup */}
+            <InventoryMobileMenu
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                canManageProducts={canManageProducts}
+                onAddProduct={handleOpenAddModal}
+            />
         </div>
     );
 };
 
 // Onboarding Helpers Component
-interface OnboardingHelpersProps {
-    products: Product[];
-    categories: Category[];
-    suppliers: Supplier[];
-    activeTab: 'products' | 'categories';
-    onOpenAddModal: () => void;
-    onOpenAddCategoryModal: () => void;
-}
 
-function OnboardingHelpers({
-    products,
-    categories,
-    suppliers,
-    activeTab,
-    onOpenAddModal,
-    onOpenAddCategoryModal
-}: OnboardingHelpersProps) {
-    const { isHelperDismissed, completeAction } = useOnboarding();
-
-    const handleAddFirstProduct = () => {
-        onOpenAddModal();
-        completeAction(ONBOARDING_ACTIONS.ADDED_FIRST_PRODUCT);
-    };
-
-    const handleAddCategory = () => {
-        onOpenAddCategoryModal();
-        completeAction(ONBOARDING_ACTIONS.CREATED_FIRST_CATEGORY);
-    };
-
-    return (
-        <div className="px-4 md:px-6 pt-4">
-            {/* Add first product helper */}
-            {activeTab === 'products' && (
-                <OnboardingHelper
-                    helperId={ONBOARDING_HELPERS.ADD_FIRST_PRODUCT}
-                    title="👋 Add your first product"
-                    description="Get started by adding products to your inventory. Click the button below to create your first product and start tracking your stock."
-                    actionButton={{
-                        label: "Add Product",
-                        onClick: handleAddFirstProduct
-                    }}
-                    variant="card"
-                    showWhen={products.length === 0}
-                />
-            )}
-
-            {/* Create categories helper */}
-            {activeTab === 'categories' && (
-                <OnboardingHelper
-                    helperId={ONBOARDING_HELPERS.CREATE_CATEGORIES}
-                    title="📂 Organize with categories"
-                    description="Create categories to organize your products and make them easier to find. Categories help you group similar items together."
-                    actionButton={{
-                        label: "Create Category",
-                        onClick: handleAddCategory
-                    }}
-                    variant="card"
-                    showWhen={categories.length === 0}
-                />
-            )}
-
-            {/* Add suppliers helper */}
-            {activeTab === 'products' && products.length > 0 && (
-                <OnboardingHelper
-                    helperId={ONBOARDING_HELPERS.ADD_SUPPLIERS}
-                    title="🏢 Track your suppliers"
-                    description="Add suppliers to track where your products come from and manage purchase orders more efficiently."
-                    variant="compact"
-                    showWhen={suppliers.length === 0}
-                />
-            )}
-        </div>
-    );
-}
 
 export default InventoryPage;
