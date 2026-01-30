@@ -26,7 +26,7 @@ const ProductCard: React.FC<{
   storeSettings: StoreSettings;
   onSelect: () => void;
   isSelected?: boolean;
-}> = ({ product, categoryName, storeSettings, onSelect, isSelected }) => {
+}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected }) => {
   const [imgError, setImgError] = React.useState(false);
 
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
@@ -106,7 +106,7 @@ const ProductCard: React.FC<{
       </div>
     </div>
   );
-};
+});
 
 const ProductListRow: React.FC<{
   product: Product;
@@ -116,7 +116,7 @@ const ProductListRow: React.FC<{
   onAdjustStock: () => void;
   isSelected?: boolean;
   canManage: boolean;
-}> = ({ product, categoryName, storeSettings, onSelect, onAdjustStock, isSelected, canManage }) => {
+}> = React.memo(({ product, categoryName, storeSettings, onSelect, onAdjustStock, isSelected, canManage }) => {
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
   const asNumber = (val: any) => {
     const n = typeof val === 'number' ? val : parseFloat(val);
@@ -169,9 +169,9 @@ const ProductListRow: React.FC<{
       </div>
     </div>
   );
-};
+});
 
-const ProductList: React.FC<Props> = ({
+const ProductList: React.FC<Props> = React.memo(({
   products,
   categories,
   onSelectProduct,
@@ -222,6 +222,6 @@ const ProductList: React.FC<Props> = ({
       )}
     />
   );
-};
+});
 
 export default ProductList;

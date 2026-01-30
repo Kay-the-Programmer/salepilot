@@ -22,7 +22,7 @@ interface InventoryHeaderProps {
     onOpenAddCategory: () => void;
 }
 
-const InventoryHeader: React.FC<InventoryHeaderProps> = ({
+const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     searchTerm,
     setSearchTerm,
     isSearchActive,
@@ -126,6 +126,6 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = ({
             />
         </div>
     );
-};
+});
 
 export default InventoryHeader;

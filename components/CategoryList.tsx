@@ -23,7 +23,7 @@ interface CategoryWithLevel extends Category {
     level: number;
 }
 
-const CategoryList: React.FC<CategoryListProps> = ({
+const CategoryList: React.FC<CategoryListProps> = React.memo(({
     categories,
     searchTerm,
     onEdit,
@@ -403,6 +403,6 @@ const CategoryList: React.FC<CategoryListProps> = ({
             />
         </div>
     );
-};
+});
 
 export default CategoryList;

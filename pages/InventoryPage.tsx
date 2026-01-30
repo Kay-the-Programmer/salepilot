@@ -70,6 +70,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [showArchived, setShowArchived] = useState(false);
     const [isStockModalOpen, setIsStockModalOpen] = useState(false);
     const [stockAdjustProduct, setStockAdjustProduct] = useState<Product | null>(null);
@@ -109,8 +110,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [detailIsLoading, setDetailIsLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
 
-    const categoryMap = new Map(categories.map(c => [c.id, c]));
-    const supplierMap = new Map(suppliers.map(s => [s.id, s]));
+    const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
+    const supplierMap = useMemo(() => new Map(suppliers.map(s => [s.id, s])), [suppliers]);
 
     const canManageProducts = currentUser.role === 'admin' || currentUser.role === 'inventory_manager';
 
@@ -145,6 +146,15 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             document.removeEventListener('mouseup', handleMouseUp);
         };
     }, [isResizing, leftPanelWidth]);
+
+    // Search Debouncing
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 300);
+
+        return () => clearTimeout(handler);
+    }, [searchTerm]);
 
     useEffect(() => {
         if (selectedProductId) {
@@ -406,26 +416,28 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setSearchTerm('');
     };
 
-    const filteredProducts = products.filter(product => {
-        if (!showArchived && product.status === 'archived') {
-            return false;
-        }
+    const filteredProducts = useMemo(() => {
+        return products.filter(product => {
+            if (!showArchived && product.status === 'archived') {
+                return false;
+            }
 
-        if (searchTerm.trim() === '') return true;
+            if (debouncedSearchTerm.trim() === '') return true;
 
-        const term = searchTerm.toLowerCase();
-        const category = product.categoryId ? categoryMap.get(product.categoryId) : null;
-        const supplier = product.supplierId ? supplierMap.get(product.supplierId) : null;
+            const term = debouncedSearchTerm.toLowerCase();
+            const category = product.categoryId ? categoryMap.get(product.categoryId) : null;
+            const supplier = product.supplierId ? supplierMap.get(product.supplierId) : null;
 
-        return (
-            product.name.toLowerCase().includes(term) ||
-            product.sku.toLowerCase().includes(term) ||
-            (product.barcode && product.barcode.toLowerCase().includes(term)) ||
-            (category && category.name.toLowerCase().includes(term)) ||
-            (supplier && supplier.name.toLowerCase().includes(term)) ||
-            (product.brand && product.brand.toLowerCase().includes(term))
-        );
-    });
+            return (
+                product.name.toLowerCase().includes(term) ||
+                product.sku.toLowerCase().includes(term) ||
+                (product.barcode && product.barcode.toLowerCase().includes(term)) ||
+                (category && category.name.toLowerCase().includes(term)) ||
+                (supplier && supplier.name.toLowerCase().includes(term)) ||
+                (product.brand && product.brand.toLowerCase().includes(term))
+            );
+        });
+    }, [products, showArchived, debouncedSearchTerm, categoryMap, supplierMap]);
 
     type SortBy = 'name' | 'price' | 'stock' | 'category' | 'sku';
     type SortOrder = 'asc' | 'desc';
@@ -470,7 +482,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     useEffect(() => {
         setPage(1);
-    }, [searchTerm, showArchived, sortBy, sortOrder]);
+    }, [debouncedSearchTerm, showArchived, sortBy, sortOrder]);
 
     useEffect(() => {
         if (page > totalPages) setPage(totalPages);
