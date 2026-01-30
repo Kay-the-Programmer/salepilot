@@ -152,7 +152,7 @@ export default function Header({
 
                             {searchLeftContent}
                             {rightContent}
-                            <div className="mr-2">
+                            <div className="mr-2 hidden">
                                 <HeaderNotificationBell />
                             </div>
 
