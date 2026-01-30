@@ -6,7 +6,6 @@ import {
     HiOutlineUser,
     HiOutlineMapPin,
     HiOutlineCreditCard,
-    HiOutlineShoppingBag,
     HiOutlineCalendar
 } from 'react-icons/hi2';
 import { formatCurrency } from '../../utils/currency';

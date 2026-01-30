@@ -1,0 +1,224 @@
+import React, { useState } from 'react';
+import { StoreSettings } from '../../../types';
+import { BuildingStorefrontIcon, EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon } from '../../icons';
+import LocationPicker from '../../LocationPicker';
+import SettingsCard from '../SettingsCard';
+import DetailItem from '../DetailItem';
+
+interface StoreDetailsSectionProps {
+    settings: StoreSettings;
+    currentSettings: StoreSettings;
+    isEditing: boolean;
+    onEdit: () => void;
+    onSave: () => void;
+    onCancel: () => void;
+    handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+    setCurrentSettings: React.Dispatch<React.SetStateAction<StoreSettings>>;
+}
+
+const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
+    settings,
+    currentSettings,
+    isEditing,
+    onEdit,
+    onSave,
+    onCancel,
+    handleChange,
+    setCurrentSettings
+}) => {
+    const [isMapOpen, setIsMapOpen] = useState(false);
+
+    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white hover:bg-slate-50/50 focus:bg-white";
+    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 mb-2";
+
+    const renderInput = (label: string, name: keyof StoreSettings, type = 'text', props = {}) => (
+        <div className="space-y-2">
+            <label htmlFor={name} className={labelClasses}>
+                <span className="flex items-center gap-2">
+                    {label}
+                </span>
+            </label>
+            <input
+                type={type}
+                name={name}
+                id={name}
+                value={(currentSettings as any)[name] || ''}
+                onChange={handleChange}
+                className={inputFieldClasses}
+                {...props}
+            />
+        </div>
+    );
+
+    return (
+        <SettingsCard
+            title="Store Details"
+            description="Configure your store's public information displayed on receipts and invoices."
+            icon={<BuildingStorefrontIcon />}
+            isEditing={isEditing}
+            onEdit={onEdit}
+            onSave={onSave}
+            onCancel={onCancel}
+            badge="Public Info"
+        >
+            {isEditing ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                        {renderInput("Store Name", "name", "text", {
+                            required: true,
+                            placeholder: "Your Store Name"
+                        })}
+                        {renderInput("Contact Email", "email", "email", {
+                            placeholder: "contact@example.com",
+                            readOnly: true,
+                            className: `${inputFieldClasses} bg-slate-100 text-slate-500 cursor-not-allowed`
+                        })}
+                        {renderInput("Website", "website", "url", {
+                            placeholder: "https://example.com"
+                        })}
+
+                        <div className="pt-2">
+                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                                <div>
+                                    <label htmlFor="isOnlineStoreEnabled" className="text-sm font-semibold text-slate-900 cursor-pointer block">
+                                        Online Store Status
+                                    </label>
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        {currentSettings.isOnlineStoreEnabled !== false
+                                            ? 'Your store is currently visible to customers'
+                                            : 'Your store is hidden (maintenance mode)'}
+                                    </p>
+                                </div>
+
+                                <label className="relative cursor-pointer">
+                                    <input
+                                        id="isOnlineStoreEnabled"
+                                        name="isOnlineStoreEnabled"
+                                        type="checkbox"
+                                        checked={currentSettings.isOnlineStoreEnabled !== false}
+                                        onChange={(e) => setCurrentSettings(prev => ({ ...prev, isOnlineStoreEnabled: e.target.checked }))}
+                                        className="peer sr-only"
+                                    />
+                                    <div className="w-12 h-6 bg-slate-300 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
+                                        <div className="absolute w-5 h-5 bg-white rounded-full left-1 top-0.5 peer-checked:left-7 transition-all duration-300 shadow-sm"></div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-6">
+                        {renderInput("Phone Number", "phone", "tel", {
+                            placeholder: "+1 (555) 123-4567"
+                        })}
+                        <div className="space-y-2">
+                            <label htmlFor="address" className={labelClasses}>Address</label>
+                            <textarea
+                                id="address"
+                                name="address"
+                                value={currentSettings.address || ''}
+                                onChange={handleChange}
+                                rows={3}
+                                className={inputFieldClasses}
+                                placeholder="123 Main Street, City, State 12345"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setIsMapOpen(true)}
+                                className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Pick from Map
+                            </button>
+
+                            {isMapOpen && (
+                                <LocationPicker
+                                    onClose={() => setIsMapOpen(false)}
+                                    onLocationSelect={(loc) => {
+                                        if (loc.address) {
+                                            setCurrentSettings(prev => ({
+                                                ...prev,
+                                                address: loc.address || ''
+                                            }));
+                                        }
+                                        setIsMapOpen(false);
+                                    }}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-1">
+                        <DetailItem
+                            label="Store Name"
+                            value={settings.name}
+                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500" />}
+                            highlight={true}
+                        />
+                        <DetailItem
+                            label="Contact Email"
+                            value={settings.email || 'Not set'}
+                            icon={<EnvelopeIcon className="w-4 h-4 text-slate-500" />}
+                        />
+                        <DetailItem
+                            label="Website"
+                            value={
+                                settings.website ? (
+                                    <a
+                                        href={settings.website}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-150 inline-flex items-center gap-1"
+                                    >
+                                        {settings.website}
+                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                        </svg>
+                                    </a>
+                                ) : 'Not set'
+                            }
+                            icon={<GlobeAltIcon className="w-4 h-4 text-slate-500" />}
+                        />
+                        <DetailItem
+                            label="Online Store Status"
+                            value={
+                                <div className="flex items-center gap-2">
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${settings.isOnlineStoreEnabled !== false
+                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                                        }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${settings.isOnlineStoreEnabled !== false ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                                        {settings.isOnlineStoreEnabled !== false ? 'Active' : 'Disabled'}
+                                    </span>
+                                </div>
+                            }
+                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500" />}
+                        />
+                    </div>
+                    <div className="space-y-1">
+                        <DetailItem
+                            label="Phone Number"
+                            value={settings.phone || 'Not set'}
+                            icon={<PhoneIcon className="w-4 h-4 text-slate-500" />}
+                        />
+                        <DetailItem
+                            label="Address"
+                            value={
+                                <div className="text-slate-900 leading-relaxed whitespace-pre-wrap">
+                                    {settings.address || 'Not set'}
+                                </div>
+                            }
+                            icon={<MapPinIcon className="w-4 h-4 text-slate-500" />}
+                        />
+                    </div>
+                </div>
+            )}
+        </SettingsCard>
+    );
+};
+
+export default StoreDetailsSection;

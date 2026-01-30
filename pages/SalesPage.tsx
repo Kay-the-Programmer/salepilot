@@ -18,6 +18,8 @@ import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
 import ProductFormModal from '../components/ProductFormModal';
 import ScanActionModal from '../components/sales/ScanActionModal';
+import OutOfStockModal from '../components/sales/OutOfStockModal';
+import LowStockAlertModal from '../components/sales/LowStockAlertModal';
 
 // New Modular Components
 import { ProductCard } from '../components/sales/ProductCard';
@@ -853,203 +855,27 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 }}
             />
 
-            {/* Out of Stock Modal */}
-            {showOutOfStockModal && outOfStockProduct && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-scale-up">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-5 border-b border-red-100">
-                            <div className="flex items-center gap-3">
-                                {/* ... content */}
-                            </div>
-                        </div>
-                        {/* Shortening for brevity since this can be its own component too but let's keep it here for now or extract? 
-                            The plan didn't explicitly say to extract this small modal, but I did extract others.
-                            Actually, it's better to keep it here or extract to a small file. 
-                            Given the instruction "make to be modular", I should probably extract it too if I am being thorough.
-                            But I'll keep it here as I didn't plan for it in `task.md`.
-                            Wait, I can't put `...` in code. I need to copy the full content.
-                        */}
-                        <div className="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-5 border-b border-red-100">
-                            <div className="flex items-center gap-3">
-                                {/* ... (re-implementing full code) */}
-                                {/* Wait, I should probably copy the full code for clarity */}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-            {/* Retrying Out of Stock Modal with FULL Content */}
-            {showOutOfStockModal && outOfStockProduct && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-scale-up">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-5 border-b border-red-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-red-500 rounded-xl shadow-lg">
-                                    <BellAlertIcon className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900">Out of Stock</h3>
-                                    <p className="text-xs text-slate-600 mt-0.5">Product currently unavailable</p>
-                                </div>
-                            </div>
-                        </div>
+            {/* Modals */}
+            <OutOfStockModal
+                isOpen={showOutOfStockModal}
+                onClose={() => {
+                    setShowOutOfStockModal(false);
+                    setOutOfStockProduct(null);
+                }}
+                product={outOfStockProduct!}
+            />
 
-                        {/* Content */}
-                        <div className="p-6">
-                            <div className="mb-4">
-                                <p className="text-slate-700 font-medium mb-2">
-                                    Sorry, "<span className="font-bold text-slate-900">{outOfStockProduct.name}</span>" is currently out of stock.
-                                </p>
-                                <p className="text-sm text-slate-500">
-                                    Please check back later or contact your admin to reorder this product.
-                                </p>
-                            </div>
-
-                            {/* Product Info Card */}
-                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                <div className="flex items-center gap-3">
-                                    {outOfStockProduct.imageUrls?.[0] ? (
-                                        <img
-                                            src={buildAssetUrl(outOfStockProduct.imageUrls[0])}
-                                            alt={outOfStockProduct.name}
-                                            className="w-16 h-16 object-cover rounded-lg"
-                                        />
-                                    ) : (
-                                        <div className="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center">
-                                            <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold text-slate-900 text-sm">{outOfStockProduct.name}</h4>
-                                        <p className="text-xs text-slate-500 mt-0.5">SKU: {outOfStockProduct.sku || 'N/A'}</p>
-                                        <div className="mt-1">
-                                            <span className="text-xs font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded-full">
-                                                0 in stock
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
-                            <button
-                                onClick={() => {
-                                    setShowOutOfStockModal(false);
-                                    setOutOfStockProduct(null);
-                                }}
-                                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-slate-700 to-slate-800 rounded-xl hover:shadow-lg transition-all duration-200"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Low Stock Alert Modal */}
-            {showLowStockAlert && lowStockProduct && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-scale-up">
-                        {/* Header */}
-                        <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-5 border-b border-amber-100">
-                            <div className="flex items-center gap-3">
-                                <div className="p-3 bg-amber-500 rounded-xl shadow-lg">
-                                    <BellAlertIcon className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h3 className="text-lg font-bold text-slate-900">Low Stock Alert</h3>
-                                    <p className="text-xs text-slate-600 mt-0.5">Notify admin to restock</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="p-6">
-                            <div className="mb-4">
-                                <p className="text-slate-700 font-medium mb-2">
-                                    Send a notification to admin about low stock for:
-                                </p>
-                                <p className="text-sm text-slate-500 mb-4">
-                                    The admin will be notified to reorder "<span className="font-bold text-slate-900">{lowStockProduct.name}</span>".
-                                </p>
-                            </div>
-
-                            {/* Product Info Card */}
-                            <div className="bg-slate-50 rounded-xl p-4 border border-slate-200">
-                                <div className="flex items-center gap-3">
-                                    {lowStockProduct.imageUrls?.[0] ? (
-                                        <img
-                                            src={buildAssetUrl(lowStockProduct.imageUrls[0])}
-                                            alt={lowStockProduct.name}
-                                            className="w-16 h-16 object-cover rounded-lg"
-                                        />
-                                    ) : (
-                                        <div className="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center">
-                                            <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
-                                        </div>
-                                    )}
-                                    <div className="flex-1">
-                                        <h4 className="font-semibold text-slate-900 text-sm">{lowStockProduct.name}</h4>
-                                        <p className="text-xs text-slate-500 mt-0.5">SKU: {lowStockProduct.sku || 'N/A'}</p>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
-                                                {typeof (lowStockProduct as any).stock === 'number'
-                                                    ? (lowStockProduct as any).stock
-                                                    : (parseFloat(String((lowStockProduct as any).stock)) || 0)} left
-                                            </span>
-                                            <span className="text-xs text-slate-500">
-                                                Reorder at: {lowStockProduct.reorderPoint || storeSettings.lowStockThreshold}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
-                            <button
-                                onClick={() => {
-                                    setShowLowStockAlert(false);
-                                    setLowStockProduct(null);
-                                }}
-                                className="flex-1 px-4 py-2.5 text-sm font-bold text-slate-700 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={async () => {
-                                    try {
-                                        // Send notification to admin
-                                        await api.post('/notifications/low-stock', {
-                                            productId: lowStockProduct.id,
-                                            productName: lowStockProduct.name,
-                                            currentStock: typeof (lowStockProduct as any).stock === 'number'
-                                                ? (lowStockProduct as any).stock
-                                                : (parseFloat(String((lowStockProduct as any).stock)) || 0),
-                                            reorderPoint: lowStockProduct.reorderPoint || storeSettings.lowStockThreshold,
-                                            requestedBy: user.email || user.name
-                                        });
-                                        showSnackbar(`Admin notified about low stock for "${lowStockProduct.name}"`, 'success');
-                                        setShowLowStockAlert(false);
-                                        setLowStockProduct(null);
-                                    } catch (error) {
-                                        console.error('Failed to send low stock notification:', error);
-                                        showSnackbar('Failed to send notification. Please try again.', 'error');
-                                    }
-                                }}
-                                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl hover:shadow-lg transition-all duration-200"
-                            >
-                                Send Alert
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            <LowStockAlertModal
+                isOpen={showLowStockAlert}
+                onClose={() => {
+                    setShowLowStockAlert(false);
+                    setLowStockProduct(null);
+                }}
+                product={lowStockProduct!}
+                user={user}
+                storeSettings={storeSettings}
+                showSnackbar={showSnackbar}
+            />
 
             <ProductFormModal
                 isOpen={isProductFormOpen}

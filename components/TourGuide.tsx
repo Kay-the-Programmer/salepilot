@@ -26,11 +26,16 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
     }, []);
 
     useEffect(() => {
-        // Check if user has seen the tour for this specific page
+        // If propsRun is explicitly true, we want to run the tour (manual trigger)
+        if (propsRun) {
+            setRun(true);
+            return;
+        }
+
+        // Otherwise, only run if they haven't seen it and propsRun isn't false
         const tourKey = page === 'dashboard' ? `salePilot.tourSeen.${user.id}` : `salePilot.tourSeen.${page}.${user.id}`;
         const hasSeenTour = localStorage.getItem(tourKey) === 'true';
 
-        // Respect hasSeenTour first. If not seen, run if propsRun is not explicitly false.
         if (hasSeenTour) {
             setRun(false);
         } else {
@@ -140,7 +145,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             disableBeacon: true,
         },
         {
-            target: '#pos-search',
+            target: '#pos-search-container',
             content: (
                 <div>
                     <h3 className="font-bold text-lg mb-2">Find Products</h3>
