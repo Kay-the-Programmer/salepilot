@@ -142,6 +142,47 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         setProduct(prev => ({ ...prev, barcode: prev.sku }));
     };
 
+    const handleLookup = async (barcodeToUse?: string) => {
+        const code = barcodeToUse || product.barcode;
+        if (!code) {
+            if (!barcodeToUse) setError("Please enter a barcode to lookup.");
+            return;
+        }
+
+        setIsGenerating(true);
+        try {
+            const data = await api.get<any>(`/products/external-lookup/${code}`);
+            if (data) {
+                setProduct(prev => ({
+                    ...prev,
+                    barcode: code,
+                    name: prev.name || data.name,
+                    description: prev.description || data.description,
+                    brand: prev.brand || data.brand,
+                    weight: (prev.weight === 0 && data.weight) ? data.weight : prev.weight,
+                    unitOfMeasure: (prev.unitOfMeasure === 'unit' && data.unitOfMeasure) ? data.unitOfMeasure : prev.unitOfMeasure,
+                }));
+
+                if (data.imageUrls && Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
+                    setImages(prev => {
+                        const existing = new Set(prev);
+                        const newImgs = data.imageUrls.filter((url: string) => !existing.has(url));
+                        return [...prev, ...newImgs];
+                    });
+                }
+                setError('');
+            }
+        } catch (err: any) {
+            console.error("Lookup failed", err);
+            // Show error only for manual interactions or if explicit feedback is needed
+            if (!barcodeToUse) {
+                setError('Product not found in database');
+            }
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -580,13 +621,23 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             <span role="img" aria-label="scan">📷</span>
                                         </Button>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleGenerateBarcode}
-                                        className="w-full py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 text-sm font-medium"
-                                    >
-                                        Generate from SKU
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={handleGenerateBarcode}
+                                            className="flex-1 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 text-sm font-medium"
+                                        >
+                                            Generate from SKU
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => handleLookup()}
+                                            disabled={isGenerating}
+                                            className="flex-1 py-2.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 text-sm font-medium disabled:opacity-50"
+                                        >
+                                            {isGenerating ? 'Searching...' : 'Lookup Info'}
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1117,6 +1168,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 </button>
                                                 <button
                                                     type="button"
+                                                    onClick={() => handleLookup()}
+                                                    disabled={isGenerating}
+                                                    className="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-sm font-medium"
+                                                >
+                                                    {isGenerating ? '...' : 'Lookup'}
+                                                </button>
+                                                <button
+                                                    type="button"
                                                     onClick={handleGenerateBarcode}
                                                     className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
                                                 >
@@ -1436,6 +1495,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 onScanSuccess={(code) => {
                     setProduct(prev => ({ ...prev, barcode: code }));
                     setIsBarcodeScannerOpen(false);
+                    // Automatically lookup if we don't have a name yet
+                    if (!product.name) {
+                        handleLookup(code);
+                    }
                 }}
                 title="Scan Product Barcode"
             />

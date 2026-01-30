@@ -65,7 +65,7 @@ const RegisterPage: React.FC = () => {
 
         setIsLoading(true);
         try {
-            const response = await api.post('/stores/register', {
+            const response = await api.post<{ user: any, store: { subdomain: string } }>('/stores/register', {
                 storeName: formData.storeName,
                 subdomain: formData.subdomain,
                 ownerName: formData.ownerName,

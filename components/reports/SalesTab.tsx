@@ -1,6 +1,6 @@
 import React from 'react';
 import { StatCard } from './StatCard';
-import { RevenueChart } from './DashboardCharts';
+import { RevenueChart } from './charts/RevenueChart';
 import { formatCurrency } from '../../utils/currency';
 import { StoreSettings } from '../../types';
 import CurrencyDollarIcon from '../icons/CurrencyDollarIcon';

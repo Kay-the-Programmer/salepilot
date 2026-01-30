@@ -1,3 +1,4 @@
+import Pagination from '../components/ui/Pagination';
 import { useState, useMemo, useEffect } from 'react';
 import { Sale, Customer, StoreSettings } from '../types';
 import SalesList from '../components/sales/SalesList';
@@ -8,333 +9,22 @@ import 'jspdf-autotable';
 
 import { api } from '../services/api';
 import { dbService } from '../services/dbService';
-import FilterIcon from '../components/icons/FilterIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import ChevronDownIcon from '../components/icons/ChevronDownIcon';
-import CalendarIcon from '../components/icons/CalendarIcon';
-import UserIcon from '../components/icons/UserIcon';
 import ChartBarIcon from '../components/icons/ChartBarIcon';
-import RefreshIcon from '../components/icons/RefreshIcon';
-import DownloadIcon from '../components/icons/DownloadIcon';
-import GridIcon from '../components/icons/GridIcon';
+
+// New Modular Components
+import SalesHeader from '../components/sales/all_sales/SalesHeader';
+import MobileViewMenu from '../components/sales/all_sales/MobileViewMenu';
+import SalesFilterSheet from '../components/sales/all_sales/SalesFilterSheet';
+import SalesFilterBar from '../components/sales/all_sales/SalesFilterBar';
+import DashboardStats from '../components/sales/all_sales/DashboardStats';
+import DailySalesSummary from '../components/sales/all_sales/DailySalesSummary';
 
 interface AllSalesPageProps {
     customers: Customer[];
     storeSettings: StoreSettings;
 }
-
-// --- Subcomponents ---
-
-function SalesFilterSheet({
-    isOpen, onClose, onApply, onReset, initialFilters, customers,
-    sortBy, setSortBy, sortOrder, setSortOrder
-}: {
-    isOpen: boolean;
-    onClose: () => void;
-    onApply: (filters: { start: string; end: string; customer: string; status: string }) => void;
-    onReset: () => void;
-    initialFilters: { start: string; end: string; customer: string; status: string };
-    customers: Customer[];
-    sortBy: string;
-    setSortBy: (val: string) => void;
-    sortOrder: 'asc' | 'desc';
-    setSortOrder: (val: 'asc' | 'desc') => void;
-}) {
-    const [tempStartDate, setTempStartDate] = useState(initialFilters.start);
-    const [tempEndDate, setTempEndDate] = useState(initialFilters.end);
-    const [tempCustomerId, setTempCustomerId] = useState(initialFilters.customer);
-    const [tempStatus, setTempStatus] = useState(initialFilters.status);
-
-    useEffect(() => {
-        if (isOpen) {
-            setTempStartDate(initialFilters.start);
-            setTempEndDate(initialFilters.end);
-            setTempCustomerId(initialFilters.customer);
-            setTempStatus(initialFilters.status);
-        }
-    }, [isOpen, initialFilters]);
-
-    const handleApply = () => {
-        onApply({ start: tempStartDate, end: tempEndDate, customer: tempCustomerId, status: tempStatus });
-        onClose();
-    };
-
-    const handleResetAndClose = () => {
-        onReset();
-        onClose();
-    };
-
-    if (!isOpen) return null;
-
-    return (
-        <div className="fixed inset-0 z-50 md:hidden" onClick={onClose}>
-            <div className="absolute inset-0 bg-black/50 animate-fade-in" />
-            <div
-                className="absolute top-[60px] right-4 left-auto w-72 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 flex flex-col max-h-[80vh]"
-                onClick={e => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h3 className="font-bold text-gray-900">Filter Options</h3>
-                    <button
-                        onClick={onClose}
-                        className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg transition-colors"
-                    >
-                        <XMarkIcon className="w-5 h-5" />
-                    </button>
-                </div>
-
-                {/* Scrollable Content */}
-                <div className="p-4 overflow-y-auto custom-scrollbar space-y-5">
-
-                    {/* Sort By */}
-                    <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {[
-                                { id: 'date', label: 'Date' },
-                                { id: 'total', label: 'Amount' },
-                                { id: 'customer', label: 'Customer' },
-                                { id: 'status', label: 'Status' },
-                            ].map((opt) => (
-                                <button
-                                    key={opt.id}
-                                    onClick={() => setSortBy(opt.id)}
-                                    className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all ${sortBy === opt.id
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    {opt.label}
-                                </button>
-                            ))}
-                        </div>
-                        <button
-                            onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                            className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
-                        >
-                            <span>Order: {sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
-                            <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
-                        </button>
-                    </div>
-
-                    <div className="border-t border-gray-100 my-2" />
-
-                    {/* Date Range */}
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <CalendarIcon className="w-4 h-4 text-blue-500" />
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date Range</label>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-medium text-gray-500">From</label>
-                                <input
-                                    type="date"
-                                    value={tempStartDate}
-                                    onChange={e => setTempStartDate(e.target.value)}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-medium text-gray-500">To</label>
-                                <input
-                                    type="date"
-                                    value={tempEndDate}
-                                    onChange={e => setTempEndDate(e.target.value)}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Customer */}
-                    <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                            <UserIcon className="w-4 h-4 text-purple-500" />
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</label>
-                        </div>
-                        <div className="relative">
-                            <select
-                                value={tempCustomerId}
-                                onChange={e => setTempCustomerId(e.target.value)}
-                                className="w-full p-2 pr-8 rounded-lg border border-gray-200 bg-gray-50 text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
-                            >
-                                <option value="">All Customers</option>
-                                {customers.map(c => (
-                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                ))}
-                            </select>
-                            <ChevronDownIcon className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                        </div>
-                    </div>
-
-                    {/* Status */}
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Status</label>
-                        <div className="grid grid-cols-2 gap-2">
-                            {[
-                                { value: '', label: 'All' },
-                                { value: 'paid', label: 'Paid' },
-                                { value: 'unpaid', label: 'Unpaid' },
-                                { value: 'partially_paid', label: 'Partial' },
-                            ].map((status) => (
-                                <button
-                                    key={status.value}
-                                    onClick={() => setTempStatus(status.value)}
-                                    className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${tempStatus === status.value
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
-                                        }`}
-                                >
-                                    {status.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Footer */}
-                <div className="p-3 border-t border-gray-100 bg-gray-50 flex gap-2">
-                    <button
-                        onClick={handleResetAndClose}
-                        className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold shadow-sm hover:bg-gray-50"
-                    >
-                        Reset
-                    </button>
-                    <button
-                        onClick={handleApply}
-                        className="flex-1 py-2 px-3 bg-gray-900 text-white rounded-xl text-xs font-semibold shadow-md active:scale-[0.98] transition-all"
-                    >
-                        Apply Filters
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-
-
-
-// --- Main Page Component ---
-
-
-function SimpleAreaChart({
-    data, storeSettings, color = 'blue'
-}: {
-    data: { date: string; totalRevenue: number }[];
-    storeSettings: StoreSettings;
-    color?: string;
-}) {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
-    if (!data || data.length === 0) return null;
-
-    const height = 180;
-    const width = 1000;
-    const padding = { top: 20, bottom: 20 };
-
-    // Sort and memoize data
-    const sortedData = useMemo(() =>
-        [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        , [data]);
-
-    // Memoize chart geometry so hover state changes don't recompute paths or points.
-    // Expected impact: avoids O(n) path/point recalculation on every hover move.
-    const { points, pathD, lineD } = useMemo(() => {
-        const maxVal = Math.max(...sortedData.map(d => d.totalRevenue)) || 1;
-        const computedPoints = sortedData.map((d, i) => {
-            const x = (i / (sortedData.length - 1 || 1)) * width;
-            const normalizedY = (d.totalRevenue / maxVal);
-            const y = height - (normalizedY * (height - padding.top - padding.bottom)) - padding.bottom;
-            return { x, y, ...d };
-        });
-
-        const computedPathD = `M0,${height} ` + computedPoints.map(p => `L${p.x},${p.y}`).join(' ') + ` L${width},${height} Z`;
-        const computedLineD = computedPoints.length === 1
-            ? `M0,${computedPoints[0].y} L${width},${computedPoints[0].y}`
-            : `M${computedPoints[0].x},${computedPoints[0].y} ` + computedPoints.slice(1).map(p => `L${p.x},${p.y}`).join(' ');
-
-        return { points: computedPoints, pathD: computedPathD, lineD: computedLineD };
-    }, [sortedData, height, padding.bottom, padding.top, width]);
-
-    return (
-        <div className="relative w-full h-full" onMouseLeave={() => setHoveredIndex(null)}>
-            <svg
-                viewBox={`0 0 ${width} ${height}`}
-                preserveAspectRatio="none"
-                className="w-full h-full text-blue-500 overflow-visible"
-            >
-                <defs>
-                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="currentColor" stopOpacity="0.15" />
-                        <stop offset="90%" stopColor="currentColor" stopOpacity="0.0" />
-                    </linearGradient>
-                </defs>
-                <path d={pathD} fill="url(#chartGradient)" />
-                <path
-                    d={lineD}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    vectorEffect="non-scaling-stroke"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-
-                {/* Interactive Overlay Columns */}
-                {points.map((p, i) => (
-                    <rect
-                        key={i}
-                        x={i === 0 ? 0 : points[i - 1].x + (p.x - points[i - 1].x) / 2}
-                        y={0}
-                        width={width / points.length}
-                        height={height}
-                        fill="transparent"
-                        onMouseEnter={() => setHoveredIndex(i)}
-                        onClick={() => setHoveredIndex(i)}
-                        onTouchStart={() => setHoveredIndex(i)}
-                    />
-                ))}
-
-                {/* Visible Dots & Tooltip Indicator */}
-                {points.map((p, i) => (
-                    <g key={i}>
-                        {(points.length < 15 || hoveredIndex === i) && (
-                            <circle
-                                cx={p.x}
-                                cy={p.y}
-                                r={hoveredIndex === i ? 6 : 3}
-                                fill="white"
-                                stroke="currentColor"
-                                strokeWidth={hoveredIndex === i ? 3 : 2}
-                                vectorEffect="non-scaling-stroke"
-                            />
-                        )}
-                    </g>
-                ))}
-            </svg>
-
-            {/* Tooltip */}
-            {hoveredIndex !== null && points[hoveredIndex] && (
-                <div
-                    className="absolute bg-gray-900 text-white text-xs rounded-lg py-1 px-2 pointer-events-none shadow-xl transform -translate-x-1/2 -translate-y-full z-10"
-                    style={{
-                        left: `${(points[hoveredIndex].x / width) * 100}%`,
-                        top: `${(points[hoveredIndex].y / height) * 100}%`,
-                        marginTop: '-12px'
-                    }}
-                >
-                    <div className="font-bold whitespace-nowrap">{formatCurrency(points[hoveredIndex].totalRevenue, storeSettings)}</div>
-                    <div className="text-[10px] text-gray-300 whitespace-nowrap text-center">
-                        {new Date(points[hoveredIndex].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </div>
-                </div>
-            )}
-        </div>
-    );
-};
 
 export default function AllSalesPage({ customers, storeSettings }: AllSalesPageProps) {
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
@@ -543,262 +233,73 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
     return (
         <div className="flex flex-col min-h-[100dvh] bg-gradient-to-b from-gray-50 to-white relative">
-            {/* Desktop Header */}
-            <div className="hidden md:flex items-center justify-between px-6 py-4 sticky top-0 z-30">
-                <div className="flex justify-between w-full">
-                    <h1 className="text-xl font-bold text-gray-900">Sales History</h1>
+            <SalesHeader
+                selectedStatus={selectedStatus}
+                setSelectedStatus={setSelectedStatus}
+                mobileView={mobileView}
+                isMobileMenuOpen={isMobileMenuOpen}
+                setIsMobileMenuOpen={setIsMobileMenuOpen}
+                setIsFilterSheetOpen={setIsFilterSheetOpen}
+                hasActiveFilters={hasActiveFilters}
+                startDate={startDate}
+                endDate={endDate}
+                selectedCustomerId={selectedCustomerId}
+                resetFilters={resetFilters}
+                customers={customers}
+            />
 
-                    {/* Status Pills */}
-                    <div className="flex bg-gray-100/80 p-1 rounded-3xl shadow-lg border-white shrink-0">
-                        {['', 'paid', 'unpaid', 'partially_paid'].map((status) => {
-                            const isActive = selectedStatus === status;
-                            const label = status === '' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-                            return (
-                                <button
-                                    key={status}
-                                    onClick={() => setSelectedStatus(status)}
-                                    className={`px-4 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${isActive
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                        }`}
-                                >
-                                    {label}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-
-            </div>
-
-            {/* Mobile Header */}
-            <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-3 md:hidden">
-                <div className="flex items-center justify-between">
-                    <h1 className="text-lg font-bold text-gray-900">
-                        {mobileView === 'summary' ? 'Sales Summary' : 'Sales History'}
-                    </h1>
-                    <div className="flex items-center space-x-2">
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors ${isMobileMenuOpen ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
-                            aria-label="Menu"
-                        >
-                            <GridIcon className="w-6 h-6" />
-                        </button>
-
-                        {/* Filter Button */}
-                        <button
-                            onClick={() => setIsFilterSheetOpen(true)}
-                            className={`p-2 rounded-lg active:bg-gray-100 transition-colors relative ${hasActiveFilters ? 'text-blue-600 bg-blue-50' : 'text-gray-600'}`}
-                            aria-label="Filter options"
-                        >
-                            <FilterIcon className="w-6 h-6" />
-                            {hasActiveFilters && (
-                                <span className="absolute top-2 right-2 w-2 h-2 bg-blue-600 rounded-full ring-2 ring-white" />
-                            )}
-                        </button>
-                    </div>
-                </div>
-
-                {/* Active Filters Chips (Mobile) */}
-                {hasActiveFilters && (
-                    <div className="flex flex-wrap gap-2 mt-3 pb-1">
-                        {startDate && endDate && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 text-blue-700 px-2.5 py-1 text-xs font-medium border border-blue-100">
-                                <CalendarIcon className="w-3 h-3" />
-                                {new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                            </span>
-                        )}
-                        {selectedCustomerId && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-purple-50 text-purple-700 px-2.5 py-1 text-xs font-medium border border-purple-100">
-                                <UserIcon className="w-3 h-3" />
-                                {customers.find(c => String(c.id) === String(selectedCustomerId))?.name || 'Customer'}
-                            </span>
-                        )}
-                        {selectedStatus && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full capitalize bg-green-50 text-green-700 px-2.5 py-1 text-xs font-medium border border-green-100">
-                                {selectedStatus.replace('_', ' ')}
-                            </span>
-                        )}
-                        <button onClick={resetFilters} className="text-xs text-red-600 underline ml-1">
-                            Clear
-                        </button>
-                    </div>
-                )}
-            </div>
-
-            {/* Mobile Grid Menu Popup */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div className="absolute inset-0 bg-black/50 animate-fade-in" />
-                    {/* Position below header roughly */}
-                    <div
-                        className="absolute top-[60px] right-4 left-auto w-48 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 p-2"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => {
-                                    setMobileView('summary');
-                                    setIsMobileMenuOpen(false);
-                                }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${mobileView === 'summary'
-                                    ? 'bg-gray-900 text-white shadow-md'
-                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                                    }`}
-                            >
-                                <ChartBarIcon className="w-6 h-6 mb-1" />
-                                <span className="text-xs font-semibold">Summary</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setMobileView('history');
-                                    setIsMobileMenuOpen(false);
-                                }}
-                                className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all ${mobileView === 'history'
-                                    ? 'bg-gray-900 text-white shadow-md'
-                                    : 'bg-gray-50 text-gray-700 hover:bg-gray-100'
-                                    }`}
-                            >
-                                <RefreshIcon className="w-6 h-6 mb-1" />
-                                <span className="text-xs font-semibold">History</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-
+            <MobileViewMenu
+                isOpen={isMobileMenuOpen}
+                onClose={() => setIsMobileMenuOpen(false)}
+                mobileView={mobileView}
+                setMobileView={setMobileView}
+            />
 
             <main className="flex-1 overflow-y-auto bg-transparent p-4 md:p-6 min-w-0">
                 <div className="max-w-7xl mx-auto">
-                    {/* Desktop Filters & Export */}
-                    {showFilters && (
-                        <div className="hidden md:block mb-6 animate-slideDown">
-                            <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3 items-center">
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-600">Start Date</label>
-                                        <input
-                                            type="date"
-                                            value={startDate}
-                                            onChange={e => setStartDate(e.target.value)}
-                                            className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-600">End Date</label>
-                                        <input
-                                            type="date"
-                                            value={endDate}
-                                            onChange={e => setEndDate(e.target.value)}
-                                            className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <label className="text-xs font-medium text-gray-600">Customer</label>
-                                        <select
-                                            value={selectedCustomerId}
-                                            onChange={e => setSelectedCustomerId(e.target.value)}
-                                            className="w-full p-2.5 rounded-xl border border-gray-200 bg-gray-50 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                        >
-                                            <option value="">All Customers</option>
-                                            {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                                        </select>
-                                    </div>
 
-                                    <div className="flex gap-2 lg:col-span-3 justify-end h-full items-end pb-1">
-                                        <button
-                                            onClick={resetFilters}
-                                            className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-medium text-sm hover:bg-gray-200 transition-colors"
-                                        >
-                                            Reset
-                                        </button>
-                                        <button
-                                            onClick={handleExportCSV}
-                                            className="px-4 py-2.5 rounded-xl bg-white text-gray-700 font-medium text-sm border border-gray-300 hover:bg-gray-50 transition-colors flex items-center gap-2"
-                                        >
-                                            <DownloadIcon className="w-4 h-4" />
-                                            CSV
-                                        </button>
-                                        <button
-                                            onClick={handleExportPDF}
-                                            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium text-sm hover:from-blue-700 hover:to-blue-800 transition-colors flex items-center gap-2"
-                                        >
-                                            <DownloadIcon className="w-4 h-4" />
-                                            PDF
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {/* Filter Toggle Button (Desktop mainly, to show/hide the filter bar) */}
+                    {/* The original code had `showFilters` logic but I noticed in the original file line 778 there is a button that sets IsFilterSheetOpen, but there is also a "Filter Chart" button.
+                        However, line 677 says {showFilters && ...}.
+                        Wait, where is setShowFilters called? Use search in original file.
+                    */}
+                    {/* Checking original file for setShowFilters usage... */}
 
-                    {/* Mobile Stats Summary - Only in Summary View */}
-                    <div className={`md:hidden space-y-4 mb-6 ${mobileView === 'summary' ? 'block' : 'hidden'}`}>
-                        {/* 1. Top Stats Cards */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-3 opacity-5">
-                                    <ChartBarIcon className="w-16 h-16" />
-                                </div>
-                                <div className="text-sm font-medium text-gray-500 mb-1">Total Revenue</div>
-                                <div className="text-xl font-bold text-gray-900 tracking-tight">
-                                    {formatCurrency(
-                                        // Try to use daily sales sum if available for more accurate "filtered" total, otherwise page stats
-                                        dailySales.length > 0
-                                            ? dailySales.reduce((sum, d) => sum + d.totalRevenue, 0)
-                                            : stats.totalRevenue,
-                                        storeSettings
-                                    )}
-                                </div>
+                    <div className="hidden md:flex justify-end mb-4">
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm transition-all"
+                        >
+                            <span className="text-gray-500">Filters</span>
+                            <div className={`transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`}>
+                                <ChevronDownIcon className="w-4 h-4" />
                             </div>
-                            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-3 opacity-5">
-                                    <ChartBarIcon className="w-16 h-16" />
-                                </div>
-                                <div className="text-sm font-medium text-gray-500 mb-1">Transactions</div>
-                                <div className="text-xl font-bold text-gray-900 tracking-tight">
-                                    {/* Use total count from API if available, else page stats */}
-                                    {total > 0 ? total : stats.totalSales}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 2. Graph Chart Card */}
-                        <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                            <div className="flex items-center justify-between mb-4">
-                                <div>
-                                    <h3 className="font-bold text-gray-900">Sales Trend</h3>
-                                    <p className="text-xs text-gray-500">Revenue over specific period</p>
-                                </div>
-                                <button
-                                    onClick={() => !hasActiveFilters && setIsFilterSheetOpen(true)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 rounded-lg text-xs font-semibold text-gray-700 transition-colors"
-                                >
-                                    <FilterIcon className="w-3 h-3" />
-                                    <span>{hasActiveFilters ? 'Filtered' : 'Filter Chart'}</span>
-                                </button>
-                            </div>
-
-                            <div className="h-48 w-full">
-                                {dailySales && dailySales.length > 0 ? (
-                                    <SimpleAreaChart data={dailySales} color="#2563eb" storeSettings={storeSettings} />
-                                ) : (
-                                    <div className="h-full flex flex-col items-center justify-center text-gray-400 bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-                                        <ChartBarIcon className="w-8 h-8 mb-2 opacity-50" />
-                                        <div className="text-xs">No chart data available</div>
-                                        <button onClick={() => setIsFilterSheetOpen(true)} className="text-xs text-blue-600 font-medium mt-1">Select Date Range</button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        </button>
                     </div>
 
-                    {/* FilterBar removed - filters are in header */}
+                    <SalesFilterBar
+                        showFilters={showFilters}
+                        startDate={startDate}
+                        setStartDate={setStartDate}
+                        endDate={endDate}
+                        setEndDate={setEndDate}
+                        selectedCustomerId={selectedCustomerId}
+                        setSelectedCustomerId={setSelectedCustomerId}
+                        customers={customers}
+                        resetFilters={resetFilters}
+                        handleExportCSV={handleExportCSV}
+                        handleExportPDF={handleExportPDF}
+                    />
 
-
+                    <DashboardStats
+                        mobileView={mobileView}
+                        dailySales={dailySales}
+                        stats={stats}
+                        total={total}
+                        storeSettings={storeSettings}
+                        hasActiveFilters={hasActiveFilters}
+                        onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
+                    />
 
                     {/* Loading State */}
                     {isLoading && (
@@ -834,78 +335,11 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                     {/* Content */}
                     {!isLoading && !error && (
                         <>
-                            {/* Daily Sales Summary (Mobile View: Summary, Desktop: Always) */}
-                            {dailySales && dailySales.length > 0 && (
-                                <div className={`mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${mobileView === 'summary' ? 'block' : 'hidden md:block'}`}>
-                                    <div className="p-4 border-b border-gray-100">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <div className="p-2 bg-gradient-to-br from-blue-100 to-blue-50 rounded-lg">
-                                                    <ChartBarIcon className="w-5 h-5 text-blue-600" />
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-gray-900">Daily Sales Breakdown</h3>
-                                                    <p className="text-sm text-gray-500">Product performance by day</p>
-                                                </div>
-                                            </div>
-                                            <div className="text-sm text-gray-600">
-                                                {dailySales.length} day{dailySales.length !== 1 ? 's' : ''}
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="divide-y divide-gray-100">
-                                        {dailySales.map(day => (
-                                            <div key={day.date} className="hover:bg-gray-50/50 transition-colors">
-                                                <div className="p-4">
-                                                    <div className="flex items-center justify-between mb-3">
-                                                        <div className="font-semibold text-gray-900">
-                                                            {new Date(day.date).toLocaleDateString('en-US', {
-                                                                weekday: 'short',
-                                                                month: 'short',
-                                                                day: 'numeric',
-                                                                year: 'numeric'
-                                                            })}
-                                                        </div>
-                                                        <div className="flex items-center gap-4 text-sm">
-                                                            <span className="text-gray-600">
-                                                                <span className="font-semibold">{day.totalQuantity.toLocaleString()}</span> units
-                                                            </span>
-                                                            <span className="font-bold text-gray-900">
-                                                                {formatCurrency(day.totalRevenue, storeSettings)}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Product Items */}
-                                                    <div className="space-y-2">
-                                                        {day.items.slice(0, 3).map((item, idx) => (
-                                                            <div key={item.name + idx} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
-                                                                <div className="flex-1 min-w-0">
-                                                                    <div className="text-sm font-medium text-gray-900 truncate">{item.name}</div>
-                                                                </div>
-                                                                <div className="flex items-center gap-4 text-sm">
-                                                                    <span className="text-gray-600 font-medium">{item.quantity}</span>
-                                                                    <span className="font-semibold text-gray-900">
-                                                                        {formatCurrency(item.revenue, storeSettings)}
-                                                                    </span>
-                                                                </div>
-                                                            </div>
-                                                        ))}
-                                                        {day.items.length > 3 && (
-                                                            <div className="text-center">
-                                                                <button className="text-sm text-blue-600 font-medium hover:text-blue-800">
-                                                                    + {day.items.length - 3} more products
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
+                            <DailySalesSummary
+                                dailySales={dailySales}
+                                mobileView={mobileView}
+                                storeSettings={storeSettings}
+                            />
 
                             {/* Sales List (Mobile View: History, Desktop: Always) */}
                             <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:block'}`}>
@@ -944,66 +378,14 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                 />
 
                                 {/* Pagination Controls (Mobile Optimized) */}
-                                {total > 0 && (
-                                    <div className="p-4 border-t border-gray-100 bg-gray-50/30">
-                                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                                            {/* Page Info */}
-                                            <div className="text-sm text-gray-600">
-                                                <span>
-                                                    Showing <strong className="text-gray-900">{(page - 1) * pageSize + 1}</strong> -{' '}
-                                                    <strong className="text-gray-900">{Math.min(page * pageSize, total)}</strong> of{' '}
-                                                    <strong className="text-gray-900">{total.toLocaleString()}</strong> transactions
-                                                </span>
-                                            </div>
-
-                                            {/* Controls */}
-                                            <div className="flex items-center gap-3">
-                                                {/* Rows per page */}
-                                                <div className="flex items-center gap-2">
-                                                    <label className="text-sm text-gray-600 hidden sm:block">Rows:</label>
-                                                    <div className="relative">
-                                                        <select
-                                                            value={pageSize}
-                                                            onChange={(e) => {
-                                                                setPageSize(parseInt(e.target.value, 10));
-                                                                setPage(1);
-                                                            }}
-                                                            className="appearance-none pl-3 pr-8 py-2 rounded-lg border border-gray-300 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                        >
-                                                            {[10, 20, 50, 100].map(sz => (
-                                                                <option key={sz} value={sz}>{sz}</option>
-                                                            ))}
-                                                        </select>
-                                                        <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none">
-                                                            <ChevronDownIcon className="w-4 h-4 text-gray-400" />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Pagination Buttons */}
-                                                <div className="flex items-center gap-1 bg-white border border-gray-300 rounded-lg p-1">
-                                                    <button
-                                                        className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                        onClick={() => setPage(p => Math.max(1, p - 1))}
-                                                        disabled={page <= 1}
-                                                    >
-                                                        ← Prev
-                                                    </button>
-                                                    <div className="px-3 py-1.5 text-sm font-medium text-gray-900">
-                                                        {page}
-                                                    </div>
-                                                    <button
-                                                        className="px-3 py-1.5 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                        onClick={() => setPage(p => (p * pageSize < total ? p + 1 : p))}
-                                                        disabled={page * pageSize >= total}
-                                                    >
-                                                        Next →
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                                <Pagination
+                                    total={total}
+                                    page={page}
+                                    pageSize={pageSize}
+                                    onPageChange={setPage}
+                                    onPageSizeChange={setPageSize}
+                                    label="transactions"
+                                />
                             </div>
 
                             {/* Empty State */}
@@ -1057,4 +439,4 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
             />
         </div>
     );
-};
+}

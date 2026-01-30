@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
-import { StatSparkline } from './DashboardCharts';
+import { StatSparkline } from './charts/StatSparkline';
 import { TimeRangeFilter, TimeFilter } from './TimeRangeFilter';
 
 interface FilterableStatCardProps {
@@ -120,7 +120,7 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
                 <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
             </div>
             <div className="absolute bottom-0 left-0 right-0 h-16 opacity-30 group-hover:opacity-40 transition-opacity rounded-b-2xl overflow-hidden pointer-events-none">
-                {!loading && <StatSparkline data={data.trend} color={sparklineColor} height={60} storeSettings={storeSettings} />}
+                {!loading && <StatSparkline data={data.trend} color={sparklineColor} height={60} />}
             </div>
         </div>
     );

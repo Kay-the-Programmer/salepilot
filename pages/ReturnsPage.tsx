@@ -15,7 +15,8 @@ import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
 import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import PackageIcon from '../components/icons/PackageIcon';
-import { GridIcon, ListIcon } from '../components/icons'; // Ensure these are exported from icons/index or similar
+import { GridIcon, ListIcon } from '../components/icons';
+import Pagination from '../components/ui/Pagination';
 
 interface ReturnsPageProps {
     sales: Sale[];
@@ -98,7 +99,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
     const [selectedReturnForDetails, setSelectedReturnForDetails] = useState<Return | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid'); // using 'card' as grid equivalent or just grid
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
+    const [itemsPerPage, setItemsPerPage] = useState(10);
 
     const taxRate = storeSettings.taxRate / 100;
 
@@ -412,27 +413,15 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                 )}
 
                                 {/* Pagination Controls */}
-                                {totalPages > 1 && (
-                                    <div className="flex justify-center items-center mt-8 gap-2">
-                                        <button
-                                            onClick={() => handlePageChange(currentPage - 1)}
-                                            disabled={currentPage === 1}
-                                            className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <ChevronRightIcon className="w-5 h-5 transform rotate-180" />
-                                        </button>
-                                        <span className="text-sm font-medium text-gray-700">
-                                            Page {currentPage} of {totalPages}
-                                        </span>
-                                        <button
-                                            onClick={() => handlePageChange(currentPage + 1)}
-                                            disabled={currentPage === totalPages}
-                                            className="p-2 border rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            <ChevronRightIcon className="w-5 h-5" />
-                                        </button>
-                                    </div>
-                                )}
+                                <Pagination
+                                    total={sortedReturns.length}
+                                    page={currentPage}
+                                    pageSize={itemsPerPage}
+                                    onPageChange={setCurrentPage}
+                                    onPageSizeChange={setItemsPerPage}
+                                    label="returns"
+                                    className="mt-8 !p-0 !bg-transparent !border-none !shadow-none"
+                                />
                             </>
                         )}
                     </div>

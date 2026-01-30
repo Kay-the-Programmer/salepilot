@@ -23,6 +23,7 @@ export { default as CalendarIcon } from './CalendarIcon';
 export { default as CameraIcon } from './CameraIcon';
 export { default as CashIcon } from './CashIcon';
 export { default as ChartBarIcon } from './ChartBarIcon';
+export { default as ChatBubbleLeftRightIcon } from './ChatBubbleLeftRightIcon';
 export { default as CheckCircleIcon } from './CheckCircleIcon';
 export { default as CheckIcon } from './CheckIcon';
 export { default as ChevronDoubleLeftIcon } from './ChevronDoubleLeftIcon';

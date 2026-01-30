@@ -9,6 +9,8 @@ import PencilIcon from '../components/icons/PencilIcon';
 import SearchIcon from '../components/icons/SearchIcon';
 import { Customer, Sale, StoreSettings, User } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
+import Pagination from '../components/ui/Pagination';
+import ListGridToggle from '../components/ui/ListGridToggle';
 
 // Inline CSS for mobile responsiveness
 const styles = `
@@ -259,6 +261,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     const [detailIsLoading, setDetailIsLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
     const [customerToDelete, setCustomerToDelete] = useState<string | null>(null);
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(12);
+    const [listViewMode, setListViewMode] = useState<'grid' | 'list'>('list');
 
 
 
@@ -364,6 +369,15 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
         return result;
     }, [customers, searchTerm, viewMode]);
 
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm, viewMode]);
+
+    const paginatedCustomers = useMemo(() => {
+        const start = (page - 1) * pageSize;
+        return filteredCustomers.slice(start, start + pageSize);
+    }, [filteredCustomers, page, pageSize]);
+
     const customerSales = useMemo(() =>
         sales.filter(s => s.customerId === selectedCustomerId),
         [sales, selectedCustomerId]
@@ -423,7 +437,12 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                             </div>
 
-                            <div className="flex justify-end">
+                            <div className="flex justify-between items-center">
+                                <ListGridToggle
+                                    viewMode={listViewMode}
+                                    onViewModeChange={setListViewMode}
+                                    size="sm"
+                                />
                                 <button
                                     onClick={() => setViewMode(viewMode === 'az' ? 'recent' : 'az')}
                                     className="text-xs text-gray-500 hover:text-blue-600 flex items-center gap-1"
@@ -437,12 +456,26 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                         </div>
                         <div className="flex-1 overflow-y-auto desktop-scrollbar p-3">
                             <CustomerList
-                                customers={filteredCustomers}
+                                customers={paginatedCustomers}
                                 onSelectCustomer={handleSelectCustomer}
                                 onEdit={handleOpenEditModal}
                                 isLoading={isLoading}
                                 error={error}
                                 canManage={canManageCustomers}
+                                viewMode={listViewMode}
+                                selectedCustomerId={selectedCustomerId}
+                            />
+                        </div>
+                        <div className="flex-none p-3 border-t border-gray-100 bg-white">
+                            <Pagination
+                                total={filteredCustomers.length}
+                                page={page}
+                                pageSize={pageSize}
+                                onPageChange={setPage}
+                                onPageSizeChange={setPageSize}
+                                label="customers"
+                                compact={true}
+                                className="!shadow-none !p-0 !border-none"
                             />
                         </div>
                     </div>
@@ -657,6 +690,12 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                 </div>
 
                                 <div className="flex items-center gap-1 relative">
+                                    {/* List/Grid Toggle */}
+                                    <ListGridToggle
+                                        viewMode={listViewMode}
+                                        onViewModeChange={setListViewMode}
+                                        size="sm"
+                                    />
                                     {/* View Options Button (Mobile) */}
                                     {isMobile && (
                                         <>
@@ -777,14 +816,29 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                             onAction={searchTerm ? () => setSearchTerm('') : handleOpenAddModal}
                         />
                     ) : (
-                        <CustomerList
-                            customers={filteredCustomers}
-                            onSelectCustomer={handleSelectCustomer}
-                            onEdit={handleOpenEditModal}
-                            isLoading={isLoading}
-                            error={error}
-                            canManage={canManageCustomers}
-                        />
+                        <>
+                            <CustomerList
+                                customers={paginatedCustomers}
+                                onSelectCustomer={handleSelectCustomer}
+                                onEdit={handleOpenEditModal}
+                                isLoading={isLoading}
+                                error={error}
+                                canManage={canManageCustomers}
+                                viewMode={listViewMode}
+                                selectedCustomerId={selectedCustomerId}
+                            />
+                            <div className="mt-6">
+                                <Pagination
+                                    total={filteredCustomers.length}
+                                    page={page}
+                                    pageSize={pageSize}
+                                    onPageChange={setPage}
+                                    onPageSizeChange={setPageSize}
+                                    label="customers"
+                                    className="!bg-transparent !p-0 !border-none !shadow-none"
+                                />
+                            </div>
+                        </>
                     )}
                 </div>
             </main>

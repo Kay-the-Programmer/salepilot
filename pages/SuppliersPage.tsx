@@ -1,11 +1,13 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Supplier, Product, StoreSettings } from '../types';
 import Header from '../components/Header';
 import SupplierList from '../components/suppliers/SupplierList';
 import SupplierFormModal from '../components/suppliers/SupplierFormModal';
 import SupplierDetailView from '../components/suppliers/SupplierDetailView';
 import ArrowLeftIcon from '../components/icons/ArrowLeftIcon';
+import Pagination from '../components/ui/Pagination';
+import ListGridToggle from '../components/ui/ListGridToggle';
 
 interface SuppliersPageProps {
     suppliers: Supplier[];
@@ -30,6 +32,9 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
     const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
     const [selectedSupplierId, setSelectedSupplierId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(12);
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
     const handleOpenAddModal = () => {
         setEditingSupplier(null);
@@ -68,6 +73,15 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
             (supplier.contactPerson && supplier.contactPerson.toLowerCase().includes(term))
         );
     }), [suppliers, searchTerm]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [searchTerm]);
+
+    const paginatedSuppliers = useMemo(() => {
+        const start = (page - 1) * pageSize;
+        return filteredSuppliers.slice(start, start + pageSize);
+    }, [filteredSuppliers, page, pageSize]);
 
     const selectedSupplier = useMemo(() =>
         suppliers.find(c => c.id === selectedSupplierId),
@@ -126,15 +140,34 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                 setSearchTerm={setSearchTerm}
             />
             <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                <div className="px-4 py-3 flex justify-end">
+                    <ListGridToggle
+                        viewMode={viewMode}
+                        onViewModeChange={setViewMode}
+                        size="sm"
+                    />
+                </div>
                 <SupplierList
-                    suppliers={filteredSuppliers}
+                    suppliers={paginatedSuppliers}
                     onSelectSupplier={handleSelectSupplier}
                     onEdit={handleOpenEditModal}
                     onDelete={onDeleteSupplier}
                     onAddNew={handleOpenAddModal}
                     isLoading={isLoading}
                     error={error}
+                    viewMode={viewMode}
+                    selectedSupplierId={selectedSupplierId}
                 />
+                <div className="p-4 bg-white border-t border-gray-200 sticky bottom-0">
+                    <Pagination
+                        total={filteredSuppliers.length}
+                        page={page}
+                        pageSize={pageSize}
+                        onPageChange={setPage}
+                        onPageSizeChange={setPageSize}
+                        label="suppliers"
+                    />
+                </div>
             </main>
             <SupplierFormModal
                 isOpen={isModalOpen}

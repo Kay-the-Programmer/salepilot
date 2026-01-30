@@ -446,3 +446,50 @@ export interface Shipment {
     updated_at: string;
     store_id: string;
 }
+
+// --- WhatsApp Integration ---
+
+export interface WhatsAppConfig {
+    store_id: string;
+    phone_number_id: string;
+    business_account_id?: string;
+    webhook_verify_token: string;
+    is_enabled: boolean;
+    auto_reply_enabled: boolean;
+    business_hours?: {
+        start: string;
+        end: string;
+        timezone: string;
+        days: number[]; // 0-6 (Sun-Sat)
+    };
+    away_message?: string;
+    greeting_message?: string;
+}
+
+export interface WhatsAppConversation {
+    id: string;
+    store_id: string;
+    customer_phone: string;
+    customer_name?: string;
+    customer_id?: string;
+    status: 'active' | 'closed' | 'escalated';
+    last_message_at: string;
+    created_at: string;
+    metadata?: any;
+    unreadCount?: number; // UI helper
+}
+
+export interface WhatsAppMessage {
+    id: string;
+    conversation_id: string;
+    store_id: string;
+    direction: 'inbound' | 'outbound';
+    message_type: 'text' | 'image' | 'document' | 'interactive' | 'template';
+    content: string;
+    media_url?: string;
+    whatsapp_message_id?: string;
+    status: 'sent' | 'delivered' | 'read' | 'failed';
+    is_ai_generated: boolean;
+    created_at: string;
+}
+

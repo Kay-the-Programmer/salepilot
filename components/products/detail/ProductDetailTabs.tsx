@@ -146,7 +146,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
 
                         {/* Specs Tab */}
                         {activeTab === 'specs' && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div className="space-y-4">
                                     <h4 className="text-sm font-medium text-slate-900 uppercase tracking-wider">Identification</h4>
                                     <div className="space-y-3 bg-slate-50 rounded-lg p-4">

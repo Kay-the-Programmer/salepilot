@@ -4,16 +4,15 @@ import { SnackbarType } from '../App';
 import { api, buildAssetUrl } from '@/services/api';
 import { formatCurrency } from '../utils/currency';
 import {
-    MagnifyingGlassIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
     BellAlertIcon,
-    ShoppingCartIcon
+    ShoppingCartIcon,
+    MagnifyingGlassIcon
 } from '../components/icons';
 import TourGuide from '../components/TourGuide';
 import PaymentChoiceModal from '../components/sales/PaymentChoiceModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Header from "@/components/Header.tsx";
+import Pagination from '../components/ui/Pagination';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
@@ -114,7 +113,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 18; // Fixed for desktop grid 3x6 
+    const [pageSize, setPageSize] = useState(18); // Default matches historical 3x6 grid
 
     // Persist view mode to localStorage
     useEffect(() => {
@@ -308,12 +307,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
         );
     }, [products, searchTerm]);
 
+    // Pagination Logic
     const paginatedProducts = useMemo(() => {
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        return filteredProducts.slice(startIndex, startIndex + itemsPerPage);
-    }, [filteredProducts, currentPage]);
-
-    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+        const startIndex = (currentPage - 1) * pageSize;
+        return filteredProducts.slice(startIndex, startIndex + pageSize);
+    }, [filteredProducts, currentPage, pageSize]);
 
     const handleContinuousScan = async (decodedText: string) => {
         if (isScannerPaused || showScanActionModal) return;
@@ -670,37 +668,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 )}
                             </div>
 
-                            {/* Pagination Footer */}
-                            {
-                                !isLoading && filteredProducts.length > 0 && (
-                                    <div className="flex-none p-4 border-t border-slate-200 bg-white/5 backdrop-blur top-shadow z-10">
-                                        <div className="flex items-center justify-between max-w-7xl mx-auto">
-                                            <div className="text-sm text-slate-600">
-                                                Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredProducts.length)}</span> of <span className="font-medium">{filteredProducts.length}</span> products
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <button
-                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                                    disabled={currentPage === 1}
-                                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                >
-                                                    <ChevronLeftIcon className="w-5 h-5 text-slate-600" />
-                                                </button>
-                                                <span className="text-sm font-medium text-slate-900 px-2">
-                                                    Page {currentPage} of {totalPages}
-                                                </span>
-                                                <button
-                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                                    disabled={currentPage === totalPages}
-                                                    className="p-2 rounded-lg border border-slate-200 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                                >
-                                                    <ChevronRightIcon className="w-5 h-5 text-slate-600" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            }
+                            <Pagination
+                                total={filteredProducts.length}
+                                page={currentPage}
+                                pageSize={pageSize}
+                                onPageChange={setCurrentPage}
+                                onPageSizeChange={setPageSize}
+                                label="products"
+                            />
                         </div>
                     </div>
                 </div>

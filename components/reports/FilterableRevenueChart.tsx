@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../../types';
 import { api } from '../../services/api';
-import { RevenueChart } from './DashboardCharts';
+import { RevenueChart } from './charts/RevenueChart';
 import { TimeRangeFilter, TimeFilter } from './TimeRangeFilter';
 
 interface FilterableRevenueChartProps {

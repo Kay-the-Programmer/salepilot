@@ -24,7 +24,8 @@ import {
     CreditCardIcon,
     Bars3Icon,
     BookOpenIcon,
-    XMarkIcon
+    XMarkIcon,
+    ChatBubbleLeftRightIcon
 } from './icons';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 import logo from '../assets/logo.png';
@@ -245,6 +246,13 @@ const NAV_ITEMS = [
         page: 'user-guide',
         icon: BookOpenIcon,
         roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer'],
+        badge: null
+    },
+    {
+        name: 'WhatsApp Support',
+        page: 'whatsapp/conversations',
+        icon: ChatBubbleLeftRightIcon,
+        roles: ['admin', 'staff'],
         badge: null
     },
 ];

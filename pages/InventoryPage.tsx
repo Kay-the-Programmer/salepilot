@@ -11,13 +11,12 @@ import ProductDetailView from '../components/products/ProductDetailView';
 import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
+import Pagination from '../components/ui/Pagination';
 import InventoryHeader from '../components/inventory/InventoryHeader';
 import InventoryMobileHeader from '../components/inventory/InventoryMobileHeader';
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
 import InventoryMobileMenu from '../components/inventory/InventoryMobileMenu';
-import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
-import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import LinkToPOModal from '../components/LinkToPOModal';
@@ -461,7 +460,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     }, [filteredProducts, sortBy, sortOrder, categoryMap]);
 
     const [page, setPage] = useState(1);
-    const pageSize = 12;
+    const [pageSize, setPageSize] = useState(12);
     const totalPages = Math.max(1, Math.ceil(sortedProducts.length / pageSize));
 
     const paginatedProducts = useMemo(() => {
@@ -591,34 +590,16 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                         selectedProductId={selectedProductId}
                                     />
                                 </div>
-                                {sortedProducts.length > 0 && (
-                                    <div className="flex-none p-4 border-t border-gray-100 bg-white sticky bottom-0 z-10">
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-xs text-gray-500">
-                                                <span className="font-medium">{(page - 1) * pageSize + 1}-{Math.min(page * pageSize, sortedProducts.length)}</span> of <span className="font-medium">{sortedProducts.length}</span>
-                                            </div>
-                                            <div className="flex items-center gap-1">
-                                                <button
-                                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                                    disabled={page <= 1}
-                                                    className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                                                >
-                                                    <ChevronLeftIcon className="w-4 h-4" />
-                                                </button>
-                                                <span className="text-xs font-medium text-gray-700 mx-1">
-                                                    {page} / {totalPages}
-                                                </span>
-                                                <button
-                                                    onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                                                    disabled={page >= totalPages}
-                                                    className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-                                                >
-                                                    <ChevronRightIcon className="w-4 h-4" />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
+                                <Pagination
+                                    total={sortedProducts.length}
+                                    page={page}
+                                    pageSize={pageSize}
+                                    onPageChange={setPage}
+                                    onPageSizeChange={setPageSize}
+                                    label="products"
+                                    className="border-t border-gray-100 bg-white sticky bottom-0 z-10"
+                                    compact={true}
+                                />
                             </div>
                         ) : (
                             <div className="h-full overflow-y-auto scroll-smooth">
@@ -691,7 +672,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             storeSettings={storeSettings}
                                             user={currentUser}
                                             onEdit={handleOpenEditCategoryModal}
-                                            onDelete={(cat) => onDeleteCategory?.(cat.id)}
+                                            onDelete={(cat: Category) => onDeleteCategory?.(cat.id)}
                                             onBack={handleBackToList}
                                         />
                                     ) : (

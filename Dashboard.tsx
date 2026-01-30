@@ -42,6 +42,8 @@ const MarketingPage = lazy(() => import('./pages/MarketingPage'));
 const MarketplaceRequestActionPage = lazy(() => import('./pages/MarketplaceRequestActionPage'));
 const LogisticsPage = lazy(() => import('./pages/LogisticsPage'));
 const UserGuidePage = lazy(() => import('./pages/UserGuidePage'));
+const WhatsAppConversationsPage = lazy(() => import('./pages/WhatsAppConversationsPage'));
+const WhatsAppSettingsPage = lazy(() => import('./pages/WhatsAppSettingsPage'));
 
 import Snackbar from './components/Snackbar';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
@@ -73,8 +75,8 @@ type SnackbarState = {
 
 const PERMISSIONS: Record<User['role'], string[]> = {
     superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'subscription', 'logistics', 'user-guide', 'quick-view'],
-    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'subscription', 'logistics', 'user-guide', 'quick-view'],
-    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'user-guide', 'quick-view'],
+    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings'],
+    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'user-guide', 'quick-view', 'whatsapp/conversations'],
     inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'user-guide', 'quick-view'],
     customer: ['profile', 'notifications', 'user-guide', 'quick-view'],
     supplier: ['profile', 'notifications', 'user-guide', 'quick-view']
@@ -1114,7 +1116,7 @@ export default function Dashboard() {
         const parts = pagePath.split('/');
         const page = parts[0];
 
-        if (!hasAccess(page, currentUser.role)) {
+        if (!hasAccess(page, currentUser.role) && !hasAccess(pagePath, currentUser.role)) {
             return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
         }
 
@@ -1246,6 +1248,11 @@ export default function Dashboard() {
                     return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
                 case 'user-guide':
                     return <UserGuidePage />;
+                case 'whatsapp':
+                    if (parts[1] === 'settings') {
+                        return <WhatsAppSettingsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
+                    }
+                    return <WhatsAppConversationsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
                 default:
                     return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
             }
