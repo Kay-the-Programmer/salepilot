@@ -1,6 +1,7 @@
 import React from 'react';
 import Header from '../../components/Header';
-import { FiFilter, FiGrid, FiList } from 'react-icons/fi';
+import { FiFilter } from 'react-icons/fi';
+import ListGridToggle from '../ui/ListGridToggle';
 
 interface InventoryHeaderProps {
     searchTerm: string;
@@ -101,21 +102,12 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = ({
                                     Filters
                                 </button>
 
-                                <div className="flex bg-gray-100/80 p-1 rounded-xl">
-                                    <button
-                                        onClick={() => setViewMode('grid')}
-                                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                        title="Grid View"
-                                    >
-                                        <FiGrid className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => setViewMode('list')}
-                                        className={`p-1.5 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                                        title="List View"
-                                    >
-                                        <FiList className="w-4 h-4" />
-                                    </button>
+                                <div className="ml-2">
+                                    <ListGridToggle
+                                        viewMode={viewMode}
+                                        onViewModeChange={setViewMode}
+                                        size="sm"
+                                    />
                                 </div>
 
                                 <button

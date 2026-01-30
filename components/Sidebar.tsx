@@ -221,6 +221,13 @@ const NAV_ITEMS = [
         badge: null
     },
     {
+        name: 'Settings',
+        page: 'superadmin/settings',
+        icon: Cog6ToothIcon,
+        roles: ['superadmin'],
+        badge: null
+    },
+    {
         name: 'Profile',
         page: 'profile',
         icon: UserIcon,
@@ -252,7 +259,14 @@ const NAV_ITEMS = [
         name: 'WhatsApp Support',
         page: 'whatsapp/conversations',
         icon: ChatBubbleLeftRightIcon,
-        roles: ['admin', 'staff'],
+        roles: ['superadmin'],
+        badge: null
+    },
+    {
+        name: 'Contact Support',
+        page: 'support',
+        icon: ChatBubbleLeftRightIcon,
+        roles: ['admin'],
         badge: null
     },
 ];

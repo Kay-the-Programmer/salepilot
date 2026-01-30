@@ -2,7 +2,8 @@ import React from 'react';
 import { Product, Category, StoreSettings } from '../types';
 import { formatCurrency } from '@/utils/currency';
 import { buildAssetUrl } from '../services/api';
-import LoadingSpinner from './LoadingSpinner';
+
+import UnifiedListGrid from './ui/UnifiedListGrid';
 
 interface Props {
   products: Product[];
@@ -50,8 +51,13 @@ const ProductCard: React.FC<{
 
   return (
     <div
-      onClick={onSelect}
-      className={`group bg-white rounded-2xl shadow-sm border transition-all duration-300 flex flex-col overflow-hidden cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md transform scale-[1.02]' : 'border-gray-100 hover:shadow-lg hover:border-blue-100'
+      onClick={(e) => {
+        // Only trigger selection if not handled by child elements
+        if (!e.defaultPrevented) {
+          onSelect();
+        }
+      }}
+      className={`group bg-white rounded-2xl shadow-sm border transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md transform scale-[1.02]' : 'border-gray-100 hover:shadow-lg hover:border-blue-100'
         }`}
     >
       {/* Card Header / Image Area */}
@@ -102,6 +108,69 @@ const ProductCard: React.FC<{
   );
 };
 
+const ProductListRow: React.FC<{
+  product: Product;
+  categoryName: string;
+  storeSettings: StoreSettings;
+  onSelect: () => void;
+  onAdjustStock: () => void;
+  isSelected?: boolean;
+  canManage: boolean;
+}> = ({ product, categoryName, storeSettings, onSelect, onAdjustStock, isSelected, canManage }) => {
+  const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
+  const asNumber = (val: any) => {
+    const n = typeof val === 'number' ? val : parseFloat(val);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  return (
+    <div
+      className={`rounded-xl border shadow-sm p-4 flex items-center justify-between transition-all duration-200 cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500/20' : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-md'
+        }`}
+      onClick={onSelect}
+    >
+      <div className="flex-1 min-w-0 mr-4">
+        <div className="flex items-center">
+          <h3 className={`font-semibold cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+            {product.name}
+          </h3>
+          <span className={`text-xs px-2 py-0.5 rounded-full ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+            {asNumber(product.stock)} in stock
+          </span>
+        </div>
+        <div className="text-sm text-gray-500 flex flex-wrap gap-x-4">
+          <span className="font-mono text-xs">SKU: {product.sku}</span>
+          <span>Category: {categoryName}</span>
+          <span className="font-medium text-gray-700">Price: {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? ' / kg' : ''}</span>
+        </div>
+      </div>
+      <div className="flex gap-2 shrink-0">
+        <button
+          className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect();
+          }}
+        >
+          {isSelected ? 'Viewing' : 'View Details'}
+        </button>
+        {canManage && (
+          <button
+            className="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onAdjustStock();
+            }}
+          >
+            Adjust
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const ProductList: React.FC<Props> = ({
   products,
   categories,
@@ -114,101 +183,44 @@ const ProductList: React.FC<Props> = ({
   viewMode = 'grid',
   selectedProductId
 }) => {
-  if (isLoading) return <LoadingSpinner fullScreen={false} text="Loading products..." className="py-12" />;
-  if (error) return <div className="p-6 text-red-500">Error: {error}</div>;
-
   const getCategoryName = (categoryId?: string) =>
     categoryId ? (categories.find(c => c.id === categoryId)?.name || '-') : '-';
 
   const canManage = userRole === 'admin' || userRole === 'inventory_manager';
 
-  const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
-  const asNumber = (val: any) => {
-    const n = typeof val === 'number' ? val : parseFloat(val);
-    return Number.isFinite(n) ? n : 0;
-  };
-
   return (
-    <div className="p-4">
-      {products.length === 0 ? (
-        <div className="text-gray-600">No products to display.</div>
-      ) : (
-        <>
-          {viewMode === 'grid' ? (
-            <div
-              className="grid gap-4 sm:gap-6"
-              style={{
-                gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 180px), 1fr))'
-              }}
-            >
-              {products.map((p) => (
-                <ProductCard
-                  key={p.id}
-                  product={p}
-                  categoryName={getCategoryName(p.categoryId)}
-                  storeSettings={storeSettings}
-                  onSelect={() => onSelectProduct(p)}
-                  isSelected={selectedProductId === p.id}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {products.map((p) => {
-                const isSelected = selectedProductId === p.id;
-                return (
-                  <div
-                    key={p.id}
-                    className={`rounded-xl border shadow-sm p-4 flex items-center justify-between transition-all duration-200 cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500/20' : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-md'
-                      }`}
-                    onClick={() => onSelectProduct(p)}
-                  >
-                    <div className="flex-1 min-w-0 mr-4">
-                      <div className="flex items-center">
-                        <h3 className={`font-semibold cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
-                          {p.name}
-                        </h3>
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${asNumber(p.stock) <= (p.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                          {asNumber(p.stock)} in stock
-                        </span>
-                      </div>
-                      <div className="text-sm text-gray-500 flex flex-wrap gap-x-4">
-                        <span className="font-mono text-xs">SKU: {p.sku}</span>
-                        <span>Category: {getCategoryName(p.categoryId)}</span>
-                        <span className="font-medium text-gray-700">Price: {formatPrice(p.price)}{p.unitOfMeasure === 'kg' ? ' / kg' : ''}</span>
-                      </div>
-                    </div>
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                          }`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onSelectProduct(p);
-                        }}
-                      >
-                        {isSelected ? 'Viewing' : 'View Details'}
-                      </button>
-                      {canManage && (
-                        <button
-                          className="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition-colors"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onAdjustStock(p);
-                          }}
-                        >
-                          Adjust
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </>
+    <UnifiedListGrid<Product>
+      items={products}
+      viewMode={viewMode}
+      isLoading={isLoading}
+      error={error}
+      emptyMessage="No products to display."
+      selectedId={selectedProductId}
+      getItemId={(product) => product.id}
+      onItemClick={(product) => onSelectProduct(product)}
+      className="!p-4"
+      gridColumns={{ minWidth: '180px' }}
+      renderGridItem={(product, _index, isSelected) => (
+        <ProductCard
+          product={product}
+          categoryName={getCategoryName(product.categoryId)}
+          storeSettings={storeSettings}
+          onSelect={() => onSelectProduct(product)}
+          isSelected={isSelected}
+        />
       )}
-    </div>
+      renderListItem={(product, _index, isSelected) => (
+        <ProductListRow
+          product={product}
+          categoryName={getCategoryName(product.categoryId)}
+          storeSettings={storeSettings}
+          onSelect={() => onSelectProduct(product)}
+          onAdjustStock={() => onAdjustStock(product)}
+          isSelected={isSelected}
+          canManage={canManage}
+        />
+      )}
+    />
   );
 };
 

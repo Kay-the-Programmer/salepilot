@@ -28,7 +28,7 @@ const Pagination: React.FC<PaginationProps> = ({
     const endItem = Math.min(page * pageSize, total);
 
     return (
-        <div className={`p-4 border-t border-slate-200 bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-10 ${className}`}>
+        <div className={`p-4  bg-white shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.02)] z-10 ${className}`}>
             <div className={`flex ${compact ? 'flex-row' : 'flex-col sm:flex-row'} items-center justify-between gap-4`}>
                 {/* Page Info */}
                 <div className="text-sm text-slate-500 font-medium whitespace-nowrap">

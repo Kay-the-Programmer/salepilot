@@ -12,6 +12,8 @@ interface UnifiedListGridProps<T> {
     error?: string | null;
     /** Message to show when items array is empty */
     emptyMessage?: string;
+    /** Custom component to render when empty */
+    emptyStateComponent?: React.ReactNode;
     /** ID of currently selected item */
     selectedId?: string | null;
     /** Function to extract unique ID from item */
@@ -52,6 +54,7 @@ function UnifiedListGrid<T>({
     isLoading = false,
     error = null,
     emptyMessage = 'No items to display.',
+    emptyStateComponent,
     selectedId,
     getItemId,
     renderGridItem,
@@ -92,6 +95,9 @@ function UnifiedListGrid<T>({
 
     // Empty state
     if (items.length === 0) {
+        if (emptyStateComponent) {
+            return <>{emptyStateComponent}</>;
+        }
         return (
             <div className="text-center p-10">
                 <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">

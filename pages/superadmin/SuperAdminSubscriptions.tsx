@@ -62,7 +62,7 @@ const SuperAdminSubscriptions: React.FC = () => {
     const [paymentForm, setPaymentForm] = useState<PaymentFormData>({
         storeId: '',
         amount: '',
-        currency: 'USD',
+        currency: 'ZMW',
         periodDays: '30',
         notes: '',
         paymentMethod: 'manual'
@@ -133,7 +133,7 @@ const SuperAdminSubscriptions: React.FC = () => {
             setPaymentForm({
                 storeId: '',
                 amount: '',
-                currency: 'USD',
+                currency: 'ZMW',
                 periodDays: '30',
                 notes: '',
                 paymentMethod: 'manual'
@@ -174,7 +174,7 @@ const SuperAdminSubscriptions: React.FC = () => {
             setPaymentForm({
                 storeId: '',
                 amount: '',
-                currency: 'USD',
+                currency: 'ZMW',
                 periodDays: '30',
                 notes: '',
                 paymentMethod: 'manual'
@@ -261,10 +261,11 @@ const SuperAdminSubscriptions: React.FC = () => {
     };
 
     const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-US', {
+        return new Intl.NumberFormat('en-ZM', {
             style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 0
+            currency: 'ZMW',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
         }).format(amount);
     };
 
@@ -649,6 +650,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                             onChange={e => setPaymentForm(prev => ({ ...prev, currency: e.target.value }))}
                                             disabled={processing}
                                         >
+                                            <option value="ZMW">ZMW (K)</option>
                                             <option value="USD">USD ($)</option>
                                             <option value="EUR">EUR (€)</option>
                                             <option value="GBP">GBP (£)</option>

@@ -3,6 +3,7 @@ import GridIcon from '../../icons/GridIcon';
 import FilterIcon from '../../icons/FilterIcon';
 import CalendarIcon from '../../icons/CalendarIcon';
 import UserIcon from '../../icons/UserIcon';
+import ChevronDownIcon from '../../icons/ChevronDownIcon';
 import { Customer } from '../../../types';
 
 interface SalesHeaderProps {
@@ -28,28 +29,49 @@ export default function SalesHeader({
     return (
         <>
             {/* Desktop Header */}
-            <div className="hidden md:flex items-center justify-between px-6 py-4 sticky top-0 z-30">
+            <div className="hidden md:flex items-center justify-between px-6 py-2 sticky top-0 z-30">
                 <div className="flex justify-between w-full">
                     <h1 className="text-xl font-bold text-gray-900">Sales History</h1>
 
-                    {/* Status Pills */}
-                    <div className="flex bg-gray-100/80 p-1 rounded-3xl shadow-lg border-white shrink-0">
-                        {['', 'paid', 'unpaid', 'partially_paid'].map((status) => {
-                            const isActive = selectedStatus === status;
-                            const label = status === '' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
-                            return (
-                                <button
-                                    key={status}
-                                    onClick={() => setSelectedStatus(status)}
-                                    className={`px-4 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${isActive
-                                        ? 'bg-white text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                        }`}
-                                >
-                                    {label}
-                                </button>
-                            );
-                        })}
+                    {/* Right side actions: Status Pills + Filter Toggle */}
+                    <div className="flex items-center gap-4">
+                        {/* Status Pills */}
+                        <div className="flex bg-gray-100/80 p-1 rounded-3xl shadow-sm border border-gray-100 shrink-0">
+                            {['', 'paid', 'unpaid', 'partially_paid'].map((status) => {
+                                const isActive = selectedStatus === status;
+                                const label = status === '' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
+                                return (
+                                    <button
+                                        key={status}
+                                        onClick={() => setSelectedStatus(status)}
+                                        className={`px-4 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${isActive
+                                            ? 'bg-white text-gray-900 shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Filter Trigger Button */}
+                        <button
+                            onClick={() => setIsFilterSheetOpen(true)}
+                            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-200 border shadow-sm ${hasActiveFilters
+                                ? 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                                }`}
+                        >
+                            <FilterIcon className={`w-4 h-4 ${hasActiveFilters ? 'text-blue-600' : 'text-gray-500'}`} />
+                            <span>Filters</span>
+                            {hasActiveFilters && (
+                                <span className="flex items-center justify-center w-5 h-5 bg-blue-600 text-white text-[10px] rounded-full font-bold ml-1 animate-in zoom-in-50">
+                                    !
+                                </span>
+                            )}
+                            <ChevronDownIcon className="w-4 h-4 text-gray-400" />
+                        </button>
                     </div>
                 </div>
             </div>

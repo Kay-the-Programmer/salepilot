@@ -1,10 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Shipment, Courier, Bus } from '../types';
-import { PlusIcon, TruckIcon, XMarkIcon, GridIcon, ListIcon } from '../components/icons/index';
+
+import { PlusIcon, TruckIcon, XMarkIcon } from '../components/icons/index';
 import Button from '../components/ui/Button';
 import InputField from '../components/ui/InputField';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils/currency';
+import ListGridToggle from '../components/ui/ListGridToggle';
+import ShipmentList from '../components/logistics/ShipmentList';
+import CourierList from '../components/logistics/CourierList';
+import BusList from '../components/logistics/BusList';
 
 export default function LogisticsPage() {
     const [activeTab, setActiveTab] = useState<'shipments' | 'couriers' | 'buses'>('shipments');
@@ -178,21 +183,8 @@ export default function LogisticsPage() {
                     </div>
 
                     {/* View Toggle */}
-                    <div className="flex items-center bg-gray-100 p-1 rounded-lg">
-                        <button
-                            onClick={() => setViewMode('list')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                            title="List View"
-                        >
-                            <ListIcon className="w-5 h-5" />
-                        </button>
-                        <button
-                            onClick={() => setViewMode('grid')}
-                            className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                            title="Grid View"
-                        >
-                            <GridIcon className="w-5 h-5" />
-                        </button>
+                    <div className="bg-gray-100 p-1 rounded-lg">
+                        <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
                     </div>
 
                     {activeTab === 'shipments' && (
@@ -211,240 +203,35 @@ export default function LogisticsPage() {
             <div className="flex-1 flex gap-4 overflow-hidden">
                 {/* Main List/Grid Area */}
                 <div className={`${isDetailPaneOpen ? 'hidden md:block' : ''} flex-1 overflow-auto bg-white rounded-lg shadow border border-gray-200 transition-all`}>
-                    {activeTab === 'shipments' && viewMode === 'list' && (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Tracking</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Method</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Provider</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Recipient</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Cost</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {shipments.map(shipment => {
-                                    const providerName = shipment.method === 'courier'
-                                        ? couriers.find(c => c.id === shipment.courier_id)?.company_name
-                                        : buses.find(b => b.id === shipment.bus_id)?.driver_name + (buses.find(b => b.id === shipment.bus_id)?.number_plate ? ` (${buses.find(b => b.id === shipment.bus_id)?.number_plate})` : '');
-                                    const isSelected = selectedShipment?.id === shipment.id;
-                                    return (
-                                        <tr
-                                            key={shipment.id}
-                                            className={`hover:bg-gray-50 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
-                                            onClick={() => setSelectedShipment(shipment)}
-                                        >
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{shipment.tracking_number}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500 capitalize">{shipment.method}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">{providerName || 'Unknown'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">
-                                                <div className="font-medium text-gray-900">{shipment.recipient_name}</div>
-                                                <div className="text-xs">{shipment.recipient_address}</div>
-                                            </td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                                ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                                        shipment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}`}>
-                                                    {shipment.status.toUpperCase()}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{formatCurrency(shipment.shipping_cost, { currency: { symbol: 'K', code: 'ZMW', position: 'before' } } as any)}</td>
-                                        </tr>
-                                    )
-                                })}
-                                {shipments.length === 0 && !isLoading && (
-                                    <tr><td colSpan={6} className="text-center py-10 text-gray-500">No shipments found</td></tr>
-                                )}
-                            </tbody>
-                        </table>
+                    {activeTab === 'shipments' && (
+                        <ShipmentList
+                            shipments={shipments}
+                            couriers={couriers}
+                            buses={buses}
+                            viewMode={viewMode}
+                            onSelect={setSelectedShipment}
+                            selectedId={selectedShipment?.id || null}
+                        />
                     )}
 
-                    {activeTab === 'shipments' && viewMode === 'grid' && (
-                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {shipments.map(shipment => {
-                                const providerName = shipment.method === 'courier'
-                                    ? couriers.find(c => c.id === shipment.courier_id)?.company_name
-                                    : buses.find(b => b.id === shipment.bus_id)?.driver_name + (buses.find(b => b.id === shipment.bus_id)?.number_plate ? ` (${buses.find(b => b.id === shipment.bus_id)?.number_plate})` : '');
-                                const isSelected = selectedShipment?.id === shipment.id;
-                                return (
-                                    <div
-                                        key={shipment.id}
-                                        className={`bg-white p-5 rounded-lg shadow border-2 hover:shadow-md transition-all cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'}`}
-                                        onClick={() => setSelectedShipment(shipment)}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <span className="text-xs font-medium text-blue-600 bg-blue-50 px-2 py-1 rounded">{shipment.tracking_number}</span>
-                                                <span className={`ml-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                                                ${shipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                                        shipment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}`}>
-                                                    {shipment.status.toUpperCase()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="mt-3">
-                                            <p className="font-semibold text-gray-900">{shipment.recipient_name}</p>
-                                            <p className="text-sm text-gray-500">{shipment.recipient_address}</p>
-                                            <p className="text-sm text-gray-500 mt-1">{shipment.recipient_phone}</p>
-                                        </div>
-                                        <div className="mt-3 pt-3 border-t border-gray-100 flex justify-between items-center">
-                                            <span className="text-sm text-gray-500 capitalize">
-                                                <TruckIcon className="w-4 h-4 inline mr-1" />
-                                                {shipment.method}: {providerName || 'N/A'}
-                                            </span>
-                                            <span className="font-bold text-gray-900">{formatCurrency(shipment.shipping_cost, { currency: { symbol: 'K', code: 'ZMW', position: 'before' } } as any)}</span>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            {shipments.length === 0 && !isLoading && <div className="col-span-full text-center text-gray-500 py-10">No shipments found</div>}
-                        </div>
+                    {activeTab === 'couriers' && (
+                        <CourierList
+                            couriers={couriers}
+                            viewMode={viewMode}
+                            onSelect={setSelectedCourier}
+                            onDelete={(id) => handleDelete(id, 'courier')}
+                            selectedId={selectedCourier?.id || null}
+                        />
                     )}
 
-                    {activeTab === 'couriers' && viewMode === 'list' && (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Company Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Contact Details</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Receipt Info</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {couriers.map(courier => {
-                                    const isSelected = selectedCourier?.id === courier.id;
-                                    return (
-                                        <tr
-                                            key={courier.id}
-                                            className={`hover:bg-gray-50 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
-                                            onClick={() => setSelectedCourier(courier)}
-                                        >
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{courier.company_name}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">{courier.contact_details || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">{courier.receipt_details || '-'}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${courier.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {courier.isActive !== false ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right text-sm font-medium">
-                                                <button onClick={() => handleDelete(courier.id, 'courier')} className="text-red-600 hover:text-red-900">Delete</button>
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                                {couriers.length === 0 && !isLoading && (
-                                    <tr><td colSpan={5} className="text-center py-10 text-gray-500">No couriers found</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
-
-                    {activeTab === 'couriers' && viewMode === 'grid' && (
-                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {couriers.map(courier => {
-                                const isSelected = selectedCourier?.id === courier.id;
-                                return (
-                                    <div
-                                        key={courier.id}
-                                        className={`bg-white p-5 rounded-lg shadow border-2 hover:shadow-md transition-all cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'}`}
-                                        onClick={() => setSelectedCourier(courier)}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-bold text-lg text-gray-900">{courier.company_name}</h3>
-                                                <span className={`mt-1 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${courier.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {courier.isActive !== false ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </div>
-                                            <button onClick={() => handleDelete(courier.id, 'courier')} className="text-red-500 hover:text-red-700"><XMarkIcon className="w-4 h-4" /></button>
-                                        </div>
-                                        <div className="mt-3 text-sm text-gray-600 space-y-1">
-                                            {courier.contact_details && <p><span className="font-medium">Contact:</span> {courier.contact_details}</p>}
-                                            {courier.receipt_details && <p><span className="font-medium">Receipt Info:</span> {courier.receipt_details}</p>}
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            {couriers.length === 0 && !isLoading && <div className="col-span-full text-center text-gray-500 py-10">No couriers found</div>}
-                        </div>
-                    )}
-
-                    {activeTab === 'buses' && viewMode === 'list' && (
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Driver Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Number Plate</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Vehicle</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Phone</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Status</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase whitespace-nowrap">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {buses.map(bus => {
-                                    const isSelected = selectedBus?.id === bus.id;
-                                    return (
-                                        <tr
-                                            key={bus.id}
-                                            className={`hover:bg-gray-50 cursor-pointer transition-colors ${isSelected ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}`}
-                                            onClick={() => setSelectedBus(bus)}
-                                        >
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{bus.driver_name}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500 font-mono">{bus.number_plate}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">{bus.vehicle_name || '-'}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-500">{bus.contact_phone || '-'}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bus.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {bus.isActive !== false ? 'Active' : 'Inactive'}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-right text-sm font-medium">
-                                                <button onClick={() => handleDelete(bus.id, 'bus')} className="text-red-600 hover:text-red-900">Delete</button>
-                                            </td>
-                                        </tr>
-                                    )
-                                })}
-                                {buses.length === 0 && !isLoading && (
-                                    <tr><td colSpan={6} className="text-center py-10 text-gray-500">No buses found</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    )}
-
-                    {activeTab === 'buses' && viewMode === 'grid' && (
-                        <div className="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {buses.map(bus => {
-                                const isSelected = selectedBus?.id === bus.id;
-                                return (
-                                    <div
-                                        key={bus.id}
-                                        className={`bg-white p-5 rounded-lg shadow border-2 hover:shadow-md transition-all cursor-pointer ${isSelected ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200'}`}
-                                        onClick={() => setSelectedBus(bus)}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <h3 className="font-bold text-lg text-gray-900">{bus.driver_name}</h3>
-                                                <span className="text-sm font-mono text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{bus.number_plate}</span>
-                                            </div>
-                                            <button onClick={() => handleDelete(bus.id, 'bus')} className="text-red-500 hover:text-red-700"><XMarkIcon className="w-4 h-4" /></button>
-                                        </div>
-                                        <div className="mt-3 text-sm text-gray-600 space-y-1">
-                                            {bus.vehicle_name && <p><span className="font-medium">Vehicle:</span> {bus.vehicle_name}</p>}
-                                            {bus.contact_phone && <p><span className="font-medium">Phone:</span> {bus.contact_phone}</p>}
-                                            <span className={`mt-2 px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bus.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                {bus.isActive !== false ? 'Active' : 'Inactive'}
-                                            </span>
-                                        </div>
-                                    </div>
-                                )
-                            })}
-                            {buses.length === 0 && !isLoading && <div className="col-span-full text-center text-gray-500 py-10">No buses found</div>}
-                        </div>
+                    {activeTab === 'buses' && (
+                        <BusList
+                            buses={buses}
+                            viewMode={viewMode}
+                            onSelect={setSelectedBus}
+                            onDelete={(id) => handleDelete(id, 'bus')}
+                            selectedId={selectedBus?.id || null}
+                        />
                     )}
                 </div>
 

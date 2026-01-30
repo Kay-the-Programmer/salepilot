@@ -16,7 +16,10 @@ import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import CheckCircleIcon from '../components/icons/CheckCircleIcon';
 import PackageIcon from '../components/icons/PackageIcon';
 import { GridIcon, ListIcon } from '../components/icons';
+import { StandardCard, StandardRow } from '../components/ui/standard';
 import Pagination from '../components/ui/Pagination';
+import ListGridToggle from '../components/ui/ListGridToggle';
+import UnifiedListGrid from '../components/ui/UnifiedListGrid';
 
 interface ReturnsPageProps {
     sales: Sale[];
@@ -306,21 +309,12 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                             </div>
 
                             {/* View Toggle */}
-                            <div className="flex items-center bg-gray-100 p-1 rounded-lg self-end sm:self-auto">
-                                <button
-                                    onClick={() => setViewMode('list')}
-                                    className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                                    title="List View"
-                                >
-                                    <ListIcon className="w-5 h-5" />
-                                </button>
-                                <button
-                                    onClick={() => setViewMode('grid')}
-                                    className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}
-                                    title="Grid View"
-                                >
-                                    <GridIcon className="w-5 h-5" />
-                                </button>
+                            <div className="flex items-center self-end sm:self-auto">
+                                <ListGridToggle
+                                    viewMode={viewMode}
+                                    onViewModeChange={setViewMode}
+                                    size="sm"
+                                />
                             </div>
                         </div>
 
@@ -333,84 +327,58 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                             </div>
                         ) : (
                             <>
-                                {viewMode === 'list' ? (
-                                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
-                                                <tr>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Return ID</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Original Sale</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                                {paginatedReturns.map((ret) => (
-                                                    <tr key={ret.id}
-                                                        className="hover:bg-gray-50 transition-colors cursor-pointer"
-                                                        onClick={() => setSelectedReturnForDetails(ret)}
-                                                    >
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{ret.id}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {new Date(ret.timestamp).toLocaleDateString()}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ret.originalSaleId}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                            {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-bold text-gray-900">
-                                                            {formatCurrency(ret.refundAmount, storeSettings)}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                                            <button
-                                                                className="text-blue-600 hover:text-blue-900"
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setSelectedReturnForDetails(ret);
-                                                                }}
-                                                            >
-                                                                View
-                                                            </button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                ) : (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {paginatedReturns.map((ret) => (
-                                            <div
-                                                key={ret.id}
-                                                className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all cursor-pointer group"
-                                                onClick={() => setSelectedReturnForDetails(ret)}
-                                            >
-                                                <div className="flex justify-between items-start mb-3">
-                                                    <div>
-                                                        <span className="text-xs font-bold text-blue-600 uppercase tracking-widest group-hover:underline">{ret.id}</span>
-                                                        <h4 className="text-sm font-semibold text-gray-900 mt-0.5">Sale Ref: {ret.originalSaleId}</h4>
-                                                    </div>
-                                                    <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
-                                                        {formatCurrency(ret.refundAmount, storeSettings)}
-                                                    </div>
+                                <UnifiedListGrid<Return>
+                                    items={paginatedReturns}
+                                    viewMode={viewMode}
+                                    isLoading={false}
+                                    error={null}
+                                    selectedId={selectedReturnForDetails?.id}
+                                    getItemId={(ret) => ret.id}
+                                    onItemClick={(ret) => setSelectedReturnForDetails(ret)}
+                                    className="!p-0"
+                                    renderGridItem={(ret, _index, isSelected) => (
+                                        <StandardCard
+                                            title={`Sale Ref: ${ret.originalSaleId}`}
+                                            subtitle={ret.id}
+                                            status={
+                                                <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full text-xs font-bold">
+                                                    {formatCurrency(ret.refundAmount, storeSettings)}
                                                 </div>
-
-                                                <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-50 text-sm text-gray-500">
-                                                    <div className="flex items-center gap-1.5">
-                                                        <CalendarIcon className="w-4 h-4" />
+                                            }
+                                            isSelected={isSelected}
+                                            onClick={() => setSelectedReturnForDetails(ret)}
+                                            secondaryInfo={
+                                                <div className="flex items-center justify-between w-full mt-2">
+                                                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                        <CalendarIcon className="w-3.5 h-3.5" />
                                                         {new Date(ret.timestamp).toLocaleDateString()}
                                                     </div>
-                                                    <div className="flex items-center gap-1.5 font-medium text-gray-700 group-hover:text-blue-600 transition-colors">
+                                                    <div className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                                                         {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items
-                                                        <ChevronRightIcon className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
                                                     </div>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
+                                            }
+                                        />
+                                    )}
+                                    renderListItem={(ret, _index, isSelected) => (
+                                        <StandardRow
+                                            title={`Sale Ref: ${ret.originalSaleId}`}
+                                            subtitle={ret.id}
+                                            isSelected={isSelected}
+                                            onClick={() => setSelectedReturnForDetails(ret)}
+                                            primaryMeta={formatCurrency(ret.refundAmount, storeSettings)}
+                                            secondaryMeta={new Date(ret.timestamp).toLocaleDateString()}
+                                            details={[
+                                                <span key="items" className="text-xs text-gray-500">
+                                                    {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} items
+                                                </span>
+                                            ]}
+                                            actions={
+                                                <div className="text-sm text-blue-600 font-medium whitespace-nowrap px-3 py-1 bg-blue-50 rounded-lg">View</div>
+                                            }
+                                        />
+                                    )}
+                                />
 
                                 {/* Pagination Controls */}
                                 <Pagination
@@ -425,18 +393,20 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                             </>
                         )}
                     </div>
-                </main>
+                </main >
                 <UnifiedScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={handleScanSuccess} onScanError={(err) => showSnackbar(err, 'error')} />
 
-                {selectedReturnForDetails && (
-                    <ReturnDetailsModal
-                        isOpen={!!selectedReturnForDetails}
-                        onClose={() => setSelectedReturnForDetails(null)}
-                        returnData={selectedReturnForDetails}
-                        storeSettings={storeSettings}
-                    />
-                )}
-            </div>
+                {
+                    selectedReturnForDetails && (
+                        <ReturnDetailsModal
+                            isOpen={!!selectedReturnForDetails}
+                            onClose={() => setSelectedReturnForDetails(null)}
+                            returnData={selectedReturnForDetails}
+                            storeSettings={storeSettings}
+                        />
+                    )
+                }
+            </div >
         )
     }
 

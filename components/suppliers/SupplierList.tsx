@@ -3,12 +3,13 @@ import { Supplier } from '../../types';
 import TrashIcon from '../icons/TrashIcon';
 import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
 import UserCircleIcon from '../icons/UserCircleIcon';
-import EnvelopeIcon from '../icons/EnvelopeIcon';
+
 import PhoneIcon from '../icons/PhoneIcon';
 import PlusIcon from '../icons/PlusIcon';
 import ConfirmationModal from '../ConfirmationModal';
 import Swipeable from './Swipeable';
 import UnifiedListGrid from '../ui/UnifiedListGrid';
+import { StandardCard, StandardRow } from '../ui/standard';
 
 interface SupplierListProps {
     suppliers: Supplier[];
@@ -21,139 +22,6 @@ interface SupplierListProps {
     viewMode?: 'grid' | 'list';
     selectedSupplierId?: string | null;
 }
-
-// Supplier Grid Card Component
-const SupplierGridCard: React.FC<{
-    supplier: Supplier;
-    isSelected: boolean;
-    onEdit: (supplier: Supplier) => void;
-    onDelete: (supplierId: string) => void;
-}> = ({ supplier, isSelected, onEdit, onDelete }) => (
-    <div
-        className={`group bg-white rounded-2xl p-5 border flex flex-col items-center text-center shadow-sm transition-all duration-300 ${isSelected
-                ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md transform scale-[1.02]'
-                : 'border-gray-200 hover:shadow-md hover:border-blue-100'
-            }`}
-    >
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center mb-4 border border-blue-100">
-            <BuildingOfficeIcon className="w-8 h-8 text-blue-600" />
-        </div>
-        <h3 className={`font-bold mb-1 truncate w-full text-base transition-colors ${isSelected ? 'text-blue-700' : 'text-gray-900 group-hover:text-blue-600'
-            }`}>{supplier.name}</h3>
-        {supplier.contactPerson && (
-            <div className="text-sm text-gray-500 mb-3 truncate w-full">{supplier.contactPerson}</div>
-        )}
-        <div className="flex items-center justify-center gap-2 w-full mt-auto pt-2">
-            {supplier.email && <div className="w-2 h-2 rounded-full bg-blue-400" title="Email available" />}
-            {supplier.phone && <div className="w-2 h-2 rounded-full bg-green-400" title="Phone available" />}
-            {!supplier.email && !supplier.phone && <span className="text-xs text-gray-400">No details</span>}
-        </div>
-
-        {/* Action buttons that appear on hover */}
-        <div className="mt-3 pt-3 border-t border-gray-100 w-full flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(supplier);
-                }}
-                className="flex-1 py-2 text-xs font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            >
-                Edit
-            </button>
-            <button
-                onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(supplier.id);
-                }}
-                className="flex-1 py-2 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-            >
-                Delete
-            </button>
-        </div>
-    </div>
-);
-
-// Supplier List Card Component (with swipeable)
-const SupplierListCard: React.FC<{
-    supplier: Supplier;
-    isSelected: boolean;
-    onEdit: (supplier: Supplier) => void;
-    onDelete: (supplierId: string) => void;
-    onClick: () => void;
-}> = ({ supplier, isSelected, onEdit, onDelete, onClick }) => (
-    <Swipeable
-        onSwipeLeft={() => onDelete(supplier.id)}
-        leftActionColor="bg-red-500"
-        leftActionIcon={<TrashIcon className="w-5 h-5 text-white" />}
-    >
-        <div
-            className={`bg-white rounded-2xl p-5 border shadow-sm transition-all ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-gray-200 hover:shadow-md'
-                }`}
-            onClick={onClick}
-        >
-            <div className="flex items-center justify-between">
-                <h3 className={`font-bold text-lg truncate max-w-[calc(100%-60px)] ${isSelected ? 'text-blue-700' : 'text-gray-900'
-                    }`}>
-                    {supplier.name}
-                </h3>
-                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center shrink-0">
-                    <BuildingOfficeIcon className="w-5 h-5 text-gray-400" />
-                </div>
-            </div>
-            {supplier.contactPerson && (
-                <div className="flex items-center text-sm text-gray-500 mt-1">
-                    <UserCircleIcon className="w-4 h-4 mr-1.5 text-gray-400" />
-                    <span className="truncate">{supplier.contactPerson}</span>
-                </div>
-            )}
-
-            <div className="mt-4 pt-4 border-t border-gray-50 grid grid-cols-2 gap-3">
-                {supplier.phone ? (
-                    <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
-                        <PhoneIcon className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
-                        <span className="truncate text-xs font-medium">{supplier.phone}</span>
-                    </div>
-                ) : (
-                    <div className="flex items-center text-sm text-gray-400 bg-gray-50/50 p-2 rounded-lg decoration-dashed">
-                        <span className="text-xs">No phone</span>
-                    </div>
-                )}
-
-                {supplier.email ? (
-                    <div className="flex items-center text-sm text-gray-600 bg-gray-50 p-2 rounded-lg">
-                        <EnvelopeIcon className="w-4 h-4 text-gray-400 mr-2 shrink-0" />
-                        <span className="truncate text-xs font-medium">{supplier.email}</span>
-                    </div>
-                ) : (
-                    <div className="flex items-center text-sm text-gray-400 bg-gray-50/50 p-2 rounded-lg decoration-dashed">
-                        <span className="text-xs">No email</span>
-                    </div>
-                )}
-            </div>
-
-            <div className="flex items-center justify-end mt-4 gap-2">
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onEdit(supplier);
-                    }}
-                    className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-50 rounded-lg border border-gray-200 hover:bg-white hover:border-gray-300 active:bg-gray-100 transition-all"
-                >
-                    Edit
-                </button>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onDelete(supplier.id);
-                    }}
-                    className="px-4 py-2 text-sm font-semibold text-red-600 bg-red-50 rounded-lg border border-red-100 hover:bg-white hover:border-red-200 active:bg-red-50 transition-all"
-                >
-                    Delete
-                </button>
-            </div>
-        </div>
-    </Swipeable>
-);
 
 const SupplierList: React.FC<SupplierListProps> = ({
     suppliers,
@@ -215,21 +83,110 @@ const SupplierList: React.FC<SupplierListProps> = ({
                 getItemId={(supplier) => supplier.id}
                 onItemClick={(supplier) => onSelectSupplier(supplier.id)}
                 renderGridItem={(supplier, _index, isSelected) => (
-                    <SupplierGridCard
-                        supplier={supplier}
+                    <StandardCard
+                        title={supplier.name}
+                        subtitle="Supplier"
                         isSelected={isSelected}
-                        onEdit={onEdit}
-                        onDelete={handleDeleteClick}
+                        onClick={() => onSelectSupplier(supplier.id)}
+                        image={
+                            <div className="w-full h-full bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center text-blue-600">
+                                <BuildingOfficeIcon className="w-16 h-16 opacity-50" />
+                            </div>
+                        }
+                        secondaryInfo={
+                            <div className="flex flex-col gap-1 mt-1">
+                                {supplier.contactPerson && (
+                                    <div className="flex items-center gap-1.5 text-xs text-gray-600 truncate">
+                                        <UserCircleIcon className="w-3 h-3 text-gray-400" />
+                                        {supplier.contactPerson}
+                                    </div>
+                                )}
+                                <div className="flex items-center gap-2 mt-1">
+                                    {supplier.email && <div className="w-2 h-2 rounded-full bg-blue-400" title="Email available" />}
+                                    {supplier.phone && <div className="w-2 h-2 rounded-full bg-green-400" title="Phone available" />}
+                                    {!supplier.email && !supplier.phone && <span className="text-[10px] text-gray-400">No contact details</span>}
+                                </div>
+                            </div>
+                        }
+                        actions={
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        onEdit(supplier);
+                                    }}
+                                    className="px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-gray-100"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDeleteClick(supplier.id);
+                                    }}
+                                    className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-gray-100"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        }
                     />
                 )}
                 renderListItem={(supplier, _index, isSelected) => (
-                    <SupplierListCard
-                        supplier={supplier}
-                        isSelected={isSelected}
-                        onEdit={onEdit}
-                        onDelete={handleDeleteClick}
-                        onClick={() => onSelectSupplier(supplier.id)}
-                    />
+                    <Swipeable
+                        onSwipeLeft={() => handleDeleteClick(supplier.id)}
+                        leftActionColor="bg-red-500"
+                        leftActionIcon={<TrashIcon className="w-5 h-5 text-white" />}
+                    >
+                        <StandardRow
+                            title={supplier.name}
+                            isSelected={isSelected}
+                            onClick={() => onSelectSupplier(supplier.id)}
+                            leading={
+                                <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center border border-gray-100">
+                                    <BuildingOfficeIcon className="w-5 h-5 text-gray-400" />
+                                </div>
+                            }
+                            details={[
+                                supplier.contactPerson ? (
+                                    <div className="flex items-center gap-1 text-gray-600" key="contact">
+                                        <UserCircleIcon className="w-3.5 h-3.5 text-gray-400" />
+                                        <span className="truncate">{supplier.contactPerson}</span>
+                                    </div>
+                                ) : null,
+                                supplier.phone ? (
+                                    <div className="flex items-center gap-1 text-gray-500" key="phone">
+                                        <PhoneIcon className="w-3.5 h-3.5 text-gray-400" />
+                                        <span className="text-xs">{supplier.phone}</span>
+                                    </div>
+                                ) : null
+                            ]}
+                            actions={
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onEdit(supplier);
+                                        }}
+                                        className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                        title="Edit"
+                                    >
+                                        <div className="text-xs font-medium">Edit</div>
+                                    </button>
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteClick(supplier.id);
+                                        }}
+                                        className="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                                        title="Delete"
+                                    >
+                                        <TrashIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            }
+                        />
+                    </Swipeable>
                 )}
                 gridColumns={{ minWidth: '220px' }}
                 className="!p-0"

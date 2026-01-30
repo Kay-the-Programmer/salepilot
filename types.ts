@@ -463,6 +463,7 @@ export interface WhatsAppConfig {
         days: number[]; // 0-6 (Sun-Sat)
     };
     away_message?: string;
+    display_phone_number?: string;
     greeting_message?: string;
 }
 
@@ -493,3 +494,28 @@ export interface WhatsAppMessage {
     created_at: string;
 }
 
+
+// --- Superadmin Dashboard Types ---
+
+export interface RevenueSummary {
+    totalAmount: number;
+    count: number;
+    byMonth: { month: string; amount: number; count: number; }[];
+    growthPercentage?: number;
+}
+
+export interface StoreStats {
+    total: number;
+    active: number;
+    trial: number;
+    inactive: number;
+}
+
+export interface QuickAction {
+    id: string;
+    title: string;
+    description: string;
+    icon: any; // Using any for ReactNode/Component to avoid complex imports here
+    action: () => void;
+    color: string;
+}

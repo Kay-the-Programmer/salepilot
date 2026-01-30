@@ -1,16 +1,18 @@
 import { useEffect, useState, useMemo } from 'react';
 import { api } from '../services/api';
 import { Sale, StoreSettings, Payment } from '../types';
-import {
-    HiOutlineShoppingBag,
-    HiMagnifyingGlass
-} from 'react-icons/hi2';
-import Header from '../components/Header';
 import RecordOrderPaymentModal from '../components/orders/RecordOrderPaymentModal';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
 import ConfirmationModal from '../components/ConfirmationModal';
 import Pagination from '../components/ui/Pagination';
-import { formatCurrency } from '../utils/currency';
+
+// New Modular Components
+import OrdersHeader from '../components/orders/OrdersHeader';
+import OrdersMetrics from '../components/orders/OrdersMetrics';
+import OrdersFilterBar from '../components/orders/OrdersFilterBar';
+import OrdersList from '../components/orders/OrdersList';
+import OrderDetailContent from '../components/orders/OrderDetailContent';
+import { HiOutlineXMark, HiOutlineBanknotes, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
 
 const styles = `
     .premium-scrollbar::-webkit-scrollbar {
@@ -36,6 +38,14 @@ const styles = `
         animation: fadeIn 0.4s ease-out forwards;
     }
 
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .animate-fadeInRight {
+        animation: fadeInRight 0.3s ease-out forwards;
+    }
+
     .glass-effect {
         background: rgba(255, 255, 255, 0.7);
         backdrop-filter: blur(12px);
@@ -57,6 +67,8 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedOrder, setSelectedOrder] = useState<Sale | null>(null);
     const [paymentOrder, setPaymentOrder] = useState<Sale | null>(null);
+
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
     // Pagination state
     const [page, setPage] = useState(1);
@@ -165,25 +177,6 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
         });
     };
 
-    const getStatusStyles = (status?: string) => {
-        switch (status) {
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200';
-            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
-        }
-    };
-
-    const getPaymentStatusStyles = (status?: string) => {
-        switch (status) {
-            case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
-        }
-    };
-
     const filteredOrders = useMemo(() => {
         return orders.filter(order =>
             (order.customerDetails?.name || order.customerName || 'Guest').toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -193,7 +186,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
     const stats = useMemo(() => ({
         total: total || orders.length,
-        pending: orders.filter(o => o.fulfillmentStatus === 'pending').length, // Note: This only counts pending in current page/fetch if not supported by API stats endpoint
+        pending: orders.filter(o => o.fulfillmentStatus === 'pending').length,
         revenue: orders.reduce((sum, o) => sum + (o.paymentStatus === 'paid' ? Number(o.total) : 0), 0),
         avgOrderValue: orders.length > 0 ?
             orders.reduce((sum, o) => sum + Number(o.total), 0) / orders.length : 0
@@ -202,144 +195,42 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     return (
         <div className="flex flex-col h-full bg-[#f8fafc]">
             <style>{styles}</style>
-            {/* Desktop Header */}
-            <div className="hidden md:flex  items-center justify-between px-6 py-4 bg-gray-50 sticky top-0 z-30">
-                <div className="flex w-full justify-between">
-                    <h1 className="text-xl font-bold text-slate-900">Online Orders</h1>
 
-                    {/* Status Pills */}
-                    <div className="flex bg-slate-100/80 border border-white shadow-lg p-1 rounded-3xl shrink-0">
-                        {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map((status) => {
-                            const isActive = filterStatus === status;
-                            const label = status === 'all' ? 'All' : status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ');
-                            return (
-                                <button
-                                    key={status}
-                                    onClick={() => setFilterStatus(status)}
-                                    className={`px-4 py-1.5 rounded-2xl text-sm font-bold transition-all duration-200 ${isActive
-                                        ? 'bg-white text-slate-900 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700'
-                                        }`}
-                                >
-                                    {label}
-                                </button>
-                            );
-                        })}
-                    </div>
-                </div>
-            </div>
-
-            <Header
-                title="Online Orders"
+            <OrdersHeader
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                className="md:hidden"
+                filterStatus={filterStatus}
+                setFilterStatus={setFilterStatus}
             />
 
             <main className="flex-1 overflow-hidden p-0 flex flex-col">
-                {/* Metrics Bar */}
-                <div className="px-6 py-4 border-slate-200 bg-transparent flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="overflow-x-auto no-scrollbar shadow-lg rounded-2xl p-1  w-full md:w-auto">
-                        <div className="flex items-center  gap-4 min-w-max">
-                            {[
-                                { label: 'Total', value: stats.total, color: 'slate' },
-                                { label: 'Pending', value: stats.pending, color: 'amber' },
-                                { label: 'Revenue', value: formatCurrency(stats.revenue, storeSettings), color: 'emerald' },
-                                { label: 'Avg Value', value: formatCurrency(stats.avgOrderValue, storeSettings), color: 'indigo' }
-                            ].map((s, i) => (
-                                <div key={i} className="flex flex-col px-4 py-2 bg-white rounded-2xl border border-slate-200 min-w-[120px]">
-                                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{s.label}</span>
-                                    <span className={`text-lg font-bold text-${s.color}-600`}>{s.value}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
 
-                    {/* Search Input - Desktop Only */}
-                    <div className="hidden md:flex relative w-64 shrink-0 shadow-lg p-1 rounded-3xl">
-                        <input
-                            type="text"
-                            placeholder="Search orders..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-3xl text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
-                        />
-                        <HiMagnifyingGlass className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    </div>
-                </div>
 
-                {/* Filter Tabs (Mobile Only) */}
-                <div className="md:hidden px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-white/30">
-                    {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map(status => (
-                        <button
-                            key={status}
-                            onClick={() => setFilterStatus(status)}
-                            className={`px-5 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${filterStatus === status
-                                ? 'bg-slate-900 text-white shadow-lg'
-                                : 'bg-white text-slate-500 border border-slate-200 hover:border-slate-300'
-                                }`}
-                        >
-                            {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
-                        </button>
-                    ))}
-                </div>
+                <OrdersFilterBar
+                    filterStatus={filterStatus}
+                    setFilterStatus={setFilterStatus}
+                    viewMode={viewMode}
+                    setViewMode={setViewMode}
+                />
 
-                <div className="flex-1 flex overflow-hidden">
-                    {/* Orders List - Full Width */}
-                    <div className="flex-1 flex flex-col min-w-0">
-                        <div className="flex-1 overflow-y-auto premium-scrollbar p-6 space-y-3">
-                            {loading ? (
-                                <div className="h-full flex items-center justify-center">
-                                    <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                                </div>
-                            ) : filteredOrders.length === 0 ? (
-                                <div className="h-full flex flex-col items-center justify-center text-center p-10 bg-white rounded-3xl border-2 border-dashed border-slate-200">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
-                                        <HiOutlineShoppingBag className="w-8 h-8 text-slate-300" />
-                                    </div>
-                                    <p className="text-slate-500 font-medium">No orders found</p>
-                                </div>
-                            ) : (
-                                filteredOrders.map(order => (
-                                    <button
-                                        key={order.transactionId}
-                                        onClick={() => setSelectedOrder(order)}
-                                        className={`w-full text-left p-4 rounded-2xl border transition-all animate-fadeIn bg-white border-slate-100 hover:border-indigo-200 hover:shadow-md hover:scale-[1.01] active:scale-[0.99] group`}
-                                    >
-                                        <div className="flex justify-between items-start mb-2">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
-                                                    #{order.transactionId.slice(-4)}
-                                                </div>
-                                                <div>
-                                                    <h3 className="font-bold text-slate-900 truncate">
-                                                        {order.customerDetails?.name || order.customerName || 'Guest'}
-                                                    </h3>
-                                                    <p className="text-[10px] text-slate-400 font-medium tracking-wide">
-                                                        {new Date(order.timestamp).toLocaleDateString()} • {new Date(order.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col items-end gap-2">
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${getStatusStyles(order.fulfillmentStatus)}`}>
-                                                    {order.fulfillmentStatus?.replace('_', ' ') || 'pending'}
-                                                </span>
-                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${getPaymentStatusStyles(order.paymentStatus)}`}>
-                                                    {order.paymentStatus?.replace('_', ' ') || 'pending'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="flex justify-between items-end mt-3 pl-13">
-                                            <div className="text-xs text-slate-500 font-medium">
-                                                {order.cart.length} items
-                                            </div>
-                                            <div className="text-lg font-bold text-slate-900">
-                                                {formatCurrency(order.total, storeSettings)}
-                                            </div>
-                                        </div>
-                                    </button>
-                                ))
-                            )}
+                <div className="flex-1 flex overflow-hidden p-0">
+                    {/* Orders List Content */}
+                    <div className="flex-1 flex flex-col min-w-0 bg-gray-50">
+                        <div className="flex-1 overflow-y-auto premium-scrollbar p-0">
+                            <OrdersMetrics
+                                stats={stats}
+                                storeSettings={storeSettings}
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                            />
+                            <OrdersList
+                                orders={filteredOrders}
+                                viewMode={viewMode}
+                                loading={loading}
+                                onOrderClick={setSelectedOrder}
+                                storeSettings={storeSettings}
+                                selectedOrderId={selectedOrder?.transactionId}
+                            />
                         </div>
 
                         <Pagination
@@ -351,12 +242,66 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                             label="orders"
                         />
                     </div>
+
+                    {/* Desktop Sideview */}
+                    {selectedOrder && (
+                        <div className="hidden xl:flex w-[450px] flex-col bg-white border-l border-slate-200 shadow-xl overflow-hidden animate-fadeInRight">
+                            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
+                                <h2 className="text-lg font-bold text-slate-900">Order Details</h2>
+                                <button
+                                    onClick={() => setSelectedOrder(null)}
+                                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200"
+                                >
+                                    <HiOutlineXMark className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <div className="flex-1 overflow-y-auto premium-scrollbar p-6">
+                                <OrderDetailContent order={selectedOrder} storeSettings={storeSettings} />
+                            </div>
+
+                            {/* Sideview Actions */}
+                            <div className="p-6 border-t border-slate-100 bg-slate-50/50">
+                                <div className="flex flex-col gap-3">
+                                    {selectedOrder.paymentStatus !== 'paid' && (
+                                        <button
+                                            onClick={() => handleMarkAsPaid(selectedOrder)}
+                                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <HiOutlineBanknotes className="w-5 h-5" />
+                                            Record Payment
+                                        </button>
+                                    )}
+
+                                    {selectedOrder.fulfillmentStatus === 'pending' && (
+                                        <button
+                                            onClick={() => updateStatus(selectedOrder.transactionId, 'fulfilled')}
+                                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <HiOutlineCheckCircle className="w-5 h-5" />
+                                            Fulfill Order
+                                        </button>
+                                    )}
+
+                                    {selectedOrder.fulfillmentStatus === 'fulfilled' && (
+                                        <button
+                                            onClick={() => updateStatus(selectedOrder.transactionId, 'shipped')}
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            <HiOutlineTruck className="w-5 h-5" />
+                                            Mark Shipped
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </main>
 
-            {/* Modals */}
+            {/* Mobile Modal */}
             <OrderDetailsModal
-                isOpen={!!selectedOrder}
+                isOpen={!!selectedOrder && (typeof window !== 'undefined' && window.innerWidth < 1280)}
                 onClose={() => setSelectedOrder(null)}
                 order={selectedOrder}
                 orders={orders}

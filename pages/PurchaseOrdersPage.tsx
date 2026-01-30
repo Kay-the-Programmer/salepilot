@@ -17,9 +17,10 @@ import ChevronRightIcon from '../components/icons/ChevronRightIcon';
 import InformationCircleIcon from '../components/icons/InformationCircleIcon';
 import ConfirmationModal from '../components/ConfirmationModal';
 import Pagination from '../components/ui/Pagination';
-
-
-import GridIcon from '../components/icons/GridIcon';
+import ListGridToggle from '../components/ui/ListGridToggle';
+import POList from '../components/purchase-orders/POList';
+import StatusBadge from '../components/purchase-orders/StatusBadge';
+import GridIcon from '../components/icons/GridIcon'; // Keeping for mobile menu
 import { formatCurrency } from '../utils/currency';
 
 interface PurchaseOrdersPageProps {
@@ -40,23 +41,7 @@ type ViewState =
     | { mode: 'detail'; po: PurchaseOrder }
     | { mode: 'form'; po?: PurchaseOrder };
 
-export function StatusBadge({ status }: { status: PurchaseOrder['status'] }) {
-    const statusConfig = {
-        draft: { color: 'bg-gray-100 text-gray-800', icon: '📝' },
-        ordered: { color: 'bg-blue-100 text-blue-800', icon: '📦' },
-        partially_received: { color: 'bg-yellow-100 text-yellow-800', icon: '📊' },
-        received: { color: 'bg-green-100 text-green-800', icon: '✅' },
-        canceled: { color: 'bg-red-100 text-red-800', icon: '❌' },
-    };
 
-    const config = statusConfig[status];
-    return (
-        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${config.color}`}>
-            <span>{config.icon}</span>
-            {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-        </span>
-    );
-};
 
 export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSettings }: {
     isOpen: boolean;
@@ -733,6 +718,7 @@ export default function PurchaseOrdersPage({
     storeSettings,
 }: PurchaseOrdersPageProps) {
     const [view, setView] = useState<ViewState>({ mode: 'list' });
+    const [listViewMode, setListViewMode] = useState<'list' | 'grid'>('list');
     const [isReceiveModalOpen, setIsReceiveModalOpen] = useState(false);
     const [selectedPO, setSelectedPO] = useState<PurchaseOrder | null>(null);
     const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -979,6 +965,9 @@ export default function PurchaseOrdersPage({
                         </div>
 
                         <div className="flex items-center space-x-2">
+                            {/* View Toggle */}
+                            <ListGridToggle viewMode={listViewMode} onViewModeChange={setListViewMode} size="sm" />
+
                             {/* Mobile Menu Button */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -1055,128 +1044,31 @@ export default function PurchaseOrdersPage({
                         </div>
                     </div>
 
-
-
                     {/* POs List */}
-                    {isLoading ? (
-                        <div className="text-center py-12">
-                            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                            <p className="mt-3 text-gray-600">Loading purchase orders...</p>
-                        </div>
-                    ) : error ? (
-                        <div className="text-center py-12">
-                            <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                                <XMarkIcon className="w-6 h-6 text-red-600" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Orders</h3>
-                            <p className="text-gray-500">{error}</p>
-                        </div>
-                    ) : filteredPOs.length === 0 ? (
-                        <div className="text-center py-12">
-                            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <ClipboardDocumentListIcon className="w-8 h-8 text-gray-400" />
-                            </div>
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2">No purchase orders found</h3>
-                            <p className="text-gray-500 mb-6">
-                                {statusFilter !== 'all' ? 'Try adjusting your filters' : 'Create your first purchase order'}
-                            </p>
-                            <button
-                                onClick={handleCreateNew}
-                                className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700"
-                            >
-                                Create Purchase Order
-                            </button>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                                {/* Desktop Table Header */}
-                                <div className="hidden sm:grid sm:grid-cols-12 px-6 py-3 bg-gray-50 border-b border-gray-200">
-                                    <div className="col-span-3">
-                                        <span className="text-sm font-semibold text-gray-900">PO Number</span>
-                                    </div>
-                                    <div className="col-span-3">
-                                        <span className="text-sm font-semibold text-gray-900">Supplier</span>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <span className="text-sm font-semibold text-gray-900">Status</span>
-                                    </div>
-                                    <div className="col-span-2">
-                                        <span className="text-sm font-semibold text-gray-900">Created</span>
-                                    </div>
-                                    <div className="col-span-2 text-right">
-                                        <span className="text-sm font-semibold text-gray-900">Total</span>
-                                    </div>
-                                </div>
+                    <POList
+                        orders={paginatedPOs}
+                        storeSettings={storeSettings}
+                        viewMode={listViewMode}
+                        onSelectPO={handleSelectPO}
+                        isLoading={isLoading}
+                        error={error}
+                        statusFilter={statusFilter}
+                        handleCreateNew={handleCreateNew}
+                    />
 
-                                {/* POs List */}
-                                <div className="divide-y divide-gray-200">
-                                    {paginatedPOs.map((po, index) => (
-                                        <div
-                                            key={po.id}
-                                            onClick={() => handleSelectPO(po)}
-                                            className="p-4 sm:p-6 hover:bg-gray-50 active:bg-gray-100 transition-colors cursor-pointer animate-fade-in-up"
-                                            style={{ animationDelay: `${index * 50}ms` }}
-                                        >
-                                            {/* Mobile View */}
-                                            <div className="sm:hidden">
-                                                <div className="flex items-start justify-between mb-3">
-                                                    <div>
-                                                        <h4 className="font-semibold text-blue-600 text-lg">
-                                                            {po.poNumber}
-                                                        </h4>
-                                                        <p className="text-sm text-gray-500 mt-1">
-                                                            {po.supplierName}
-                                                        </p>
-                                                    </div>
-                                                    <StatusBadge status={po.status} />
-                                                </div>
-                                                <div className="flex items-center justify-between text-sm text-gray-600">
-                                                    <span>{new Date(po.createdAt).toLocaleDateString()}</span>
-                                                    <span className="font-semibold text-gray-900">
-                                                        {formatCurrency(po.total, storeSettings)}
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            {/* Desktop View */}
-                                            <div className="hidden sm:grid sm:grid-cols-12 items-center">
-                                                <div className="col-span-3">
-                                                    <div className="font-medium text-blue-600">{po.poNumber}</div>
-                                                </div>
-                                                <div className="col-span-3">
-                                                    <div className="text-gray-900">{po.supplierName}</div>
-                                                </div>
-                                                <div className="col-span-2">
-                                                    <StatusBadge status={po.status} />
-                                                </div>
-                                                <div className="col-span-2">
-                                                    <div className="text-gray-600">
-                                                        {new Date(po.createdAt).toLocaleDateString()}
-                                                    </div>
-                                                </div>
-                                                <div className="col-span-2 text-right">
-                                                    <div className="font-semibold text-gray-900">
-                                                        {formatCurrency(po.total, storeSettings)}
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                            <div className="p-4 bg-white border-t border-gray-200">
-                                <Pagination
-                                    total={filteredPOs.length}
-                                    page={page}
-                                    pageSize={pageSize}
-                                    onPageChange={setPage}
-                                    onPageSizeChange={setPageSize}
-                                    label="orders"
-                                />
-                            </div>
-                        </>
+                    {!isLoading && paginatedPOs.length > 0 && (
+                        <div className="p-4 bg-white border-t border-gray-200 rounded-b-2xl shadow-sm border-x border-b">
+                            <Pagination
+                                total={filteredPOs.length}
+                                page={page}
+                                pageSize={pageSize}
+                                onPageChange={setPage}
+                                onPageSizeChange={setPageSize}
+                                label="orders"
+                            />
+                        </div>
                     )}
+
                 </div>
             </div>
         );

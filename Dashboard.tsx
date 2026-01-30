@@ -34,6 +34,7 @@ const SuperAdminStores = lazy(() => import('./pages/superadmin/SuperAdminStores'
 const SuperAdminNotifications = lazy(() => import('./pages/superadmin/SuperAdminNotifications'));
 const SuperAdminSubscriptions = lazy(() => import('./pages/superadmin/SuperAdminSubscriptions'));
 const SuperAdminStoreDetails = lazy(() => import('./pages/superadmin/SuperAdminStoreDetails'));
+const SuperAdminSettings = lazy(() => import('./pages/superadmin/SuperAdminSettings'));
 const MarketplacePage = lazy(() => import('./pages/shop/MarketplacePage'));
 const MarketplaceDashboard = lazy(() => import('./pages/shop/CustomerDashboard')); // The Marketplace Portal
 const CustomerOrdersPage = lazy(() => import('./pages/customers/CustomerDashboard')); // The My Orders Page
@@ -44,6 +45,7 @@ const LogisticsPage = lazy(() => import('./pages/LogisticsPage'));
 const UserGuidePage = lazy(() => import('./pages/UserGuidePage'));
 const WhatsAppConversationsPage = lazy(() => import('./pages/WhatsAppConversationsPage'));
 const WhatsAppSettingsPage = lazy(() => import('./pages/WhatsAppSettingsPage'));
+const SupportPage = lazy(() => import('./pages/SupportPage'));
 
 import Snackbar from './components/Snackbar';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
@@ -74,9 +76,9 @@ type SnackbarState = {
 };
 
 const PERMISSIONS: Record<User['role'], string[]> = {
-    superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'subscription', 'logistics', 'user-guide', 'quick-view'],
-    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings'],
-    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'user-guide', 'quick-view', 'whatsapp/conversations'],
+    superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings'],
+    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'marketing', 'subscription', 'logistics', 'user-guide', 'quick-view', 'support'],
+    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'marketing', 'user-guide', 'quick-view'],
     inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'marketing', 'user-guide', 'quick-view'],
     customer: ['profile', 'notifications', 'user-guide', 'quick-view'],
     supplier: ['profile', 'notifications', 'user-guide', 'quick-view']
@@ -218,7 +220,7 @@ export default function Dashboard() {
     const hasAccess = (page: string, role: User['role']) => {
         // When superadmin is in super mode, only allow strictly superadmin routes (Superadmin page)
         if (role === 'superadmin' && superMode === 'superadmin') {
-            return ['superadmin'].includes(page);
+            return ['superadmin', 'whatsapp', 'profile'].includes(page);
         }
         const effectiveRole: User['role'] = (role === 'superadmin' && superMode === 'store') ? 'admin' : role;
         return PERMISSIONS[effectiveRole].includes(page);
@@ -1238,6 +1240,7 @@ export default function Dashboard() {
                     }
                     if (subPath === 'notifications') return <SuperAdminNotifications />;
                     if (subPath === 'subscriptions') return <SuperAdminSubscriptions />;
+                    if (subPath === 'settings') return <SuperAdminSettings />;
                     return <SuperAdminDashboard />;
                 }
                 case 'marketing':
@@ -1253,6 +1256,8 @@ export default function Dashboard() {
                         return <WhatsAppSettingsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
                     }
                     return <WhatsAppConversationsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
+                case 'support':
+                    return <SupportPage />;
                 default:
                     return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
             }
@@ -1290,14 +1295,14 @@ export default function Dashboard() {
                             user={currentUser}
                             onLogout={handleLogout}
                             isOnline={isOnline}
-                            allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]}
+                            allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile'] : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]}
                             superMode={currentUser.role === 'superadmin' ? superMode : undefined}
                             onChangeSuperMode={(mode) => {
                                 setSuperMode(mode);
                                 try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
                                 // Redirect to appropriate default page if current is no longer permitted
                                 const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
-                                const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions'] : PERMISSIONS[effectiveRole];
+                                const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile'] : PERMISSIONS[effectiveRole];
                                 const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
                                 if (!allowed.includes(page)) {
                                     const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];

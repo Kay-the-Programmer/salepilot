@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { StoreSettings, WhatsAppConfig } from '../types';
 import { api } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { ArrowPathIcon, CheckCircleIcon } from '@heroicons/react/24/outline'; // Adjust import if needed or use local icons
+import { RefreshIcon, CheckCircleIcon } from '../components/icons';
 
 interface WhatsAppSettingsPageProps {
     storeSettings: StoreSettings | null;
@@ -100,6 +100,17 @@ export default function WhatsAppSettingsPage({ storeSettings, showSnackbar }: Wh
                                 placeholder="Optional"
                             />
                         </div>
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700">Display Phone Number (for Support)</label>
+                        <input
+                            type="text"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2 border"
+                            value={config?.display_phone_number || ''}
+                            onChange={e => setConfig(prev => prev ? ({ ...prev, display_phone_number: e.target.value }) : null)}
+                            placeholder="+1 (555) 123-4567"
+                        />
+                        <p className="mt-1 text-xs text-gray-500">This number will be shown to store owners for support.</p>
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Access Token (Need 'messages' permission)</label>

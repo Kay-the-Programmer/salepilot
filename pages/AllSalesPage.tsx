@@ -10,16 +10,17 @@ import 'jspdf-autotable';
 import { api } from '../services/api';
 import { dbService } from '../services/dbService';
 import XMarkIcon from '../components/icons/XMarkIcon';
-import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 import ChartBarIcon from '../components/icons/ChartBarIcon';
+import ListGridToggle from '../components/ui/ListGridToggle';
 
 // New Modular Components
 import SalesHeader from '../components/sales/all_sales/SalesHeader';
 import MobileViewMenu from '../components/sales/all_sales/MobileViewMenu';
 import SalesFilterSheet from '../components/sales/all_sales/SalesFilterSheet';
-import SalesFilterBar from '../components/sales/all_sales/SalesFilterBar';
+
 import DashboardStats from '../components/sales/all_sales/DashboardStats';
 import DailySalesSummary from '../components/sales/all_sales/DailySalesSummary';
+import SaleDetailContent from '../components/sales/SaleDetailContent';
 
 interface AllSalesPageProps {
     customers: Customer[];
@@ -28,7 +29,7 @@ interface AllSalesPageProps {
 
 export default function AllSalesPage({ customers, storeSettings }: AllSalesPageProps) {
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
-    const [showFilters, setShowFilters] = useState(false);
+
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mobileView, setMobileView] = useState<'summary' | 'history'>('summary');
     const [sortBy, setSortBy] = useState('date');
@@ -44,6 +45,9 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
     const hasActiveFilters = useMemo(() => !!(startDate || endDate || selectedCustomerId || selectedStatus), [startDate, endDate, selectedCustomerId, selectedStatus]);
     const [dailySales, setDailySales] = useState<{ date: string; totalRevenue: number; totalQuantity: number; items: { name: string; quantity: number; revenue: number }[] }[]>([]);
+
+    // View Mode for SalesList
+    const [salesListViewMode, setSalesListViewMode] = useState<'grid' | 'list'>('list');
 
     // Pagination state for Sales History
     const [page, setPage] = useState(1);
@@ -248,6 +252,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                 customers={customers}
             />
 
+
             <MobileViewMenu
                 isOpen={isMobileMenuOpen}
                 onClose={() => setIsMobileMenuOpen(false)}
@@ -255,55 +260,28 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                 setMobileView={setMobileView}
             />
 
-            <main className="flex-1 overflow-y-auto bg-transparent p-4 md:p-6 min-w-0">
-                <div className="max-w-7xl mx-auto">
+            <main className="flex-1 overflow-hidden bg-transparent min-w-0 flex flex-col">
+                <div className="w-full h-full flex flex-col">
 
-                    {/* Filter Toggle Button (Desktop mainly, to show/hide the filter bar) */}
-                    {/* The original code had `showFilters` logic but I noticed in the original file line 778 there is a button that sets IsFilterSheetOpen, but there is also a "Filter Chart" button.
-                        However, line 677 says {showFilters && ...}.
-                        Wait, where is setShowFilters called? Use search in original file.
-                    */}
-                    {/* Checking original file for setShowFilters usage... */}
+                    {/* Filter Toggle Button is now inside SalesHeader */}
 
-                    <div className="hidden md:flex justify-end mb-4">
-                        <button
-                            onClick={() => setShowFilters(!showFilters)}
-                            className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 shadow-sm transition-all"
-                        >
-                            <span className="text-gray-500">Filters</span>
-                            <div className={`transition-transform duration-200 ${showFilters ? 'rotate-180' : ''}`}>
-                                <ChevronDownIcon className="w-4 h-4" />
-                            </div>
-                        </button>
+                    <div className="flex-none px-4 md:px-6">
+
+
+                        <DashboardStats
+                            mobileView={mobileView}
+                            dailySales={dailySales}
+                            stats={stats}
+                            total={total}
+                            storeSettings={storeSettings}
+                            hasActiveFilters={hasActiveFilters}
+                            onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
+                        />
                     </div>
-
-                    <SalesFilterBar
-                        showFilters={showFilters}
-                        startDate={startDate}
-                        setStartDate={setStartDate}
-                        endDate={endDate}
-                        setEndDate={setEndDate}
-                        selectedCustomerId={selectedCustomerId}
-                        setSelectedCustomerId={setSelectedCustomerId}
-                        customers={customers}
-                        resetFilters={resetFilters}
-                        handleExportCSV={handleExportCSV}
-                        handleExportPDF={handleExportPDF}
-                    />
-
-                    <DashboardStats
-                        mobileView={mobileView}
-                        dailySales={dailySales}
-                        stats={stats}
-                        total={total}
-                        storeSettings={storeSettings}
-                        hasActiveFilters={hasActiveFilters}
-                        onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
-                    />
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="bg-white rounded-2xl p-8 border border-gray-200">
+                        <div className="bg-white rounded-2xl p-8 border border-gray-200 mt-4">
                             <div className="flex flex-col items-center justify-center space-y-4">
                                 <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
                                 <div className="text-gray-600">Loading sales data...</div>
@@ -313,7 +291,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                     {/* Error State */}
                     {error && (
-                        <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-2xl p-6">
+                        <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-2xl p-6 mt-4">
                             <div className="flex items-start gap-3">
                                 <div className="p-2 bg-red-100 rounded-lg">
                                     <XMarkIcon className="w-5 h-5 text-red-600" />
@@ -334,29 +312,32 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                     {/* Content */}
                     {!isLoading && !error && (
-                        <>
-                            <DailySalesSummary
-                                dailySales={dailySales}
-                                mobileView={mobileView}
-                                storeSettings={storeSettings}
-                            />
+                        <div className="flex-1 flex flex-col min-h-0 gap-0">
+                            <div className="flex-none px-4 md:px-6 mb-0">
+                                <DailySalesSummary
+                                    dailySales={dailySales}
+                                    mobileView={mobileView}
+                                    storeSettings={storeSettings}
+                                />
+                            </div>
 
-                            {/* Sales List (Mobile View: History, Desktop: Always) */}
-                            <div className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:block'}`}>
-                                <div className="p-4 border-b border-gray-100">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h3 className="font-bold text-gray-900">Recent Transactions</h3>
-                                            <p className="text-sm text-gray-500">
-                                                {total} sale{total !== 1 ? 's' : ''} found
-                                            </p>
-                                        </div>
+                            {/* Split View Container */}
+                            <div className="flex-1 flex min-h-0 m-0">
+                                {/* Left Column: Sales List */}
+                                <div className={`flex-1 flex flex-col bg-white border-y md:border-y-0 md:border-r border-gray-200 shadow-sm overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:flex'}`}>
+                                    <div className="p-4 md:px-6 border-b border-gray-100 flex-none">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h3 className="font-bold text-gray-900">Recent Transactions</h3>
+                                                <p className="text-sm text-gray-500">
+                                                    {total} sale{total !== 1 ? 's' : ''} found
+                                                </p>
+                                            </div>
 
-                                        {/* Summary Header */}
-                                        {enrichedSales.length > 0 && (
-                                            <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                                <div className="flex items-center gap-6">
-                                                    <div className="text-right">
+                                            {/* Summary Header */}
+                                            {enrichedSales.length > 0 && (
+                                                <div className="flex items-center gap-4">
+                                                    <div className="hidden lg:block text-right">
                                                         <div className="text-sm text-slate-600">Total Sales Value</div>
                                                         <div className="text-xl font-bold text-slate-900">
                                                             {formatCurrency(
@@ -365,61 +346,93 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                                             )}
                                                         </div>
                                                     </div>
+                                                    <ListGridToggle viewMode={salesListViewMode} onViewModeChange={setSalesListViewMode} size="sm" />
                                                 </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <SalesList
-                                    sales={enrichedSales}
-                                    onSelectSale={setSelectedSale}
-                                    storeSettings={storeSettings}
-                                />
-
-                                {/* Pagination Controls (Mobile Optimized) */}
-                                <Pagination
-                                    total={total}
-                                    page={page}
-                                    pageSize={pageSize}
-                                    onPageChange={setPage}
-                                    onPageSizeChange={setPageSize}
-                                    label="transactions"
-                                />
-                            </div>
-
-                            {/* Empty State */}
-                            {salesData.length === 0 && !isLoading && (
-                                <div className="bg-white rounded-2xl p-8 border border-gray-200 text-center">
-                                    <div className="max-w-md mx-auto">
-                                        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <ChartBarIcon className="w-8 h-8 text-gray-400" />
+                                            )}
                                         </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">No sales found</h3>
-                                        <p className="text-gray-600 mb-6">
-                                            {hasActiveFilters
-                                                ? 'Try adjusting your filters to see more results'
-                                                : 'Sales will appear here once transactions are processed'}
-                                        </p>
-                                        {hasActiveFilters && (
-                                            <button
-                                                onClick={resetFilters}
-                                                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-colors"
-                                            >
-                                                Clear All Filters
-                                            </button>
+                                    </div>
+
+                                    <div className="flex-1 overflow-y-auto min-h-0">
+                                        {salesData.length === 0 ? (
+                                            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
+                                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                                    <ChartBarIcon className="w-8 h-8 text-gray-400" />
+                                                </div>
+                                                <h3 className="text-lg font-semibold text-gray-900 mb-2">No sales found</h3>
+                                                <p className="text-gray-600 mb-6">
+                                                    {hasActiveFilters
+                                                        ? 'Try adjusting your filters to see more results'
+                                                        : 'Sales will appear here once transactions are processed'}
+                                                </p>
+                                                {hasActiveFilters && (
+                                                    <button
+                                                        onClick={resetFilters}
+                                                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-colors"
+                                                    >
+                                                        Clear All Filters
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <SalesList
+                                                sales={enrichedSales}
+                                                onSelectSale={setSelectedSale}
+                                                storeSettings={storeSettings}
+                                                viewMode={salesListViewMode}
+                                                selectedSaleId={selectedSale?.transactionId}
+                                            />
                                         )}
                                     </div>
+
+                                    {/* Pagination Controls (Fixed Bottom) */}
+                                    <div className=" p-0 flex-none">
+                                        <Pagination
+                                            total={total}
+                                            page={page}
+                                            pageSize={pageSize}
+                                            onPageChange={setPage}
+                                            onPageSizeChange={setPageSize}
+                                            label="transactions"
+                                        />
+                                    </div>
                                 </div>
-                            )}
-                        </>
+
+                                {/* Right Column: Sale Details (Desktop) */}
+                                {selectedSale && (
+                                    <div className="hidden xl:flex w-[450px] flex-col bg-gray-50 border-l border-gray-200 shadow-sm overflow-hidden animate-fade-in-right">
+                                        <div className="p-4 px-6 border-b border-gray-200 bg-white flex justify-between items-center flex-none">
+                                            <h3 className="font-bold text-gray-900">Sale Details</h3>
+                                            <button
+                                                onClick={() => setSelectedSale(null)}
+                                                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                                            >
+                                                <XMarkIcon className="w-5 h-5 text-gray-500" />
+                                            </button>
+                                        </div>
+                                        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                                            <SaleDetailContent sale={selectedSale} storeSettings={storeSettings} />
+                                        </div>
+                                        <div className="p-4 px-6 border-t border-gray-200 bg-white flex-none">
+                                            <div className="flex gap-2">
+                                                <button
+                                                    className="flex-1 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors shadow-sm"
+                                                    onClick={() => {/* Add print handler if needed or use modal */ }}
+                                                >
+                                                    Print Receipt
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     )}
                 </div>
             </main>
 
             {/* Modals */}
             <SaleDetailModal
-                isOpen={!!selectedSale}
+                isOpen={!!selectedSale && (window.innerWidth < 1280)} // Only show modal on smaller screens
                 onClose={() => setSelectedSale(null)}
                 sale={selectedSale}
                 storeSettings={storeSettings}
@@ -436,6 +449,8 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                 setSortBy={setSortBy}
                 sortOrder={sortOrder}
                 setSortOrder={setSortOrder}
+                onExportCSV={handleExportCSV}
+                onExportPDF={handleExportPDF}
             />
         </div>
     );

@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { Sale, StoreSettings } from '@/types.ts';
 import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
-import { formatCurrency } from '@/utils/currency.ts';
 import ReceiptModal from './ReceiptModal';
 import { Button } from '../ui/Button';
+import SaleDetailContent from './SaleDetailContent';
 
 interface SaleDetailModalProps {
     isOpen: boolean;
@@ -17,19 +17,6 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
     const [isReceiptOpen, setIsReceiptOpen] = useState(false);
 
     if (!isOpen || !sale) return null;
-
-    // Use the amountPaid from server (which is net) or fallback to calculated if net is somehow missing
-    const calculatedAmountPaid = sale.amountPaid !== undefined ? sale.amountPaid : (sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid);
-    const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
-
-    let derivedPaymentStatus = sale.paymentStatus as string;
-    if (sale.refundStatus && sale.refundStatus !== 'none') {
-        derivedPaymentStatus = sale.refundStatus;
-    } else if (balanceDue <= 0.01) {
-        derivedPaymentStatus = 'paid';
-    } else if (calculatedAmountPaid > 0) {
-        derivedPaymentStatus = 'partially_paid';
-    }
 
     return (
         <>
@@ -70,150 +57,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
 
                     {/* Scrollable content area */}
                     <div className="overflow-y-auto max-h-[calc(85vh-130px)] px-4 sm:px-6 py-3">
-                        {/* Key info cards - responsive grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
-                            <div className="bg-gray-50 rounded-xl p-3">
-                                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Customer</h4>
-                                <p className="text-base font-medium text-gray-900 truncate">
-                                    {sale.customerName || 'Walk-in Customer'}
-                                </p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-3">
-                                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Date & Time</h4>
-                                <p className="text-base font-medium text-gray-900">
-                                    {new Date(sale.timestamp).toLocaleDateString()}
-                                </p>
-                                <p className="text-sm text-gray-600">
-                                    {new Date(sale.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            </div>
-                            <div className="bg-gray-50 rounded-xl p-3">
-                                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Payment Status</h4>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${derivedPaymentStatus === 'paid' ? 'bg-green-100 text-green-800' :
-                                    derivedPaymentStatus === 'partially_paid' ? 'bg-blue-100 text-blue-800' :
-                                        derivedPaymentStatus === 'returned' ? 'bg-slate-100 text-slate-800' :
-                                            derivedPaymentStatus === 'partially_returned' ? 'bg-orange-100 text-orange-800' :
-                                                'bg-red-100 text-red-800'
-                                    }`}>
-                                    {derivedPaymentStatus?.replace('_', ' ') || 'Unknown'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Items section */}
-                        <div className="mb-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">Items ({sale.cart.length})</h4>
-                            <div className="space-y-2">
-                                {sale.cart.map(item => (
-                                    <div key={item.productId} className="bg-white border border-gray-200 rounded-xl p-3">
-                                        <div className="flex justify-between items-start mb-1">
-                                            <div className="flex-1">
-                                                <p className="font-medium text-gray-900 truncate">{item.name}</p>
-                                                <p className="text-sm text-gray-500">SKU: {item.sku || 'N/A'}</p>
-                                            </div>
-                                            <p className="font-semibold text-gray-900 ml-2">
-                                                {formatCurrency(item.price * item.quantity, storeSettings)}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center justify-between text-sm text-gray-600">
-                                            <div className="flex items-center gap-2">
-                                                <span>Qty: {item.quantity}</span>
-                                                {item.returnedQuantity !== undefined && item.returnedQuantity > 0 && (
-                                                    <span className="text-orange-600 font-medium">
-                                                        (Returned: {item.returnedQuantity})
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <span>{formatCurrency(item.price, storeSettings)} each</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Two-column layout for desktop, stacked for mobile */}
-                        <div className="space-y-4">
-                            {/* Payments section */}
-                            {(sale.payments?.length || 0) > 0 && (
-                                <div>
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-2">Payments</h4>
-                                    <div className="space-y-2">
-                                        {sale.payments?.map(p => (
-                                            <div key={p.id} className="flex items-center justify-between p-2 bg-green-50 rounded-lg border border-green-100">
-                                                <div>
-                                                    <p className="font-medium text-gray-900 capitalize">{p.method}</p>
-                                                    <p className="text-sm text-gray-500">
-                                                        {new Date(p.date).toLocaleDateString()}
-                                                    </p>
-                                                </div>
-                                                <span className="font-semibold text-green-700">
-                                                    {formatCurrency(p.amount, storeSettings)}
-                                                </span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Totals section - optimized for mobile */}
-                            <div className="bg-gray-50 rounded-2xl p-4">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-3">Summary</h4>
-                                <div className="space-y-2">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Subtotal</span>
-                                        <span className="font-medium">{formatCurrency(sale.subtotal, storeSettings)}</span>
-                                    </div>
-
-                                    {sale.discount > 0 && (
-                                        <div className="flex justify-between text-red-600">
-                                            <span>Discount</span>
-                                            <span className="font-medium">-{formatCurrency(sale.discount, storeSettings)}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-600">Tax</span>
-                                        <span className="font-medium">{formatCurrency(sale.tax, storeSettings)}</span>
-                                    </div>
-
-                                    {sale.storeCreditUsed && sale.storeCreditUsed > 0 && (
-                                        <div className="flex justify-between text-green-600">
-                                            <span>Store Credit Used</span>
-                                            <span className="font-medium">-{formatCurrency(sale.storeCreditUsed, storeSettings)}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="border-t border-gray-300 pt-2 flex justify-between">
-                                        <span className="text-gray-600">Original Total</span>
-                                        <span className="font-medium">{formatCurrency(sale.originalTotal ?? sale.total + (sale.totalRefunded ?? 0), storeSettings)}</span>
-                                    </div>
-
-                                    {sale.totalRefunded !== undefined && sale.totalRefunded > 0 && (
-                                        <div className="flex justify-between text-orange-600">
-                                            <span>Total Refunded</span>
-                                            <span className="font-medium">-{formatCurrency(sale.totalRefunded, storeSettings)}</span>
-                                        </div>
-                                    )}
-
-                                    <div className="flex justify-between text-lg font-bold border-t border-gray-200 pt-1">
-                                        <span>Net Total</span>
-                                        <span>{formatCurrency(sale.total, storeSettings)}</span>
-                                    </div>
-
-                                    <div className="flex justify-between text-green-700">
-                                        <span>Paid</span>
-                                        <span className="font-bold">{formatCurrency(calculatedAmountPaid, storeSettings)}</span>
-                                    </div>
-
-                                    {balanceDue > 0.01 && (
-                                        <div className="flex justify-between text-red-700 pt-2 border-t border-gray-300">
-                                            <span className="font-bold">Balance Due</span>
-                                            <span className="text-xl font-bold">{formatCurrency(balanceDue, storeSettings)}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                        <SaleDetailContent sale={sale} storeSettings={storeSettings} />
                     </div>
 
                     {/* Fixed bottom action bar - iOS style */}

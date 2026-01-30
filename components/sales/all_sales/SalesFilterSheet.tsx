@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import XMarkIcon from '../../icons/XMarkIcon';
 import ChevronDownIcon from '../../icons/ChevronDownIcon';
 import CalendarIcon from '../../icons/CalendarIcon';
@@ -16,12 +16,16 @@ interface SalesFilterSheetProps {
     setSortBy: (val: string) => void;
     sortOrder: 'asc' | 'desc';
     setSortOrder: (val: 'asc' | 'desc') => void;
+    onExportCSV?: () => void;
+    onExportPDF?: () => void;
 }
+
 
 export default function SalesFilterSheet({
     isOpen, onClose, onApply, onReset, initialFilters, customers,
-    sortBy, setSortBy, sortOrder, setSortOrder
+    sortBy, setSortBy, sortOrder, setSortOrder, onExportCSV, onExportPDF
 }: SalesFilterSheetProps) {
+
     const [tempStartDate, setTempStartDate] = useState(initialFilters.start);
     const [tempEndDate, setTempEndDate] = useState(initialFilters.end);
     const [tempCustomerId, setTempCustomerId] = useState(initialFilters.customer);
@@ -49,15 +53,18 @@ export default function SalesFilterSheet({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 md:hidden" onClick={onClose}>
-            <div className="absolute inset-0 bg-black/50 animate-fade-in" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none" onClick={onClose}>
+            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in pointer-events-auto" />
             <div
-                className="absolute top-[60px] right-4 left-auto w-72 bg-white rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 flex flex-col max-h-[80vh]"
+                className="relative w-full max-w-md mx-4 bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 flex flex-col max-h-[90vh] pointer-events-auto"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-                    <h3 className="font-bold text-gray-900">Filter Options</h3>
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                    <div>
+                        <h3 className="font-bold text-gray-900 text-lg">Filter Sales</h3>
+                        <p className="text-xs text-gray-500">Refine your sales data view</p>
+                    </div>
                     <button
                         onClick={onClose}
                         className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg transition-colors"
@@ -177,21 +184,45 @@ export default function SalesFilterSheet({
                 </div>
 
                 {/* Footer */}
-                <div className="p-3 border-t border-gray-100 bg-gray-50 flex gap-2">
-                    <button
-                        onClick={handleResetAndClose}
-                        className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold shadow-sm hover:bg-gray-50"
-                    >
-                        Reset
-                    </button>
-                    <button
-                        onClick={handleApply}
-                        className="flex-1 py-2 px-3 bg-gray-900 text-white rounded-xl text-xs font-semibold shadow-md active:scale-[0.98] transition-all"
-                    >
-                        Apply Filters
-                    </button>
+                <div className="p-4 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleResetAndClose}
+                            className="flex-1 py-2.5 px-4 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold shadow-sm hover:bg-gray-50 transition-colors"
+                        >
+                            Reset
+                        </button>
+                        <button
+                            onClick={handleApply}
+                            className="flex-1 py-2.5 px-4 bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-md active:scale-[0.98] transition-all hover:bg-blue-700"
+                        >
+                            Apply Filters
+                        </button>
+                    </div>
+
+                    {(onExportCSV || onExportPDF) && (
+                        <div className="flex gap-2 pt-1">
+                            {onExportCSV && (
+                                <button
+                                    onClick={onExportCSV}
+                                    className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    CSV
+                                </button>
+                            )}
+                            {onExportPDF && (
+                                <button
+                                    onClick={onExportPDF}
+                                    className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                                >
+                                    PDF
+                                </button>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
+
