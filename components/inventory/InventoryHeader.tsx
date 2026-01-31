@@ -43,7 +43,7 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     return (
         <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-white/10 hidden md:block">
             <Header
-                title="Inventory"
+                title={activeTab === 'products' ? 'Products' : 'Categories'}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
                 isSearchActive={isSearchActive}
@@ -52,7 +52,7 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                 buttonText={canManageProducts ? (activeTab === 'products' ? 'Add Product' : 'Add Category') : undefined}
                 onButtonClick={canManageProducts ? (activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory) : undefined}
                 searchLeftContent={
-                    <div className="flex items-center gap-3 mr-4 bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm p-1.5 rounded-2xl border border-gray-100/50 dark:border-white/10" glass-effect="">
+                    <>
                         <div className="flex bg-gray-100/60 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
                             <button
                                 onClick={() => {
@@ -81,10 +81,10 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                         </div>
 
                         {activeTab === 'products' && (
-                            <>
+                            <div className="flex bg-transparent gap-1 p-1 rounded-xl shrink-0 items-center">
                                 <button
                                     onClick={() => setIsManualLookupOpen(true)}
-                                    className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 font-medium transition-colors text-sm"
+                                    className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white dark:bg-slate-800 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 font-medium transition-colors text-sm"
                                     title="Manually enter barcode"
                                 >
                                     <span role="img" aria-label="barcode">⌨️</span>
@@ -119,9 +119,9 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                                 >
                                     {showArchived ? 'Showing Archived' : 'Show Archived'}
                                 </button>
-                            </>
+                            </div>
                         )}
-                    </div>
+                    </>
                 }
             />
         </div>

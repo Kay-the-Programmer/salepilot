@@ -89,36 +89,37 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
+            className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
             onClick={onClose}
         >
             <div
-                className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-lg"
+                glass-effect=""
+                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-lg"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
                 <div className="sm:hidden pt-3 pb-1 flex justify-center">
-                    <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                    <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
                 </div>
 
                 {/* Header */}
-                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
+                <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 dark:border-gray-700 z-10">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-900" id="modal-title">
+                            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100" id="modal-title">
                                 {categoryToEdit ? 'Edit Category' : 'New Category'}
                             </h3>
-                            <p className="text-sm text-gray-500 mt-0.5">
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
                                 {categoryToEdit ? 'Update category details' : 'Create a new product category'}
                             </p>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
+                            className="p-2 -m-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 active:bg-gray-100 dark:active:bg-gray-700 rounded-full transition-colors"
                             aria-label="Close"
                         >
                             <XMarkIcon className="h-6 w-6" />
@@ -145,25 +146,25 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                         )}
 
                         {/* Mobile accordion navigation for sections */}
-                        <div className="sm:hidden flex border-b border-gray-200">
+                        <div className="sm:hidden flex border-b border-gray-200 dark:border-gray-700">
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('basic')}
-                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'basic' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'basic' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                             >
                                 Basic Info
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('attributes')}
-                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'attributes' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'attributes' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                             >
                                 Attributes
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('accounting')}
-                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'accounting' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'accounting' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
                             >
                                 Accounting
                             </button>
@@ -192,7 +193,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                             id="parentId"
                                             value={category.parentId || 'null'}
                                             onChange={handleChange}
-                                            className="block w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent transition-all appearance-none text-gray-900 dark:text-gray-100"
                                         >
                                             <option value="null">None (Top-level category)</option>
                                             {availableParents.map(c => (
@@ -224,20 +225,20 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                 {category.attributes.length > 0 ? (
                                     <div className="space-y-3">
                                         {category.attributes.map((attr, index) => (
-                                            <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 rounded-xl">
+                                            <div key={index} className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl">
                                                 <div className="flex-1">
                                                     <input
                                                         type="text"
                                                         placeholder="Attribute name"
                                                         value={attr.name}
                                                         onChange={e => handleAttributeChange(index, e.target.value)}
-                                                        className="block w-full bg-white px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent focus:outline-none"
+                                                        className="block w-full bg-white dark:bg-gray-700 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent focus:outline-none text-gray-900 dark:text-gray-100"
                                                     />
                                                 </div>
                                                 <button
                                                     type="button"
                                                     onClick={() => removeAttribute(index)}
-                                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                     aria-label="Remove attribute"
                                                 >
                                                     <TrashIcon className="w-5 h-5" />
@@ -246,16 +247,16 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                         ))}
                                     </div>
                                 ) : (
-                                    <div className="text-center py-6 border-2 border-dashed border-gray-300 rounded-xl">
-                                        <p className="text-gray-500">No attributes added yet</p>
-                                        <p className="text-sm text-gray-400 mt-1">Add attributes like Size, Color, etc.</p>
+                                    <div className="text-center py-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl">
+                                        <p className="text-gray-500 dark:text-gray-400">No attributes added yet</p>
+                                        <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">Add attributes like Size, Color, etc.</p>
                                     </div>
                                 )}
 
                                 <button
                                     type="button"
                                     onClick={addAttribute}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 text-base font-medium rounded-xl text-gray-700 bg-gray-50 hover:bg-gray-100 active:bg-gray-200 transition-colors"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-gray-600 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 transition-colors"
                                 >
                                     <PlusIcon className="w-5 h-5" />
                                     Add Attribute
@@ -283,7 +284,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                             id="revenueAccountId"
                                             value={category.revenueAccountId || ''}
                                             onChange={handleChange}
-                                            className="block w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent transition-all appearance-none text-gray-900 dark:text-gray-100"
                                         >
                                             <option value="">Default Revenue Account</option>
                                             {revenueAccounts.map(a => (
@@ -308,7 +309,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                             id="cogsAccountId"
                                             value={category.cogsAccountId || ''}
                                             onChange={handleChange}
-                                            className="block w-full px-4 py-3 text-base bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent transition-all appearance-none text-gray-900 dark:text-gray-100"
                                         >
                                             <option value="">Default COGS Account</option>
                                             {cogsAccounts.map(a => (
@@ -327,7 +328,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                     </div>
 
                     {/* Fixed action buttons */}
-                    <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
+                    <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-gray-700">
                         <div className="flex flex-col sm:flex-row justify-end gap-3">
                             <Button
                                 type="button"

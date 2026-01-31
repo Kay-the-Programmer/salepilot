@@ -3,8 +3,8 @@ import { Product, StoreSettings } from '@/types.ts';
 import { buildAssetUrl } from '@/services/api';
 import { formatCurrency } from '@/utils/currency.ts';
 import ShoppingCartIcon from '@/components/icons/ShoppingCartIcon';
-import StatusBadge from './StatusBadge';
 import StockIndicator from './StockIndicator';
+
 
 interface ProductOverviewProps {
     product: Product;
@@ -36,13 +36,13 @@ const ProductOverview: React.FC<ProductOverviewProps> = ({ product, storeSetting
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Image Section - Full width on mobile, 1/3 on desktop */}
             <div className="lg:col-span-1">
-                <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden relative aspect-square group">
+                <div glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden relative aspect-square">
                     {mainImage ? (
                         <>
                             <img
                                 src={mainImage}
                                 alt={product.name}
-                                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                className="w-full h-full object-contain"
                                 onLoad={() => setImageLoaded(true)}
                             />
                             {!imageLoaded && (
@@ -52,55 +52,41 @@ const ProductOverview: React.FC<ProductOverviewProps> = ({ product, storeSetting
                             )}
                         </>
                     ) : (
-                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 p-8">
-                            <ShoppingCartIcon className="w-16 h-16 sm:w-20 sm:h-20" />
-                            <p className="text-sm text-slate-400 mt-3">No image available</p>
+                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600">
+                            <ShoppingCartIcon className="w-16 h-16" />
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mt-3">No image</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Pricing and Quick Stats - 2/3 on desktop */}
-            <div className="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                {/* Selling Price Card */}
-                <div className="bg-gradient-to-br from-blue-50 to-white rounded-2xl p-5 sm:p-6 border border-blue-100 flex flex-col justify-center">
-                    <div className="text-3xl sm:text-4xl font-bold text-slate-900">
-                        {formatCurrency(price, storeSettings)}
+            {/* Key Information - 2/3 on desktop */}
+            <div className="lg:col-span-2 space-y-4">
+                {/* Price and Profit */}
+                <div className="grid grid-cols-2 gap-4">
+                    <div glass-effect="" className="rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Price</div>
+                        <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+                            {formatCurrency(price, storeSettings)}
+                        </div>
                     </div>
-                    <div className="text-sm text-slate-500 font-medium mt-1">Selling Price</div>
-                </div>
-
-                {/* Cost Card */}
-                <div className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200">
-                    <div className="text-sm text-slate-500 font-medium mb-1">Cost Price</div>
-                    <div className="text-2xl sm:text-3xl font-bold text-slate-900">
-                        {formatCurrency(costPrice, storeSettings)}
-                    </div>
-                </div>
-
-                {/* Profit Card */}
-                <div className="bg-gradient-to-br from-emerald-50 to-white rounded-2xl p-5 sm:p-6 border border-emerald-100">
-                    <div className="text-sm text-slate-500 font-medium mb-1">Profit</div>
-                    <div className="flex items-baseline gap-2">
-                        <span className={`text-2xl sm:text-3xl font-bold ${profitAmount > 0 ? 'text-emerald-600' : 'text-slate-900'}`}>
-                            {formatCurrency(profitAmount, storeSettings)}
-                        </span>
-                        {profitMargin !== null && (
-                            <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                                {profitMargin.toFixed(0)}%
+                    <div glass-effect="" className="rounded-xl p-4 border border-slate-200 dark:border-slate-700">
+                        <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Profit</div>
+                        <div className="flex items-baseline gap-2">
+                            <span className={`text-2xl font-bold ${profitAmount > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                {formatCurrency(profitAmount, storeSettings)}
                             </span>
-                        )}
+                            {profitMargin !== null && (
+                                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                    {profitMargin.toFixed(0)}%
+                                </span>
+                            )}
+                        </div>
                     </div>
                 </div>
 
-                {/* Status Card */}
-                <div className="bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200 flex flex-col justify-center">
-                    <div className="text-sm text-slate-500 font-medium mb-2">Status</div>
-                    <StatusBadge status={product.status} />
-                </div>
-
-                {/* Stock Summary */}
-                <div className="sm:col-span-2 bg-slate-50 rounded-2xl p-5 sm:p-6 border border-slate-200">
+                {/* Stock Status */}
+                <div glass-effect="" className="rounded-xl p-4 border border-slate-200 dark:border-slate-700">
                     <StockIndicator product={product} storeSettings={storeSettings} />
                 </div>
             </div>

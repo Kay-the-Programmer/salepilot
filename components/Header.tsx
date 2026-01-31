@@ -2,25 +2,6 @@ import { useState } from 'react';
 import PlusIcon from './icons/PlusIcon';
 import XMarkIcon from './icons/XMarkIcon';
 import Bars3Icon from './icons/Bars3Icon';
-import { useNotifications } from '../contexts/NotificationContext';
-import NotificationDropdown from './NotificationDropdown';
-import { useNavigate } from 'react-router-dom';
-
-// Wrapper for bell in header
-const HeaderNotificationBell = () => {
-    const navigate = useNavigate();
-    // Safety check: try catch doesn't work for hooks.
-    // We assume Header is always inside NotificationProvider (which we ensured).
-    const { notifications, markAsRead } = useNotifications();
-    return (
-        <NotificationDropdown
-            notifications={notifications}
-            onMarkAsRead={markAsRead}
-            onViewAll={() => navigate('/notifications')}
-        />
-    );
-};
-
 
 interface HeaderProps {
     title: string;
@@ -77,112 +58,92 @@ export default function Header({
     return (
         <header className={`glass-effect border-b border-gray-200/40 dark:border-white/10 sticky top-0 z-30 transition-all duration-300 ${className}`}>
             <div className="px-4 h-16 flex items-center justify-between">
-                {isSearchActive ? (
-                    <div className="flex items-center w-full animate-fadeIn transition-all duration-200">
-                        <div className="relative flex-1">
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                                <svg className="w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
-                            </span>
-                            <input
-                                type="text"
-                                autoFocus
-                                placeholder="Search..."
-                                className="w-full py-2 pl-10 pr-4 bg-gray-100/50 dark:bg-slate-800/50 border-none rounded-lg focus:ring-2 focus:ring-blue-500 text-sm dark:text-white backdrop-blur-sm"
-                                value={searchTerm || ''}
-                                onChange={(e) => {
-                                    if (setSearchTerm) setSearchTerm(e.target.value);
-                                    if (onSearch) onSearch(e.target.value);
-                                }}
-                            />
-                            {/* Clear Button inside input */}
-                            {searchTerm && (
-                                <button
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        handleClear();
-                                    }}
-                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                                >
-                                    <XMarkIcon className="w-4 h-4" />
-                                </button>
-                            )}
-                        </div>
-                        <button
-                            onClick={() => {
-                                setIsSearchActive(false);
-                                handleClear();
-                            }}
-                            className="ml-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                        >
-                            Cancel
-                        </button>
+                {title && (
+                    <div className="flex items-center flex-1 min-w-0 mr-4">
+                        {onMenuClick && (
+                            <button
+                                onClick={onMenuClick}
+                                className="mr-3 -ml-1 p-2 rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"
+                            >
+                                <span className="sr-only">Open menu</span>
+                                <Bars3Icon className="h-6 w-6" aria-hidden="true" />
+                            </button>
+                        )}
+                        <h1 className="text-xl font-bold text-gray-700 dark:text-white truncate">{title}</h1>
                     </div>
-                ) : (
-                    <>
-                        <div className="flex items-center flex-1 min-w-0 mr-2">
-                            {onMenuClick && (
-                                <button
-                                    onClick={onMenuClick}
-                                    className="mr-3 -ml-1 p-2 rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"
-                                >
-                                    <span className="sr-only">Open menu</span>
-                                    <Bars3Icon className="h-6 w-6" aria-hidden="true" />
-                                </button>
-                            )}
-                            <h1 className="text-xl font-bold text-gray-700 dark:text-white truncate">{title}</h1>
+                )}
+
+                <div className="flex items-center gap-2">
+                    {showArchivedToggle && setShowArchived && (
+                        <div className="hidden sm:flex items-center mr-2">
+                            <input
+                                id="show-archived"
+                                type="checkbox"
+                                checked={showArchived}
+                                onChange={(e) => setShowArchived(e.target.checked)}
+                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <label htmlFor="show-archived" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
+                                Archived
+                            </label>
                         </div>
+                    )}
 
-                        <div className="flex items-center gap-2">
-                            {showArchivedToggle && setShowArchived && (
-                                <div className="hidden sm:flex items-center mr-2">
-                                    <input
-                                        id="show-archived"
-                                        type="checkbox"
-                                        checked={showArchived}
-                                        onChange={(e) => setShowArchived(e.target.checked)}
-                                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                                    />
-                                    <label htmlFor="show-archived" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-                                        Archived
-                                    </label>
-                                </div>
-                            )}
-
+                    {(searchLeftContent || rightContent || showSearch || (buttonText && onButtonClick)) && (
+                        <div className="flex items-center gap-3 p-1 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-gray-100/50 dark:border-white/10 backdrop-blur-sm shadow-sm" glass-effect="">
                             {searchLeftContent}
                             {rightContent}
-                            <div className="mr-2 hidden">
-                                <HeaderNotificationBell />
-                            </div>
-
 
                             {showSearch && (
-                                <button
-                                    onClick={() => setIsSearchActive(true)}
-                                    className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full"
-                                    aria-label="Search"
-                                >
-                                    <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                    </svg>
-                                </button>
+                                <div className={`flex items-center transition-all duration-300 ${isSearchActive ? 'w-48 lg:w-64' : 'w-10'}`}>
+                                    {isSearchActive ? (
+                                        <div className="flex items-center w-full bg-gray-100/80 dark:bg-slate-900/40 rounded-xl px-2.5 h-9 border border-gray-200/50 dark:border-white/5 animate-fadeIn">
+                                            <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                            <input
+                                                type="text"
+                                                autoFocus
+                                                placeholder="Search..."
+                                                className="w-full bg-transparent border-none focus:ring-0 text-sm py-1 ml-1.5 dark:text-white"
+                                                value={searchTerm || ''}
+                                                onChange={(e) => {
+                                                    if (setSearchTerm) setSearchTerm(e.target.value);
+                                                    if (onSearch) onSearch(e.target.value);
+                                                }}
+                                            />
+                                            <button onClick={() => { setIsSearchActive(false); handleClear(); }}>
+                                                <XMarkIcon className="w-4 h-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" />
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={() => setIsSearchActive(true)}
+                                            className="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100/80 dark:hover:bg-slate-800 transition-colors"
+                                            aria-label="Search"
+                                        >
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                            </svg>
+                                        </button>
+                                    )}
+                                </div>
                             )}
 
                             {buttonText && onButtonClick && (
                                 <button
                                     id="header-action-button"
                                     onClick={onButtonClick}
-                                    className="ml-2 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                    className="ml-1 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-md active:scale-95 whitespace-nowrap"
                                 >
-                                    <PlusIcon className="w-5 h-5 mr-1" />
+                                    <PlusIcon className="w-4 h-4" />
                                     <span className="hidden sm:inline">{buttonText}</span>
                                     <span className="sm:hidden">Add</span>
                                 </button>
                             )}
                         </div>
-                    </>
-                )}
+                    )}
+                </div>
             </div>
         </header>
     );

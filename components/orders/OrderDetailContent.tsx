@@ -18,20 +18,20 @@ interface OrderDetailContentProps {
 const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSettings }) => {
     const getStatusStyles = (status?: string) => {
         switch (status) {
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200';
-            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+            case 'pending': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+            case 'fulfilled': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+            case 'shipped': return 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+            case 'cancelled': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800';
+            default: return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
         }
     };
 
     const getPaymentStatusStyles = (status?: string) => {
         switch (status) {
-            case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+            case 'paid': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
+            case 'pending': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
+            case 'partially_paid': return 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
+            default: return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
         }
     };
 
@@ -47,7 +47,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
         <div className="space-y-8">
             {/* ID and Date - Shown in sideview but redundant in modal header, keeping for consistency in content flow */}
             <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-sm text-slate-500">
+                <div className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                     <HiOutlineCalendar className="w-4 h-4" />
                     <span className="font-medium">{new Date(order.timestamp).toLocaleString()}</span>
                 </div>
@@ -55,23 +55,23 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
 
             {/* Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className={`p-5 rounded-2xl border-2 ${getStatusStyles(order.fulfillmentStatus)} flex items-center gap-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-200`}>
-                    <div className="p-3 rounded-xl bg-white/50 border border-slate-100 shadow-sm">
+                <div glass-effect="" className={`p-5 rounded-2xl border-2 ${getStatusStyles(order.fulfillmentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
+                    <div className="p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 shadow-sm">
                         <HiOutlineTruck className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
-                        <p className="text-xs uppercase font-bold tracking-widest text-slate-500 mb-1">Fulfillment</p>
+                        <p className="text-xs uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400 mb-1">Fulfillment</p>
                         <div className="flex items-center justify-between">
                             <p className="text-lg font-bold">{formatStatusString(order.fulfillmentStatus || 'Pending')}</p>
                         </div>
                     </div>
                 </div>
-                <div className={`p-5 rounded-2xl border-2 ${getPaymentStatusStyles(order.paymentStatus)} flex items-center gap-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-200`}>
-                    <div className="p-3 rounded-xl bg-white/50 border border-slate-100 shadow-sm">
+                <div glass-effect="" className={`p-5 rounded-2xl border-2 ${getPaymentStatusStyles(order.paymentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
+                    <div className="p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 shadow-sm">
                         <HiOutlineCurrencyDollar className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
-                        <p className="text-xs uppercase font-bold tracking-widest text-slate-500 mb-1">Payment</p>
+                        <p className="text-xs uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400 mb-1">Payment</p>
                         <div className="flex items-center justify-between">
                             <p className="text-lg font-bold">{formatStatusString(order.paymentStatus || 'Pending')}</p>
                         </div>
@@ -81,41 +81,41 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
 
             <div className="grid grid-cols-1 gap-8">
                 {/* Items Section */}
-                <section className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-                        <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                <section glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-slate-50 dark:from-slate-800 to-white dark:to-slate-900">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
                             Ordered Items ({order.cart.length})
                         </h3>
                     </div>
-                    <div className="divide-y divide-slate-100">
+                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
                         {order.cart.map((item, idx) => (
-                            <div key={idx} className="p-5 flex items-center justify-between hover:bg-slate-50/50 transition-colors duration-150">
+                            <div key={idx} className="p-5 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors duration-150">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl flex items-center justify-center font-bold text-xs text-indigo-700 border border-indigo-100 shadow-sm shrink-0">
                                         {item.quantity}x
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-bold text-slate-900 truncate mb-0.5">{item.name}</p>
-                                        <p className="text-[10px] text-slate-500 font-medium">
+                                        <p className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate mb-0.5">{item.name}</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                                             {formatCurrency(Number(item.price), storeSettings)} each
                                         </p>
                                     </div>
                                 </div>
                                 <div className="text-right whitespace-nowrap ml-4">
-                                    <p className="text-sm font-bold text-slate-900">
+                                    <p className="text-sm font-bold text-slate-900 dark:text-slate-100">
                                         {formatCurrency(Number(item.price) * (item.quantity || 1), storeSettings)}
                                     </p>
                                 </div>
                             </div>
                         ))}
                     </div>
-                    <div className="p-6 bg-gradient-to-r from-slate-50 to-white border-t border-slate-100 space-y-2">
-                        <div className="flex justify-between items-center text-xs text-slate-600">
+                    <div className="p-6 bg-gradient-to-r from-slate-50 dark:from-slate-800 to-white dark:to-slate-900 border-t border-slate-100 dark:border-slate-700 space-y-2">
+                        <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-400">
                             <span>Subtotal</span>
                             <span className="font-medium">{formatCurrency(order.subtotal, storeSettings)}</span>
                         </div>
-                        <div className="flex justify-between items-center text-xs text-slate-600">
+                        <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-400">
                             <span>Tax</span>
                             <span className="font-medium">{formatCurrency(order.tax, storeSettings)}</span>
                         </div>
@@ -125,7 +125,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                                 <span className="font-medium">-{formatCurrency(order.discount, storeSettings)}</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-center text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
+                        <div className="flex justify-between items-center text-sm font-bold text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-200 dark:border-slate-700">
                             <span>Total</span>
                             <span className="text-base">{formatCurrency(order.total, storeSettings)}</span>
                         </div>
@@ -133,9 +133,9 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                 </section>
 
                 {/* Customer Card */}
-                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white">
-                        <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2">
+                <div glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-slate-50 dark:from-slate-800 to-white dark:to-slate-900">
+                        <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                             Customer info
                         </h3>
@@ -146,21 +146,21 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                                 <HiOutlineUser className="w-6 h-6 text-emerald-600" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="font-bold text-slate-900 text-base truncate mb-0.5">
+                                <p className="font-bold text-slate-900 dark:text-slate-100 text-base truncate mb-0.5">
                                     {order.customerDetails?.name || order.customerName || 'Guest Customer'}
                                 </p>
-                                <p className="text-xs text-slate-500 truncate">{order.customerDetails?.email || 'No email'}</p>
-                                <p className="text-xs text-slate-500 mt-0.5">{order.customerDetails?.phone || 'No phone'}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{order.customerDetails?.email || 'No email'}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{order.customerDetails?.phone || 'No phone'}</p>
                             </div>
                         </div>
 
                         {order.customerDetails?.address && (
-                            <div className="pt-4 border-t border-slate-100">
+                            <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
                                 <div className="flex items-center gap-2 mb-2">
-                                    <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-400" />
-                                    <h4 className="text-[10px] uppercase font-bold tracking-wider text-slate-500">Address</h4>
+                                    <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
+                                    <h4 className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Address</h4>
                                 </div>
-                                <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
+                                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
                                     {order.customerDetails.address}
                                 </p>
                             </div>

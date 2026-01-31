@@ -910,30 +910,30 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
     return (
         <>
-            <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
-                <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
+            <div className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center animate-fade-in">
+                <div glass-effect="" className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
                     {/* Header */}
-                    <div className="sticky top-0 bg-white z-20 border-b border-gray-200">
+                    <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-20 border-b border-gray-200 dark:border-gray-700">
                         <div className="px-4 py-3 sm:px-6 flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900">
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                                     {productToEdit ? 'Edit Product' : 'Add Product'}
                                 </h3>
-                                <p className="text-sm text-gray-500 mt-1 sm:hidden">
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 sm:hidden">
                                     {mobileSections.find(s => s.id === activeSection)?.label}
                                 </p>
                             </div>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                             >
-                                <XMarkIcon className="w-6 h-6 text-gray-500" />
+                                <XMarkIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
                             </button>
                         </div>
 
                         {/* Mobile Tabs */}
-                        <div className="sm:hidden overflow-x-auto hide-scrollbar border-t border-gray-200">
+                        <div className="sm:hidden overflow-x-auto hide-scrollbar border-t border-gray-200 dark:border-gray-700">
                             <div className="flex">
                                 {mobileSections.map((section) => (
                                     <button
@@ -941,8 +941,8 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         type="button"
                                         onClick={() => setActiveSection(section.id)}
                                         className={`flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeSection === section.id
-                                            ? 'border-blue-600 text-blue-600 bg-blue-50'
-                                            : 'border-transparent text-gray-600 hover:text-gray-900'
+                                            ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                                            : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                                             }`}
                                     >
                                         {section.label}
@@ -980,7 +980,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             value={product.name}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
                                     <div>

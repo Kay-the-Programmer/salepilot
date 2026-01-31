@@ -2,12 +2,12 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Product, Category, Supplier, StoreSettings, User, Account, PurchaseOrder } from '../types';
 
 import ProductList from '../components/ProductList';
-import ProductFormModal from '../components/ProductFormModal';
 import CategoryList from '../components/CategoryList';
 import CategoryFormModal from '../components/CategoryFormModal';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
+import ProductEditForm from '../components/products/ProductEditForm';
 import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -66,9 +66,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     storeSettings,
     currentUser
 }) => {
-    const [isModalOpen, setIsModalOpen] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const [isEditingProduct, setIsEditingProduct] = useState(false); // Inline edit mode
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [showArchived, setShowArchived] = useState(false);
@@ -81,7 +81,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [productToDelete, setProductToDelete] = useState<Product | null>(null);
     const [isScanModalOpen, setIsScanModalOpen] = useState(false);
     const [isManualLookupOpen, setIsManualLookupOpen] = useState(false);
-    const [initialFormValues, setInitialFormValues] = useState<Partial<Omit<Product, 'id'>> | undefined>(undefined);
 
     // Link to PO State
     const [isLinkPOModalOpen, setIsLinkPOModalOpen] = useState(false);
@@ -207,26 +206,52 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return categories.filter(c => c.parentId === selectedCategoryId);
     }, [selectedCategoryId, categories]);
 
-    const handleOpenAddModal = () => {
-        setEditingProduct(null);
-        setIsModalOpen(true);
+    const handleOpenAddModal = (initialValues?: Partial<Omit<Product, 'id'>>) => {
+        const newProduct: Product = {
+            id: '', // Empty ID signifies creation
+            name: '',
+            description: '',
+            sku: `${storeSettings.skuPrefix}${Math.floor(10000 + Math.random() * 90000)}`,
+            categoryId: undefined,
+            price: 0,
+            stock: 0,
+            imageUrls: [],
+            status: 'active',
+            barcode: '',
+            costPrice: 0,
+            supplierId: undefined,
+            brand: '',
+            reorderPoint: 0,
+            safetyStock: 0,
+            weight: 0,
+            dimensions: '',
+            variants: [],
+            customAttributes: {},
+            unitOfMeasure: 'unit',
+            ...initialValues
+        };
+        setEditingProduct(newProduct);
+        setIsEditingProduct(true);
+        setSelectedProductId(null);
     };
 
     const handleOpenEditModal = (product: Product) => {
+        // Use inline edit form instead of modal
         setEditingProduct(product);
-        setIsModalOpen(true);
+        setIsEditingProduct(true);
     };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+
+
+    const handleCloseEditForm = () => {
+        setIsEditingProduct(false);
         setEditingProduct(null);
-        setInitialFormValues(undefined);
     };
 
     const handleSave = async (productData: Product | Omit<Product, 'id'>) => {
         try {
             const savedProduct = await onSaveProduct(productData);
-            handleCloseModal();
+            handleCloseEditForm();
             setSearchTerm('');
             setPage(1);
 
@@ -532,7 +557,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     }, [detailedProduct, categories]);
 
     // Desktop: Two-panel layout with left having header + products, right having full-height details
-    const selectedItem = activeTab === 'products' ? selectedProductId : selectedCategoryId;
+    const selectedItem = activeTab === 'products' ? (selectedProductId || (isEditingProduct && editingProduct)) : selectedCategoryId;
 
     return (
         <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden">
@@ -652,7 +677,17 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         <div className="h-full overflow-y-auto scroll-smooth">
                             {activeTab === 'products' ? (
                                 <div className="h-full">
-                                    {detailIsLoading ? (
+                                    {(isEditingProduct && editingProduct) ? (
+                                        <ProductEditForm
+                                            product={editingProduct}
+                                            categories={categories}
+                                            suppliers={suppliers}
+                                            storeSettings={storeSettings}
+                                            onSave={handleSave}
+                                            onCancel={handleCloseEditForm}
+                                            onAddCategory={handleOpenAddCategoryModal}
+                                        />
+                                    ) : detailIsLoading ? (
                                         <LoadingSpinner fullScreen={false} text="Loading product details..." className="py-20" />
                                     ) : detailError ? (
                                         <div className="text-center p-10 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-200 dark:border-red-500/20 m-6">
@@ -664,7 +699,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             product={detailedProduct}
                                             category={selectedProductCategory}
                                             supplier={selectedProductSupplier}
-                                            attributes={displayedAttributes}
                                             storeSettings={storeSettings}
                                             user={currentUser}
                                             onEdit={handleOpenEditModal}
@@ -704,20 +738,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             </div>
 
             {/* Modals */}
-            {canManageProducts && isModalOpen && (
-                <ProductFormModal
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    onSave={handleSave}
-                    productToEdit={editingProduct}
-                    categories={categories}
-                    suppliers={suppliers}
-                    storeSettings={storeSettings}
-
-                    onAddCategory={handleOpenAddCategoryModal}
-                    initialValues={initialFormValues}
-                />
-            )}
 
             {canManageProducts && isStockModalOpen && (
                 <StockAdjustmentModal
@@ -779,7 +799,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
                             if (scannedData) {
                                 // Product found in API, open add modal with prefilled data
-                                setInitialFormValues({
+                                handleOpenAddModal({
                                     name: scannedData.name || '',
                                     description: scannedData.description || '',
                                     barcode: code,
@@ -789,21 +809,18 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     unitOfMeasure: scannedData.unitOfMeasure || 'unit',
                                     // Try to match category tags if possible, otherwise leave empty
                                 });
-                                setIsModalOpen(true);
                             } else {
                                 // Product not found in API either, open add modal with just barcode
-                                setInitialFormValues({
+                                handleOpenAddModal({
                                     barcode: code
                                 });
-                                setIsModalOpen(true);
                             }
                         } catch (error) {
                             console.error("Error looking up barcode:", error);
                             // Fallback to just opening modal with barcode
-                            setInitialFormValues({
+                            handleOpenAddModal({
                                 barcode: code
                             });
-                            setIsModalOpen(true);
                         }
                     }
                 }}
@@ -831,7 +848,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
                             if (scannedData) {
                                 // Product found in API, open add modal with prefilled data
-                                setInitialFormValues({
+                                handleOpenAddModal({
                                     name: scannedData.name || '',
                                     description: scannedData.description || '',
                                     barcode: code,
@@ -840,20 +857,17 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     weight: scannedData.weight || 0,
                                     unitOfMeasure: scannedData.unitOfMeasure || 'unit',
                                 });
-                                setIsModalOpen(true);
                             } else {
                                 // Product not found in API either, open add modal with just barcode
-                                setInitialFormValues({
+                                handleOpenAddModal({
                                     barcode: code
                                 });
-                                setIsModalOpen(true);
                             }
                         } catch (error) {
                             console.error("Error looking up barcode:", error);
-                            setInitialFormValues({
+                            handleOpenAddModal({
                                 barcode: code
                             });
-                            setIsModalOpen(true);
                         }
                     }
                 }}

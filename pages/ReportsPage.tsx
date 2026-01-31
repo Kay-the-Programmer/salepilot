@@ -321,10 +321,10 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                    {/* Desktop Tabs  */}
-                    <div className="w-full">
-                        <div className="relative border border-slate-200/50 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-slate-800/50 p-1">
-                            <div className="flex items-center overflow-x-auto gap-1 w-full scrollbar-hide">
+                    {/* Desktop Tabs Component (Hidden on mobile) */}
+                    <div className="hidden min-[1100px]:flex items-center">
+                        <div className="relative border border-slate-200/50 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-slate-800/10 p-1 backdrop-blur-sm">
+                            <div className="flex items-center gap-1">
                                 {tabs.map((tab) => (
                                     <button
                                         key={tab.id}
@@ -332,19 +332,19 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                         className={`
                                             flex items-center gap-2
                                             shrink-0
-                                            px-4 sm:px-5
-                                            py-2.5
+                                            px-4 
+                                            py-2
                                             rounded-xl
                                             text-sm font-bold
                                             whitespace-nowrap
-                                            transition-all active:scale-95
+                                            transition-all duration-200 active:scale-95
                                             ${activeTab === tab.id
-                                                ? 'bg-slate-800/50 text-white shadow-lg  active:scale-95'
+                                                ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-md'
                                                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'
                                             }
                                         `}
                                     >
-                                        <span className="flex items-center justify-center">
+                                        <span className="flex items-center justify-center opacity-70">
                                             {tab.icon}
                                         </span>
                                         <span>{tab.label}</span>
@@ -357,22 +357,16 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
                     <div className="flex items-center  p-1 rounded-xl space-x-2">
                         {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 px-4 rounded-3xl bg-white dark:bg-slate-800 shadow-lg flex items-center gap-2 active:bg-gray-200 dark:active:bg-white/10 text-gray-600 dark:text-gray-400"
-                            aria-label="Menu"
-                        >
-                            <GridIcon className="w-5 h-5" />
-                        </button>
-
+                        {/* Filter Button */}
                         <div className="relative" ref={filterMenuRef}>
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`p-2 flex items-center gap-2 bg-white dark:bg-slate-800 shadow-lg rounded-3xl px-4 active:bg-gray-200 dark:active:bg-white/10 transition-colors ${showFilters ? 'bg-gray-100 dark:bg-white/20 text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}
+                                className={`h-11 flex items-center gap-2 bg-white dark:bg-slate-800 shadow-md border border-slate-200/50 dark:border-white/10 rounded-2xl px-4 active:scale-95 transition-all
+                                    ${showFilters ? 'ring-2 ring-blue-500/50 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300'}`}
                                 aria-label="Filter options"
                             >
                                 <FunnelIcon className="w-5 h-5" />
-                                <span className="text-xs font-semibold text-gray-500 tracking-wider">Filter</span>
+                                <span className="text-sm font-bold tracking-tight">Filter</span>
                             </button>
 
                             {/* Floating Filter Popup */}
@@ -451,19 +445,71 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                 </div>
                             )}
                         </div>
+                        {/* Mobile Grid Menu Button */}
+                        <button
+                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                            className="min-[1100px]:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-slate-900 dark:bg-slate-700 text-white shadow-lg active:scale-90 transition-all"
+                            aria-label="Menu"
+                        >
+                            <GridIcon className="w-5 h-5 font-bold" />
+                        </button>
                     </div>
                 </div>
             </header>
 
+            {/* Mobile Tab Scroller (Visible on mobile/tablet) */}
+            <div className="flex-none min-[1100px]:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5 sticky top-[72px] z-30">
+                <div className="relative">
+                    <div className="flex items-center overflow-x-auto gap-2 px-4 py-3 scrollbar-hide mask-fade-edges">
+                        {tabs.map((tab) => {
+                            const isActive = activeTab === tab.id;
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`
+                                        flex items-center gap-2
+                                        shrink-0
+                                        px-4 py-2
+                                        rounded-xl
+                                        text-sm font-bold
+                                        whitespace-nowrap
+                                        transition-all duration-200 active:scale-95
+                                        ${isActive
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                            : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-transparent'
+                                        }
+                                    `}
+                                >
+                                    {isActive && React.cloneElement(tab.icon as React.ReactElement<any>, { className: "w-4 h-4" })}
+                                    <span>{tab.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+
             {/* Mobile Grid Menu Popup */}
             {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-50 backdrop-blur-3xl bg-gray-900/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
-                    {/* Position slightly below header */}
+                <div className="fixed inset-0 z-[100] md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md animate-fade-in" />
+
                     <div
-                        className="absolute top-[70px] right-4 left-4 bg-white/20 backdrop-blur-sm rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100"
+                        className="absolute top-[80px] left-4 right-4 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl p-6 border border-slate-200 dark:border-white/10 animate-fade-in-up overflow-hidden"
                         onClick={e => e.stopPropagation()}
                     >
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="flex items-center justify-between mb-6 px-2">
+                            <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Quick Access</h3>
+                            <button
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400"
+                            >
+                                <XMarkIcon className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
                             {tabs.map((tab) => {
                                 const isActive = activeTab === tab.id;
                                 return (
@@ -473,18 +519,24 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                             setActiveTab(tab.id);
                                             setIsMobileMenuOpen(false);
                                         }}
-                                        className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
-                                            ? 'bg-gray-900/90 text-white shadow-lg'
-                                            : 'bg-gray-50/90 text-gray-600 hover:bg-gray-100'
+                                        className={`flex flex-col items-center justify-center p-4 rounded-3xl transition-all active:scale-95 group ${isActive
+                                            ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/30'
+                                            : 'bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10'
                                             }`}
                                     >
-                                        <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
+                                        <div className={`mb-3 p-3 rounded-2xl transition-transform group-hover:scale-110 ${isActive ? 'bg-white/20' : 'bg-white dark:bg-slate-800 shadow-sm'}`}>
                                             {React.cloneElement(tab.icon as React.ReactElement<any>, { className: "w-6 h-6" })}
                                         </div>
-                                        <span className="text-xs font-semibold">{tab.label}</span>
+                                        <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
                                     </button>
                                 );
                             })}
+                        </div>
+
+                        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-500/10 rounded-2xl border border-blue-100 dark:border-blue-400/20">
+                            <p className="text-blue-600 dark:text-blue-400 text-xs font-bold text-center">
+                                Select a report to view detailed analytics and performance metrics for your business.
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -500,101 +552,83 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
             {/* Mobile Filter Modal */}
             {showFilters && (
-                <div className="fixed inset-0 z-[100] bg-black bg-opacity-50 animate-fade-in flex items-end md:items-center justify-center md:hidden">
-                    <div className="bg-white w-full md:w-auto md:min-w-[400px] rounded-t-3xl md:rounded-2xl shadow-2xl animate-slide-up max-h-[85vh] overflow-hidden">
-                        <div className="p-4">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-xl font-bold text-gray-900">Filters</h2>
+                <div className="fixed inset-0 z-[100] bg-slate-950/40 backdrop-blur-sm animate-fade-in flex items-end md:items-center justify-center min-[1100px]:hidden">
+                    <div className="bg-white dark:bg-slate-900 w-full rounded-t-[2.5rem] shadow-2xl animate-slide-up max-h-[85vh] overflow-hidden border-t border-slate-200 dark:border-white/10">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-8">
+                                <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Filters</h2>
                                 <button
                                     onClick={() => setShowFilters(false)}
-                                    className="p-2 rounded-lg active:bg-gray-100"
+                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 active:scale-90 transition-all font-bold"
                                     aria-label="Close filters"
                                 >
-                                    <XMarkIcon className="w-5 h-5" />
+                                    <XMarkIcon className="w-6 h-6" />
                                 </button>
                             </div>
 
-                            <div className="space-y-6">
+                            <div className="space-y-8">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Date Range
+                                    <label className="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
+                                        Time Range
                                     </label>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        <button
-                                            onClick={() => { setDateRange(7, '7d'); setShowFilters(false); }}
-                                            className={`p-3 rounded-xl border-2 ${datePreset === '7d' ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-700'}`}
-                                        >
-                                            <div className="text-sm font-medium">7 Days</div>
-                                        </button>
-                                        <button
-                                            onClick={() => { setDateRange(30, '30d'); setShowFilters(false); }}
-                                            className={`p-3 rounded-xl border-2 ${datePreset === '30d' ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-700'}`}
-                                        >
-                                            <div className="text-sm font-medium">30 Days</div>
-                                        </button>
-                                        <button
-                                            onClick={() => { setThisMonth(); setShowFilters(false); }}
-                                            className={`p-3 rounded-xl border-2 ${datePreset === 'month' ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-700'}`}
-                                        >
-                                            <div className="text-sm font-medium">This Month</div>
-                                        </button>
-                                        <button
-                                            onClick={() => setDatePreset('custom')}
-                                            className={`p-3 rounded-xl border-2 ${datePreset === 'custom' ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-200 text-gray-700'}`}
-                                        >
-                                            <div className="text-sm font-medium">Custom</div>
-                                        </button>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {[
+                                            { id: '7d', label: '7 Days', action: () => setDateRange(7, '7d') },
+                                            { id: '30d', label: '30 Days', action: () => setDateRange(30, '30d') },
+                                            { id: 'month', label: 'This Month', action: setThisMonth },
+                                            { id: 'custom', label: 'Custom', action: () => setDatePreset('custom') }
+                                        ].map((preset) => (
+                                            <button
+                                                key={preset.id}
+                                                onClick={() => { preset.action(); if (preset.id !== 'custom') setShowFilters(false); }}
+                                                className={`p-4 rounded-2xl border-2 transition-all active:scale-95 ${datePreset === preset.id
+                                                    ? 'border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                                    : 'border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400'}`}
+                                            >
+                                                <div className="text-sm font-bold">{preset.label}</div>
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
 
                                 {datePreset === 'custom' && (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Start Date
-                                            </label>
-                                            <div className="relative">
-                                                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                                <input
-                                                    type="date"
-                                                    value={startDate}
-                                                    onChange={(e) => setStartDate(e.target.value)}
-                                                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900"
-                                                />
+                                    <div className="space-y-4 animate-fade-in">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-2">Start Date</label>
+                                                <div className="relative">
+                                                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                    <input
+                                                        type="date"
+                                                        value={startDate}
+                                                        onChange={(e) => setStartDate(e.target.value)}
+                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-800 dark:text-white"
+                                                    />
+                                                </div>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                End Date
-                                            </label>
-                                            <div className="relative">
-                                                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                                                <input
-                                                    type="date"
-                                                    value={endDate}
-                                                    onChange={(e) => setEndDate(e.target.value)}
-                                                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl bg-white text-gray-900"
-                                                />
+                                            <div>
+                                                <label className="block text-xs font-bold text-slate-500 mb-2">End Date</label>
+                                                <div className="relative">
+                                                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                                                    <input
+                                                        type="date"
+                                                        value={endDate}
+                                                        onChange={(e) => setEndDate(e.target.value)}
+                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-800 dark:text-white"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="pt-4 border-t border-gray-200">
-                                    <div className="flex space-x-3">
-                                        <button
-                                            onClick={() => setShowFilters(false)}
-                                            className="flex-1 py-3 px-4 border-2 border-gray-200 text-gray-700 font-medium rounded-xl active:bg-gray-50"
-                                        >
-                                            Cancel
-                                        </button>
-                                        <button
-                                            onClick={() => setShowFilters(false)}
-                                            className="flex-1 py-3 px-4 bg-gray-900 text-white font-medium rounded-xl active:bg-gray-800"
-                                        >
-                                            Apply
-                                        </button>
-                                    </div>
+                                <div className="pt-6">
+                                    <button
+                                        onClick={() => setShowFilters(false)}
+                                        className="w-full py-4 bg-slate-900 dark:bg-blue-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-[0.98] transition-all"
+                                    >
+                                        Apply Filters
+                                    </button>
                                 </div>
                             </div>
                         </div>

@@ -12,22 +12,22 @@ interface CameraCaptureModalProps {
 const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({ isOpen, onClose, onCapture }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    const [stream, setStream] = useState<MediaStream | null>(null);
+    const streamRef = useRef<MediaStream | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     const stopStream = useCallback(() => {
-        if (stream) {
-            stream.getTracks().forEach(track => track.stop());
-            setStream(null);
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
         }
-    }, [stream]);
+    }, []);
 
     useEffect(() => {
         if (isOpen) {
             setError(null);
             navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
                 .then(mediaStream => {
-                    setStream(mediaStream);
+                    streamRef.current = mediaStream;
                     if (videoRef.current) {
                         videoRef.current.srcObject = mediaStream;
                     }

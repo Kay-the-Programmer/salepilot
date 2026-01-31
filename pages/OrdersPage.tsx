@@ -14,44 +14,7 @@ import OrdersList from '../components/orders/OrdersList';
 import OrderDetailContent from '../components/orders/OrderDetailContent';
 import { HiOutlineXMark, HiOutlineBanknotes, HiOutlineCheckCircle, HiOutlineTruck } from 'react-icons/hi2';
 
-const styles = `
-    .premium-scrollbar::-webkit-scrollbar {
-        width: 5px;
-        height: 5px;
-    }
-    .premium-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .premium-scrollbar::-webkit-scrollbar-thumb {
-        background: #e2e8f0;
-        border-radius: 10px;
-    }
-    .premium-scrollbar::-webkit-scrollbar-thumb:hover {
-        background: #cbd5e1;
-    }
 
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fadeIn {
-        animation: fadeIn 0.4s ease-out forwards;
-    }
-
-    @keyframes fadeInRight {
-        from { opacity: 0; transform: translateX(20px); }
-        to { opacity: 1; transform: translateX(0); }
-    }
-    .animate-fadeInRight {
-        animation: fadeInRight 0.3s ease-out forwards;
-    }
-
-    .glass-effect {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
-    }
-`;
 
 interface OrdersPageProps {
     onOpenSidebar?: () => void;
@@ -193,8 +156,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     }), [orders, total]);
 
     return (
-        <div className="flex flex-col h-full bg-[#f8fafc]">
-            <style>{styles}</style>
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
 
             <OrdersHeader
                 searchTerm={searchTerm}
@@ -215,7 +177,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
                 <div className="flex-1 flex overflow-hidden p-0">
                     {/* Orders List Content */}
-                    <div className="flex-1 flex flex-col min-w-0 bg-gray-50">
+                    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-950">
                         <div className="flex-1 overflow-y-auto premium-scrollbar p-0">
                             <OrdersMetrics
                                 stats={stats}
@@ -245,12 +207,12 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
                     {/* Desktop Sideview */}
                     {selectedOrder && (
-                        <div className="hidden xl:flex w-[450px] flex-col bg-white border-l border-slate-200 shadow-xl overflow-hidden animate-fadeInRight">
-                            <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-20">
-                                <h2 className="text-lg font-bold text-slate-900">Order Details</h2>
+                        <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-slide-in-right">
+                            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-20">
+                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Order Details</h2>
                                 <button
                                     onClick={() => setSelectedOrder(null)}
-                                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-all border border-transparent hover:border-slate-200"
+                                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
                                 >
                                     <HiOutlineXMark className="w-5 h-5" />
                                 </button>
@@ -261,7 +223,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                             </div>
 
                             {/* Sideview Actions */}
-                            <div className="p-6 border-t border-slate-100 bg-slate-50/50">
+                            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
                                 <div className="flex flex-col gap-3">
                                     {selectedOrder.paymentStatus !== 'paid' && (
                                         <button

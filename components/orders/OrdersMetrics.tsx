@@ -32,8 +32,8 @@ const OrdersMetrics: React.FC<OrdersMetricsProps> = ({
                         { label: 'Avg Value', value: formatCurrency(stats.avgOrderValue, storeSettings), color: 'indigo' }
                     ].map((s, i) => (
                         <div key={i} className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{s.label}</span>
-                            <span className={`text-base font-semibold text-slate-700`}>{s.value}</span>
+                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">{s.label}</span>
+                            <span className={`text-base font-semibold text-slate-700 dark:text-slate-300`}>{s.value}</span>
                         </div>
                     ))}
                 </div>

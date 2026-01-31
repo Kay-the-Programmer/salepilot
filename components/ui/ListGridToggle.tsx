@@ -22,38 +22,30 @@ const ListGridToggle: React.FC<ListGridToggleProps> = ({
     className = '',
     size = 'md',
 }) => {
-    const buttonSizeClasses = size === 'sm' ? 'p-1.5' : 'p-2';
+    const isGrid = viewMode === 'grid';
+    const buttonSizeClasses = size === 'sm' ? 'p-2' : 'p-2.5';
     const iconSizeClasses = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
 
+    const handleToggle = (e: React.MouseEvent) => {
+        e.preventDefault();
+        onViewModeChange(isGrid ? 'list' : 'grid');
+    };
+
     return (
-        <div className={`flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1 ${className}`}>
-            <button
-                onClick={() => onViewModeChange('grid')}
-                className={`${buttonSizeClasses} rounded-md transition-all duration-200 ${viewMode === 'grid'
-                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                    }`}
-                title="Grid view"
-                aria-label="Switch to grid view"
-            >
-                <div className="flex items-center justify-center">
-                    <GridIcon className={iconSizeClasses} />
-                </div>
-            </button>
-            <button
-                onClick={() => onViewModeChange('list')}
-                className={`${buttonSizeClasses} rounded-md transition-all duration-200 ${viewMode === 'list'
-                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
-                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                    }`}
-                title="List view"
-                aria-label="Switch to list view"
-            >
-                <div className="flex items-center justify-center">
-                    <ListIcon className={iconSizeClasses} />
-                </div>
-            </button>
-        </div>
+        <button
+            onClick={handleToggle}
+            className={`flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-sm group ${buttonSizeClasses} ${className}`}
+            title={isGrid ? "Switch to List View" : "Switch to Grid View"}
+            aria-label={isGrid ? "Switch to List View" : "Switch to Grid View"}
+        >
+            <div className="flex items-center justify-center">
+                {isGrid ? (
+                    <ListIcon className={`${iconSizeClasses} group-hover:scale-110 transition-transform`} />
+                ) : (
+                    <GridIcon className={`${iconSizeClasses} group-hover:scale-110 transition-transform`} />
+                )}
+            </div>
+        </button>
     );
 };
 

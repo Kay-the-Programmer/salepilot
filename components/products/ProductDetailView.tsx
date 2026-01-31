@@ -8,7 +8,6 @@ const ProductDetailView: React.FC<{
   product: Product;
   category?: Category;
   supplier?: Supplier;
-  attributes: { name: string, value: string }[];
   storeSettings: StoreSettings;
   user: User;
   onEdit: (product: Product) => void;
@@ -22,7 +21,6 @@ const ProductDetailView: React.FC<{
   product,
   category,
   supplier,
-  attributes,
   storeSettings,
   user,
   onEdit,
@@ -34,7 +32,7 @@ const ProductDetailView: React.FC<{
   onBack
 }) => {
     return (
-      <div className="flex flex-col h-full bg-white">
+      <div className="flex flex-col h-full bg-white dark:bg-slate-900">
         {/* Header */}
         <ProductDetailHeader
           product={product}
@@ -61,7 +59,6 @@ const ProductDetailView: React.FC<{
               product={product}
               category={category}
               supplier={supplier}
-              attributes={attributes}
               storeSettings={storeSettings}
             />
           </div>
