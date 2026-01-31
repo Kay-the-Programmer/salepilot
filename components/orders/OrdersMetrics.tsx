@@ -22,7 +22,7 @@ const OrdersMetrics: React.FC<OrdersMetricsProps> = ({
     setViewMode
 }) => {
     return (
-        <div className="px-6 py-2 border-slate-200 bg-transparent flex flex-row items-center justify-between gap-4">
+        <div className="px-6 py-2 border-slate-200 dark:border-slate-800 bg-transparent flex flex-row items-center justify-between gap-4">
             <div className="overflow-x-auto no-scrollbar w-full md:w-auto">
                 <div className="flex items-center gap-8 min-w-max py-2">
                     {[
@@ -32,8 +32,8 @@ const OrdersMetrics: React.FC<OrdersMetricsProps> = ({
                         { label: 'Avg Value', value: formatCurrency(stats.avgOrderValue, storeSettings), color: 'indigo' }
                     ].map((s, i) => (
                         <div key={i} className="flex flex-col">
-                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-0.5">{s.label}</span>
-                            <span className={`text-base font-semibold text-slate-700 dark:text-slate-300`}>{s.value}</span>
+                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-0.5">{s.label}</span>
+                            <span className={`text-base font-bold text-slate-700 dark:text-slate-100 tracking-tight`}>{s.value}</span>
                         </div>
                     ))}
                 </div>

@@ -23,20 +23,20 @@ const OrdersList: React.FC<OrdersListProps> = ({
 }) => {
     const getStatusStyles = (status?: string) => {
         switch (status) {
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200';
-            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+            case 'pending': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/30';
+            case 'fulfilled': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30';
+            case 'shipped': return 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/30';
+            case 'cancelled': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800/30';
+            default: return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
         }
     };
 
     const getPaymentStatusStyles = (status?: string) => {
         switch (status) {
-            case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+            case 'paid': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800/30';
+            case 'pending': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800/30';
+            case 'partially_paid': return 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800/30';
+            default: return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
         }
     };
 
@@ -56,7 +56,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     isSelected={isSelected}
                     onClick={() => onOrderClick(order)}
                     image={
-                        <div className="w-full h-full bg-slate-50 text-slate-400 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors">
+                        <div className="w-full h-full bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                             #{order.transactionId.slice(-4)}
                         </div>
                     }
@@ -67,7 +67,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     }
                     primaryInfo={formatCurrency(order.total, storeSettings)}
                     secondaryInfo={
-                        <div className="text-xs text-slate-500 font-medium">
+                        <div className="text-xs text-slate-500 dark:text-slate-500 font-medium">
                             {order.cart.length} items
                         </div>
                     }
@@ -80,7 +80,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     isSelected={isSelected}
                     onClick={() => onOrderClick(order)}
                     leading={
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-colors shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors shrink-0">
                             #{order.transactionId.slice(-4)}
                         </div>
                     }
@@ -96,7 +96,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     }
                     primaryMeta={formatCurrency(order.total, storeSettings)}
                     details={[
-                        <span className="text-xs text-slate-500 font-medium" key="items">
+                        <span className="text-xs text-slate-500 dark:text-slate-500 font-medium" key="items">
                             {order.cart.length} items
                         </span>
                     ]}

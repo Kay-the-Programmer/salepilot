@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { api } from '../services/api';
+import SocketService from '../services/socketService';
 import { Sale, StoreSettings, Payment } from '../types';
 import RecordOrderPaymentModal from '../components/orders/RecordOrderPaymentModal';
 import OrderDetailsModal from '../components/orders/OrderDetailsModal';
@@ -31,7 +32,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     const [selectedOrder, setSelectedOrder] = useState<Sale | null>(null);
     const [paymentOrder, setPaymentOrder] = useState<Sale | null>(null);
 
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
 
     // Pagination state
     const [page, setPage] = useState(1);
@@ -58,6 +59,32 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     useEffect(() => {
         setPage(1);
     }, [filterStatus]);
+
+    // Real-time updates
+    useEffect(() => {
+        const storeId = storeSettings?.storeId;
+        if (!storeId) return;
+
+        const socketService = SocketService.getInstance();
+        const socket = socketService.getSocket();
+
+        socket.emit('join_store', storeId);
+
+        const handleNewOrder = (data: any) => {
+            console.log('Real-time order received:', data);
+            showSnackbar('New online order received!', 'info');
+            fetchOrders();
+            onDataRefresh?.();
+        };
+
+        socket.on('new_sale', handleNewOrder);
+        socket.on('new_order', handleNewOrder);
+
+        return () => {
+            socket.off('new_sale', handleNewOrder);
+            socket.off('new_order', handleNewOrder);
+        };
+    }, [storeSettings?.storeId]);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -207,8 +234,8 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
                     {/* Desktop Sideview */}
                     {selectedOrder && (
-                        <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-slide-in-right">
-                            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-20">
+                        <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-slide-in-right">
+                            <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-950 flex items-center justify-between bg-white dark:bg-slate-950 sticky top-0 z-20">
                                 <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Order Details</h2>
                                 <button
                                     onClick={() => setSelectedOrder(null)}
@@ -228,7 +255,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.paymentStatus !== 'paid' && (
                                         <button
                                             onClick={() => handleMarkAsPaid(selectedOrder)}
-                                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold  transition-all flex items-center justify-center gap-2"
                                         >
                                             <HiOutlineBanknotes className="w-5 h-5" />
                                             Record Payment
@@ -238,7 +265,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.fulfillmentStatus === 'pending' && (
                                         <button
                                             onClick={() => updateStatus(selectedOrder.transactionId, 'fulfilled')}
-                                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-indigo-200 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
                                         >
                                             <HiOutlineCheckCircle className="w-5 h-5" />
                                             Fulfill Order
@@ -248,7 +275,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.fulfillmentStatus === 'fulfilled' && (
                                         <button
                                             onClick={() => updateStatus(selectedOrder.transactionId, 'shipped')}
-                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-200 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-blue-600 dark:hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
                                         >
                                             <HiOutlineTruck className="w-5 h-5" />
                                             Mark Shipped

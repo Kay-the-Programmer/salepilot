@@ -55,25 +55,25 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
 
             {/* Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div glass-effect="" className={`p-5 rounded-2xl border-2 ${getStatusStyles(order.fulfillmentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
-                    <div className="p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div glass-effect="" className={`p-1 rounded-2xl border-2 border-slate-200 dark:border-slate-700 ${getStatusStyles(order.fulfillmentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
+                    <div className="p-3">
                         <HiOutlineTruck className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
                         <p className="text-xs uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400 mb-1">Fulfillment</p>
                         <div className="flex items-center justify-between">
-                            <p className="text-lg font-bold">{formatStatusString(order.fulfillmentStatus || 'Pending')}</p>
+                            <p className="text-sm font-bold">{formatStatusString(order.fulfillmentStatus || 'Pending')}</p>
                         </div>
                     </div>
                 </div>
-                <div glass-effect="" className={`p-5 rounded-2xl border-2 ${getPaymentStatusStyles(order.paymentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
-                    <div className="p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 shadow-sm">
+                <div glass-effect="" className={`p-1 rounded-2xl border-2 border-slate-200 dark:border-slate-700 ${getPaymentStatusStyles(order.paymentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
+                    <div className="p-3">
                         <HiOutlineCurrencyDollar className="w-6 h-6" />
                     </div>
                     <div className="flex-1">
                         <p className="text-xs uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400 mb-1">Payment</p>
                         <div className="flex items-center justify-between">
-                            <p className="text-lg font-bold">{formatStatusString(order.paymentStatus || 'Pending')}</p>
+                            <p className="text-sm font-bold">{formatStatusString(order.paymentStatus || 'Pending')}</p>
                         </div>
                     </div>
                 </div>

@@ -58,20 +58,20 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                 onClick={onClose}
             />
 
-            <div className="relative bg-white w-full sm:max-w-lg max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50">
+            <div className="relative bg-white dark:bg-slate-900 w-full sm:max-w-lg max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950 border border-white/50 dark:border-slate-800/50">
                 <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
-                    <div className="px-6 py-6 sm:px-8 border-b border-slate-100 flex justify-between items-center bg-white">
+                    <div className="px-6 py-6 sm:px-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
                         <div>
-                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
                                 Record Payment
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                                     Order #{order.transactionId.slice(-6)}
                                 </p>
-                                <div className="w-1 h-1 rounded-full bg-slate-200" />
-                                <p className="text-sm font-bold text-emerald-600">
+                                <div className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
+                                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                     {formatCurrency(balanceDue, storeSettings)} due
                                 </p>
                             </div>
@@ -79,7 +79,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2.5 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all border border-slate-100 shadow-sm"
+                            className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-700 shadow-sm"
                         >
                             <XMarkIcon className="h-5 w-5" />
                         </button>
@@ -96,7 +96,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                 step="0.01"
                                 required
                                 icon={<CurrencyDollarIcon className="w-4 h-4" />}
-                                className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                className="!font-black text-slate-900 dark:text-white border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 focus:ring-blue-500/20 shadow-sm"
                             />
                             <InputField
                                 label="Payment Date"
@@ -105,18 +105,18 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                 onChange={(e) => setDate(e.target.value)}
                                 required
                                 icon={<CalendarIcon className="w-4 h-4" />}
-                                className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                className="!font-black text-slate-900 dark:text-white border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 focus:ring-blue-500/20 shadow-sm"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Payment Method</label>
+                            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">Payment Method</label>
                             <div className="relative">
-                                <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                                 <select
                                     value={method}
                                     onChange={e => setMethod(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 font-bold shadow-sm"
+                                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 dark:text-white font-bold shadow-sm"
                                 >
                                     {(storeSettings.paymentMethods || []).map(pm => (
                                         <option key={pm.id} value={pm.name}>{pm.name}</option>
@@ -125,7 +125,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                         <option value="" disabled>No payment methods configured</option>
                                     )}
                                 </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </div>
                             </div>
@@ -138,16 +138,16 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                             onChange={(e) => setReference(e.target.value)}
                             placeholder="Optional reference details"
                             icon={<ClipboardDocumentListIcon className="w-4 h-4" />}
-                            className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                            className="!font-black text-slate-900 dark:text-white border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 focus:ring-blue-500/20 shadow-sm"
                         />
                     </div>
 
                     {/* Footer */}
-                    <div className="px-6 py-6 sm:px-8 border-t border-slate-100 bg-white sm:flex sm:flex-row-reverse gap-4">
+                    <div className="px-6 py-6 sm:px-8 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sm:flex sm:flex-row-reverse gap-4">
                         <button
                             type="submit"
                             disabled={isInvalid}
-                            className={`w-full sm:w-auto px-8 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-600/10 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                            className={`w-full sm:w-auto px-8 py-4 bg-emerald-600 dark:bg-emerald-500 text-white dark:text-white rounded-[1.5rem] font-bold text-sm hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-600/10 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
                             onClick={() => {
                                 // simple click handler protection if form submit doesn't catch it
                                 if (isInvalid) return;
@@ -159,7 +159,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white text-slate-600 border border-slate-200 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 transition-all active:scale-[0.98] flex items-center justify-center"
+                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center"
                         >
                             Discard
                         </button>

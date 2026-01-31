@@ -1,9 +1,10 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { StockTakeSession, CountedItem } from '../types';
+import { StockTakeSession } from '../types';
 import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { HiOutlineXMark } from 'react-icons/hi2';
 
 interface StockTakePageProps {
     session: StockTakeSession | null;
@@ -93,16 +94,18 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
 
     if (!session) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center bg-gray-100 p-8">
-                <div className="text-center">
-                    <ClipboardDocumentListIcon className="mx-auto h-12 w-12 text-gray-400" />
-                    <h2 className="mt-2 text-xl font-semibold text-gray-900">Inventory Counts</h2>
-                    <p className="mt-1 text-sm text-gray-500">Verify your inventory by starting a physical stock count.</p>
-                    <div className="mt-6">
+            <div className="flex-1 flex flex-col items-center justify-center bg-gray-100 dark:bg-slate-950 p-8">
+                <div glass-effect="" className="max-w-md w-full text-center p-12 rounded-[2.5rem] shadow-xl border border-white/50 dark:border-slate-800/50">
+                    <div className="mx-auto h-20 w-20 rounded-3xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-6">
+                        <ClipboardDocumentListIcon className="h-10 w-10 text-blue-500 dark:text-blue-400" />
+                    </div>
+                    <h2 className="text-2xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight">Stock Counts</h2>
+                    <p className="mt-3 text-slate-500 dark:text-slate-400 font-medium">Verify your inventory by starting a physical stock count.</p>
+                    <div className="mt-10">
                         <button
                             type="button"
                             onClick={onStart}
-                            className="inline-flex items-center rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                            className="w-full inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:translate-y-[-2px] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 uppercase tracking-widest"
                         >
                             Start New Stock Take
                         </button>
@@ -119,36 +122,38 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
     }> = ({ filterType, label, count }) => (
         <button
             onClick={() => setFilter(filterType)}
-            className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${filter === filterType ? 'bg-blue-100 text-blue-700' : 'bg-white text-gray-600 hover:bg-gray-50'}`}
+            className={`px-4 py-2 text-xs font-black uppercase tracking-widest rounded-xl transition-all ${filter === filterType
+                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                : 'bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700'}`}
         >
             {label}
-            {typeof count !== 'undefined' && <span className={`ml-2 inline-block px-2 py-0.5 text-xs rounded-full ${filter === filterType ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-700'}`}>{count}</span>}
+            {typeof count !== 'undefined' && <span className={`ml-2 inline-block px-2 py-0.5 text-[10px] rounded-lg ${filter === filterType ? 'bg-blue-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'}`}>{count}</span>}
         </button>
     );
 
     return (
-        <div className="flex flex-col h-full bg-gray-100">
-            <header className="bg-gray-100 z-10 p-4 ">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
+            <header className="z-10 p-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Stock Take in Progress</h1>
-                        <p className="text-sm text-gray-500">Started at: {new Date(session.startTime).toLocaleString()}</p>
+                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Stock Take in Progress</h1>
+                        <p className="text-sm font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest">Started at: {new Date(session.startTime).toLocaleString()}</p>
                     </div>
-                    <div className="flex-shrink-0 flex items-center gap-2">
-                        <button onClick={handleCancel} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-                            <XMarkIcon className="-ml-0.5 h-5 w-5 text-gray-500" />
+                    <div className="flex-shrink-0 flex items-center gap-3">
+                        <button onClick={handleCancel} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-red-500 px-5 py-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-500/20 dark:hover:shadow-slate-500/20 dark:hover:bg-slate-800 hover:translate-y-[-2px] transition-all uppercase tracking-widest">
+                            <XMarkIcon className="h-4 w-4 text-slate-400" />
                             Cancel
                         </button>
-                        <button onClick={handleFinalize} type="button" className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                        <button onClick={handleFinalize} type="button" className="rounded-md bg-blue-600 px-6 py-3 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-slate-50 dark:hover:bg-slate-800 hover:translate-y-[-2px] transition-all uppercase tracking-widest">
                             Complete Count
                         </button>
                     </div>
                 </div>
-                <div className="mt-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                        <div className="relative">
-                            <span className="absolute inset-y-0 left-0 flex items-center pl-3">
-                                <svg className="w-5 h-5 text-gray-400" viewBox="0 0 24 24" fill="none">
+                <div className="mt-8 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div className="flex-1 max-w-md">
+                        <div className="relative group">
+                            <span className="absolute inset-y-0 left-0 flex items-center pl-4">
+                                <svg className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" viewBox="0 0 24 24" fill="none">
                                     <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path>
                                 </svg>
                             </span>
@@ -158,7 +163,7 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onKeyDown={handleSearchKeyDown}
-                                className="block w-full max-w-sm py-2 pl-10 pr-3 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                className="block w-full py-4 pl-12 pr-4 bg-white dark:bg-slate-900 border-0 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm font-bold text-sm"
                             />
                         </div>
                     </div>
@@ -170,54 +175,61 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                     </div>
                 </div>
             </header>
-            <main className="flex-1 flex flex-col overflow-hidden">
-                <div className="px-4 sm:px-4 lg:px-4 py-4 flex-1 flex flex-col min-h-0">
-                    <div className="flex-1 flex flex-col min-h-0">
-                        <div className="overflow-auto flex-1 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                            <table className="min-w-full divide-y divide-gray-300">
-                                <thead className="bg-gray-50 sticky top-0 z-10">
-                                    <tr>
-                                        <th scope="col" className="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 w-2/5">Product</th>
-                                        <th scope="col" className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 w-1/5">SKU</th>
-                                        <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 w-1/5">Expected</th>
-                                        <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 w-1/5">Counted</th>
-                                        <th scope="col" className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900 w-1/5">Discrepancy</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200 bg-white">
-                                    {filteredAndSortedItems.length > 0 ? filteredAndSortedItems.map((item) => {
-                                        const discrepancy = item.counted !== null ? item.counted - item.expected : null;
-                                        return (
-                                            <tr key={item.productId} className={item.counted !== null ? (discrepancy === 0 ? 'bg-green-50' : 'bg-red-50') : ''}>
-                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{item.name}</td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{item.sku || '-'}</td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-center text-sm text-gray-700">{item.expected}</td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm">
-                                                    <input
-                                                        ref={el => { inputRefs.current[item.productId] = el; }}
-                                                        type="number"
-                                                        value={item.counted ?? ''}
-                                                        onChange={e => handleCountChange(item.productId, e.target.value)}
-                                                        min="0"
-                                                        step="any"
-                                                        className="block w-24 mx-auto p-1 border rounded-md text-center focus:ring-blue-500 focus:border-blue-500"
-                                                    />
-                                                </td>
-                                                <td className={`whitespace-nowrap px-3 py-4 text-center text-sm font-bold ${discrepancy === null ? 'text-gray-500' : discrepancy > 0 ? 'text-blue-600' : discrepancy < 0 ? 'text-red-600' : 'text-green-600'}`}>
-                                                    {discrepancy === null ? '—' : (discrepancy > 0 ? `+${discrepancy}` : discrepancy)}
-                                                </td>
-                                            </tr>
-                                        )
-                                    }) : (
-                                        <tr>
-                                            <td colSpan={5} className="text-center py-10 text-gray-500">
-                                                No products match your search or filter.
+            <main className="flex-1 flex flex-col overflow-hidden px-6 pb-6">
+                <div glass-effect="" className="flex-1 flex flex-col min-h-0 shadow-xl border border-white/50 dark:border-slate-800/50 overflow-hidden">
+                    <div className="overflow-auto flex-1 premium-scrollbar">
+                        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
+                            <thead className="bg-slate-50/50 dark:bg-slate-900/50 backdrop-blur-md sticky top-0 z-10 border-b border-slate-200 dark:border-slate-800">
+                                <tr>
+                                    <th scope="col" className="py-5 pl-8 pr-4 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] w-2/5">Product</th>
+                                    <th scope="col" className="px-4 py-5 text-left text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] w-1/5">SKU</th>
+                                    <th scope="col" className="px-4 py-5 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] w-1/5">Expected</th>
+                                    <th scope="col" className="px-4 py-5 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] w-1/5">Counted</th>
+                                    <th scope="col" className="px-4 py-5 text-center text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] w-1/5">Discrepancy</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                                {filteredAndSortedItems.length > 0 ? filteredAndSortedItems.map((item) => {
+                                    const discrepancy = item.counted !== null ? item.counted - item.expected : null;
+                                    const isOk = discrepancy === 0;
+                                    const isHigh = discrepancy !== null && discrepancy > 0;
+                                    const isLow = discrepancy !== null && discrepancy < 0;
+
+                                    return (
+                                        <tr key={item.productId} className={`group hover:bg-white/50 dark:hover:bg-slate-800/30 transition-colors ${item.counted !== null ? (isOk ? 'bg-emerald-50/30 dark:bg-emerald-500/5' : 'bg-rose-50/30 dark:bg-rose-500/5') : ''}`}>
+                                            <td className="whitespace-nowrap py-5 pl-8 pr-4 text-sm font-bold text-slate-900 dark:text-slate-100">{item.name}</td>
+                                            <td className="whitespace-nowrap px-4 py-5 text-sm font-medium text-slate-500 dark:text-slate-400">{item.sku || '—'}</td>
+                                            <td className="whitespace-nowrap px-4 py-5 text-center text-sm font-bold text-slate-700 dark:text-slate-300">{item.expected}</td>
+                                            <td className="whitespace-nowrap px-4 py-5 text-sm">
+                                                <input
+                                                    ref={el => { inputRefs.current[item.productId] = el; }}
+                                                    type="number"
+                                                    value={item.counted ?? ''}
+                                                    onChange={e => handleCountChange(item.productId, e.target.value)}
+                                                    min="0"
+                                                    step="any"
+                                                    className="block w-24 mx-auto py-2 px-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-center font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all sm:text-sm"
+                                                />
+                                            </td>
+                                            <td className={`whitespace-nowrap px-4 py-5 text-center text-sm font-black tracking-tight ${discrepancy === null ? 'text-slate-300 dark:text-slate-700' : isHigh ? 'text-blue-600 dark:text-blue-400' : isLow ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                                {discrepancy === null ? '—' : (discrepancy > 0 ? `+${discrepancy}` : discrepancy)}
                                             </td>
                                         </tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
+                                    )
+                                }) : (
+                                    <tr>
+                                        <td colSpan={5} className="text-center py-20">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-slate-900 flex items-center justify-center mb-4">
+                                                    <HiOutlineXMark className="w-8 h-8 text-slate-300 dark:text-slate-700" />
+                                                </div>
+                                                <p className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">No products found</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </main>
@@ -229,9 +241,10 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                 message="Are you sure you want to cancel this stock take? All progress will be lost and this session will be discarded."
                 confirmText="Yes, Cancel"
                 cancelText="No, Keep It"
-                confirmButtonClass="bg-red-600 hover:bg-red-700"
+                confirmButtonClass="bg-rose-600 hover:bg-rose-700 rounded-2xl p-4 font-black uppercase tracking-widest text-[10px]"
+                variant="floating"
             />
-        </div >
+        </div>
     );
 };
 

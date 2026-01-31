@@ -87,77 +87,97 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-            <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <img className="mx-auto h-16 w-auto" src="/assets/logo.png" alt="SalePilot" />
-                <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans transition-colors duration-500">
+            {/* Ambient Background Elements */}
+            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-100/40 dark:bg-blue-900/10 blur-[100px] pointer-events-none animate-pulse" />
+            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-100/40 dark:bg-indigo-900/10 blur-[100px] pointer-events-none" />
+
+            <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 animate-in fade-in zoom-in duration-500">
+                <img className="mx-auto h-16 w-auto drop-shadow-sm dark:invert dark:brightness-200" src="/assets/logo.png" alt="SalePilot" />
+                <h2 className="mt-8 text-center text-3xl font-black text-slate-900 dark:text-white uppercase tracking-tight">
                     Create your store
                 </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
-                    Start your 14-day free trial. No credit card required.
+                <p className="mt-3 text-center text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                    Start your 14-day free trial.
                 </p>
             </div>
 
-            <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+            <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md relative z-10 animate-in slide-in-from-bottom-6 duration-700">
+                <div glass-effect="" className="bg-white/80 dark:bg-slate-900/80 py-10 px-6 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-white/50 dark:border-slate-800/50 backdrop-blur-xl sm:rounded-[2.5rem] sm:px-12">
                     {errors.submit && (
-                        <div className="mb-4 bg-red-50 border-l-4 border-red-400 p-4">
-                            <p className="text-sm text-red-700">{errors.submit}</p>
+                        <div className="mb-6 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 p-4 rounded-2xl text-center">
+                            <p className="text-[11px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wide">{errors.submit}</p>
                         </div>
                     )}
 
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="storeName" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="storeName" className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 px-2">
                                 Store name
                             </label>
-                            <div className="mt-1">
+                            <div className="relative group">
                                 <input
                                     id="storeName"
                                     name="storeName"
                                     type="text"
                                     required
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="block w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-0 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-slate-800 transition-all text-sm font-bold"
+                                    placeholder="Your Store Name"
                                     value={formData.storeName}
                                     onChange={handleChange}
                                 />
-                                {errors.storeName && <p className="mt-1 text-sm text-red-600">{errors.storeName}</p>}
+                                {errors.storeName && <p className="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-wider px-2">{errors.storeName}</p>}
                             </div>
                         </div>
 
                         <div>
-                            <label htmlFor="subdomain" className="block text-sm font-medium text-gray-700">
+                            <label htmlFor="subdomain" className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 px-2">
                                 Subdomain
                             </label>
-                            <div className="mt-1 flex rounded-md shadow-sm">
+                            <div className="mt-1 flex rounded-2xl overflow-hidden shadow-sm group">
                                 <input
                                     id="subdomain"
                                     name="subdomain"
                                     type="text"
                                     required
-                                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="block w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border-0 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-0 focus:bg-white dark:focus:bg-slate-800 transition-all text-sm font-bold"
+                                    placeholder="my-store"
                                     value={formData.subdomain}
                                     onChange={handleChange}
                                 />
-                                <span className="inline-flex items-center px-3 py-2 rounded-r-md border border-l-0 border-gray-300 bg-gray-50 text-gray-500 sm:text-sm">
+                                <span className="inline-flex items-center px-4 bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs font-bold border-l border-slate-200 dark:border-slate-700">
                                     .yourdomain.com
                                 </span>
                             </div>
-                            {errors.subdomain && <p className="mt-1 text-sm text-red-600">{errors.subdomain}</p>}
+                            {errors.subdomain && <p className="mt-2 text-[10px] font-bold text-rose-500 uppercase tracking-wider px-2">{errors.subdomain}</p>}
                         </div>
 
-                        {/* Add other form fields: ownerName, ownerEmail, password, confirmPassword */}
-
-                        <div>
+                        <div className="pt-2">
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                className="w-full flex justify-center py-5 px-4 bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 dark:shadow-white/10 transform transition-all active:scale-[0.98] hover:translate-y-[-2px]"
                             >
-                                {isLoading ? 'Creating your store...' : 'Create Store'}
+                                {isLoading ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin" />
+                                ) : (
+                                    'CREATE STORE'
+                                )}
                             </button>
                         </div>
                     </form>
+
+                    <div className="mt-8 text-center">
+                        <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                            Already have a store?{' '}
+                            <button
+                                onClick={() => navigate('/login')}
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                            >
+                                Sign In
+                            </button>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

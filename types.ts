@@ -229,6 +229,7 @@ export interface PurchaseOrder {
 }
 
 export interface StoreSettings {
+    storeId: string;
     // Store Information
     name: string;
     address: string;

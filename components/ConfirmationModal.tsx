@@ -38,16 +38,16 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                                 <ExclamationTriangleIcon className="h-5 w-5 text-amber-600" aria-hidden="true" />
                             </div>
                             <div className="flex-1">
-                                <h3 className="text-base font-bold text-slate-900 leading-tight">
+                                <h3 className="text-base dark:text-white font-bold text-slate-900 leading-tight">
                                     {title}
                                 </h3>
-                                <div className="mt-1 text-sm text-slate-500">
+                                <div className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                                     {message}
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className="bg-slate-50/50 px-6 py-4 flex gap-3">
+                    <div className="bg-slate-50/50 px-6 py-4 flex gap-3 dark:bg-slate-800/50">
                         <Button
                             type="button"
                             variant="secondary"
