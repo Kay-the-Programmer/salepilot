@@ -22,6 +22,11 @@ const MarketingPage: React.FC = () => {
     const [customText, setCustomText] = useState('');
     const [format, setFormat] = useState<'square' | 'portrait'>('square');
 
+    // Brand Agent State (Zambia-specific)
+    const [shopName, setShopName] = useState('');
+    const [offer, setOffer] = useState('');
+    const [currency, setCurrency] = useState('ZMW');
+
     // AI State
     const [isGeneratingAi, setIsGeneratingAi] = useState(false);
     const [aiImageUrl, setAiImageUrl] = useState<string | null>(null);
@@ -70,19 +75,30 @@ const MarketingPage: React.FC = () => {
             const categoryName = categories.find(c => c.id === (selectedProduct as any).categoryId)?.name ||
                 (selectedProduct as any).category || 'Product';
 
-            const response = await api.post<{ imageUrl: string }>('/ai/generate-poster', {
+            const response = await api.post<{
+                imageUrl: string | null;
+                useFallback?: boolean;
+                visualPrompt?: string;
+            }>('/ai/generate-poster', {
                 productName: selectedProduct.name,
                 category: categoryName,
                 price: selectedProduct.price,
                 storeName: storeSettings?.name || 'Our Store',
                 tone,
                 customText,
-                format
+                format,
+                // Brand Agent fields for Zambian shop owners
+                shopName: shopName || storeSettings?.name || 'Our Store',
+                offer,
+                currency
             });
 
-            setAiImageUrl(response.imageUrl);
+            // If useFallback is true or imageUrl is null, Canvas fallback will be used
+            // Setting null triggers canvas-based generation in PosterGenerator
+            setAiImageUrl(response.useFallback ? null : response.imageUrl);
         } catch (error) {
             console.error("Failed to generate AI poster", error);
+            // On complete failure, canvas fallback is used automatically (aiImageUrl remains null)
         } finally {
             setIsGeneratingAi(false);
         }
@@ -192,6 +208,13 @@ const MarketingPage: React.FC = () => {
                             format={format}
                             setFormat={setFormat}
                             onGenerate={handleGeneratePoster}
+                            // Brand Agent fields for Zambian shop owners
+                            shopName={shopName}
+                            setShopName={setShopName}
+                            offer={offer}
+                            setOffer={setOffer}
+                            currency={currency}
+                            setCurrency={setCurrency}
                         />
 
                         {/* Help / Tip Card */}

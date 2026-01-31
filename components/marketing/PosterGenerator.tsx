@@ -169,7 +169,7 @@ const PosterGenerator: React.FC<Props> = ({
                             <SparklesIcon className="absolute inset-0 m-auto w-6 h-6 text-blue-400 animate-pulse" />
                         </div>
                         <p className="mt-4 text-blue-100 font-bold tracking-wide animate-pulse uppercase text-[10px]">
-                            {isGeneratingAi ? 'Nano Banana Processing...' : 'Loading AI Image...'}
+                            {isGeneratingAi ? 'Creating with Nano Banana Pro...' : 'Loading Artwork...'}
                         </p>
                     </div>
                 )}
@@ -189,7 +189,7 @@ const PosterGenerator: React.FC<Props> = ({
                 {aiImageUrl && !isGeneratingAi && !isLoadingAiImage && (
                     <div className="absolute top-4 right-4 bg-blue-600/90 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-lg backdrop-blur-md border border-blue-400/30 flex items-center gap-1.5">
                         <SparklesIcon className="w-3 h-3" />
-                        AI GENERATED
+                        NANO BANANA PRO
                     </div>
                 )}
             </div>
