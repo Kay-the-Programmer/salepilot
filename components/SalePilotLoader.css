@@ -1,9 +1,8 @@
 /* ============================================
-   SalePilot Premium Brand Loader
-   Speed-Focused Animation System
+   SalePilot Ultra-Premium Loader
+   Captivating Brand Experience
    ============================================ */
 
-/* Brand Colors */
 :root {
     --sp-navy: #0A2E5C;
     --sp-navy-light: #154180;
@@ -12,94 +11,178 @@
     --sp-orange-light: #FFA35C;
     --sp-orange-dark: #E66B1F;
     --sp-green: #2E8B57;
-    --sp-white: #FFFFFF;
-    --sp-speed-glow: rgba(255, 127, 39, 0.6);
+    --sp-glow-orange: rgba(255, 127, 39, 0.6);
+    --sp-glow-navy: rgba(10, 46, 92, 0.4);
 }
 
 /* ============================================
-   Overlay & Container
+   Overlay
    ============================================ */
 
 .sp-loader-overlay {
     position: fixed;
     inset: 0;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
     overflow: hidden;
 }
 
 .dark .sp-loader-overlay {
-    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
 }
 
-/* Subtle background pattern */
-.sp-loader-overlay::before {
-    content: '';
+.sp-backdrop-blur {
     position: absolute;
     inset: 0;
-    background-image: radial-gradient(circle at 2px 2px, rgba(10, 46, 92, 0.03) 1px, transparent 0);
-    background-size: 40px 40px;
+    background: radial-gradient(ellipse at 50% 40%,
+            rgba(255, 127, 39, 0.06) 0%,
+            transparent 50%);
 }
 
-.dark .sp-loader-overlay::before {
-    background-image: radial-gradient(circle at 2px 2px, rgba(255, 127, 39, 0.05) 1px, transparent 0);
+.dark .sp-backdrop-blur {
+    background: radial-gradient(ellipse at 50% 40%,
+            rgba(255, 127, 39, 0.1) 0%,
+            transparent 50%);
 }
 
 .sp-loader-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    gap: 28px;
+    gap: 32px;
     z-index: 1;
+    position: relative;
 }
 
 /* ============================================
-   Brand Ring - Premium Circular Container
+   Ambient Background Orbs
    ============================================ */
 
-.sp-brand-ring {
+.sp-ambient {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    pointer-events: none;
+}
+
+.sp-ambient-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    opacity: 0.4;
+    animation: sp-orb-float 8s ease-in-out infinite;
+}
+
+.sp-orb-1 {
+    width: 120px;
+    height: 120px;
+    background: var(--sp-orange);
+    top: -30px;
+    left: -40px;
+    animation-delay: 0s;
+}
+
+.sp-orb-2 {
+    width: 80px;
+    height: 80px;
+    background: var(--sp-navy-light);
+    bottom: 0;
+    right: -30px;
+    animation-delay: 2s;
+}
+
+.sp-orb-3 {
+    width: 60px;
+    height: 60px;
+    background: var(--sp-orange-light);
+    top: 50%;
+    right: -50px;
+    animation-delay: 4s;
+}
+
+@keyframes sp-orb-float {
+
+    0%,
+    100% {
+        transform: translate(0, 0) scale(1);
+        opacity: 0.3;
+    }
+
+    25% {
+        transform: translate(10px, -15px) scale(1.1);
+        opacity: 0.5;
+    }
+
+    50% {
+        transform: translate(-5px, 10px) scale(0.95);
+        opacity: 0.4;
+    }
+
+    75% {
+        transform: translate(15px, 5px) scale(1.05);
+        opacity: 0.5;
+    }
+}
+
+/* ============================================
+   Logo Stage
+   ============================================ */
+
+.sp-logo-stage {
     position: relative;
-    width: 140px;
-    height: 140px;
+    width: 130px;
+    height: 130px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-/* Rotating outer ring glow */
-.sp-ring-glow {
+/* ============================================
+   Outer Glow Ring
+   ============================================ */
+
+.sp-glow-ring {
     position: absolute;
-    inset: -4px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
-    background: conic-gradient(from 0deg,
-            transparent 0deg,
-            var(--sp-orange) 60deg,
-            transparent 120deg,
-            transparent 240deg,
-            var(--sp-navy) 300deg,
-            transparent 360deg);
-    animation: sp-ring-rotate 2s linear infinite;
-    opacity: 0.8;
+    background: radial-gradient(circle,
+            transparent 45%,
+            var(--sp-glow-orange) 50%,
+            transparent 55%);
+    opacity: 0;
+    animation: sp-glow-pulse 2s ease-in-out infinite;
 }
 
-.sp-ring-glow::after {
-    content: '';
+@keyframes sp-glow-pulse {
+
+    0%,
+    100% {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.15);
+    }
+}
+
+/* ============================================
+   Rotating Arc Ring
+   ============================================ */
+
+.sp-arc-ring {
     position: absolute;
-    inset: 4px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    width: 100%;
+    height: 100%;
+    animation: sp-arc-spin 1.8s linear infinite;
 }
 
-.dark .sp-ring-glow::after {
-    background: linear-gradient(135deg, #0f172a, #1e293b);
-}
-
-@keyframes sp-ring-rotate {
+@keyframes sp-arc-spin {
     from {
         transform: rotate(0deg);
     }
@@ -110,282 +193,234 @@
 }
 
 /* ============================================
-   Main Loader
+   Pixel Cascade
    ============================================ */
 
-.sp-loader {
-    position: relative;
-    width: 100px;
-    height: 90px;
-    animation: sp-cart-rush 0.8s ease-in-out infinite;
+.sp-pixels-cascade {
+    position: absolute;
+    width: 70px;
+    height: 50px;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
-@keyframes sp-cart-rush {
+.sp-cascade-pixel {
+    position: absolute;
+    background: var(--sp-navy);
+    border-radius: 2px;
+    box-shadow: 0 2px 8px var(--sp-glow-navy);
+    animation: sp-pixel-cascade 2.4s ease-in-out infinite;
+}
+
+.dark .sp-cascade-pixel {
+    background: #64748b;
+    box-shadow: 0 2px 12px rgba(100, 116, 139, 0.5);
+}
+
+.sp-cp-1 {
+    width: 8px;
+    height: 8px;
+    left: 32px;
+    top: 0;
+    animation-delay: 0s;
+}
+
+.sp-cp-2 {
+    width: 6px;
+    height: 6px;
+    left: 20px;
+    top: 8px;
+    animation-delay: 0.2s;
+}
+
+.sp-cp-3 {
+    width: 7px;
+    height: 7px;
+    left: 44px;
+    top: 6px;
+    animation-delay: 0.35s;
+}
+
+.sp-cp-4 {
+    width: 5px;
+    height: 5px;
+    left: 12px;
+    top: 16px;
+    animation-delay: 0.5s;
+}
+
+.sp-cp-5 {
+    width: 6px;
+    height: 6px;
+    left: 54px;
+    top: 14px;
+    animation-delay: 0.15s;
+}
+
+.sp-cp-6 {
+    width: 4px;
+    height: 4px;
+    left: 28px;
+    top: 18px;
+    animation-delay: 0.45s;
+}
+
+.sp-cp-7 {
+    width: 5px;
+    height: 5px;
+    left: 38px;
+    top: 22px;
+    animation-delay: 0.6s;
+}
+
+@keyframes sp-pixel-cascade {
 
     0%,
     100% {
-        transform: translateX(-3px);
+        transform: translateY(0) scale(1);
+        opacity: 0.3;
+    }
+
+    20% {
+        opacity: 1;
     }
 
     50% {
-        transform: translateX(3px);
+        transform: translateY(-10px) scale(1.1);
+        opacity: 1;
+    }
+
+    80% {
+        opacity: 0.8;
     }
 }
 
 /* ============================================
-   Speed Lines - Motion Effect
+   Cart Assembly
    ============================================ */
 
-.sp-speed-lines {
-    position: absolute;
-    left: -40px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 35px;
-    height: 50px;
-    overflow: visible;
+.sp-cart-assembly {
+    position: relative;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.sp-speed-line {
+/* Speed Trail */
+.sp-speed-trail {
+    position: absolute;
+    left: -22px;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 36px;
+    width: 25px;
+}
+
+.sp-trail {
     position: absolute;
     height: 3px;
     background: linear-gradient(to left, var(--sp-orange), transparent);
-    border-radius: 2px;
-    animation: sp-speed-streak 0.6s ease-out infinite;
+    border-radius: 3px;
+    animation: sp-trail-streak 0.7s ease-out infinite;
 }
 
-.dark .sp-speed-line {
-    background: linear-gradient(to left, var(--sp-orange-light), transparent);
-}
-
-.sp-speed-line-1 {
-    width: 25px;
-    top: 10px;
+.sp-trail-1 {
+    width: 20px;
+    top: 6px;
     animation-delay: 0s;
 }
 
-.sp-speed-line-2 {
-    width: 35px;
-    top: 18px;
-    animation-delay: 0.1s;
-}
-
-.sp-speed-line-3 {
-    width: 30px;
-    top: 26px;
-    animation-delay: 0.05s;
-}
-
-.sp-speed-line-4 {
-    width: 20px;
-    top: 34px;
-    animation-delay: 0.15s;
-}
-
-.sp-speed-line-5 {
+.sp-trail-2 {
     width: 28px;
-    top: 42px;
-    animation-delay: 0.08s;
+    top: 16px;
+    animation-delay: 0.12s;
 }
 
-@keyframes sp-speed-streak {
+.sp-trail-3 {
+    width: 18px;
+    top: 26px;
+    animation-delay: 0.06s;
+}
+
+@keyframes sp-trail-streak {
     0% {
         opacity: 0;
-        transform: translateX(15px) scaleX(0.3);
+        transform: translateX(12px) scaleX(0.3);
     }
 
-    30% {
+    25% {
         opacity: 1;
         transform: translateX(0) scaleX(1);
     }
 
     100% {
         opacity: 0;
-        transform: translateX(-20px) scaleX(0.5);
+        transform: translateX(-18px) scaleX(0.5);
     }
 }
 
-/* ============================================
-   Shopping Cart
-   ============================================ */
-
-.sp-cart {
+/* Cart Core */
+.sp-cart-core {
     position: relative;
-    width: 70px;
-    height: 60px;
-    margin-left: 25px;
-    margin-top: 15px;
+    width: 56px;
+    height: 56px;
+    animation: sp-cart-ride 0.9s ease-in-out infinite;
 }
 
-/* Cart Body */
-.sp-cart-body {
-    position: absolute;
-    width: 60px;
-    height: 45px;
-    background: linear-gradient(145deg, var(--sp-navy-light), var(--sp-navy));
-    border-radius: 0 0 10px 10px;
-    clip-path: polygon(8% 0, 92% 0, 100% 100%, 0% 100%);
-    overflow: hidden;
-    box-shadow:
-        0 8px 32px rgba(10, 46, 92, 0.4),
-        0 2px 8px rgba(10, 46, 92, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
-.dark .sp-cart-body {
-    background: linear-gradient(145deg, var(--sp-navy), var(--sp-navy-dark));
-    box-shadow:
-        0 8px 32px rgba(255, 127, 39, 0.2),
-        0 0 60px rgba(255, 127, 39, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
-}
-
-/* Motion Blur Effect */
-.sp-motion-blur {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.15) 20%,
-            rgba(255, 255, 255, 0.3) 50%,
-            rgba(255, 255, 255, 0.15) 80%,
-            transparent 100%);
-    animation: sp-motion-sweep 1s ease-in-out infinite;
-}
-
-@keyframes sp-motion-sweep {
-    0% {
-        transform: translateX(-100%) skewX(-15deg);
-    }
-
-    100% {
-        transform: translateX(200%) skewX(-15deg);
-    }
-}
-
-/* Cart Handle */
-.sp-cart-handle {
-    position: absolute;
-    top: -12px;
-    left: -10px;
-    width: 28px;
-    height: 18px;
-    border: 4px solid var(--sp-navy);
-    border-bottom: none;
-    border-radius: 3px 10px 0 0;
-    transform: rotate(-12deg);
-}
-
-.dark .sp-cart-handle {
-    border-color: var(--sp-navy-light);
-}
-
-/* ============================================
-   Lightning Bolt - SVG Version
-   ============================================ */
-
-.sp-lightning {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 28px;
-    height: 32px;
-}
-
-.sp-bolt-svg {
-    width: 100%;
-    height: 100%;
-    fill: var(--sp-orange);
-    filter: drop-shadow(0 0 8px var(--sp-speed-glow));
-    animation: sp-bolt-flash 0.4s ease-in-out infinite;
-}
-
-@keyframes sp-bolt-flash {
+@keyframes sp-cart-ride {
 
     0%,
     100% {
-        opacity: 1;
-        filter: drop-shadow(0 0 8px var(--sp-speed-glow));
-        transform: scale(1);
+        transform: translateX(-3px) translateY(0);
+    }
+
+    25% {
+        transform: translateX(0) translateY(-2px);
     }
 
     50% {
-        opacity: 0.85;
-        filter: drop-shadow(0 0 16px var(--sp-speed-glow)) drop-shadow(0 0 24px rgba(255, 127, 39, 0.4));
-        transform: scale(1.08);
+        transform: translateX(3px) translateY(0);
+    }
+
+    75% {
+        transform: translateX(0) translateY(1px);
     }
 }
 
-/* ============================================
-   Wheels with Speed Trail
-   ============================================ */
-
-.sp-wheel-container {
-    position: absolute;
-    bottom: -8px;
+.sp-cart-svg {
+    width: 100%;
+    height: 100%;
 }
 
-.sp-wheel-left {
-    left: 8px;
+.sp-cart-path {
+    stroke-dasharray: 0;
+    animation: sp-cart-draw 2s ease-out forwards;
 }
 
-.sp-wheel-right {
-    right: 8px;
+@keyframes sp-cart-draw {
+    from {
+        stroke-dashoffset: 100;
+    }
+
+    to {
+        stroke-dashoffset: 0;
+    }
 }
 
 .sp-wheel {
-    width: 14px;
-    height: 14px;
-    background: linear-gradient(145deg, var(--sp-navy-light), var(--sp-navy));
-    border-radius: 50%;
-    position: relative;
-    animation: sp-wheel-spin 0.3s linear infinite;
-    box-shadow: 0 2px 6px rgba(10, 46, 92, 0.3);
+    fill: var(--sp-navy);
+    transform-origin: center;
+    animation: sp-wheel-roll 0.4s linear infinite;
 }
 
 .dark .sp-wheel {
-    background: linear-gradient(145deg, var(--sp-navy), var(--sp-navy-dark));
-    box-shadow: 0 2px 8px rgba(255, 127, 39, 0.2);
+    fill: #94a3b8;
 }
 
-/* Wheel spokes */
-.sp-wheel::before,
-.sp-wheel::after {
-    content: '';
-    position: absolute;
-    background: rgba(255, 255, 255, 0.3);
-}
-
-.sp-wheel::before {
-    width: 2px;
-    height: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.sp-wheel::after {
-    width: 100%;
-    height: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-/* Wheel motion trail */
-.sp-wheel-trail {
-    position: absolute;
-    left: -20px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 20px;
-    height: 4px;
-    background: linear-gradient(to left, var(--sp-orange), transparent);
-    border-radius: 2px;
-    opacity: 0.6;
-    animation: sp-trail-pulse 0.4s ease-out infinite;
-}
-
-@keyframes sp-wheel-spin {
+@keyframes sp-wheel-roll {
     from {
         transform: rotate(0deg);
     }
@@ -395,235 +430,404 @@
     }
 }
 
-@keyframes sp-trail-pulse {
+/* ============================================
+   Lightning Core
+   ============================================ */
+
+.sp-lightning-core {
+    position: absolute;
+    top: 50%;
+    left: 52%;
+    transform: translate(-50%, -48%);
+    width: 26px;
+    height: 26px;
+}
+
+.sp-bolt {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+}
+
+.sp-bolt-shape {
+    animation: sp-bolt-pulse 0.6s ease-in-out infinite;
+}
+
+@keyframes sp-bolt-pulse {
 
     0%,
     100% {
-        opacity: 0.6;
-        width: 20px;
+        opacity: 1;
+        transform: scale(1);
     }
 
     50% {
         opacity: 0.9;
-        width: 28px;
+        transform: scale(1.12);
+    }
+}
+
+/* Energy Ring around Bolt */
+.sp-energy-ring {
+    position: absolute;
+    inset: -8px;
+    border: 2px solid var(--sp-orange);
+    border-radius: 50%;
+    opacity: 0;
+    animation: sp-energy-expand 1.2s ease-out infinite;
+}
+
+@keyframes sp-energy-expand {
+    0% {
+        transform: scale(0.5);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(1.8);
+        opacity: 0;
     }
 }
 
 /* ============================================
-   Energy Particles
+   Particle Sparks
    ============================================ */
 
-.sp-particles {
+.sp-particle-field {
     position: absolute;
-    top: 5px;
-    right: -5px;
-    width: 45px;
-    height: 45px;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
 }
 
-.sp-particle {
+.sp-spark {
     position: absolute;
-    border-radius: 2px;
+    width: 4px;
+    height: 4px;
     background: var(--sp-orange);
-    box-shadow: 0 0 6px var(--sp-speed-glow);
-    animation: sp-particle-burst 1.2s ease-out infinite;
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--sp-glow-orange);
+    animation: sp-spark-fly 1.5s ease-out infinite;
 }
 
-.dark .sp-particle {
-    background: var(--sp-orange-light);
-    box-shadow: 0 0 10px var(--sp-speed-glow);
-}
-
-.sp-particle-1 {
-    width: 6px;
-    height: 6px;
+.sp-spark-1 {
+    top: 40%;
+    right: 5px;
     animation-delay: 0s;
 }
 
-.sp-particle-2 {
-    width: 5px;
-    height: 5px;
-    animation-delay: 0.2s;
+.sp-spark-2 {
+    top: 25%;
+    right: 15px;
+    animation-delay: 0.3s;
 }
 
-.sp-particle-3 {
-    width: 4px;
-    height: 4px;
-    animation-delay: 0.4s;
-}
-
-.sp-particle-4 {
-    width: 5px;
-    height: 5px;
+.sp-spark-3 {
+    top: 55%;
+    right: 10px;
     animation-delay: 0.6s;
 }
 
-.sp-particle-5 {
-    width: 4px;
-    height: 4px;
-    animation-delay: 0.8s;
+.sp-spark-4 {
+    top: 35%;
+    right: 0;
+    animation-delay: 0.9s;
 }
 
-.sp-particle-6 {
-    width: 3px;
-    height: 3px;
-    animation-delay: 1.0s;
-}
-
-@keyframes sp-particle-burst {
+@keyframes sp-spark-fly {
     0% {
         opacity: 0;
-        transform: translate(0, 0) rotate(0deg) scale(0);
+        transform: translate(0, 0) scale(0);
     }
 
-    15% {
+    20% {
         opacity: 1;
-        transform: translate(5px, -5px) rotate(45deg) scale(1);
+        transform: translate(5px, -5px) scale(1);
     }
 
     100% {
         opacity: 0;
-        transform: translate(35px, -40px) rotate(180deg) scale(0.3);
+        transform: translate(30px, -25px) scale(0.3);
     }
 }
 
 /* ============================================
-   Brand Text
+   Brand Identity
    ============================================ */
 
-.sp-brand-text {
+.sp-brand-identity {
     display: flex;
-    align-items: baseline;
-    font-size: 24px;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.sp-brand-name {
+    display: flex;
+    font-size: 28px;
     font-weight: 800;
     letter-spacing: -0.5px;
-    user-select: none;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.sp-text-sale {
+.sp-name-sale {
     color: var(--sp-navy);
-    animation: sp-text-slide-in 0.6s ease-out forwards;
+    animation: sp-name-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.dark .sp-text-sale {
-    color: #e2e8f0;
+.dark .sp-name-sale {
+    color: #f1f5f9;
 }
 
-.sp-text-pilot {
+.sp-name-pilot {
     color: var(--sp-orange);
-    animation: sp-text-slide-in 0.6s ease-out 0.1s forwards;
     opacity: 0;
+    animation: sp-name-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
 }
 
-@keyframes sp-text-slide-in {
-    0% {
+@keyframes sp-name-reveal {
+    from {
         opacity: 0;
-        transform: translateX(-10px);
+        transform: translateY(12px);
+        filter: blur(4px);
     }
 
-    100% {
+    to {
         opacity: 1;
-        transform: translateX(0);
+        transform: translateY(0);
+        filter: blur(0);
+    }
+}
+
+.sp-tagline {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #64748b;
+    opacity: 0;
+    animation: sp-tagline-fade 0.8s ease-out 0.4s forwards;
+}
+
+.dark .sp-tagline {
+    color: #94a3b8;
+}
+
+@keyframes sp-tagline-fade {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 0.8;
+        transform: translateY(0);
     }
 }
 
 /* ============================================
-   Progress Bar
+   Premium Progress Bar
    ============================================ */
 
+.sp-progress-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
 .sp-progress-bar {
-    width: 180px;
-    height: 4px;
-    background: rgba(10, 46, 92, 0.1);
-    border-radius: 4px;
+    width: 160px;
+    height: 3px;
+    background: rgba(10, 46, 92, 0.08);
+    border-radius: 3px;
     overflow: hidden;
     position: relative;
 }
 
 .dark .sp-progress-bar {
-    background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
 }
 
 .sp-progress-fill {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(90deg, var(--sp-navy), var(--sp-orange));
-    border-radius: 4px;
-    animation: sp-progress-sweep 1.5s ease-in-out infinite;
-    transform-origin: left center;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            var(--sp-navy) 0%,
+            var(--sp-orange) 50%,
+            var(--sp-orange-light) 100%);
+    border-radius: 3px;
+    animation: sp-progress-flow 1.4s ease-in-out infinite;
 }
 
-.sp-progress-glow {
+.sp-progress-shimmer {
     position: absolute;
-    top: -2px;
-    width: 40px;
-    height: 8px;
-    background: radial-gradient(ellipse, var(--sp-speed-glow), transparent);
+    width: 30%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 255, 255, 0.4),
+            transparent);
+    animation: sp-shimmer 1.4s ease-in-out infinite;
+}
+
+@keyframes sp-progress-flow {
+    0% {
+        left: -40%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+@keyframes sp-shimmer {
+    0% {
+        left: -30%;
+    }
+
+    100% {
+        left: 100%;
+    }
+}
+
+/* Loading Dots */
+.sp-progress-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.sp-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--sp-navy);
     border-radius: 50%;
-    animation: sp-glow-move 1.5s ease-in-out infinite;
+    opacity: 0.3;
+    animation: sp-dot-bounce 1.4s ease-in-out infinite;
 }
 
-@keyframes sp-progress-sweep {
-    0% {
-        transform: translateX(-100%);
-    }
-
-    50% {
-        transform: translateX(0%);
-    }
-
-    100% {
-        transform: translateX(100%);
-    }
+.dark .sp-dot {
+    background: #94a3b8;
 }
 
-@keyframes sp-glow-move {
-    0% {
-        left: -40px;
-    }
+.sp-dot-1 {
+    animation-delay: 0s;
+}
 
-    50% {
-        left: 70px;
-    }
+.sp-dot-2 {
+    animation-delay: 0.15s;
+}
 
+.sp-dot-3 {
+    animation-delay: 0.3s;
+}
+
+@keyframes sp-dot-bounce {
+
+    0%,
+    60%,
     100% {
-        left: 180px;
+        transform: translateY(0);
+        opacity: 0.3;
+    }
+
+    30% {
+        transform: translateY(-6px);
+        opacity: 1;
     }
 }
 
 /* ============================================
-   Performance Optimizations
+   Performance
    ============================================ */
 
-.sp-loader,
-.sp-ring-glow,
-.sp-speed-line,
+.sp-arc-ring,
+.sp-glow-ring,
+.sp-cascade-pixel,
+.sp-cart-core,
 .sp-wheel,
-.sp-bolt-svg,
-.sp-particle,
+.sp-bolt-shape,
+.sp-energy-ring,
+.sp-spark,
+.sp-trail,
 .sp-progress-fill,
-.sp-progress-glow {
+.sp-progress-shimmer,
+.sp-dot,
+.sp-ambient-orb {
     will-change: transform, opacity;
 }
 
-/* Reduced motion preference */
+.sp-logo-stage,
+.sp-cart-assembly {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+}
+
+/* ============================================
+   Reduced Motion
+   ============================================ */
+
 @media (prefers-reduced-motion: reduce) {
 
-    .sp-loader,
-    .sp-ring-glow,
-    .sp-speed-line,
+    .sp-arc-ring,
+    .sp-glow-ring,
+    .sp-cascade-pixel,
+    .sp-cart-core,
     .sp-wheel,
-    .sp-bolt-svg,
-    .sp-particle,
-    .sp-motion-blur,
-    .sp-wheel-trail,
+    .sp-bolt-shape,
+    .sp-energy-ring,
+    .sp-spark,
+    .sp-trail,
     .sp-progress-fill,
-    .sp-progress-glow {
-        animation: none;
+    .sp-progress-shimmer,
+    .sp-dot,
+    .sp-ambient-orb {
+        animation: none !important;
     }
 
-    .sp-bolt-svg {
-        filter: drop-shadow(0 0 8px var(--sp-speed-glow));
+    .sp-glow-ring {
+        opacity: 0.4;
+        transform: scale(1.05);
+    }
+
+    .sp-cascade-pixel {
+        opacity: 0.6;
+    }
+
+    .sp-progress-fill {
+        left: 30%;
+    }
+
+    .sp-dot {
+        opacity: 0.6;
+    }
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+
+@media (max-width: 480px) {
+    .sp-loader-container {
+        gap: 28px;
+    }
+
+    .sp-brand-name {
+        font-size: 24px;
+    }
+
+    .sp-tagline {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+    }
+
+    .sp-progress-bar {
+        width: 140px;
+    }
+
+    .sp-ambient-orb {
+        filter: blur(30px);
     }
 }
