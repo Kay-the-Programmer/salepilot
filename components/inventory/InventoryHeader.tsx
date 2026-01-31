@@ -2,6 +2,9 @@ import React from 'react';
 import Header from '../../components/Header';
 import { FiFilter } from 'react-icons/fi';
 import ListGridToggle from '../ui/ListGridToggle';
+import CheckIcon from '../icons/CheckIcon';
+import ChevronDownIcon from '../icons/ChevronDownIcon';
+import AdjustmentsHorizontalIcon from '../icons/AdjustmentsHorizontalIcon';
 
 interface InventoryHeaderProps {
     searchTerm: string;
@@ -40,6 +43,19 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     onOpenAddProduct,
     onOpenAddCategory
 }) => {
+    const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+    const settingsRef = React.useRef<HTMLDivElement>(null);
+
+    React.useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+                setIsSettingsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     return (
         <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-white/10 hidden md:block">
             <Header
@@ -52,76 +68,105 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                 buttonText={canManageProducts ? (activeTab === 'products' ? 'Add Product' : 'Add Category') : undefined}
                 onButtonClick={canManageProducts ? (activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory) : undefined}
                 searchLeftContent={
-                    <>
-                        <div className="flex bg-gray-100/60 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
+                    <div className="flex bg-gray-100/60 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
+                        <button
+                            onClick={() => {
+                                setActiveTab('products');
+                                setSearchTerm('');
+                            }}
+                            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'products'
+                                ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                }`}
+                        >
+                            Products
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('categories');
+                                setSearchTerm('');
+                            }}
+                            className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'categories'
+                                ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
+                                }`}
+                        >
+                            Categories
+                        </button>
+                    </div>
+                }
+                rightContent={
+                    activeTab === 'products' ? (
+                        <div className="flex items-center gap-2">
+                            {/* Barcode Lookup - Primary Action */}
                             <button
-                                onClick={() => {
-                                    setActiveTab('products');
-                                    setSearchTerm('');
-                                }}
-                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'products'
-                                    ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                    }`}
+                                onClick={() => setIsManualLookupOpen(true)}
+                                className="hidden lg:flex items-center justify-center p-2 rounded-xl text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
+                                title="Lookup Barcode"
                             >
-                                Products
+                                <span className="text-xl leading-none">⌨️</span>
                             </button>
-                            <button
-                                onClick={() => {
-                                    setActiveTab('categories');
-                                    setSearchTerm('');
-                                }}
-                                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === 'categories'
-                                    ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
-                                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
-                                    }`}
-                            >
-                                Categories
-                            </button>
-                        </div>
 
-                        {activeTab === 'products' && (
-                            <div className="flex bg-transparent gap-1 p-1 rounded-xl shrink-0 items-center">
-                                <button
-                                    onClick={() => setIsManualLookupOpen(true)}
-                                    className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 bg-white dark:bg-slate-800 dark:border-white/10 hover:bg-gray-50 dark:hover:bg-slate-700 text-gray-700 dark:text-gray-300 font-medium transition-colors text-sm"
-                                    title="Manually enter barcode"
-                                >
-                                    <span role="img" aria-label="barcode">⌨️</span>
-                                    Lookup Barcode
-                                </button>
+                            <div className="h-6 w-px bg-gray-200 dark:bg-slate-700 mx-1"></div>
 
+                            {/* View Settings Dropdown */}
+                            <div className="relative" ref={settingsRef}>
                                 <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showFilters || searchTerm || showArchived
+                                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all ${isSettingsOpen || showArchived || showFilters
                                         ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-400'
                                         : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700'
                                         }`}
                                 >
-                                    <FiFilter className="w-4 h-4" />
-                                    Filters
+                                    <AdjustmentsHorizontalIcon className="w-5 h-5" />
+                                    <span className="text-sm font-medium">Display</span>
+                                    <ChevronDownIcon className={`w-4 h-4 transition-transform ${isSettingsOpen ? 'rotate-180' : ''}`} />
                                 </button>
 
-                                <div className="ml-2">
-                                    <ListGridToggle
-                                        viewMode={viewMode}
-                                        onViewModeChange={setViewMode}
-                                        size="sm"
-                                    />
-                                </div>
+                                {isSettingsOpen && (
+                                    <div className="absolute right-0 top-full mt-2 w-64 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-white/10 p-2 z-50 animate-in fade-in zoom-in-95 duration-200 font-medium">
+                                        <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                            View Layout
+                                        </div>
+                                        <div className="px-2">
+                                            <ListGridToggle
+                                                viewMode={viewMode}
+                                                onViewModeChange={(mode) => {
+                                                    setViewMode(mode);
+                                                    // Don't close for better UX
+                                                }}
+                                                size="sm"
+                                            />
+                                        </div>
 
-                                <button
-                                    onClick={() => setShowArchived(!showArchived)}
-                                    className={`px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors whitespace-nowrap ${showArchived
-                                        ? 'bg-amber-50 dark:bg-amber-500/10 border-amber-200 dark:border-amber-500/20 text-amber-700 dark:text-amber-400'
-                                        : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700'
-                                        }`}
-                                >
-                                    {showArchived ? 'Showing Archived' : 'Show Archived'}
-                                </button>
+                                        <div className="my-2 border-t border-gray-100 dark:border-white/5"></div>
+
+                                        <button
+                                            onClick={() => setShowFilters(!showFilters)}
+                                            className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <FiFilter className="w-4 h-4" />
+                                                <span>Show Filters</span>
+                                            </div>
+                                            {showFilters && <CheckIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                                        </button>
+
+                                        <button
+                                            onClick={() => setShowArchived(!showArchived)}
+                                            className="w-full flex items-center justify-between px-3 py-2 text-sm text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-4 h-4 flex items-center justify-center text-xs">📦</span>
+                                                <span>Show Archived</span>
+                                            </div>
+                                            {showArchived && <CheckIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />}
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                    </>
+                        </div>
+                    ) : null
                 }
             />
         </div>

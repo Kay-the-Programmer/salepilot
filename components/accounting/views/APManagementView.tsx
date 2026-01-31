@@ -27,16 +27,16 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
 
     const StatusBadge: React.FC<{ status: SupplierInvoice['status'] }> = ({ status }) => {
         const statusConfig = {
-            unpaid: { color: 'from-amber-500 to-yellow-500', bg: 'bg-gradient-to-r from-amber-50 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40', text: 'text-amber-700 dark:text-amber-400', border: 'border-amber-200/50 dark:border-amber-500/20' },
-            partially_paid: { color: 'from-blue-500 to-blue-600', bg: 'bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-indigo-900/40', text: 'text-blue-700 dark:text-blue-400', border: 'border-blue-200/50 dark:border-blue-500/20' },
-            paid: { color: 'from-green-500 to-emerald-500', bg: 'bg-gradient-to-r from-green-50 to-emerald-100 dark:from-green-900/40 dark:to-emerald-900/40', text: 'text-green-700 dark:text-green-400', border: 'border-green-200/50 dark:border-green-500/20' },
-            overdue: { color: 'from-red-500 to-red-600', bg: 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/40 dark:to-rose-900/40', text: 'text-red-700 dark:text-red-400', border: 'border-red-200/50 dark:border-red-500/20' },
+            unpaid: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' },
+            partially_paid: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
+            paid: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
+            overdue: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
         };
         const config = statusConfig[status] || statusConfig.unpaid;
 
         return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider border ${config.bg} ${config.text} ${config.border}`}>
-                <div className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gradient-to-br ${config.color} shadow-[0_0_8px_rgba(var(--color-shadow),0.4)]`}></div>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></div>
                 {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </span>
         );
@@ -78,37 +78,38 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
         <div className="space-y-6 md:space-y-8 pb-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Accounts Payable</h3>
-                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">Manage supplier invoices and payments</p>
+                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Accounts Payable</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage supplier invoices and payments</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <div glass-effect="" className="flex-1 px-4 py-3 !bg-amber-50/50 dark:!bg-amber-900/20 border-amber-200/50 dark:border-amber-800/50 rounded-2xl">
-                        <div className="text-[10px] font-bold text-amber-700 dark:text-amber-300 uppercase tracking-widest">Total Outstanding</div>
-                        <div className="text-lg md:text-2xl font-black text-amber-900 dark:text-amber-50 tracking-tight">{formatCurrency(totalOutstanding, storeSettings)}</div>
+                    <div className="flex-1 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 rounded-xl">
+                        <div className="text-xs font-medium text-amber-700 dark:text-amber-400">Total Outstanding</div>
+                        <div className="text-xl font-bold text-amber-900 dark:text-amber-100 tracking-tight">{formatCurrency(totalOutstanding, storeSettings)}</div>
                     </div>
                     <button
                         onClick={onOpenInvoiceForm}
-                        className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-black rounded-2xl hover:shadow-xl hover:shadow-blue-500/25 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 active:translate-y-0"
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-colors"
                     >
-                        <PlusIcon className="w-5 h-5" />
+                        <PlusIcon className="w-4 h-4" />
                         <span className="whitespace-nowrap">Record Invoice</span>
                     </button>
                 </div>
             </div>
 
             {/* Stats and Filters */}
+            {/* Stats and Filters */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div glass-effect="" className="p-4 rounded-2xl">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Invoices</div>
-                    <div className="text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">{invoicesWithStatus.length}</div>
+                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                    <div className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Invoices</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{invoicesWithStatus.length}</div>
                 </div>
-                <div glass-effect="" className="p-4 !bg-red-50/50 dark:!bg-red-900/20 border-red-200/50 dark:border-red-800/50 rounded-2xl">
-                    <div className="text-xs font-bold text-red-700 dark:text-red-300 uppercase tracking-widest">Overdue</div>
-                    <div className="text-2xl font-black text-red-900 dark:text-red-50 tracking-tight">{overdueCount}</div>
+                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                    <div className="text-xs font-medium text-red-600 dark:text-red-400">Overdue</div>
+                    <div className="text-2xl font-bold text-red-700 dark:text-red-400 tracking-tight">{overdueCount}</div>
                 </div>
-                <div glass-effect="" className="p-4 !bg-amber-50/50 dark:!bg-amber-900/20 border-amber-200/50 dark:border-amber-800/50 rounded-2xl">
-                    <div className="text-xs font-bold text-amber-700 dark:text-amber-300 uppercase tracking-widest">Unpaid</div>
-                    <div className="text-2xl font-black text-amber-900 dark:text-amber-50 tracking-tight">{unpaidCount}</div>
+                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                    <div className="text-xs font-medium text-amber-600 dark:text-amber-400">Unpaid</div>
+                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 tracking-tight">{unpaidCount}</div>
                 </div>
             </div>
 
@@ -118,9 +119,9 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                     <button
                         key={status}
                         onClick={() => setStatusFilter(status)}
-                        className={`px-4 py-2 text-sm font-bold rounded-xl transition-all duration-200 active:scale-95 ${statusFilter === status
-                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                            : 'bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${statusFilter === status
+                            ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
+                            : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
                             }`}
                     >
                         {status === 'all' ? 'All Invoices' : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -129,21 +130,21 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
             </div>
 
             {/* Mobile View: Cards */}
+            {/* Mobile View: Cards */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
                 {filteredInvoices.map(invoice => (
                     <div
                         key={invoice.id}
-                        glass-effect=""
-                        className="p-4 rounded-2xl relative overflow-hidden group active:scale-[0.98] transition-all"
+                        className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm"
                         onClick={() => onViewInvoice(invoice)}
                     >
                         <div className="flex justify-between items-start mb-3">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-sm font-black text-slate-900 dark:text-slate-100">{invoice.invoiceNumber}</span>
+                                    <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{invoice.invoiceNumber}</span>
                                     <StatusBadge status={invoice.status} />
                                 </div>
-                                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
                                     <BuildingOfficeIcon className="w-3.5 h-3.5" />
                                     <span>{invoice.supplierName}</span>
                                 </div>
@@ -151,12 +152,12 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                             <div className="relative" onClick={e => e.stopPropagation()}>
                                 <button
                                     onClick={() => setActiveActionMenu(activeActionMenu === invoice.id ? null : invoice.id)}
-                                    className="p-2 -mr-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-full transition-colors"
+                                    className="p-1.5 -mr-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-colors"
                                 >
                                     <EllipsisVerticalIcon className="w-5 h-5" />
                                 </button>
                                 {activeActionMenu === invoice.id && (
-                                    <div className="absolute right-0 top-full mt-1 w-48 glass-effect !bg-white/95 dark:!bg-slate-900/95 rounded-xl shadow-xl z-10 py-1 animate-fade-in-up">
+                                    <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 py-1">
                                         <button
                                             onClick={() => {
                                                 onViewInvoice(invoice);
@@ -173,7 +174,7 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                                                     setInvoiceToPay(invoice);
                                                     setActiveActionMenu(null);
                                                 }}
-                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold"
+                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-medium"
                                             >
                                                 <CalculatorIcon className="w-4 h-4" />
                                                 Record Payment
@@ -186,14 +187,14 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
 
                         <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                             <div>
-                                <div className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-bold">Due Date</div>
-                                <div className={`text-sm font-bold ${invoice.status === 'overdue' ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Due Date</div>
+                                <div className={`text-sm font-medium ${invoice.status === 'overdue' ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
                                     {new Date(invoice.dueDate).toLocaleDateString()}
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-bold">Outstanding</div>
-                                <div className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">
+                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Outstanding</div>
+                                <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
                                     {formatCurrency(invoice.amount - invoice.amountPaid, storeSettings)}
                                 </div>
                             </div>
@@ -203,18 +204,18 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
             </div>
 
             {/* Desktop View: Table */}
-            <div className="hidden md:block glass-effect rounded-2xl overflow-hidden">
+            <div className="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead className="bg-slate-50/50 dark:bg-slate-900/50">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50">
                             <tr>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Invoice #</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Supplier</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">PO #</th>
-                                <th className="px-6 py-4 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Due Date</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Balance Due</th>
-                                <th className="px-6 py-4 text-center text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Status</th>
-                                <th className="px-6 py-4 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Actions</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">Invoice #</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">Supplier</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">PO #</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">Due Date</th>
+                                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">Balance Due</th>
+                                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Status</th>
+                                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="bg-transparent divide-y divide-slate-200 dark:divide-slate-800">
@@ -222,30 +223,27 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                                 <tr
                                     key={invoice.id}
                                     onClick={() => onViewInvoice(invoice)}
-                                    className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.5)]"></div>
-                                            <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{invoice.invoiceNumber}</span>
+                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
+                                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{invoice.invoiceNumber}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 bg-amber-50 dark:bg-amber-900/30 rounded-lg flex items-center justify-center border border-amber-100 dark:border-amber-500/20">
-                                                <BuildingOfficeIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                                            </div>
-                                            <span className="text-sm text-slate-900 dark:text-slate-100 font-bold">{invoice.supplierName}</span>
+                                            <span className="text-sm text-slate-900 dark:text-slate-100 font-medium">{invoice.supplierName}</span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600 dark:text-blue-400 font-bold">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                                         {invoice.poNumber}
                                     </td>
-                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${invoice.status === 'overdue' ? 'text-red-600 dark:text-red-400 font-black' : 'text-slate-500 dark:text-slate-400 font-bold'}`}>
+                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${invoice.status === 'overdue' ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-slate-500 dark:text-slate-400'}`}>
                                         {new Date(invoice.dueDate).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(invoice.amount - invoice.amountPaid, storeSettings)}</div>
+                                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(invoice.amount - invoice.amountPaid, storeSettings)}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <StatusBadge status={invoice.status} />
@@ -254,9 +252,9 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                                         {invoice.status !== 'paid' && (
                                             <button
                                                 onClick={() => setInvoiceToPay(invoice)}
-                                                className="px-4 py-2 text-xs font-black text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-200 border border-blue-200/50 dark:border-blue-500/20 active:scale-95"
+                                                className="px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                                             >
-                                                Record Payment
+                                                Pay
                                             </button>
                                         )}
                                     </td>
@@ -265,11 +263,11 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                             {filteredInvoices.length === 0 && (
                                 <tr>
                                     <td colSpan={7} className="text-center py-12">
-                                        <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-200 dark:border-slate-800">
-                                            <DocumentChartBarIcon className="w-8 h-8 text-slate-400 dark:text-slate-600" />
+                                        <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                            <DocumentChartBarIcon className="w-6 h-6 text-slate-400" />
                                         </div>
-                                        <p className="text-slate-600 dark:text-slate-400 font-bold">No invoices found</p>
-                                        <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">Try changing your filters</p>
+                                        <p className="text-slate-900 dark:text-slate-100 font-medium">No invoices found</p>
+                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Try changing your filters</p>
                                     </td>
                                 </tr>
                             )}

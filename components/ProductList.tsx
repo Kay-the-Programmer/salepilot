@@ -131,10 +131,10 @@ const ProductListRow: React.FC<{
     >
       <div className="flex-1 min-w-0 mr-4">
         <div className="flex items-center">
-          <h3 className={`font-semibold cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+          <h3 className={`font-semibold cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white'}`}>
             {product.name}
           </h3>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+          <span className={`text-xs px-2 py-0.5 rounded-full ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'}`}>
             {asNumber(product.stock)} in stock
           </span>
         </div>
@@ -146,7 +146,7 @@ const ProductListRow: React.FC<{
       </div>
       <div className="flex gap-2 shrink-0">
         <button
-          className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
             }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -157,7 +157,7 @@ const ProductListRow: React.FC<{
         </button>
         {canManage && (
           <button
-            className="px-3 py-1.5 text-sm bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition-colors"
+            className="px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               onAdjustStock();

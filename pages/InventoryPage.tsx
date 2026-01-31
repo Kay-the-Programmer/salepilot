@@ -16,7 +16,8 @@ import InventoryHeader from '../components/inventory/InventoryHeader';
 import InventoryMobileHeader from '../components/inventory/InventoryMobileHeader';
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
-import InventoryMobileMenu from '../components/inventory/InventoryMobileMenu';
+
+
 
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import LinkToPOModal from '../components/LinkToPOModal';
@@ -66,7 +67,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     storeSettings,
     currentUser
 }) => {
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isEditingProduct, setIsEditingProduct] = useState(false); // Inline edit mode
     const [searchTerm, setSearchTerm] = useState('');
@@ -597,10 +598,14 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             {/* Mobile Header */}
             <InventoryMobileHeader
                 activeTab={activeTab}
+                setActiveTab={setActiveTab}
                 selectedItem={!!selectedItem}
-                isMobileMenuOpen={isMobileMenuOpen}
-                setIsMobileMenuOpen={setIsMobileMenuOpen}
                 onScanClick={() => setIsScanModalOpen(true)}
+                onAddClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
+                showArchived={showArchived}
+                setShowArchived={setShowArchived}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
             />
 
             <div className="flex-1 flex overflow-hidden">
@@ -887,14 +892,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
             {/* Mobile Menu Popup */}
             {/* Mobile Menu Popup */}
-            <InventoryMobileMenu
-                isOpen={isMobileMenuOpen}
-                onClose={() => setIsMobileMenuOpen(false)}
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                canManageProducts={canManageProducts}
-                onAddProduct={handleOpenAddModal}
-            />
+
         </div>
     );
 };

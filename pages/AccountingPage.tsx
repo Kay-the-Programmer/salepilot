@@ -13,7 +13,7 @@ import ReceiptPercentIcon from '../components/icons/ReceiptPercentIcon';
 import BookOpenIcon from '../components/icons/BookOpenIcon';
 import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import ChartBarIcon from '../components/icons/ChartBarIcon';
-import GridIcon from '../components/icons/GridIcon';
+
 import CalendarDaysIcon from '../components/icons/CalendarDaysIcon';
 import ExpenseFormModal from '../components/accounting/ExpenseFormModal';
 import AccountAdjustmentModal from '../components/accounting/AccountAdjustmentModal';
@@ -65,7 +65,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     isLoading, error, storeSettings
 }) => {
     const [activeTab, setActiveTab] = React.useState('dashboard');
-    const [isTabMenuOpen, setIsTabMenuOpen] = React.useState(false);
+
     const [isSupplierInvoiceFormOpen, setIsSupplierInvoiceFormOpen] = React.useState(false);
     const [editingSupplierInvoice, setEditingSupplierInvoice] = React.useState<SupplierInvoice | null>(null);
     const [viewingAPInvoice, setViewingAPInvoice] = React.useState<SupplierInvoice | null>(null);
@@ -107,10 +107,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         }
     };
 
-    const handleSelectTab = (tabName: string) => {
-        setActiveTabAndHash(tabName);
-        setIsTabMenuOpen(false);
-    };
+
 
     const handleOpenRecordPaymentAP = (invoice: SupplierInvoice) => {
         setInvoiceToPayAP(invoice);
@@ -281,14 +278,6 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                                 </div>
                             </div>
 
-                            {/* Mobile Grid Toggle */}
-                            <button
-                                type="button"
-                                className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all active:scale-95"
-                                onClick={() => setIsTabMenuOpen(!isTabMenuOpen)}
-                            >
-                                <GridIcon className="w-6 h-6" />
-                            </button>
                         </div>
 
                         {/* Navigation Tabs - Integrated into Header */}
@@ -314,19 +303,26 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         </nav>
 
                         {/* Tablet/Mobile Horizontal Tabs (Visible when grid is closed) */}
-                        <nav className="lg:hidden flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
-                            {tabConfig.map((tab) => (
-                                <button
-                                    key={tab.tabName}
-                                    onClick={() => setActiveTabAndHash(tab.tabName)}
-                                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeTab === tab.tabName
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800'
-                                        }`}
-                                >
-                                    {tab.shortLabel || tab.label}
-                                </button>
-                            ))}
+                        {/* Tablet/Mobile Horizontal Tabs (Bleed Layout) */}
+                        <nav className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 pb-1 scroll-smooth">
+                            {tabConfig.map((tab) => {
+                                const isActive = activeTab === tab.tabName;
+                                return (
+                                    <button
+                                        key={tab.tabName}
+                                        onClick={() => setActiveTabAndHash(tab.tabName)}
+                                        className={`flex-none flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 border ${isActive
+                                            ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-transparent shadow-md transform scale-105'
+                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                            }`}
+                                    >
+                                        <span className={isActive ? 'text-white/90 dark:text-slate-900/90' : 'text-slate-400 dark:text-slate-500'}>
+                                            {React.cloneElement(tab.icon as any, { className: "w-3.5 h-3.5" })}
+                                        </span>
+                                        {tab.shortLabel || tab.label}
+                                    </button>
+                                );
+                            })}
                         </nav>
                     </div>
                 </div>
@@ -335,42 +331,6 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
             <main className="px-4 sm:px-6 lg:px-8 py-8">
                 <div className="max-w-[1600px] mx-auto">
 
-                    {/* Mobile Tab Menu (Floating Grid) */}
-                    {isTabMenuOpen && (
-                        <div
-                            className="fixed inset-0 z-50 bg-black/20 backdrop-blur-sm sm:hidden animate-fade-in"
-                            onClick={() => setIsTabMenuOpen(false)}
-                        >
-                            <div
-                                className="absolute top-[70px] right-4 left-4 glass-effect !bg-white/95 dark:!bg-slate-900/95 rounded-3xl shadow-2xl p-5 animate-fade-in-up"
-                                onClick={e => e.stopPropagation()}
-                            >
-                                <div className="grid grid-cols-3 gap-4">
-                                    {tabConfig.map((tab) => {
-                                        const isActive = activeTab === tab.tabName;
-                                        return (
-                                            <button
-                                                key={tab.tabName}
-                                                onClick={() => handleSelectTab(tab.tabName)}
-                                                className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
-                                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
-                                                    }`}
-                                            >
-                                                <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white dark:bg-slate-700 shadow-sm'}`}>
-                                                    {React.cloneElement(tab.icon as any, { className: "w-6 h-6" })}
-                                                </div>
-                                                <span className="text-[10px] font-bold text-center leading-tight">
-                                                    {tab.shortLabel || tab.label}
-                                                </span>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
                     {/* Content */}
                     <div className="animate-fade-in">
                         {renderContent()}
@@ -378,8 +338,9 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 </div>
             </main>
 
+
             {/* Modals */}
-            <SupplierInvoiceFormModal
+            < SupplierInvoiceFormModal
                 isOpen={isSupplierInvoiceFormOpen}
                 onClose={() => setIsSupplierInvoiceFormOpen(false)}
                 onSave={onSaveSupplierInvoice}
@@ -387,70 +348,80 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 purchaseOrders={purchaseOrders}
                 suppliers={suppliers}
             />
-            {viewingAPInvoice && (
-                <SupplierInvoiceDetailModal
-                    isOpen={!!viewingAPInvoice}
-                    onClose={() => setViewingAPInvoice(null)}
-                    invoice={viewingAPInvoice}
-                    onRecordPayment={handleOpenRecordPaymentAP}
-                    storeSettings={storeSettings}
-                />
-            )}
-            {invoiceToPayAP && (
-                <UnifiedRecordPaymentModal
-                    isOpen={isRecordSupplierPaymentOpen}
-                    onClose={() => setIsRecordSupplierPaymentOpen(false)}
-                    title="Record Supplier Payment"
-                    invoiceId={invoiceToPayAP.id}
-                    invoiceNumber={invoiceToPayAP.invoiceNumber}
-                    balanceDue={invoiceToPayAP.amount - (invoiceToPayAP.amountPaid || 0)}
-                    customerOrSupplierName={suppliers.find(s => s.id === invoiceToPayAP.supplierId)?.name || 'Unknown Supplier'}
-                    paymentMethods={storeSettings.paymentMethods}
-                    onSave={onRecordSupplierPayment}
-                    storeSettings={storeSettings}
-                />
-            )}
-            {viewingARInvoice && (
-                <SalesInvoiceDetailModal
-                    isOpen={!!viewingARInvoice}
-                    onClose={() => setViewingARInvoice(null)}
-                    invoice={sales.find(s => s.transactionId === viewingARInvoice.transactionId) || viewingARInvoice}
-                    onRecordPayment={handleOpenRecordPaymentAR}
-                    storeSettings={storeSettings}
-                    customerName={viewingARInvoice.customerName || (viewingARInvoice.customerId ? (customers.find(c => c.id === viewingARInvoice.customerId)?.name) : undefined) || undefined}
-                />
-            )}
-            {invoiceToPayAR && (
-                <UnifiedRecordPaymentModal
-                    isOpen={isRecordARPaymentOpen}
-                    onClose={() => setIsRecordARPaymentOpen(false)}
-                    title="Record Payment"
-                    invoiceId={invoiceToPayAR.transactionId}
-                    balanceDue={invoiceToPayAR.total - (invoiceToPayAR.payments?.reduce((s, p) => s + p.amount, 0) || invoiceToPayAR.amountPaid || 0)}
-                    customerOrSupplierName={invoiceToPayAR.customerName || (invoiceToPayAR.customerId ? (customers.find(c => c.id === invoiceToPayAR.customerId)?.name) : undefined)}
-                    paymentMethods={storeSettings.paymentMethods}
-                    onSave={(invoiceId, payment) => onRecordPayment(invoiceId, payment)}
-                    storeSettings={storeSettings}
-                />
-            )}
+            {
+                viewingAPInvoice && (
+                    <SupplierInvoiceDetailModal
+                        isOpen={!!viewingAPInvoice}
+                        onClose={() => setViewingAPInvoice(null)}
+                        invoice={viewingAPInvoice}
+                        onRecordPayment={handleOpenRecordPaymentAP}
+                        storeSettings={storeSettings}
+                    />
+                )
+            }
+            {
+                invoiceToPayAP && (
+                    <UnifiedRecordPaymentModal
+                        isOpen={isRecordSupplierPaymentOpen}
+                        onClose={() => setIsRecordSupplierPaymentOpen(false)}
+                        title="Record Supplier Payment"
+                        invoiceId={invoiceToPayAP.id}
+                        invoiceNumber={invoiceToPayAP.invoiceNumber}
+                        balanceDue={invoiceToPayAP.amount - (invoiceToPayAP.amountPaid || 0)}
+                        customerOrSupplierName={suppliers.find(s => s.id === invoiceToPayAP.supplierId)?.name || 'Unknown Supplier'}
+                        paymentMethods={storeSettings.paymentMethods}
+                        onSave={onRecordSupplierPayment}
+                        storeSettings={storeSettings}
+                    />
+                )
+            }
+            {
+                viewingARInvoice && (
+                    <SalesInvoiceDetailModal
+                        isOpen={!!viewingARInvoice}
+                        onClose={() => setViewingARInvoice(null)}
+                        invoice={sales.find(s => s.transactionId === viewingARInvoice.transactionId) || viewingARInvoice}
+                        onRecordPayment={handleOpenRecordPaymentAR}
+                        storeSettings={storeSettings}
+                        customerName={viewingARInvoice.customerName || (viewingARInvoice.customerId ? (customers.find(c => c.id === viewingARInvoice.customerId)?.name) : undefined) || undefined}
+                    />
+                )
+            }
+            {
+                invoiceToPayAR && (
+                    <UnifiedRecordPaymentModal
+                        isOpen={isRecordARPaymentOpen}
+                        onClose={() => setIsRecordARPaymentOpen(false)}
+                        title="Record Payment"
+                        invoiceId={invoiceToPayAR.transactionId}
+                        balanceDue={invoiceToPayAR.total - (invoiceToPayAR.payments?.reduce((s, p) => s + p.amount, 0) || invoiceToPayAR.amountPaid || 0)}
+                        customerOrSupplierName={invoiceToPayAR.customerName || (invoiceToPayAR.customerId ? (customers.find(c => c.id === invoiceToPayAR.customerId)?.name) : undefined)}
+                        paymentMethods={storeSettings.paymentMethods}
+                        onSave={(invoiceId, payment) => onRecordPayment(invoiceId, payment)}
+                        storeSettings={storeSettings}
+                    />
+                )
+            }
 
             {/* Account Adjustment Modal */}
-            {accountToAdjust && (
-                <AccountAdjustmentModal
-                    isOpen={isAdjustmentModalOpen}
-                    onClose={() => {
-                        setIsAdjustmentModalOpen(false);
-                        setAccountToAdjust(null);
-                    }}
-                    onSave={(amount, offsetId, offsetName, desc) => {
-                        handleAdjustAccount(accountToAdjust.id, amount, offsetId, offsetName, desc);
-                        setIsAdjustmentModalOpen(false);
-                        setAccountToAdjust(null);
-                    }}
-                    account={accountToAdjust}
-                    accounts={accounts}
-                />
-            )}
+            {
+                accountToAdjust && (
+                    <AccountAdjustmentModal
+                        isOpen={isAdjustmentModalOpen}
+                        onClose={() => {
+                            setIsAdjustmentModalOpen(false);
+                            setAccountToAdjust(null);
+                        }}
+                        onSave={(amount, offsetId, offsetName, desc) => {
+                            handleAdjustAccount(accountToAdjust.id, amount, offsetId, offsetName, desc);
+                            setIsAdjustmentModalOpen(false);
+                            setAccountToAdjust(null);
+                        }}
+                        account={accountToAdjust}
+                        accounts={accounts}
+                    />
+                )
+            }
 
             {/* Expense Form Modal */}
             <ExpenseFormModal
@@ -464,19 +435,21 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 accounts={accounts}
             />
 
-            {isRecurringExpenseFormOpen && (
-                <RecurringExpenseFormModal
-                    isOpen={isRecurringExpenseFormOpen}
-                    onClose={() => {
-                        setIsRecurringExpenseFormOpen(false);
-                        setEditingRecurringExpense(null);
-                    }}
-                    onSave={onSaveRecurringExpense}
-                    expenseToEdit={editingRecurringExpense}
-                    accounts={accounts}
-                />
-            )}
-        </div>
+            {
+                isRecurringExpenseFormOpen && (
+                    <RecurringExpenseFormModal
+                        isOpen={isRecurringExpenseFormOpen}
+                        onClose={() => {
+                            setIsRecurringExpenseFormOpen(false);
+                            setEditingRecurringExpense(null);
+                        }}
+                        onSave={onSaveRecurringExpense}
+                        expenseToEdit={editingRecurringExpense}
+                        accounts={accounts}
+                    />
+                )
+            }
+        </div >
     );
 };
 

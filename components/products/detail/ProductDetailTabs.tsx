@@ -36,7 +36,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
     return (
         <div className="space-y-4">
             {/* Tab Bar - Scrollable on mobile */}
-            <div className="flex overflow-x-auto border-b border-slate-200 dark:border-slate-700 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
+            <div className="flex overflow-x-auto border-b border-slate-200 dark:border-white/10 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent">
                 {tabs.map((tab) => (
                     <button
                         key={tab.id}
@@ -52,7 +52,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
             </div>
 
             {/* Tab Content */}
-            <div glass-effect="" className="rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div glass-effect="" className="rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden">
                 <div className="p-6">
                     <div className="min-h-[200px]">
                         {/* Details Tab */}
