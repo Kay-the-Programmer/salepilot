@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Product, Category, Supplier, StoreSettings, User, Account, PurchaseOrder } from '../types';
 
 import ProductList from '../components/ProductList';
@@ -207,7 +207,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return categories.filter(c => c.parentId === selectedCategoryId);
     }, [selectedCategoryId, categories]);
 
-    const handleOpenAddModal = (initialValues?: Partial<Omit<Product, 'id'>>) => {
+    const handleOpenAddModal = useCallback((initialValues?: Partial<Omit<Product, 'id'>>) => {
         const newProduct: Product = {
             id: '', // Empty ID signifies creation
             name: '',
@@ -234,7 +234,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setEditingProduct(newProduct);
         setIsEditingProduct(true);
         setSelectedProductId(null);
-    };
+    }, [storeSettings.skuPrefix]);
 
     const handleOpenEditModal = (product: Product) => {
         // Use inline edit form instead of modal
@@ -378,15 +378,15 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setLinkPOQuantity(0);
     };
 
-    const handleOpenAddCategoryModal = () => {
+    const handleOpenAddCategoryModal = useCallback(() => {
         setEditingCategory(null);
         setIsCategoryModalOpen(true);
-    };
+    }, []);
 
-    const handleOpenEditCategoryModal = (category: Category) => {
+    const handleOpenEditCategoryModal = useCallback((category: Category) => {
         setEditingCategory(category);
         setIsCategoryModalOpen(true);
-    };
+    }, []);
 
     const handleCloseCategoryModal = () => {
         setIsCategoryModalOpen(false);
@@ -428,29 +428,37 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         handleCloseDeleteModal();
     };
 
-    const handleSelectProduct = (product: Product) => {
+    const handleSelectProduct = useCallback((product: Product) => {
         setSelectedProductId(product.id);
-    };
+    }, []);
 
-    const handleSelectCategory = (categoryId: string) => {
+    const handleSelectCategory = useCallback((categoryId: string) => {
         setSelectedCategoryId(categoryId);
-    };
+    }, []);
 
-    const handleBackToList = () => {
+    const handleBackToList = useCallback(() => {
         setSelectedProductId(null);
         setSelectedCategoryId(null);
         setSearchTerm('');
-    };
+    }, []);
 
     const filteredProducts = useMemo(() => {
+        if (debouncedSearchTerm.trim() === '') {
+            return products.filter(product => {
+                if (!showArchived && product.status === 'archived') {
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        const term = debouncedSearchTerm.toLowerCase();
+
         return products.filter(product => {
             if (!showArchived && product.status === 'archived') {
                 return false;
             }
 
-            if (debouncedSearchTerm.trim() === '') return true;
-
-            const term = debouncedSearchTerm.toLowerCase();
             const category = product.categoryId ? categoryMap.get(product.categoryId) : null;
             const supplier = product.supplierId ? supplierMap.get(product.supplierId) : null;
 
