@@ -25,8 +25,11 @@ import {
     Bars3Icon,
     BookOpenIcon,
     XMarkIcon,
-    ChatBubbleLeftRightIcon
+    ChatBubbleLeftRightIcon,
+    SunIcon,
+    MoonIcon
 } from './icons';
+import { useTheme } from '../contexts/ThemeContext';
 import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 import logo from '../assets/logo.png';
 
@@ -292,6 +295,7 @@ export default function Sidebar({
     onInstall
 }: SidebarProps) {
     const [isExpanded, setIsExpanded] = useState(true);
+    const { theme, toggleTheme } = useTheme();
     const sidebarRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
@@ -381,17 +385,17 @@ export default function Sidebar({
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden fixed inset-0 w-full h-full glass-effect backdrop-blur-md z-[70] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
+                    className="md:hidden fixed inset-0 w-full h-full glass-effect backdrop-blur-md z-[70] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden dark:bg-slate-900/50"
                 >
                     {/* Header with Close Button */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                        <h2 className="text-lg font-bold text-gray-800">Menu</h2>
+                    <div className="flex items-center justify-between h-8 bg-gray-900 dark:bg-black text-white select-none overflow-hidden" style={{ WebkitAppRegion: 'drag' } as any}>
+                        <h2 className="text-lg font-bold text-gray-800 dark:text-white">Menu</h2>
                         <button
                             onClick={onMobileClose}
-                            className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
                             aria-label="Close menu"
                         >
-                            <XMarkIcon className="w-6 h-6 text-gray-500 hover:text-gray-700" />
+                            <XMarkIcon className="w-6 h-6 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white" />
                         </button>
                     </div>
 
@@ -406,14 +410,14 @@ export default function Sidebar({
                                         to={`/${item.page}`}
                                         onClick={() => window.innerWidth < 768 && onMobileClose?.()}
                                         className={({ isActive }) => `
-                                            flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-50 active:scale-95 transition-all group
-                                            ${isActive ? 'bg-blue-50/50 active' : ''}
+                                            flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-200 dark:hover:bg-white/10 bg-white dark:bg-slate-800 shadow-sm active:scale-95 transition-all group
+                                            ${isActive ? 'bg-blue-50/50 dark:bg-blue-500/20 backdrop-blur-lg active' : ''}
                                         `}
                                     >
-                                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors bg-white border border-gray-100 text-gray-600 group-[.active]:bg-blue-100 group-[.active]:text-blue-600">
+                                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-colors text-gray-600 dark:text-gray-400 group-[.active]:bg-gray-100 dark:group-[.active]:bg-white/10 group-[.active]:text-gray-900 dark:group-[.active]:text-white">
                                             <IconComponent className="w-7 h-7" />
                                         </div>
-                                        <span className="text-xs font-medium text-center leading-tight text-gray-600 group-[.active]:text-blue-700">
+                                        <span className="text-xs font-medium text-center leading-tight text-gray-900 dark:text-white group-[.active]:text-blue-700 dark:group-[.active]:text-blue-400">
                                             {item.name}
                                         </span>
                                     </NavLink>
@@ -439,24 +443,29 @@ export default function Sidebar({
                     </div>
 
                     {/* Mobile Footer (User & Logout) */}
-                    <div className="p-4 border-t border-gray-100 bg-gray-50/50">
-                        <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-gray-100 shadow-sm cursor-pointer" onClick={() => handleNavigation('profile')}>
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-md">
+                    <div className="p-4 border-t border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/20">
+                        <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-md" onClick={() => handleNavigation('profile')}>
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 truncate">{user.name}</p>
-                                <p className="text-xs text-gray-500 truncate">{user.role}</p>
+                            <div className="flex-1 min-w-0" onClick={() => handleNavigation('profile')}>
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.role}</p>
                             </div>
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onLogout();
-                                }}
-                                className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
-                            >
-                                <ArrowLeftOnRectangleIcon className="w-5 h-5" />
-                            </button>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    onClick={toggleTheme}
+                                    className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                                >
+                                    {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
+                                </button>
+                                <button
+                                    onClick={onLogout}
+                                    className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                                >
+                                    <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -466,23 +475,24 @@ export default function Sidebar({
             <aside
                 className={`
                     hidden md:flex
-                    bg-gray-100 
+                    bg-white dark:bg-slate-900/50
                     h-screen flex-col transition-all duration-300 ease-in-out z-50
                     relative translate-x-0
                     ${isExpanded ? 'w-64' : 'w-20'}
-                    shadow-none
+                    shadow-none border-r border-gray-200 dark:border-white/10
                 `}
+                glass-effect=""
                 style={{
                     scrollbarWidth: 'thin',
                     scrollbarColor: '#9CA3AF transparent'
                 }}
             >
                 {/* Desktop Logo */}
-                <div className={`flex h-16 items-center border-b border-gray-200 transition-all duration-300 ${isExpanded ? 'px-6 justify-between' : 'px-0 justify-center'}`}>
+                <div className={`flex h-16 items-center border-b border-gray-200 dark:border-white/10 transition-all duration-300 ${isExpanded ? 'px-6 justify-between' : 'px-0 justify-center'}`}>
                     {/* Collapse/Expand Toggle (Top Left) */}
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className={`p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-200 transition-colors ${!isExpanded && 'absolute left-1/2 -translate-x-1/2'}`}
+                        className={`p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors ${!isExpanded && 'absolute left-1/2 -translate-x-1/2'}`}
                         aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
                     >
                         <Bars3Icon className="w-6 h-6" />
@@ -497,11 +507,11 @@ export default function Sidebar({
 
                 {/* Mode Switcher */}
                 {user.role === 'superadmin' && isExpanded && (
-                    <div className="px-4 py-3 border-b border-gray-200">
-                        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-3 border border-gray-200">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10">
+                        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-200 dark:border-white/10">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-medium text-gray-700">Mode</span>
-                                <SwatchIcon className="w-4 h-4 text-gray-500" />
+                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Mode</span>
+                                <SwatchIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                             </div>
                             <div className="flex gap-2">
                                 <button
@@ -546,14 +556,14 @@ export default function Sidebar({
                                     w-full flex items-center gap-3 px-4 py-3 rounded-xl
                                     transition-all duration-200 group relative
                                     ${isActive
-                                        ? 'bg-gray-200 text-gray-700 active-link font-bold'
-                                        : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                                        ? 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white active-link font-bold'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white'
                                     }
                                     ${!isExpanded && 'justify-center'}
                                 `}
                                 title={!isExpanded ? item.name : undefined}
                             >
-                                <div className="flex-shrink-0 text-gray-500 group-hover:text-gray-700 [[.active-link]_&]:text-blue-600">
+                                <div className="flex-shrink-0 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-white [[.active-link]_&]:text-blue-600 dark:[[.active-link]_&]:text-blue-400">
                                     <IconComponent className="w-5 h-5" />
                                 </div>
                                 <div className={`flex-1 text-left transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
@@ -571,12 +581,12 @@ export default function Sidebar({
                 </nav>
 
                 {/* User Profile & Bottom Section */}
-                <div className="px-3 py-4 border-t border-gray-200 space-y-4">
+                <div className="px-3 py-4 border-t border-gray-200 dark:border-white/10 space-y-4">
                     {/* User Profile */}
                     <NavLink
                         id="sidebar-profile-section"
                         to="/profile"
-                        className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isActive ? 'bg-blue-50' : 'hover:bg-gray-100'}`}
+                        className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-500/10' : 'hover:bg-gray-100 dark:hover:bg-white/10'}`}
                         role="button"
                         tabIndex={0}
                         onKeyDown={(e) => e.key === 'Enter' && handleNavigation('profile')}
@@ -588,12 +598,12 @@ export default function Sidebar({
                                     {(user?.name || 'User').charAt(0).toUpperCase()}
                                 </span>
                             </div>
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                         </div>
                         <div className={`flex-1 min-w-0 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                            <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'Guest User'}</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user?.name || 'Guest User'}</p>
                             <div className="flex items-center gap-2 mt-0.5">
-                                <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleColor(user?.role || 'staff')}`}>
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleColor(user?.role || 'staff')} dark:opacity-80`}>
                                     <span className="mr-1">{getRoleIcon(user?.role || 'staff')}</span>
                                     {(user?.role || 'staff').replace('_', ' ')}
                                 </span>
@@ -641,12 +651,40 @@ export default function Sidebar({
                         </button>
                     )}
 
+                    {/* Theme Toggle Button */}
+                    <button
+                        onClick={toggleTheme}
+                        className={`
+                            w-full flex items-center gap-3 px-3 py-3 rounded-xl
+                            text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white
+                            transition-colors duration-200
+                            ${!isExpanded && 'justify-center'}
+                        `}
+                        title={!isExpanded ? (theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode') : undefined}
+                    >
+                        {theme === 'light' ? (
+                            <>
+                                <MoonIcon className="w-5 h-5 flex-shrink-0" />
+                                <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                    Dark Theme
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <SunIcon className="w-5 h-5 flex-shrink-0" />
+                                <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
+                                    Light Theme
+                                </span>
+                            </>
+                        )}
+                    </button>
+
                     {/* Logout Button */}
                     <button
                         onClick={onLogout}
                         className={`
                             w-full flex items-center gap-3 px-3 py-3 rounded-xl
-                            text-gray-600 hover:bg-red-50 hover:text-red-700
+                            text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-400
                             transition-colors duration-200
                             ${!isExpanded && 'justify-center'}
                         `}

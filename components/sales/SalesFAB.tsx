@@ -25,7 +25,7 @@ export const SalesFAB: React.FC<SalesFABProps> = ({
     heldSalesCount
 }) => {
     return (
-        <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-white/20 backdrop-blur-md border border-white/20 rounded-3xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
+        <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-white/20 dark:bg-slate-900/40 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-3xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
             <button
                 id="pos-mobile-scanner-fab"
                 onClick={() => {

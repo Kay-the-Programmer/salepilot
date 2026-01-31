@@ -8,15 +8,11 @@ interface PersonalUseTabProps {
     storeSettings?: StoreSettings; // Optional if needed for formatting currency
 }
 
-export const PersonalUseTab: React.FC<PersonalUseTabProps> = ({ personalUse }) => {
-    const totalPersonalUseCount = personalUse ? personalUse.length : 0;
-    const totalPersonalUseValue = personalUse ? personalUse.reduce((acc, item) => acc + (item.change * -1), 0) : 0;
-
+export const PersonalUseTab: React.FC<PersonalUseTabProps> = ({ personalUse, storeSettings }) => {
     return (
         <div className="space-y-6 animate-fade-in pb-10">
             <PersonalUseStatsRow
-                totalPersonalUseCount={totalPersonalUseCount}
-                totalPersonalUseValue={totalPersonalUseValue}
+                storeSettings={storeSettings!}
             />
 
             <PersonalUseList personalUse={personalUse} />

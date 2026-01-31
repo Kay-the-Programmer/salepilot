@@ -535,7 +535,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const selectedItem = activeTab === 'products' ? selectedProductId : selectedCategoryId;
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 overflow-hidden">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden">
             {/* Desktop Header */}
             {/* Desktop Header */}
             <InventoryHeader
@@ -581,8 +581,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex flex-col h-full border-r border-gray-200 bg-white transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    className={`flex flex-col h-full border-r border-gray-200 dark:border-white/10 bg-white/50 dark:bg-slate-900/50 transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
                     style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '400px' : 'none' }}
+                    glass-effect=""
                 >
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
@@ -609,7 +610,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     onPageChange={setPage}
                                     onPageSizeChange={setPageSize}
                                     label="products"
-                                    className="border-t border-gray-100 bg-white sticky bottom-0 z-10"
+                                    className="border-t border-gray-100 dark:border-white/5 bg-white dark:bg-slate-900 sticky bottom-0 z-10"
                                     compact={true}
                                 />
                             </div>
@@ -637,14 +638,15 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             e.preventDefault();
                             setIsResizing(true);
                         }}
-                        className="hidden md:block w-1 hover:w-2 bg-gray-200 hover:bg-blue-500 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600"
+                        className="hidden md:block w-1 hover:w-2 bg-gray-200 dark:bg-slate-700 hover:bg-blue-500 dark:hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600"
                     />
                 )}
 
                 {/* Right Panel: Detail View */}
                 <div
-                    className={`flex-1 flex flex-col bg-white h-full relative ${!selectedItem ? 'hidden md:flex md:bg-gray-50' : 'flex w-full overflow-hidden'}`}
+                    className={`flex-1 flex flex-col bg-white/50 dark:bg-slate-800/50 h-full relative ${!selectedItem ? 'hidden md:flex md:bg-gray-50/50 dark:md:bg-slate-900/50' : 'flex w-full overflow-hidden'}`}
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
+                    glass-effect=""
                 >
                     {selectedItem ? (
                         <div className="h-full overflow-y-auto scroll-smooth">
@@ -653,9 +655,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     {detailIsLoading ? (
                                         <LoadingSpinner fullScreen={false} text="Loading product details..." className="py-20" />
                                     ) : detailError ? (
-                                        <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200 m-6">
-                                            <p className="text-red-600 font-medium">Error loading product</p>
-                                            <p className="text-red-500 text-sm mt-1">{detailError}</p>
+                                        <div className="text-center p-10 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-200 dark:border-red-500/20 m-6">
+                                            <p className="text-red-600 dark:text-red-400 font-medium">Error loading product</p>
+                                            <p className="text-red-500 dark:text-red-400/80 text-sm mt-1">{detailError}</p>
                                         </div>
                                     ) : detailedProduct ? (
                                         <ProductDetailView
@@ -688,7 +690,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             onBack={handleBackToList}
                                         />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-gray-400 italic">
+                                        <div className="flex items-center justify-center h-full text-gray-400 dark:text-slate-500 italic">
                                             Category not found
                                         </div>
                                     )}

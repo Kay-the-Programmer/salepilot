@@ -31,11 +31,11 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
     onTourStart
 }) => {
     return (
-        <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 overflow-y-auto bg-slate-50 dark:bg-slate-900 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             {/* Mobile Products Header */}
             <div className="sticky top-0 z-10">
                 {/* Top Bar (Menu, Logo, Notification) */}
-                <div className="bg-transparent/1 backdrop-blur-sm border-b border-slate-200/50 p-4 pb-2">
+                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-white/5 p-4 pb-2">
                     <div className="flex items-center justify-between">
                         <div id="pos-mobile-header" className="flex items-center gap-2">
                             {onOpenSidebar && (
@@ -43,7 +43,7 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                                     onClick={onOpenSidebar}
                                     className="p-2 -ml-2 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none"
                                 >
-                                    <GridIcon className="w-6 h-6" />
+                                    <GridIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
                                 </button>
                             )}
                         </div>
@@ -57,10 +57,10 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                                 className="p-2 rounded-full hover:bg-slate-100"
                                 title="Help Guide"
                             >
-                                <QuestionMarkCircleIcon className="w-6 h-6 text-slate-700" />
+                                <QuestionMarkCircleIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
                             </button>
-                            <button className="p-2 rounded-full hover:bg-slate-100 relative">
-                                <BellAlertIcon className="w-6 h-6 text-slate-700" />
+                            <button className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 relative">
+                                <BellAlertIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
                                 {/* Optional: Add notification badge here if needed */}
                             </button>
                         </div>
@@ -68,7 +68,7 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                 </div>
 
                 {/* Search Bar (Sticky) */}
-                <div id="pos-mobile-search-container" className="bg-transparent/1 backdrop-blur-sm border-b border-slate-200 px-4 pb-4 pt-2">
+                <div id="pos-mobile-search-container" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-white/5 px-4 pb-4 pt-2">
                     <div className="relative">
                         <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input
@@ -77,7 +77,7 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search products..."
-                            className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-3xl bg-slate-50/80 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-white/10 rounded-3xl bg-slate-50/80 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                         />
                     </div>
                 </div>

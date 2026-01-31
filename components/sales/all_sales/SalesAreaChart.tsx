@@ -1,4 +1,5 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
 
@@ -9,113 +10,80 @@ interface SalesAreaChartProps {
 }
 
 export default function SalesAreaChart({
-    data, storeSettings, color = 'blue'
+    data, storeSettings, color = '#3b82f6'
 }: SalesAreaChartProps) {
-    const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-
     if (!data || data.length === 0) return null;
 
-    const height = 180;
-    const width = 1000;
-    const padding = { top: 20, bottom: 20 };
-
-    // Sort and memoize data
-    const sortedData = useMemo(() =>
-        [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-        , [data]);
-
-    // Memoize chart geometry so hover state changes don't recompute paths or points.
-    // Expected impact: avoids O(n) path/point recalculation on every hover move.
-    const { points, pathD, lineD } = useMemo(() => {
-        const maxVal = Math.max(...sortedData.map(d => d.totalRevenue)) || 1;
-        const computedPoints = sortedData.map((d, i) => {
-            const x = (i / (sortedData.length - 1 || 1)) * width;
-            const normalizedY = (d.totalRevenue / maxVal);
-            const y = height - (normalizedY * (height - padding.top - padding.bottom)) - padding.bottom;
-            return { x, y, ...d };
-        });
-
-        const computedPathD = `M0,${height} ` + computedPoints.map(p => `L${p.x},${p.y}`).join(' ') + ` L${width},${height} Z`;
-        const computedLineD = computedPoints.length === 1
-            ? `M0,${computedPoints[0].y} L${width},${computedPoints[0].y}`
-            : `M${computedPoints[0].x},${computedPoints[0].y} ` + computedPoints.slice(1).map(p => `L${p.x},${p.y}`).join(' ');
-
-        return { points: computedPoints, pathD: computedPathD, lineD: computedLineD };
-    }, [sortedData, height, padding.bottom, padding.top, width]);
+    // Process and sort data
+    const chartData = useMemo(() => {
+        return [...data]
+            .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+            .map(d => ({
+                date: d.date,
+                revenue: d.totalRevenue,
+                formattedDate: new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            }));
+    }, [data]);
 
     return (
-        <div className="relative w-full h-full" onMouseLeave={() => setHoveredIndex(null)}>
-            <svg
-                viewBox={`0 0 ${width} ${height}`}
-                preserveAspectRatio="none"
-                className="w-full h-full text-blue-500 overflow-visible"
-            >
-                <defs>
-                    <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-                        <stop offset="0%" stopColor="currentColor" stopOpacity="0.15" />
-                        <stop offset="90%" stopColor="currentColor" stopOpacity="0.0" />
-                    </linearGradient>
-                </defs>
-                <path d={pathD} fill="url(#chartGradient)" />
-                <path
-                    d={lineD}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="3"
-                    vectorEffect="non-scaling-stroke"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-
-                {/* Interactive Overlay Columns */}
-                {points.map((p, i) => (
-                    <rect
-                        key={i}
-                        x={i === 0 ? 0 : points[i - 1].x + (p.x - points[i - 1].x) / 2}
-                        y={0}
-                        width={width / points.length}
-                        height={height}
-                        fill="transparent"
-                        onMouseEnter={() => setHoveredIndex(i)}
-                        onClick={() => setHoveredIndex(i)}
-                        onTouchStart={() => setHoveredIndex(i)}
-                    />
-                ))}
-
-                {/* Visible Dots & Tooltip Indicator */}
-                {points.map((p, i) => (
-                    <g key={i}>
-                        {(points.length < 15 || hoveredIndex === i) && (
-                            <circle
-                                cx={p.x}
-                                cy={p.y}
-                                r={hoveredIndex === i ? 6 : 3}
-                                fill="white"
-                                stroke="currentColor"
-                                strokeWidth={hoveredIndex === i ? 3 : 2}
-                                vectorEffect="non-scaling-stroke"
-                            />
-                        )}
-                    </g>
-                ))}
-            </svg>
-
-            {/* Tooltip */}
-            {hoveredIndex !== null && points[hoveredIndex] && (
-                <div
-                    className="absolute bg-gray-900 text-white text-xs rounded-lg py-1 px-2 pointer-events-none shadow-xl transform -translate-x-1/2 -translate-y-full z-10"
-                    style={{
-                        left: `${(points[hoveredIndex].x / width) * 100}%`,
-                        top: `${(points[hoveredIndex].y / height) * 100}%`,
-                        marginTop: '-12px'
-                    }}
+        <div className="w-full h-full min-h-[160px] animate-fade-in">
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                    data={chartData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                 >
-                    <div className="font-bold whitespace-nowrap">{formatCurrency(points[hoveredIndex].totalRevenue, storeSettings)}</div>
-                    <div className="text-[10px] text-gray-300 whitespace-nowrap text-center">
-                        {new Date(points[hoveredIndex].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </div>
-                </div>
-            )}
+                    <defs>
+                        <linearGradient id="colorSalesTrend" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={color} stopOpacity={0.25} />
+                            <stop offset="95%" stopColor={color} stopOpacity={0} />
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                    <XAxis
+                        dataKey="formattedDate"
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }}
+                        dy={10}
+                        interval="preserveStartEnd"
+                        minTickGap={20}
+                        hide={chartData.length > 20}
+                    />
+                    <YAxis
+                        axisLine={false}
+                        tickLine={false}
+                        tick={{ fontSize: 10, fill: '#64748b', fontWeight: 600 }}
+                        tickFormatter={(value) => formatCurrency(value, storeSettings)}
+                        hide={true}
+                    />
+                    <Tooltip
+                        contentStyle={{
+                            borderRadius: '16px',
+                            border: '1px solid rgba(255, 255, 255, 0.4)',
+                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                            padding: '12px',
+                            background: 'rgba(255, 255, 255, 0.85)',
+                            backdropFilter: 'blur(12px)',
+                            WebkitBackdropFilter: 'blur(12px)'
+                        }}
+                        itemStyle={{ fontWeight: '900', fontSize: '15px', color: '#0f172a' }}
+                        labelStyle={{ fontSize: '10px', fontWeight: '800', color: '#64748b', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                        formatter={(value: any) => [formatCurrency(value, storeSettings), 'SALES']}
+                        cursor={{ stroke: color, strokeWidth: 2, strokeDasharray: '5 5' }}
+                    />
+                    <Area
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke={color}
+                        strokeWidth={4}
+                        fillOpacity={1}
+                        fill="url(#colorSalesTrend)"
+                        animationDuration={1500}
+                        strokeLinecap="round"
+                        activeDot={{ r: 6, strokeWidth: 0, fill: color }}
+                    />
+                </AreaChart>
+            </ResponsiveContainer>
         </div>
     );
-};
+}

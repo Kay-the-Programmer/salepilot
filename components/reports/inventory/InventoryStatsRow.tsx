@@ -1,43 +1,50 @@
 import React from 'react';
-import { StatCard } from '../StatCard';
-import { formatCurrency } from '../../../utils/currency';
 import { StoreSettings } from '../../../types';
 import CurrencyDollarIcon from '../../icons/CurrencyDollarIcon';
 import MinusCircleIcon from '../../icons/MinusCircleIcon';
 import TrendingUpIcon from '../../icons/TrendingUpIcon';
 import ArchiveBoxIcon from '../../icons/ArchiveBoxIcon';
+import { FilterableStatCard } from '../FilterableStatCard';
 
 interface InventoryStatsRowProps {
     inventory: any;
     storeSettings: StoreSettings;
 }
 
-export const InventoryStatsRow: React.FC<InventoryStatsRowProps> = ({ inventory, storeSettings }) => {
+export const InventoryStatsRow: React.FC<InventoryStatsRowProps> = ({ storeSettings }) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
+            <FilterableStatCard
                 title="Retail Value"
-                value={formatCurrency(inventory.totalRetailValue, storeSettings)}
-                icon={<CurrencyDollarIcon className="h-5 w-5 text-blue-600" />}
-                color="bg-blue-100"
+                type="inventory_retail"
+                icon={<CurrencyDollarIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                color="bg-blue-100/50 dark:bg-blue-500/20"
+                sparklineColor="#3b82f6"
+                storeSettings={storeSettings}
             />
-            <StatCard
+            <FilterableStatCard
                 title="Cost Value"
-                value={formatCurrency(inventory.totalCostValue, storeSettings)}
-                icon={<MinusCircleIcon className="h-5 w-5 text-yellow-600" />}
-                color="bg-yellow-100"
+                type="inventory_cost"
+                icon={<MinusCircleIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />}
+                color="bg-yellow-100/50 dark:bg-yellow-500/20"
+                sparklineColor="#eab308"
+                storeSettings={storeSettings}
             />
-            <StatCard
+            <FilterableStatCard
                 title="Potential Profit"
-                value={formatCurrency(inventory.potentialProfit, storeSettings)}
-                icon={<TrendingUpIcon className="h-5 w-5 text-green-600" />}
-                color="bg-green-100"
+                type="inventory_profit"
+                icon={<TrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />}
+                color="bg-green-100/50 dark:bg-green-500/20"
+                sparklineColor="#10b981"
+                storeSettings={storeSettings}
             />
-            <StatCard
+            <FilterableStatCard
                 title="Total Units"
-                value={inventory.totalUnits.toLocaleString()}
-                icon={<ArchiveBoxIcon className="h-5 w-5 text-purple-600" />}
-                color="bg-purple-100"
+                type="inventory_units"
+                icon={<ArchiveBoxIcon className="h-5 w-5 text-purple-600 dark:text-purple-400" />}
+                color="bg-purple-100/50 dark:bg-purple-500/20"
+                sparklineColor="#a855f7"
+                storeSettings={storeSettings}
             />
         </div>
     );

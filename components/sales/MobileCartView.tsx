@@ -45,7 +45,6 @@ interface MobileCartViewProps {
     setIsScannerOpen: (isOpen: boolean) => void;
     onContinuousScan: (decodedText: string) => void;
     onScanError: (error: any) => void;
-    isScannerPaused: boolean;
     setAppliedStoreCredit: (amount: number) => void;
 }
 
@@ -80,7 +79,6 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
     setIsScannerOpen,
     onContinuousScan,
     onScanError,
-    isScannerPaused,
     setAppliedStoreCredit
 }) => {
     const getStepFor = (uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1);
@@ -89,17 +87,17 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
 
 
     return (
-        <div className={`md:hidden fixed inset-0 bg-white z-50 transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`md:hidden fixed inset-0 bg-white dark:bg-slate-900 z-50 transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             {/* Mobile Cart Header */}
-            <div className="flex-none bg-white border-b border-slate-200 z-10 px-4 py-3">
+            <div className="flex-none bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-white/5 z-10 px-4 py-3">
                 <div className="flex items-center justify-between">
                     <button
                         onClick={onClose}
                         className="p-2 -ml-2 rounded-xl text-slate-600 hover:bg-slate-50 active:scale-95 transition-all"
                     >
-                        <ArrowLeftIcon className="w-6 h-6" />
+                        <ArrowLeftIcon className="w-6 h-6 text-slate-700 dark:text-white" />
                     </button>
-                    <h2 className="text-lg font-bold text-slate-900">Cart ({cart.length})</h2>
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white">Cart ({cart.length})</h2>
                     {cart.length > 0 && (
                         <button
                             onClick={clearCart}
@@ -112,7 +110,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
             </div>
 
             {/* Mobile Cart Content - Animated Flex Layout */}
-            <div className="flex-1 flex flex-col min-h-0 relative bg-slate-50/50">
+            <div className="flex-1 flex flex-col min-h-0 relative bg-slate-50/50 dark:bg-white/5">
 
                 {/* Slot 1: Scrollable Content (Empty State or List + Checkout) */}
                 <div className={`
@@ -121,11 +119,11 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                 `}>
                     {cart.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                            <div className="w-20 h-20 bg-blue-50 rounded-3xl flex items-center justify-center mb-6 shadow-sm">
+                            <div className="w-20 h-20 bg-blue-50 dark:bg-blue-500/10 rounded-3xl flex items-center justify-center mb-6 shadow-sm">
                                 <ShoppingCartIcon className="w-10 h-10 text-blue-500" />
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Cart is Empty</h3>
-                            <p className="text-slate-500 mb-8 max-w-[200px] leading-relaxed">Scan a product or browse the catalog to start selling</p>
+                            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Cart is Empty</h3>
+                            <p className="text-slate-500 dark:text-gray-400 mb-8 max-w-[200px] leading-relaxed">Scan a product or browse the catalog to start selling</p>
 
                             <div className="flex flex-col gap-3 w-full max-w-xs">
                                 <button
@@ -148,38 +146,38 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                             {/* Items List */}
                             <div className="p-4 space-y-4">
                                 {cart.map(item => (
-                                    <div key={item.productId} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+                                    <div key={item.productId} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow">
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
-                                                <h4 className="font-bold text-slate-800 text-base">{item.name}</h4>
-                                                <p className="text-sm text-slate-500 font-medium mt-1">{formatCurrency(item.price, storeSettings)} each</p>
+                                                <h4 className="font-bold text-slate-800 dark:text-white text-base">{item.name}</h4>
+                                                <p className="text-sm text-slate-500 dark:text-gray-400 font-medium mt-1">{formatCurrency(item.price, storeSettings)} each</p>
                                             </div>
                                             <div className="text-right">
-                                                <p className="font-extrabold text-slate-900 text-lg">{formatCurrency(item.price * item.quantity, storeSettings)}</p>
+                                                <p className="font-extrabold text-slate-900 dark:text-white text-lg">{formatCurrency(item.price * item.quantity, storeSettings)}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center justify-between bg-slate-50 p-2 rounded-xl">
+                                        <div className="flex items-center justify-between bg-slate-50 dark:bg-white/5 p-2 rounded-xl">
                                             <div className="flex items-center gap-4">
                                                 <button
                                                     onClick={() => updateQuantity(item.productId, item.quantity - getStepFor(item.unitOfMeasure))}
-                                                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 hover:border-slate-300 shadow-sm transition-all active:scale-95"
+                                                    className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 hover:border-slate-300 shadow-sm transition-all active:scale-95"
                                                 >
-                                                    <span className="text-slate-600 font-bold text-lg">-</span>
+                                                    <span className="text-slate-600 dark:text-white font-bold text-lg">-</span>
                                                 </button>
-                                                <span className="font-bold text-xl text-slate-900 w-12 text-center">
+                                                <span className="font-bold text-xl text-slate-900 dark:text-white w-12 text-center">
                                                     {item.quantity}
-                                                    {item.unitOfMeasure === 'kg' && <span className="text-xs text-slate-500 ml-0.5">kg</span>}
+                                                    {item.unitOfMeasure === 'kg' && <span className="text-xs text-slate-500 dark:text-gray-500 ml-0.5">kg</span>}
                                                 </span>
                                                 <button
                                                     onClick={() => updateQuantity(item.productId, item.quantity + getStepFor(item.unitOfMeasure))}
-                                                    className="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-100 hover:border-slate-300 shadow-sm transition-all active:scale-95"
+                                                    className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 hover:border-slate-300 shadow-sm transition-all active:scale-95"
                                                 >
-                                                    <span className="text-slate-600 font-bold text-lg">+</span>
+                                                    <span className="text-slate-600 dark:text-white font-bold text-lg">+</span>
                                                 </button>
                                             </div>
                                             <button
                                                 onClick={() => removeFromCart(item.productId)}
-                                                className="text-slate-400 hover:text-red-500 p-2 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="text-slate-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                                                 title="Remove item"
                                             >
                                                 <XMarkIcon className="w-6 h-6" />
@@ -193,8 +191,8 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                             {!isScannerOpen && (
                                 <div className="px-4 pb-4 space-y-6">
                                     {/* Customer Select */}
-                                    <div className="bg-white p-4 rounded-xl border border-slate-200">
-                                        <label className="block text-sm font-medium text-slate-900 mb-2">Customer</label>
+                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-white/10">
+                                        <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">Customer</label>
                                         <CustomerSelect
                                             customers={customers}
                                             selectedCustomer={selectedCustomer}
@@ -206,41 +204,41 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                     </div>
 
                                     {/* Summary & Payment */}
-                                    <div className="bg-white p-4 rounded-xl border border-slate-200 space-y-4">
+                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-white/10 space-y-4">
                                         <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
-                                                <span className="text-slate-600">Subtotal</span>
-                                                <span className="font-medium">{formatCurrency(subtotal, storeSettings)}</span>
+                                                <span className="text-slate-600 dark:text-gray-400">Subtotal</span>
+                                                <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(subtotal, storeSettings)}</span>
                                             </div>
                                             <div className="flex justify-between items-center">
-                                                <span className="text-slate-600">Discount</span>
+                                                <span className="text-slate-600 dark:text-gray-400">Discount</span>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-xs">{storeSettings.currency.symbol}</span>
                                                     <input
                                                         type="number"
                                                         value={discount}
                                                         onChange={(e) => setDiscount(e.target.value)}
-                                                        className="w-20 px-2 py-1 border border-slate-300 rounded text-right text-sm"
+                                                        className="w-20 px-2 py-1 border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded text-right text-sm"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="flex justify-between">
-                                                <span className="text-slate-600">Tax</span>
-                                                <span className="font-medium">{formatCurrency(taxAmount, storeSettings)}</span>
+                                                <span className="text-slate-600 dark:text-gray-400">Tax</span>
+                                                <span className="font-medium text-slate-900 dark:text-white">{formatCurrency(taxAmount, storeSettings)}</span>
                                             </div>
-                                            <div className="flex justify-between pt-2 border-t border-slate-100">
-                                                <span className="font-bold text-slate-900">Total</span>
-                                                <span className="font-bold text-lg text-slate-900">{formatCurrency(total, storeSettings)}</span>
+                                            <div className="flex justify-between pt-2 border-t border-slate-100 dark:border-white/5">
+                                                <span className="font-bold text-slate-900 dark:text-white">Total</span>
+                                                <span className="font-bold text-lg text-slate-900 dark:text-white">{formatCurrency(total, storeSettings)}</span>
                                             </div>
                                         </div>
 
-                                        <div className="pt-4 border-t border-slate-100">
-                                            <label className="block text-sm font-medium text-slate-900 mb-2">Payment Method</label>
+                                        <div className="pt-4 border-t border-slate-100 dark:border-white/5">
+                                            <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">Payment Method</label>
                                             <div className="relative group">
                                                 <select
                                                     value={selectedPaymentMethod}
                                                     onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                                                    className="w-full pl-3 pr-10 py-3 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100"
+                                                    className="w-full pl-3 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-white/10 rounded-lg text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600"
                                                 >
                                                     {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
                                                         ? storeSettings.paymentMethods.map(method => (
@@ -264,12 +262,12 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
 
                                         {isMobileMoney && (
                                             <div className="pt-2">
-                                                <label className="block text-sm font-medium text-slate-900 mb-2">Payer Mobile Number</label>
+                                                <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">Payer Mobile Number</label>
                                                 <input
                                                     type="text"
                                                     value={mobileMoneyNumber}
                                                     onChange={(e) => setMobileMoneyNumber(e.target.value)}
-                                                    className="w-full p-2 border border-slate-300 rounded-lg font-bold text-lg"
+                                                    className="w-full p-2 border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-bold text-lg"
                                                     placeholder="e.g. 0961111111"
                                                 />
                                             </div>
@@ -277,17 +275,17 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
 
                                         {isCashMethod && (
                                             <div className="pt-2">
-                                                <label className="block text-sm font-medium text-slate-900 mb-2">Cash Received</label>
+                                                <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">Cash Received</label>
                                                 <input
                                                     ref={mobileCashInputRef}
                                                     type="number"
                                                     value={cashReceived}
                                                     onChange={(e) => setCashReceived(e.target.value)}
-                                                    className="w-full p-2 border border-slate-300 rounded-lg font-bold text-lg"
+                                                    className="w-full p-2 border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-bold text-lg"
                                                     placeholder="0.00"
                                                 />
                                                 {changeDue > 0 && (
-                                                    <div className="mt-2 text-emerald-700 text-sm font-medium">
+                                                    <div className="mt-2 text-emerald-700 dark:text-emerald-400 text-sm font-medium">
                                                         Change Due: {formatCurrency(changeDue, storeSettings)}
                                                     </div>
                                                 )}
@@ -321,7 +319,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                         <button
                                             onClick={() => processTransaction('invoice')}
                                             disabled={cart.length === 0 || total < 0 || !selectedCustomer || isProcessing}
-                                            className="w-full py-3 px-4 bg-slate-100 text-slate-900 font-semibold rounded-lg border border-slate-300 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+                                            className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg border border-slate-300 dark:border-white/10 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
                                         >
                                             {isProcessing ? (
                                                 <div className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
@@ -354,7 +352,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                 onScanError={onScanError}
                                 continuous={true}
                                 delayBetweenScans={1500}
-                                paused={isScannerPaused}
+                                paused={false}
                             />
                             {cart.length === 0 && (
                                 <div className="absolute inset-x-0 bottom-8 text-center pointer-events-none">
@@ -369,11 +367,11 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
 
                 {/* Slot 3: Fixed Footer (Toggle Button) */}
                 {(cart.length > 0 || isScannerOpen) && (
-                    <div className="flex-none p-4 bg-white border-t border-slate-200 z-30 pb-[env(safe-area-inset-bottom)] md:pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
+                    <div className="flex-none p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/5 z-30 pb-[env(safe-area-inset-bottom)] md:pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
                         {isScannerOpen ? (
                             <button
                                 onClick={() => setIsScannerOpen(false)}
-                                className="w-full py-3.5 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
+                                className="w-full py-3.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl font-bold border border-red-200 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 shadow-sm active:scale-95"
                             >
                                 <XMarkIcon className="w-5 h-5" />
                                 Stop Scanning

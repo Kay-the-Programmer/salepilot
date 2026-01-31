@@ -57,11 +57,11 @@ const ProductCard: React.FC<{
           onSelect();
         }
       }}
-      className={`group bg-white rounded-2xl shadow-sm border transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md transform scale-[1.02]' : 'border-gray-100 hover:shadow-lg hover:border-blue-100'
+      className={`group bg-white dark:bg-slate-800 rounded-2xl shadow-sm border transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md transform scale-[1.02]' : 'border-gray-100 dark:border-white/10 hover:shadow-lg dark:hover:shadow-blue-900/20 hover:border-blue-100 dark:hover:border-blue-900/50'
         }`}
     >
       {/* Card Header / Image Area */}
-      <div className="relative aspect-[4/3] bg-gray-50 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gray-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
         {showImage ? (
           <img
             src={imageUrl!}
@@ -92,16 +92,16 @@ const ProductCard: React.FC<{
       <div className="p-3 flex-1 flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-start mb-0.5">
-            <div className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}>{categoryName}</div>
-            <div className="text-[10px] text-gray-300 font-mono">{product.sku}</div>
+            <div className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>{categoryName}</div>
+            <div className="text-[10px] text-gray-300 dark:text-gray-600 font-mono">{product.sku}</div>
           </div>
-          <h3 className={`font-bold text-sm sm:text-base mb-1 line-clamp-2 leading-tight transition-colors ${isSelected ? 'text-blue-700' : 'text-gray-900 group-hover:text-blue-600'}`}>
+          <h3 className={`font-bold text-sm sm:text-base mb-1 line-clamp-2 leading-tight transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
             {product.name}
           </h3>
         </div>
-        <div className="text-lg sm:text-xl font-black text-gray-900 mt-2">
+        <div className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mt-2">
           {formatPrice(product.price)}
-          {product.unitOfMeasure === 'kg' && <span className="text-xs text-gray-500 font-normal"> / kg</span>}
+          {product.unitOfMeasure === 'kg' && <span className="text-xs text-gray-500 dark:text-gray-400 font-normal"> / kg</span>}
         </div>
       </div>
     </div>
@@ -125,7 +125,7 @@ const ProductListRow: React.FC<{
 
   return (
     <div
-      className={`rounded-xl border shadow-sm p-4 flex items-center justify-between transition-all duration-200 cursor-pointer ${isSelected ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500/20' : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-md'
+      className={`rounded-xl border shadow-sm p-4 flex items-center justify-between transition-all duration-200 cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 ring-1 ring-blue-500/20' : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-white/10 hover:border-blue-200 dark:hover:border-blue-900/50 hover:shadow-md'
         }`}
       onClick={onSelect}
     >
@@ -138,10 +138,10 @@ const ProductListRow: React.FC<{
             {asNumber(product.stock)} in stock
           </span>
         </div>
-        <div className="text-sm text-gray-500 flex flex-wrap gap-x-4">
+        <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-4">
           <span className="font-mono text-xs">SKU: {product.sku}</span>
           <span>Category: {categoryName}</span>
-          <span className="font-medium text-gray-700">Price: {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? ' / kg' : ''}</span>
+          <span className="font-medium text-gray-700 dark:text-gray-300">Price: {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? ' / kg' : ''}</span>
         </div>
       </div>
       <div className="flex gap-2 shrink-0">

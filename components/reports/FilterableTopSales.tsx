@@ -130,62 +130,61 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
     }, [timeFilter, typeFilter, storeSettings]);
 
     return (
-        <div className={`bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col min-h-[400px] transition-all ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
+        <div className={`bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col min-h-[400px] transition-all ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-slate-900 text-lg">Top Sales</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Top Sales</h3>
                 <div className="flex items-center gap-2">
-                    <div className="flex bg-slate-100 p-1 rounded-xl">
+                    <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
                         {(['products', 'units', 'categories'] as TopSalesType[]).map((t) => (
                             <button
                                 key={t}
                                 onClick={() => setTypeFilter(t)}
                                 className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${typeFilter === t
-                                    ? 'bg-white text-slate-900 shadow-sm'
-                                    : 'text-slate-500 hover:text-slate-700'
+                                    ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white'
                                     }`}
                             >
                                 {t.charAt(0).toUpperCase() + t.slice(1)}
                             </button>
                         ))}
                     </div>
-                    <TimeRangeFilter value={timeFilter} onChange={setTimeFilter} onOpenChange={setIsFilterOpen} />
                 </div>
             </div>
 
             <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
                 {loading ? (
                     <div className="h-full flex items-center justify-center py-10">
-                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-indigo-600 animate-spin"></div>
+                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-slate-600 border-t-indigo-600 dark:border-t-indigo-400 animate-spin"></div>
                     </div>
                 ) : items.length > 0 ? (
                     <div className="space-y-4">
                         {items.map((item, i) => (
-                            <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-xl transition-all group">
-                                <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-50 transition-colors">
+                            <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all group">
+                                <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
                                     {typeFilter === 'categories' ? (
                                         <div className="text-xl">🏷️</div>
                                     ) : (
-                                        <ShoppingCartIcon className="w-6 h-6 text-slate-400 group-hover:text-indigo-400" />
+                                        <ShoppingCartIcon className="w-6 h-6 text-slate-400 dark:text-slate-500 group-hover:text-indigo-400 dark:group-hover:text-indigo-400" />
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium text-slate-900 text-sm truncate">{item.name}</h4>
-                                    <p className="text-xs text-slate-500">{item.subtitle}</p>
+                                    <h4 className="font-medium text-slate-900 dark:text-white text-sm truncate">{item.name}</h4>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{item.subtitle}</p>
                                 </div>
                                 <div className="text-right">
-                                    <div className="font-bold text-slate-900 text-sm">{item.valueText}</div>
-                                    <div className="text-xs text-emerald-600 font-medium">Top #{i + 1}</div>
+                                    <div className="font-bold text-slate-900 dark:text-white text-sm">{item.valueText}</div>
+                                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Top #{i + 1}</div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center py-10 text-center">
-                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                            <ArchiveBoxIcon className="w-8 h-8 text-slate-200" />
+                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700 rounded-full flex items-center justify-center mb-3">
+                            <ArchiveBoxIcon className="w-8 h-8 text-slate-200 dark:text-slate-600" />
                         </div>
-                        <p className="text-slate-500 text-sm font-medium">No sales data found</p>
-                        <p className="text-slate-400 text-xs">Try changing the time filter or view</p>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">No sales data found</p>
+                        <p className="text-slate-400 dark:text-slate-500 text-xs">Try changing the time filter or view</p>
                     </div>
                 )}
             </div>

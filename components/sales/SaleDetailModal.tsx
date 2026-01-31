@@ -62,7 +62,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
 
                     {/* Fixed bottom action bar - iOS style */}
                     <div className="sticky bottom-0 bg-white px-4 py-3 sm:px-6 border-t border-gray-200">
-                        <div className="flex flex-col sm:flex-row justify-end gap-3">
+                        <div className="flex flex-col-1 sm:flex-row justify-end gap-3">
                             <Button
                                 type="button"
                                 variant="secondary"

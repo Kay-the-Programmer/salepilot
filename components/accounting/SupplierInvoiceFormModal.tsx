@@ -105,26 +105,26 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
             {/* Backdrop with blur */}
             <div
-                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+                className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm transition-opacity duration-300"
                 onClick={onClose}
             />
 
-            <div className="relative bg-white w-full sm:max-w-xl max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50">
+            <div className="relative glass-effect !bg-white/95 dark:!bg-slate-900/95 w-full sm:max-w-xl max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50">
                 <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
-                    <div className="px-6 py-6 sm:px-8 border-b border-slate-100 flex justify-between items-center bg-white">
+                    <div className="px-6 py-6 sm:px-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
                         <div>
-                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
                                 {invoiceToEdit ? 'Edit' : 'Record'} Invoice
                             </h3>
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">
+                            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
                                 Supplier Accounts Payable
                             </p>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2.5 rounded-2xl bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all border border-slate-100 shadow-sm"
+                            className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-800 shadow-sm"
                         >
                             <XMarkIcon className="h-5 w-5" />
                         </button>
@@ -134,48 +134,48 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                         {/* Section: Partnership */}
                         <div className="space-y-4">
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+                                <div className="p-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg">
                                     <BuildingOfficeIcon className="w-4 h-4" />
                                 </div>
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Partner Intelligence</h4>
+                                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Partner Intelligence</h4>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Supplier Entity</label>
+                                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">Supplier Entity</label>
                                     <div className="relative">
-                                        <BuildingOfficeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                        <BuildingOfficeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                                         <select
                                             value={selectedSupplierId}
                                             onChange={handleSupplierSelect}
                                             required
-                                            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 font-bold shadow-sm"
+                                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 dark:text-slate-100 font-bold shadow-sm"
                                         >
-                                            <option value="" disabled>Select Supplier</option>
-                                            {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                            <option value="" disabled className="dark:bg-slate-900">Select Supplier</option>
+                                            {suppliers.map(s => <option key={s.id} value={s.id} className="dark:bg-slate-900">{s.name}</option>)}
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Linked PO Reference</label>
+                                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">Linked PO Reference</label>
                                     <div className="relative">
-                                        <ClipboardDocumentListIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                        <ClipboardDocumentListIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                                         <select
                                             name="purchaseOrderId"
                                             value={invoice.purchaseOrderId}
                                             onChange={handlePOSelect}
                                             required
                                             disabled={!selectedSupplierId}
-                                            className="w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 font-bold shadow-sm disabled:bg-slate-50 disabled:text-slate-400"
+                                            className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 dark:text-slate-100 font-bold shadow-sm disabled:bg-slate-50 dark:disabled:bg-slate-950 disabled:text-slate-400 dark:disabled:text-slate-600"
                                         >
-                                            <option value="">Select PO Reference</option>
-                                            {availablePOs.map(po => <option key={po.id} value={po.id}>{po.poNumber} — {new Date(po.createdAt).toLocaleDateString()}</option>)}
+                                            <option value="" className="dark:bg-slate-900">Select PO Reference</option>
+                                            {availablePOs.map(po => <option key={po.id} value={po.id} className="dark:bg-slate-900">{po.poNumber} — {new Date(po.createdAt).toLocaleDateString()}</option>)}
                                         </select>
-                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
                                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                         </div>
                                     </div>
@@ -184,12 +184,12 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                         </div>
 
                         {/* Section: Invoice Identity */}
-                        <div className="space-y-4 pt-4 border-t border-slate-100">
+                        <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                             <div className="flex items-center gap-2 mb-2">
-                                <div className="p-1.5 bg-amber-50 text-amber-600 rounded-lg">
+                                <div className="p-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-lg">
                                     <TagIcon className="w-4 h-4" />
                                 </div>
-                                <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Invoice Details</h4>
+                                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Invoice Details</h4>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -201,7 +201,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                                     required
                                     placeholder="INV-2024-001"
                                     icon={<TagIcon className="h-4 w-4" />}
-                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                    className="!font-black text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 focus:ring-blue-500/20 shadow-sm"
                                 />
                                 <InputField
                                     label="Absolute Amount"
@@ -213,7 +213,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                                     required
                                     placeholder="0.00"
                                     icon={<CurrencyDollarIcon className="h-4 w-4" />}
-                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                    className="!font-black text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 focus:ring-blue-500/20 shadow-sm"
                                 />
                             </div>
 
@@ -226,7 +226,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                                     onChange={handleChange}
                                     required
                                     icon={<CalendarIcon className="h-4 w-4" />}
-                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                    className="!font-black text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 focus:ring-blue-500/20 shadow-sm [color-scheme:light] dark:[color-scheme:dark]"
                                 />
                                 <InputField
                                     label="Maturity (Due) Date"
@@ -236,18 +236,18 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                                     onChange={handleChange}
                                     required
                                     icon={<CalendarIcon className="h-4 w-4" />}
-                                    className="!font-black text-slate-900 border-slate-200 rounded-2xl bg-white focus:ring-blue-500/20 shadow-sm"
+                                    className="!font-black text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 focus:ring-blue-500/20 shadow-sm [color-scheme:light] dark:[color-scheme:dark]"
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="px-6 py-6 sm:px-8 border-t border-slate-100 bg-white sm:flex sm:flex-row-reverse gap-4">
+                    <div className="px-6 py-6 sm:px-8 border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 sm:flex sm:flex-row-reverse gap-4">
                         <button
                             type="submit"
                             disabled={isInvalid}
-                            className="w-full sm:w-auto px-8 py-4 bg-slate-900 text-white rounded-[1.5rem] font-bold text-sm hover:bg-slate-800 transition-all shadow-xl shadow-slate-900/10 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-8 py-4 bg-slate-900 dark:bg-blue-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-slate-800 dark:hover:bg-blue-700 transition-all shadow-xl shadow-slate-900/10 dark:shadow-blue-600/20 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
                             <ClipboardDocumentListIcon className="w-5 h-5" />
                             {invoiceToEdit ? 'Finalize Changes' : 'Record Invoice'}
@@ -255,7 +255,7 @@ const SupplierInvoiceFormModal: React.FC<SupplierInvoiceFormModalProps> = ({ isO
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white text-slate-600 border border-slate-200 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 transition-all active:scale-[0.98] flex items-center justify-center"
+                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center"
                         >
                             Discard
                         </button>

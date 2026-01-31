@@ -56,18 +56,18 @@ export default function SalesFilterSheet({
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none" onClick={onClose}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in pointer-events-auto" />
             <div
-                className="relative w-full max-w-md mx-4 bg-white rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 flex flex-col max-h-[90vh] pointer-events-auto"
+                className="relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 dark:border-white/10 flex flex-col max-h-[90vh] pointer-events-auto"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
                     <div>
-                        <h3 className="font-bold text-gray-900 text-lg">Filter Sales</h3>
-                        <p className="text-xs text-gray-500">Refine your sales data view</p>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg">Filter Sales</h3>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">Refine your sales data view</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1 text-gray-400 hover:text-gray-600 bg-gray-50 rounded-lg transition-colors"
+                        className="p-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 bg-gray-50 dark:bg-white/5 rounded-lg transition-colors"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
@@ -78,7 +78,7 @@ export default function SalesFilterSheet({
 
                     {/* Sort By */}
                     <div>
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block">Sort By</label>
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 block">Sort By</label>
                         <div className="grid grid-cols-2 gap-2">
                             {[
                                 { id: 'date', label: 'Date' },
@@ -90,8 +90,8 @@ export default function SalesFilterSheet({
                                     key={opt.id}
                                     onClick={() => setSortBy(opt.id)}
                                     className={`px-3 py-2 text-xs font-medium rounded-lg border transition-all ${sortBy === opt.id
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-400'
+                                        : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     {opt.label}
@@ -100,38 +100,38 @@ export default function SalesFilterSheet({
                         </div>
                         <button
                             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                            className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100"
+                            className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
                         >
                             <span>Order: {sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
                             <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
                         </button>
                     </div>
 
-                    <div className="border-t border-gray-100 my-2" />
+                    <div className="border-t border-gray-100 dark:border-white/10 my-2" />
 
                     {/* Date Range */}
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <CalendarIcon className="w-4 h-4 text-blue-500" />
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Date Range</label>
+                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date Range</label>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-medium text-gray-500">From</label>
+                                <label className="text-[10px] font-medium text-gray-500 dark:text-gray-400">From</label>
                                 <input
                                     type="date"
                                     value={tempStartDate}
                                     onChange={e => setTempStartDate(e.target.value)}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-slate-800 text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-medium text-gray-500">To</label>
+                                <label className="text-[10px] font-medium text-gray-500 dark:text-gray-400">To</label>
                                 <input
                                     type="date"
                                     value={tempEndDate}
                                     onChange={e => setTempEndDate(e.target.value)}
-                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-xs focus:ring-2 focus:ring-blue-500 outline-none"
+                                    className="w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-slate-800 text-xs text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                                 />
                             </div>
                         </div>
@@ -141,13 +141,13 @@ export default function SalesFilterSheet({
                     <div className="space-y-2">
                         <div className="flex items-center gap-2">
                             <UserIcon className="w-4 h-4 text-purple-500" />
-                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Customer</label>
+                            <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</label>
                         </div>
                         <div className="relative">
                             <select
                                 value={tempCustomerId}
                                 onChange={e => setTempCustomerId(e.target.value)}
-                                className="w-full p-2 pr-8 rounded-lg border border-gray-200 bg-gray-50 text-xs font-medium focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
+                                className="w-full p-2 pr-8 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-slate-800 text-xs text-gray-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 outline-none appearance-none"
                             >
                                 <option value="">All Customers</option>
                                 {customers.map(c => (
@@ -160,7 +160,7 @@ export default function SalesFilterSheet({
 
                     {/* Status */}
                     <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">Status</label>
+                        <label className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Status</label>
                         <div className="grid grid-cols-2 gap-2">
                             {[
                                 { value: '', label: 'All' },
@@ -172,8 +172,8 @@ export default function SalesFilterSheet({
                                     key={status.value}
                                     onClick={() => setTempStatus(status.value)}
                                     className={`px-3 py-2 rounded-lg text-xs font-medium border transition-all ${tempStatus === status.value
-                                        ? 'bg-blue-50 border-blue-200 text-blue-700'
-                                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                                        ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 text-blue-700 dark:text-blue-400'
+                                        : 'bg-white dark:bg-slate-800 border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5'
                                         }`}
                                 >
                                     {status.label}
@@ -184,11 +184,11 @@ export default function SalesFilterSheet({
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-gray-100 bg-gray-50 flex flex-col gap-3">
+                <div className="p-4 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-slate-900 flex flex-col gap-3">
                     <div className="flex gap-2">
                         <button
                             onClick={handleResetAndClose}
-                            className="flex-1 py-2.5 px-4 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold shadow-sm hover:bg-gray-50 transition-colors"
+                            className="flex-1 py-2.5 px-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                         >
                             Reset
                         </button>
@@ -205,7 +205,7 @@ export default function SalesFilterSheet({
                             {onExportCSV && (
                                 <button
                                     onClick={onExportCSV}
-                                    className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-2 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
                                 >
                                     CSV
                                 </button>
@@ -213,7 +213,7 @@ export default function SalesFilterSheet({
                             {onExportPDF && (
                                 <button
                                     onClick={onExportPDF}
-                                    className="flex-1 py-2 px-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-xs font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-2 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
                                 >
                                     PDF
                                 </button>

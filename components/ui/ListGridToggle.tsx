@@ -26,28 +26,32 @@ const ListGridToggle: React.FC<ListGridToggleProps> = ({
     const iconSizeClasses = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
 
     return (
-        <div className={`flex bg-gray-100 rounded-lg p-1 ${className}`}>
+        <div className={`flex bg-gray-100 dark:bg-slate-700 rounded-lg p-1 ${className}`}>
             <button
                 onClick={() => onViewModeChange('grid')}
                 className={`${buttonSizeClasses} rounded-md transition-all duration-200 ${viewMode === 'grid'
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                 title="Grid view"
                 aria-label="Switch to grid view"
             >
-                <GridIcon className={iconSizeClasses} />
+                <div className="flex items-center justify-center">
+                    <GridIcon className={iconSizeClasses} />
+                </div>
             </button>
             <button
                 onClick={() => onViewModeChange('list')}
                 className={`${buttonSizeClasses} rounded-md transition-all duration-200 ${viewMode === 'list'
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 shadow-sm'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                     }`}
                 title="List view"
                 aria-label="Switch to list view"
             >
-                <ListIcon className={iconSizeClasses} />
+                <div className="flex items-center justify-center">
+                    <ListIcon className={iconSizeClasses} />
+                </div>
             </button>
         </div>
     );

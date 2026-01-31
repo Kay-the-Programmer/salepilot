@@ -1,11 +1,9 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Supplier, User } from '../types';
 import { SnackbarType } from '../App';
-import { api, buildAssetUrl } from '@/services/api';
+import { api } from '@/services/api';
 import { formatCurrency } from '../utils/currency';
 import {
-    BellAlertIcon,
-    ShoppingCartIcon,
     MagnifyingGlassIcon
 } from '../components/icons';
 import TourGuide from '../components/TourGuide';
@@ -575,7 +573,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     };
 
     return (
-        <div className="h-screen w-full bg-slate-50 flex flex-col md:flex-row overflow-hidden">
+        <div className="h-screen w-full bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-hidden">
             <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
                 <div className="flex-none">
                     <Header
@@ -599,7 +597,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 </div>
 
-                <div className="flex-1 overflow-hidden bg-gray-100">
+                <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-slate-950">
                     <div className="h-full flex flex-col">
                         {/* Left Column - Products */}
                         <div className="flex-1 flex flex-col h-full min-w-0">
@@ -661,9 +659,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                                         {filteredProducts.length === 0 && (
                                             <div className="text-center py-12">
-                                                <MagnifyingGlassIcon className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                                                <p className="text-slate-600">No products found</p>
-                                                <p className="text-sm text-slate-500 mt-1">Try a different search term</p>
+                                                <MagnifyingGlassIcon className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+                                                <p className="text-slate-600 dark:text-gray-400">No products found</p>
+                                                <p className="text-sm text-slate-500 dark:text-gray-500 mt-1">Try a different search term</p>
                                             </div>
                                         )}
                                     </div>
@@ -684,18 +682,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
             </div>
 
             {/* Right Column - Cart & Checkout */}
-            <div className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-gray-50 z-20 " >
+            <div className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-gray-50 dark:bg-slate-900 z-20 " >
                 {/* Cart Header */}
-                <div className="flex-none p-4 py-2 border-b border-slate-100 shadow-sm bg-transparent" >
+                <div className="flex-none p-4 py-2 border-b border-slate-100 dark:border-white/5 shadow-sm bg-transparent" >
                     <div className="flex items-center justify-between">
                         <div className="hidden md:flex items-center gap-3">
                             <div>
-                                <h2 className="font-bold text-lg text-slate-700">Shopping Cart</h2>
-                                <div className="flex items-center gap-2 text-sm text-slate-600">
+                                <h2 className="font-bold text-lg text-slate-700 dark:text-white">Shopping Cart</h2>
+                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
                                     <span>{cart.length} items</span>
                                     {cart.length > 0 && (
                                         <>
-                                            <span className="w-1 h-1 bg-slate-400 rounded-full"></span>
+                                            <span className="w-1 h-1 bg-slate-400 dark:bg-slate-600 rounded-full"></span>
                                             <span>{formatCurrency(subtotal, storeSettings)}</span>
                                         </>
                                     )}
@@ -719,7 +717,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     storeSettings={storeSettings}
                     updateQuantity={updateQuantity}
                     removeFromCart={removeFromCart}
-                    clearCart={clearCart}
                 />
 
                 {/* Cart Summary & Actions (Fixed Bottom) - Now Resizable */}
@@ -749,7 +746,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     onHoldSale={handleHoldSale}
                     onContinuousScan={handleContinuousScan}
                     onScanError={handleScanError}
-                    isScannerPaused={isScannerPaused}
                     changeDue={changeDue}
                     mobileMoneyNumber={mobileMoneyNumber}
                     setMobileMoneyNumber={setMobileMoneyNumber}
@@ -802,7 +798,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 setIsScannerOpen={setIsScannerOpen}
                 onContinuousScan={handleContinuousScan}
                 onScanError={handleScanError}
-                isScannerPaused={isScannerPaused}
                 setAppliedStoreCredit={setAppliedStoreCredit}
             />
 

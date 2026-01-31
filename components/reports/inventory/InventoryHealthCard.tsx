@@ -11,11 +11,16 @@ export const InventoryHealthCard: React.FC<InventoryHealthCardProps> = ({
     totalRetailValue
 }) => {
     return (
-        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col justify-center items-center text-center">
-            <ArchiveBoxIcon className="w-16 h-16 text-slate-200 mb-4" />
-            <h3 className="font-bold text-slate-900 text-lg">Inventory Health</h3>
-            <p className="text-sm text-slate-500 mt-2 px-4">
-                Your inventory has a potential profit margin of <span className="font-bold text-green-600">{((potentialProfit / (totalRetailValue || 1)) * 100).toFixed(1)}%</span>.
+        <div className="glass-effect dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-white/10 flex flex-col justify-center items-center text-center">
+            <div className="p-5 bg-blue-50 dark:bg-blue-500/10 rounded-2xl mb-6">
+                <ArchiveBoxIcon className="w-12 h-12 text-blue-500 dark:text-blue-400" />
+            </div>
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-xl mb-3">Inventory Health</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                Your inventory has a potential profit margin of <br />
+                <span className="font-black text-2xl text-green-600 dark:text-green-400 mt-2 block tracking-tight">
+                    {((potentialProfit / (totalRetailValue || 1)) * 100).toFixed(1)}%
+                </span>
             </p>
         </div>
     );

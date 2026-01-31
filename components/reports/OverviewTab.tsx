@@ -1,7 +1,7 @@
 import React from 'react';
 import { OnboardingTaskList } from './OnboardingTaskList';
 import { AiSummaryCard } from './AiSummaryCard';
-import { FilterableRevenueChart } from './FilterableRevenueChart';
+import { FilterableSalesTrend } from './sales/FilterableSalesTrend';
 import { FilterableSalesChannelChart } from './FilterableSalesChannelChart';
 import { FilterableTopSales } from './FilterableTopSales';
 import { StoreSettings } from '../../types';
@@ -45,7 +45,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
                 {/* Row 2: Charts */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <FilterableRevenueChart storeSettings={storeSettings} />
+                    <FilterableSalesTrend storeSettings={storeSettings} />
                     <FilterableSalesChannelChart totalRevenue={sales.totalRevenue} />
                 </div>
 

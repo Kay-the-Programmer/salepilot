@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StoreSettings } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -16,6 +16,7 @@ import XMarkIcon from '../components/icons/XMarkIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
 import FunnelIcon from '../components/icons/FunnelIcon';
 import GridIcon from '../components/icons/GridIcon';
+import ChartBarIcon from '../components/icons/ChartBarIcon';
 
 // Components
 import { OverviewTab } from '../components/reports/OverviewTab';
@@ -24,6 +25,15 @@ import { InventoryTab } from '../components/reports/InventoryTab';
 import { CustomersTab } from '../components/reports/CustomersTab';
 import { CashflowTab } from '../components/reports/CashflowTab';
 import { PersonalUseTab } from '../components/reports/PersonalUseTab';
+
+// - [x] Explore `ReportsPage.tsx` and sub-components
+// - [x] Define "filterable cards" implementation strategy
+// - [x] Implement global dark theme and glass effect enhancements
+// - [x] Refactor Inventory Report section
+// - [x] Refactor Customers Report section
+// - [x] Refactor Cashflow Report section
+// - [x] Refactor Personal Report section
+// - [/] Verify changes
 
 interface ReportsPageProps {
     storeSettings: StoreSettings;
@@ -129,37 +139,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
         setDatePreset('month');
     }
 
-    const salesTrend = useMemo(() => {
-        if (!reportData?.sales?.salesTrend) return [];
-        const trend = [];
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const dateStr = toDateInputString(d);
-            trend.push({
-                date: dateStr,
-                value1: reportData.sales.salesTrend[dateStr]?.revenue || 0,
-                value2: reportData.sales.salesTrend[dateStr]?.profit || 0,
-            });
-        }
-        return trend;
-    }, [reportData, startDate, endDate]);
 
-    const cashflowTrend = useMemo(() => {
-        if (!reportData?.cashflow?.cashflowTrend) return [];
-        const trend = [];
-        const start = new Date(startDate);
-        const end = new Date(endDate);
-        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-            const dateStr = toDateInputString(d);
-            trend.push({
-                date: dateStr,
-                value1: reportData.cashflow.cashflowTrend[dateStr]?.inflow || 0,
-                value2: reportData.cashflow.cashflowTrend[dateStr]?.outflow || 0,
-            });
-        }
-        return trend;
-    }, [reportData, startDate, endDate]);
+
 
     const handleExportCSV = () => {
         const dateString = `${startDate}_to_${endDate}`;
@@ -280,7 +261,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                     <SalesTab
                         reportData={reportData}
                         storeSettings={storeSettings}
-                        salesTrend={salesTrend}
                         dailySales={dailySales}
                         dailyPage={dailyPage}
                         setDailyPage={setDailyPage}
@@ -310,7 +290,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                     <CashflowTab
                         reportData={reportData}
                         storeSettings={storeSettings}
-                        cashflowTrend={cashflowTrend}
                         onClose={onClose}
                     />
                 );
@@ -329,57 +308,58 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
     };
 
     return (
-        <div className="flex flex-col h-full w-full glass-effect relative">
-
+        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
             {/* Header */}
-            <div className="sticky top-0 z-40 glass-effect px-4 py-3">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                        {onClose && (
-                            <button
-                                onClick={onClose}
-                                className="p-2 -ml-2 rounded-lg active:bg-gray-100"
-                                aria-label="Close"
-                            >
-                                <XMarkIcon className="w-5 h-5 text-gray-600" />
-                            </button>
-                        )}
-                        <div className="ml-2">
-                            <h1 className="text-lg font-bold text-gray-900">Dashboard</h1>
-                            <div className="text-xs text-gray-500">
-                                {datePreset === 'custom'
-                                    ? `${new Date(startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${new Date(endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`
-                                    : datePreset === '7d' ? 'Last 7 days'
-                                        : datePreset === '30d' ? 'Last 30 days'
-                                            : 'This month'
-                                }
+            <header className="flex-none bg-white glass-effect px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
+                <div className="flex items-center gap-4">
+                    <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-xl">
+                        <ChartBarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                        <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-none">Dashboard</h1>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 uppercase tracking-wider font-semibold">Analytics & Performance</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-4">
+                    {/* Desktop Tabs  */}
+                    <div className="w-full">
+                        <div className="relative border border-slate-200/50 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-slate-800/50 p-1">
+                            <div className="flex items-center overflow-x-auto gap-1 w-full scrollbar-hide">
+                                {tabs.map((tab) => (
+                                    <button
+                                        key={tab.id}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`
+                                            flex items-center gap-2
+                                            shrink-0
+                                            px-4 sm:px-5
+                                            py-2.5
+                                            rounded-xl
+                                            text-sm font-bold
+                                            whitespace-nowrap
+                                            transition-all active:scale-95
+                                            ${activeTab === tab.id
+                                                ? 'bg-slate-800/50 text-white shadow-lg  active:scale-95'
+                                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'
+                                            }
+                                        `}
+                                    >
+                                        <span className="flex items-center justify-center">
+                                            {tab.icon}
+                                        </span>
+                                        <span>{tab.label}</span>
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     </div>
 
-                    {/* Desktop Tabs  */}
-                    <div className="hidden md:flex  shadow-lg rounded-3xl border border-white items-center gap-3 mx-6">
-                        <div className="flex glass-effect p-1 rounded-3xl shrink-0">
-                            {tabs.map((tab) => (
-                                <button
-                                    key={tab.id}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`px-4 py-1.5 rounded-2xl text-sm font-medium transition-all duration-200 ${activeTab === tab.id
-                                        ? 'bg-gray-200 text-gray-900 shadow-sm'
-                                        : 'text-gray-500 hover:text-gray-700'
-                                        }`}
-                                >
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
 
                     <div className="flex items-center  p-1 rounded-xl space-x-2">
                         {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="md:hidden p-2 px-4 rounded-3xl bg-white shadow-lg flex items-center gap-2  active:bg-gray-200 text-gray-600"
+                            className="md:hidden p-2 px-4 rounded-3xl bg-white dark:bg-slate-800 shadow-lg flex items-center gap-2 active:bg-gray-200 dark:active:bg-white/10 text-gray-600 dark:text-gray-400"
                             aria-label="Menu"
                         >
                             <GridIcon className="w-5 h-5" />
@@ -388,7 +368,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         <div className="relative" ref={filterMenuRef}>
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`p-2 flex items-center gap-2 bg-white shadow-lg rounded-3xl px-4 active:bg-gray-200 transition-colors ${showFilters ? 'bg-gray-100 text-gray-900' : 'text-gray-600'}`}
+                                className={`p-2 flex items-center gap-2 bg-white dark:bg-slate-800 shadow-lg rounded-3xl px-4 active:bg-gray-200 dark:active:bg-white/10 transition-colors ${showFilters ? 'bg-gray-100 dark:bg-white/20 text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}
                                 aria-label="Filter options"
                             >
                                 <FunnelIcon className="w-5 h-5" />
@@ -397,39 +377,39 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
 
                             {/* Floating Filter Popup */}
                             {showFilters && (
-                                <div className="absolute right-0 top-full mt-2 w-[400px] bg-white rounded-2xl shadow-xl border border-gray-100 z-30 animate-fade-in origin-top-right p-4 hidden md:block">
+                                <div className="absolute right-0 top-full mt-2 w-[400px] bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-white/10 z-30 animate-fade-in origin-top-right p-4 hidden md:block">
                                     <div className="flex flex-col gap-4">
                                         <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-bold text-gray-900">Filter Report</h3>
-                                            <button onClick={() => setShowFilters(false)} className="text-gray-400 hover:text-gray-600 p-1">
+                                            <h3 className="font-bold text-gray-900 dark:text-white">Filter Report</h3>
+                                            <button onClick={() => setShowFilters(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white p-1">
                                                 <XMarkIcon className="w-4 h-4" />
                                             </button>
                                         </div>
 
                                         <div className="space-y-3">
-                                            <div className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Date Range</div>
+                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Date Range</div>
                                             <div className="grid grid-cols-2 gap-2">
                                                 <button
                                                     onClick={() => setDateRange(7, '7d')}
-                                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${datePreset === '7d' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === '7d' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
                                                 >
                                                     Last 7 Days
                                                 </button>
                                                 <button
                                                     onClick={() => setDateRange(30, '30d')}
-                                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${datePreset === '30d' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === '30d' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
                                                 >
                                                     Last 30 Days
                                                 </button>
                                                 <button
                                                     onClick={setThisMonth}
-                                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${datePreset === 'month' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === 'month' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
                                                 >
                                                     This Month
                                                 </button>
                                                 <button
                                                     onClick={() => setDatePreset('custom')}
-                                                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors border ${datePreset === 'custom' ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === 'custom' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
                                                 >
                                                     Custom Range
                                                 </button>
@@ -473,7 +453,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                         </div>
                     </div>
                 </div>
-            </div>
+            </header>
 
             {/* Mobile Grid Menu Popup */}
             {isMobileMenuOpen && (

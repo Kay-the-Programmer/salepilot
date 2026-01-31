@@ -1273,7 +1273,7 @@ export default function Dashboard() {
     return (
         <OnboardingProvider user={currentUser}>
             <NotificationProvider user={currentUser}>
-                <div className="flex h-screen bg-gray-100 font-sans">
+                <div className="flex h-screen bg-gray-100 dark:bg-slate-950 font-sans transition-colors duration-200">
                     {/* Mobile overlay/backdrop */}
                     {isSidebarOpen && (
                         <div
@@ -1340,11 +1340,11 @@ export default function Dashboard() {
                     </div>
 
                     {/* Main content */}
-                    <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
+                    <div id="main-content" className="flex-1 flex flex-col overflow-y-auto dark:bg-slate-950">
                         {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                         {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                         {location.pathname !== '/sales' && (
-                            <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
+                            <div className="md:hidden h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between transition-all duration-200">
                                 <button
                                     onClick={() => setIsSidebarOpen(true)}
                                     id="mobile-menu-toggle"

@@ -1,14 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
+import React from 'react';
 import { api } from '../services/api';
-import { Account, JournalEntry, StoreSettings, AccountType, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier, Expense, RecurringExpense } from '../types';
+import { Account, JournalEntry, StoreSettings, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier, Expense, RecurringExpense } from '../types';
 import Header from '../components/Header';
-import { formatCurrency } from '../utils/currency';
-import PlusIcon from '../components/icons/PlusIcon';
-import PencilIcon from '../components/icons/PencilIcon';
-import TrashIcon from '../components/icons/TrashIcon';
-import XMarkIcon from '../components/icons/XMarkIcon';
-import PrinterIcon from '../components/icons/PrinterIcon';
 import UnifiedRecordPaymentModal from '../components/accounting/UnifiedRecordPaymentModal';
 import SupplierInvoiceFormModal from '../components/accounting/SupplierInvoiceFormModal';
 import SupplierInvoiceDetailModal from '../components/accounting/SupplierInvoiceDetailModal';
@@ -16,34 +9,21 @@ import SalesInvoiceDetailModal from '../components/accounting/SalesInvoiceDetail
 import ArrowTrendingUpIcon from '../components/icons/ArrowTrendingUpIcon';
 import ArrowTrendingDownIcon from '../components/icons/ArrowTrendingDownIcon';
 import BanknotesIcon from '../components/icons/BanknotesIcon';
-import CalculatorIcon from '../components/icons/CalculatorIcon';
 import DocumentChartBarIcon from '../components/icons/DocumentChartBarIcon';
 import ReceiptPercentIcon from '../components/icons/ReceiptPercentIcon';
 import BookOpenIcon from '../components/icons/BookOpenIcon';
 import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import ChartBarIcon from '../components/icons/ChartBarIcon';
-import ChevronDownIcon from '../components/icons/ChevronDownIcon';
-import CreditCardIcon from '../components/icons/CreditCardIcon';
-import UsersIcon from '../components/icons/UsersIcon';
-import BuildingOfficeIcon from '../components/icons/BuildingOfficeIcon';
-import InformationCircleIcon from '../components/icons/InformationCircleIcon';
 import GridIcon from '../components/icons/GridIcon';
-import EllipsisVerticalIcon from '../components/icons/EllipsisVerticalIcon';
-import EyeIcon from '../components/icons/EyeIcon';
 import CalendarDaysIcon from '../components/icons/CalendarDaysIcon';
-import CalendarIcon from '../components/icons/CalendarIcon';
-import MagnifyingGlassIcon from '../components/icons/MagnifyingGlassIcon';
 import ExpenseFormModal from '../components/accounting/ExpenseFormModal';
 import AccountAdjustmentModal from '../components/accounting/AccountAdjustmentModal';
-import ScaleIcon from '../components/icons/Scale';
 import RecurringExpenseFormModal from '../components/accounting/RecurringExpenseFormModal';
 
 // Extracted accounting components
 import AccountingDashboard from '../components/accounting/views/AccountingDashboard';
-import AccountFormModal from '../components/accounting/modals/AccountFormModal';
 import ChartOfAccountsView from '../components/accounting/views/ChartOfAccountsView';
 import JournalView from '../components/accounting/views/JournalView';
-import CustomerStatementModal from '../components/accounting/modals/CustomerStatementModal';
 import ARManagementView from '../components/accounting/views/ARManagementView';
 import APManagementView from '../components/accounting/views/APManagementView';
 import ExpensesView from '../components/accounting/views/ExpensesView';
@@ -71,7 +51,7 @@ interface AccountingPageProps {
     recurringExpenses: RecurringExpense[];
     onSaveExpense: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'> & { id?: string }) => void;
     onDeleteExpense: (expenseId: string) => void;
-    onSaveRecurringExpense: (expense: Omit<RecurringExpense, 'id' | 'createdBy' | 'createdAt' | 'updatedAt'> & { id?: string }) => void;
+    onSaveRecurringExpense: (expense: Omit<RecurringExpense, 'id' | 'createdBy' | 'createdAt' | 'updatedAt' | 'nextRunDate' | 'status'> & { id?: string, status?: string }) => void;
     onDeleteRecurringExpense: (expenseId: string) => void;
     isLoading: boolean;
     error: string | null;
@@ -283,8 +263,8 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 aria-selected={isActive}
                 onClick={() => setActiveTabAndHash(tabName)}
                 className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${isActive
-                    ? 'bg-gray-200 text-gray-800 shadow-lg shadow-gray-200/20'
-                    : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
                     }`}
             >
                 {icon && <span className="w-4 h-4">{icon}</span>}
@@ -307,7 +287,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
             <Header
                 title="Accounting"
                 showSearch={false}
@@ -328,7 +308,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
             <main className="px-4 sm:px-6 lg:px-8 py-6">
                 <div className="max-w-7xl mx-auto">
                     {/* Desktop Tabs */}
-                    <div className="hidden sm:flex items-center gap-2 mb-8 p-2 bg-gradient-to-b from-white to-slate-50 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="hidden sm:flex items-center gap-2 mb-8 p-2 glass-effect rounded-2xl">
                         {tabConfig.map((tab) => (
                             <TabButton key={tab.tabName} {...tab} />
                         ))}
@@ -341,7 +321,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                             onClick={() => setIsTabMenuOpen(false)}
                         >
                             <div
-                                className="absolute top-[70px] right-4 left-4 bg-white rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-slate-100"
+                                className="absolute top-[70px] right-4 left-4 glass-effect !bg-white/95 dark:!bg-slate-900/95 rounded-3xl shadow-2xl p-5 animate-fade-in-up"
                                 onClick={e => e.stopPropagation()}
                             >
                                 <div className="grid grid-cols-3 gap-4">
@@ -352,12 +332,12 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                                                 key={tab.tabName}
                                                 onClick={() => handleSelectTab(tab.tabName)}
                                                 className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
-                                                    ? 'bg-slate-900 text-white shadow-lg'
-                                                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                                                    : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
                                                     }`}
                                             >
-                                                <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white shadow-sm'}`}>
-                                                    {React.cloneElement(tab.icon as React.ReactElement, { className: "w-6 h-6" })}
+                                                <div className={`mb-2 p-2.5 rounded-xl ${isActive ? 'bg-white/20' : 'bg-white dark:bg-slate-700 shadow-sm'}`}>
+                                                    {React.cloneElement(tab.icon as any, { className: "w-6 h-6" })}
                                                 </div>
                                                 <span className="text-[10px] font-bold text-center leading-tight">
                                                     {tab.shortLabel || tab.label}

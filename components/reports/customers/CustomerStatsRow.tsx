@@ -1,47 +1,50 @@
 import React from 'react';
-import { StatCard } from '../StatCard';
-import { formatCurrency } from '../../../utils/currency';
 import { StoreSettings } from '../../../types';
 import UsersIcon from '../../icons/UsersIcon';
 import TrendingUpIcon from '../../icons/TrendingUpIcon';
 import PlusIcon from '../../icons/PlusIcon';
 import CurrencyDollarIcon from '../../icons/CurrencyDollarIcon';
+import { FilterableStatCard } from '../FilterableStatCard';
 
 interface CustomerStatsRowProps {
     customers: any;
     storeSettings: StoreSettings;
 }
 
-export const CustomerStatsRow: React.FC<CustomerStatsRowProps> = ({ customers, storeSettings }) => {
+export const CustomerStatsRow: React.FC<CustomerStatsRowProps> = ({ storeSettings }) => {
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
+            <FilterableStatCard
                 title="Total Customers"
-                value={customers.totalCustomers.toLocaleString()}
-                icon={<UsersIcon className="h-5 w-5 text-blue-600" />}
-                color="bg-blue-100"
-                tooltip="Total number of unique customers registered in your store."
+                type="customers"
+                icon={<UsersIcon className="h-5 w-5 text-blue-600 dark:text-blue-400" />}
+                color="bg-blue-100/50 dark:bg-blue-500/20"
+                sparklineColor="#3b82f6"
+                storeSettings={storeSettings}
             />
-            <StatCard
+            <FilterableStatCard
                 title="Active Customers"
-                value={customers.activeCustomersInPeriod.toLocaleString()}
-                icon={<TrendingUpIcon className="h-5 w-5 text-green-600" />}
-                color="bg-green-100"
-                tooltip="Customers who made at least one purchase during the selected period."
+                type="active_customers"
+                icon={<TrendingUpIcon className="h-5 w-5 text-green-600 dark:text-green-400" />}
+                color="bg-green-100/50 dark:bg-green-500/20"
+                sparklineColor="#10b981"
+                storeSettings={storeSettings}
             />
-            <StatCard
+            <FilterableStatCard
                 title="New Customers"
-                value={customers.newCustomersInPeriod.toLocaleString()}
-                icon={<PlusIcon className="h-5 w-5 text-indigo-600" />}
-                color="bg-indigo-100"
-                tooltip="Customers who registered during the selected period."
+                type="new_customers"
+                icon={<PlusIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />}
+                color="bg-indigo-100/50 dark:bg-indigo-500/20"
+                sparklineColor="#6366f1"
+                storeSettings={storeSettings}
             />
-            <StatCard
+            <FilterableStatCard
                 title="Store Credit"
-                value={formatCurrency(customers.totalStoreCreditOwed, storeSettings)}
-                icon={<CurrencyDollarIcon className="h-5 w-5 text-yellow-600" />}
-                color="bg-yellow-100"
-                tooltip="Total outstanding store credit currently held by all customers."
+                type="store_credit"
+                icon={<CurrencyDollarIcon className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />}
+                color="bg-yellow-100/50 dark:bg-yellow-500/20"
+                sparklineColor="#eab308"
+                storeSettings={storeSettings}
             />
         </div>
     );

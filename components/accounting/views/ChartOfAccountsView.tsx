@@ -80,7 +80,7 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
         return commitments;
     }, [recurringExpenses]);
 
-    const renderAccountList = (type: AccountType, title: string, iconColor: string, accentColor: string) => {
+    const renderAccountList = (type: AccountType, title: string, accentColor: string) => {
         const typeAccounts = filteredAccounts.filter(a => a.type === type);
         if (typeAccounts.length === 0) return null;
 
@@ -91,54 +91,54 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
             <div className="mb-4">
                 <button
                     onClick={() => toggleSection(type)}
-                    className="w-full flex items-center justify-between p-4 bg-white border border-slate-200 rounded-2xl hover:border-slate-300 transition-all duration-200 shadow-sm group"
+                    className="w-full flex items-center justify-between p-4 glass-effect !bg-white/50 dark:!bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl hover:border-slate-300 dark:hover:border-slate-700 transition-all duration-200 group"
                 >
                     <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-xl bg-slate-50 group-hover:bg-white transition-colors border border-transparent group-hover:border-slate-100 ${accentColor}`}>
+                        <div className={`p-2 rounded-xl bg-slate-50 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors border border-transparent group-hover:border-slate-100 dark:group-hover:border-slate-600 ${accentColor}`}>
                             <CalculatorIcon className="w-4 h-4" />
                         </div>
                         <div className="text-left">
-                            <h4 className="font-black text-slate-900 tracking-tight text-sm uppercase">{title}s</h4>
-                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-0.5">
+                            <h4 className="font-black text-slate-900 dark:text-slate-100 tracking-tight text-sm uppercase">{title}s</h4>
+                            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">
                                 {typeAccounts.length} accounts • Total: {formatCurrency(totalBalance, storeSettings)}
                             </p>
                         </div>
                     </div>
-                    <ChevronDownIcon className={`w-5 h-5 text-slate-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
+                    <ChevronDownIcon className={`w-5 h-5 text-slate-400 dark:text-slate-500 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isExpanded && (
                     <div className="mt-2 space-y-2 pl-2">
                         {typeAccounts.sort((a, b) => a.number.localeCompare(b.number)).map(account => (
-                            <div key={account.id} className="relative group bg-white border border-slate-100 rounded-xl p-3 md:p-4 hover:border-blue-200 hover:shadow-sm transition-all duration-200">
+                            <div key={account.id} className="relative group glass-effect !bg-white/30 dark:!bg-slate-900/30 border border-slate-100 dark:border-slate-800 rounded-xl p-3 md:p-4 hover:border-blue-200 dark:hover:border-blue-800 transition-all duration-200">
                                 <div className="flex items-center justify-between gap-4">
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="hidden sm:block font-mono text-xs font-black text-slate-400 bg-slate-50 px-2 py-1 rounded-lg">
+                                        <div className="hidden sm:block font-mono text-xs font-black text-slate-400 dark:text-slate-500 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded-lg">
                                             {account.number}
                                         </div>
                                         <div className="min-w-0">
                                             <div className="flex items-center gap-2">
-                                                <span className="sm:hidden font-mono text-[10px] font-black text-slate-400">{account.number}</span>
-                                                <h5 className="font-bold text-slate-900 text-sm truncate">{account.name}</h5>
+                                                <span className="sm:hidden font-mono text-[10px] font-black text-slate-400 dark:text-slate-500">{account.number}</span>
+                                                <h5 className="font-bold text-slate-900 dark:text-slate-100 text-sm truncate">{account.name}</h5>
                                                 {account.subType && (
-                                                    <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded-md font-black uppercase tracking-tighter">System</span>
+                                                    <span className="text-[9px] px-1.5 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-md font-black uppercase tracking-tighter">System</span>
                                                 )}
                                             </div>
                                             {account.description && (
-                                                <p className="text-[10px] text-slate-500 truncate mt-0.5">{account.description}</p>
+                                                <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate mt-0.5">{account.description}</p>
                                             )}
                                         </div>
                                     </div>
 
                                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                                         <div className="text-right">
-                                            <div className={`text-sm md:text-base font-black tracking-tight ${account.balance >= 0 ? 'text-slate-900' : 'text-red-600'}`}>
+                                            <div className={`text-sm md:text-base font-black tracking-tight ${account.balance >= 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'}`}>
                                                 {formatCurrency(account.balance, storeSettings)}
                                             </div>
                                             {recurringCommitments[account.id] && (
                                                 <div className="flex items-center gap-1 mt-1 justify-end">
-                                                    <CalendarDaysIcon className="w-3 h-3 text-indigo-500" />
-                                                    <span className="text-[10px] font-black text-indigo-600 uppercase tracking-tight">
+                                                    <CalendarDaysIcon className="w-3 h-3 text-indigo-500 dark:text-indigo-400" />
+                                                    <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">
                                                         {recurringCommitments[account.id].count} recurring • {formatCurrency(recurringCommitments[account.id].totalAmount, storeSettings)}
                                                     </span>
                                                 </div>
@@ -149,16 +149,16 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                                         <div className="hidden md:flex items-center gap-1">
                                             <button
                                                 onClick={() => onAdjustAccount(account)}
-                                                className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                                                className="p-2 text-slate-400 dark:text-slate-500 hover:text-purple-600 dark:hover:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30 rounded-lg transition-colors"
                                                 title="Adjust Balance"
                                             >
                                                 <ScaleIcon className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => handleEdit(account)} className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                                            <button onClick={() => handleEdit(account)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors">
                                                 <PencilIcon className="w-4 h-4" />
                                             </button>
                                             {!account.subType && (
-                                                <button onClick={() => onDeleteAccount(account.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                                                <button onClick={() => onDeleteAccount(account.id)} className="p-2 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors">
                                                     <TrashIcon className="w-4 h-4" />
                                                 </button>
                                             )}
@@ -168,33 +168,33 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                                         <div className="md:hidden relative">
                                             <button
                                                 onClick={() => setActiveActionMenu(activeActionMenu === account.id ? null : account.id)}
-                                                className="p-1.5 hover:bg-slate-50 rounded-lg transition-colors"
+                                                className="p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                                             >
-                                                <EllipsisVerticalIcon className="w-5 h-5 text-slate-400" />
+                                                <EllipsisVerticalIcon className="w-5 h-5 text-slate-400 dark:text-slate-500" />
                                             </button>
 
                                             {activeActionMenu === account.id && (
                                                 <>
                                                     <div className="fixed inset-0 z-30" onClick={() => setActiveActionMenu(null)}></div>
-                                                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 z-40 animate-scale-up">
+                                                    <div className="absolute right-0 mt-2 w-48 glass-effect !bg-white/95 dark:!bg-slate-900/95 rounded-xl shadow-xl z-40 animate-scale-up py-1.5">
                                                         <button
                                                             onClick={() => { onAdjustAccount(account); setActiveActionMenu(null); }}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-purple-600 hover:bg-purple-50"
+                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/30"
                                                         >
                                                             <ScaleIcon className="w-4 h-4" />
                                                             Adjust Balance
                                                         </button>
                                                         <button
                                                             onClick={() => handleEdit(account)}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50"
+                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
                                                         >
-                                                            <PencilIcon className="w-4 h-4 text-blue-500" />
+                                                            <PencilIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                                             Edit Account
                                                         </button>
                                                         {!account.subType && (
                                                             <button
                                                                 onClick={() => { onDeleteAccount(account.id); setActiveActionMenu(null); }}
-                                                                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50"
+                                                                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                                                             >
                                                                 <TrashIcon className="w-4 h-4" />
                                                                 Delete Account
@@ -218,12 +218,12 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
         <div className="space-y-4 md:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Chart of Accounts</h3>
-                    <p className="text-sm text-slate-600 mt-1">Organize and manage your financial structure</p>
+                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Chart of Accounts</h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Organize and manage your financial structure</p>
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-black text-sm rounded-2xl hover:shadow-xl hover:shadow-blue-500/25 transition-all duration-300"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white font-black text-sm rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 shadow-lg shadow-blue-600/20 active:scale-95"
                 >
                     <PlusIcon className="w-5 h-5" />
                     New Account
@@ -232,23 +232,23 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
 
             <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2">
-                    <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+                    <MagnifyingGlassIcon className="w-5 h-5 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                     type="text"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     placeholder="Search accounts name or number..."
-                    className="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-sm font-medium shadow-sm"
+                    className="w-full pl-12 pr-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-sm font-medium text-slate-900 dark:text-slate-100 shadow-sm"
                 />
             </div>
 
             <div className="animate-fade-in space-y-2">
-                {renderAccountList('asset', 'Asset', 'bg-blue-100 text-blue-600', 'text-blue-600')}
-                {renderAccountList('liability', 'Liability', 'bg-red-100 text-red-600', 'text-red-600')}
-                {renderAccountList('equity', 'Equity', 'bg-purple-100 text-purple-600', 'text-purple-600')}
-                {renderAccountList('revenue', 'Revenue', 'bg-green-100 text-green-600', 'text-green-600')}
-                {renderAccountList('expense', 'Expense', 'bg-amber-100 text-amber-600', 'text-amber-600')}
+                {renderAccountList('asset', 'Assets', 'text-blue-600 dark:text-blue-400')}
+                {renderAccountList('liability', 'Liabilities', 'text-red-600 dark:text-red-400')}
+                {renderAccountList('equity', 'Equity', 'text-purple-600 dark:text-purple-400')}
+                {renderAccountList('revenue', 'Revenue', 'text-emerald-600 dark:text-emerald-400')}
+                {renderAccountList('expense', 'Expenses', 'text-amber-600 dark:text-amber-400')}
             </div>
 
             <AccountFormModal

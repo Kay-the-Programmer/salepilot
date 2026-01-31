@@ -3,13 +3,15 @@ import UsersIcon from '../../icons/UsersIcon';
 
 export const CustomerAcquisitionChart: React.FC = () => {
     return (
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-            <h3 className="font-bold text-slate-900 text-lg mb-6">Customer Acquisition</h3>
-            <div className="h-48 flex items-center justify-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                <div className="text-center">
-                    <UsersIcon className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-                    <p className="text-slate-500 text-sm">Customer trend data visualization would go here</p>
-                    <p className="text-slate-400 text-xs mt-1">(Requires more detailed historical data)</p>
+        <div className="lg:col-span-2 dark:bg-slate-800  glass-effect rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-white/10">
+            <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-6 uppercase tracking-wider">Customer Acquisition</h3>
+            <div className="h-56 flex items-center justify-center bg-slate-50/50 dark:bg-slate-800/50 rounded-2xl border border-dashed border-slate-200 dark:border-white/10">
+                <div className="text-center p-6">
+                    <div className="p-4 bg-white dark:bg-slate-800 rounded-full shadow-sm inline-block mb-4">
+                        <UsersIcon className="w-10 h-10 text-slate-300 dark:text-slate-500" />
+                    </div>
+                    <p className="text-slate-900 dark:text-white font-bold text-sm">Customer trend data visualization</p>
+                    <p className="text-slate-400 dark:text-slate-500 text-xs mt-2 max-w-[200px] mx-auto leading-relaxed">Detailed historical data is required to generate this chart.</p>
                 </div>
             </div>
         </div>

@@ -57,9 +57,9 @@ export const FilterableSalesChannelChart: React.FC<FilterableSalesChannelChartPr
     }, [filter]);
 
     return (
-        <div className={`glass-effect rounded-2xl p-5 shadow-sm border border-slate-100 flex flex-col min-h-[400px] transition-all ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+        <div className={`glass-effect dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-white/10 flex flex-col min-h-[400px] transition-all ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-900 text-lg">Sales Channels</h3>
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Sales Channels</h3>
                 <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
             </div>
 
@@ -77,10 +77,10 @@ export const FilterableSalesChannelChart: React.FC<FilterableSalesChannelChartPr
                         />
                     </div>
                     <div className="mt-4 flex justify-center gap-6">
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
                             <span className="w-3 h-3 rounded-full bg-blue-500"></span> Online
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600">
+                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
                             <span className="w-3 h-3 rounded-full bg-orange-400"></span> In-Store
                         </div>
                     </div>

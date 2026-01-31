@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
     MagnifyingGlassIcon,
-    GridIcon,
-    ListIcon,
     ClockIcon,
     QuestionMarkCircleIcon
 } from '../icons';
+import ListGridToggle from '../ui/ListGridToggle';
 
 interface SalesHeaderActionsProps {
     searchTerm: string;
@@ -51,14 +50,14 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                                 if (!searchTerm) setIsSearchExpanded(false);
                             }}
                             placeholder="Search products..."
-                            className="w-full pl-10 pr-10 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                            className="w-full pl-10 pr-10 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                         />
                         <button
                             onClick={() => {
                                 setSearchTerm('');
                                 setIsSearchExpanded(false);
                             }}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-1"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 p-1"
                             title="Close search"
                         >
                             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -69,7 +68,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                 ) : (
                     <button
                         onClick={() => setIsSearchExpanded(true)}
-                        className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/30 transition-all shadow-sm group"
+                        className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-sm group"
                         title="Search Products"
                     >
                         <MagnifyingGlassIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -77,30 +76,19 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                 )}
 
                 {/* View Toggle (Desktop Only) */}
-                <button
-                    id="pos-view-toggle"
-                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                    className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/30 transition-all shadow-sm group"
-                    title={viewMode === 'grid' ? "Switch to List View" : "Switch to Grid View"}
-                >
-                    {viewMode === 'grid' ? (
-                        <ListIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    ) : (
-                        <GridIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
-                    )}
-                </button>
+                <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
             </div>
 
             <button
                 id="pos-held-btn"
                 onClick={onOpenHeldSales}
-                className="px-3 py-2 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-xl hover:text-amber-700 hover:border-amber-200 hover:bg-amber-50/50 transition-all shadow-sm flex items-center gap-2 group relative"
+                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:text-amber-700 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-500/30 hover:bg-amber-50/50 dark:hover:bg-amber-500/10 transition-all shadow-sm flex items-center gap-2 group relative"
                 title="View Held Sales"
             >
                 <ClockIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                 <span className="hidden lg:inline">Held Sales</span>
                 {heldSalesCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white shadow-sm animate-in zoom-in">
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 dark:bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm animate-in zoom-in">
                         {heldSalesCount}
                     </span>
                 )}
@@ -108,7 +96,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
 
             <button
                 onClick={onTourStart}
-                className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-200 hover:bg-blue-50/30 transition-all shadow-sm group"
+                className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-sm group"
                 title="Launch Help Guide"
             >
                 <QuestionMarkCircleIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />

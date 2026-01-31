@@ -320,14 +320,14 @@ export default function DashboardLayout() {
                     <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
                         {/* Mobile Header - Optional, only if needed or specific pages don't have it */}
                         {location.pathname !== '/sales' && (
-                            <div className="md:hidden h-14 bg-white border-b border-gray-200 flex items-center px-4 justify-between transition-all duration-200">
-                                <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100">
+                            <div className="md:hidden h-14 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between transition-all duration-200" glass-effect="">
+                                <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700">
                                     <Bars3Icon className="w-6 h-6" />
                                 </button>
                                 <div className="flex items-center justify-center flex-1">
                                     <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
                                 </div>
-                                <button onClick={() => navigate('/notifications')} className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 relative">
+                                <button onClick={() => navigate('/notifications')} className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700 relative">
                                     <BellAlertIcon className="w-6 h-6" />
                                     {(announcements || []).some(a => !a.isRead) && (
                                         <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>

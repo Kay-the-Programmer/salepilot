@@ -36,8 +36,8 @@ const StandardRow: React.FC<StandardRowProps> = ({
     return (
         <div
             className={`rounded-xl border shadow-sm p-4 flex items-center justify-between transition-all duration-200 cursor-pointer ${isSelected
-                ? 'bg-blue-50 border-blue-200 ring-1 ring-blue-500/20'
-                : 'bg-white border-gray-100 hover:border-blue-200 hover:shadow-md'
+                ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 ring-1 ring-blue-500/20'
+                : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-white/10 hover:border-blue-200 dark:hover:border-blue-500/50 hover:shadow-md'
                 } ${className}`}
             onClick={(e) => {
                 if (!e.defaultPrevented && onClick) {
@@ -56,7 +56,7 @@ const StandardRow: React.FC<StandardRowProps> = ({
                 {/* Main Content */}
                 <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className={`font-semibold cursor-pointer truncate ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                        <h3 className={`font-semibold cursor-pointer truncate ${isSelected ? 'text-blue-900 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
                             {title}
                         </h3>
                         {status && (
@@ -66,8 +66,8 @@ const StandardRow: React.FC<StandardRowProps> = ({
                         )}
                     </div>
 
-                    <div className="text-sm text-gray-500 flex flex-wrap gap-x-4 mt-0.5 items-center">
-                        {subtitle && <span className="font-medium text-gray-700">{subtitle}</span>}
+                    <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-4 mt-0.5 items-center">
+                        {subtitle && <span className="font-medium text-gray-700 dark:text-gray-300">{subtitle}</span>}
                         {details.map((detail, idx) => (
                             <React.Fragment key={idx}>
                                 {detail}
@@ -82,12 +82,12 @@ const StandardRow: React.FC<StandardRowProps> = ({
                 {(primaryMeta || secondaryMeta) && (
                     <div className="text-right">
                         {primaryMeta && (
-                            <div className={`font-bold ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
+                            <div className={`font-bold ${isSelected ? 'text-blue-900 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
                                 {primaryMeta}
                             </div>
                         )}
                         {secondaryMeta && (
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                                 {secondaryMeta}
                             </div>
                         )}

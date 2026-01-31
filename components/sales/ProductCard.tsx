@@ -34,7 +34,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     const lowStockThreshold = product.reorderPoint || storeSettings.lowStockThreshold;
     const isLowStock = numericStock > 0 && numericStock <= lowStockThreshold;
 
-    const roundQty = (q: number) => Math.round(q * 1000) / 1000;
     const getStepFor = (uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1);
 
     const handleUpdateQuantity = (delta: number) => {
@@ -48,14 +47,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div
                 onClick={() => !isSoldOut && addToCart(product)}
                 className={`
-                    group relative bg-white rounded-xl border border-slate-200 
+                    group relative bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10
                     transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden cursor-pointer
                     ${isSoldOut ? 'opacity-60 grayscale' : ''}
                     ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
                 `}
             >
                 {/* Image Container */}
-                <div className="aspect-square bg-white relative overflow-hidden">
+                <div className="aspect-square bg-white dark:bg-slate-800 relative overflow-hidden">
                     {product.imageUrls?.[0] ? (
                         <img
                             src={buildAssetUrl(product.imageUrls[0])}
@@ -63,7 +62,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
                             <ShoppingCartIcon className="w-12 h-12 opacity-20" />
                         </div>
                     )}
@@ -103,11 +102,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                     {/* Quick Add Overlay */}
                     <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${cartItem ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
+                        <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
                             {cartItem ? (
-                                <span className="font-bold text-blue-600 text-lg">{cartItem.quantity}</span>
+                                <span className="font-bold text-blue-600 dark:text-blue-400 text-lg">{cartItem.quantity}</span>
                             ) : (
-                                <PlusIcon className="w-6 h-6 text-slate-900" />
+                                <PlusIcon className="w-6 h-6 text-slate-900 dark:text-white" />
                             )}
                         </div>
                     </div>
@@ -115,12 +114,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 {/* Product Details */}
                 <div className="p-3">
-                    <h3 className="font-medium text-slate-900 text-sm line-clamp-2 h-10 mb-1 leading-snug group-hover:text-blue-600 transition-colors">
+                    <h3 className="font-medium text-slate-900 dark:text-white text-sm line-clamp-2 h-10 mb-1 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                         {product.name}
                     </h3>
                     <div className="flex items-end justify-between">
                         <div>
-                            <div className="font-bold text-slate-900 text-base">
+                            <div className="font-bold text-slate-900 dark:text-white text-base">
                                 {formatCurrency(product.price, storeSettings)}
                             </div>
                         </div>
@@ -130,13 +129,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                 <button
                                     onClick={() => handleUpdateQuantity(-getStepFor(product.unitOfMeasure))}
-                                    className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
                                 >
                                     -
                                 </button>
                                 <button
                                     onClick={() => handleUpdateQuantity(getStepFor(product.unitOfMeasure))}
-                                    className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
                                 >
                                     +
                                 </button>
@@ -153,14 +152,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div
                 onClick={() => !isSoldOut && addToCart(product)}
                 className={`
-                    group bg-white rounded-xl border border-slate-200 p-3
+                    group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 p-3
                     transition-all duration-200 hover:shadow-md cursor-pointer flex items-center gap-4
                     ${isSoldOut ? 'opacity-60 grayscale' : ''}
                     ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
                 `}
             >
                 {/* Image */}
-                <div className="w-20 h-20 flex-shrink-0 bg-slate-100 rounded-lg overflow-hidden relative">
+                <div className="w-20 h-20 flex-shrink-0 bg-slate-100 dark:bg-white/5 rounded-lg overflow-hidden relative">
                     {product.imageUrls?.[0] ? (
                         <img
                             src={buildAssetUrl(product.imageUrls[0])}
@@ -168,7 +167,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
                             <ShoppingCartIcon className="w-8 h-8 opacity-20" />
                         </div>
                     )}
@@ -182,8 +181,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                     {cartItem && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center">
-                                <span className="font-bold text-blue-600 text-sm">{cartItem.quantity}</span>
+                            <div className="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center">
+                                <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">{cartItem.quantity}</span>
                             </div>
                         </div>
                     )}
@@ -191,7 +190,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                 {/* Product Info */}
                 <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-slate-900 text-sm mb-1 group-hover:text-blue-600 transition-colors truncate">
+                    <h3 className="font-semibold text-slate-900 dark:text-white text-sm mb-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                         {product.name}
                     </h3>
                     <div className="flex items-center gap-2">
@@ -217,7 +216,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                                 </button>
                             </>
                         ) : (
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-slate-500 dark:text-gray-500">
                                 {numericStock} in stock
                             </span>
                         )}
@@ -227,7 +226,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                 {/* Price and Actions */}
                 <div className="flex items-center gap-3">
                     <div className="text-right">
-                        <div className="font-bold text-slate-900 text-lg">
+                        <div className="font-bold text-slate-900 dark:text-white text-lg">
                             {formatCurrency(product.price, storeSettings)}
                         </div>
                     </div>
@@ -235,13 +234,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={() => handleUpdateQuantity(-getStepFor(product.unitOfMeasure))}
-                                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
                             >
                                 -
                             </button>
                             <button
                                 onClick={() => handleUpdateQuantity(getStepFor(product.unitOfMeasure))}
-                                className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 transition-colors"
+                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
                             >
                                 +
                             </button>
@@ -256,9 +255,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         return (
             <button
                 onClick={() => addToCart(product)}
-                className="bg-white rounded-xl border border-slate-200 p-1 text-left"
+                className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 p-1 text-left"
             >
-                <div className="aspect-square bg-slate-100 rounded-lg mb-2 overflow-hidden relative">
+                <div className="aspect-square bg-slate-100 dark:bg-white/5 rounded-lg mb-2 overflow-hidden relative">
                     {product.imageUrls?.[0] ? (
                         <img
                             src={buildAssetUrl(product.imageUrls[0])}
@@ -266,15 +265,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             className="w-full h-full object-cover"
                         />
                     ) : (
-                        <div className="w-full h-full flex items-center justify-center text-slate-300">
+                        <div className="w-full h-full flex items-center justify-center text-slate-300 dark:text-slate-700">
                             <ShoppingCartIcon className="w-8 h-8" />
                         </div>
                     )}
                 </div>
-                <h3 className="font-medium text-sm text-slate-900 line-clamp-2">
+                <h3 className="font-medium text-sm text-slate-900 dark:text-white line-clamp-2">
                     {product.name}
                 </h3>
-                <div className="mt-2 font-bold text-slate-900">
+                <div className="mt-2 font-bold text-slate-900 dark:text-white">
                     {formatCurrency(product.price, storeSettings)}
                 </div>
             </button>

@@ -75,7 +75,7 @@ export default function Header({
     };
 
     return (
-        <header className={`glass-effect border-b border-gray-200/40 sticky top-0 z-30 transition-all duration-300 ${className}`}>
+        <header className={`glass-effect border-b border-gray-200/40 dark:border-white/10 sticky top-0 z-30 transition-all duration-300 ${className}`}>
             <div className="px-4 h-16 flex items-center justify-between">
                 {isSearchActive ? (
                     <div className="flex items-center w-full animate-fadeIn transition-all duration-200">
@@ -89,7 +89,7 @@ export default function Header({
                                 type="text"
                                 autoFocus
                                 placeholder="Search..."
-                                className="w-full py-2 pl-10 pr-4 bg-gray-100/50 border-none rounded-lg focus:ring-2 focus:ring-blue-500 text-sm backdrop-blur-sm"
+                                className="w-full py-2 pl-10 pr-4 bg-gray-100/50 dark:bg-slate-800/50 border-none rounded-lg focus:ring-2 focus:ring-blue-500 text-sm dark:text-white backdrop-blur-sm"
                                 value={searchTerm || ''}
                                 onChange={(e) => {
                                     if (setSearchTerm) setSearchTerm(e.target.value);
@@ -114,7 +114,7 @@ export default function Header({
                                 setIsSearchActive(false);
                                 handleClear();
                             }}
-                            className="ml-3 text-sm font-medium text-gray-600 hover:text-gray-900"
+                            className="ml-3 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                         >
                             Cancel
                         </button>
@@ -131,7 +131,7 @@ export default function Header({
                                     <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                                 </button>
                             )}
-                            <h1 className="text-xl font-bold text-gray-700 truncate">{title}</h1>
+                            <h1 className="text-xl font-bold text-gray-700 dark:text-white truncate">{title}</h1>
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -144,7 +144,7 @@ export default function Header({
                                         onChange={(e) => setShowArchived(e.target.checked)}
                                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                                     />
-                                    <label htmlFor="show-archived" className="ml-2 text-sm text-gray-700">
+                                    <label htmlFor="show-archived" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                         Archived
                                     </label>
                                 </div>
@@ -160,7 +160,7 @@ export default function Header({
                             {showSearch && (
                                 <button
                                     onClick={() => setIsSearchActive(true)}
-                                    className="p-2 text-gray-600 hover:bg-gray-100 rounded-full"
+                                    className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-full"
                                     aria-label="Search"
                                 >
                                     <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

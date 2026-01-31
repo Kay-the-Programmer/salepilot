@@ -88,7 +88,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                 onItemClick={onSelectSale}
                 selectedId={selectedSaleId}
                 className="flex-1"
-                listClassName="space-y-0 divide-y divide-slate-100"
+                listClassName="space-y-0 divide-y divide-slate-100 dark:divide-white/5"
                 renderGridItem={(sale, _, isSelected) => {
                     const derivedStatus = getSaleDerivedStatus(sale);
                     return (
@@ -98,14 +98,14 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                             isSelected={isSelected}
                             onClick={() => onSelectSale(sale)}
                             image={
-                                <div className="w-full h-full bg-slate-50 text-slate-400 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                                <div className="w-full h-full bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 dark:group-hover:bg-blue-500/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                                     #{sale.transactionId.slice(-4)}
                                 </div>
                             }
                             status={<PaymentStatusBadge status={derivedStatus as any} />}
                             primaryInfo={formatCurrency(sale.total, storeSettings)}
                             secondaryInfo={
-                                <div className="text-xs text-slate-500 font-medium">
+                                <div className="text-xs text-slate-500 dark:text-gray-400 font-medium">
                                     {sale.itemsCount || sale.cart?.length || 0} items
                                 </div>
                             }
@@ -124,18 +124,18 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                             isSelected={isSelected}
                             onClick={() => onSelectSale(sale)}
                             leading={
-                                <div className="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 dark:group-hover:bg-blue-500/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0">
                                     #{sale.transactionId.slice(-4)}
                                 </div>
                             }
                             status={<PaymentStatusBadge status={derivedStatus as any} />}
                             primaryMeta={formatCurrency(sale.total, storeSettings)}
                             details={[
-                                <span className="text-xs text-slate-500 font-medium" key="count">
+                                <span className="text-xs text-slate-500 dark:text-gray-400 font-medium" key="count">
                                     {sale.itemsCount || sale.cart?.length || 0} items
                                 </span>,
                                 (derivedStatus === 'partially_paid' && (
-                                    <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden ml-2" key="progress">
+                                    <div className="w-16 h-1.5 bg-slate-100 dark:bg-white/10 rounded-full overflow-hidden ml-2" key="progress">
                                         <div
                                             className="h-full bg-blue-500 rounded-full"
                                             style={{ width: `${paymentPercentage}%` }}

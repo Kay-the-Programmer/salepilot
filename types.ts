@@ -299,6 +299,7 @@ export interface JournalEntry {
         type: 'sale' | 'purchase' | 'manual' | 'payment';
         id?: string; // e.g., sale.transactionId or po.id
     };
+    reference?: string;
 }
 
 export interface SupplierPayment {

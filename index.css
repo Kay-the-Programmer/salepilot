@@ -27,11 +27,23 @@ body,
   --salepilot-orange-dark: #E66B1F;
 }
 
+.dark {
+  --salepilot-navy: #0F172A;
+  --salepilot-navy-light: #1E293B;
+  --salepilot-orange: #FB923C;
+  --salepilot-orange-dark: #F97316;
+}
+
 body {
   margin: 0;
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  @apply bg-slate-50 text-slate-900 transition-colors duration-200;
+}
+
+.dark body {
+  @apply bg-slate-950 text-slate-100;
 }
 
 /* Images and SVGs behave nicely by default */
@@ -102,13 +114,26 @@ textarea {
   border-radius: 20px;
 }
 
-.glass-effect {
-  @apply bg-white/20 backdrop-blur-lg;
+.glass-effect,
+[glass-effect] {
+  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm transition-all duration-300;
 }
 
-@supports (backdrop-filter: blur(4px)) {
-  .glass-effect {
-    @apply bg-white/20;
+.dark .glass-effect,
+.dark [glass-effect] {
+  @apply bg-slate-900/70 backdrop-blur-md border border-slate-700/50 shadow-lg shadow-black/20;
+}
+
+@supports not (backdrop-filter: blur(4px)) {
+
+  .glass-effect,
+  [glass-effect] {
+    @apply bg-white shadow-md;
+  }
+
+  .dark .glass-effect,
+  .dark [glass-effect] {
+    @apply bg-slate-900 shadow-xl;
   }
 }
 

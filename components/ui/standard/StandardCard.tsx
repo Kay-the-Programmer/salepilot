@@ -42,14 +42,14 @@ const StandardCard: React.FC<StandardCardProps> = ({
                     onClick();
                 }
             }}
-            className={`group bg-white rounded-2xl shadow-sm border transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full ${isSelected
+            className={`group bg-white dark:bg-slate-800 rounded-2xl shadow-sm border transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full ${isSelected
                 ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md transform scale-[1.02]'
-                : 'border-gray-100 hover:shadow-lg hover:border-blue-100'
+                : 'border-gray-100 dark:border-white/10 hover:shadow-lg hover:border-blue-100 dark:hover:border-blue-500/50'
                 } ${className}`}
         >
             {/* Card Header / Image Area */}
             {(image || status) && (
-                <div className="relative aspect-[4/3] bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-50">
+                <div className="relative aspect-[4/3] bg-gray-50 dark:bg-white/5 flex items-center justify-center overflow-hidden border-b border-gray-50 dark:border-white/5">
                     {image && (
                         isImageUrl ? (
                             showImage ? (
@@ -88,7 +88,7 @@ const StandardCard: React.FC<StandardCardProps> = ({
                 <div>
                     <div className="flex justify-between items-start mb-1 gap-2">
                         {subtitle && (
-                            <div className={`text-[10px] font-bold uppercase tracking-wider truncate ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}>
+                            <div className={`text-[10px] font-bold uppercase tracking-wider truncate ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>
                                 {subtitle}
                             </div>
                         )}
@@ -97,13 +97,13 @@ const StandardCard: React.FC<StandardCardProps> = ({
                         )}
                     </div>
                     <h3
-                        className={`font-bold text-sm sm:text-base mb-1 line-clamp-2 leading-tight transition-colors ${isSelected ? 'text-blue-700' : 'text-gray-900 group-hover:text-blue-600'}`}
+                        className={`font-bold text-sm sm:text-base mb-1 line-clamp-2 leading-tight transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}
                         title={title}
                     >
                         {title}
                     </h3>
                     {secondaryInfo && (
-                        <div className="text-xs text-gray-500 mt-1 line-clamp-2">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2">
                             {secondaryInfo}
                         </div>
                     )}
@@ -111,7 +111,7 @@ const StandardCard: React.FC<StandardCardProps> = ({
 
                 <div className="mt-3 flex items-end justify-between gap-2">
                     {primaryInfo && (
-                        <div className="text-lg font-black text-gray-900">
+                        <div className="text-lg font-black text-gray-900 dark:text-white">
                             {primaryInfo}
                         </div>
                     )}
