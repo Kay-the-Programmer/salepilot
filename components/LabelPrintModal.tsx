@@ -63,47 +63,64 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
     if (!isOpen || !product) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-md m-0 sm:m-4">
-                <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b">
+        <div
+            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in"
+            aria-labelledby="modal-title"
+            role="dialog"
+            aria-modal="true"
+            onClick={onClose}
+        >
+            <div
+                glass-effect=""
+                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-md m-0 sm:m-4 dark:bg-slate-900/80 dark:border-slate-700/50"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b border-gray-100 dark:border-slate-800">
                     <div>
-                        <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-slate-100" id="modal-title">
                             Print Product Label
                         </h3>
-                        <p className="text-sm text-gray-500 mt-1">{product.name}</p>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">{product.name}</p>
                     </div>
-                    <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-500">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="p-2 -m-2 text-gray-400 hover:text-gray-500 dark:text-slate-500 dark:hover:text-slate-400 rounded-full transition-colors"
+                    >
                         <XMarkIcon className="h-6 w-6" />
                     </button>
                 </div>
 
                 <div className="p-6 text-center">
                     <div ref={printAreaRef}>
-                        <div className="label-container inline-block p-4 border border-dashed border-gray-400">
-                            <h3 className="text-lg font-semibold">{product.name}</h3>
-                            <p className="text-2xl font-bold mb-2">{formatCurrency(product.price, storeSettings)}</p>
+                        <div className="label-container inline-block p-4 border border-dashed border-gray-400 bg-white rounded-lg">
+                            <h3 className="text-lg font-semibold text-black">{product.name}</h3>
+                            <p className="text-2xl font-bold mb-2 text-black">{formatCurrency(product.price, storeSettings)}</p>
                             <div className="codes flex items-center justify-center gap-4">
                                 <canvas ref={qrCodeRef}></canvas>
                             </div>
                             <canvas ref={barcodeRef}></canvas>
                         </div>
                     </div>
+                    <p className="mt-4 text-xs text-gray-500 dark:text-slate-400">
+                        Labels are optimized for standard 50mm x 30mm label printers.
+                    </p>
                 </div>
 
-                <div className="bg-gray-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3 border-t">
+                <div className="bg-gray-50/50 dark:bg-slate-800/50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-3 border-t border-gray-100 dark:border-slate-800">
                     <Button
                         type="button"
                         variant="primary"
                         onClick={handlePrint}
                         className="flex-1 sm:flex-none"
                     >
-                        Print
+                        Print Label
                     </Button>
                     <Button
                         type="button"
                         variant="secondary"
                         onClick={onClose}
-                        className="flex-1 sm:flex-none"
+                        className="flex-1 sm:flex-none dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600"
                     >
                         Close
                     </Button>

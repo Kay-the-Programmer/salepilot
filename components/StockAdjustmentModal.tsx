@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
 import XMarkIcon from './icons/XMarkIcon';
-import AdjustmentsIcon from './icons/AdjustmentsIcon';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
 
@@ -90,15 +89,13 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
     };
 
     const newStock = calculateNewStock();
-    const isIncrease = newStock > product.stock;
-    const isDecrease = newStock < product.stock;
     const isValid = reason && (reason !== 'Other' || customReason.trim()) &&
         !isNaN(newStock) &&
         (isStockCount ? newStock >= 0 : true);
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
+            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
@@ -106,151 +103,120 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
         >
             <form
                 onSubmit={handleSave}
-                className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
+                glass-effect=""
+                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md dark:bg-slate-900/80 dark:border-slate-700/50"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
-                <div className="sm:hidden pt-3 pb-1 flex justify-center">
-                    <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                <div className="sm:hidden pt-2 pb-0 flex justify-center">
+                    <div className="w-10 h-1 bg-gray-200 dark:bg-slate-800 rounded-full"></div>
                 </div>
 
-                {/* Header */}
-                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-blue-100 rounded-lg">
-                                <AdjustmentsIcon className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-semibold text-gray-900" id="modal-title">
-                                    Adjust Stock
-                                </h3>
-                                <p className="text-sm text-gray-500 truncate max-w-[200px] sm:max-w-none">
-                                    {product.name}
-                                </p>
-                            </div>
+                {/* Header - Minimal */}
+                <div className="px-6 pt-5 pb-3">
+                    <div className="flex items-start justify-between">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100" id="modal-title">
+                                Adjust Stock
+                            </h3>
+                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                                {product.name}
+                            </p>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
-                            aria-label="Close"
+                            className="p-1.5 -mr-1.5 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 rounded-full transition-colors"
                         >
-                            <XMarkIcon className="h-6 w-6" />
+                            <XMarkIcon className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
 
-                {/* Form content - scrollable */}
-                <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6 space-y-6">
-                    {/* Current stock display */}
-                    <div className="bg-gray-50 rounded-xl p-5">
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Current Stock</p>
-                                <p className="text-3xl font-bold text-gray-900 mt-1">{product.stock}</p>
-                                <p className="text-xs text-gray-500 mt-1">{product.unitOfMeasure}</p>
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto px-6 pb-6 space-y-6">
+                    {/* Quantity & Current Stock Integrated */}
+                    <div className="space-y-4">
+                        <div className="flex items-center justify-between text-sm">
+                            <label className="font-medium text-gray-700 dark:text-slate-300">
+                                {inputLabel}
+                            </label>
+                            <span className="text-gray-500 dark:text-slate-500">
+                                Current: <span className="font-bold text-gray-900 dark:text-slate-200">{product.stock} {product.unitOfMeasure}</span>
+                            </span>
+                        </div>
+
+                        <div className="relative">
+                            <input
+                                type="number"
+                                value={newQuantity}
+                                onChange={(e) => setNewQuantity(e.target.value)}
+                                className="w-full text-3xl font-bold px-0 py-2 bg-transparent border-b-2 border-gray-200 dark:border-slate-800 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors text-gray-900 dark:text-slate-100 placeholder-gray-300 dark:placeholder-slate-700"
+                                placeholder="0"
+                                autoFocus
+                                step={product.unitOfMeasure === 'kg' ? '0.001' : '1'}
+                            />
+                            <div className="absolute right-0 bottom-3 text-lg font-medium text-gray-400 pointer-events-none">
+                                {product.unitOfMeasure}
                             </div>
                         </div>
+                        <p className="text-xs text-gray-400 dark:text-slate-500 italic">
+                            {helper}{!isStockCount ? ' Use minus (-) to remove.' : ''}
+                        </p>
                     </div>
 
-                    {/* Quantity input */}
-                    <div>
-                        <InputField
-                            label={inputLabel}
-                            type="number"
-                            name="newQuantity"
-                            id="newQuantity"
-                            value={newQuantity}
-                            onChange={(e) => setNewQuantity(e.target.value)}
-                            min={isStockCount ? 0 : undefined}
-                            step={product.unitOfMeasure === 'kg' ? '0.001' : '1'}
-                            required
-                            placeholder={isStockCount ? "Enter count" : "Enter amount"}
-                            rightElement={<span className="text-gray-500">{product.unitOfMeasure}</span>}
-                            helperText={`${helper}${!isStockCount ? ' Use negative numbers to subtract.' : ''}`}
-                        />
-                    </div>
-
-                    {/* Reason selection */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
-                            Reason for Adjustment
-                        </label>
-
-                        {/* Quick reason chips */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                            {adjustmentReasons.map(({ value, icon, color }) => (
+                    {/* Reasons - Minimalist Row/Chip layout */}
+                    <div className="space-y-3">
+                        <p className="text-sm font-medium text-gray-700 dark:text-slate-300">Reason</p>
+                        <div className="flex flex-wrap gap-2">
+                            {adjustmentReasons.map(({ value, icon }) => (
                                 <button
                                     key={value}
                                     type="button"
                                     onClick={() => setReason(value)}
-                                    className={`flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all ${reason === value
-                                        ? 'border-blue-500 bg-blue-50'
-                                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${reason === value
+                                        ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20'
+                                        : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-200 dark:hover:border-slate-700'
                                         }`}
                                 >
-                                    <span className="text-lg">{icon}</span>
-                                    <span className="text-sm font-medium text-gray-700 truncate">{value}</span>
+                                    <span className="mr-1.5">{icon}</span>
+                                    {value}
                                 </button>
                             ))}
                         </div>
 
-                        {/* Custom reason input */}
                         {showCustomReason && (
-                            <div className="mt-4">
+                            <div className="pt-2 animate-fade-in">
                                 <InputField
-                                    label="Specify Reason"
-                                    id="customReason"
+                                    placeholder="Type reason..."
                                     value={customReason}
                                     onChange={(e) => setCustomReason(e.target.value)}
-                                    placeholder="Enter reason for adjustment..."
                                     required={reason === 'Other'}
+                                    className="!mb-0"
                                 />
-                            </div>
-                        )}
-
-                        {/* Selected reason display */}
-                        {reason && !showCustomReason && (
-                            <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="text-lg">
-                                            {adjustmentReasons.find(r => r.value === reason)?.icon}
-                                        </span>
-                                        <span className="font-medium text-gray-900">{reason}</span>
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setReason('')}
-                                        className="text-sm text-blue-600 hover:text-blue-800"
-                                    >
-                                        Change
-                                    </button>
-                                </div>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Fixed action buttons */}
-                <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
-                    <div className="flex flex-col sm:flex-row justify-end gap-3">
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={onClose}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            disabled={!isValid}
-                        >
-                            Update Stock
-                        </Button>
-                    </div>
+                {/* Footer - Minimal integrated */}
+                <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex items-center gap-3">
+                    <Button
+                        type="button"
+                        variant="secondary"
+                        onClick={onClose}
+                        className="flex-1 dark:bg-slate-800/50"
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        type="submit"
+                        variant="primary"
+                        disabled={!isValid}
+                        className="flex-1"
+                    >
+                        Confirm
+                    </Button>
                 </div>
             </form>
         </div>

@@ -1,5 +1,6 @@
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import Pagination from '../components/ui/Pagination';
-import { useState, useMemo, useEffect } from 'react';
+import SocketService from '../services/socketService';
 import { Sale, Customer, StoreSettings } from '../types';
 import SalesList from '../components/sales/SalesList';
 import SaleDetailModal from '../components/sales/SaleDetailModal';
@@ -77,127 +78,149 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
         return { totalRevenue, totalSales, avgSaleValue, paidSales };
     }, [enrichedSales]);
 
-    useEffect(() => {
-        const fetchSales = async () => {
-            setIsLoading(true);
-            setError(null);
+    const fetchSales = useCallback(async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const params = new URLSearchParams();
+            if (startDate) params.append('startDate', startDate);
+            if (endDate) params.append('endDate', endDate);
+            if (selectedCustomerId) params.append('customerId', selectedCustomerId);
+            if (selectedStatus) params.append('paymentStatus', selectedStatus);
+            params.append('page', String(page));
+            params.append('limit', String(pageSize));
+            params.append('sortBy', sortBy);
+            params.append('sortOrder', sortOrder);
+
+            const [fetchedSales, daily] = await Promise.all([
+                api.get<{ items: Sale[]; total: number; page: number; limit: number }>(`/sales?${params.toString()}`),
+                startDate && endDate ? api.get<{ daily: any }>(`/reports/daily-sales?startDate=${startDate}&endDate=${endDate}`) : Promise.resolve({ daily: [] as any }),
+            ]);
+            setSalesData(fetchedSales?.items || []);
+            setTotal(fetchedSales?.total || 0);
+            setDailySales((daily as any)?.daily || []);
+
+        } catch (err: any) {
+            // Offline fallback
             try {
-                const params = new URLSearchParams();
-                if (startDate) params.append('startDate', startDate);
-                if (endDate) params.append('endDate', endDate);
-                if (selectedCustomerId) params.append('customerId', selectedCustomerId);
-                if (selectedStatus) params.append('paymentStatus', selectedStatus);
-                params.append('page', String(page));
-                params.append('limit', String(pageSize));
-                params.append('sortBy', sortBy);
-                params.append('sortOrder', sortOrder);
+                const allSales = await dbService.getAll<Sale>('sales');
+                const start = startDate ? new Date(startDate + 'T00:00:00') : null;
+                const end = endDate ? new Date(endDate + 'T23:59:59.999') : null;
 
-                const [fetchedSales, daily] = await Promise.all([
-                    api.get<{ items: Sale[]; total: number; page: number; limit: number }>(`/sales?${params.toString()}`),
-                    startDate && endDate ? api.get<{ daily: any }>(`/reports/daily-sales?startDate=${startDate}&endDate=${endDate}`) : Promise.resolve({ daily: [] as any }),
-                ]);
-                setSalesData(fetchedSales?.items || []);
-                setTotal(fetchedSales?.total || 0);
-                setDailySales((daily as any)?.daily || []);
+                let filtered = allSales.filter(s => {
+                    const ts = new Date(s.timestamp);
+                    if (start && ts < start) return false;
+                    if (end && ts > end) return false;
+                    if (selectedCustomerId && String(s.customerId || '') !== String(selectedCustomerId)) return false;
+                    if (selectedStatus && s.paymentStatus !== (selectedStatus as any)) return false;
+                    return true;
+                });
 
-            } catch (err: any) {
-                // Offline fallback
-                try {
-                    const allSales = await dbService.getAll<Sale>('sales');
-                    const start = startDate ? new Date(startDate + 'T00:00:00') : null;
-                    const end = endDate ? new Date(endDate + 'T23:59:59.999') : null;
+                filtered.sort((a, b) => {
+                    let cmp = 0;
+                    switch (sortBy) {
+                        case 'total':
+                            cmp = a.total - b.total;
+                            break;
+                        case 'customer':
+                            cmp = (a.customerName || '').localeCompare(b.customerName || '');
+                            break;
+                        case 'status':
+                            cmp = (a.paymentStatus || '').localeCompare(b.paymentStatus || '');
+                            break;
+                        case 'date':
+                        default:
+                            cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+                    }
+                    return sortOrder === 'asc' ? cmp : -cmp;
+                });
 
-                    let filtered = allSales.filter(s => {
-                        const ts = new Date(s.timestamp);
-                        if (start && ts < start) return false;
-                        if (end && ts > end) return false;
-                        if (selectedCustomerId && String(s.customerId || '') !== String(selectedCustomerId)) return false;
-                        if (selectedStatus && s.paymentStatus !== (selectedStatus as any)) return false;
-                        return true;
-                    });
+                const totalCount = filtered.length;
+                const startIdx = (page - 1) * pageSize;
+                const pageItems = filtered.slice(startIdx, startIdx + pageSize);
 
-                    filtered.sort((a, b) => {
-                        let cmp = 0;
-                        switch (sortBy) {
-                            case 'total':
-                                cmp = a.total - b.total;
-                                break;
-                            case 'customer':
-                                cmp = (a.customerName || '').localeCompare(b.customerName || '');
-                                break;
-                            case 'status':
-                                cmp = (a.paymentStatus || '').localeCompare(b.paymentStatus || '');
-                                break;
-                            case 'date':
-                            default:
-                                cmp = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+                setSalesData(pageItems);
+                setTotal(totalCount);
+
+                if (start && end) {
+                    const dailyMap = new Map<string, { date: string; totalRevenue: number; totalQuantity: number; items: { name: string; quantity: number; revenue: number }[] }>();
+                    const itemsAggMap = new Map<string, Map<string, { quantity: number; revenue: number }>>();
+
+                    for (const sale of filtered) {
+                        const d = new Date(sale.timestamp);
+                        const key = d.toISOString().slice(0, 10);
+                        if (d < start || d > end) continue;
+
+                        if (!dailyMap.has(key)) {
+                            dailyMap.set(key, { date: key, totalRevenue: 0, totalQuantity: 0, items: [] });
+                            itemsAggMap.set(key, new Map());
                         }
-                        return sortOrder === 'asc' ? cmp : -cmp;
-                    });
+                        const day = dailyMap.get(key)!;
+                        day.totalRevenue += sale.total || 0;
 
-                    const totalCount = filtered.length;
-                    const startIdx = (page - 1) * pageSize;
-                    const pageItems = filtered.slice(startIdx, startIdx + pageSize);
-
-                    setSalesData(pageItems);
-                    setTotal(totalCount);
-
-                    if (start && end) {
-                        const dailyMap = new Map<string, { date: string; totalRevenue: number; totalQuantity: number; items: { name: string; quantity: number; revenue: number }[] }>();
-                        const itemsAggMap = new Map<string, Map<string, { quantity: number; revenue: number }>>();
-
-                        for (const sale of filtered) {
-                            const d = new Date(sale.timestamp);
-                            const key = d.toISOString().slice(0, 10);
-                            if (d < start || d > end) continue;
-
-                            if (!dailyMap.has(key)) {
-                                dailyMap.set(key, { date: key, totalRevenue: 0, totalQuantity: 0, items: [] });
-                                itemsAggMap.set(key, new Map());
-                            }
-                            const day = dailyMap.get(key)!;
-                            day.totalRevenue += sale.total || 0;
-
-                            for (const it of sale.cart || []) {
-                                day.totalQuantity += it.quantity || 0;
-                                const perDay = itemsAggMap.get(key)!;
-                                const prev = perDay.get(it.name) || { quantity: 0, revenue: 0 };
-                                prev.quantity += it.quantity || 0;
-                                prev.revenue += (it.price || 0) * (it.quantity || 0);
-                                perDay.set(it.name, prev);
-                            }
+                        for (const it of sale.cart || []) {
+                            day.totalQuantity += it.quantity || 0;
+                            const perDay = itemsAggMap.get(key)!;
+                            const prev = perDay.get(it.name) || { quantity: 0, revenue: 0 };
+                            prev.quantity += it.quantity || 0;
+                            prev.revenue += (it.price || 0) * (it.quantity || 0);
+                            perDay.set(it.name, prev);
                         }
-
-                        const dailyArr = Array.from(dailyMap.values()).map(day => {
-                            const perDay = itemsAggMap.get(day.date)!;
-                            day.items = Array.from(perDay.entries()).map(([name, v]) => ({ name, quantity: v.quantity, revenue: v.revenue }));
-                            return day;
-                        }).sort((a, b) => b.date.localeCompare(a.date));
-
-                        setDailySales(dailyArr);
-                    } else {
-                        setDailySales([]);
                     }
 
-                    setError(null);
-                } catch (fallbackErr: any) {
-                    setError(err.message || 'Failed to fetch sales data.');
-                }
-            } finally {
-                setIsLoading(false);
-            }
-        };
+                    const dailyArr = Array.from(dailyMap.values()).map(day => {
+                        const perDay = itemsAggMap.get(day.date)!;
+                        day.items = Array.from(perDay.entries()).map(([name, v]) => ({ name, quantity: v.quantity, revenue: v.revenue }));
+                        return day;
+                    }).sort((a, b) => b.date.localeCompare(a.date));
 
+                    setDailySales(dailyArr);
+                } else {
+                    setDailySales([]);
+                }
+
+                setError(null);
+            } catch (fallbackErr: any) {
+                setError(err.message || 'Failed to fetch sales data.');
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    }, [startDate, endDate, selectedCustomerId, selectedStatus, page, pageSize, sortBy, sortOrder]);
+
+    useEffect(() => {
         const timer = setTimeout(() => {
             fetchSales();
         }, 300);
 
         return () => clearTimeout(timer);
-    }, [startDate, endDate, selectedCustomerId, selectedStatus, page, pageSize, sortBy, sortOrder]);
+    }, [fetchSales]); // fetchSales is now a stable dependency due to useCallback
 
     useEffect(() => {
         setPage(1);
     }, [startDate, endDate, selectedCustomerId, selectedStatus, sortBy, sortOrder]);
+
+    // Socket.io integration for real-time updates
+    useEffect(() => {
+        if (storeSettings?.storeId) {
+            const socketService = SocketService.getInstance();
+            socketService.joinStore(storeSettings.storeId);
+
+            const handleNewSaleOrOrder = () => {
+                console.log('New sale or order received via socket, refreshing sales...');
+                fetchSales(); // This will trigger a re-fetch of sales data
+            };
+
+            socketService.on('new_sale', handleNewSaleOrOrder);
+            socketService.on('new_order', handleNewSaleOrOrder);
+
+            return () => {
+                socketService.off('new_sale', handleNewSaleOrOrder);
+                socketService.off('new_order', handleNewSaleOrOrder);
+                socketService.leaveStore(storeSettings.storeId);
+            };
+        }
+    }, [storeSettings?.storeId, fetchSales]); // fetchSales is a stable dependency
 
     const handleApplyFilters = (newFilters: { start: string; end: string; customer: string; status: string }) => {
         setStartDate(newFilters.start);

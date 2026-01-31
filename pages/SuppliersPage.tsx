@@ -96,23 +96,23 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
     if (selectedSupplier) {
         return (
             <div className="flex flex-col h-full">
-                <header className="bg-gray-100 z-10">
+                <header className="bg-gray-100/80 dark:bg-slate-900/80 backdrop-blur-[2px] sticky top-0 z-10 border-b border-gray-200/50 dark:border-slate-800/50 glass-effect">
                     <div className="mx-auto px-4 sm:px-4 lg:px-4">
                         <div className="flex items-center h-16">
                             <button
                                 onClick={handleBackToList}
-                                className="mr-4 p-2 rounded-full hover:bg-gray-100"
+                                className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400 transition-colors"
                                 aria-label="Back to supplier list"
                             >
-                                <ArrowLeftIcon className="w-6 h-6 text-gray-600" />
+                                <ArrowLeftIcon className="w-6 h-6" />
                             </button>
-                            <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate">
+                            <h1 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate">
                                 {selectedSupplier.name}
                             </h1>
                         </div>
                     </div>
                 </header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-slate-950">
                     <SupplierDetailView
                         supplier={selectedSupplier}
                         products={supplierProducts}
@@ -139,7 +139,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
             />
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-slate-950">
                 <div className="px-4 py-3 flex justify-end">
                     <ListGridToggle
                         viewMode={viewMode}
@@ -158,16 +158,15 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                     viewMode={viewMode}
                     selectedSupplierId={selectedSupplierId}
                 />
-                <div className="p-4 bg-white border-t border-gray-200 sticky bottom-0">
-                    <Pagination
-                        total={filteredSuppliers.length}
-                        page={page}
-                        pageSize={pageSize}
-                        onPageChange={setPage}
-                        onPageSizeChange={setPageSize}
-                        label="suppliers"
-                    />
-                </div>
+                <Pagination
+                    total={filteredSuppliers.length}
+                    page={page}
+                    pageSize={pageSize}
+                    onPageChange={setPage}
+                    onPageSizeChange={setPageSize}
+                    label="suppliers"
+                    className="border-t border-gray-200 dark:border-slate-800 backdrop-blur-[2px] sticky bottom-0 glass-effect !bg-white/80 dark:!bg-slate-900/80"
+                />
             </main>
             <SupplierFormModal
                 isOpen={isModalOpen}

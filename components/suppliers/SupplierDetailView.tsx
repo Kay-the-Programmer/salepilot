@@ -28,15 +28,15 @@ const InfoCard: React.FC<{
     icon?: React.ReactNode;
     variant?: 'default' | 'products';
 }> = ({ title, children, icon, variant = 'default' }) => (
-    <div className={`bg-white rounded-2xl shadow-sm border ${variant === 'products' ? 'border-slate-200' : 'border-slate-200'} overflow-hidden`}>
-        <div className="px-6 py-5 border-b border-slate-100">
+    <div className={`bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] rounded-2xl shadow-sm border ${variant === 'products' ? 'border-slate-200 dark:border-slate-800' : 'border-slate-200 dark:border-slate-800'} overflow-hidden glass-effect`}>
+        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800/50">
             <div className="flex items-center gap-3">
                 {icon && (
-                    <div className={`p-2 rounded-lg ${variant === 'products' ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-600'}`}>
+                    <div className={`p-2 rounded-lg ${variant === 'products' ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400'}`}>
                         {icon}
                     </div>
                 )}
-                <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
+                <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
             </div>
         </div>
         <div className={`${variant === 'products' ? 'p-0' : 'p-6'}`}>
@@ -51,19 +51,19 @@ const DetailItem: React.FC<{
     icon?: React.ReactNode;
     highlight?: boolean;
 }> = ({ label, value, icon, highlight = false }) => (
-    <div className="py-3 border-b border-slate-100 last:border-b-0">
+    <div className="py-3 border-b border-slate-100 dark:border-slate-800/50 last:border-b-0">
         <div className="flex items-start gap-3">
             {icon && (
                 <div className="flex-shrink-0 mt-0.5">
-                    <div className="p-1.5 bg-slate-50 rounded-lg">
+                    <div className="p-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg">
                         {icon}
                     </div>
                 </div>
             )}
             <div className="flex-grow min-w-0">
-                <div className="text-sm font-medium text-slate-500 mb-1">{label}</div>
-                <div className={`${highlight ? 'font-semibold' : 'font-normal'} text-slate-900 ${typeof value === 'string' ? 'whitespace-pre-wrap' : ''}`}>
-                    {value || <span className="text-slate-400">Not specified</span>}
+                <div className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1">{label}</div>
+                <div className={`${highlight ? 'font-semibold' : 'font-normal'} text-slate-900 dark:text-white ${typeof value === 'string' ? 'whitespace-pre-wrap' : ''}`}>
+                    {value || <span className="text-slate-400 dark:text-slate-600">Not specified</span>}
                 </div>
             </div>
         </div>
@@ -75,12 +75,12 @@ const ProductItem: React.FC<{ product: Product; storeSettings: StoreSettings }> 
     const isLowStock = numericStock <= (product.reorderPoint || 10);
 
     return (
-        <div className="px-6 py-4 border-b border-slate-100 last:border-b-0 hover:bg-slate-50/50 transition-colors group">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 last:border-b-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
             <div className="flex items-start gap-4">
                 {/* Product Image */}
                 <div className="flex-shrink-0">
                     {product.imageUrls?.[0] ? (
-                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50">
+                        <div className="w-16 h-16 rounded-xl overflow-hidden bg-gradient-to-br from-slate-100 to-slate-50 dark:from-slate-800 dark:to-slate-900">
                             <img
                                 src={buildAssetUrl(product.imageUrls[0])}
                                 alt={product.name}
@@ -88,8 +88,8 @@ const ProductItem: React.FC<{ product: Product; storeSettings: StoreSettings }> 
                             />
                         </div>
                     ) : (
-                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-slate-200 flex items-center justify-center">
-                            <ShoppingCartIcon className="w-6 h-6 text-slate-400" />
+                        <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 border border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                            <ShoppingCartIcon className="w-6 h-6 text-slate-400 dark:text-slate-500" />
                         </div>
                     )}
                 </div>
@@ -98,16 +98,16 @@ const ProductItem: React.FC<{ product: Product; storeSettings: StoreSettings }> 
                 <div className="flex-grow min-w-0">
                     <div className="flex items-start justify-between mb-2">
                         <div>
-                            <h4 className="font-semibold text-slate-900 text-sm line-clamp-2">
+                            <h4 className="font-semibold text-slate-900 dark:text-white text-sm line-clamp-2">
                                 {product.name}
                             </h4>
-                            <p className="text-xs text-slate-500 mt-1">{product.sku || 'No SKU'}</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{product.sku || 'No SKU'}</p>
                         </div>
                         <div className="text-right">
-                            <div className="text-sm font-bold text-slate-900">
+                            <div className="text-sm font-bold text-slate-900 dark:text-white">
                                 {formatCurrency(product.price, storeSettings)}
                             </div>
-                            <div className="text-xs text-slate-500">Unit price</div>
+                            <div className="text-xs text-slate-500 dark:text-slate-400">Unit price</div>
                         </div>
                     </div>
 
@@ -115,28 +115,28 @@ const ProductItem: React.FC<{ product: Product; storeSettings: StoreSettings }> 
                         <div className="flex items-center gap-4">
                             <div className="flex items-center gap-1.5">
                                 <div className={`w-2 h-2 rounded-full ${isLowStock ? 'bg-amber-500' : 'bg-emerald-500'}`}></div>
-                                <span className={`text-xs font-medium ${isLowStock ? 'text-amber-700' : 'text-emerald-700'}`}>
+                                <span className={`text-xs font-medium ${isLowStock ? 'text-amber-700 dark:text-amber-400' : 'text-emerald-700 dark:text-emerald-400'}`}>
                                     {numericStock} in stock
                                 </span>
                                 {isLowStock && numericStock > 0 && (
-                                    <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">
+                                    <span className="text-xs text-amber-600 bg-amber-50 dark:bg-amber-900/30 dark:text-amber-400 px-2 py-0.5 rounded-full">
                                         Low stock
                                     </span>
                                 )}
                             </div>
                             {product.unitOfMeasure === 'kg' && (
-                                <span className="text-xs text-slate-500 bg-slate-50 px-2 py-0.5 rounded-full">
+                                <span className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded-full">
                                     Sold per kg
                                 </span>
                             )}
                         </div>
                         <div className="text-xs text-slate-500">
                             {product.status === 'active' ? (
-                                <span className="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                                <span className="text-emerald-600 bg-emerald-50 dark:bg-emerald-900/30 dark:text-emerald-400 px-2 py-0.5 rounded-full">
                                     Active
                                 </span>
                             ) : (
-                                <span className="text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
+                                <span className="text-slate-400 bg-slate-50 dark:bg-slate-800 dark:text-slate-500 px-2 py-0.5 rounded-full">
                                     Inactive
                                 </span>
                             )}
@@ -161,21 +161,21 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
     }).length;
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-slate-950 dark:to-slate-900 p-4 sm:p-6 lg:p-8">
             {/* Header Section */}
             <div className="max-w-7xl mx-auto mb-8">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white">
                             {supplier.name}
                         </h1>
-                        <p className="text-slate-600 mt-2">
+                        <p className="text-slate-600 dark:text-slate-400 mt-2">
                             Supplier details and associated products
                         </p>
                     </div>
                     <button
                         onClick={() => onEdit(supplier)}
-                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-600/20 hover:shadow-xl"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-500 dark:to-blue-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg shadow-blue-600/20 hover:shadow-xl active:scale-95"
                     >
                         <PencilIcon className="w-4 h-4" />
                         Edit Supplier
@@ -196,28 +196,28 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                                 <DetailItem
                                     label="Company Name"
                                     value={supplier.name}
-                                    icon={<BuildingOfficeIcon className="w-4 h-4 text-slate-500" />}
+                                    icon={<BuildingOfficeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                                     highlight={true}
                                 />
                                 <DetailItem
                                     label="Contact Person"
                                     value={supplier.contactPerson}
-                                    icon={<UserIcon className="w-4 h-4 text-slate-500" />}
+                                    icon={<UserIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                                 />
                                 <DetailItem
                                     label="Email Address"
                                     value={supplier.email}
-                                    icon={<EnvelopeIcon className="w-4 h-4 text-slate-500" />}
+                                    icon={<EnvelopeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                                 />
                                 <DetailItem
                                     label="Phone Number"
                                     value={supplier.phone}
-                                    icon={<PhoneIcon className="w-4 h-4 text-slate-500" />}
+                                    icon={<PhoneIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                                 />
                                 <DetailItem
                                     label="Address"
                                     value={supplier.address}
-                                    icon={<MapPinIcon className="w-4 h-4 text-slate-500" />}
+                                    icon={<MapPinIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                                 />
                             </div>
                         </InfoCard>
@@ -233,18 +233,18 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                                     <DetailItem
                                         label="Payment Terms"
                                         value={supplier.paymentTerms}
-                                        icon={<CurrencyDollarIcon className="w-4 h-4 text-slate-500" />}
+                                        icon={<CurrencyDollarIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                                     />
                                     <DetailItem
                                         label="Banking Details"
                                         value={
                                             supplier.bankingDetails ? (
-                                                <div className="whitespace-pre-wrap font-mono text-sm bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                                <div className="whitespace-pre-wrap font-mono text-sm bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-300">
                                                     {supplier.bankingDetails}
                                                 </div>
                                             ) : undefined
                                         }
-                                        icon={<ClipboardDocumentListIcon className="w-4 h-4 text-slate-500" />}
+                                        icon={<ClipboardDocumentListIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                                     />
                                 </div>
                             </InfoCard>
@@ -258,7 +258,7 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                                     label="Notes"
                                     value={
                                         supplier.notes ? (
-                                            <div className="whitespace-pre-wrap bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                            <div className="whitespace-pre-wrap bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-300">
                                                 {supplier.notes}
                                             </div>
                                         ) : undefined
@@ -271,55 +271,55 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                     {/* Right Column - Products & Stats */}
                     <div className="space-y-6">
                         {/* Supplier Stats */}
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl border border-blue-200 p-6">
-                            <h3 className="text-lg font-semibold text-slate-900 mb-6 flex items-center gap-2">
-                                <ArrowTrendingUpIcon className="w-5 h-5 text-blue-600" />
+                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900/40 dark:to-indigo-900/40 rounded-2xl border border-blue-200 dark:border-blue-800/50 p-6 glass-effect backdrop-blur-[2px]">
+                            <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-6 flex items-center gap-2">
+                                <ArrowTrendingUpIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 Supplier Stats
                             </h3>
                             <div className="space-y-4">
-                                <div className="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-blue-100">
+                                <div className="flex items-center justify-between p-3 bg-white/80 dark:bg-slate-900/60 rounded-xl border border-blue-100 dark:border-blue-900/30">
                                     <div>
-                                        <div className="text-sm font-medium text-slate-600">Total Products</div>
-                                        <div className="text-2xl font-bold text-slate-900">{products.length}</div>
+                                        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Total Products</div>
+                                        <div className="text-2xl font-bold text-slate-900 dark:text-white">{products.length}</div>
                                     </div>
-                                    <div className="p-2 bg-blue-100 rounded-lg">
-                                        <ShoppingCartIcon className="w-6 h-6 text-blue-600" />
+                                    <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg text-blue-600 dark:text-blue-400">
+                                        <ShoppingCartIcon className="w-6 h-6" />
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-emerald-100">
+                                <div className="flex items-center justify-between p-3 bg-white/80 dark:bg-slate-900/60 rounded-xl border border-emerald-100 dark:border-emerald-900/30">
                                     <div>
-                                        <div className="text-sm font-medium text-slate-600">Active Products</div>
-                                        <div className="text-2xl font-bold text-emerald-700">{activeProducts}</div>
+                                        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Active Products</div>
+                                        <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{activeProducts}</div>
                                     </div>
-                                    <div className="p-2 bg-emerald-100 rounded-lg">
+                                    <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg">
                                         <div className="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center">
                                             <div className="w-2 h-2 rounded-full bg-white"></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-amber-100">
+                                <div className="flex items-center justify-between p-3 bg-white/80 dark:bg-slate-900/60 rounded-xl border border-amber-100 dark:border-amber-900/30">
                                     <div>
-                                        <div className="text-sm font-medium text-slate-600">Low Stock</div>
-                                        <div className="text-2xl font-bold text-amber-700">{lowStockProducts}</div>
+                                        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Low Stock</div>
+                                        <div className="text-2xl font-bold text-amber-700 dark:text-amber-400">{lowStockProducts}</div>
                                     </div>
-                                    <div className="p-2 bg-amber-100 rounded-lg">
+                                    <div className="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-lg">
                                         <div className="w-6 h-6 rounded-full bg-amber-500 flex items-center justify-center">
                                             <div className="w-2 h-2 rounded-full bg-white"></div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center justify-between p-3 bg-white/80 rounded-xl border border-purple-100">
+                                <div className="flex items-center justify-between p-3 bg-white/80 dark:bg-slate-900/60 rounded-xl border border-purple-100 dark:border-purple-900/30">
                                     <div>
-                                        <div className="text-sm font-medium text-slate-600">Inventory Value</div>
-                                        <div className="text-2xl font-bold text-purple-700">
+                                        <div className="text-sm font-medium text-slate-600 dark:text-slate-400">Inventory Value</div>
+                                        <div className="text-2xl font-bold text-purple-700 dark:text-purple-400">
                                             {formatCurrency(totalProductValue, storeSettings)}
                                         </div>
                                     </div>
-                                    <div className="p-2 bg-purple-100 rounded-lg">
-                                        <CurrencyDollarIcon className="w-6 h-6 text-purple-600" />
+                                    <div className="p-2 bg-purple-100 dark:bg-purple-900/50 rounded-lg text-purple-600 dark:text-purple-400">
+                                        <CurrencyDollarIcon className="w-6 h-6" />
                                     </div>
                                 </div>
                             </div>
@@ -339,11 +339,11 @@ const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, produ
                                 </div>
                             ) : (
                                 <div className="p-8 text-center">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <ShoppingCartIcon className="w-8 h-8 text-slate-400" />
+                                    <div className="w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-200 dark:border-slate-700">
+                                        <ShoppingCartIcon className="w-8 h-8 text-slate-400 dark:text-slate-500" />
                                     </div>
-                                    <h4 className="font-medium text-slate-900 mb-2">No products linked</h4>
-                                    <p className="text-sm text-slate-500">
+                                    <h4 className="font-medium text-slate-900 dark:text-white mb-2">No products linked</h4>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400">
                                         This supplier doesn't have any products associated yet.
                                     </p>
                                 </div>

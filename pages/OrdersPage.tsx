@@ -66,9 +66,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
         if (!storeId) return;
 
         const socketService = SocketService.getInstance();
-        const socket = socketService.getSocket();
-
-        socket.emit('join_store', storeId);
+        socketService.joinStore(storeId);
 
         const handleNewOrder = (data: any) => {
             console.log('Real-time order received:', data);
@@ -77,12 +75,13 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
             onDataRefresh?.();
         };
 
-        socket.on('new_sale', handleNewOrder);
-        socket.on('new_order', handleNewOrder);
+        socketService.on('new_sale', handleNewOrder);
+        socketService.on('new_order', handleNewOrder);
 
         return () => {
-            socket.off('new_sale', handleNewOrder);
-            socket.off('new_order', handleNewOrder);
+            socketService.off('new_sale', handleNewOrder);
+            socketService.off('new_order', handleNewOrder);
+            socketService.leaveStore(storeId);
         };
     }, [storeSettings?.storeId]);
 

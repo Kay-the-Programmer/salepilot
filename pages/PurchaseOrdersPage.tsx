@@ -6,9 +6,7 @@ import PencilIcon from '../components/icons/PencilIcon';
 import TrashIcon from '../components/icons/TrashIcon';
 import PlusIcon from '../components/icons/PlusIcon';
 import { SnackbarType } from '../App';
-import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
-import ArrowDownTrayIcon from '../components/icons/ArrowDownTrayIcon';
 import TruckIcon from '../components/icons/TruckIcon';
 import PackageIcon from '../components/icons/PackageIcon';
 import DocumentTextIcon from '../components/icons/DocumentTextIcon';
@@ -93,30 +91,34 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in">
-            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
-                {/* Drag handle for mobile */}
-                <div className="sm:hidden pt-3 pb-1 flex justify-center">
-                    <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+        <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in" onClick={onClose}>
+            <div
+                glass-effect=""
+                className="bg-white/95 dark:bg-slate-900/80 w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl border border-gray-100 dark:border-slate-700/50"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* iOS-style drag handle for mobile */}
+                <div className="sm:hidden pt-2 pb-0 flex justify-center">
+                    <div className="w-10 h-1 bg-gray-200 dark:bg-slate-800 rounded-full"></div>
                 </div>
 
                 {/* Header */}
-                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200">
-                    <div className="flex items-center justify-between">
+                <div className="px-6 pt-5 pb-3">
+                    <div className="flex items-start justify-between">
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-900">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100" id="modal-title">
                                 Receive Stock
                             </h3>
-                            <p className="text-sm text-gray-500 mt-0.5">
+                            <p className="text-sm text-gray-500 dark:text-slate-400 mt-0.5">
                                 PO #{po.poNumber} • {po.supplierName}
                             </p>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 -m-2 text-gray-500 hover:text-gray-700 active:bg-gray-100 rounded-full transition-colors"
+                            className="p-1.5 -mr-1.5 text-gray-400 hover:text-gray-600 dark:text-slate-500 dark:hover:text-slate-300 rounded-full transition-colors"
                         >
-                            <XMarkIcon className="h-6 w-6" />
+                            <XMarkIcon className="h-5 w-5" />
                         </button>
                     </div>
                 </div>
@@ -128,41 +130,41 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
                             {itemsToReceive.map(item => {
                                 const remaining = item.quantity - item.receivedQuantity;
                                 return (
-                                    <div key={item.productId} className="bg-gray-50 rounded-xl p-4">
+                                    <div key={item.productId} className="bg-gray-50 dark:bg-slate-800/50 rounded-xl p-4 border border-gray-100 dark:border-slate-800">
                                         <div className="flex items-start justify-between mb-3">
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="font-semibold text-gray-900 truncate">
+                                                <h4 className="font-semibold text-gray-900 dark:text-white truncate">
                                                     {item.productName}
                                                 </h4>
-                                                <p className="text-sm text-gray-500 mt-1">
+                                                <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                                                     SKU: {item.sku}
                                                 </p>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-sm font-medium text-gray-900">
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                     {formatCurrency(item.costPrice, storeSettings)}
                                                 </div>
-                                                <div className="text-xs text-gray-500">each</div>
+                                                <div className="text-xs text-gray-500 dark:text-slate-500">each</div>
                                             </div>
                                         </div>
 
                                         <div className="grid grid-cols-3 gap-3 mb-3">
                                             <div className="text-center">
-                                                <div className="text-sm font-medium text-gray-700">Ordered</div>
-                                                <div className="text-lg font-bold text-gray-900">{item.quantity}</div>
+                                                <div className="text-sm font-medium text-gray-700 dark:text-slate-300">Ordered</div>
+                                                <div className="text-lg font-bold text-gray-900 dark:text-white">{item.quantity}</div>
                                             </div>
                                             <div className="text-center">
-                                                <div className="text-sm font-medium text-gray-700">Received</div>
-                                                <div className="text-lg font-bold text-green-600">{item.receivedQuantity}</div>
+                                                <div className="text-sm font-medium text-gray-700 dark:text-slate-300">Received</div>
+                                                <div className="text-lg font-bold text-green-600 dark:text-emerald-400">{item.receivedQuantity}</div>
                                             </div>
                                             <div className="text-center">
-                                                <div className="text-sm font-medium text-gray-700">Remaining</div>
-                                                <div className="text-lg font-bold text-blue-600">{remaining}</div>
+                                                <div className="text-sm font-medium text-gray-700 dark:text-slate-300">Remaining</div>
+                                                <div className="text-lg font-bold text-blue-600 dark:text-blue-400">{remaining}</div>
                                             </div>
                                         </div>
 
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                                                 Receiving Now
                                             </label>
                                             <input
@@ -172,7 +174,7 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
                                                 min="0"
                                                 max={remaining}
                                                 placeholder="0"
-                                                className="w-full px-4 py-3 text-center text-lg border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                className="w-full px-4 py-3 text-center text-lg bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                                             />
                                         </div>
                                     </div>
@@ -181,13 +183,13 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
                         </div>
                     ) : (
                         <div className="text-center py-12">
-                            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                <PackageIcon className="w-8 h-8 text-green-600" />
+                            <div className="mx-auto w-16 h-16 bg-green-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mb-4">
+                                <PackageIcon className="w-8 h-8 text-green-600 dark:text-emerald-400" />
                             </div>
-                            <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
                                 All Items Received
                             </h4>
-                            <p className="text-gray-500">
+                            <p className="text-gray-500 dark:text-slate-400">
                                 This purchase order has been fully received.
                             </p>
                         </div>
@@ -195,32 +197,32 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
                 </div>
 
                 {/* Actions */}
-                <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
-                    <div className="flex flex-col sm:flex-row gap-3">
-                        {itemsToReceive.length > 0 && (
-                            <>
-                                <button
-                                    onClick={handleReceiveAll}
-                                    className="px-6 py-3.5 border-2 border-blue-300 text-blue-700 font-semibold rounded-xl hover:bg-blue-50 active:bg-blue-100 transition-colors"
-                                >
-                                    Receive All
-                                </button>
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={Object.values(receivedQuantities).every(val => !val || parseInt(val) === 0)}
-                                    className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-                                >
-                                    Confirm Receipt
-                                </button>
-                            </>
-                        )}
+                <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex flex-col sm:flex-row items-center gap-3">
+                    <div className="flex-1 w-full flex gap-3">
                         <button
                             onClick={onClose}
-                            className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                            className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                         >
                             Cancel
                         </button>
+                        {itemsToReceive.length > 0 && (
+                            <button
+                                onClick={handleReceiveAll}
+                                className="flex-1 px-4 py-2 border border-blue-200 dark:border-blue-900/50 text-blue-600 dark:text-blue-400 font-semibold rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                            >
+                                Receive All
+                            </button>
+                        )}
                     </div>
+                    {itemsToReceive.length > 0 && (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={Object.values(receivedQuantities).every(val => !val || parseInt(val) === 0)}
+                            className="w-full sm:w-auto sm:min-w-[160px] px-6 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                        >
+                            Confirm Receipt
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
@@ -363,21 +365,21 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
     };
 
     return (
-        <div className="h-full flex flex-col bg-gray-50">
+        <div className="h-full flex flex-col bg-gray-50 dark:bg-slate-950">
             {/* Header */}
-            <div className="bg-white border-b border-gray-200 px-4 py-3 sm:px-6 flex-shrink-0">
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 sm:px-6 flex-shrink-0">
                 <div className="flex items-center">
                     <button
                         onClick={onCancel}
-                        className="p-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="p-2 -ml-2 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                     >
                         <ArrowLeftIcon className="w-6 h-6" />
                     </button>
                     <div className="ml-3">
-                        <h1 className="text-xl font-semibold text-gray-900">
+                        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                             {poToEdit ? `Edit PO #${poToEdit.poNumber}` : 'New Purchase Order'}
                         </h1>
-                        <p className="text-sm text-gray-500">
+                        <p className="text-sm text-gray-500 dark:text-slate-400">
                             {poToEdit ? 'Update purchase order details' : 'Create a new purchase order'}
                         </p>
                     </div>
@@ -385,12 +387,12 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
             </div>
 
             {/* Form Content - Scrollable Area */}
-            <div className="flex-1 overflow-y-auto bg-gray-50">
+            <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950">
                 <div className="p-4 sm:p-6 max-w-6xl mx-auto pb-24 space-y-6">
                     {/* Supplier Selection */}
-                    <div id="po-supplier-select" className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                            <TruckIcon className="w-5 h-5 text-gray-500" />
+                    <div id="po-supplier-select" glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <TruckIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                             Supplier Selection
                         </h3>
                         <div className="relative">
@@ -398,20 +400,20 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                 id="supplierId"
                                 value={po.supplierId}
                                 onChange={handleSupplierChange}
-                                className="w-full px-4 py-3 text-base border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                                className="w-full px-4 py-3 text-base bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none text-gray-900 dark:text-white"
                                 disabled={!!poToEdit}
                             >
-                                <option value="" disabled>Select a supplier...</option>
+                                <option value="" disabled className="dark:bg-slate-800">Select a supplier...</option>
                                 {suppliers.map(s => (
-                                    <option key={s.id} value={s.id}>
+                                    <option key={s.id} value={s.id} className="dark:bg-slate-800">
                                         {s.name}
                                     </option>
                                 ))}
                             </select>
-                            <ChevronRightIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 w-5 h-5 text-gray-400 pointer-events-none" />
+                            <ChevronRightIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 rotate-90 w-5 h-5 text-gray-400 dark:text-slate-500 pointer-events-none" />
                         </div>
                         {poToEdit && (
-                            <p className="mt-2 text-sm text-gray-500">
+                            <p className="mt-2 text-sm text-gray-500 dark:text-slate-400">
                                 Supplier cannot be changed after a PO is created.
                             </p>
                         )}
@@ -423,28 +425,28 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                             {/* Add Products */}
                             <div id="po-available-products" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Available Products */}
-                                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                                <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
                                     <div className="flex items-center justify-between mb-4">
-                                        <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                                        <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                             <PackageIcon className="w-5 h-5 text-blue-500" />
                                             Available Products
                                         </h4>
-                                        <span className="text-sm text-gray-500">
+                                        <span className="text-sm text-gray-500 dark:text-slate-400">
                                             {availableProducts.length} items
                                         </span>
                                     </div>
-                                    <div className="max-h-60 overflow-y-auto space-y-2">
+                                    <div className="max-h-60 overflow-y-auto space-y-2 custom-scrollbar">
                                         {availableProducts.map(p => (
                                             <button
                                                 key={p.id}
                                                 onClick={() => addProductToPO(p)}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-colors text-left"
+                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left"
                                             >
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-medium text-gray-900 truncate">
+                                                    <div className="font-medium text-gray-900 dark:text-white truncate">
                                                         {p.name}
                                                     </div>
-                                                    <div className="text-sm text-gray-500">
+                                                    <div className="text-sm text-gray-500 dark:text-slate-400">
                                                         SKU: {p.sku}
                                                     </div>
                                                 </div>
@@ -452,7 +454,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                             </button>
                                         ))}
                                         {availableProducts.length === 0 && (
-                                            <div className="text-center py-4 text-gray-500">
+                                            <div className="text-center py-4 text-gray-500 dark:text-slate-400">
                                                 No products found for this supplier.
                                             </div>
                                         )}
@@ -460,38 +462,38 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                 </div>
 
                                 {/* Suggested Products */}
-                                <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                                <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
-                                            <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                                            <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                                 <span className="text-yellow-500">📊</span>
                                                 Suggested Products
                                             </h4>
-                                            <p className="text-xs text-gray-500">
+                                            <p className="text-xs text-gray-500 dark:text-slate-400">
                                                 Items below reorder point
                                             </p>
                                         </div>
                                         {suggestedProducts.length > 0 && (
                                             <button
                                                 onClick={handleAddAllSuggested}
-                                                className="px-3 py-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                                                className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                                             >
                                                 Add All ({suggestedProducts.length})
                                             </button>
                                         )}
                                     </div>
-                                    <div className="max-h-60 overflow-y-auto space-y-2">
+                                    <div className="max-h-60 overflow-y-auto space-y-2 custom-scrollbar">
                                         {suggestedProducts.map(p => (
                                             <button
                                                 key={p.id}
                                                 onClick={() => addProductToPO(p, p.suggestedQty)}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-yellow-200 hover:border-yellow-300 hover:bg-yellow-50 transition-colors text-left"
+                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-yellow-200 dark:border-yellow-900/50 hover:border-yellow-300 dark:hover:border-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors text-left"
                                             >
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="font-medium text-gray-900 truncate">
+                                                    <div className="font-medium text-gray-900 dark:text-white truncate">
                                                         {p.name}
                                                     </div>
-                                                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                                                    <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-slate-400">
                                                         <span>Stock: {p.stock}</span>
                                                         <span>•</span>
                                                         <span>Order: {p.suggestedQty}</span>
@@ -501,7 +503,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                             </button>
                                         ))}
                                         {suggestedProducts.length === 0 && (
-                                            <div className="text-center py-4 text-gray-500">
+                                            <div className="text-center py-4 text-gray-500 dark:text-slate-400">
                                                 All items are well-stocked.
                                             </div>
                                         )}
@@ -510,29 +512,29 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                             </div>
 
                             {/* Items Table */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                                <div className="px-5 py-4 border-b border-gray-200">
-                                    <h3 className="text-lg font-semibold text-gray-900">
+                            <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden">
+                                <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-800">
+                                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                         PO Items ({po.items.length})
                                     </h3>
                                 </div>
 
                                 {po.items.length > 0 ? (
-                                    <div className="divide-y divide-gray-200">
+                                    <div className="divide-y divide-gray-200 dark:divide-slate-800">
                                         {po.items.map(item => (
-                                            <div key={item.productId} className="p-5 hover:bg-gray-50 transition-colors">
+                                            <div key={item.productId} className="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex-1 min-w-0">
-                                                        <h4 className="font-semibold text-gray-900">
+                                                        <h4 className="font-semibold text-gray-900 dark:text-white">
                                                             {item.productName}
                                                         </h4>
-                                                        <p className="text-sm text-gray-500 mt-1">
+                                                        <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">
                                                             SKU: {item.sku}
                                                         </p>
                                                     </div>
                                                     <button
                                                         onClick={() => removeItem(item.productId)}
-                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                     >
                                                         <TrashIcon className="w-5 h-5" />
                                                     </button>
@@ -540,7 +542,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                                                             Quantity
                                                         </label>
                                                         <input
@@ -548,16 +550,16 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                                             min="1"
                                                             value={item.quantity}
                                                             onChange={e => updateItem(item.productId, 'quantity', parseInt(e.target.value) || 1)}
-                                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                            className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                                                             Cost Price
                                                         </label>
                                                         <div className="relative">
                                                             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                                                <span className="text-gray-500">{storeSettings.currency.symbol}</span>
+                                                                <span className="text-gray-500 dark:text-slate-500">{storeSettings.currency.symbol}</span>
                                                             </div>
                                                             <input
                                                                 type="number"
@@ -565,15 +567,15 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                                                 min="0"
                                                                 value={item.costPrice}
                                                                 onChange={e => updateItem(item.productId, 'costPrice', parseFloat(e.target.value) || 0)}
-                                                                className="w-full pl-7 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                                                className="w-full pl-7 pr-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                                                             />
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                                                             Line Total
                                                         </label>
-                                                        <div className="px-3 py-2 bg-gray-50 rounded-lg text-right font-semibold text-gray-900">
+                                                        <div className="px-3 py-2 bg-gray-50 dark:bg-slate-800/50 rounded-lg text-right font-semibold text-gray-900 dark:text-white border border-gray-100 dark:border-slate-700">
                                                             {formatCurrency(item.quantity * item.costPrice, storeSettings)}
                                                         </div>
                                                     </div>
@@ -583,11 +585,11 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                     </div>
                                 ) : (
                                     <div className="text-center py-12">
-                                        <PackageIcon className="mx-auto w-12 h-12 text-gray-300 mb-4" />
-                                        <p className="text-gray-500">
+                                        <PackageIcon className="mx-auto w-12 h-12 text-gray-300 dark:text-slate-600 mb-4" />
+                                        <p className="text-gray-500 dark:text-slate-400">
                                             No items added to this purchase order.
                                         </p>
-                                        <p className="text-sm text-gray-400 mt-1">
+                                        <p className="text-sm text-gray-400 dark:text-slate-500 mt-1">
                                             Add products from the sections above.
                                         </p>
                                     </div>
@@ -599,14 +601,14 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                     {/* Details and Summary */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Details */}
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <DocumentTextIcon className="w-5 h-5 text-gray-500" />
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                                 Order Details
                             </h3>
                             <div className="space-y-4">
                                 <div>
-                                    <label htmlFor="expectedAt" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="expectedAt" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                                         Expected Delivery Date
                                     </label>
                                     <input
@@ -614,11 +616,11 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                         id="expectedAt"
                                         value={po.expectedAt?.split('T')[0] || ''}
                                         onChange={e => setPo({ ...po, expectedAt: new Date(e.target.value).toISOString() })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-2">
+                                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
                                         Notes
                                     </label>
                                     <textarea
@@ -626,7 +628,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                         value={po.notes || ''}
                                         onChange={e => setPo({ ...po, notes: e.target.value })}
                                         rows={3}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                        className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                                         placeholder="Add any notes or instructions..."
                                     />
                                 </div>
@@ -634,43 +636,43 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                         </div>
 
                         {/* Costs Summary */}
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <CurrencyDollarIcon className="w-5 h-5 text-gray-500" />
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <CurrencyDollarIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                                 Cost Summary
                             </h3>
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
-                                    <span className="text-gray-600">Subtotal</span>
-                                    <span className="font-medium text-gray-900">
+                                    <span className="text-gray-600 dark:text-slate-400">Subtotal</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">
                                         {formatCurrency(po.subtotal, storeSettings)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <div className="flex items-center gap-2">
-                                        <label htmlFor="shippingCost" className="text-gray-600">Shipping</label>
+                                        <label htmlFor="shippingCost" className="text-gray-600 dark:text-slate-400">Shipping</label>
                                         <input
                                             type="number"
                                             id="shippingCost"
                                             value={po.shippingCost}
                                             onChange={e => setPo({ ...po, shippingCost: parseFloat(e.target.value) || 0 })}
-                                            className="w-24 px-2 py-1 text-right border border-gray-300 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                            className="w-24 px-2 py-1 text-right bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-gray-900 dark:text-white"
                                         />
                                     </div>
-                                    <span className="font-medium text-gray-900">
+                                    <span className="font-medium text-gray-900 dark:text-white">
                                         {formatCurrency(po.shippingCost, storeSettings)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-gray-600">Tax ({storeSettings.taxRate}%)</span>
-                                    <span className="font-medium text-gray-900">
+                                    <span className="text-gray-600 dark:text-slate-400">Tax ({storeSettings.taxRate}%)</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">
                                         {formatCurrency(po.tax, storeSettings)}
                                     </span>
                                 </div>
-                                <div className="pt-4 border-t border-gray-200">
+                                <div className="pt-4 border-t border-gray-200 dark:border-slate-800">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-lg font-semibold text-gray-900">Total</span>
-                                        <span className="text-xl font-bold text-blue-600">
+                                        <span className="text-lg font-semibold text-gray-900 dark:text-white">Total</span>
+                                        <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                                             {formatCurrency(po.total, storeSettings)}
                                         </span>
                                     </div>
@@ -684,9 +686,9 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                         <button
                             onClick={() => handleSaveAndExit(false)}
                             disabled={isLoading}
-                            className="px-6 py-3.5 border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="px-6 py-3.5 border-2 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 active:bg-gray-100 dark:active:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                         >
-                            {isLoading && <div className="w-5 h-5 border-2 border-gray-600 border-t-transparent rounded-full animate-spin" />}
+                            {isLoading && <div className="w-5 h-5 border-2 border-gray-600 dark:border-slate-400 border-t-transparent rounded-full animate-spin" />}
                             Save as Draft
                         </button>
                         <button
@@ -927,19 +929,19 @@ export default function PurchaseOrdersPage({
         };
 
         return (
-            <div className="min-h-screen bg-gray-50">
+            <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
                 {/* Header */}
-                <div className="sticky top-0 z-40 bg-white border-b border-gray-200 px-4 py-3">
+                <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <h1 className="text-xl font-bold text-gray-900">Purchase Orders</h1>
+                            <h1 className="text-xl font-bold text-gray-900 dark:text-white">Purchase Orders</h1>
                             <button
                                 id="po-help-btn"
                                 onClick={() => {
                                     localStorage.removeItem('salePilot.poMainTourSeen');
                                     setRunMainTour(true);
                                 }}
-                                className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 transition-colors"
+                                className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                                 title="Start Tour"
                             >
                                 <InformationCircleIcon className="w-5 h-5" />
@@ -948,14 +950,14 @@ export default function PurchaseOrdersPage({
 
                         {/* Desktop Tabs (Pills) */}
                         <div id="po-filters" className="hidden md:flex items-center gap-3 mx-6">
-                            <div className="flex bg-gray-100/80 p-1 rounded-xl shrink-0">
+                            <div className="flex bg-gray-100/80 dark:bg-slate-800/80 p-1 rounded-xl shrink-0">
                                 {['all', 'draft', 'ordered', 'received', 'canceled'].map((status) => (
                                     <button
                                         key={status}
                                         onClick={() => setStatusFilter(status)}
                                         className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${statusFilter === status
-                                            ? 'bg-white text-gray-900 shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700'
+                                            ? 'bg-white dark:bg-slate-700 text-gray-900 dark:text-white shadow-sm'
+                                            : 'text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-300'
                                             }`}
                                     >
                                         {status === 'all' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase())}
@@ -971,7 +973,7 @@ export default function PurchaseOrdersPage({
                             {/* Mobile Menu Button */}
                             <button
                                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                                className="md:hidden p-2 rounded-lg active:bg-gray-200 text-gray-600"
+                                className="md:hidden p-2 rounded-lg active:bg-gray-200 dark:active:bg-slate-800 text-gray-600 dark:text-slate-400"
                                 aria-label="Menu"
                             >
                                 <GridIcon className="w-5 h-5" />
@@ -992,9 +994,10 @@ export default function PurchaseOrdersPage({
 
                 {/* Mobile Grid Menu Popup */}
                 {isMobileMenuOpen && (
-                    <div className="fixed inset-0 z-50 bg-black/50 md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
+                    <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
                         <div
-                            className="absolute top-[70px] right-4 left-4 bg-white rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100"
+                            glass-effect=""
+                            className="absolute top-[70px] right-4 left-4 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100 dark:border-slate-800"
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="grid grid-cols-2 gap-4">
@@ -1008,8 +1011,8 @@ export default function PurchaseOrdersPage({
                                                 setIsMobileMenuOpen(false);
                                             }}
                                             className={`flex flex-col items-center justify-center p-3 rounded-2xl transition-all active:scale-95 ${isActive
-                                                ? 'bg-gray-900 text-white shadow-lg'
-                                                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                                                ? 'bg-gray-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
+                                                : 'bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'
                                                 }`}
                                         >
                                             <span className="text-sm font-semibold whitespace-nowrap">
@@ -1026,21 +1029,21 @@ export default function PurchaseOrdersPage({
                 {/* Stats Cards */}
                 <div className="px-4 py-4 sm:px-6">
                     <div id="po-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                            <div className="text-sm font-medium text-gray-500">Draft</div>
-                            <div className="text-2xl font-bold text-gray-900">{stats.draft}</div>
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <div className="text-sm font-medium text-gray-500 dark:text-slate-400">Draft</div>
+                            <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.draft}</div>
                         </div>
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                            <div className="text-sm font-medium text-gray-500">Ordered</div>
-                            <div className="text-2xl font-bold text-blue-600">{stats.ordered}</div>
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <div className="text-sm font-medium text-gray-500 dark:text-slate-400">Ordered</div>
+                            <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.ordered}</div>
                         </div>
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                            <div className="text-sm font-medium text-gray-500">In Transit</div>
-                            <div className="text-2xl font-bold text-yellow-600">{stats.partially_received}</div>
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <div className="text-sm font-medium text-gray-500 dark:text-slate-400">In Transit</div>
+                            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.partially_received}</div>
                         </div>
-                        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-200">
-                            <div className="text-sm font-medium text-gray-500">Total Value</div>
-                            <div className="text-2xl font-bold text-gray-900">{formatCurrency(stats.totalValue, storeSettings)}</div>
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <div className="text-sm font-medium text-gray-500 dark:text-slate-400">Total Value</div>
+                            <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats.totalValue, storeSettings)}</div>
                         </div>
                     </div>
 
@@ -1057,7 +1060,7 @@ export default function PurchaseOrdersPage({
                     />
 
                     {!isLoading && paginatedPOs.length > 0 && (
-                        <div className="p-4 bg-white border-t border-gray-200 rounded-b-2xl shadow-sm border-x border-b">
+                        <div glass-effect="" className="p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 rounded-b-2xl shadow-sm border-x border-b">
                             <Pagination
                                 total={filteredPOs.length}
                                 page={page}
@@ -1076,25 +1079,25 @@ export default function PurchaseOrdersPage({
 
     const renderDetailView = (po: PurchaseOrder) => {
         return (
-            <div className="min-h-screen bg-gray-50 pb-20">
+            <div className="min-h-screen bg-gray-50 dark:bg-slate-950 pb-20">
                 {/* Header */}
-                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3 sm:px-6">
+                <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 sm:px-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
                             <button
                                 onClick={handleBackToList}
-                                className="p-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                                className="p-2 -ml-2 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             >
                                 <ArrowLeftIcon className="w-6 h-6" />
                             </button>
                             <div className="ml-3">
                                 <div className="flex items-center gap-2">
-                                    <h1 className="text-xl font-semibold text-gray-900">
+                                    <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
                                         PO #{po.poNumber}
                                     </h1>
                                     <StatusBadge status={po.status} />
                                 </div>
-                                <p className="text-sm text-gray-500">
+                                <p className="text-sm text-gray-500 dark:text-slate-400">
                                     Created on {new Date(po.createdAt).toLocaleDateString()}
                                 </p>
                             </div>
@@ -1103,7 +1106,7 @@ export default function PurchaseOrdersPage({
                             {po.status === 'draft' && (
                                 <button
                                     onClick={() => handleEditPO(po)}
-                                    className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    className="p-2 text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                                     title="Edit PO"
                                 >
                                     <PencilIcon className="w-5 h-5" />
@@ -1112,7 +1115,7 @@ export default function PurchaseOrdersPage({
                             {(po.status === 'ordered' || po.status === 'partially_received') && (
                                 <button
                                     onClick={() => handleReceiveStock(po)}
-                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 active:scale-95 transition-all"
+                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 dark:bg-emerald-600 hover:bg-green-700 dark:hover:bg-emerald-700 active:scale-95 transition-all"
                                 >
                                     <PackageIcon className="w-4 h-4 mr-2" />
                                     Receive Stock
@@ -1120,7 +1123,7 @@ export default function PurchaseOrdersPage({
                             )}
                             <button
                                 onClick={() => handleOpenDeleteModal(po)}
-                                className="p-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-2 text-gray-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 title="Delete PO"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -1132,103 +1135,103 @@ export default function PurchaseOrdersPage({
                 <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-blue-50 rounded-lg">
-                                    <TruckIcon className="w-5 h-5 text-blue-600" />
+                                <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                                    <TruckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <h3 className="font-semibold text-gray-900">Supplier</h3>
+                                <h3 className="font-semibold text-gray-900 dark:text-white">Supplier</h3>
                             </div>
                             <div className="space-y-1">
-                                <div className="text-lg font-bold text-gray-900">{po.supplierName}</div>
+                                <div className="text-lg font-bold text-gray-900 dark:text-white">{po.supplierName}</div>
                                 {po.isMarketplaceOrder && (
-                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-400">
                                         Marketplace Order
                                     </span>
                                 )}
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-yellow-50 rounded-lg">
-                                    <InformationCircleIcon className="w-5 h-5 text-yellow-600" />
+                                <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                                    <InformationCircleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                                 </div>
-                                <h3 className="font-semibold text-gray-900">Dates</h3>
+                                <h3 className="font-semibold text-gray-900 dark:text-white">Dates</h3>
                             </div>
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Ordered:</span>
-                                    <span className="text-gray-900 font-medium">
+                                    <span className="text-gray-500 dark:text-slate-400">Ordered:</span>
+                                    <span className="text-gray-900 dark:text-white font-medium">
                                         {po.orderedAt ? new Date(po.orderedAt).toLocaleString() : 'Not ordered yet'}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Expected:</span>
-                                    <span className="text-gray-900 font-medium">
+                                    <span className="text-gray-500 dark:text-slate-400">Expected:</span>
+                                    <span className="text-gray-900 dark:text-white font-medium">
                                         {po.expectedAt ? new Date(po.expectedAt).toLocaleDateString() : 'N/A'}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200">
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
                             <div className="flex items-center gap-3 mb-4">
-                                <div className="p-2 bg-green-50 rounded-lg">
-                                    <CurrencyDollarIcon className="w-5 h-5 text-green-600" />
+                                <div className="p-2 bg-green-50 dark:bg-emerald-900/20 rounded-lg">
+                                    <CurrencyDollarIcon className="w-5 h-5 text-green-600 dark:text-emerald-400" />
                                 </div>
-                                <h3 className="font-semibold text-gray-900">Financials</h3>
+                                <h3 className="font-semibold text-gray-900 dark:text-white">Financials</h3>
                             </div>
                             <div className="space-y-2 text-sm">
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Total Amount:</span>
-                                    <span className="text-lg font-bold text-gray-900">
+                                    <span className="text-gray-500 dark:text-slate-400">Total Amount:</span>
+                                    <span className="text-lg font-bold text-gray-900 dark:text-white">
                                         {formatCurrency(po.total, storeSettings)}
                                     </span>
                                 </div>
                                 <div className="flex justify-between">
-                                    <span className="text-gray-500">Items:</span>
-                                    <span className="text-gray-900 font-medium">{po.items.length} products</span>
+                                    <span className="text-gray-500 dark:text-slate-400">Items:</span>
+                                    <span className="text-gray-900 dark:text-white font-medium">{po.items.length} products</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     {/* Items Table */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div className="px-6 py-4 border-b border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900">Order Items</h3>
+                    <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-800">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Order Items</h3>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
+                        <div className="overflow-x-auto custom-scrollbar">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
+                                <thead className="bg-gray-50 dark:bg-slate-800/50">
                                     <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Received</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Line Total</th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Product</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Qty</th>
+                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Received</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Cost</th>
+                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-slate-400 uppercase tracking-wider">Line Total</th>
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
+                                <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
                                     {po.items.map((item) => (
-                                        <tr key={item.productId} className="hover:bg-gray-50">
+                                        <tr key={item.productId} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
                                             <td className="px-6 py-4 whitespace-nowrap">
-                                                <div className="text-sm font-medium text-gray-900">{item.productName}</div>
-                                                <div className="text-xs text-gray-500">SKU: {item.sku}</div>
+                                                <div className="text-sm font-medium text-gray-900 dark:text-white">{item.productName}</div>
+                                                <div className="text-xs text-gray-500 dark:text-slate-400">SKU: {item.sku}</div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 font-semibold">
+                                            <td className="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900 dark:text-white font-semibold">
                                                 {item.quantity}
                                             </td>
                                             <td className="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                                <span className={`font-bold ${item.receivedQuantity >= item.quantity ? 'text-green-600' : 'text-blue-600'}`}>
+                                                <span className={`font-bold ${item.receivedQuantity >= item.quantity ? 'text-green-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'}`}>
                                                     {item.receivedQuantity}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500">
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm text-gray-500 dark:text-slate-400">
                                                 {formatCurrency(item.costPrice, storeSettings)}
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-gray-900 dark:text-white">
                                                 {formatCurrency(item.quantity * item.costPrice, storeSettings)}
                                             </td>
                                         </tr>
@@ -1240,34 +1243,34 @@ export default function PurchaseOrdersPage({
 
                     {/* Financial Summary and Notes */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <DocumentTextIcon className="w-5 h-5 text-gray-400" />
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <DocumentTextIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                                 Notes
                             </h3>
-                            <div className="text-gray-600 text-sm italic bg-gray-50 p-4 rounded-xl border border-dashed border-gray-200">
+                            <div className="text-gray-600 dark:text-slate-400 text-sm italic bg-gray-50 dark:bg-slate-800/50 p-4 rounded-xl border border-dashed border-gray-200 dark:border-slate-700">
                                 {po.notes || 'No notes provided for this order.'}
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Financial Summary</h3>
+                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-slate-800">
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Financial Summary</h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Subtotal</span>
-                                    <span className="font-medium text-gray-900">{formatCurrency(po.subtotal, storeSettings)}</span>
+                                    <span className="text-gray-500 dark:text-slate-400">Subtotal</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(po.subtotal, storeSettings)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Shipping</span>
-                                    <span className="font-medium text-gray-900">{formatCurrency(po.shippingCost, storeSettings)}</span>
+                                    <span className="text-gray-500 dark:text-slate-400">Shipping</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(po.shippingCost, storeSettings)}</span>
                                 </div>
                                 <div className="flex justify-between text-sm">
-                                    <span className="text-gray-500">Tax ({storeSettings.taxRate}%)</span>
-                                    <span className="font-medium text-gray-900">{formatCurrency(po.tax, storeSettings)}</span>
+                                    <span className="text-gray-500 dark:text-slate-400">Tax ({storeSettings.taxRate}%)</span>
+                                    <span className="font-medium text-gray-900 dark:text-white">{formatCurrency(po.tax, storeSettings)}</span>
                                 </div>
-                                <div className="pt-3 border-t border-gray-100 flex justify-between items-center">
-                                    <span className="text-base font-bold text-gray-900">Total</span>
-                                    <span className="text-xl font-bold text-blue-600">{formatCurrency(po.total, storeSettings)}</span>
+                                <div className="pt-3 border-t border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                                    <span className="text-base font-bold text-gray-900 dark:text-white">Total</span>
+                                    <span className="text-xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(po.total, storeSettings)}</span>
                                 </div>
                             </div>
                         </div>
@@ -1349,9 +1352,9 @@ export default function PurchaseOrdersPage({
                                 Are you sure you want to delete <strong>PO #{poToDelete.poNumber}</strong>? This action cannot be undone.
                             </p>
                             {deleteError && (
-                                <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2 animate-shake">
+                                <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl flex items-start gap-2 animate-shake">
                                     <XMarkIcon className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                                    <p className="text-sm text-red-700 font-medium">
+                                    <p className="text-sm text-red-700 dark:text-red-400 font-medium">
                                         {deleteError}
                                     </p>
                                 </div>

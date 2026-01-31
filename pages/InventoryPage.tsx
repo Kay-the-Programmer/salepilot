@@ -606,7 +606,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             <div className="flex-1 flex overflow-hidden">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex flex-col h-full border-r border-gray-200 dark:border-white/10 bg-white/50 dark:bg-slate-900/50 transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    className={`flex flex-col h-full  dark:border-white/10 bg-white/50 dark:bg-slate-900/50 transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
                     style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '400px' : 'none' }}
                     glass-effect=""
                 >

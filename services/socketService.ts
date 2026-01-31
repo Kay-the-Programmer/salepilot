@@ -32,6 +32,22 @@ class SocketService {
         this.socket.emit('join_offer', offerId);
     }
 
+    public joinStore(storeId: string) {
+        this.socket.emit('join_store', storeId);
+    }
+
+    public leaveStore(storeId: string) {
+        this.socket.emit('leave_store', storeId);
+    }
+
+    public on(event: string, callback: (...args: any[]) => void) {
+        this.socket.on(event, callback);
+    }
+
+    public off(event: string, callback: (...args: any[]) => void) {
+        this.socket.off(event, callback);
+    }
+
     public sendLocation(offerId: string, userId: string, lat: number, lng: number) {
         this.socket.emit('send_location', { offerId, userId, lat, lng });
     }

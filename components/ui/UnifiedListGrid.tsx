@@ -81,14 +81,14 @@ function UnifiedListGrid<T>({
     // Error state
     if (error) {
         return (
-            <div className="text-center p-10 bg-red-50 rounded-xl border border-red-200 m-4">
-                <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-6 h-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center p-10 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-900/30 m-4">
+                <div className="mx-auto w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </div>
-                <p className="text-red-600 font-medium">Error loading data</p>
-                <p className="text-red-500 text-sm mt-1">{error}</p>
+                <p className="text-red-600 dark:text-red-400 font-medium">Error loading data</p>
+                <p className="text-red-500 dark:text-red-500/80 text-sm mt-1">{error}</p>
             </div>
         );
     }
@@ -100,12 +100,12 @@ function UnifiedListGrid<T>({
         }
         return (
             <div className="text-center p-10">
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                     </svg>
                 </div>
-                <p className="text-gray-500">{emptyMessage}</p>
+                <p className="text-gray-500 dark:text-slate-400">{emptyMessage}</p>
             </div>
         );
     }

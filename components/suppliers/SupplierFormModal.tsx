@@ -47,15 +47,15 @@ function SectionProgress({ activeSection, setActiveSection }: SectionProgressPro
                         type="button"
                         onClick={() => setActiveSection(section)}
                         className={`flex items-center justify-center w-8 h-8 rounded-full transition-all ${activeSection === section
-                            ? 'bg-gray-900 text-white scale-110'
-                            : 'bg-gray-100 text-gray-500'
+                            ? 'bg-gray-900 dark:bg-slate-100 text-white dark:text-gray-900 scale-110 shadow-lg shadow-gray-900/10 dark:shadow-white/10'
+                            : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-500 hover:bg-gray-200 dark:hover:bg-slate-700'
                             }`}
                         aria-label={`Go to ${section} section`}
                     >
                         {index + 1}
                     </button>
                     {index < 3 && (
-                        <div className={`w-6 h-0.5 ${activeSection === section || index < ['basic', 'details', 'banking', 'notes'].indexOf(activeSection) ? 'bg-gray-900' : 'bg-gray-200'}`} />
+                        <div className={`w-6 h-0.5 ${activeSection === section || index < ['basic', 'details', 'banking', 'notes'].indexOf(activeSection) ? 'bg-gray-900 dark:bg-slate-100' : 'bg-gray-200 dark:bg-slate-800'}`} />
                     )}
                 </React.Fragment>
             ))}
@@ -125,13 +125,13 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                 return (
                     <div className="space-y-4 animate-slide-in">
                         <div className="flex items-center mb-4">
-                            <BuildingOfficeIcon className="w-5 h-5 text-gray-600 mr-2" />
-                            <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
+                            <BuildingOfficeIcon className="w-5 h-5 text-gray-600 dark:text-slate-400 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
                         </div>
 
                         {error && (
-                            <div className="rounded-xl bg-red-50 p-4 border border-red-100 mb-4 animate-shake">
-                                <p className="text-sm text-red-600 flex items-center">
+                            <div className="rounded-xl bg-red-50 dark:bg-red-900/20 p-4 border border-red-100 dark:border-red-900/30 mb-4 animate-shake">
+                                <p className="text-sm text-red-600 dark:text-red-400 flex items-center">
                                     <span className="mr-2">⚠️</span>
                                     {error}
                                 </p>
@@ -184,8 +184,8 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                 return (
                     <div className="space-y-4 animate-slide-in">
                         <div className="flex items-center mb-4">
-                            <MapPinIcon className="w-5 h-5 text-gray-600 mr-2" />
-                            <h3 className="text-lg font-semibold text-gray-900">Address & Terms</h3>
+                            <MapPinIcon className="w-5 h-5 text-gray-600 dark:text-slate-400 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Address & Terms</h3>
                         </div>
 
                         <InputField
@@ -214,8 +214,8 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                 return (
                     <div className="space-y-4 animate-slide-in">
                         <div className="flex items-center mb-4">
-                            <BankIcon className="w-5 h-5 text-gray-600 mr-2" />
-                            <h3 className="text-lg font-semibold text-gray-900">Banking Details</h3>
+                            <BankIcon className="w-5 h-5 text-gray-600 dark:text-slate-400 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Banking Details</h3>
                         </div>
 
                         <InputField
@@ -235,8 +235,8 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                 return (
                     <div className="space-y-4 animate-slide-in">
                         <div className="flex items-center mb-4">
-                            <DocumentTextIcon className="w-5 h-5 text-gray-600 mr-2" />
-                            <h3 className="text-lg font-semibold text-gray-900">Additional Notes</h3>
+                            <DocumentTextIcon className="w-5 h-5 text-gray-600 dark:text-slate-500 mr-2" />
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Additional Notes</h3>
                         </div>
 
                         <InputField
@@ -266,26 +266,26 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
             aria-labelledby="modal-title"
         >
             <div
-                className="bg-white w-full max-w-md md:max-w-2xl md:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up"
+                className="bg-white dark:bg-slate-900/95 w-full max-w-md md:max-w-2xl md:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up backdrop-blur-sm border-t md:border border-gray-100 dark:border-slate-800 glass-effect"
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={handleKeyDown}
             >
                 {/* Header */}
-                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-4 py-3">
+                <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 glass-effect">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
                             <button
                                 onClick={onClose}
-                                className="p-2 -ml-2 rounded-xl active:bg-gray-100 transition-colors"
+                                className="p-2 -ml-2 rounded-xl active:bg-gray-100 dark:active:bg-slate-800 text-gray-600 dark:text-slate-400 transition-colors"
                                 aria-label="Close modal"
                             >
-                                <XMarkIcon className="w-6 h-6 text-gray-600" />
+                                <XMarkIcon className="w-6 h-6" />
                             </button>
                             <div className="ml-2">
-                                <h1 id="modal-title" className="text-lg font-bold text-gray-900">
+                                <h1 id="modal-title" className="text-lg font-bold text-gray-900 dark:text-white">
                                     {supplierToEdit ? 'Edit Supplier' : 'New Supplier'}
                                 </h1>
-                                <div className="text-xs text-gray-500">
+                                <div className="text-xs text-gray-500 dark:text-slate-400">
                                     {activeSection === 'basic' && 'Basic Information'}
                                     {activeSection === 'details' && 'Address & Terms'}
                                     {activeSection === 'banking' && 'Banking Details'}
@@ -318,7 +318,7 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                 </div>
 
                 {/* Footer Navigation */}
-                <div className="sticky bottom-0 bg-white border-t border-gray-200 px-4 py-3">
+                <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-t border-gray-200 dark:border-slate-800 px-4 py-3 glass-effect">
                     <div className="flex items-center justify-between">
                         <Button
                             type="button"
@@ -335,7 +335,7 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                             Back
                         </Button>
 
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 dark:text-slate-500 font-medium">
                             {activeSection === 'basic' && 'Step 1 of 4'}
                             {activeSection === 'details' && 'Step 2 of 4'}
                             {activeSection === 'banking' && 'Step 3 of 4'}
@@ -353,9 +353,9 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                                     handleSubmit();
                                 }
                             }}
-                            className={`px-4 py-2.5 rounded-xl font-medium transition-all ${isLastSection
-                                ? 'bg-gray-900 text-white active:bg-gray-800 active:scale-95'
-                                : 'bg-gray-100 text-gray-900 active:bg-gray-200'
+                            className={`px-4 py-2.5 rounded-xl font-semibold transition-all shadow-sm ${isLastSection
+                                ? 'bg-gray-900 dark:bg-slate-100 text-white dark:text-gray-900 active:scale-95 hover:bg-gray-800 dark:hover:bg-white'
+                                : 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-slate-100 active:scale-95 hover:bg-gray-200 dark:hover:bg-slate-700'
                                 }`}
                         >
                             {isLastSection ? 'Save Supplier' : 'Next'}

@@ -10,6 +10,7 @@ interface SwipeableProps {
     leftActionIcon?: React.ReactNode;
     rightActionIcon?: React.ReactNode;
     threshold?: number;
+    className?: string;
 }
 
 const Swipeable: React.FC<SwipeableProps> = ({
@@ -20,7 +21,8 @@ const Swipeable: React.FC<SwipeableProps> = ({
     rightActionColor = 'bg-blue-500',
     leftActionIcon,
     rightActionIcon,
-    threshold = 100
+    threshold = 100,
+    className = ''
 }) => {
     const [startX, setStartX] = useState(0);
     const [currentX, setCurrentX] = useState(0);
@@ -39,7 +41,7 @@ const Swipeable: React.FC<SwipeableProps> = ({
 
     const handleTouchEnd = () => {
         if (!isSwiping) return;
-        
+
         const deltaX = currentX;
         if (Math.abs(deltaX) > threshold) {
             if (deltaX < 0 && onSwipeLeft) {
@@ -50,7 +52,7 @@ const Swipeable: React.FC<SwipeableProps> = ({
                 onSwipeRight();
             }
         }
-        
+
         // Reset
         setCurrentX(0);
         setIsSwiping(false);
@@ -62,7 +64,7 @@ const Swipeable: React.FC<SwipeableProps> = ({
     };
 
     return (
-        <div className="relative overflow-hidden">
+        <div className={`relative overflow-hidden ${className}`}>
             {/* Background actions */}
             <div className="absolute inset-0 flex">
                 {onSwipeRight && (
@@ -76,7 +78,7 @@ const Swipeable: React.FC<SwipeableProps> = ({
                     </div>
                 )}
             </div>
-            
+
             {/* Swipeable content */}
             <div
                 ref={containerRef}
