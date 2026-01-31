@@ -23,8 +23,8 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
     onCancel,
     handleChange
 }) => {
-    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white hover:bg-slate-50/50 focus:bg-white";
-    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 mb-2";
+    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white dark:bg-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 focus:bg-white dark:focus:bg-slate-800";
+    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 mb-2";
 
     return (
         <SettingsCard
@@ -54,20 +54,20 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                                 max="100"
                                 placeholder="0.00"
                             />
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">
                                 %
                             </div>
                         </div>
                     </div>
 
                     <div>
-                        <h4 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+                        <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
                             <CreditCardIcon className="w-4 h-4" />
                             Currency Settings
                         </h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                                <label htmlFor="currency.symbol" className="text-sm font-medium text-slate-700">Symbol</label>
+                                <label htmlFor="currency.symbol" className="text-sm font-medium text-slate-700 dark:text-slate-300">Symbol</label>
                                 <input
                                     type="text"
                                     name="currency.symbol"
@@ -80,7 +80,7 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="currency.code" className="text-sm font-medium text-slate-700">Code</label>
+                                <label htmlFor="currency.code" className="text-sm font-medium text-slate-700 dark:text-slate-300">Code</label>
                                 <input
                                     type="text"
                                     name="currency.code"
@@ -93,7 +93,7 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label htmlFor="currency.position" className="text-sm font-medium text-slate-700">Position</label>
+                                <label htmlFor="currency.position" className="text-sm font-medium text-slate-700 dark:text-slate-300">Position</label>
                                 <select
                                     name="currency.position"
                                     id="currency.position"
@@ -101,8 +101,8 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                                     onChange={handleChange}
                                     className={inputFieldClasses}
                                 >
-                                    <option value="before">Before amount ($100)</option>
-                                    <option value="after">After amount (100$)</option>
+                                    <option value="before" className="dark:bg-slate-800">Before amount ($100)</option>
+                                    <option value="after" className="dark:bg-slate-800">After amount (100$)</option>
                                 </select>
                             </div>
                         </div>
@@ -115,13 +115,13 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                             label="Tax Rate"
                             value={
                                 <div className="flex items-center gap-2">
-                                    <div className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 text-blue-700 font-bold rounded-lg">
+                                    <div className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800/30 font-bold rounded-lg">
                                         {settings.taxRate}%
                                     </div>
-                                    <span className="text-sm text-slate-500">applied to all sales</span>
+                                    <span className="text-sm text-slate-500 dark:text-slate-400">applied to all sales</span>
                                 </div>
                             }
-                            icon={<ChartBarIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<ChartBarIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                         />
                     </div>
                     <div className="space-y-1">
@@ -129,18 +129,18 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                             label="Currency"
                             value={
                                 <div className="flex items-center gap-3">
-                                    <div className="px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 rounded-lg border border-slate-200">
-                                        <span className="font-bold text-slate-900 text-lg">{settings.currency.symbol}</span>
+                                    <div className="px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
+                                        <span className="font-bold text-slate-900 dark:text-white text-lg">{settings.currency.symbol}</span>
                                     </div>
                                     <div>
-                                        <div className="font-semibold text-slate-900">{settings.currency.code}</div>
-                                        <div className="text-sm text-slate-500">
+                                        <div className="font-semibold text-slate-900 dark:text-white">{settings.currency.code}</div>
+                                        <div className="text-sm text-slate-500 dark:text-slate-400">
                                             {settings.currency.position === 'before' ? 'Before amount' : 'After amount'}
                                         </div>
                                     </div>
                                 </div>
                             }
-                            icon={<CurrencyDollarIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<CurrencyDollarIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                         />
                     </div>
                 </div>

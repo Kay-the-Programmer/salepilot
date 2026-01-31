@@ -18,10 +18,10 @@ interface CustomerDetailViewProps {
 }
 
 const InfoCard: React.FC<{ title: string; children: React.ReactNode; icon?: React.ReactNode; className?: string }> = ({ title, children, icon, className = "" }) => (
-    <div className={`bg-white p-6 rounded-lg border border-gray-200 shadow-sm ${className}`}>
-        <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-100">
-            {icon && <div className="text-gray-400 w-5 h-5">{icon}</div>}
-            <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+    <div className={`bg-white dark:bg-slate-900/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm glass-effect ${className}`}>
+        <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-100 dark:border-slate-800">
+            {icon && <div className="text-gray-400 dark:text-slate-500 w-5 h-5">{icon}</div>}
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
         </div>
         {children}
     </div>
@@ -36,20 +36,20 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
 
     const getStatusStyles = (status?: string) => {
         switch (status) {
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200';
-            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800';
+            case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800';
+            case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800';
+            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800';
+            default: return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700';
         }
     };
 
     const getPaymentStatusStyles = (status?: string) => {
         switch (status) {
-            case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200';
-            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200';
+            case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800';
+            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800';
+            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800';
+            default: return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700';
         }
     };
 
@@ -60,13 +60,13 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                 <div className="lg:col-span-1 space-y-6">
                     <InfoCard title="Account Overview" icon={<BanknotesIcon />}>
                         <div className="space-y-4">
-                            <div className="flex justify-between items-center p-3 rounded-md bg-gray-50 border border-gray-100">
-                                <span className="text-sm text-gray-600">Store Credit</span>
-                                <span className="text-lg font-semibold text-gray-900">{formatCurrency(customer.storeCredit, storeSettings)}</span>
+                            <div className="flex justify-between items-center p-3 rounded-md bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800">
+                                <span className="text-sm text-gray-600 dark:text-slate-400">Store Credit</span>
+                                <span className="text-lg font-semibold text-gray-900 dark:text-white">{formatCurrency(customer.storeCredit, storeSettings)}</span>
                             </div>
-                            <div className="flex justify-between items-center p-3 rounded-md bg-gray-50 border border-gray-100">
-                                <span className="text-sm text-gray-600">A/R Balance</span>
-                                <span className="text-lg font-semibold text-gray-900">{formatCurrency(customer.accountBalance, storeSettings)}</span>
+                            <div className="flex justify-between items-center p-3 rounded-md bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800">
+                                <span className="text-sm text-gray-600 dark:text-slate-400">A/R Balance</span>
+                                <span className="text-lg font-semibold text-gray-900 dark:text-white">{formatCurrency(customer.accountBalance, storeSettings)}</span>
                             </div>
                         </div>
                     </InfoCard>
@@ -74,23 +74,23 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                     <InfoCard title="Contact Details" icon={<UserCircleIcon />}>
                         <div className="space-y-4">
                             <div>
-                                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Email</dt>
-                                <dd className="text-sm text-gray-900 flex items-center gap-2">
-                                    <EnvelopeIcon className="w-4 h-4 text-gray-400" />
+                                <dt className="text-xs font-medium text-gray-500 dark:text-slate-500 uppercase tracking-wide mb-1">Email</dt>
+                                <dd className="text-sm text-gray-900 dark:text-slate-200 flex items-center gap-2">
+                                    <EnvelopeIcon className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                                     {customer.email || 'N/A'}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Phone</dt>
-                                <dd className="text-sm text-gray-900 flex items-center gap-2">
-                                    <PhoneIcon className="w-4 h-4 text-gray-400" />
+                                <dt className="text-xs font-medium text-gray-500 dark:text-slate-500 uppercase tracking-wide mb-1">Phone</dt>
+                                <dd className="text-sm text-gray-900 dark:text-slate-200 flex items-center gap-2">
+                                    <PhoneIcon className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                                     {customer.phone || 'N/A'}
                                 </dd>
                             </div>
                             <div>
-                                <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Address</dt>
-                                <dd className="text-sm text-gray-900 flex items-start gap-2">
-                                    <MapPinIcon className="w-4 h-4 text-gray-400 mt-0.5" />
+                                <dt className="text-xs font-medium text-gray-500 dark:text-slate-500 uppercase tracking-wide mb-1">Address</dt>
+                                <dd className="text-sm text-gray-900 dark:text-slate-200 flex items-start gap-2">
+                                    <MapPinIcon className="w-4 h-4 text-gray-400 dark:text-slate-500 mt-0.5" />
                                     <span className="flex-1">
                                         {customer.address ? `${customer.address.street}, ${customer.address.city}, ${customer.address.state} ${customer.address.zip}` : 'N/A'}
                                     </span>
@@ -98,8 +98,8 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                             </div>
                             {customer.notes && (
                                 <div>
-                                    <dt className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Notes</dt>
-                                    <dd className="text-sm text-gray-700 italic border-l-2 border-gray-200 pl-2">"{customer.notes}"</dd>
+                                    <dt className="text-xs font-medium text-gray-500 dark:text-slate-500 uppercase tracking-wide mb-1">Notes</dt>
+                                    <dd className="text-sm text-gray-700 dark:text-slate-300 italic border-l-2 border-gray-200 dark:border-slate-800 pl-2">"{customer.notes}"</dd>
                                 </div>
                             )}
                         </div>
@@ -112,15 +112,15 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         {recentOrders.length > 0 ? (
                             <div className="space-y-3">
                                 {recentOrders.map((sale) => (
-                                    <div key={sale.transactionId} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
+                                    <div key={sale.transactionId} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
                                         <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-gray-50 rounded-lg text-gray-500">
+                                            <div className="p-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400">
                                                 <DocumentTextIcon className="w-5 h-5" />
                                             </div>
                                             <div>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="text-sm font-semibold text-gray-900">#{sale.transactionId.slice(-4)}</span>
-                                                    <span className="text-xs text-gray-500">{new Date(sale.timestamp).toLocaleDateString()}</span>
+                                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">#{sale.transactionId.slice(-4)}</span>
+                                                    <span className="text-xs text-gray-500 dark:text-slate-500">{new Date(sale.timestamp).toLocaleDateString()}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1 mt-1">
                                                     <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getStatusStyles(sale.fulfillmentStatus)}`}>
@@ -133,15 +133,15 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <span className="block text-sm font-bold text-gray-900">{formatCurrency(sale.total, storeSettings)}</span>
-                                            <span className="text-xs text-gray-500">{sale.cart.length} items</span>
+                                            <span className="block text-sm font-bold text-gray-900 dark:text-white">{formatCurrency(sale.total, storeSettings)}</span>
+                                            <span className="text-xs text-gray-500 dark:text-slate-500">{sale.cart.length} items</span>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         ) : (
                             <div className="text-center py-8">
-                                <p className="text-sm text-gray-500">No recent orders.</p>
+                                <p className="text-sm text-gray-500 dark:text-slate-500">No recent orders.</p>
                             </div>
                         )}
                     </InfoCard>
@@ -150,16 +150,16 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         <InfoCard title="Outstanding Invoices" icon={<CreditCardIcon />}>
                             <div className="space-y-3">
                                 {unpaidInvoices.map((sale) => (
-                                    <div key={sale.transactionId} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors bg-white">
+                                    <div key={sale.transactionId} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-900/50">
                                         <div className="flex flex-col">
-                                            <span className="text-sm font-semibold text-gray-900">Invoice #{sale.transactionId}</span>
-                                            <span className="text-xs text-red-500 font-medium">
+                                            <span className="text-sm font-semibold text-gray-900 dark:text-white">Invoice #{sale.transactionId}</span>
+                                            <span className="text-xs text-red-500 dark:text-red-400 font-medium">
                                                 Due: {sale.dueDate ? new Date(sale.dueDate).toLocaleDateString() : 'Immediate'}
                                             </span>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-lg font-semibold text-gray-900">{formatCurrency(sale.total - sale.amountPaid, storeSettings)}</p>
-                                            <p className="text-xs text-gray-500">Balance Due</p>
+                                            <p className="text-lg font-semibold text-gray-900 dark:text-white">{formatCurrency(sale.total - sale.amountPaid, storeSettings)}</p>
+                                            <p className="text-xs text-gray-500 dark:text-slate-500">Balance Due</p>
                                         </div>
                                     </div>
                                 ))}
@@ -171,22 +171,22 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         {paidSales.length > 0 ? (
                             <div className="space-y-4">
                                 {paidSales.map((sale) => (
-                                    <div key={sale.transactionId} className="p-4 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors">
-                                        <div className="flex items-center justify-between mb-3 border-b border-gray-100 pb-2">
+                                    <div key={sale.transactionId} className="p-4 rounded-lg border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                                        <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">
                                             <div className="flex items-center gap-3">
-                                                <span className="bg-gray-100 text-gray-600 py-1 px-2 rounded text-xs font-mono font-medium">#{sale.transactionId}</span>
-                                                <span className="text-sm text-gray-500">{new Date(sale.timestamp).toLocaleDateString()}</span>
+                                                <span className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 py-1 px-2 rounded text-xs font-mono font-medium border border-gray-200 dark:border-slate-700">#{sale.transactionId}</span>
+                                                <span className="text-sm text-gray-500 dark:text-slate-500">{new Date(sale.timestamp).toLocaleDateString()}</span>
                                             </div>
                                             <div className="text-right">
-                                                <span className="text-base font-medium text-gray-900">{formatCurrency(sale.total, storeSettings)}</span>
+                                                <span className="text-base font-medium text-gray-900 dark:text-white">{formatCurrency(sale.total, storeSettings)}</span>
                                             </div>
                                         </div>
 
                                         <div className="space-y-1">
                                             {sale.cart.map(item => (
-                                                <div key={item.productId} className="flex justify-between text-sm text-gray-700">
-                                                    <span>{item.quantity} × <span className="font-medium">{item.name}</span></span>
-                                                    <span className="text-gray-500">{formatCurrency(item.quantity * item.price, storeSettings)}</span>
+                                                <div key={item.productId} className="flex justify-between text-sm text-gray-700 dark:text-slate-400">
+                                                    <span>{item.quantity} × <span className="font-medium text-gray-900 dark:text-slate-200">{item.name}</span></span>
+                                                    <span className="text-gray-500 dark:text-slate-500">{formatCurrency(item.quantity * item.price, storeSettings)}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -194,8 +194,8 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-200">
-                                <p className="text-sm text-gray-500">No purchase history available.</p>
+                            <div className="text-center py-12 bg-gray-50 dark:bg-slate-900 rounded-lg border border-dashed border-gray-200 dark:border-slate-800">
+                                <p className="text-sm text-gray-500 dark:text-slate-500">No purchase history available.</p>
                             </div>
                         )}
                     </InfoCard>

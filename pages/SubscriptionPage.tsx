@@ -208,7 +208,7 @@ const SubscriptionPage: React.FC = () => {
 
     return (
         <NotificationProvider user={user}>
-            <div className="flex h-screen bg-slate-50">
+            <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
                 <Sidebar
                     user={user || {}}
                     onLogout={() => {
@@ -218,119 +218,147 @@ const SubscriptionPage: React.FC = () => {
                     }}
                     isOnline={navigator.onLine}
                 />
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 flex flex-col overflow-hidden relative">
+                    {/* Background decorative elements */}
+                    <div className="absolute top-0 right-0 w-1/3 h-1/3 bg-indigo-500/5 blur-[120px] rounded-full -z-10"></div>
+                    <div className="absolute bottom-0 left-0 w-1/4 h-1/4 bg-blue-500/5 blur-[100px] rounded-full -z-10"></div>
+
                     <Header title="Subscription Plans" />
 
-                    <main className="flex-1 overflow-y-auto p-6 md:p-8">
+                    <main className="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth">
                         <div className="max-w-6xl mx-auto">
                             <button
                                 onClick={() => navigate(-1)}
-                                className="mb-6 flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"
+                                className="mb-8 flex items-center text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all group"
                             >
-                                <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                </svg>
+                                <div className="w-8 h-8 rounded-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center mr-3 shadow-sm group-hover:scale-110 transition-transform">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                </div>
                                 Back
                             </button>
 
                             {user?.subscriptionStatus && (
-                                <div className="mb-8 p-6 bg-white rounded-2xl border border-blue-100 shadow-sm flex items-center justify-between">
-                                    <div>
-                                        <h3 className="text-lg font-bold text-slate-900">Current Subscription</h3>
-                                        <div className="mt-1 flex items-center gap-2">
-                                            <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider ${user.subscriptionStatus === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                                                }`}>
-                                                {user.subscriptionStatus}
-                                            </span>
-                                            {user.subscriptionPlan && (
-                                                <span className="text-sm font-medium text-slate-600">
-                                                    Plan: <span className="capitalize">{user.subscriptionPlan.replace('plan_', '')}</span>
-                                                </span>
-                                            )}
+                                <div className="mb-12 p-6 bg-white dark:bg-slate-900/50 rounded-3xl border border-blue-100 dark:border-blue-500/20 shadow-sm flex items-center justify-between glass-effect" glass-effect="true">
+                                    <div className="flex items-center gap-5">
+                                        <div className="p-3 bg-blue-50 dark:bg-blue-900/30 rounded-2xl">
+                                            <ShieldCheckIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
                                         </div>
-                                        {user.subscriptionEndsAt && (
-                                            <p className="mt-2 text-xs text-slate-500">
-                                                Expires on {new Date(user.subscriptionEndsAt).toLocaleDateString()}
-                                            </p>
-                                        )}
+                                        <div>
+                                            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Active Subscription</h3>
+                                            <div className="mt-1.5 flex items-center gap-3">
+                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${user.subscriptionStatus === 'active'
+                                                    ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/30'
+                                                    : 'bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-800/30'
+                                                    }`}>
+                                                    {user.subscriptionStatus}
+                                                </span>
+                                                {user.subscriptionPlan && (
+                                                    <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                                        {user.subscriptionPlan.replace('plan_', '')} Plan
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
-                                    <ShieldCheckIcon className="w-10 h-10 text-blue-500 opacity-20" />
+                                    {user.subscriptionEndsAt && (
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Renews On</p>
+                                            <p className="text-sm font-bold text-slate-900 dark:text-white">
+                                                {new Date(user.subscriptionEndsAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 
-                            <div className="text-center mb-10">
-                                <h2 className="text-3xl font-extrabold text-slate-900 sm:text-4xl">
-                                    Choose the plan that fits your business
+                            <div className="text-center mb-12">
+                                <h2 className="text-3xl font-black text-slate-900 dark:text-white sm:text-5xl tracking-tight mb-4">
+                                    Power your business with <span className="text-indigo-600 dark:text-indigo-500">SalePilot</span>
                                 </h2>
-                                <p className="mt-4 text-lg text-slate-600">
-                                    Simple pricing, no hidden fees. Upgrade or cancel anytime.
+                                <p className="max-w-2xl mx-auto text-lg text-slate-600 dark:text-slate-400 font-medium">
+                                    Choose the perfect plan for your business needs. Simple pricing with zero hidden costs.
                                 </p>
                             </div>
 
                             {fetchingPlans ? (
-                                <div className="flex justify-center items-center h-64">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                                <div className="flex flex-col justify-center items-center h-64 gap-4">
+                                    <div className="relative w-16 h-16">
+                                        <div className="absolute inset-0 border-4 border-indigo-100 dark:border-slate-800 rounded-full"></div>
+                                        <div className="absolute inset-0 border-4 border-indigo-600 rounded-full border-t-transparent animate-spin"></div>
+                                    </div>
+                                    <p className="text-sm font-bold text-slate-400 animate-pulse uppercase tracking-widest">Loading Premium Plans...</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                                     {plans.map((plan) => (
                                         <div
                                             key={plan.id}
-                                            className={`relative rounded-3xl p-8 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl ${plan.id === 'plan_pro'
-                                                ? 'bg-gradient-to-b from-blue-900 to-blue-800 text-white shadow-xl ring-4 ring-blue-500/20'
-                                                : 'bg-white text-slate-900 border border-slate-200 shadow-sm'
+                                            className={`relative rounded-[32px] p-8 transition-all duration-500 transform hover:-translate-y-2 hover:shadow-2xl flex flex-col ${plan.id === 'plan_pro'
+                                                ? 'bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 dark:from-indigo-600 dark:via-blue-600 dark:to-indigo-700 text-white shadow-2xl shadow-blue-500/20'
+                                                : 'bg-white dark:bg-slate-900/50 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800 shadow-sm glass-effect'
                                                 }`}
+                                            glass-effect={plan.id !== 'plan_pro' ? "true" : undefined}
                                         >
                                             {plan.id === 'plan_pro' && (
-                                                <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2">
-                                                    <span className="inline-flex items-center gap-1 rounded-full bg-blue-500 px-4 py-1.5 text-xs font-semibold text-white shadow-md">
+                                                <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                                                    <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 px-5 py-1.5 text-[10px] font-black text-white shadow-xl uppercase tracking-widest ring-4 ring-white dark:ring-slate-900">
                                                         <ShieldCheckIcon className="w-3.5 h-3.5" />
-                                                        Most Popular
+                                                        The Best Choice
                                                     </span>
                                                 </div>
                                             )}
 
-                                            <div className="mb-6">
-                                                <h3 className={`text-xl font-bold ${plan.id === 'plan_pro' ? 'text-white' : 'text-slate-900'}`}>
+                                            <div className="mb-8">
+                                                <h3 className={`text-2xl font-black tracking-tight ${plan.id === 'plan_pro' ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
                                                     {plan.name}
                                                 </h3>
-                                                <p className={`mt-2 text-sm ${plan.id === 'plan_pro' ? 'text-blue-200' : 'text-slate-500'}`}>
+                                                <p className={`mt-2 text-sm font-medium ${plan.id === 'plan_pro' ? 'text-blue-100/80' : 'text-slate-500 dark:text-slate-400'}`}>
                                                     {plan.description}
                                                 </p>
                                             </div>
 
-                                            <div className="flex items-baseline mb-6">
-                                                <span className={`text-4xl font-extrabold tracking-tight ${plan.id === 'plan_pro' ? 'text-white' : 'text-slate-900'}`}>
+                                            <div className="flex items-baseline mb-8">
+                                                <span className={`text-4xl font-black tracking-tight ${plan.id === 'plan_pro' ? 'text-white' : 'text-slate-900 dark:text-white'}`}>
                                                     {plan.currency} {plan.price}
                                                 </span>
-                                                <span className={`ml-1 text-sm font-semibold ${plan.id === 'plan_pro' ? 'text-blue-200' : 'text-slate-500'}`}>
-                                                    /{plan.interval}
+                                                <span className={`ml-2 text-xs font-bold uppercase tracking-widest ${plan.id === 'plan_pro' ? 'text-blue-100/60' : 'text-slate-400'}`}>
+                                                    / {plan.interval}
                                                 </span>
                                             </div>
 
-                                            <ul className="mb-8 space-y-4">
-                                                {plan.features.map((feature, index) => (
-                                                    <li key={index} className="flex items-start">
-                                                        <div className={`p-1 rounded-full mr-3 ${plan.id === 'plan_pro' ? 'bg-blue-700/50' : 'bg-blue-50'}`}>
-                                                            <CheckCircleIcon className={`w-4 h-4 ${plan.id === 'plan_pro' ? 'text-blue-300' : 'text-blue-600'}`} />
-                                                        </div>
-                                                        <span className={`text-sm ${plan.id === 'plan_pro' ? 'text-blue-100' : 'text-slate-600'}`}>
-                                                            {feature}
-                                                        </span>
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                            <div className="flex-1">
+                                                <ul className="space-y-4 mb-10">
+                                                    {plan.features.map((feature, index) => (
+                                                        <li key={index} className="flex items-start group">
+                                                            <div className={`p-1 rounded-lg mr-4 transition-colors ${plan.id === 'plan_pro'
+                                                                ? 'bg-white/20 text-white'
+                                                                : 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                                                                }`}>
+                                                                <CheckCircleIcon className="w-4 h-4" />
+                                                            </div>
+                                                            <span className={`text-sm font-medium leading-relaxed ${plan.id === 'plan_pro' ? 'text-blue-50' : 'text-slate-600 dark:text-slate-300'}`}>
+                                                                {feature}
+                                                            </span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
 
                                             <button
                                                 onClick={() => handleSelectPlan(plan.id)}
                                                 disabled={loading || user?.subscriptionPlan === plan.id}
-                                                className={`w-full py-3.5 px-6 rounded-xl text-sm font-semibold transition-all duration-300 text-center flex items-center justify-center gap-2 ${plan.id === 'plan_pro'
-                                                    ? 'bg-white text-blue-900 hover:bg-blue-50 shadow-lg'
-                                                    : 'bg-slate-900 text-white hover:bg-slate-800 shadow-md hover:shadow-lg'
-                                                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                                                className={`w-full py-4 px-6 rounded-2xl text-sm font-black transition-all duration-300 text-center flex items-center justify-center gap-2 group ${plan.id === 'plan_pro'
+                                                    ? 'bg-white text-blue-900 hover:bg-blue-50 shadow-xl'
+                                                    : 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-white shadow-lg'
+                                                    } disabled:opacity-50 disabled:cursor-not-allowed uppercase tracking-widest overflow-hidden relative`}
                                             >
-                                                {loading && selectedPlan === plan.id ? 'Processing...' :
-                                                    user?.subscriptionPlan === plan.id ? 'Current Plan' : 'Get Started'}
+                                                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 skew-x-[25deg]"></div>
+                                                <span className="relative">
+                                                    {loading && selectedPlan === plan.id ? 'Processing...' :
+                                                        user?.subscriptionPlan === plan.id ? 'Active Plan' : 'Select Plan'}
+                                                </span>
                                             </button>
                                         </div>
                                     ))}

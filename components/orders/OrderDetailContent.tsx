@@ -81,18 +81,18 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
 
             <div className="grid grid-cols-1 gap-8">
                 {/* Items Section */}
-                <section glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-slate-50 dark:from-slate-800 to-white dark:to-slate-900">
+                <section glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden bg-white dark:bg-slate-900/50">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-800/50 to-white dark:to-slate-900/50">
                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
                             Ordered Items ({order.cart.length})
                         </h3>
                     </div>
-                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                    <div className="divide-y divide-slate-100 dark:divide-slate-800">
                         {order.cart.map((item, idx) => (
-                            <div key={idx} className="p-5 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors duration-150">
+                            <div key={idx} className="p-5 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150">
                                 <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl flex items-center justify-center font-bold text-xs text-indigo-700 border border-indigo-100 shadow-sm shrink-0">
+                                    <div className="w-10 h-10 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl flex items-center justify-center font-bold text-xs text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30 shadow-sm shrink-0">
                                         {item.quantity}x
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -110,22 +110,22 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                             </div>
                         ))}
                     </div>
-                    <div className="p-6 bg-gradient-to-r from-slate-50 dark:from-slate-800 to-white dark:to-slate-900 border-t border-slate-100 dark:border-slate-700 space-y-2">
+                    <div className="p-6 bg-gradient-to-r from-slate-50 dark:from-slate-800/50 to-white dark:to-slate-900/50 border-t border-slate-100 dark:border-slate-800 space-y-2">
                         <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-400">
                             <span>Subtotal</span>
-                            <span className="font-medium">{formatCurrency(order.subtotal, storeSettings)}</span>
+                            <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(order.subtotal, storeSettings)}</span>
                         </div>
                         <div className="flex justify-between items-center text-xs text-slate-600 dark:text-slate-400">
                             <span>Tax</span>
-                            <span className="font-medium">{formatCurrency(order.tax, storeSettings)}</span>
+                            <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(order.tax, storeSettings)}</span>
                         </div>
                         {order.discount > 0 && (
-                            <div className="flex justify-between items-center text-xs text-green-600">
+                            <div className="flex justify-between items-center text-xs text-green-600 dark:text-emerald-400">
                                 <span>Discount</span>
                                 <span className="font-medium">-{formatCurrency(order.discount, storeSettings)}</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-center text-sm font-bold text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-200 dark:border-slate-700">
+                        <div className="flex justify-between items-center text-sm font-bold text-slate-900 dark:text-slate-100 pt-2 border-t border-slate-200 dark:border-slate-800">
                             <span>Total</span>
                             <span className="text-base">{formatCurrency(order.total, storeSettings)}</span>
                         </div>
@@ -133,8 +133,8 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                 </section>
 
                 {/* Customer Card */}
-                <div glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-700 bg-gradient-to-r from-slate-50 dark:from-slate-800 to-white dark:to-slate-900">
+                <div glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden bg-white dark:bg-slate-900/50">
+                    <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-800/50 to-white dark:to-slate-900/50">
                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                             Customer info
@@ -142,8 +142,8 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                     </div>
                     <div className="p-6">
                         <div className="flex items-start gap-4 mb-4">
-                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl flex items-center justify-center shadow-sm border border-emerald-100 shrink-0">
-                                <HiOutlineUser className="w-6 h-6 text-emerald-600" />
+                            <div className="w-12 h-12 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl flex items-center justify-center shadow-sm border border-emerald-100 dark:border-emerald-800/30 shrink-0">
+                                <HiOutlineUser className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="font-bold text-slate-900 dark:text-slate-100 text-base truncate mb-0.5">
@@ -155,12 +155,12 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                         </div>
 
                         {order.customerDetails?.address && (
-                            <div className="pt-4 border-t border-slate-100 dark:border-slate-700">
+                            <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
                                 <div className="flex items-center gap-2 mb-2">
                                     <HiOutlineMapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                                     <h4 className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-slate-400">Address</h4>
                                 </div>
-                                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800 p-3 rounded-lg border border-slate-100 dark:border-slate-700">
+                                <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
                                     {order.customerDetails.address}
                                 </p>
                             </div>

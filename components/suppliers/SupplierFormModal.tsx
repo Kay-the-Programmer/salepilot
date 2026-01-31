@@ -245,7 +245,6 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                             value={supplier.notes || ''}
                             onChange={handleChange}
                             multiline
-                            icon={<DocumentTextIcon className="w-5 h-5" />}
                             placeholder="Minimum order quantity, delivery schedule, special instructions, etc."
                             rows={5}
                         />
@@ -294,14 +293,7 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                             </div>
                         </div>
 
-                        <div className="flex items-center">
-                            <Button
-                                onClick={() => handleSubmit()}
-                                icon={<CheckIcon className="w-5 h-5" />}
-                            >
-                                Save
-                            </Button>
-                        </div>
+                        
                     </div>
                 </div>
 

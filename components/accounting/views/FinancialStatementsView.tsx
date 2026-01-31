@@ -353,11 +353,11 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
     );
 
     return (
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-6 md:space-y-8 pb-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Financial Statements</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">View and analyze your business health</p>
+                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Financial Statements</h3>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">View and analyze your business health</p>
                 </div>
                 <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800 self-start lg:self-auto">
                     <button

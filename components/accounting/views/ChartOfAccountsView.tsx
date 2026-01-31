@@ -215,15 +215,15 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
     };
 
     return (
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-6 md:space-y-8 pb-10">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Chart of Accounts</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Organize and manage your financial structure</p>
+                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Chart of Accounts</h3>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">Organize and manage your financial structure</p>
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white font-black text-sm rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-300 shadow-lg shadow-blue-600/20 active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 dark:bg-blue-500 text-white font-black text-sm rounded-2xl hover:bg-blue-700 dark:hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/20 hover:-translate-y-0.5 transition-all duration-300 active:scale-95 active:translate-y-0"
                 >
                     <PlusIcon className="w-5 h-5" />
                     New Account
@@ -243,7 +243,7 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                 />
             </div>
 
-            <div className="animate-fade-in space-y-2">
+            <div className="animate-fade-in space-y-3">
                 {renderAccountList('asset', 'Assets', 'text-blue-600 dark:text-blue-400')}
                 {renderAccountList('liability', 'Liabilities', 'text-red-600 dark:text-red-400')}
                 {renderAccountList('equity', 'Equity', 'text-purple-600 dark:text-purple-400')}

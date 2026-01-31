@@ -30,8 +30,8 @@ const getInitials = (name: string) => {
 // Reusable Avatar Component
 const CustomerAvatar = ({ name, isSelected, size = 'default' }: { name: string, isSelected?: boolean, size?: 'default' | 'large' }) => (
     <div className={`${size === 'large' ? 'h-24 w-24 text-2xl' : 'h-10 w-10 text-sm'} rounded-full flex items-center justify-center font-bold border-2 transition-colors ${isSelected
-        ? 'bg-blue-50 text-blue-600 border-blue-200'
-        : 'bg-gray-50 text-gray-500 border-gray-200'
+        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800'
+        : 'bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-slate-400 border-gray-200 dark:border-slate-700'
         }`}>
         {getInitials(name)}
     </div>
@@ -88,7 +88,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
                                 e.stopPropagation();
                                 onEdit(customer);
                             }}
-                            className="bg-gray-100 hover:bg-blue-50 text-gray-600 hover:text-blue-600 p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold"
+                            className="bg-gray-100 dark:bg-slate-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 p-2 rounded-lg transition-colors flex items-center gap-1 text-xs font-semibold"
                         >
                             <PencilIcon className="w-3.5 h-3.5" />
                             Edit
@@ -122,7 +122,7 @@ const CustomerList: React.FC<CustomerListProps> = ({
                                 e.stopPropagation();
                                 onEdit(customer);
                             }}
-                            className="p-1.5 rounded-lg text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                            className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                             title="Edit"
                         >
                             <PencilIcon className="w-4 h-4" />

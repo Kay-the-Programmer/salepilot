@@ -88,7 +88,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
 
         if (isPaid) {
             return (
-                <span className="px-2.5 py-1 bg-gradient-to-r from-green-50 to-green-100 text-green-700 text-[10px] md:text-xs font-medium rounded-full">
+                <span className="px-2.5 py-1 bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-emerald-900/30 text-green-700 dark:text-green-400 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full border border-green-200/50 dark:border-green-500/20">
                     Paid
                 </span>
             );
@@ -96,30 +96,30 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
 
         if (isOverdue) {
             return (
-                <span className="px-2.5 py-1 bg-gradient-to-r from-red-50 to-red-100 text-red-700 text-[10px] md:text-xs font-medium rounded-full">
+                <span className="px-2.5 py-1 bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/30 dark:to-rose-900/30 text-red-700 dark:text-red-400 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full border border-red-200/50 dark:border-red-500/20">
                     Overdue
                 </span>
             );
         }
 
         return (
-            <span className="px-2.5 py-1 bg-gradient-to-r from-amber-50 to-amber-100 text-amber-700 text-[10px] md:text-xs font-medium rounded-full">
+            <span className="px-2.5 py-1 bg-gradient-to-r from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-yellow-900/30 text-amber-700 dark:text-amber-400 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-full border border-amber-200/50 dark:border-amber-500/20">
                 Pending
             </span>
         );
     };
 
     return (
-        <div className="space-y-4 md:space-y-6">
+        <div className="space-y-6 md:space-y-8 pb-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h3 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-slate-100">Accounts Receivable</h3>
-                    <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Manage customer invoices and payments</p>
+                    <h3 className="text-2xl md:text-3xl font-black text-slate-900 dark:text-slate-100 tracking-tight">Accounts Receivable</h3>
+                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400 mt-1">Manage customer invoices and payments</p>
                 </div>
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <div className="flex-1 px-4 py-3 glass-effect !bg-blue-50/50 dark:!bg-blue-900/20 border-blue-200/50 dark:border-blue-800/50 rounded-2xl">
-                        <div className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-wider">Total Outstanding</div>
-                        <div className="text-lg md:text-2xl font-black text-blue-900 dark:text-blue-50">{formatCurrency(totalOutstanding, storeSettings)}</div>
+                    <div glass-effect="" className="flex-1 px-4 py-3 !bg-blue-50/50 dark:!bg-blue-900/20 border-blue-200/50 dark:border-blue-800/50 rounded-2xl">
+                        <div className="text-[10px] font-bold text-blue-700 dark:text-blue-300 uppercase tracking-widest">Total Outstanding</div>
+                        <div className="text-lg md:text-2xl font-black text-blue-900 dark:text-blue-50 tracking-tight">{formatCurrency(totalOutstanding, storeSettings)}</div>
                     </div>
                 </div>
             </div>
@@ -131,9 +131,9 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                         <button
                             key={status}
                             onClick={() => setStatusFilter(status)}
-                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold border transition-all duration-200 whitespace-nowrap ${statusFilter === status
+                            className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold border transition-all duration-200 whitespace-nowrap active:scale-95 ${statusFilter === status
                                 ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                : 'bg-white/50 dark:bg-slate-900/50 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800'
                                 }`}
                         >
                             {status === 'all' ? 'All History' : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
@@ -150,7 +150,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                     <select
                         onChange={e => e.target.value && handleGenerateStatement(e.target.value)}
                         value={''}
-                        className="w-full md:w-64 pl-10 pr-8 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 appearance-none text-sm font-medium text-slate-700 dark:text-slate-300 shadow-sm"
+                        className="w-full md:w-64 pl-10 pr-8 py-2.5 bg-white/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 appearance-none text-sm font-bold text-slate-700 dark:text-slate-100 shadow-sm"
                     >
                         <option value="" disabled className="dark:bg-slate-900">Generate Statement</option>
                         {customers.filter(c => c.accountBalance > 0).map(c => (
@@ -176,16 +176,17 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                     return (
                         <div
                             key={invoice.transactionId}
-                            className="glass-effect p-4 rounded-2xl relative overflow-hidden group active:scale-[0.98] transition-all"
+                            glass-effect=""
+                            className="p-4 rounded-2xl relative overflow-hidden group active:scale-[0.98] transition-all"
                             onClick={() => onViewInvoice(invoice)}
                         >
                             <div className="flex justify-between items-start mb-3">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">#{invoice.transactionId}</span>
+                                        <span className="text-sm font-black text-slate-900 dark:text-slate-100">#{invoice.transactionId}</span>
                                         <StatusBadge invoice={invoice} />
                                     </div>
-                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                                    <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
                                         <UsersIcon className="w-3.5 h-3.5" />
                                         <span>{customerName}</span>
                                     </div>
@@ -193,7 +194,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                 <div className="relative" onClick={e => e.stopPropagation()}>
                                     <button
                                         onClick={() => setActiveActionMenu(activeActionMenu === invoice.transactionId ? null : invoice.transactionId)}
-                                        className="p-2 -mr-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-full"
+                                        className="p-2 -mr-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 rounded-full transition-colors"
                                     >
                                         <EllipsisVerticalIcon className="w-5 h-5" />
                                     </button>
@@ -204,7 +205,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                                     onViewInvoice(invoice);
                                                     setActiveActionMenu(null);
                                                 }}
-                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
                                                 <EyeIcon className="w-4 h-4" />
                                                 View Details
@@ -215,7 +216,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                                         handleRecordPaymentClick(invoice);
                                                         setActiveActionMenu(null);
                                                     }}
-                                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-medium"
+                                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold"
                                                 >
                                                     <CalculatorIcon className="w-4 h-4" />
                                                     Record Payment
@@ -228,14 +229,14 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
 
                             <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
                                 <div>
-                                    <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-medium">Due Date</div>
-                                    <div className={`text-sm font-semibold ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                    <div className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-bold">Due Date</div>
+                                    <div className={`text-sm font-bold ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
                                         {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-slate-500 font-medium">Balance Due</div>
-                                    <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                                    <div className="text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 font-bold">Balance Due</div>
+                                    <div className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">
                                         {formatCurrency(balanceDue, storeSettings)}
                                     </div>
                                 </div>
@@ -251,15 +252,15 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                     <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead className="bg-slate-50/50 dark:bg-slate-900/50">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Invoice #</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Customer</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Due Date</th>
-                                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Balance Due</th>
-                                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Status</th>
-                                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Invoice #</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Customer</th>
+                                <th className="px-6 py-4 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Due Date</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Balance Due</th>
+                                <th className="px-6 py-4 text-center text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Status</th>
+                                <th className="px-6 py-4 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-slate-200">
+                        <tbody className="bg-transparent divide-y divide-slate-200 dark:divide-slate-800">
                             {filteredInvoices.map(invoice => {
                                 const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
                                 const rawBalance = (invoice.total - calculatedAmountPaid);
@@ -278,22 +279,22 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]"></div>
-                                                <span className="text-sm font-medium text-blue-700 dark:text-blue-400">#{invoice.transactionId}</span>
+                                                <span className="text-sm font-bold text-blue-700 dark:text-blue-400">#{invoice.transactionId}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                                <div className="w-8 h-8 bg-blue-50 dark:bg-blue-900/30 rounded-lg flex items-center justify-center border border-blue-100 dark:border-blue-500/20">
                                                     <UsersIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                                                 </div>
-                                                <span className="text-sm text-slate-900 dark:text-slate-100 font-medium">{customerName}</span>
+                                                <span className="text-sm text-slate-900 dark:text-slate-100 font-bold">{customerName}</span>
                                             </div>
                                         </td>
-                                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${isOverdue ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-slate-500 dark:text-slate-400'}`}>
+                                        <td className={`px-6 py-4 whitespace-nowrap text-sm ${isOverdue ? 'text-red-600 dark:text-red-400 font-black' : 'text-slate-500 dark:text-slate-400 font-bold'}`}>
                                             {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right">
-                                            <div className="text-sm font-bold text-slate-900 dark:text-slate-100">{formatCurrency(balanceDue, storeSettings)}</div>
+                                            <div className="text-sm font-black text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(balanceDue, storeSettings)}</div>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-center">
                                             <StatusBadge invoice={invoice} />
@@ -302,7 +303,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                             {!isPaid && (
                                                 <button
                                                     onClick={() => handleRecordPaymentClick(invoice)}
-                                                    className="px-3 py-1.5 text-sm font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-200"
+                                                    className="px-4 py-2 text-xs font-black text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all duration-200 border border-blue-200/50 dark:border-blue-500/20 active:scale-95"
                                                 >
                                                     Record Payment
                                                 </button>
@@ -317,12 +318,12 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
             </div>
 
             {filteredInvoices.length === 0 && (
-                <div className="text-center py-12 md:py-24 bg-white rounded-2xl border border-slate-100 shadow-sm">
-                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                        <DocumentChartBarIcon className="w-8 h-8 text-slate-300" />
+                <div glass-effect="" className="text-center py-12 md:py-24 rounded-2xl">
+                    <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-slate-100 dark:border-slate-800">
+                        <DocumentChartBarIcon className="w-8 h-8 text-slate-300 dark:text-slate-600" />
                     </div>
-                    <p className="text-slate-600 font-medium">No open invoices found</p>
-                    <p className="text-sm text-slate-500 mt-1">All invoices are paid up!</p>
+                    <p className="text-slate-600 dark:text-slate-300 font-bold">No open invoices found</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-500 mt-1">All invoices are paid up!</p>
                 </div>
             )}
 

@@ -1,9 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Customer } from '../../types';
-import XMarkIcon from '../icons/XMarkIcon';
+import { XMarkIcon, UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon, CreditCardIcon } from '../icons';
 import { InputField } from '../ui/InputField';
-import { Button } from '../ui/Button';
 
 interface CustomerFormModalProps {
     isOpen: boolean;
@@ -35,7 +33,6 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
         if (isOpen) {
             setError('');
             if (customerToEdit) {
-                // Ensure address and store credit object exists
                 const initialData = { ...getInitialState(), ...customerToEdit };
                 if (!initialData.address) {
                     initialData.address = getInitialState().address;
@@ -88,128 +85,163 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
 
     if (!isOpen) return null;
 
-    const renderSectionTitle = (title: string) => <h4 className="text-md font-semibold text-gray-800 mt-6 mb-2 border-b pb-1">{title}</h4>;
-
+    const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
+        <div className="flex items-center gap-2 mb-4 mt-8 first:mt-0">
+            <div className="p-1.5 bg-blue-100/50 dark:bg-blue-900/30 rounded-lg">
+                <Icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h4 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em]">{title}</h4>
+        </div>
+    );
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
-                <form onSubmit={handleSubmit} className="flex flex-col h-full max-h-[90vh]">
-                    {/* Header */}
-                    <div className="sticky top-0 bg-white px-4 pt-5 pb-4 sm:p-6 border-b border-gray-200 z-10">
-                        <div className="flex justify-between items-start">
-                            <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                {customerToEdit ? 'Edit Customer' : 'Add New Customer'}
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
+            <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
+
+            <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 overflow-hidden flex flex-col animate-scale-in glass-effect">
+                {/* Header */}
+                <div className="px-8 py-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-900/50">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-none">
+                            <UserIcon className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                                {customerToEdit ? 'Edit Customer Profile' : 'New Customer Profile'}
                             </h3>
-                            <button type="button" onClick={onClose} className="p-2 -m-2 text-gray-400 hover:text-gray-500 hover:bg-gray-50 rounded-full transition-colors">
-                                <XMarkIcon className="h-6 w-6" />
-                            </button>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                                {customerToEdit ? `Updating ID: ${customerToEdit.id.substring(0, 8)}` : 'Create a new buyer account'}
+                            </p>
                         </div>
                     </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all font-bold"
+                    >
+                        <XMarkIcon className="w-6 h-6" />
+                    </button>
+                </div>
 
-                    {/* Content */}
-                    <div className="px-4 sm:px-6 py-4 flex-grow overflow-y-auto">
-                        {error && <div className="rounded-xl bg-red-50 p-4 mb-4 border border-red-100"><p className="text-sm text-red-700">{error}</p></div>}
-
-                        {renderSectionTitle('Primary Information')}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <InputField
-                                label="Full Name"
-                                name="name"
-                                value={customer.name}
-                                onChange={handleChange}
-                                required
-                                placeholder="John Doe"
-                            />
-                            <InputField
-                                label="Store Credit Balance ($)"
-                                name="storeCredit"
-                                type="number"
-                                value={customer.storeCredit?.toString() || '0'}
-                                onChange={handleChange}
-                                min="0"
-                                step="0.01"
-                            />
+                <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto custom-scrollbar p-8">
+                    {error && (
+                        <div className="mb-8 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-2xl animate-shake">
+                            <p className="text-sm font-bold text-red-600 dark:text-red-400 flex items-center gap-2">
+                                <div className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+                                {error}
+                            </p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                            <InputField
-                                label="Email"
-                                name="email"
-                                type="email"
-                                value={customer.email || ''}
-                                onChange={handleChange}
-                                placeholder="john@example.com"
-                            />
-                            <InputField
-                                label="Phone"
-                                name="phone"
-                                type="tel"
-                                value={customer.phone || ''}
-                                onChange={handleChange}
-                                placeholder="+1 (555) 000-0000"
-                            />
-                        </div>
+                    )}
 
-                        {renderSectionTitle('Address')}
+                    <SectionHeader icon={UserIcon} title="Primary Identity" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <InputField
+                            label="Full Name"
+                            name="name"
+                            value={customer.name}
+                            onChange={handleChange}
+                            required
+                            placeholder="e.g. Alexander Pierce"
+                            icon={<UserIcon className="w-4 h-4" />}
+                        />
+                        <InputField
+                            label="Store Credit ($)"
+                            name="storeCredit"
+                            type="number"
+                            value={customer.storeCredit?.toString() || '0'}
+                            onChange={handleChange}
+                            min="0"
+                            step="0.01"
+                            icon={<CreditCardIcon className="w-4 h-4" />}
+                        />
+                    </div>
+
+                    <SectionHeader icon={EnvelopeIcon} title="Contact Channels" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <InputField
+                            label="Email Address"
+                            name="email"
+                            type="email"
+                            value={customer.email || ''}
+                            onChange={handleChange}
+                            placeholder="mail@example.com"
+                            icon={<EnvelopeIcon className="w-4 h-4" />}
+                        />
+                        <InputField
+                            label="Phone Number"
+                            name="phone"
+                            type="tel"
+                            value={customer.phone || ''}
+                            onChange={handleChange}
+                            placeholder="+1 (000) 000-0000"
+                            icon={<PhoneIcon className="w-4 h-4" />}
+                        />
+                    </div>
+
+                    <SectionHeader icon={MapPinIcon} title="Location Details" />
+                    <div className="space-y-6">
                         <InputField
                             label="Street Address"
                             name="street"
                             value={customer.address?.street || ''}
-                            onChange={(e: any) => handleAddressChange(e)}
-                            placeholder="123 Main St"
+                            onChange={handleAddressChange}
+                            placeholder="123 Commerce Way"
+                            icon={<MapPinIcon className="w-4 h-4" />}
                         />
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                             <InputField
                                 label="City"
                                 name="city"
                                 value={customer.address?.city || ''}
-                                onChange={(e: any) => handleAddressChange(e)}
+                                onChange={handleAddressChange}
+                                placeholder="New York"
                             />
                             <InputField
-                                label="State / Province"
+                                label="State"
                                 name="state"
                                 value={customer.address?.state || ''}
-                                onChange={(e: any) => handleAddressChange(e)}
+                                onChange={handleAddressChange}
+                                placeholder="NY"
                             />
                             <InputField
-                                label="Zip / Postal Code"
+                                label="Zip Code"
                                 name="zip"
                                 value={customer.address?.zip || ''}
-                                onChange={(e: any) => handleAddressChange(e)}
+                                onChange={handleAddressChange}
+                                placeholder="10001"
                             />
                         </div>
-
-                        {renderSectionTitle('Additional Information')}
-                        <InputField
-                            label="Notes"
-                            name="notes"
-                            multiline
-                            rows={4}
-                            value={customer.notes || ''}
-                            onChange={handleChange}
-                            placeholder="e.g., Prefers window shopping, birthday in June, etc."
-                        />
                     </div>
 
-                    {/* Footer */}
-                    <div className="sticky bottom-0 bg-white px-4 py-4 sm:px-6 border-t border-gray-200">
-                        <div className="flex flex-col sm:flex-row justify-end gap-3">
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={onClose}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                variant="primary"
-                            >
-                                Save Customer
-                            </Button>
-                        </div>
-                    </div>
+                    <SectionHeader icon={ChatBubbleLeftRightIcon} title="Intelligence & Notes" />
+                    <InputField
+                        label="Internal Notes"
+                        name="notes"
+                        multiline
+                        rows={4}
+                        value={customer.notes || ''}
+                        onChange={handleChange}
+                        placeholder="Key preferences, loyalty status, or behavioral notes..."
+                        icon={<ChatBubbleLeftRightIcon className="w-4 h-4 mt-1" />}
+                    />
                 </form>
+
+                {/* Footer */}
+                <div className="px-8 py-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row justify-end gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="px-6 py-3 text-sm font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition-all"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        type="submit"
+                        className="px-10 py-3 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                    >
+                        {customerToEdit ? 'Save Changes' : 'Initialize Profile'}
+                    </button>
+                </div>
             </div>
         </div>
     );

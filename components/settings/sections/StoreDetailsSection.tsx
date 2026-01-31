@@ -28,10 +28,10 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
 }) => {
     const [isMapOpen, setIsMapOpen] = useState(false);
 
-    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white hover:bg-slate-50/50 focus:bg-white";
-    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 mb-2";
+    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white dark:bg-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 focus:bg-white dark:focus:bg-slate-800";
+    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 mb-2";
 
-    const renderInput = (label: string, name: keyof StoreSettings, type = 'text', props = {}) => (
+    const renderInput = (label: string, name: keyof StoreSettings, type = 'text', props: any = {}) => (
         <div className="space-y-2">
             <label htmlFor={name} className={labelClasses}>
                 <span className="flex items-center gap-2">
@@ -44,7 +44,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                 id={name}
                 value={(currentSettings as any)[name] || ''}
                 onChange={handleChange}
-                className={inputFieldClasses}
+                className={props.className || inputFieldClasses}
                 {...props}
             />
         </div>
@@ -71,19 +71,19 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                         {renderInput("Contact Email", "email", "email", {
                             placeholder: "contact@example.com",
                             readOnly: true,
-                            className: `${inputFieldClasses} bg-slate-100 text-slate-500 cursor-not-allowed`
+                            className: `${inputFieldClasses} bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-500 cursor-not-allowed`
                         })}
                         {renderInput("Website", "website", "url", {
                             placeholder: "https://example.com"
                         })}
 
                         <div className="pt-2">
-                            <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
                                 <div>
-                                    <label htmlFor="isOnlineStoreEnabled" className="text-sm font-semibold text-slate-900 cursor-pointer block">
+                                    <label htmlFor="isOnlineStoreEnabled" className="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer block">
                                         Online Store Status
                                     </label>
-                                    <p className="text-xs text-slate-500 mt-1">
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                         {currentSettings.isOnlineStoreEnabled !== false
                                             ? 'Your store is currently visible to customers'
                                             : 'Your store is hidden (maintenance mode)'}
@@ -99,7 +99,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                                         onChange={(e) => setCurrentSettings(prev => ({ ...prev, isOnlineStoreEnabled: e.target.checked }))}
                                         className="peer sr-only"
                                     />
-                                    <div className="w-12 h-6 bg-slate-300 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
+                                    <div className="w-12 h-6 bg-slate-300 dark:bg-slate-700 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
                                         <div className="absolute w-5 h-5 bg-white rounded-full left-1 top-0.5 peer-checked:left-7 transition-all duration-300 shadow-sm"></div>
                                     </div>
                                 </label>
@@ -124,7 +124,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setIsMapOpen(true)}
-                                className="mt-2 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                                className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -156,13 +156,13 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                         <DetailItem
                             label="Store Name"
                             value={settings.name}
-                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                             highlight={true}
                         />
                         <DetailItem
                             label="Contact Email"
                             value={settings.email || 'Not set'}
-                            icon={<EnvelopeIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<EnvelopeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                         />
                         <DetailItem
                             label="Website"
@@ -172,7 +172,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                                         href={settings.website}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-150 inline-flex items-center gap-1"
+                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-150 inline-flex items-center gap-1"
                                     >
                                         {settings.website}
                                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,38 +181,39 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                                     </a>
                                 ) : 'Not set'
                             }
-                            icon={<GlobeAltIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<GlobeAltIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                         />
                         <DetailItem
                             label="Online Store Status"
                             value={
                                 <div className="flex items-center gap-2">
                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${settings.isOnlineStoreEnabled !== false
-                                        ? 'bg-emerald-50 text-emerald-700 border-emerald-100'
-                                        : 'bg-slate-50 text-slate-600 border-slate-200'
+                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/30'
+                                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
                                         }`}>
                                         <span className={`w-1.5 h-1.5 rounded-full ${settings.isOnlineStoreEnabled !== false ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
                                         {settings.isOnlineStoreEnabled !== false ? 'Active' : 'Disabled'}
                                     </span>
                                 </div>
                             }
-                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                         />
                     </div>
                     <div className="space-y-1">
+                        <span className="lg:hidden h-px bg-slate-100 dark:bg-slate-800 block my-2"></span>
                         <DetailItem
                             label="Phone Number"
                             value={settings.phone || 'Not set'}
-                            icon={<PhoneIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<PhoneIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                         />
                         <DetailItem
                             label="Address"
                             value={
-                                <div className="text-slate-900 leading-relaxed whitespace-pre-wrap">
+                                <div className="text-slate-900 dark:text-slate-100 leading-relaxed whitespace-pre-wrap">
                                     {settings.address || 'Not set'}
                                 </div>
                             }
-                            icon={<MapPinIcon className="w-4 h-4 text-slate-500" />}
+                            icon={<MapPinIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
                         />
                     </div>
                 </div>

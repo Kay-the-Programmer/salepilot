@@ -1,7 +1,6 @@
 import React from 'react';
 import { api } from '../services/api';
 import { Account, JournalEntry, StoreSettings, Sale, Customer, Payment, SupplierInvoice, SupplierPayment, PurchaseOrder, Supplier, Expense, RecurringExpense } from '../types';
-import Header from '../components/Header';
 import UnifiedRecordPaymentModal from '../components/accounting/UnifiedRecordPaymentModal';
 import SupplierInvoiceFormModal from '../components/accounting/SupplierInvoiceFormModal';
 import SupplierInvoiceDetailModal from '../components/accounting/SupplierInvoiceDetailModal';
@@ -122,12 +121,6 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     const handleOpenRecordPaymentAR = (invoice: Sale) => {
         setInvoiceToPayAR(invoice);
         setIsRecordARPaymentOpen(true);
-        // Optionally close the detail modal, or keep it open. 
-        // For better UX, we might want to close the detail modal or keep it and update it.
-        // Let's close it for now to avoid stacked modals unless intended.
-        // Actually, let's keep it open or close it? The user didn't specify.
-        // The implementation plan checklist just said "Enable the button".
-        // Let's close the detail modal to focus on payment.
         setViewingARInvoice(null);
     };
 
@@ -254,26 +247,6 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         }
     };
 
-    const TabButton: React.FC<{ tabName: string, label: string, shortLabel?: string, icon?: React.ReactNode }> = ({ tabName, label, shortLabel, icon }) => {
-        const isActive = activeTab === tabName;
-        return (
-            <button
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => setActiveTabAndHash(tabName)}
-                className={`inline-flex items-center gap-2 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 ${isActive
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/50 dark:hover:bg-slate-800/50'
-                    }`}
-            >
-                {icon && <span className="w-4 h-4">{icon}</span>}
-                <span className="hidden sm:inline">{label}</span>
-                <span className="sm:hidden inline">{shortLabel ?? label}</span>
-            </button>
-        );
-    };
-
     const tabConfig = [
         { tabName: 'dashboard', label: 'Dashboard', shortLabel: 'Home', icon: <ChartBarIcon className="w-4 h-4" /> },
         { tabName: 'reports', label: 'Reports', shortLabel: 'Reports', icon: <DocumentChartBarIcon className="w-4 h-4" /> },
@@ -288,31 +261,79 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
-            <Header
-                title="Accounting"
-                showSearch={false}
-                rightContent={
-                    <button
-                        type="button"
-                        className="sm:hidden p-2 rounded-lg text-slate-600 active:bg-slate-100"
-                        aria-haspopup="menu"
-                        aria-expanded={isTabMenuOpen}
-                        aria-controls="accounting-tab-menu"
-                        onClick={() => setIsTabMenuOpen(o => !o)}
-                    >
-                        <GridIcon className="w-5 h-5" />
-                    </button>
-                }
-            />
+            {/* Unified Header */}
+            <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/10 transition-all duration-300">
+                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between py-3 h-auto lg:h-20 gap-4">
+                        {/* Title Section */}
+                        <div className="flex items-center justify-between shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="p-2.5 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
+                                    <BookOpenIcon className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
+                                        Accounting
+                                    </h1>
+                                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">
+                                        Financial Control Center
+                                    </p>
+                                </div>
+                            </div>
 
-            <main className="px-4 sm:px-6 lg:px-8 py-6">
-                <div className="max-w-7xl mx-auto">
-                    {/* Desktop Tabs */}
-                    <div className="hidden sm:flex items-center gap-2 mb-8 p-2 glass-effect rounded-2xl">
-                        {tabConfig.map((tab) => (
-                            <TabButton key={tab.tabName} {...tab} />
-                        ))}
+                            {/* Mobile Grid Toggle */}
+                            <button
+                                type="button"
+                                className="lg:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 transition-all active:scale-95"
+                                onClick={() => setIsTabMenuOpen(!isTabMenuOpen)}
+                            >
+                                <GridIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+
+                        {/* Navigation Tabs - Integrated into Header */}
+                        <nav className="hidden lg:flex items-center gap-1.5 p-1.5 bg-slate-100/50 dark:bg-slate-800/40 rounded-2xl backdrop-blur-sm border border-slate-200/50 dark:border-white/5 max-w-full overflow-x-auto no-scrollbar">
+                            {tabConfig.map((tab) => {
+                                const isActive = activeTab === tab.tabName;
+                                return (
+                                    <button
+                                        key={tab.tabName}
+                                        onClick={() => setActiveTabAndHash(tab.tabName)}
+                                        className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 ${isActive
+                                            ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
+                                            }`}
+                                    >
+                                        <span className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'opacity-70'}`}>
+                                            {tab.icon}
+                                        </span>
+                                        {tab.label}
+                                    </button>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Tablet/Mobile Horizontal Tabs (Visible when grid is closed) */}
+                        <nav className="lg:hidden flex items-center gap-1 overflow-x-auto no-scrollbar pb-1">
+                            {tabConfig.map((tab) => (
+                                <button
+                                    key={tab.tabName}
+                                    onClick={() => setActiveTabAndHash(tab.tabName)}
+                                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${activeTab === tab.tabName
+                                        ? 'bg-blue-600 text-white shadow-md'
+                                        : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-800'
+                                        }`}
+                                >
+                                    {tab.shortLabel || tab.label}
+                                </button>
+                            ))}
+                        </nav>
                     </div>
+                </div>
+            </header>
+
+            <main className="px-4 sm:px-6 lg:px-8 py-8">
+                <div className="max-w-[1600px] mx-auto">
 
                     {/* Mobile Tab Menu (Floating Grid) */}
                     {isTabMenuOpen && (

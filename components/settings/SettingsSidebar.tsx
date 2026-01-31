@@ -42,19 +42,19 @@ const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeCategory, onCat
                         key={category.id}
                         onClick={() => onCategoryChange(category.id)}
                         className={`w-full flex items-start gap-3 p-4 rounded-2xl transition-all duration-200 group ${isActive
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 ring-1 ring-indigo-600'
-                                : 'text-slate-600 hover:bg-slate-50 hover:text-indigo-600 border border-transparent'
+                            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/20 ring-1 ring-indigo-600'
+                            : 'text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 dark:hover:text-indigo-400 border border-transparent'
                             }`}
                     >
-                        <div className={`shrink-0 p-2 rounded-xl transition-colors ${isActive ? 'bg-white/20' : 'bg-slate-100 text-slate-500 group-hover:bg-indigo-50 group-hover:text-indigo-600'
+                        <div className={`shrink-0 p-2 rounded-xl transition-colors ${isActive ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/40 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'
                             }`}>
                             <Icon className="w-5 h-5" />
                         </div>
                         <div className="text-left">
-                            <p className={`font-semibold text-sm ${isActive ? 'text-white' : 'text-slate-900'}`}>
+                            <p className={`font-semibold text-sm ${isActive ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>
                                 {category.label}
                             </p>
-                            <p className={`text-xs mt-0.5 line-clamp-1 ${isActive ? 'text-indigo-100' : 'text-slate-500'}`}>
+                            <p className={`text-xs mt-0.5 line-clamp-1 ${isActive ? 'text-indigo-100' : 'text-slate-500 dark:text-slate-400'}`}>
                                 {category.description}
                             </p>
                         </div>

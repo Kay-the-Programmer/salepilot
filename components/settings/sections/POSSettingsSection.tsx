@@ -31,8 +31,8 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
     const [newPaymentMethod, setNewPaymentMethod] = useState('');
     const [newSupplierPaymentMethod, setNewSupplierPaymentMethod] = useState('');
 
-    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white hover:bg-slate-50/50 focus:bg-white";
-    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 mb-2";
+    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white dark:bg-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 focus:bg-white dark:focus:bg-slate-800";
+    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 mb-2";
 
     return (
         <SettingsCard
@@ -60,7 +60,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                         />
                     </div>
 
-                    <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-slate-50 to-white rounded-xl border border-slate-200">
+                    <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800 dark:to-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
                         <div className="flex items-center">
                             <div className="relative">
                                 <input
@@ -71,16 +71,16 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                     onChange={handleChange}
                                     className="peer sr-only"
                                 />
-                                <div className="w-12 h-6 bg-slate-300 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
-                                    <div className="absolute w-5 h-5 bg-white rounded-full left-1 top-0.5 peer-checked:left-7 transition-all duration-300"></div>
+                                <div className="w-12 h-6 bg-slate-300 dark:bg-slate-700 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
+                                    <div className="absolute w-5 h-5 bg-white dark:bg-slate-100 rounded-full left-1 top-0.5 peer-checked:left-7 transition-all duration-300 shadow-sm"></div>
                                 </div>
                             </div>
                         </div>
                         <div className="flex-1">
-                            <label htmlFor="enableStoreCredit" className="text-sm font-semibold text-slate-900 cursor-pointer">
+                            <label htmlFor="enableStoreCredit" className="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer">
                                 Enable Store Credit System
                             </label>
-                            <p className="text-sm text-slate-500 mt-1">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
                                 Allow customers to use store credit for purchases and manage credit balances
                             </p>
                         </div>
@@ -89,8 +89,8 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                     {/* Payment Methods */}
                     <div className="space-y-6">
                         <div className="space-y-4">
-                            <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                                <CreditCardIcon className="w-4 h-4" />
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <CreditCardIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                                 Customer Payment Methods
                             </h4>
                             <div className="space-y-3">
@@ -107,7 +107,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => removePaymentMethod('paymentMethods', pm.id)}
-                                            className="p-3 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-slate-200 hover:border-red-200 transition-all duration-200 group-hover:opacity-100"
+                                            className="p-3 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-all duration-200 group-hover:opacity-100"
                                             aria-label={`Remove ${pm.name}`}
                                         >
                                             <TrashIcon className="w-5 h-5" />
@@ -125,7 +125,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => addPaymentMethod('paymentMethods', newPaymentMethod, setNewPaymentMethod)}
-                                        className="px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold rounded-xl hover:from-slate-800 hover:to-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        className="px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-700 dark:to-slate-800 text-white font-semibold rounded-xl hover:from-slate-800 hover:to-slate-700 dark:hover:from-slate-600 dark:hover:to-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
                                         disabled={!newPaymentMethod.trim()}
                                     >
                                         <PlusIcon className="w-4 h-4" />
@@ -135,9 +135,9 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                             </div>
                         </div>
 
-                        <div className="space-y-4 pt-6 border-t border-slate-200">
-                            <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                                <BuildingStorefrontIcon className="w-4 h-4" />
+                        <div className="space-y-4 pt-6 border-t border-slate-200 dark:border-slate-800">
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <BuildingStorefrontIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                 Supplier Payment Methods
                             </h4>
                             <div className="space-y-3">
@@ -154,7 +154,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => removePaymentMethod('supplierPaymentMethods', pm.id)}
-                                            className="p-3 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl border border-slate-200 hover:border-red-200 transition-all duration-200 group-hover:opacity-100"
+                                            className="p-3 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-all duration-200 group-hover:opacity-100"
                                             aria-label={`Remove ${pm.name}`}
                                         >
                                             <TrashIcon className="w-5 h-5" />
@@ -172,7 +172,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                     <button
                                         type="button"
                                         onClick={() => addPaymentMethod('supplierPaymentMethods', newSupplierPaymentMethod, setNewSupplierPaymentMethod)}
-                                        className="px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-800 text-white font-semibold rounded-xl hover:from-slate-800 hover:to-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                        className="px-5 py-3 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-slate-700 dark:to-slate-800 text-white font-semibold rounded-xl hover:from-slate-800 hover:to-slate-700 dark:hover:from-slate-600 dark:hover:to-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
                                         disabled={!newSupplierPaymentMethod.trim()}
                                     >
                                         <PlusIcon className="w-4 h-4" />
@@ -184,21 +184,23 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="space-y-4">
-                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                        <h4 className="text-sm font-semibold text-slate-500 mb-2">Receipt Footer</h4>
-                        <p className="text-slate-900 italic">"{settings.receiptMessage || 'No footer message set'}"</p>
+                <div className="space-y-6">
+                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                        <h4 className="text-[10px] uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400 mb-2">Receipt Footer</h4>
+                        <p className="text-slate-900 dark:text-slate-100 text-sm leading-relaxed italic">"{settings.receiptMessage || 'No footer message set'}"</p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
                         <div className="space-y-4">
-                            <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                                <CreditCardIcon className="w-4 h-4 text-slate-400" />
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg">
+                                    <CreditCardIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+                                </div>
                                 Customer Payment Methods
                             </h4>
                             <div className="flex flex-wrap gap-2">
                                 {(settings.paymentMethods || []).map(pm => (
-                                    <span key={pm.id} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg shadow-sm">
+                                    <span key={pm.id} className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg shadow-sm">
                                         {pm.name}
                                     </span>
                                 ))}
@@ -206,13 +208,15 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                                <BuildingStorefrontIcon className="w-4 h-4 text-slate-400" />
+                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                                <div className="p-1.5 bg-blue-50 dark:bg-blue-900/40 rounded-lg">
+                                    <BuildingStorefrontIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                </div>
                                 Supplier Payment Methods
                             </h4>
                             <div className="flex flex-wrap gap-2">
                                 {(settings.supplierPaymentMethods || []).map(pm => (
-                                    <span key={pm.id} className="px-3 py-1.5 bg-white border border-slate-200 text-slate-700 text-sm font-medium rounded-lg shadow-sm">
+                                    <span key={pm.id} className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg shadow-sm">
                                         {pm.name}
                                     </span>
                                 ))}

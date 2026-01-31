@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Shipment, Courier, Bus } from '../types';
 
-import { PlusIcon, TruckIcon, XMarkIcon } from '../components/icons/index';
+import { PlusIcon, TruckIcon, XMarkIcon, TrashIcon } from '../components/icons/index';
 import Button from '../components/ui/Button';
 import InputField from '../components/ui/InputField';
 import { api } from '../services/api';
@@ -16,7 +16,6 @@ export default function LogisticsPage() {
     const [shipments, setShipments] = useState<Shipment[]>([]);
     const [couriers, setCouriers] = useState<Courier[]>([]);
     const [buses, setBuses] = useState<Bus[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
 
     const [isShipmentModalOpen, setIsShipmentModalOpen] = useState(false);
     const [isCourierModalOpen, setIsCourierModalOpen] = useState(false);
@@ -60,7 +59,6 @@ export default function LogisticsPage() {
     };
 
     const fetchData = async () => {
-        setIsLoading(true);
         try {
             const [shipmentData, courierData, busData] = await Promise.all([
                 api.get<Shipment[]>('/logistics/shipments'),
@@ -73,7 +71,6 @@ export default function LogisticsPage() {
         } catch (error) {
             console.error("Failed to load logistics data", error);
         } finally {
-            setIsLoading(false);
         }
     };
 
@@ -162,47 +159,84 @@ export default function LogisticsPage() {
     };
 
     return (
-        <div className="p-4 md:p-6 h-full flex flex-col">
+        <div className="p-4 md:p-6 h-full flex flex-col bg-gray-50 dark:bg-slate-950">
             {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-                <div className="flex items-center gap-3">
-                    <div className="p-3 bg-blue-100 rounded-lg text-blue-600">
-                        <TruckIcon className="w-8 h-8" />
+            <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md sticky top-0 z-10 border border-white/20 dark:border-slate-800/50 rounded-2xl p-6 mb-6 shadow-sm glass-effect">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="p-3 bg-blue-600 dark:bg-blue-500 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-none">
+                            <TruckIcon className="w-8 h-8" />
+                        </div>
+                        <div>
+                            <h1 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Logistics</h1>
+                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Fleet & Shipment Management</p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Logistics</h1>
-                        <p className="text-sm text-gray-500">Manage shipments, couriers, and buses</p>
+
+                    <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <div className="bg-gray-100/80 dark:bg-slate-800/80 p-1 rounded-xl flex text-xs font-bold w-full md:w-auto overflow-x-auto">
+                            <button
+                                onClick={() => handleTabChange('shipments')}
+                                className={`px-5 py-2.5 rounded-lg transition-all whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'shipments' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
+                            >
+                                Shipments
+                            </button>
+                            <button
+                                onClick={() => handleTabChange('couriers')}
+                                className={`px-5 py-2.5 rounded-lg transition-all whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'couriers' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
+                            >
+                                Couriers
+                            </button>
+                            <button
+                                onClick={() => handleTabChange('buses')}
+                                className={`px-5 py-2.5 rounded-lg transition-all whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'buses' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
+                            >
+                                Buses
+                            </button>
+                        </div>
+
+                        {/* View Toggle */}
+                        <div className="bg-gray-100/80 dark:bg-slate-800/80 p-1 rounded-xl">
+                            <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
+                        </div>
+
+                        <div className="flex gap-2 w-full sm:w-auto">
+                            {activeTab === 'shipments' && (
+                                <button
+                                    onClick={() => setIsShipmentModalOpen(true)}
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                >
+                                    <PlusIcon className="w-4 h-4" />
+                                    New Shipment
+                                </button>
+                            )}
+                            {activeTab === 'couriers' && (
+                                <button
+                                    onClick={() => setIsCourierModalOpen(true)}
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                >
+                                    <PlusIcon className="w-4 h-4" />
+                                    Add Courier
+                                </button>
+                            )}
+                            {activeTab === 'buses' && (
+                                <button
+                                    onClick={() => setIsBusModalOpen(true)}
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                >
+                                    <PlusIcon className="w-4 h-4" />
+                                    Add Bus
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
-
-                <div className="flex flex-wrap gap-2 w-full md:w-auto">
-                    <div className="bg-gray-100 p-1 rounded-lg flex text-sm font-medium w-full md:w-auto overflow-x-auto">
-                        <button onClick={() => handleTabChange('shipments')} className={`px-4 py-2 rounded-md transition-all whitespace-nowrap ${activeTab === 'shipments' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}>Shipments</button>
-                        <button onClick={() => handleTabChange('couriers')} className={`px-4 py-2 rounded-md transition-all whitespace-nowrap ${activeTab === 'couriers' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}>Couriers</button>
-                        <button onClick={() => handleTabChange('buses')} className={`px-4 py-2 rounded-md transition-all whitespace-nowrap ${activeTab === 'buses' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-900'}`}>Buses</button>
-                    </div>
-
-                    {/* View Toggle */}
-                    <div className="bg-gray-100 p-1 rounded-lg">
-                        <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
-                    </div>
-
-                    {activeTab === 'shipments' && (
-                        <Button onClick={() => setIsShipmentModalOpen(true)} icon={<PlusIcon className="w-5 h-5" />}>New Shipment</Button>
-                    )}
-                    {activeTab === 'couriers' && (
-                        <Button onClick={() => setIsCourierModalOpen(true)} icon={<PlusIcon className="w-5 h-5" />}>Add Courier</Button>
-                    )}
-                    {activeTab === 'buses' && (
-                        <Button onClick={() => setIsBusModalOpen(true)} icon={<PlusIcon className="w-5 h-5" />}>Add Bus</Button>
-                    )}
-                </div>
-            </div>
+            </header>
 
             {/* Content - Split Layout */}
-            <div className="flex-1 flex gap-4 overflow-hidden">
+            <div className="flex-1 flex gap-6 overflow-hidden">
                 {/* Main List/Grid Area */}
-                <div className={`${isDetailPaneOpen ? 'hidden md:block' : ''} flex-1 overflow-auto bg-white rounded-lg shadow border border-gray-200 transition-all`}>
+                <div className={`${isDetailPaneOpen ? 'hidden md:block' : ''} flex-1 overflow-auto bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-800 transition-all custom-scrollbar`}>
                     {activeTab === 'shipments' && (
                         <ShipmentList
                             shipments={shipments}
@@ -250,24 +284,27 @@ export default function LogisticsPage() {
                             />
 
                             {/* Detail Panel */}
-                            <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white shadow-xl z-50 lg:relative lg:z-0 lg:w-96 lg:max-w-none lg:shadow-none lg:border-l lg:border-gray-200 overflow-y-auto animate-slide-in-right">
+                            <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-50 lg:relative lg:z-0 lg:w-96 lg:max-w-none lg:shadow-none lg:border-l lg:border-gray-200 dark:lg:border-slate-800 overflow-y-auto animate-slide-in-right glass-effect">
                                 <div className="p-6">
                                     {/* Header */}
-                                    <div className="flex justify-between items-center mb-6">
-                                        <h2 className="text-xl font-bold text-gray-900">
-                                            {selectedShipment && 'Shipment Details'}
-                                            {selectedCourier && 'Courier Details'}
-                                            {selectedBus && 'Bus Details'}
-                                        </h2>
+                                    <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+                                        <div>
+                                            <h2 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
+                                                {selectedShipment && 'Shipment Details'}
+                                                {selectedCourier && 'Courier Details'}
+                                                {selectedBus && 'Bus Details'}
+                                            </h2>
+                                            <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mt-0.5">Record Viewer</p>
+                                        </div>
                                         <button
                                             onClick={() => {
                                                 setSelectedShipment(null);
                                                 setSelectedCourier(null);
                                                 setSelectedBus(null);
                                             }}
-                                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
                                         >
-                                            <XMarkIcon className="w-5 h-5 text-gray-500" />
+                                            <XMarkIcon className="w-5 h-5" />
                                         </button>
                                     </div>
 
@@ -276,19 +313,19 @@ export default function LogisticsPage() {
                                         <div className="space-y-6">
                                             {/* Status Badge */}
                                             <div className="flex items-center gap-3">
-                                                <span className={`px-3 py-1 text-sm font-semibold rounded-full
-                                                ${selectedShipment.status === 'delivered' ? 'bg-green-100 text-green-800' :
-                                                        selectedShipment.status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-blue-100 text-blue-800'}`}>
+                                                <span className={`px-3 py-1 text-[10px] font-black rounded-full uppercase tracking-widest
+                                                ${selectedShipment.status === 'delivered' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' :
+                                                        selectedShipment.status === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'}`}>
                                                     {selectedShipment.status?.toUpperCase()}
                                                 </span>
-                                                <span className="text-sm text-gray-500 capitalize">{selectedShipment.method}</span>
+                                                <span className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">{selectedShipment.method}</span>
                                             </div>
 
                                             {/* Status Update */}
-                                            <div className="bg-gray-50 p-4 rounded-lg">
-                                                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Update Status</label>
+                                            <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                <label className="block text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Update Progress</label>
                                                 <select
-                                                    className="block w-full p-2 border border-blue-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white"
+                                                    className="block w-full p-3 border border-gray-200 dark:border-slate-700 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-bold bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
                                                     value={selectedShipment.status}
                                                     onChange={(e) => handleUpdateStatus(selectedShipment.id, e.target.value)}
                                                 >
@@ -303,65 +340,67 @@ export default function LogisticsPage() {
                                             </div>
 
                                             {/* Tracking */}
-                                            <div className="bg-blue-50 p-4 rounded-lg">
-                                                <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Tracking Number</p>
-                                                <p className="text-lg font-bold text-blue-800 font-mono">{selectedShipment.tracking_number}</p>
+                                            <div className="bg-blue-600 dark:bg-blue-600 p-5 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none">
+                                                <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest">Tracking Identity</p>
+                                                <p className="text-lg font-black text-white font-mono mt-1">{selectedShipment.tracking_number}</p>
                                             </div>
 
                                             {/* Recipient */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Recipient Information</h3>
-                                                <div className="grid grid-cols-1 gap-3">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 uppercase">Name</p>
-                                                        <p className="font-medium text-gray-900">{selectedShipment.recipient_name || '-'}</p>
+                                            <div className="space-y-4">
+                                                <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-gray-100 dark:border-slate-800 pb-2">Recipient Info</h3>
+                                                <div className="grid grid-cols-1 gap-4">
+                                                    <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                        <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Customer</p>
+                                                        <p className="font-bold text-gray-900 dark:text-white uppercase tracking-tight">{selectedShipment.recipient_name || 'N/A'}</p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 uppercase">Phone</p>
-                                                        <p className="font-medium text-gray-900">{selectedShipment.recipient_phone || '-'}</p>
+                                                    <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                        <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Contact</p>
+                                                        <p className="font-bold text-gray-900 dark:text-white uppercase tracking-tight">{selectedShipment.recipient_phone || 'N/A'}</p>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 uppercase">Address</p>
-                                                        <p className="font-medium text-gray-900">{selectedShipment.recipient_address || '-'}</p>
+                                                    <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                        <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Physical Address</p>
+                                                        <p className="text-sm font-bold text-gray-700 dark:text-slate-300">{selectedShipment.recipient_address || '-'}</p>
                                                     </div>
                                                     {selectedShipment.destination && (
-                                                        <div>
-                                                            <p className="text-xs text-gray-500 uppercase">Destination</p>
-                                                            <p className="font-medium text-gray-900">{selectedShipment.destination}</p>
+                                                        <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                            <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Destination</p>
+                                                            <p className="font-bold text-gray-900 dark:text-white uppercase tracking-tight">{selectedShipment.destination}</p>
                                                         </div>
                                                     )}
                                                 </div>
                                             </div>
 
                                             {/* Provider */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Shipping Provider</h3>
-                                                <div className="p-4 bg-gray-50 rounded-lg">
-                                                    <div className="flex items-center gap-3">
-                                                        <TruckIcon className="w-8 h-8 text-gray-400" />
+                                            <div className="space-y-4">
+                                                <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-gray-100 dark:border-slate-800 pb-2">Shipping Provider</h3>
+                                                <div className="p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-xl shadow-sm flex items-center justify-center">
+                                                            <TruckIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                                        </div>
                                                         <div>
-                                                            <p className="font-medium text-gray-900">
+                                                            <p className="font-black text-gray-900 dark:text-white uppercase tracking-tight">
                                                                 {selectedShipment.method === 'courier'
                                                                     ? couriers.find(c => c.id === selectedShipment.courier_id)?.company_name || 'Unknown Courier'
                                                                     : buses.find(b => b.id === selectedShipment.bus_id)?.driver_name || 'Unknown Bus'}
                                                             </p>
-                                                            <p className="text-sm text-gray-500 capitalize">{selectedShipment.method}</p>
+                                                            <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">{selectedShipment.method}</p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
 
                                             {/* Cost */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Shipping Cost</h3>
-                                                <p className="text-2xl font-bold text-gray-900">{formatCurrency(selectedShipment.shipping_cost, { currency: { symbol: 'K', code: 'ZMW', position: 'before' } } as any)}</p>
+                                            <div className="p-5 bg-slate-900 dark:bg-slate-800 rounded-2xl">
+                                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Shipping Cost</h3>
+                                                <p className="text-3xl font-black text-white tracking-tighter">{formatCurrency(selectedShipment.shipping_cost, { currency: { symbol: 'K', code: 'ZMW', position: 'before' } } as any)}</p>
                                             </div>
 
                                             {/* Notes */}
                                             {selectedShipment.notes && (
                                                 <div className="space-y-3">
-                                                    <h3 className="font-semibold text-gray-900 border-b pb-2">Notes</h3>
-                                                    <p className="text-gray-600">{selectedShipment.notes}</p>
+                                                    <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-gray-100 dark:border-slate-800 pb-2">Internal Notes</h3>
+                                                    <p className="text-sm font-medium text-gray-600 dark:text-slate-400 bg-gray-50 dark:bg-slate-800/50 p-4 rounded-xl italic">"{selectedShipment.notes}"</p>
                                                 </div>
                                             )}
 
@@ -370,122 +409,105 @@ export default function LogisticsPage() {
                                         </div>
                                     )}
 
-                                    {/* Courier Details */}
                                     {selectedCourier && (
-                                        <div className="space-y-6">
+                                        <div className="space-y-8">
                                             {/* Status Badge */}
                                             <div>
-                                                <span className={`px-3 py-1 text-sm font-semibold rounded-full ${selectedCourier.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {selectedCourier.isActive !== false ? 'Active' : 'Inactive'}
+                                                <span className={`px-4 py-1.5 text-[10px] font-black rounded-full uppercase tracking-widest ${selectedCourier.isActive !== false ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-400'}`}>
+                                                    {selectedCourier.isActive !== false ? 'Active Status' : 'Inactive'}
                                                 </span>
                                             </div>
 
                                             {/* Company Name */}
-                                            <div className="bg-blue-50 p-4 rounded-lg">
-                                                <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Company Name</p>
-                                                <p className="text-xl font-bold text-blue-800">{selectedCourier.company_name}</p>
+                                            <div className="bg-blue-600 dark:bg-blue-600 p-6 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none">
+                                                <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest">Courier Partner</p>
+                                                <p className="text-2xl font-black text-white uppercase tracking-tight mt-1">{selectedCourier.company_name}</p>
                                             </div>
 
-                                            {/* Contact Details */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Contact Information</h3>
-                                                <div>
-                                                    <p className="text-xs text-gray-500 uppercase">Contact Details</p>
-                                                    <p className="font-medium text-gray-900">{selectedCourier.contact_details || 'No contact information'}</p>
+                                            {/* Info Cards */}
+                                            <div className="space-y-4">
+                                                <div className="p-5 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                    <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Contact Details</h3>
+                                                    <p className="text-sm font-bold text-gray-900 dark:text-white">{selectedCourier.contact_details || 'No contact information available'}</p>
+                                                </div>
+
+                                                <div className="p-5 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                    <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Billing Identity</h3>
+                                                    <p className="text-sm font-bold text-gray-900 dark:text-white">{selectedCourier.receipt_details || 'No receipt details'}</p>
+                                                </div>
+
+                                                <div className="p-5 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                                                    <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">Total Shipments</h3>
+                                                    <span className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tighter">
+                                                        {shipments.filter(s => s.courier_id === selectedCourier.id).length}
+                                                    </span>
                                                 </div>
                                             </div>
 
-                                            {/* Receipt Details */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Receipt / Account Info</h3>
-                                                <p className="text-gray-600">{selectedCourier.receipt_details || 'No receipt details'}</p>
-                                            </div>
-
-                                            {/* Shipments using this courier */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Active Shipments</h3>
-                                                <p className="text-2xl font-bold text-gray-900">
-                                                    {shipments.filter(s => s.courier_id === selectedCourier.id).length}
-                                                </p>
-                                            </div>
-
                                             {/* Actions */}
-                                            <div className="pt-4 border-t space-y-3">
-                                                <Button
-                                                    variant="danger"
-                                                    className="w-full"
+                                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+                                                <button
                                                     onClick={() => {
                                                         handleDelete(selectedCourier.id, 'courier');
                                                         setSelectedCourier(null);
                                                     }}
+                                                    className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-black rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
                                                 >
-                                                    Delete Courier
-                                                </Button>
+                                                    <TrashIcon className="w-4 h-4" />
+                                                    Terminate Partner
+                                                </button>
                                             </div>
                                         </div>
                                     )}
 
                                     {/* Bus Details */}
                                     {selectedBus && (
-                                        <div className="space-y-6">
+                                        <div className="space-y-8">
                                             {/* Status Badge */}
                                             <div>
-                                                <span className={`px-3 py-1 text-sm font-semibold rounded-full ${selectedBus.isActive !== false ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                    {selectedBus.isActive !== false ? 'Active' : 'Inactive'}
+                                                <span className={`px-4 py-1.5 text-[10px] font-black rounded-full uppercase tracking-widest ${selectedBus.isActive !== false ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
+                                                    {selectedBus.isActive !== false ? 'Fleet Available' : 'Maintenance'}
                                                 </span>
                                             </div>
 
-                                            {/* Driver Name & Plate */}
-                                            <div className="bg-blue-50 p-4 rounded-lg">
-                                                <p className="text-xs text-blue-600 font-medium uppercase tracking-wide">Driver Name</p>
-                                                <p className="text-xl font-bold text-blue-800">{selectedBus.driver_name}</p>
-                                                <p className="text-sm font-mono text-blue-600 mt-1">{selectedBus.number_plate}</p>
+                                            {/* Header Info */}
+                                            <div className="bg-slate-900 dark:bg-slate-800 p-6 rounded-2xl shadow-lg border border-slate-800 text-center">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Vehicle Plate</p>
+                                                <p className="text-3xl font-black text-white uppercase tracking-tight font-mono">{selectedBus.number_plate}</p>
+                                                <p className="text-sm font-bold text-blue-400 mt-2 uppercase tracking-wide">{selectedBus.driver_name}</p>
                                             </div>
 
-                                            {/* Vehicle Info */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Vehicle Information</h3>
-                                                <div className="grid grid-cols-1 gap-3">
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 uppercase">Vehicle Name</p>
-                                                        <p className="font-medium text-gray-900">{selectedBus.vehicle_name || 'Not specified'}</p>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-xs text-gray-500 uppercase">Number Plate</p>
-                                                        <p className="font-medium text-gray-900 font-mono">{selectedBus.number_plate}</p>
-                                                    </div>
+                                            {/* Details */}
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Make/Model</p>
+                                                    <p className="font-bold text-gray-900 dark:text-white uppercase tracking-tight">{selectedBus.vehicle_name || 'Generic'}</p>
+                                                </div>
+                                                <div className="p-4 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800">
+                                                    <p className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Driver Contact</p>
+                                                    <p className="font-bold text-gray-900 dark:text-white">{selectedBus.contact_phone || 'N/A'}</p>
                                                 </div>
                                             </div>
 
-                                            {/* Contact */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Contact</h3>
-                                                <div>
-                                                    <p className="text-xs text-gray-500 uppercase">Phone</p>
-                                                    <p className="font-medium text-gray-900">{selectedBus.contact_phone || 'No phone number'}</p>
-                                                </div>
-                                            </div>
-
-                                            {/* Shipments using this bus */}
-                                            <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 border-b pb-2">Active Shipments</h3>
-                                                <p className="text-2xl font-bold text-gray-900">
+                                            <div className="p-5 bg-gray-50 dark:bg-slate-800/50 rounded-2xl border border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                                                <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">Active Deliveries</h3>
+                                                <span className="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tighter">
                                                     {shipments.filter(s => s.bus_id === selectedBus.id).length}
-                                                </p>
+                                                </span>
                                             </div>
 
                                             {/* Actions */}
-                                            <div className="pt-4 border-t space-y-3">
-                                                <Button
-                                                    variant="danger"
-                                                    className="w-full"
+                                            <div className="pt-6 border-t border-gray-100 dark:border-slate-800">
+                                                <button
                                                     onClick={() => {
                                                         handleDelete(selectedBus.id, 'bus');
                                                         setSelectedBus(null);
                                                     }}
+                                                    className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-black rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
                                                 >
-                                                    Delete Bus
-                                                </Button>
+                                                    <TrashIcon className="w-4 h-4" />
+                                                    Retire Vehicle
+                                                </button>
                                             </div>
                                         </div>
                                     )}
@@ -497,128 +519,199 @@ export default function LogisticsPage() {
             </div>
 
             {/* Modals */}
-            {
-                isCourierModalOpen && (
-                    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-lg max-w-md w-full p-6">
-                            <div className="flex justify-between mb-4">
-                                <h3 className="text-lg font-bold">Add Courier</h3>
-                                <button onClick={() => setIsCourierModalOpen(false)}><XMarkIcon className="w-6 h-6 text-gray-400" /></button>
+            {isCourierModalOpen && (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in">
+                        <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+                            <div>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Add Courier</h3>
+                                <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mt-0.5">New Partner Entry</p>
                             </div>
-                            <form onSubmit={handleCreateCourier} className="space-y-4">
-                                <InputField label="Company Name" required value={newCourier.company_name || ''} onChange={e => setNewCourier({ ...newCourier, company_name: e.target.value })} />
-                                <InputField label="Contact Details" value={newCourier.contact_details || ''} onChange={e => setNewCourier({ ...newCourier, contact_details: e.target.value })} />
-                                <InputField label="Receipt / Account Details" value={newCourier.receipt_details || ''} onChange={e => setNewCourier({ ...newCourier, receipt_details: e.target.value })} />
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <Button variant="secondary" onClick={() => setIsCourierModalOpen(false)}>Cancel</Button>
-                                    <Button type="submit">Save Courier</Button>
-                                </div>
-                            </form>
+                            <button
+                                onClick={() => setIsCourierModalOpen(false)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
                         </div>
-                    </div>
-                )
-            }
-
-            {
-                isBusModalOpen && (
-                    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-lg max-w-md w-full p-6">
-                            <div className="flex justify-between mb-4">
-                                <h3 className="text-lg font-bold">Add Bus</h3>
-                                <button onClick={() => setIsBusModalOpen(false)}><XMarkIcon className="w-6 h-6 text-gray-400" /></button>
+                        <form onSubmit={handleCreateCourier} className="space-y-6">
+                            <InputField label="Company Name" required value={newCourier.company_name || ''} onChange={e => setNewCourier({ ...newCourier, company_name: e.target.value })} />
+                            <InputField label="Contact Details" value={newCourier.contact_details || ''} onChange={e => setNewCourier({ ...newCourier, contact_details: e.target.value })} />
+                            <InputField label="Receipt / Account Details" value={newCourier.receipt_details || ''} onChange={e => setNewCourier({ ...newCourier, receipt_details: e.target.value })} />
+                            <div className="flex gap-3 pt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsCourierModalOpen(false)}
+                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                >
+                                    Save Courier
+                                </button>
                             </div>
-                            <form onSubmit={handleCreateBus} className="space-y-4">
-                                <InputField label="Driver Name" required value={newBus.driver_name || ''} onChange={e => setNewBus({ ...newBus, driver_name: e.target.value })} />
-                                <InputField label="Number Plate" required value={newBus.number_plate || ''} onChange={e => setNewBus({ ...newBus, number_plate: e.target.value })} />
-                                <InputField label="Vehicle Name (Optional)" value={newBus.vehicle_name || ''} onChange={e => setNewBus({ ...newBus, vehicle_name: e.target.value })} />
-                                <InputField label="Contact Phone" value={newBus.contact_phone || ''} onChange={e => setNewBus({ ...newBus, contact_phone: e.target.value })} />
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <Button variant="secondary" onClick={() => setIsBusModalOpen(false)}>Cancel</Button>
-                                    <Button type="submit">Save Bus</Button>
-                                </div>
-                            </form>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {isBusModalOpen && (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in">
+                        <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+                            <div>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Add Bus</h3>
+                                <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mt-0.5">Fleet Expansion</p>
+                            </div>
+                            <button
+                                onClick={() => setIsBusModalOpen(false)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
                         </div>
-                    </div>
-                )
-            }
-
-            {
-                isShipmentModalOpen && (
-                    <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-                        <div className="bg-white rounded-lg max-w-lg w-full p-6">
-                            <div className="flex justify-between mb-4">
-                                <h3 className="text-lg font-bold">New Shipment</h3>
-                                <button onClick={() => setIsShipmentModalOpen(false)}><XMarkIcon className="w-6 h-6 text-gray-400" /></button>
+                        <form onSubmit={handleCreateBus} className="space-y-6">
+                            <InputField label="Driver Name" required value={newBus.driver_name || ''} onChange={e => setNewBus({ ...newBus, driver_name: e.target.value })} />
+                            <InputField label="Number Plate" required value={newBus.number_plate || ''} onChange={e => setNewBus({ ...newBus, number_plate: e.target.value })} />
+                            <InputField label="Vehicle Name (Optional)" value={newBus.vehicle_name || ''} onChange={e => setNewBus({ ...newBus, vehicle_name: e.target.value })} />
+                            <InputField label="Contact Phone" value={newBus.contact_phone || ''} onChange={e => setNewBus({ ...newBus, contact_phone: e.target.value })} />
+                            <div className="flex gap-3 pt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsBusModalOpen(false)}
+                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                >
+                                    Save Bus
+                                </button>
                             </div>
-                            <form onSubmit={handleCreateShipment} className="space-y-4">
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {isShipmentModalOpen && (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in">
+                        <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
+                            <div>
+                                <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">New Shipment</h3>
+                                <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mt-0.5">Logistics Dispatch</p>
+                            </div>
+                            <button
+                                onClick={() => setIsShipmentModalOpen(false)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
+                            >
+                                <XMarkIcon className="w-6 h-6" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleCreateShipment} className="space-y-6">
+                            <div>
+                                <label className="block text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Shipping Method</label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <label className={`flex items-center justify-center p-4 rounded-2xl border transition-all cursor-pointer ${newShipment.method === 'courier' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-50 dark:bg-slate-800 border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'}`}>
+                                        <input type="radio" value="courier" checked={newShipment.method === 'courier'} onChange={() => setNewShipment({ ...newShipment, method: 'courier', bus_id: undefined })} className="sr-only" />
+                                        <TruckIcon className="w-5 h-5 mr-2" />
+                                        <span className="text-xs font-black uppercase tracking-widest">Courier</span>
+                                    </label>
+                                    <label className={`flex items-center justify-center p-4 rounded-2xl border transition-all cursor-pointer ${newShipment.method === 'bus' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-gray-50 dark:bg-slate-800 border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-700'}`}>
+                                        <input type="radio" value="bus" checked={newShipment.method === 'bus'} onChange={() => setNewShipment({ ...newShipment, method: 'bus', courier_id: undefined })} className="sr-only" />
+                                        <TruckIcon className="w-5 h-5 mr-2 rotate-180" />
+                                        <span className="text-xs font-black uppercase tracking-widest">Bus</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            {newShipment.method === 'courier' ? (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Shipping Method</label>
-                                    <div className="mt-1 flex gap-4">
-                                        <label className="flex items-center">
-                                            <input type="radio" value="courier" checked={newShipment.method === 'courier'} onChange={() => setNewShipment({ ...newShipment, method: 'courier', bus_id: undefined })} className="mr-2" />
-                                            Courier
-                                        </label>
-                                        <label className="flex items-center">
-                                            <input type="radio" value="bus" checked={newShipment.method === 'bus'} onChange={() => setNewShipment({ ...newShipment, method: 'bus', courier_id: undefined })} className="mr-2" />
-                                            Bus
-                                        </label>
-                                    </div>
+                                    <label className="block text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Select Courier</label>
+                                    <select
+                                        className="block w-full p-4 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-bold bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                                        value={newShipment.courier_id || ''}
+                                        onChange={e => setNewShipment({ ...newShipment, courier_id: e.target.value })}
+                                        required
+                                    >
+                                        <option value="">Select Courier...</option>
+                                        {couriers.map(c => <option key={c.id} value={c.id}>{c.company_name}</option>)}
+                                    </select>
                                 </div>
+                            ) : (
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-3">Select Bus</label>
+                                    <select
+                                        className="block w-full p-4 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-bold bg-white dark:bg-slate-800 text-gray-900 dark:text-white"
+                                        value={newShipment.bus_id || ''}
+                                        onChange={e => setNewShipment({ ...newShipment, bus_id: e.target.value })}
+                                        required
+                                    >
+                                        <option value="">Select Bus...</option>
+                                        {buses.map(b => <option key={b.id} value={b.id}>{b.driver_name} ({b.number_plate})</option>)}
+                                    </select>
+                                </div>
+                            )}
 
-                                {newShipment.method === 'courier' ? (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Select Courier</label>
-                                        <select className="mt-1 block w-full p-2 border rounded-md"
-                                            value={newShipment.courier_id || ''}
-                                            onChange={e => setNewShipment({ ...newShipment, courier_id: e.target.value })}
-                                            required
-                                        >
-                                            <option value="">Select Courier...</option>
-                                            {couriers.map(c => <option key={c.id} value={c.id}>{c.company_name}</option>)}
-                                        </select>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700">Select Bus</label>
-                                        <select className="mt-1 block w-full p-2 border rounded-md"
-                                            value={newShipment.bus_id || ''}
-                                            onChange={e => setNewShipment({ ...newShipment, bus_id: e.target.value })}
-                                            required
-                                        >
-                                            <option value="">Select Bus...</option>
-                                            {buses.map(b => <option key={b.id} value={b.id}>{b.driver_name} ({b.number_plate})</option>)}
-                                        </select>
-                                    </div>
-                                )}
-
+                            <div className="grid grid-cols-2 gap-4">
                                 <InputField label="Recipient Name" required value={newShipment.recipient_name || ''} onChange={e => setNewShipment({ ...newShipment, recipient_name: e.target.value })} />
                                 <InputField label="Recipient Phone" required value={newShipment.recipient_phone || ''} onChange={e => setNewShipment({ ...newShipment, recipient_phone: e.target.value })} />
-                                <InputField label="Destination Address" required value={newShipment.recipient_address || ''} onChange={e => setNewShipment({ ...newShipment, recipient_address: e.target.value })} />
+                            </div>
+                            <InputField label="Destination Address" required value={newShipment.recipient_address || ''} onChange={e => setNewShipment({ ...newShipment, recipient_address: e.target.value })} />
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <InputField label="Tracking Number (Optional)" value={newShipment.tracking_number || ''} onChange={e => setNewShipment({ ...newShipment, tracking_number: e.target.value })} />
-                                    <InputField label="Cost" type="number" required value={newShipment.shipping_cost || 0} onChange={e => setNewShipment({ ...newShipment, shipping_cost: parseFloat(e.target.value) })} />
-                                </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <InputField label="Tracking Number (Optional)" value={newShipment.tracking_number || ''} onChange={e => setNewShipment({ ...newShipment, tracking_number: e.target.value })} />
+                                <InputField label="Cost (ZMW)" type="number" required value={newShipment.shipping_cost || 0} onChange={e => setNewShipment({ ...newShipment, shipping_cost: parseFloat(e.target.value) })} />
+                            </div>
 
-                                <div className="flex justify-end gap-3 pt-4">
-                                    <Button variant="secondary" onClick={() => setIsShipmentModalOpen(false)}>Cancel</Button>
-                                    <Button type="submit">Create Shipment</Button>
-                                </div>
-                            </form>
-                        </div>
+                            <div className="flex gap-3 pt-6">
+                                <button
+                                    type="button"
+                                    onClick={() => setIsShipmentModalOpen(false)}
+                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                >
+                                    Create Shipment
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                )
-            }
+                </div>
+            )}
+            Refresh
 
             {/* Confirmation Modal */}
             {confirmationModal && confirmationModal.isOpen && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-                    <div className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 animate-scale-in">
-                        <h3 className="text-xl font-bold text-gray-900 mb-2">{confirmationModal.title}</h3>
-                        <p className="text-gray-600 mb-6">{confirmationModal.message}</p>
-                        <div className="flex justify-end gap-3">
-                            <Button variant="secondary" onClick={() => setConfirmationModal(null)}>Cancel</Button>
-                            <Button onClick={confirmationModal.onConfirm}>Confirm</Button>
+                <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-8 animate-scale-in border border-gray-100 dark:border-slate-800">
+                        <div className="w-16 h-16 bg-red-50 dark:bg-red-900/10 rounded-2xl flex items-center justify-center mb-6">
+                            <TrashIcon className="w-8 h-8 text-red-600 dark:text-red-400" />
+                        </div>
+                        <h3 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight mb-2">{confirmationModal.title}</h3>
+                        <p className="text-gray-500 dark:text-slate-400 font-medium mb-8 leading-relaxed">{confirmationModal.message}</p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setConfirmationModal(null)}
+                                className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmationModal.onConfirm}
+                                className="flex-1 px-6 py-4 bg-red-600 text-white font-black rounded-2xl shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                            >
+                                Confirm
+                            </button>
                         </div>
                     </div>
                 </div>
