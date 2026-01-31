@@ -74,10 +74,24 @@ const DashboardRevenueChart: React.FC<DashboardRevenueChartProps> = ({ revSummar
                                         <div className="w-full flex flex-col items-center relative h-full justify-end">
                                             <div
                                                 style={{ height: `${height}%` }}
-                                                className="w-full max-w-12 bg-gradient-to-t from-indigo-900/50 to-indigo-500 rounded-t-sm transition-all duration-500 group-hover:to-cyan-400 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] relative border-t border-x border-indigo-500/30"
+                                                className="w-full max-w-12 bg-gradient-to-t from-indigo-900/50 to-indigo-500 rounded-t-sm transition-all duration-500 group-hover:to-cyan-400 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] relative border-t border-x border-indigo-500/30 overflow-hidden"
                                             >
                                                 {/* Bar top highlight */}
                                                 <div className="absolute top-0 left-0 right-0 h-[1px] bg-white/50"></div>
+
+                                                {/* LIVE DATA PACKETS (NEW) */}
+                                                <div className="absolute inset-0 pointer-events-none">
+                                                    {[...Array(3)].map((_, packetIdx) => (
+                                                        <div
+                                                            key={packetIdx}
+                                                            className="absolute left-1/2 -translate-x-1/2 w-1.5 h-1.5 bg-cyan-400 rounded-full blur-[2px] animate-data-packet"
+                                                            style={{
+                                                                animationDelay: `${packetIdx * 0.8}s`,
+                                                                bottom: '-10%'
+                                                            }}
+                                                        ></div>
+                                                    ))}
+                                                </div>
                                             </div>
 
                                             <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 text-white text-xs py-2 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-300 z-20 shadow-xl pointer-events-none min-w-[100px] text-center backdrop-blur-xl">
@@ -101,6 +115,17 @@ const DashboardRevenueChart: React.FC<DashboardRevenueChartProps> = ({ revSummar
                     </div>
                 )}
             </div>
+            <style>{`
+                @keyframes data-packet {
+                    0% { bottom: -10%; opacity: 0; transform: translateX(-50%) scale(0.5); }
+                    20% { opacity: 0.8; }
+                    80% { opacity: 0.8; }
+                    100% { bottom: 100%; opacity: 0; transform: translateX(-50%) scale(1.2); }
+                }
+                .animate-data-packet {
+                    animation: data-packet 2s linear infinite;
+                }
+            `}</style>
         </div>
     );
 };
