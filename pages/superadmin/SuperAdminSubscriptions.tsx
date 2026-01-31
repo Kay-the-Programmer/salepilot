@@ -12,7 +12,8 @@ import {
     FilterIcon,
     RefreshIcon,
     PlusIcon,
-    InformationCircleIcon
+    InformationCircleIcon,
+    ChevronRightIcon
 } from '../../components/icons';
 
 // Types
@@ -107,12 +108,11 @@ const SuperAdminSubscriptions: React.FC = () => {
         };
 
         storesData.forEach(store => {
-            switch (store.subscriptionStatus) {
-                case 'active': newStats.active++; break;
-                case 'trial': newStats.trial++; break;
-                case 'past_due': newStats.pastDue++; break;
-                case 'canceled': newStats.canceled++; break;
-            }
+            if (store.subscriptionStatus === 'active') newStats.active++;
+            else if (store.subscriptionStatus === 'trial') newStats.trial++;
+            else if (store.subscriptionStatus === 'past_due') newStats.pastDue++;
+            else if (store.subscriptionStatus === 'canceled') newStats.canceled++;
+
             newStats.totalRevenue += store.totalRevenue || 0;
         });
 
@@ -120,81 +120,57 @@ const SuperAdminSubscriptions: React.FC = () => {
     };
 
     const openPaymentModal = (store?: StoreRow) => {
-        if (store) {
-            setSelectedStore(store);
-            setPaymentForm(prev => ({
-                ...prev,
-                storeId: store.id,
-                amount: store.planName?.includes('Premium') ? '99.00' :
-                    store.planName?.includes('Pro') ? '49.00' : '29.00'
-            }));
-        } else {
-            setSelectedStore(null);
-            setPaymentForm({
-                storeId: '',
-                amount: '',
-                currency: 'ZMW',
-                periodDays: '30',
-                notes: '',
-                paymentMethod: 'manual'
-            });
-        }
+        setSelectedStore(store || null);
+        setPaymentForm({
+            storeId: store?.id || '',
+            amount: '',
+            currency: 'ZMW',
+            periodDays: '30',
+            notes: '',
+            paymentMethod: 'manual'
+        });
         setPaymentModalOpen(true);
     };
 
     const handleRecordPayment = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!paymentForm.storeId || !paymentForm.amount) return;
+        if (!selectedStore) return;
 
         setProcessing(true);
         try {
-            const startDate = new Date();
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() + parseInt(paymentForm.periodDays));
+            // Update the store ID based on selection
+            const payload = {
+                ...paymentForm,
+                storeId: selectedStore.id
+            };
 
-            await api.post('/superadmin/revenue/payments', {
-                storeId: paymentForm.storeId,
-                amount: parseFloat(paymentForm.amount),
-                currency: paymentForm.currency,
-                periodStart: startDate.toISOString().split('T')[0],
-                periodEnd: endDate.toISOString().split('T')[0],
-                notes: paymentForm.notes,
-                paymentMethod: paymentForm.paymentMethod
-            });
-
-            const event = new CustomEvent('notify', {
-                detail: {
-                    type: 'success',
-                    message: 'Payment recorded and subscription extended successfully!'
-                }
-            });
-            window.dispatchEvent(event);
-
+            await api.post("/superadmin/payments/record", payload);
             setPaymentModalOpen(false);
-            setPaymentForm({
-                storeId: '',
-                amount: '',
-                currency: 'ZMW',
-                periodDays: '30',
-                notes: '',
-                paymentMethod: 'manual'
-            });
-
-            loadStores();
-        } catch (error: any) {
-            const event = new CustomEvent('notify', {
-                detail: {
-                    type: 'error',
-                    message: error.message || 'Failed to record payment'
-                }
-            });
-            window.dispatchEvent(event);
+            loadStores(); // Reload to see updates
+        } catch (err: any) {
+            console.error(err);
+            alert("Failed to record payment: " + (err.message || 'Unknown error'));
         } finally {
             setProcessing(false);
         }
     };
 
-    // Filter stores
+    const formatDate = (dateStr?: string | null) => {
+        if (!dateStr) return 'N/A';
+        return new Date(dateStr).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+    };
+
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('en-ZM', {
+            style: 'currency',
+            currency: 'ZMW'
+        }).format(amount);
+    };
+
     const filteredStores = useMemo(() => {
         return stores.filter(store => {
             const matchesSearch = !search ||
@@ -207,7 +183,7 @@ const SuperAdminSubscriptions: React.FC = () => {
             return matchesSearch && matchesStatus;
         }).sort((a, b) => {
             // Sort by status priority
-            const statusOrder = { 'past_due': 0, 'trial': 1, 'active': 2, 'canceled': 3 };
+            const statusOrder: Record<string, number> = { 'past_due': 0, 'trial': 1, 'active': 2, 'canceled': 3 };
             return statusOrder[a.subscriptionStatus] - statusOrder[b.subscriptionStatus];
         });
     }, [stores, search, statusFilter]);
@@ -215,22 +191,22 @@ const SuperAdminSubscriptions: React.FC = () => {
     const getSubscriptionConfig = (status: StoreRow['subscriptionStatus']) => {
         const configs = {
             active: {
-                color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                color: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
                 icon: <CheckCircleIcon className="w-4 h-4" />,
                 label: 'Active'
             },
             trial: {
-                color: 'bg-purple-50 text-purple-700 border-purple-200',
+                color: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20',
                 icon: <ClockIcon className="w-4 h-4" />,
                 label: 'Trial'
             },
             past_due: {
-                color: 'bg-amber-50 text-amber-700 border-amber-200',
+                color: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
                 icon: <ExclamationTriangleIcon className="w-4 h-4" />,
                 label: 'Past Due'
             },
             canceled: {
-                color: 'bg-gray-50 text-gray-700 border-gray-200',
+                color: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:border-gray-700',
                 icon: <XCircleIcon className="w-4 h-4" />,
                 label: 'Canceled'
             }
@@ -238,50 +214,19 @@ const SuperAdminSubscriptions: React.FC = () => {
         return configs[status];
     };
 
-    const formatDate = (dateString?: string | null) => {
-        if (!dateString) return '—';
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = date.getTime() - now.getTime();
-        const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffDays < 0) {
-            return <span className="text-red-600">{Math.abs(diffDays)} days ago</span>;
-        } else if (diffDays === 0) {
-            return <span className="text-amber-600">Today</span>;
-        } else if (diffDays <= 7) {
-            return <span className="text-blue-600">In {diffDays} days</span>;
-        } else {
-            return date.toLocaleDateString('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-            });
-        }
-    };
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-ZM', {
-            style: 'currency',
-            currency: 'ZMW',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(amount);
-    };
-
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-3">
-                            <div className="p-2 bg-indigo-100 text-indigo-600 rounded-lg">
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-lg backdrop-blur-sm">
                                 <CreditCardIcon className="w-6 h-6" />
                             </div>
                             Subscription Management
                         </h1>
-                        <p className="text-gray-600 mt-1">
+                        <p className="text-gray-600 dark:text-slate-400 mt-1">
                             Monitor billing status, track payments, and manage subscriptions
                         </p>
                     </div>
@@ -289,14 +234,14 @@ const SuperAdminSubscriptions: React.FC = () => {
                         <button
                             onClick={loadStores}
                             disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 shadow-sm"
                         >
                             <RefreshIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             Refresh
                         </button>
                         <button
                             onClick={() => openPaymentModal()}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-sm hover:shadow"
+                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-700 border border-transparent text-white font-medium rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all shadow-lg hover:shadow-indigo-500/25"
                         >
                             <PlusIcon className="w-4 h-4" />
                             Record Payment
@@ -306,53 +251,53 @@ const SuperAdminSubscriptions: React.FC = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                        <div className="text-sm text-gray-600">Total Stores</div>
-                        <div className="text-2xl font-bold text-gray-900 mt-1">{stats.total}</div>
+                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                        <div className="text-sm text-gray-600 dark:text-slate-400">Total Stores</div>
+                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.total}</div>
                     </div>
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                        <div className="text-sm text-gray-600">Active</div>
-                        <div className="text-2xl font-bold text-emerald-600 mt-1">{stats.active}</div>
+                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                        <div className="text-sm text-gray-600 dark:text-slate-400">Active</div>
+                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{stats.active}</div>
                     </div>
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                        <div className="text-sm text-gray-600">Trial</div>
-                        <div className="text-2xl font-bold text-purple-600 mt-1">{stats.trial}</div>
+                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                        <div className="text-sm text-gray-600 dark:text-slate-400">Trial</div>
+                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{stats.trial}</div>
                     </div>
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                        <div className="text-sm text-gray-600">Past Due</div>
-                        <div className="text-2xl font-bold text-amber-600 mt-1">{stats.pastDue}</div>
+                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                        <div className="text-sm text-gray-600 dark:text-slate-400">Past Due</div>
+                        <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.pastDue}</div>
                     </div>
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                        <div className="text-sm text-gray-600">Canceled</div>
-                        <div className="text-2xl font-bold text-gray-600 mt-1">{stats.canceled}</div>
+                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                        <div className="text-sm text-gray-600 dark:text-slate-400">Canceled</div>
+                        <div className="text-2xl font-bold text-gray-600 dark:text-slate-500 mt-1">{stats.canceled}</div>
                     </div>
-                    <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-200">
-                        <div className="text-sm text-gray-600">Total Revenue</div>
-                        <div className="text-2xl font-bold text-blue-600 mt-1">
+                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                        <div className="text-sm text-gray-600 dark:text-slate-400">Total Revenue</div>
+                        <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                             {formatCurrency(stats.totalRevenue)}
                         </div>
                     </div>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div className="p-4 border-b border-gray-100">
+                <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
+                    <div className="p-4 border-b border-gray-100 dark:border-white/5">
                         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                             <div className="relative flex-1">
-                                <SearchIcon className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                                <SearchIcon className="w-5 h-5 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
                                 <input
                                     type="text"
                                     placeholder="Search stores by name, email, or ID..."
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
+                                    className="w-full bg-white dark:bg-slate-800 pl-10 pr-4 py-3 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-colors"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                 />
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="flex items-center gap-2">
-                                    <FilterIcon className="w-5 h-5 text-gray-400" />
+                                    <FilterIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                                     <select
-                                        className="border border-gray-300 rounded-lg py-2.5 px-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                                        className="bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg py-2.5 px-3 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none"
                                         value={statusFilter}
                                         onChange={(e) => setStatusFilter(e.target.value as any)}
                                     >
@@ -365,21 +310,21 @@ const SuperAdminSubscriptions: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
                                 >
-                                    <span className="text-sm font-medium text-gray-700">More Filters</span>
-                                    <ChevronDownIcon className={`w-4 h-4 text-gray-500 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                                    <span className="text-sm font-medium text-gray-700 dark:text-slate-300">More Filters</span>
+                                    <ChevronDownIcon className={`w-4 h-4 text-gray-500 dark:text-slate-400 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                                 </button>
                             </div>
                         </div>
 
                         {/* Advanced Filters */}
                         {showFilters && (
-                            <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5 grid grid-cols-1 md:grid-cols-3 gap-4">
                                 {/* Additional filters can be added here */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Plan Type</label>
-                                    <select className="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Plan Type</label>
+                                    <select className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none">
                                         <option value="all">All Plans</option>
                                         <option value="basic">Basic</option>
                                         <option value="pro">Professional</option>
@@ -387,8 +332,8 @@ const SuperAdminSubscriptions: React.FC = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Expiration</label>
-                                    <select className="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Expiration</label>
+                                    <select className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none">
                                         <option value="all">Any Time</option>
                                         <option value="week">Within 7 Days</option>
                                         <option value="month">Within 30 Days</option>
@@ -396,8 +341,8 @@ const SuperAdminSubscriptions: React.FC = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">Payment Status</label>
-                                    <select className="w-full border border-gray-300 rounded-lg py-2 px-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Payment Status</label>
+                                    <select className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg py-2 px-3 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none">
                                         <option value="all">All Payments</option>
                                         <option value="paid">Paid</option>
                                         <option value="unpaid">Unpaid</option>
@@ -410,35 +355,35 @@ const SuperAdminSubscriptions: React.FC = () => {
 
                     {/* Table */}
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
+                            <thead className="bg-gray-50 dark:bg-slate-800/50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                         Store Details
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                         Subscription
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                         Expiration
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                         Revenue
                                     </th>
-                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-100">
+                            <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-100 dark:divide-slate-800">
                                 {loading ? (
                                     Array.from({ length: 5 }).map((_, i) => (
                                         <tr key={i} className="animate-pulse">
-                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-32"></div></td>
-                                            <td className="px-6 py-4"><div className="h-6 bg-gray-200 rounded w-20"></div></td>
-                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-24"></div></td>
-                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 rounded w-16"></div></td>
-                                            <td className="px-6 py-4"><div className="h-8 bg-gray-200 rounded w-20 ml-auto"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-32"></div></td>
+                                            <td className="px-6 py-4"><div className="h-6 bg-gray-200 dark:bg-slate-700 rounded w-20"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-24"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-16"></div></td>
+                                            <td className="px-6 py-4"><div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-20 ml-auto"></div></td>
                                         </tr>
                                     ))
                                 ) : filteredStores.length > 0 ? (
@@ -446,16 +391,16 @@ const SuperAdminSubscriptions: React.FC = () => {
                                         const config = getSubscriptionConfig(store.subscriptionStatus);
 
                                         return (
-                                            <tr key={store.id} className="hover:bg-gray-50 transition-colors group">
+                                            <tr key={store.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group">
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
-                                                        <div className="font-medium text-gray-900 group-hover:text-indigo-600 transition-colors">
+                                                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                                                             {store.name}
                                                         </div>
-                                                        <div className="text-sm text-gray-500 truncate max-w-[200px]">
+                                                        <div className="text-sm text-gray-500 dark:text-slate-400 truncate max-w-[200px]">
                                                             {store.email || 'No email'}
                                                         </div>
-                                                        <div className="text-xs font-mono text-gray-400 mt-1">
+                                                        <div className="text-xs font-mono text-gray-400 dark:text-slate-500 mt-1">
                                                             ID: {store.id.substring(0, 8)}...
                                                         </div>
                                                     </div>
@@ -468,13 +413,13 @@ const SuperAdminSubscriptions: React.FC = () => {
                                                                 {config.label}
                                                             </span>
                                                             {store.planName && (
-                                                                <span className="text-xs text-gray-500">
+                                                                <span className="text-xs text-gray-500 dark:text-slate-400">
                                                                     • {store.planName}
                                                                 </span>
                                                             )}
                                                         </div>
                                                         {store.subscriptionStartedAt && (
-                                                            <div className="text-xs text-gray-500">
+                                                            <div className="text-xs text-gray-500 dark:text-slate-500">
                                                                 Started {formatDate(store.subscriptionStartedAt)}
                                                             </div>
                                                         )}
@@ -482,22 +427,22 @@ const SuperAdminSubscriptions: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
-                                                        <div className="flex items-center gap-1 text-sm">
-                                                            <CalendarIcon className="w-4 h-4 text-gray-400" />
+                                                        <div className="flex items-center gap-1 text-sm dark:text-slate-300">
+                                                            <CalendarIcon className="w-4 h-4 text-gray-400 dark:text-slate-500" />
                                                             {formatDate(store.subscriptionEndsAt)}
                                                         </div>
                                                         {store.subscriptionEndsAt && (
-                                                            <div className="text-xs text-gray-500 mt-1">
+                                                            <div className="text-xs text-gray-500 dark:text-slate-500 mt-1">
                                                                 {new Date(store.subscriptionEndsAt).toLocaleDateString()}
                                                             </div>
                                                         )}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="text-sm font-medium text-gray-900">
+                                                    <div className="text-sm font-medium text-gray-900 dark:text-white">
                                                         {formatCurrency(store.totalRevenue || 0)}
                                                     </div>
-                                                    <div className="text-xs text-gray-500">
+                                                    <div className="text-xs text-gray-500 dark:text-slate-500">
                                                         Lifetime revenue
                                                     </div>
                                                 </td>
@@ -505,14 +450,14 @@ const SuperAdminSubscriptions: React.FC = () => {
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
                                                             onClick={() => openPaymentModal(store)}
-                                                            className="px-3 py-1.5 text-sm font-medium text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1"
+                                                            className="px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors flex items-center gap-1"
                                                         >
                                                             <CreditCardIcon className="w-4 h-4" />
                                                             Record Payment
                                                         </button>
                                                         <button
                                                             onClick={() => {/* View details */ }}
-                                                            className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+                                                            className="p-1.5 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 transition-colors"
                                                             title="View details"
                                                         >
                                                             <InformationCircleIcon className="w-5 h-5" />
@@ -525,7 +470,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                 ) : (
                                     <tr>
                                         <td colSpan={5} className="px-6 py-12 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-400">
+                                            <div className="flex flex-col items-center justify-center text-gray-400 dark:text-slate-500">
                                                 <CreditCardIcon className="w-12 h-12 mb-3 opacity-50" />
                                                 <p className="text-sm font-medium">No subscriptions found</p>
                                                 <p className="text-xs mt-1">
@@ -549,210 +494,203 @@ const SuperAdminSubscriptions: React.FC = () => {
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
                     onClick={() => !processing && setPaymentModalOpen(false)}
                 >
-                    <div
-                        className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[85vh] overflow-hidden animate-in fade-in zoom-in-95 duration-300"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <div className="p-6 border-b border-gray-100">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-900">
-                                        Record Subscription Payment
-                                    </h2>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        Extend subscription by recording a payment
-                                    </p>
-                                </div>
-                                <button
-                                    onClick={() => !processing && setPaymentModalOpen(false)}
-                                    disabled={processing}
-                                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-                                >
-                                    <XCircleIcon className="w-5 h-5" />
-                                </button>
-                            </div>
+                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-300 border border-gray-200 dark:border-slate-800">
+                        <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
+                            <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
+                                <CreditCardIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                                Record Manual Payment
+                            </h3>
+                            <button
+                                onClick={() => !processing && setPaymentModalOpen(false)}
+                                disabled={processing}
+                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50"
+                            >
+                                <XCircleIcon className="w-5 h-5" />
+                            </button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto max-h-[calc(85vh-200px)]">
-                            {selectedStore && (
-                                <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <div className="font-medium text-gray-900">{selectedStore.name}</div>
-                                            <div className="text-sm text-gray-500">
-                                                Current plan: {selectedStore.planName || 'Not specified'}
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-sm font-medium text-gray-900">
-                                                Expires: {formatDate(selectedStore.subscriptionEndsAt)}
-                                            </div>
-                                            <div className="text-xs text-gray-500">
-                                                {new Date(selectedStore.subscriptionEndsAt || '').toLocaleDateString()}
-                                            </div>
-                                        </div>
+                        <div className="p-6 overflow-y-auto max-h-[calc(85vh-200px)] custom-scrollbar">
+                            {!selectedStore ? (
+                                <div className="space-y-4">
+                                    <h4 className="font-medium text-gray-900 dark:text-white">Select a store</h4>
+                                    <div className="relative">
+                                        <SearchIcon className="w-5 h-5 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search stores..."
+                                            className="w-full bg-white dark:bg-slate-800 pl-10 pr-4 py-2 border border-gray-300 dark:border-slate-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none"
+                                            onChange={(e) => {/* Implement local search if needed */ }}
+                                        />
+                                    </div>
+                                    <div className="max-h-60 overflow-y-auto border border-gray-200 dark:border-slate-700 rounded-lg divide-y divide-gray-100 dark:divide-slate-800">
+                                        {stores.slice(0, 10).map(s => (
+                                            <button
+                                                key={s.id}
+                                                onClick={() => setSelectedStore(s)}
+                                                className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-slate-800/50 flex items-center justify-between group transition-colors"
+                                            >
+                                                <div>
+                                                    <div className="font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{s.name}</div>
+                                                    <div className="text-xs text-gray-500 dark:text-slate-400">{s.email}</div>
+                                                </div>
+                                                <ChevronRightIcon className="w-4 h-4 text-gray-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400" />
+                                            </button>
+                                        ))}
                                     </div>
                                 </div>
-                            )}
-
-                            <form onSubmit={handleRecordPayment} className="space-y-5">
-                                {!selectedStore && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Select Store
-                                        </label>
-                                        <select
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
-                                            value={paymentForm.storeId}
-                                            onChange={e => setPaymentForm(prev => ({ ...prev, storeId: e.target.value }))}
-                                            required
-                                            disabled={processing}
+                            ) : (
+                                <div className="space-y-6">
+                                    <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-lg flex items-center justify-between border border-gray-200 dark:border-slate-700">
+                                        <div>
+                                            <div className="text-sm text-gray-500 dark:text-slate-400">Store</div>
+                                            <div className="font-medium text-gray-900 dark:text-white">{selectedStore.name}</div>
+                                        </div>
+                                        <button
+                                            onClick={() => setSelectedStore(null)}
+                                            className="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 font-medium"
                                         >
-                                            <option value="" disabled>Select a store</option>
-                                            {stores.map(s => (
-                                                <option key={s.id} value={s.id}>
-                                                    {s.name} • {s.subscriptionStatus.replace('_', ' ')}
-                                                </option>
-                                            ))}
-                                        </select>
+                                            Change
+                                        </button>
                                     </div>
-                                )}
 
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Amount
-                                        </label>
-                                        <div className="relative">
-                                            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                                                $
-                                            </div>
-                                            <input
-                                                type="number"
-                                                step="0.01"
-                                                min="0"
-                                                className="w-full border border-gray-300 rounded-lg pl-8 pr-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
-                                                value={paymentForm.amount}
-                                                onChange={e => setPaymentForm(prev => ({ ...prev, amount: e.target.value }))}
-                                                required
+                                    <form onSubmit={handleRecordPayment} className="space-y-5">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                                                Duration
+                                            </label>
+                                            <select
+                                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-colors"
+                                                value={paymentForm.periodDays}
+                                                onChange={e => setPaymentForm(prev => ({ ...prev, periodDays: e.target.value }))}
                                                 disabled={processing}
-                                                placeholder="0.00"
+                                            >
+                                                <option value="30">1 Month (30 days)</option>
+                                                <option value="90">3 Months (90 days)</option>
+                                                <option value="180">6 Months (180 days)</option>
+                                                <option value="365">1 Year (365 days)</option>
+                                                <option value="730">2 Years (730 days)</option>
+                                            </select>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                                                    Amount
+                                                </label>
+                                                <div className="relative">
+                                                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-slate-400">
+                                                        $
+                                                    </div>
+                                                    <input
+                                                        type="number"
+                                                        step="0.01"
+                                                        min="0"
+                                                        className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg pl-8 pr-3 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-colors"
+                                                        value={paymentForm.amount}
+                                                        onChange={e => setPaymentForm(prev => ({ ...prev, amount: e.target.value }))}
+                                                        required
+                                                        disabled={processing}
+                                                        placeholder="0.00"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                                                    Currency
+                                                </label>
+                                                <select
+                                                    className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-colors"
+                                                    value={paymentForm.currency}
+                                                    onChange={e => setPaymentForm(prev => ({ ...prev, currency: e.target.value }))}
+                                                    disabled={processing}
+                                                >
+                                                    <option value="ZMW">ZMW (K)</option>
+                                                    <option value="USD">USD ($)</option>
+                                                    <option value="EUR">EUR (€)</option>
+                                                    <option value="GBP">GBP (£)</option>
+                                                    <option value="CAD">CAD ($)</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                                                Payment Method
+                                            </label>
+                                            <select
+                                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-colors"
+                                                value={paymentForm.paymentMethod}
+                                                onChange={e => setPaymentForm(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                                                disabled={processing}
+                                            >
+                                                <option value="manual">Manual Entry</option>
+                                                <option value="stripe">Stripe</option>
+                                                <option value="paypal">PayPal</option>
+                                                <option value="bank_transfer">Bank Transfer</option>
+                                                <option value="cash">Cash</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">
+                                                Notes (Optional)
+                                            </label>
+                                            <textarea
+                                                className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg px-3 py-2.5 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none transition-colors resize-none h-24"
+                                                placeholder="Add any notes about this payment..."
+                                                value={paymentForm.notes}
+                                                onChange={e => setPaymentForm(prev => ({ ...prev, notes: e.target.value }))}
+                                                disabled={processing}
                                             />
                                         </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Currency
-                                        </label>
-                                        <select
-                                            className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
-                                            value={paymentForm.currency}
-                                            onChange={e => setPaymentForm(prev => ({ ...prev, currency: e.target.value }))}
-                                            disabled={processing}
-                                        >
-                                            <option value="ZMW">ZMW (K)</option>
-                                            <option value="USD">USD ($)</option>
-                                            <option value="EUR">EUR (€)</option>
-                                            <option value="GBP">GBP (£)</option>
-                                            <option value="CAD">CAD ($)</option>
-                                        </select>
-                                    </div>
-                                </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Duration
-                                    </label>
-                                    <select
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
-                                        value={paymentForm.periodDays}
-                                        onChange={e => setPaymentForm(prev => ({ ...prev, periodDays: e.target.value }))}
-                                        disabled={processing}
-                                    >
-                                        <option value="30">1 Month (30 days)</option>
-                                        <option value="90">3 Months (90 days)</option>
-                                        <option value="180">6 Months (180 days)</option>
-                                        <option value="365">1 Year (365 days)</option>
-                                        <option value="730">2 Years (730 days)</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Payment Method
-                                    </label>
-                                    <select
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors"
-                                        value={paymentForm.paymentMethod}
-                                        onChange={e => setPaymentForm(prev => ({ ...prev, paymentMethod: e.target.value }))}
-                                        disabled={processing}
-                                    >
-                                        <option value="manual">Manual Entry</option>
-                                        <option value="stripe">Stripe</option>
-                                        <option value="paypal">PayPal</option>
-                                        <option value="bank_transfer">Bank Transfer</option>
-                                        <option value="cash">Cash</option>
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Notes (Optional)
-                                    </label>
-                                    <textarea
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-colors resize-none h-24"
-                                        placeholder="Add any notes about this payment..."
-                                        value={paymentForm.notes}
-                                        onChange={e => setPaymentForm(prev => ({ ...prev, notes: e.target.value }))}
-                                        disabled={processing}
-                                    />
-                                </div>
-
-                                <div className="pt-4">
-                                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-4">
-                                        <div className="flex items-center gap-2 text-blue-700 mb-2">
-                                            <InformationCircleIcon className="w-5 h-5" />
-                                            <span className="font-medium">Summary</span>
-                                        </div>
-                                        <div className="text-sm text-blue-600">
-                                            This will extend the subscription by {paymentForm.periodDays} days from today.
-                                            {paymentForm.amount && (
-                                                <div className="mt-1 font-medium">
-                                                    Total: {paymentForm.currency} {parseFloat(paymentForm.amount).toFixed(2)}
+                                        <div className="pt-4">
+                                            <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800 rounded-lg p-4 mb-4">
+                                                <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 mb-2">
+                                                    <InformationCircleIcon className="w-5 h-5" />
+                                                    <span className="font-medium">Summary</span>
                                                 </div>
-                                            )}
+                                                <div className="text-sm text-blue-600 dark:text-blue-300">
+                                                    This will extend the subscription by {paymentForm.periodDays} days from today.
+                                                    {paymentForm.amount && (
+                                                        <div className="mt-1 font-medium">
+                                                            Total: {paymentForm.currency} {parseFloat(paymentForm.amount).toFixed(2)}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
 
-                                <div className="flex gap-3 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => !processing && setPaymentModalOpen(false)}
-                                        disabled={processing}
-                                        className="flex-1 py-3 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium transition-colors disabled:opacity-50"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={processing || !paymentForm.storeId || !paymentForm.amount}
-                                        className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                    >
-                                        {processing ? (
-                                            <>
-                                                <RefreshIcon className="w-4 h-4 animate-spin" />
-                                                Processing...
-                                            </>
-                                        ) : (
-                                            <>
-                                                <CreditCardIcon className="w-4 h-4" />
-                                                Confirm Payment
-                                            </>
-                                        )}
-                                    </button>
+                                        <div className="flex gap-3 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => !processing && setPaymentModalOpen(false)}
+                                                disabled={processing}
+                                                className="flex-1 py-3 text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                disabled={processing || !paymentForm.storeId || !paymentForm.amount}
+                                                className="flex-1 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            >
+                                                {processing ? (
+                                                    <>
+                                                        <RefreshIcon className="w-4 h-4 animate-spin" />
+                                                        Processing...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <CreditCardIcon className="w-4 h-4" />
+                                                        Confirm Payment
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
-                            </form>
+                            )}
                         </div>
                     </div>
                 </div>

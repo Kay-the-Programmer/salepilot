@@ -6,13 +6,13 @@ const DashboardHeader: React.FC = () => {
     return (
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2">
-                    <UsersIcon className="w-8 h-8 text-indigo-600" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                    <UsersIcon className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
                     Dashboard Overview
                 </h1>
-                <p className="text-gray-600 mt-1">Welcome back, Super Admin. Here's what's happening with your platform.</p>
+                <p className="text-gray-600 dark:text-slate-400 mt-1">Welcome back, Super Admin. Here's what's happening with your platform.</p>
             </div>
-            <div className="text-sm text-gray-500">
+            <div className="text-sm text-gray-500 dark:text-slate-500">
                 Last updated: {new Date().toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',

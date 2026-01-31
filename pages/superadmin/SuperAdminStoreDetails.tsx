@@ -79,10 +79,10 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'active': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            case 'inactive': return 'bg-gray-50 text-gray-700 border-gray-200';
-            case 'suspended': return 'bg-red-50 text-red-700 border-red-200';
-            default: return 'bg-gray-50 text-gray-600';
+            case 'active': return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20';
+            case 'inactive': return 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:border-gray-700';
+            case 'suspended': return 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20';
+            default: return 'bg-gray-50 text-gray-600 dark:bg-slate-800 dark:text-gray-400';
         }
     };
 
@@ -91,19 +91,19 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
     if (!store) return <div className="p-8 text-center text-gray-500">Store not found</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/superadmin/stores')}
-                        className="p-2 hover:bg-white rounded-lg transition-colors text-gray-500 border border-transparent hover:border-gray-200"
+                        className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-gray-500 dark:text-slate-400 border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
                     >
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">{store.name}</h1>
-                        <p className="text-sm text-gray-500">Store ID: {store.id}</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{store.name}</h1>
+                        <p className="text-sm text-gray-500 dark:text-slate-400">Store ID: {store.id}</p>
                     </div>
                     <div className={`ml-auto px-3 py-1 rounded-full text-sm font-medium border ${getStatusColor(store.status)} capitalize`}>
                         {store.status}
@@ -113,46 +113,46 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Main Info */}
                     <div className="md:col-span-2 space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <BuildingStorefrontIcon className="w-5 h-5 text-gray-400" />
+                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <BuildingStorefrontIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                                 Store Information
                             </h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="text-xs text-gray-500 font-medium uppercase">Owner</label>
-                                    <div className="text-sm font-medium text-gray-900 mt-1">{store.ownerName || 'N/A'}</div>
+                                    <label className="text-xs text-gray-500 dark:text-slate-500 font-medium uppercase">Owner</label>
+                                    <div className="text-sm font-medium text-gray-900 dark:text-slate-200 mt-1">{store.ownerName || 'N/A'}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-500 font-medium uppercase">Email</label>
-                                    <div className="text-sm font-medium text-gray-900 mt-1">{store.email || 'N/A'}</div>
+                                    <label className="text-xs text-gray-500 dark:text-slate-500 font-medium uppercase">Email</label>
+                                    <div className="text-sm font-medium text-gray-900 dark:text-slate-200 mt-1">{store.email || 'N/A'}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-500 font-medium uppercase">Phone</label>
-                                    <div className="text-sm font-medium text-gray-900 mt-1">{store.phone || 'N/A'}</div>
+                                    <label className="text-xs text-gray-500 dark:text-slate-500 font-medium uppercase">Phone</label>
+                                    <div className="text-sm font-medium text-gray-900 dark:text-slate-200 mt-1">{store.phone || 'N/A'}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-500 font-medium uppercase">Joined</label>
-                                    <div className="text-sm font-medium text-gray-900 mt-1">{new Date(store.createdAt).toLocaleDateString()}</div>
+                                    <label className="text-xs text-gray-500 dark:text-slate-500 font-medium uppercase">Joined</label>
+                                    <div className="text-sm font-medium text-gray-900 dark:text-slate-200 mt-1">{new Date(store.createdAt).toLocaleDateString()}</div>
                                 </div>
                                 <div className="sm:col-span-2">
-                                    <label className="text-xs text-gray-500 font-medium uppercase">Address</label>
-                                    <div className="text-sm font-medium text-gray-900 mt-1">{store.address || 'N/A'}</div>
+                                    <label className="text-xs text-gray-500 dark:text-slate-500 font-medium uppercase">Address</label>
+                                    <div className="text-sm font-medium text-gray-900 dark:text-slate-200 mt-1">{store.address || 'N/A'}</div>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <EnvelopeIcon className="w-5 h-5 text-gray-400" />
+                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                                <EnvelopeIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                                 Send Notification
                             </h2>
                             <form onSubmit={handleSendNotification} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Title</label>
                                     <input
                                         type="text"
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                                        className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 outline-none"
                                         placeholder="Notification Title"
                                         value={notifTitle}
                                         onChange={e => setNotifTitle(e.target.value)}
@@ -160,9 +160,9 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Message</label>
                                     <textarea
-                                        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none h-32 resize-none"
+                                        className="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 outline-none h-32 resize-none"
                                         placeholder="Message to store owner..."
                                         value={notifMessage}
                                         onChange={e => setNotifMessage(e.target.value)}
@@ -185,36 +185,36 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
 
                     {/* Sidebar Stats */}
                     <div className="space-y-6">
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Subscription</h2>
+                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Subscription</h2>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-500">Status</span>
-                                    <span className={`px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 capitalize`}>
+                                    <span className="text-sm text-gray-500 dark:text-slate-400">Status</span>
+                                    <span className={`px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 capitalize`}>
                                         {store.subscriptionStatus}
                                     </span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-500">Plan</span>
-                                    <span className="text-sm font-medium text-gray-900">{store.plan || 'Standard'}</span>
+                                    <span className="text-sm text-gray-500 dark:text-slate-400">Plan</span>
+                                    <span className="text-sm font-medium text-gray-900 dark:text-white">{store.plan || 'Standard'}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-500">Expires</span>
-                                    <span className="text-sm font-medium text-gray-900">
+                                    <span className="text-sm text-gray-500 dark:text-slate-400">Expires</span>
+                                    <span className="text-sm font-medium text-gray-900 dark:text-white">
                                         {store.subscriptionEndsAt ? new Date(store.subscriptionEndsAt).toLocaleDateString() : 'N/A'}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                            <h2 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Usage Stats</h2>
+                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                            <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Usage Stats</h2>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-500 flex items-center gap-2">
+                                    <span className="text-sm text-gray-500 dark:text-slate-400 flex items-center gap-2">
                                         <UserIcon className="w-4 h-4" /> Users
                                     </span>
-                                    <span className="text-sm font-medium text-gray-900">{store.usersCount || 0}</span>
+                                    <span className="text-sm font-medium text-gray-900 dark:text-white">{store.usersCount || 0}</span>
                                 </div>
                                 {/* Add more stats here if available, e.g. products count, sales count */}
                             </div>
