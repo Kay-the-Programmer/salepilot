@@ -547,3 +547,39 @@ textarea {
 .top-shadow {
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.07);
 }
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(10, 46, 92, 0.3));
+    transform: scale(1);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 16px rgba(10, 46, 92, 0.6));
+    transform: scale(1.05);
+  }
+}
+
+.dark .animate-pulse-glow {
+  animation: pulse-glow-dark 2s infinite ease-in-out;
+}
+
+@keyframes pulse-glow-dark {
+
+  0%,
+  100% {
+    filter: drop-shadow(0 0 8px rgba(255, 127, 39, 0.3));
+    transform: scale(1);
+  }
+
+  50% {
+    filter: drop-shadow(0 0 16px rgba(255, 127, 39, 0.6));
+    transform: scale(1.05);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite ease-in-out;
+}

@@ -1,0 +1,629 @@
+/* ============================================
+   SalePilot Premium Brand Loader
+   Speed-Focused Animation System
+   ============================================ */
+
+/* Brand Colors */
+:root {
+    --sp-navy: #0A2E5C;
+    --sp-navy-light: #154180;
+    --sp-navy-dark: #061C3A;
+    --sp-orange: #FF7F27;
+    --sp-orange-light: #FFA35C;
+    --sp-orange-dark: #E66B1F;
+    --sp-green: #2E8B57;
+    --sp-white: #FFFFFF;
+    --sp-speed-glow: rgba(255, 127, 39, 0.6);
+}
+
+/* ============================================
+   Overlay & Container
+   ============================================ */
+
+.sp-loader-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.dark .sp-loader-overlay {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+/* Subtle background pattern */
+.sp-loader-overlay::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(circle at 2px 2px, rgba(10, 46, 92, 0.03) 1px, transparent 0);
+    background-size: 40px 40px;
+}
+
+.dark .sp-loader-overlay::before {
+    background-image: radial-gradient(circle at 2px 2px, rgba(255, 127, 39, 0.05) 1px, transparent 0);
+}
+
+.sp-loader-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    z-index: 1;
+}
+
+/* ============================================
+   Brand Ring - Premium Circular Container
+   ============================================ */
+
+.sp-brand-ring {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Rotating outer ring glow */
+.sp-ring-glow {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    background: conic-gradient(from 0deg,
+            transparent 0deg,
+            var(--sp-orange) 60deg,
+            transparent 120deg,
+            transparent 240deg,
+            var(--sp-navy) 300deg,
+            transparent 360deg);
+    animation: sp-ring-rotate 2s linear infinite;
+    opacity: 0.8;
+}
+
+.sp-ring-glow::after {
+    content: '';
+    position: absolute;
+    inset: 4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+}
+
+.dark .sp-ring-glow::after {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+}
+
+@keyframes sp-ring-rotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   Main Loader
+   ============================================ */
+
+.sp-loader {
+    position: relative;
+    width: 100px;
+    height: 90px;
+    animation: sp-cart-rush 0.8s ease-in-out infinite;
+}
+
+@keyframes sp-cart-rush {
+
+    0%,
+    100% {
+        transform: translateX(-3px);
+    }
+
+    50% {
+        transform: translateX(3px);
+    }
+}
+
+/* ============================================
+   Speed Lines - Motion Effect
+   ============================================ */
+
+.sp-speed-lines {
+    position: absolute;
+    left: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 35px;
+    height: 50px;
+    overflow: visible;
+}
+
+.sp-speed-line {
+    position: absolute;
+    height: 3px;
+    background: linear-gradient(to left, var(--sp-orange), transparent);
+    border-radius: 2px;
+    animation: sp-speed-streak 0.6s ease-out infinite;
+}
+
+.dark .sp-speed-line {
+    background: linear-gradient(to left, var(--sp-orange-light), transparent);
+}
+
+.sp-speed-line-1 {
+    width: 25px;
+    top: 10px;
+    animation-delay: 0s;
+}
+
+.sp-speed-line-2 {
+    width: 35px;
+    top: 18px;
+    animation-delay: 0.1s;
+}
+
+.sp-speed-line-3 {
+    width: 30px;
+    top: 26px;
+    animation-delay: 0.05s;
+}
+
+.sp-speed-line-4 {
+    width: 20px;
+    top: 34px;
+    animation-delay: 0.15s;
+}
+
+.sp-speed-line-5 {
+    width: 28px;
+    top: 42px;
+    animation-delay: 0.08s;
+}
+
+@keyframes sp-speed-streak {
+    0% {
+        opacity: 0;
+        transform: translateX(15px) scaleX(0.3);
+    }
+
+    30% {
+        opacity: 1;
+        transform: translateX(0) scaleX(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(-20px) scaleX(0.5);
+    }
+}
+
+/* ============================================
+   Shopping Cart
+   ============================================ */
+
+.sp-cart {
+    position: relative;
+    width: 70px;
+    height: 60px;
+    margin-left: 25px;
+    margin-top: 15px;
+}
+
+/* Cart Body */
+.sp-cart-body {
+    position: absolute;
+    width: 60px;
+    height: 45px;
+    background: linear-gradient(145deg, var(--sp-navy-light), var(--sp-navy));
+    border-radius: 0 0 10px 10px;
+    clip-path: polygon(8% 0, 92% 0, 100% 100%, 0% 100%);
+    overflow: hidden;
+    box-shadow:
+        0 8px 32px rgba(10, 46, 92, 0.4),
+        0 2px 8px rgba(10, 46, 92, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark .sp-cart-body {
+    background: linear-gradient(145deg, var(--sp-navy), var(--sp-navy-dark));
+    box-shadow:
+        0 8px 32px rgba(255, 127, 39, 0.2),
+        0 0 60px rgba(255, 127, 39, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Motion Blur Effect */
+.sp-motion-blur {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.15) 20%,
+            rgba(255, 255, 255, 0.3) 50%,
+            rgba(255, 255, 255, 0.15) 80%,
+            transparent 100%);
+    animation: sp-motion-sweep 1s ease-in-out infinite;
+}
+
+@keyframes sp-motion-sweep {
+    0% {
+        transform: translateX(-100%) skewX(-15deg);
+    }
+
+    100% {
+        transform: translateX(200%) skewX(-15deg);
+    }
+}
+
+/* Cart Handle */
+.sp-cart-handle {
+    position: absolute;
+    top: -12px;
+    left: -10px;
+    width: 28px;
+    height: 18px;
+    border: 4px solid var(--sp-navy);
+    border-bottom: none;
+    border-radius: 3px 10px 0 0;
+    transform: rotate(-12deg);
+}
+
+.dark .sp-cart-handle {
+    border-color: var(--sp-navy-light);
+}
+
+/* ============================================
+   Lightning Bolt - SVG Version
+   ============================================ */
+
+.sp-lightning {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 28px;
+    height: 32px;
+}
+
+.sp-bolt-svg {
+    width: 100%;
+    height: 100%;
+    fill: var(--sp-orange);
+    filter: drop-shadow(0 0 8px var(--sp-speed-glow));
+    animation: sp-bolt-flash 0.4s ease-in-out infinite;
+}
+
+@keyframes sp-bolt-flash {
+
+    0%,
+    100% {
+        opacity: 1;
+        filter: drop-shadow(0 0 8px var(--sp-speed-glow));
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.85;
+        filter: drop-shadow(0 0 16px var(--sp-speed-glow)) drop-shadow(0 0 24px rgba(255, 127, 39, 0.4));
+        transform: scale(1.08);
+    }
+}
+
+/* ============================================
+   Wheels with Speed Trail
+   ============================================ */
+
+.sp-wheel-container {
+    position: absolute;
+    bottom: -8px;
+}
+
+.sp-wheel-left {
+    left: 8px;
+}
+
+.sp-wheel-right {
+    right: 8px;
+}
+
+.sp-wheel {
+    width: 14px;
+    height: 14px;
+    background: linear-gradient(145deg, var(--sp-navy-light), var(--sp-navy));
+    border-radius: 50%;
+    position: relative;
+    animation: sp-wheel-spin 0.3s linear infinite;
+    box-shadow: 0 2px 6px rgba(10, 46, 92, 0.3);
+}
+
+.dark .sp-wheel {
+    background: linear-gradient(145deg, var(--sp-navy), var(--sp-navy-dark));
+    box-shadow: 0 2px 8px rgba(255, 127, 39, 0.2);
+}
+
+/* Wheel spokes */
+.sp-wheel::before,
+.sp-wheel::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.sp-wheel::before {
+    width: 2px;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.sp-wheel::after {
+    width: 100%;
+    height: 2px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Wheel motion trail */
+.sp-wheel-trail {
+    position: absolute;
+    left: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 4px;
+    background: linear-gradient(to left, var(--sp-orange), transparent);
+    border-radius: 2px;
+    opacity: 0.6;
+    animation: sp-trail-pulse 0.4s ease-out infinite;
+}
+
+@keyframes sp-wheel-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes sp-trail-pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        width: 20px;
+    }
+
+    50% {
+        opacity: 0.9;
+        width: 28px;
+    }
+}
+
+/* ============================================
+   Energy Particles
+   ============================================ */
+
+.sp-particles {
+    position: absolute;
+    top: 5px;
+    right: -5px;
+    width: 45px;
+    height: 45px;
+    pointer-events: none;
+}
+
+.sp-particle {
+    position: absolute;
+    border-radius: 2px;
+    background: var(--sp-orange);
+    box-shadow: 0 0 6px var(--sp-speed-glow);
+    animation: sp-particle-burst 1.2s ease-out infinite;
+}
+
+.dark .sp-particle {
+    background: var(--sp-orange-light);
+    box-shadow: 0 0 10px var(--sp-speed-glow);
+}
+
+.sp-particle-1 {
+    width: 6px;
+    height: 6px;
+    animation-delay: 0s;
+}
+
+.sp-particle-2 {
+    width: 5px;
+    height: 5px;
+    animation-delay: 0.2s;
+}
+
+.sp-particle-3 {
+    width: 4px;
+    height: 4px;
+    animation-delay: 0.4s;
+}
+
+.sp-particle-4 {
+    width: 5px;
+    height: 5px;
+    animation-delay: 0.6s;
+}
+
+.sp-particle-5 {
+    width: 4px;
+    height: 4px;
+    animation-delay: 0.8s;
+}
+
+.sp-particle-6 {
+    width: 3px;
+    height: 3px;
+    animation-delay: 1.0s;
+}
+
+@keyframes sp-particle-burst {
+    0% {
+        opacity: 0;
+        transform: translate(0, 0) rotate(0deg) scale(0);
+    }
+
+    15% {
+        opacity: 1;
+        transform: translate(5px, -5px) rotate(45deg) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translate(35px, -40px) rotate(180deg) scale(0.3);
+    }
+}
+
+/* ============================================
+   Brand Text
+   ============================================ */
+
+.sp-brand-text {
+    display: flex;
+    align-items: baseline;
+    font-size: 24px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    user-select: none;
+}
+
+.sp-text-sale {
+    color: var(--sp-navy);
+    animation: sp-text-slide-in 0.6s ease-out forwards;
+}
+
+.dark .sp-text-sale {
+    color: #e2e8f0;
+}
+
+.sp-text-pilot {
+    color: var(--sp-orange);
+    animation: sp-text-slide-in 0.6s ease-out 0.1s forwards;
+    opacity: 0;
+}
+
+@keyframes sp-text-slide-in {
+    0% {
+        opacity: 0;
+        transform: translateX(-10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ============================================
+   Progress Bar
+   ============================================ */
+
+.sp-progress-bar {
+    width: 180px;
+    height: 4px;
+    background: rgba(10, 46, 92, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.dark .sp-progress-bar {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.sp-progress-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, var(--sp-navy), var(--sp-orange));
+    border-radius: 4px;
+    animation: sp-progress-sweep 1.5s ease-in-out infinite;
+    transform-origin: left center;
+}
+
+.sp-progress-glow {
+    position: absolute;
+    top: -2px;
+    width: 40px;
+    height: 8px;
+    background: radial-gradient(ellipse, var(--sp-speed-glow), transparent);
+    border-radius: 50%;
+    animation: sp-glow-move 1.5s ease-in-out infinite;
+}
+
+@keyframes sp-progress-sweep {
+    0% {
+        transform: translateX(-100%);
+    }
+
+    50% {
+        transform: translateX(0%);
+    }
+
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes sp-glow-move {
+    0% {
+        left: -40px;
+    }
+
+    50% {
+        left: 70px;
+    }
+
+    100% {
+        left: 180px;
+    }
+}
+
+/* ============================================
+   Performance Optimizations
+   ============================================ */
+
+.sp-loader,
+.sp-ring-glow,
+.sp-speed-line,
+.sp-wheel,
+.sp-bolt-svg,
+.sp-particle,
+.sp-progress-fill,
+.sp-progress-glow {
+    will-change: transform, opacity;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+
+    .sp-loader,
+    .sp-ring-glow,
+    .sp-speed-line,
+    .sp-wheel,
+    .sp-bolt-svg,
+    .sp-particle,
+    .sp-motion-blur,
+    .sp-wheel-trail,
+    .sp-progress-fill,
+    .sp-progress-glow {
+        animation: none;
+    }
+
+    .sp-bolt-svg {
+        filter: drop-shadow(0 0 8px var(--sp-speed-glow));
+    }
+}
