@@ -250,13 +250,13 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
             <div className="fixed bottom-6 right-6 z-40">
                 <button
                     onClick={() => setIsMinimized(false)}
-                    className="group relative flex items-center gap-2 px-5 py-3 bg-slate-900/90 text-white rounded-full shadow-2xl hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 active:scale-95 border border-indigo-500/30 overflow-hidden backdrop-blur-md"
+                    className="group relative flex items-center gap-2 px-5 py-3 bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-white rounded-full shadow-2xl hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 active:scale-95 border border-indigo-500/30 overflow-hidden backdrop-blur-md"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 animate-pulse-slow"></div>
-                    <SparklesIcon className="w-5 h-5 animate-pulse text-indigo-400 relative z-10" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-500/20 dark:via-purple-500/20 dark:to-pink-500/20 animate-pulse-slow"></div>
+                    <SparklesIcon className="w-5 h-5 animate-pulse text-indigo-600 dark:text-indigo-400 relative z-10" />
                     <span className="font-bold text-sm tracking-widest uppercase relative z-10 font-mono">AI CORE</span>
                     <div className="flex gap-1 relative z-10">
-                        <div className="w-1.5 h-1.5 bg-green-400 rounded-full animate-blink shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
+                        <div className="w-1.5 h-1.5 bg-green-500 dark:bg-green-400 rounded-full animate-blink shadow-[0_0_8px_rgba(34,197,94,0.8)] dark:shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
                     </div>
                 </button>
             </div>
@@ -265,45 +265,44 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
 
     return (
         <div className="fixed inset-0 z-50 md:inset-auto md:bottom-6 md:right-6 w-full md:max-w-[450px] animate-slide-up-fade font-sans">
-            <div className="relative bg-slate-900/95 h-full rounded-none md:h-[700px] md:rounded-3xl shadow-[0_0_50px_rgba(79,70,229,0.15)] md:border border-white/10 backdrop-blur-xl overflow-hidden flex flex-col transition-all duration-500">
+            <div className="relative bg-white/95 dark:bg-slate-900/95 h-full rounded-none md:h-[700px] md:rounded-3xl shadow-[0_0_50px_rgba(79,70,229,0.15)] border border-slate-200 dark:border-white/10 backdrop-blur-xl overflow-hidden flex flex-col transition-all duration-500">
 
                 {/* Decorative Elements */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none"></div>
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-500/5 dark:bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none"></div>
 
                 {/* Header */}
-                <div className="relative flex items-center justify-between px-6 py-5 bg-slate-800/40 border-b border-white/5 backdrop-blur-md z-10">
+                <div className="relative flex items-center justify-between px-6 py-5 bg-slate-50/80 dark:bg-slate-800/40 border-b border-slate-200 dark:border-white/5 backdrop-blur-md z-10">
                     <div className="flex items-center gap-3">
                         <div className="relative">
-                            <div className="w-10 h-10 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/20 transition-all">
-                                <SparklesIcon className="w-5 h-5 text-indigo-400" />
+                            <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/20 transition-all">
+                                <SparklesIcon className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
                             </div>
-                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-900 rounded-full flex items-center justify-center border border-white/10">
-                                <BoltIcon className="w-2.5 h-2.5 text-yellow-400 animate-pulse" />
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-white dark:bg-slate-900 rounded-full flex items-center justify-center border border-slate-200 dark:border-white/10">
+                                <BoltIcon className="w-2.5 h-2.5 text-yellow-500 dark:text-yellow-400 animate-pulse" />
                             </div>
                         </div>
                         <div>
-                            <h3 className="font-bold text-base text-white leading-tight tracking-wide font-mono">NEXUS AI</h3>
+                            <h3 className="font-bold text-base text-slate-800 dark:text-white leading-tight tracking-wide font-mono">Ai Assistant</h3>
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="relative flex h-1.5 w-1.5">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
                                 </span>
-                                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest">System Online</p>
                             </div>
                         </div>
                     </div>
 
                     <button
                         onClick={() => setIsMinimized(true)}
-                        className="p-2 hover:bg-white/5 rounded-xl transition-all text-slate-400 hover:text-white active:scale-95 border border-transparent hover:border-white/10"
+                        className="p-2 hover:bg-slate-200/50 dark:hover:bg-white/5 rounded-xl transition-all text-slate-400 hover:text-slate-600 dark:hover:text-white active:scale-95 border border-transparent hover:border-slate-200 dark:hover:border-white/10"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Messages Container */}
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-900/0 relative z-10 scroll-smooth">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar bg-slate-50/50 dark:bg-slate-900/0 relative z-10 scroll-smooth">
                     {messages.map((message) => (
                         <div
                             key={message.id}
@@ -313,12 +312,12 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                                 <div className={`
                                     relative px-5 py-4 text-sm leading-relaxed shadow-lg transition-all backdrop-blur-sm
                                     ${message.type === 'user'
-                                        ? 'bg-indigo-600/90 text-white rounded-2xl rounded-tr-sm border border-indigo-500/50 shadow-indigo-500/10'
-                                        : 'bg-slate-800/60 text-slate-200 border border-white/10 rounded-2xl rounded-tl-sm shadow-black/20'
+                                        ? 'bg-indigo-600 text-white rounded-2xl rounded-tr-sm border border-indigo-500 shadow-indigo-500/20'
+                                        : 'bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-sm shadow-sm dark:shadow-black/20'
                                     }
                                 `}>
                                     {message.type === 'ai' ? (
-                                        <div className="font-mono text-xs md:text-sm prose prose-sm max-w-none prose-invert prose-p:my-1.5 prose-strong:text-indigo-300 prose-ul:pl-4 prose-a:text-indigo-400">
+                                        <div className="font-mono text-xs md:text-sm prose prose-sm max-w-none prose-p:my-1.5 prose-strong:text-indigo-600 dark:prose-strong:text-indigo-300 prose-ul:pl-4 prose-a:text-indigo-500 dark:prose-a:text-indigo-400 dark:prose-invert">
                                             {/* Only type out if it's an AI message that hasn't been typed yet */}
                                             {message.type === 'ai' && !message.isTyped ? (
                                                 <TypingMarkdown
@@ -337,23 +336,23 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                                 {/* Message Actions */}
                                 {message.type === 'ai' && (
                                     <div className="flex items-center gap-2 mt-2 px-1 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-300">
-                                        <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono mr-2">
+                                        <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-wider font-mono mr-2">
                                             {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                         <button
                                             onClick={() => speakMessage(message.content)}
-                                            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-indigo-400 transition-colors"
+                                            className="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                             title={isSpeaking ? "Stop" : "Listen"}
                                         >
                                             {isSpeaking ? <StopIcon className="w-3.5 h-3.5" /> : <SpeakerWaveIcon className="w-3.5 h-3.5" />}
                                         </button>
                                         <button
                                             onClick={() => copyToClipboard(message.content)}
-                                            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-indigo-400 transition-colors"
+                                            className="p-1.5 rounded-lg hover:bg-slate-200/50 dark:hover:bg-white/5 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                             title="Copy"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V17.25m19.125 0V12.75A1.125 1.125 0 0022.5 11.625h-1.5m1.5 0h-5.625c-.621 0-1.125.504-1.125 1.125v5.625c0 .621.504 1.125 1.125 1.125h1.5m1.5 0h1.125c.621 0 1.125-.504 1.125-1.125V11.125M3.375 11.125h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5m0-1.5c0-.621.504-1.125 1.125-1.125h1.5m1.5 0h5.625c.621 0 1.125.504 1.125 1.125v1.5m0-1.5c0-.621.504-1.125-1.125-1.125h-1.5" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 01-1.125-1.125V17.25m19.125 0V12.75A1.125 1.125 0 0022.5 11.625h-1.5m1.5 0h-5.625c-.621 0-1.125.504-1.125 1.125v5.625c0 .621.504 1.125 1.125 1.125h1.5m1.5 0h1.125c.621 0 1.125-.504 1.125-1.125V11.125M3.375 11.125h1.5m-1.5 0c-.621 0-1.125.504-1.125 1.125v1.5m0-1.5c0-.621.504-1.125-1.125-1.125h1.5m1.5 0h5.625c.621 0 1.125.504 1.125 1.125v1.5m0-1.5c0-.621.504-1.125-1.125-1.125h-1.5" />
                                             </svg>
                                         </button>
                                     </div>
@@ -369,7 +368,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                                 <button
                                     key={i}
                                     onClick={() => handleSendMessage(chip)}
-                                    className="px-3 py-1.5 bg-slate-800/50 border border-white/5 text-[11px] font-bold text-slate-400 rounded-lg hover:bg-indigo-500/20 hover:text-indigo-300 hover:border-indigo-500/30 transition-all active:scale-95 font-mono uppercase tracking-wide backdrop-blur-sm"
+                                    className="px-3 py-1.5 bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-white/5 text-[11px] font-bold text-slate-500 dark:text-slate-400 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/20 hover:text-indigo-600 dark:hover:text-indigo-300 hover:border-indigo-200 dark:hover:border-indigo-500/30 transition-all active:scale-95 font-mono uppercase tracking-wide backdrop-blur-sm shadow-sm"
                                 >
                                     {chip}
                                 </button>
@@ -380,16 +379,16 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                     {isTyping && (
                         <div className="flex justify-start animate-fade-in pl-1">
                             <div className="flex items-center gap-3">
-                                <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-slate-800/80 border border-white/10">
-                                    <SparklesIcon className="w-4 h-4 text-indigo-400/80 animate-pulse" />
+                                <div className="relative flex items-center justify-center w-8 h-8 rounded-lg bg-white/80 dark:bg-slate-800/80 border border-slate-200 dark:border-white/10">
+                                    <SparklesIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400/80 animate-pulse" />
                                 </div>
-                                <div className="bg-slate-800/60 border border-white/5 px-4 py-2.5 rounded-xl rounded-tl-none shadow-sm flex items-center gap-3 backdrop-blur-sm">
+                                <div className="bg-white/80 dark:bg-slate-800/60 border border-slate-200 dark:border-white/5 px-4 py-2.5 rounded-xl rounded-tl-none shadow-sm flex items-center gap-3 backdrop-blur-sm">
                                     <div className="flex gap-1">
-                                        <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce duration-[1000ms]"></div>
-                                        <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce duration-[1000ms] delay-150"></div>
-                                        <div className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce duration-[1000ms] delay-300"></div>
+                                        <div className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce duration-[1000ms]"></div>
+                                        <div className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce duration-[1000ms] delay-150"></div>
+                                        <div className="w-1.5 h-1.5 bg-indigo-500 dark:bg-indigo-400 rounded-full animate-bounce duration-[1000ms] delay-300"></div>
                                     </div>
-                                    <span className="text-[10px] font-bold text-indigo-300/80 uppercase tracking-widest font-mono animate-pulse">{typingText}</span>
+                                    <span className="text-[10px] font-bold text-indigo-500/80 dark:text-indigo-300/80 uppercase tracking-widest font-mono animate-pulse">{typingText}</span>
                                 </div>
                             </div>
                         </div>
@@ -398,13 +397,13 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 </div>
 
                 {/* Input Area */}
-                <div className="p-5 bg-slate-900/80 border-t border-white/5 backdrop-blur-xl relative z-20">
-                    <div className="flex items-end gap-2 bg-slate-950/50 p-1.5 rounded-2xl border border-white/10 focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all shadow-inner shadow-black/20">
+                <div className="p-5 bg-white/90 dark:bg-slate-900/80 border-t border-slate-200 dark:border-white/5 backdrop-blur-xl relative z-20">
+                    <div className="flex items-end gap-2 bg-slate-50 dark:bg-slate-950/50 p-1.5 rounded-2xl border border-slate-200 dark:border-white/10 focus-within:border-indigo-400/50 dark:focus-within:border-indigo-500/50 focus-within:ring-1 focus-within:ring-indigo-500/20 transition-all shadow-inner dark:shadow-black/20">
                         <button
                             onClick={isRecording ? stopVoiceRecognition : startVoiceRecognition}
                             className={`p-3 rounded-xl transition-all active:scale-90 ${isRecording
-                                ? 'bg-red-500/20 text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
-                                : 'text-slate-500 hover:text-indigo-400 hover:bg-white/5'
+                                ? 'bg-red-500/10 dark:bg-red-500/20 text-red-500 dark:text-red-400 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
+                                : 'text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/50 dark:hover:bg-white/5'
                                 }`}
                         >
                             <MicrophoneIcon className={`w-5 h-5 ${isRecording ? 'animate-pulse' : ''}`} />
@@ -416,14 +415,14 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyPress}
                             placeholder="Input command..."
-                            className="flex-1 bg-transparent px-2 py-3 text-sm text-white outline-none placeholder:text-slate-600 font-medium resize-none max-h-[150px] custom-scrollbar font-mono"
+                            className="flex-1 bg-transparent px-2 py-3 text-sm text-slate-800 dark:text-white outline-none placeholder:text-slate-400 dark:placeholder:text-slate-600 font-medium resize-none max-h-[150px] custom-scrollbar font-mono"
                             rows={1}
                         />
 
                         <button
                             onClick={() => handleSendMessage()}
                             disabled={!input.trim() || isTyping}
-                            className="bg-gradient-to-br from-indigo-600 to-violet-600 p-3 rounded-xl text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:shadow-none transition-all"
+                            className="bg-gradient-to-br from-indigo-500 to-indigo-600 dark:from-indigo-600 dark:to-violet-600 p-3 rounded-xl text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/40 hover:scale-105 active:scale-95 disabled:opacity-30 disabled:hover:scale-100 disabled:shadow-none transition-all"
                         >
                             <PaperAirplaneIcon className="w-4 h-4 -rotate-45 -translate-y-0.5 translate-x-0.5" />
                         </button>
@@ -444,10 +443,16 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                     background: transparent;
                 }
                 .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(255, 255, 255, 0.1);
+                    background: rgba(0, 0, 0, 0.2);
                     border-radius: 10px;
                 }
+                :global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+                    background: rgba(255, 255, 255, 0.1);
+                }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                    background: rgba(0, 0, 0, 0.3);
+                }
+                :global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: rgba(255, 255, 255, 0.2);
                 }
                 @keyframes blink {
