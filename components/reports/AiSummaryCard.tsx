@@ -17,7 +17,9 @@ interface Message {
     type: 'user' | 'ai';
     content: string;
     timestamp: Date;
+    isTyped?: boolean;
 }
+
 
 interface AiSummaryCardProps {
     reportData: any;
@@ -25,7 +27,7 @@ interface AiSummaryCardProps {
     userName?: string;
 }
 
-const TypingMarkdown: React.FC<{ content: string; speed?: number }> = ({ content, speed = 8 }) => {
+const TypingMarkdown: React.FC<{ content: string; speed?: number; onComplete?: () => void }> = ({ content, speed = 8, onComplete }) => {
     const [displayedContent, setDisplayedContent] = useState('');
     const [index, setIndex] = useState(0);
 
@@ -36,8 +38,10 @@ const TypingMarkdown: React.FC<{ content: string; speed?: number }> = ({ content
                 setIndex(prev => prev + 1);
             }, speed);
             return () => clearTimeout(timeout);
+        } else if (onComplete) {
+            onComplete();
         }
-    }, [index, content, speed]);
+    }, [index, content, speed, onComplete]);
 
     return <ReactMarkdown>{displayedContent}</ReactMarkdown>;
 };
@@ -139,8 +143,10 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 context: {
                     reportData: reportData,
                     userName: userName,
-                    currentDate: new Date().toISOString()
+                    currentDate: new Date().toISOString(),
+                    currency: storeSettings.currency
                 }
+
             });
 
             const aiResponse: Message = {
@@ -164,6 +170,12 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
             setIsTyping(false);
             setTypingText('Thinking...');
         }
+    };
+
+    const handleTypingComplete = (id: string) => {
+        setMessages(prev => prev.map(msg =>
+            msg.id === id ? { ...msg, isTyped: true } : msg
+        ));
     };
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -252,10 +264,10 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
 
     return (
         <div className="fixed bottom-6 right-6 z-40 w-full max-w-[420px] animate-fade-in-up">
-            <div glass-effect="" className="bg-white/95 dark:bg-slate-900/95 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-200/50 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden flex flex-col h-[650px] transition-all duration-500">
+            <div className="bg-white dark:bg-slate-900/95 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.15)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-gray-200 dark:border-slate-700/50 backdrop-blur-xl overflow-hidden flex flex-col h-[650px] transition-all duration-500">
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100/50 dark:border-slate-800/50 bg-white/50 dark:bg-slate-800/30">
+                <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-slate-800/50 bg-white/90 dark:bg-slate-800/30">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
                             <SparklesIcon className="w-6 h-6 text-white" />
@@ -292,14 +304,17 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                                     px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-sm transition-all
                                     ${message.type === 'user'
                                         ? 'bg-indigo-600 text-white rounded-tr-none'
-                                        : 'bg-white/80 dark:bg-slate-800/80 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-slate-700/50 rounded-tl-none'
+                                        : 'bg-white dark:bg-slate-800/80 text-gray-800 dark:text-gray-100 border border-gray-100 dark:border-slate-700/50 rounded-tl-none'
                                     }
                                 `}>
                                     {message.type === 'ai' ? (
                                         <div className="prose prose-sm max-w-none dark:prose-invert prose-p:my-1.5 prose-strong:text-indigo-600 dark:prose-strong:text-indigo-400 prose-ul:pl-4 prose-li:my-1">
-                                            {/* Only type out the very last message if it's new, otherwise show full */}
-                                            {messages.indexOf(message) === messages.length - 1 ? (
-                                                <TypingMarkdown content={message.content} />
+                                            {/* Only type out if it's an AI message that hasn't been typed yet */}
+                                            {message.type === 'ai' && !message.isTyped ? (
+                                                <TypingMarkdown
+                                                    content={message.content}
+                                                    onComplete={() => handleTypingComplete(message.id)}
+                                                />
                                             ) : (
                                                 <ReactMarkdown>{message.content}</ReactMarkdown>
                                             )}
@@ -367,7 +382,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 </div>
 
                 {/* Input Area */}
-                <div className="p-5 bg-white/80 dark:bg-slate-800/80 border-t border-gray-100/5 dark:border-slate-700/50">
+                <div className="p-5 bg-white dark:bg-slate-800/80 border-t border-gray-100 dark:border-slate-700/50">
                     <div className="flex items-end gap-2 bg-gray-50 dark:bg-slate-900/50 p-2 rounded-[20px] border border-gray-200 dark:border-slate-700 focus-within:border-indigo-400 dark:focus-within:border-indigo-500 transition-all">
                         <button
                             onClick={isRecording ? stopVoiceRecognition : startVoiceRecognition}
