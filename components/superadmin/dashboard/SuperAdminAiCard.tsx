@@ -243,10 +243,10 @@ export const SuperAdminAiCard: React.FC<SuperAdminAiCardProps> = ({ userName, pl
                     className="group relative flex items-center gap-2 px-5 py-3 bg-slate-900/95 text-white rounded-full shadow-2xl hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 active:scale-95 border border-indigo-500/40 overflow-hidden backdrop-blur-md"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-600/20 via-purple-600/20 to-pink-600/20 animate-pulse-slow"></div>
-                    <SparklesIcon className="w-5 h-5 animate-pulse text-indigo-400 relative z-10" />
+                    <SparklesIcon className="w-5 h-5 text-indigo-400/80 relative z-10" />
                     <span className="font-bold text-sm tracking-widest uppercase relative z-10 font-mono">PLATFORM AI</span>
                     <div className="flex gap-1 relative z-10">
-                        <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-blink shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
+                        <div className="w-1.5 h-1.5 bg-emerald-500/80 rounded-full shadow-[0_0_5px_rgba(74,222,128,0.3)]"></div>
                     </div>
                 </button>
             </div>
@@ -269,15 +269,14 @@ export const SuperAdminAiCard: React.FC<SuperAdminAiCardProps> = ({ userName, pl
                                 <SparklesIcon className="w-5 h-5 text-white" />
                             </div>
                             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-slate-900 rounded-full flex items-center justify-center border border-indigo-500/30">
-                                <BoltIcon className="w-2.5 h-2.5 text-yellow-400 animate-pulse" />
+                                <BoltIcon className="w-2.5 h-2.5 text-yellow-500/80" />
                             </div>
                         </div>
                         <div>
                             <h3 className="font-bold text-base text-white leading-tight tracking-wide font-mono">Platform Intelligence</h3>
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className="relative flex h-1.5 w-1.5">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500/80 shadow-[0_0_5px_rgba(16,185,129,0.5)]"></span>
                                 </span>
                                 <span className="text-[10px] text-emerald-400 font-mono uppercase tracking-wider">SuperAdmin Mode</span>
                             </div>

@@ -70,10 +70,9 @@ const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                         {/* Shimmer Effect */}
                         <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/5 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
 
-                        {/* LIVE BADGE (NEW) */}
                         <div className="absolute top-4 right-4 flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-950/40 border border-white/5 backdrop-blur-md">
-                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_5px_rgba(74,222,128,0.8)]"></span>
-                            <span className="text-[8px] font-mono text-green-400 font-bold tracking-widest">LIVE</span>
+                            <span className="w-1.5 h-1.5 bg-green-500 rounded-full shadow-[0_0_5px_rgba(34,197,94,0.4)]"></span>
+                            <span className="text-[8px] font-mono text-slate-400 font-bold tracking-widest uppercase">Live</span>
                         </div>
 
                         {/* Corner Tech Accents */}
@@ -88,10 +87,10 @@ const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={handleFlip}
-                                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-indigo-400 transition-all border border-white/5"
+                                        className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-500 hover:text-indigo-400 transition-all border border-white/5"
                                     >
                                         <div className="w-4 h-4 flex items-center justify-center">
-                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-full h-full animate-pulse">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="w-full h-full">
                                                 <path d="M4 4v5h5M20 20v-5h-5M4 9a9 9 0 0114.9-3.1M20 15a9 9 0 01-14.9 3.1" strokeLinecap="round" strokeLinejoin="round" />
                                             </svg>
                                         </div>
@@ -102,30 +101,12 @@ const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                             <div className="flex-1">
                                 <h3 className="text-slate-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-1.5 opacity-80">{title}</h3>
                                 <div className="flex items-baseline gap-2">
-                                    <div className={`text-3xl lg:text-4xl font-bold text-white tracking-tighter ${isPrimary ? 'text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-white' : ''} animate-pulse-subtle`}>
+                                    <div className={`text-3xl lg:text-4xl font-bold text-white tracking-tighter ${isPrimary ? 'text-transparent bg-clip-text bg-gradient-to-r from-white via-indigo-200 to-white' : ''}`}>
                                         {value}
-                                    </div>
-                                    {/* Fluctuating Decimal/Indicator (Simulated) */}
-                                    <div className="text-xs font-mono text-green-400/60 animate-pulse underline-offset-4 decoration-dotted underline">
-                                        .{Math.floor(Math.random() * 99)}%
                                     </div>
                                 </div>
                             </div>
 
-                            {/* MINI OSCILLATOR (NEW) */}
-                            <div className="mt-4 flex items-center gap-2 h-4 overflow-hidden">
-                                {[...Array(12)].map((_, i) => (
-                                    <div
-                                        key={i}
-                                        className="w-1 bg-indigo-500/30 rounded-full transition-all duration-300"
-                                        style={{
-                                            height: `${20 + Math.random() * 80}%`,
-                                            animation: `oscillator-wave 1s ease-in-out infinite`,
-                                            animationDelay: `${i * 0.1}s`
-                                        }}
-                                    ></div>
-                                ))}
-                            </div>
 
                             {subtext && (
                                 <div className="mt-4 text-[9px] text-slate-400 font-mono flex items-center gap-2 bg-black/30 w-fit px-2.5 py-1 rounded-md border border-white/5">
@@ -146,7 +127,7 @@ const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                         <div className="relative z-10 h-full flex flex-col">
                             <h3 className="text-indigo-400 text-[10px] font-mono uppercase tracking-[0.2em] mb-4 border-b border-white/10 pb-2 flex items-center justify-between">
                                 <span className="flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(99,102,241,1)]"></span>
+                                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,1)]"></span>
                                     METRIC_ANALYTICS
                                 </span>
                             </h3>
@@ -232,17 +213,6 @@ const DashboardStatsGrid: React.FC<DashboardStatsGridProps> = ({
                 .backface-hidden { backface-visibility: hidden; }
                 .rotate-y-180 { transform: rotateY(180deg); }
                 .cubic-bezier-spring { transition-timing-function: cubic-bezier(0.68, -0.6, 0.32, 1.6); }
-                @keyframes oscillator-wave {
-                    0%, 100% { transform: scaleY(0.4); opacity: 0.3; }
-                    50% { transform: scaleY(1); opacity: 1; }
-                }
-                @keyframes pulse-subtle {
-                    0%, 100% { opacity: 1; }
-                    50% { opacity: 0.85; }
-                }
-                .animate-pulse-subtle {
-                    animation: pulse-subtle 4s ease-in-out infinite;
-                }
                 .custom-scrollbar::-webkit-scrollbar { width: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }

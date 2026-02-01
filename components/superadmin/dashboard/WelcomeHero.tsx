@@ -134,19 +134,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({
             {/* TYPING REPORT OVERLAY */}
             <div className={`absolute inset-0 z-20 flex flex-col p-8 md:p-12 transition-all duration-1000 ${isTypingReport ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
 
-                {/* MATRIX RAIN BACKGROUND (Premium) */}
-                <div className="absolute inset-0 opacity-[0.05] pointer-events-none overflow-hidden font-mono text-[10px] text-cyan-500 select-none">
-                    <div className="absolute top-0 left-[10%] animate-matrix-fall">01011001010101011001</div>
-                    <div className="absolute top-0 left-[30%] animate-matrix-fall-slow">DEC_7F_RBT_ACTIVE</div>
-                    <div className="absolute top-0 left-[50%] animate-matrix-fall">SYSTEM_OPTIMAL_STABLE</div>
-                    <div className="absolute top-0 left-[70%] animate-matrix-fall-slow">1001011100101010</div>
-                    <div className="absolute top-0 left-[90%] animate-matrix-fall">ACCESS_GRANTED</div>
-                </div>
 
-                {/* SWEEPING GRID (Premium) */}
-                <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                    <div className="w-full h-[2px] bg-cyan-400/20 blur-[2px] absolute top-0 animate-sweep-grid"></div>
-                </div>
 
                 <div className="flex items-center gap-3 mb-6 relative z-10">
                     <div className="flex gap-1.5">
@@ -162,7 +150,7 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({
                     <div className="ml-auto flex items-center gap-2">
                         <div className="flex gap-1">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className={`w-1 h-3 bg-cyan-500/30 rounded-full animate-pulse`} style={{ animationDelay: `${i * 0.2}s` }}></div>
+                                <div key={i} className={`w-1 h-3 bg-cyan-500/20 rounded-full`}></div>
                             ))}
                         </div>
                     </div>
@@ -217,39 +205,12 @@ const WelcomeHero: React.FC<WelcomeHeroProps> = ({
                 .typing-cursor-bold::after {
                     content: '';
                 }
-                @keyframes matrix-fall {
-                    0% { transform: translateY(-100%); opacity: 0; }
-                    10% { opacity: 1; }
-                    90% { opacity: 1; }
-                    100% { transform: translateY(100vh); opacity: 0; }
-                }
-                .animate-matrix-fall {
-                    animation: matrix-fall 10s linear infinite;
-                }
-                .animate-matrix-fall-slow {
-                    animation: matrix-fall 15s linear infinite;
-                }
-                @keyframes sweep-grid {
-                    0% { top: -10%; }
-                    100% { top: 110%; }
-                }
-                .animate-sweep-grid {
-                    animation: sweep-grid 3s linear infinite;
-                }
-                @keyframes progress-loop {
-                    0% { width: 0%; transform: translateX(-100%); }
-                    50% { width: 100%; transform: translateX(0%); }
-                    100% { width: 0%; transform: translateX(100%); }
-                }
-                .animate-progress-loop {
-                    animation: progress-loop 2s ease-in-out infinite;
-                }
                 @keyframes blink {
                     0%, 100% { opacity: 1; }
                     50% { opacity: 0; }
                 }
                 .animate-blink {
-                    animation: blink 1s step-end infinite;
+                    animation: blink 1.5s step-end infinite;
                 }
                 @keyframes fade-in {
                     from { opacity: 0; transform: translateY(10px); }

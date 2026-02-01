@@ -182,42 +182,24 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
 
 
     // MOUSE TRACKING STATE FOR COMMANDER
-    const mousePosRef = useRef({ x: typeof window !== 'undefined' ? window.innerWidth - 100 : 1800, y: 100 });
     const [commanderPos, setCommanderPos] = useState({ x: typeof window !== 'undefined' ? window.innerWidth - 100 : 1800, y: 100 });
 
-    // Smooth follow logic
+    // Simplified follow logic
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
-            mousePosRef.current = { x: e.clientX, y: e.clientY };
+            if (isDraggingCommander || isDraggingScout) return;
+            setCommanderPos({ x: e.clientX - 70, y: e.clientY - 50 });
         };
 
         window.addEventListener('mousemove', handleMouseMove);
-
-        let animationFrameId: number;
-
-        const loop = () => {
-            setCommanderPos(prev => {
-                const targetX = mousePosRef.current.x - 70;
-                const targetY = mousePosRef.current.y - 50;
-                const newX = prev.x + (targetX - prev.x) * 0.05;
-                const newY = prev.y + (targetY - prev.y) * 0.05;
-                return { x: newX, y: newY };
-            });
-            animationFrameId = requestAnimationFrame(loop);
-        };
-
-        loop();
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            cancelAnimationFrame(animationFrameId);
-        };
-    }, []);
+        return () => window.removeEventListener('mousemove', handleMouseMove);
+    }, [isDraggingCommander, isDraggingScout]);
 
     // DRAGGING LOGIC
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (isDraggingCommander) {
-                mousePosRef.current = { x: e.clientX, y: e.clientY };
+                setCommanderPos({ x: e.clientX - 70, y: e.clientY - 50 });
                 setLastInteractionTime(Date.now());
             }
             if (isDraggingScout) {
@@ -454,33 +436,14 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
         setScoutState(prev => ({ ...prev, speech: null, mode: 'IDLE' }));
     };
 
-    const triggerCelebration = async () => {
-        const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
-        setCommanderMood('HAPPY');
-        setCommanderSpeech("Performance spikes detected! Initiating morale protocol.");
-
-        // Dance sequence
-        for (let i = 0; i < 3; i++) {
-            setScoutState(prev => ({ ...prev, y: (getScoutScreenPos().y - 20), mood: 'HAPPY' }));
-            await wait(300);
-            setScoutState(prev => ({ ...prev, y: (getScoutScreenPos().y + 20) }));
-            await wait(300);
-        }
-
-        setScoutState(prev => ({ ...prev, speech: "GO SALE PILOT! GO!", mood: 'HAPPY' }));
-        await wait(2000);
-        setCommanderSpeech(null);
-        setScoutState(prev => ({ ...prev, speech: null }));
-    };
 
     useEffect(() => {
         if (loading || isDraggingCommander || isDraggingScout) return;
         const interval = setInterval(() => {
             const rand = Math.random();
-            if (rand > 0.8) runPatrolMission();
-            else if (rand > 0.6) runSecuritySweep();
-            else if (rand > 0.5 && (revSummary?.totalAmount || 0) > 0) triggerCelebration();
-        }, 45000);
+            if (rand > 0.9) runPatrolMission();
+            else if (rand > 0.8) runSecuritySweep();
+        }, 120000);
         return () => clearInterval(interval);
     }, [loading, isDraggingCommander, isDraggingScout, revSummary]);
 
@@ -500,24 +463,8 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
         <div ref={containerRef} className="min-h-screen bg-slate-950 transition-colors duration-300 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200 relative">
             {/* Background Atmosphere */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-900/10 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-900/10 rounded-full blur-[120px]"></div>
-
-                {/* DATA STREAM PARTICLES */}
-                <div className="absolute inset-0 z-0">
-                    {[...Array(20)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="absolute w-1 h-1 bg-cyan-500/20 rounded-full animate-data-flow blur-[1px]"
-                            style={{
-                                left: `${Math.random() * 100}%`,
-                                top: `${Math.random() * 100}%`,
-                                animationDuration: `${3 + Math.random() * 7}s`,
-                                animationDelay: `${Math.random() * 5}s`
-                            }}
-                        ></div>
-                    ))}
-                </div>
+                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-900/5 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-900/5 rounded-full blur-[120px]"></div>
             </div>
 
             {/* --- ROBOT LAYER --- */}
@@ -525,42 +472,15 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
             {/* ROBOT SHADOWS */}
             <div className="fixed inset-0 pointer-events-none z-0">
                 <div
-                    className="absolute w-24 h-8 bg-black/20 blur-xl rounded-full transition-transform duration-[50ms]"
-                    style={{ transform: `translate3d(${commanderPos.x + 30}px, ${commanderPos.y + 150}px, 0) scaleX(1.5)` }}
+                    className="absolute w-24 h-4 bg-black/10 blur-xl rounded-full"
+                    style={{ transform: `translate3d(${commanderPos.x + 30}px, ${commanderPos.y + 150}px, 0)` }}
                 ></div>
                 <div
-                    className="absolute w-16 h-6 bg-black/20 blur-lg rounded-full transition-all duration-1000"
-                    style={{ transform: `translate3d(${scoutScreenPos.x + 20}px, ${scoutScreenPos.y + 100}px, 0) scaleX(1.5)` }}
+                    className="absolute w-16 h-3 bg-black/10 blur-lg rounded-full"
+                    style={{ transform: `translate3d(${scoutScreenPos.x + 20}px, ${scoutScreenPos.y + 100}px, 0)` }}
                 ></div>
             </div>
 
-            {/* DATA BEAM SVG */}
-            {showDataBeam && !isNaN(scoutScreenPos.x) && !isNaN(commanderPos.x) && (
-                <svg className="fixed inset-0 w-full h-full pointer-events-none z-[45]">
-                    <defs>
-                        <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                            <stop offset="0%" stopColor="#22d3ee" stopOpacity="0" />
-                            <stop offset="50%" stopColor="#22d3ee" stopOpacity="0.8" />
-                            <stop offset="100%" stopColor="#818cf8" stopOpacity="0" />
-                        </linearGradient>
-                        <filter id="beamGlow">
-                            <feGaussianBlur stdDeviation="4" result="blur" />
-                            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                        </filter>
-                    </defs>
-                    <line
-                        x1={(scoutScreenPos.x || 0) + 80}
-                        y1={(scoutScreenPos.y || 0) + 80}
-                        x2={(commanderPos.x || 0) + 70}
-                        y2={(commanderPos.y || 0) + 70}
-                        stroke="url(#beamGradient)"
-                        strokeWidth="4"
-                        strokeDasharray="10,5"
-                        filter="url(#beamGlow)"
-                        className="animate-beam-flow"
-                    />
-                </svg>
-            )}
 
             {/* 1. Commander */}
             <LiveRobot
@@ -613,7 +533,7 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
             {/* MOBILE TECH ACCENT (Simplified Hub) */}
             <div className="lg:hidden fixed top-[10%] left-0 w-full pointer-events-none z-0 opacity-40 overflow-hidden h-40">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[80px]"></div>
-                <div className="absolute top-10 left-[10%] w-32 h-32 border border-indigo-500/20 rounded-full animate-ping [animation-duration:4s]"></div>
+                <div className="absolute top-10 left-[10%] w-32 h-32 border border-indigo-500/10 rounded-full"></div>
             </div>
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 z-10">
@@ -670,19 +590,6 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
             </div>
 
             <style>{`
-                @keyframes data-flow {
-                    0% { transform: translateY(100vh) scale(0); opacity: 0; }
-                    20% { opacity: 0.5; }
-                    80% { opacity: 0.5; }
-                    100% { transform: translateY(-100px) scale(1); opacity: 0; }
-                }
-                .animate-data-flow { animation: data-flow linear infinite; }
-                @keyframes beam-flow {
-                    0% { stroke-dashoffset: 100; opacity: 0.3; }
-                    50% { opacity: 1; }
-                    100% { stroke-dashoffset: 0; opacity: 0.3; }
-                }
-                .animate-beam-flow { animation: beam-flow 1s linear infinite; }
                 @keyframes scrub {
                     0%, 100% { transform: rotate(0deg) translateX(0); }
                     25% { transform: rotate(5deg) translateX(10px); }
