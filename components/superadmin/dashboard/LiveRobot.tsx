@@ -45,13 +45,15 @@ const LiveRobot: React.FC<LiveRobotProps> = ({
         };
 
         const updateTracking = (targetX: number, targetY: number) => {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
+            const centerX = (typeof window !== 'undefined' ? window.innerWidth : 1920) / 2;
+            const centerY = (typeof window !== 'undefined' ? window.innerHeight : 1080) / 2;
 
-            const dx = (targetX - centerX) / (window.innerWidth / 2);
-            const dy = (targetY - centerY) / (window.innerHeight / 2);
+            const dx = (targetX - centerX) / (centerX || 1);
+            const dy = (targetY - centerY) / (centerY || 1);
 
-            setEyeOffset({ x: dx * 8, y: dy * 5 });
+            if (!isNaN(dx) && !isNaN(dy)) {
+                setEyeOffset({ x: dx * 8, y: dy * 5 });
+            }
         };
 
         if (targetPos) {

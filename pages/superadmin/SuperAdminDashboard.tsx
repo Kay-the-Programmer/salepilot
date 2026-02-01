@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { api } from '../../services/api';
-import { RevenueSummary, StoreStats } from '../../types';
+import { RevenueSummary, StoreStats, User } from '../../types';
 
 // Components
 import WelcomeHero from '../../components/superadmin/dashboard/WelcomeHero';
@@ -10,7 +10,7 @@ import SuperAdminAiCard from '../../components/superadmin/dashboard/SuperAdminAi
 import HoloComputeHub from '../../components/superadmin/dashboard/HoloComputeHub';
 import LiveRobot from '../../components/superadmin/dashboard/LiveRobot';
 
-const SuperAdminDashboard: React.FC = () => {
+const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) => {
     const [loading, setLoading] = useState(true);
     const [revSummary, setRevSummary] = useState<RevenueSummary | null>(null);
     const [storeStats, setStoreStats] = useState<StoreStats>({
@@ -54,6 +54,52 @@ const SuperAdminDashboard: React.FC = () => {
     const [isDraggingCommander, setIsDraggingCommander] = useState(false);
     const [isDraggingScout, setIsDraggingScout] = useState(false);
     const [lastInteractionTime, setLastInteractionTime] = useState(Date.now());
+
+    // --- HELPER FUNCTIONS (Defined before use) ---
+
+    function formatCurrency(amount: number) {
+        return new Intl.NumberFormat('en-ZM', {
+            style: 'currency',
+            currency: 'ZMW',
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        }).format(amount);
+    }
+
+    function getScoutScreenPos() {
+        const getNumeric = (val: string | number) => {
+            if (typeof val === 'number') return val;
+            if (typeof val !== 'string') return 0;
+            if (val.includes('calc')) {
+                if (val.includes('100%')) {
+                    const pixels = parseInt(val.match(/\d+px/)?.[0] || '0');
+                    return (typeof window !== 'undefined' ? window.innerWidth : 1920) - pixels;
+                }
+                return 500;
+            }
+            if (val.includes('%')) {
+                return (parseFloat(val) / 100) * (typeof window !== 'undefined' ? window.innerWidth : 1920);
+            }
+            return parseFloat(val) || 0;
+        };
+
+        const currentX = getNumeric(scoutState.x);
+        const currentY = getNumeric(scoutState.y);
+        return { x: currentX, y: currentY };
+    }
+
+    function getRandomMetricComment() {
+        if (!revSummary || !storeStats) return "Systems nominal.";
+
+        const comments = [
+            `Global revenue holding at ${formatCurrency(revSummary.totalAmount)}.`,
+            `Active fleet: ${storeStats.active} stores operational.`,
+            `Platform growth is within projected vectors.`,
+            `Analyzing capital flow... ZMW liquidity is stable.`,
+            `${storeStats.trial} new units in trial phase. Monitoring conversion.`
+        ];
+        return comments[Math.floor(Math.random() * comments.length)];
+    }
 
     // REACHABILITY/PROXIMITY DETECTION
     useEffect(() => {
@@ -134,15 +180,6 @@ const SuperAdminDashboard: React.FC = () => {
         fetchData();
     }, []);
 
-    // Format currency
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-ZM', {
-            style: 'currency',
-            currency: 'ZMW',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(amount);
-    };
 
     // MOUSE TRACKING STATE FOR COMMANDER
     const mousePosRef = useRef({ x: typeof window !== 'undefined' ? window.innerWidth - 100 : 1800, y: 100 });
@@ -220,19 +257,6 @@ const SuperAdminDashboard: React.FC = () => {
         };
     }, [isDraggingCommander, isDraggingScout]);
 
-    // DATA-DRIVEN SPEECH HELPERS
-    const getRandomMetricComment = () => {
-        if (!revSummary || !storeStats) return "Systems nominal.";
-
-        const comments = [
-            `Global revenue holding at ${formatCurrency(revSummary.totalAmount)}.`,
-            `Active fleet: ${storeStats.active} stores operational.`,
-            `Platform growth is within projected vectors.`,
-            `Analyzing capital flow... ZMW liquidity is stable.`,
-            `${storeStats.trial} new units in trial phase. Monitoring conversion.`
-        ];
-        return comments[Math.floor(Math.random() * comments.length)];
-    };
 
     // IDLE BEHAVIOR ENGINE
     useEffect(() => {
@@ -469,12 +493,6 @@ const SuperAdminDashboard: React.FC = () => {
         );
     }
 
-    // Helper to get scout numeric positions
-    const getScoutScreenPos = () => {
-        const currentX = typeof scoutState.x === 'string' ? (parseFloat(scoutState.x) / 100) * (typeof window !== 'undefined' ? window.innerWidth : 1920) : scoutState.x;
-        const currentY = typeof scoutState.y === 'string' ? parseFloat(scoutState.y) : scoutState.y;
-        return { x: currentX, y: currentY };
-    };
 
     const scoutScreenPos = getScoutScreenPos();
 
@@ -517,7 +535,7 @@ const SuperAdminDashboard: React.FC = () => {
             </div>
 
             {/* DATA BEAM SVG */}
-            {showDataBeam && (
+            {showDataBeam && !isNaN(scoutScreenPos.x) && !isNaN(commanderPos.x) && (
                 <svg className="fixed inset-0 w-full h-full pointer-events-none z-[45]">
                     <defs>
                         <linearGradient id="beamGradient" x1="0%" y1="0%" x2="100%" y2="0%">
@@ -531,10 +549,10 @@ const SuperAdminDashboard: React.FC = () => {
                         </filter>
                     </defs>
                     <line
-                        x1={scoutScreenPos.x + 80}
-                        y1={scoutScreenPos.y + 80}
-                        x2={commanderPos.x + 70}
-                        y2={commanderPos.y + 70}
+                        x1={(scoutScreenPos.x || 0) + 80}
+                        y1={(scoutScreenPos.y || 0) + 80}
+                        x2={(commanderPos.x || 0) + 70}
+                        y2={(commanderPos.y || 0) + 70}
                         stroke="url(#beamGradient)"
                         strokeWidth="4"
                         strokeDasharray="10,5"
@@ -545,35 +563,29 @@ const SuperAdminDashboard: React.FC = () => {
             )}
 
             {/* 1. Commander */}
-            <div
-                className="fixed z-50 pointer-events-none hidden lg:block transition-transform duration-[50ms] ease-out will-change-transform"
-                style={{ transform: `translate3d(${commanderPos.x}px, ${commanderPos.y}px, 0)` }}
-            >
-                <LiveRobot
-                    style={{ width: '140px', height: '140px' }}
-                    variant="APPLE"
-                    speech={commanderSpeech}
-                    mood={commanderMood}
-                    isCalling={commanderCalling}
-                    isDragging={isDraggingCommander}
-                    targetPos={showDataBeam ? scoutScreenPos : null}
-                    onClick={() => {
-                        setCommanderMood('HAPPY');
-                        setCommanderSpeech("Keep up the good work!");
-                        setTimeout(() => setCommanderSpeech(null), 2000);
-                    }}
-                    onMouseDown={() => setIsDraggingCommander(true)}
-                />
-            </div>
+            <LiveRobot
+                variant="APPLE"
+                speech={commanderSpeech}
+                mood={commanderMood}
+                isCalling={commanderCalling}
+                isDragging={isDraggingCommander}
+                onMouseDown={() => setIsDraggingCommander(true)}
+                mode={isResearching ? 'RESEARCH' : 'IDLE'}
+                className="fixed transition-all duration-300 z-50 scale-75 md:scale-100"
+                style={{
+                    left: `${commanderPos.x}px`,
+                    top: `${commanderPos.y}px`
+                }}
+            />
 
             {/* 2. Scout */}
             <div
                 ref={scoutRef}
-                className="fixed z-50 pointer-events-none transition-all duration-1000 ease-in-out"
+                className="fixed z-[49] pointer-events-none transition-all duration-1000 ease-in-out"
                 style={{
                     left: scoutState.x,
                     top: scoutState.y,
-                    transform: `scale(${scoutState.scale})`,
+                    transform: `scale(${typeof scoutState.x === 'number' ? scoutState.scale * 0.7 : scoutState.scale})`, // Smaller on mobile if dynamic pos
                 }}
             >
                 <LiveRobot
@@ -585,7 +597,7 @@ const SuperAdminDashboard: React.FC = () => {
                     isLanding={scoutState.isLanding}
                     isDragging={isDraggingScout}
                     targetPos={showDataBeam ? { x: commanderPos.x + 70, y: commanderPos.y + 70 } : null}
-                    className={`drop-shadow-2xl ${scoutState.mode === 'MAINTENANCE' ? 'animate-scrub' : ''}`}
+                    className={`drop-shadow-2xl md:scale-100 scale-75 ${scoutState.mode === 'MAINTENANCE' ? 'animate-scrub' : ''}`}
                     onClick={() => {
                         setScoutState(prev => ({ ...prev, mood: 'HAPPY', speech: "Systems 100% operational!" }));
                         setLastInteractionTime(Date.now());
@@ -596,6 +608,12 @@ const SuperAdminDashboard: React.FC = () => {
                         setScoutState(prev => ({ ...prev, mode: 'IDLE' }));
                     }}
                 />
+            </div>
+
+            {/* MOBILE TECH ACCENT (Simplified Hub) */}
+            <div className="lg:hidden fixed top-[10%] left-0 w-full pointer-events-none z-0 opacity-40 overflow-hidden h-40">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[80px]"></div>
+                <div className="absolute top-10 left-[10%] w-32 h-32 border border-indigo-500/20 rounded-full animate-ping [animation-duration:4s]"></div>
             </div>
 
             <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 z-10">
@@ -637,14 +655,19 @@ const SuperAdminDashboard: React.FC = () => {
                 </div>
             </div>
 
-            <SuperAdminAiCard
-                userName="SuperAdmin"
-                platformStats={{
-                    totalStores: storeStats.total,
-                    activeStores: storeStats.active,
-                    totalRevenue: revSummary?.totalAmount || 0
-                }}
-            />
+            {/* Dashboard AI Card FAB (Optimized for Mobile) */}
+            <div className="fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[51]">
+                {/* Visual Connector to Floating Deck (Mobile) */}
+                <div className="md:hidden absolute bottom-[-10px] right-1/2 translate-x-1/2 w-1 h-10 bg-gradient-to-t from-indigo-500/40 to-transparent"></div>
+                <SuperAdminAiCard
+                    userName={currentUser?.name || 'Commander'}
+                    platformStats={{
+                        totalStores: storeStats.total,
+                        activeStores: storeStats.active,
+                        totalRevenue: revSummary?.totalAmount || 0
+                    }}
+                />
+            </div>
 
             <style>{`
                 @keyframes data-flow {
@@ -679,7 +702,7 @@ const SuperAdminDashboard: React.FC = () => {
                     filter: hue-rotate(90deg) contrast(1.5);
                 }
             `}</style>
-        </div>
+        </div >
     );
 };
 

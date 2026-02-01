@@ -1241,7 +1241,7 @@ export default function Dashboard() {
                     if (subPath === 'notifications') return <SuperAdminNotifications />;
                     if (subPath === 'subscriptions') return <SuperAdminSubscriptions />;
                     if (subPath === 'settings') return <SuperAdminSettings />;
-                    return <SuperAdminDashboard />;
+                    return <SuperAdminDashboard currentUser={currentUser} />;
                 }
                 case 'marketing':
                     return <MarketingPage />;

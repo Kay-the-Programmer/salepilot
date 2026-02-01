@@ -13,7 +13,7 @@ import SystemNotificationModal from './SystemNotificationModal';
 import TourGuide from './TourGuide';
 import { OnboardingProvider } from '../contexts/OnboardingContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
-import { Bars3Icon, BellAlertIcon } from './icons'; // Adjust paths
+import { Bars3Icon, BellAlertIcon, HomeIcon, BuildingStorefrontIcon, EnvelopeIcon, SparklesIcon } from './icons'; // Adjust paths
 import Logo from '../assets/logo.png'; // Adjust paths
 import SocketService from '../services/socketService';
 
@@ -344,6 +344,51 @@ export default function DashboardLayout() {
                             showSnackbar,
                             fetchGlobalData // Expose this so pages can trigger a global refresh if needed
                         }} />
+
+                        {/* SuperAdmin "Command Deck" Mobile Nav */}
+                        {currentUser.role === 'superadmin' && superMode === 'superadmin' && (
+                            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 bg-slate-900/90 backdrop-blur-xl border border-indigo-500/30 rounded-2xl shadow-[0_0_30px_rgba(79,70,229,0.25)] flex items-center justify-around px-2 z-[45] pointer-events-auto overflow-hidden">
+                                {/* Deck Glow */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none"></div>
+
+                                <button
+                                    onClick={() => navigate('/superadmin')}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname === '/superadmin' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                >
+                                    <HomeIcon className="w-5 h-5" />
+                                    <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">HUB</span>
+                                </button>
+
+                                <button
+                                    onClick={() => navigate('/superadmin/stores')}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/stores') ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                >
+                                    <BuildingStorefrontIcon className="w-5 h-5" />
+                                    <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">FLEET</span>
+                                </button>
+
+                                <button
+                                    onClick={() => navigate('/superadmin/notifications')}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/notifications') ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                >
+                                    <EnvelopeIcon className="w-5 h-5" />
+                                    <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">COMMS</span>
+                                </button>
+
+                                <button
+                                    onClick={() => {
+                                        // Trigger AI Chat (it's a component in SuperAdminDashboard, but we might want a global way to open it)
+                                        // For now, let's navigate to dashboard if not there, or we can use a context/state
+                                        if (location.pathname !== '/superadmin') navigate('/superadmin');
+                                        // The AI card will be accessible via its FAB
+                                    }}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/ai') ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                >
+                                    <SparklesIcon className="w-5 h-5" />
+                                    <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">INTEL</span>
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
