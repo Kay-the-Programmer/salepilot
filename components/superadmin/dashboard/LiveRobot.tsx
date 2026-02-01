@@ -136,7 +136,7 @@ const LiveRobot: React.FC<LiveRobotProps> = ({
             style={style}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className={`transition-all duration-500 group ${className}
+            className={`transition-all duration-500 group ${className} relative z-[100]
                 ${isDragging ? 'cursor-grabbing scale-110 rotate-12 animate-wobble' : 'cursor-grab hover:scale-110 active:scale-95'}
                 ${isLanding ? 'animate-landing-squash' : ''}
                 ${mode === 'RESEARCH' ? 'animate-research-wiggle' : ''}
