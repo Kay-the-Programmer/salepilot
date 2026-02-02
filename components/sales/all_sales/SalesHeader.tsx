@@ -35,10 +35,10 @@ export default function SalesHeader({
     return (
         <>
             {/* Desktop Header */}
-            <div className="hidden md:flex items-center justify-between px-6 py-2 sticky top-0 z-30">
+            <div className="hidden dark:bg-slate-900 md:flex items-center justify-between px-6 py-2 sticky top-0 z-30">
                 <div className="flex justify-between w-full">
                     <div>
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white leading-tight">Recent Sales</h1>
+                        <h1 className="text-xl font-bold text-gray-900 dark:text-white uppercase leading-tight">Recent Sales</h1>
                         <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
                             {total} sale{total !== 1 ? 's' : ''} found
                         </p>

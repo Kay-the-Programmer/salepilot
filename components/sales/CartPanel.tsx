@@ -18,6 +18,16 @@ export const CartPanel: React.FC<CartPanelProps> = ({
 }) => {
     const getStepFor = (uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1);
 
+    const [removingItems, setRemovingItems] = React.useState<string[]>([]);
+
+    const handleRemoveWithAnimation = (productId: string) => {
+        setRemovingItems(prev => [...prev, productId]);
+        setTimeout(() => {
+            removeFromCart(productId);
+            setRemovingItems(prev => prev.filter(id => id !== productId));
+        }, 400); // Match CSS animation duration
+    };
+
     return (
         <div id="pos-cart-items" className="hidden md:flex flex-1 overflow-y-auto">
             {
@@ -33,7 +43,11 @@ export const CartPanel: React.FC<CartPanelProps> = ({
                         {cart.map(item => (
                             <div
                                 key={item.productId}
-                                className="px-4 py-4 sm:py-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors duration-200 border-b border-slate-100 dark:border-white/5 last:border-b-0 group"
+                                className={`
+                                    px-4 py-4 sm:py-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors duration-200 border-b border-slate-100 dark:border-white/5 last:border-b-0 group 
+                                    animate-cart-item
+                                    ${removingItems.includes(item.productId) ? 'animate-cart-item-exit' : ''}
+                                `}
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                                     {/* Product Info Section */}
@@ -94,7 +108,7 @@ export const CartPanel: React.FC<CartPanelProps> = ({
 
                                         {/* Remove Button */}
                                         <button
-                                            onClick={() => removeFromCart(item.productId)}
+                                            onClick={() => handleRemoveWithAnimation(item.productId)}
                                             className="p-2.5 sm:p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 active:bg-red-100 dark:active:bg-red-500/20 rounded-lg transition-all duration-150 group-hover:opacity-100 opacity-0 sm:opacity-100 sm:group-hover:opacity-100"
                                             aria-label={`Remove ${item.name} from cart`}
                                         >

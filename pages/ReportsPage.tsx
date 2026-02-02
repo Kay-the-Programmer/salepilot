@@ -311,8 +311,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
             <header className="flex-none bg-white glass-effect px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
                 <div className="flex items-center gap-4">
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white leading-none">Dashboard</h1>
-                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1  tracking-wider font-semibold">{getGreeting()} {user?.name?.split(' ')[0] || "User"}</p>
+                        <h1 className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white leading-none">{getGreeting()} {user?.name?.split(' ')[0] || "User"}</h1>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1  tracking-wider font-semibold">Here's what's happening in your store</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">

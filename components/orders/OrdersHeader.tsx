@@ -18,7 +18,7 @@ const OrdersHeader: React.FC<OrdersHeaderProps> = ({
     return (
         <>
             {/* Desktop Header */}
-            <div className="hidden md:flex items-center justify-between px-6 py-4 bg-slate-50 dark:bg-slate-950 sticky top-0 z-30 transition-colors">
+            <div className="hidden md:flex items-center justify-between px-6 py-4 bg-slate-50 dark:bg-slate-900 sticky top-0 z-30 transition-colors">
                 <div className="flex w-full justify-between items-center">
                     <h1 className="text-xl font-bold text-slate-900 dark:text-white">Online Orders</h1>
 

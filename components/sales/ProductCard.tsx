@@ -252,10 +252,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }
 
     if (variant === 'mobile') {
+        const [isTapping, setIsTapping] = React.useState(false);
+
+        const handleAddToCart = () => {
+            if (isSoldOut) return;
+            setIsTapping(true);
+            addToCart(product);
+            setTimeout(() => setIsTapping(false), 200);
+        };
+
         return (
             <button
-                onClick={() => addToCart(product)}
-                className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 p-1 text-left"
+                onClick={handleAddToCart}
+                className={`
+                    bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 p-1 text-left relative
+                    transition-all duration-200 active:scale-95 h-full flex flex-col
+                    ${isTapping ? 'animate-card-tap ring-2 ring-blue-500 border-transparent shadow-lg shadow-blue-500/20' : ''}
+                    ${cartItem ? 'ring-1 ring-blue-200 dark:ring-blue-500/30' : ''}
+                `}
             >
                 <div className="aspect-square bg-slate-100 dark:bg-white/5 rounded-lg mb-2 overflow-hidden relative">
                     {product.imageUrls?.[0] ? (
@@ -269,12 +283,28 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             <ShoppingCartIcon className="w-8 h-8" />
                         </div>
                     )}
+
+                    {/* Quantity Badge for Mobile */}
+                    {cartItem && (
+                        <div className="absolute top-1 right-1 bg-blue-600 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center shadow-md animate-cart-item">
+                            {cartItem.quantity}
+                        </div>
+                    )}
+
+                    {/* Sold Out Overlay */}
+                    {isSoldOut && (
+                        <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/60 flex items-center justify-center">
+                            <span className="text-[10px] font-bold bg-red-500 text-white px-1.5 py-0.5 rounded">SOLD OUT</span>
+                        </div>
+                    )}
                 </div>
-                <h3 className="font-medium text-sm text-slate-900 dark:text-white line-clamp-2">
-                    {product.name}
-                </h3>
-                <div className="mt-2 font-bold text-slate-900 dark:text-white">
-                    {formatCurrency(product.price, storeSettings)}
+                <div className="px-1 pb-1">
+                    <h3 className="font-medium text-xs text-slate-800 dark:text-gray-200 line-clamp-1 leading-tight">
+                        {product.name}
+                    </h3>
+                    <div className="mt-1 font-bold text-xs text-slate-900 dark:text-white">
+                        {formatCurrency(product.price, storeSettings)}
+                    </div>
                 </div>
             </button>
         );

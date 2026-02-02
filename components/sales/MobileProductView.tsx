@@ -1,5 +1,5 @@
 import React from 'react';
-import { Product, StoreSettings } from '../../types';
+import { Product, StoreSettings, CartItem } from '../../types';
 import {
     GridIcon,
     MagnifyingGlassIcon,
@@ -7,11 +7,12 @@ import {
     BellAlertIcon
 } from '../icons';
 import logo from '../../assets/logo.png';
-import { ProductCard } from './ProductCard'; // Assuming ProductCard is in the same directory
+import { ProductCard } from './ProductCard';
 
 interface MobileProductViewProps {
     isOpen: boolean;
     products: Product[];
+    cart: CartItem[];
     storeSettings: StoreSettings;
     addToCart: (product: Product) => void;
     searchTerm: string;
@@ -23,6 +24,7 @@ interface MobileProductViewProps {
 export const MobileProductView: React.FC<MobileProductViewProps> = ({
     isOpen,
     products,
+    cart,
     storeSettings,
     addToCart,
     searchTerm,
@@ -85,17 +87,29 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
             {/* Mobile Products Grid */}
             <div id="pos-mobile-product-list" className="p-4 pb-24">
                 <div className="grid grid-cols-2 gap-3">
-                    {products.slice(0, 20).map(product => (
-                        <ProductCard
+                    {products.slice(0, 30).map((product, index) => (
+                        <div
                             key={product.id}
-                            product={product}
-                            storeSettings={storeSettings}
-                            addToCart={addToCart}
-                            variant="mobile"
-                            onLowStockAlert={() => { }} // Not used in mobile view currently
-                        />
+                            className="animate-staggered-fade-in flex flex-col"
+                            style={{ animationDelay: `${index * 0.05}s` }}
+                        >
+                            <ProductCard
+                                product={product}
+                                cartItem={cart.find(item => item.productId === product.id)}
+                                storeSettings={storeSettings}
+                                addToCart={addToCart}
+                                variant="mobile"
+                                onLowStockAlert={() => { }} // Not used in mobile view currently
+                            />
+                        </div>
                     ))}
                 </div>
+                {products.length === 0 && (
+                    <div className="text-center py-12">
+                        <MagnifyingGlassIcon className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+                        <p className="text-slate-600 dark:text-gray-400">No products found</p>
+                    </div>
+                )}
             </div>
         </div>
     );

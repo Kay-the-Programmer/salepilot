@@ -212,13 +212,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
         if (stockInCart + step <= availableStock + 1e-9) {
             if (existingItem) {
                 const newQty = Math.min(availableStock, roundQty(existingItem.quantity + step));
-                setCart(cart.map(item => item.productId === product.id
-                    ? { ...item, quantity: newQty }
-                    : item));
+                // Option B: Move to top and update quantity
+                setCart([
+                    { ...existingItem, quantity: newQty },
+                    ...cart.filter(item => item.productId !== product.id)
+                ]);
                 showSnackbar(`Added another "${product.name}" to cart`, 'success');
             } else {
+                // Prepend new item to the top
                 setCart([
-                    ...cart,
                     {
                         productId: product.id,
                         name: product.name,
@@ -228,7 +230,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         stock: availableStock,
                         unitOfMeasure: product.unitOfMeasure,
                         costPrice: product.costPrice,
-                    }
+                    },
+                    ...cart
                 ]);
                 showSnackbar(`Added "${product.name}" to cart`, 'success');
             }
@@ -757,6 +760,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 <MobileProductView
                     isOpen={activeTab === 'products'}
                     products={filteredProducts}
+                    cart={cart}
                     storeSettings={storeSettings}
                     addToCart={addToCart}
                     searchTerm={searchTerm}

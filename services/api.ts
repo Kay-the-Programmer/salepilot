@@ -154,7 +154,17 @@ async function applyOptimisticUpdate(endpoint: string, method: string, body: any
   try {
     if (method === 'POST') {
       const tempId = body.id || `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const item = { ...body, id: tempId, _pending: true };
+
+      const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+      const currentStoreId = currentUser?.currentStoreId;
+
+      const item: any = { ...body, id: tempId, _pending: true };
+
+      // Inject storeId for store-scoped data
+      if (currentStoreId && !GLOBAL_IDB_STORES.includes(storeName)) {
+        item.storeId = currentStoreId;
+      }
+
       await dbService.put(storeName, item);
       return tempId;
     } else if (method === 'PUT' || method === 'PATCH') {
@@ -179,6 +189,9 @@ async function applyOptimisticUpdate(endpoint: string, method: string, body: any
     console.warn('Optimistic update failed:', err);
   }
 }
+
+// Stores that should not be filtered by storeId (global data)
+const GLOBAL_IDB_STORES = ['marketStores', 'marketProducts', 'marketRequests', 'users'];
 
 // Mapping of API endpoints to IndexedDB stores for automatic caching
 const ENDPOINT_TO_STORE: Record<string, string> = {
@@ -214,7 +227,16 @@ export const api = {
         const settings = await dbService.get<T>('settings', currentUser?.currentStoreId || 'default');
         if (settings) return settings;
       } else {
-        const cached = await dbService.getAll<any>(cacheStore);
+        let cached = await dbService.getAll<any>(cacheStore);
+
+        // Filter by storeId for store-specific collections
+        const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+        const currentStoreId = currentUser?.currentStoreId;
+
+        if (currentStoreId && cached && !GLOBAL_IDB_STORES.includes(cacheStore)) {
+          cached = cached.filter(item => item.storeId === currentStoreId);
+        }
+
         if (cached && cached.length > 0) return cached as unknown as T;
       }
     }
@@ -228,7 +250,18 @@ export const api = {
           const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
           dbService.put('settings', data, currentUser?.currentStoreId || 'default');
         } else if (Array.isArray(data)) {
-          dbService.bulkPut(cacheStore, data);
+          // Identify current store to tag data
+          const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+          const currentStoreId = currentUser?.currentStoreId;
+
+          let dataToCache: any = data;
+
+          // Inject storeId if we are in a specific store context and not a global store
+          if (currentStoreId && !GLOBAL_IDB_STORES.includes(cacheStore)) {
+            dataToCache = (data as any[]).map(item => ({ ...item, storeId: currentStoreId }));
+          }
+
+          dbService.bulkPut(cacheStore, dataToCache);
         }
       }
 
@@ -241,7 +274,17 @@ export const api = {
           const settings = await dbService.get<T>('settings', currentUser?.currentStoreId || 'default');
           if (settings) return settings;
         } else {
-          const cached = await dbService.getAll<any>(cacheStore);
+          let cached = await dbService.getAll<any>(cacheStore);
+
+          // Filter by storeId for store-specific collections to avoid mixing data
+          // GLOBAL_IDB_STORES are excluded from filtering
+          const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+          const currentStoreId = currentUser?.currentStoreId;
+
+          if (currentStoreId && cached && !GLOBAL_IDB_STORES.includes(cacheStore)) {
+            cached = cached.filter(item => item.storeId === currentStoreId);
+          }
+
           if (cached && cached.length > 0) return cached as unknown as T;
         }
       }

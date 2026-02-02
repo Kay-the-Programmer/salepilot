@@ -393,8 +393,8 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                                 {/* Right Column: Sale Details (Desktop) */}
                                 {selectedSale && (
-                                    <div className="hidden xl:flex w-[450px] flex-col bg-slate-50 dark:bg-slate-900/50 border-l border-gray-200 dark:border-white/10 shadow-sm overflow-hidden animate-fade-in-right" glass-effect="">
-                                        <div className="p-2 px-4 glass-effect dark:bg-slate-800/50 flex justify-between items-center flex-none">
+                                    <div className="hidden xl:flex w-[450px] flex-col bg-slate-50 dark:bg-slate-900 border-l border-gray-200 dark:border-white/10 shadow-sm overflow-hidden animate-fade-in-right" glass-effect="">
+                                        <div className="p-2 px-4 glass-effect  flex justify-between items-center flex-none">
                                             <h3 className="font-bold text-gray-900 dark:text-white">Sale Details</h3>
                                             <button
                                                 onClick={() => setSelectedSale(null)}

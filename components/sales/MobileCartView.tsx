@@ -86,6 +86,16 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
     const isMobileMoney = (selectedPaymentMethod?.toLowerCase().includes('mobile') || selectedPaymentMethod?.toLowerCase().includes('lenco') || selectedPaymentMethod?.toLowerCase().includes('mtn') || selectedPaymentMethod?.toLowerCase().includes('airtel'));
 
 
+    const [removingItems, setRemovingItems] = React.useState<string[]>([]);
+
+    const handleRemoveWithAnimation = (productId: string) => {
+        setRemovingItems(prev => [...prev, productId]);
+        setTimeout(() => {
+            removeFromCart(productId);
+            setRemovingItems(prev => prev.filter(id => id !== productId));
+        }, 400); // Match CSS animation duration
+    };
+
     return (
         <div className={`md:hidden fixed inset-0 bg-white dark:bg-slate-900 z-50 transition-transform duration-300 flex flex-col ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
             {/* Mobile Cart Header */}
@@ -146,7 +156,14 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                             {/* Items List */}
                             <div className="p-4 space-y-4">
                                 {cart.map(item => (
-                                    <div key={item.productId} className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow">
+                                    <div
+                                        key={item.productId}
+                                        className={`
+                                            bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow 
+                                            animate-cart-item
+                                            ${removingItems.includes(item.productId) ? 'animate-cart-item-exit' : ''}
+                                        `}
+                                    >
                                         <div className="flex justify-between items-start mb-4">
                                             <div>
                                                 <h4 className="font-bold text-slate-800 dark:text-white text-base">{item.name}</h4>
@@ -176,7 +193,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                 </button>
                                             </div>
                                             <button
-                                                onClick={() => removeFromCart(item.productId)}
+                                                onClick={() => handleRemoveWithAnimation(item.productId)}
                                                 className="text-slate-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
                                                 title="Remove item"
                                             >

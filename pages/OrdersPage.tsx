@@ -182,7 +182,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     }), [orders, total]);
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
 
             <OrdersHeader
                 searchTerm={searchTerm}
@@ -203,7 +203,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
                 <div className="flex-1 flex overflow-hidden p-0">
                     {/* Orders List Content */}
-                    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-950">
+                    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-900">
                         <div className="flex-1 overflow-y-auto premium-scrollbar p-0">
                             <OrdersMetrics
                                 stats={stats}
@@ -233,8 +233,8 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
                     {/* Desktop Sideview */}
                     {selectedOrder && (
-                        <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-950 border-l border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-slide-in-right">
-                            <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-950 flex items-center justify-between bg-white dark:bg-slate-950 sticky top-0 z-20">
+                        <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-slide-in-right">
+                            <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-20">
                                 <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Order Details</h2>
                                 <button
                                     onClick={() => setSelectedOrder(null)}

@@ -161,50 +161,50 @@ export default function LogisticsPage() {
     return (
         <div className="p-0 h-full flex flex-col bg-gray-50 dark:bg-slate-950 ">
             {/* Header */}
-            <header className="dark:bg-slate-950 backdrop-blur-md sticky top-0 z-10 p-2 ">
+            <header className="dark:bg-slate-900 backdrop-blur-md sticky top-0 z-10 p-2 ">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
                         <div className="p-3 text-blue-600 dark:shadow-none">
                             <TruckIcon className="w-8 h-8" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Logistics</h1>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">Logistics</h1>
                             <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Fleet & Shipment Management</p>
                         </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                        <div className="bg-gray-100/80 dark:bg-slate-800/80 p-1 rounded-xl flex text-xs font-bold w-full md:w-auto overflow-x-auto">
+                        <div className="bg-gray-200/80 dark:bg-slate-800/80 gap-1 p-1 rounded-xl flex text-xs font-bold w-full md:w-auto overflow-x-auto">
                             <button
                                 onClick={() => handleTabChange('shipments')}
-                                className={`px-5 py-2.5 rounded-lg transition-all whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'shipments' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
+                                className={`px-5 py-2.5 rounded-lg transition-all  whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'shipments' ? 'bg-white dark:bg-slate-700 shadow-lg text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
                             >
                                 Shipments
                             </button>
                             <button
                                 onClick={() => handleTabChange('couriers')}
-                                className={`px-5 py-2.5 rounded-lg transition-all whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'couriers' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
+                                className={`px-5 py-2.5 rounded-lg transition-all  whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'couriers' ? 'bg-white dark:bg-slate-700 shadow-lg text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
                             >
                                 Couriers
                             </button>
                             <button
                                 onClick={() => handleTabChange('buses')}
-                                className={`px-5 py-2.5 rounded-lg transition-all whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'buses' ? 'bg-white dark:bg-slate-700 shadow-sm text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
+                                className={`px-5 py-2.5 rounded-lg transition-all  whitespace-nowrap uppercase tracking-widest text-[10px] ${activeTab === 'buses' ? 'bg-white dark:bg-slate-700 shadow-lg text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-slate-400 hover:text-gray-900 dark:hover:text-slate-200'}`}
                             >
                                 Buses
                             </button>
                         </div>
 
                         {/* View Toggle */}
-                        <div className="bg-gray-100/80 dark:bg-slate-800/80 p-1 rounded-xl">
+                        <div className="">
                             <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
                         </div>
 
-                        <div className="flex gap-2 w-full sm:w-auto">
+                        <div className="flex gap-2 w-full sm:w-auto ">
                             {activeTab === 'shipments' && (
                                 <button
                                     onClick={() => setIsShipmentModalOpen(true)}
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     New Shipment
@@ -213,7 +213,7 @@ export default function LogisticsPage() {
                             {activeTab === 'couriers' && (
                                 <button
                                     onClick={() => setIsCourierModalOpen(true)}
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     Add Courier
@@ -222,7 +222,7 @@ export default function LogisticsPage() {
                             {activeTab === 'buses' && (
                                 <button
                                     onClick={() => setIsBusModalOpen(true)}
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2.5 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600/90 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     Add Bus
@@ -236,7 +236,7 @@ export default function LogisticsPage() {
             {/* Content - Split Layout */}
             <div className="flex-1 flex gap-1 overflow-hidden">
                 {/* Main List/Grid Area */}
-                <div className={`${isDetailPaneOpen ? 'hidden md:block' : ''} flex-1 overflow-auto bg-white/50 dark:bg-slate-900/50 p-2 transition-all custom-scrollbar`}>
+                <div className={`${isDetailPaneOpen ? 'hidden md:block' : ''} flex-1 overflow-auto bg-white/50 dark:bg-slate-900 p-2 transition-all custom-scrollbar`}>
                     {activeTab === 'shipments' && (
                         <ShipmentList
                             shipments={shipments}

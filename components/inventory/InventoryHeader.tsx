@@ -57,7 +57,7 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     }, []);
 
     return (
-        <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-white/10 hidden md:block">
+        <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 hidden md:block">
             <Header
                 title={activeTab === 'products' ? 'Products' : 'Categories'}
                 searchTerm={searchTerm}
