@@ -43,11 +43,11 @@ export default function NotificationDropdown({ notifications, onMarkAsRead, onVi
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
             >
-                <Menu.Items className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right divide-y divide-gray-100 rounded-xl bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
-                    <div className="px-4 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                        <p className="text-sm font-semibold text-gray-900">Notifications</p>
+                <Menu.Items className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right divide-y divide-gray-100 dark:divide-slate-700 rounded-xl bg-white dark:bg-slate-900 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden">
+                    <div className="px-4 py-3 bg-gray-50 dark:bg-slate-800 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
+                        <p className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</p>
                         {unreadCount > 0 && (
-                            <span className="inline-flex items-center rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-medium text-indigo-800">
+                            <span className="inline-flex items-center rounded-full bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 text-xs font-medium text-indigo-800 dark:text-indigo-300">
                                 {unreadCount} New
                             </span>
                         )}
@@ -55,7 +55,7 @@ export default function NotificationDropdown({ notifications, onMarkAsRead, onVi
                     <div className="max-h-96 overflow-y-auto">
                         {recentNotifications.length === 0 ? (
                             <div className="p-6 text-center">
-                                <p className="text-sm text-gray-500">No notifications yet.</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400">No notifications yet.</p>
                             </div>
                         ) : (
                             <div>
@@ -65,21 +65,21 @@ export default function NotificationDropdown({ notifications, onMarkAsRead, onVi
                                             <div
                                                 onClick={() => handleNotificationClick(notification)}
                                                 className={`
-                                                    ${active ? 'bg-gray-50' : ''}
-                                                    ${!notification.isRead ? 'bg-indigo-50/50' : ''}
+                                                    ${active ? 'bg-gray-50 dark:bg-slate-800' : ''}
+                                                    ${!notification.isRead ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}
                                                     block px-4 py-3 cursor-pointer transition-colors border-l-4
                                                     ${!notification.isRead ? 'border-indigo-500' : 'border-transparent'}
                                                 `}
                                             >
                                                 <div className="flex justify-between items-start mb-1">
-                                                    <p className={`text-sm font-medium ${!notification.isRead ? 'text-gray-900' : 'text-gray-700'}`}>
+                                                    <p className={`text-sm font-medium ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>
                                                         {notification.title}
                                                     </p>
-                                                    <p className="text-xs text-gray-400 whitespace-nowrap ml-2">
+                                                    <p className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap ml-2">
                                                         {new Date(notification.createdAt).toLocaleDateString()}
                                                     </p>
                                                 </div>
-                                                <p className="text-xs text-gray-500 line-clamp-2">{notification.message}</p>
+                                                <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2">{notification.message}</p>
                                             </div>
                                         )}
                                     </Menu.Item>
@@ -87,10 +87,10 @@ export default function NotificationDropdown({ notifications, onMarkAsRead, onVi
                             </div>
                         )}
                     </div>
-                    <div className="bg-gray-50 px-4 py-2 border-t border-gray-100">
+                    <div className="bg-gray-50 dark:bg-slate-800 px-4 py-2 border-t border-gray-100 dark:border-slate-700">
                         <button
                             onClick={onViewAll}
-                            className="block w-full text-center text-sm font-medium text-indigo-600 hover:text-indigo-500 py-1"
+                            className="block w-full text-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300 py-1"
                         >
                             View all notifications
                         </button>

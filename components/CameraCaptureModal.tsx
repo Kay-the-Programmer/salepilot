@@ -70,12 +70,12 @@ const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({ isOpen, onClose
 
     return (
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
-                <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-center border-b">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+            <div className="bg-white dark:bg-slate-900 w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
+                <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-center border-b dark:border-slate-700">
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
                         Capture Image
                     </h3>
-                    <button type="button" onClick={handleClose} className="text-gray-400 hover:text-gray-500">
+                    <button type="button" onClick={handleClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-300">
                         <XMarkIcon className="h-6 w-6" />
                     </button>
                 </div>
@@ -87,12 +87,12 @@ const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({ isOpen, onClose
                     )}
                     <canvas ref={canvasRef} className="hidden" />
                 </div>
-                <div className="bg-gray-50 px-4 py-4 sm:px-6 flex justify-center items-center">
+                <div className="bg-gray-50 dark:bg-slate-800 px-4 py-4 sm:px-6 flex justify-center items-center">
                     <button
                         type="button"
                         onClick={handleCapture}
                         disabled={!!error}
-                        className="p-4 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+                        className="p-4 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 dark:disabled:bg-slate-700"
                         aria-label="Capture photo"
                     >
                         <CameraIcon className="w-8 h-8" />

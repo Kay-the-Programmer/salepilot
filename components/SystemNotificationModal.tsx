@@ -43,27 +43,27 @@ const SystemNotificationModal: React.FC<SystemNotificationModalProps> = ({
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-2xl transition-all border-t-4 border-indigo-600">
+                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-slate-900 p-6 text-left align-middle shadow-2xl transition-all border-t-4 border-indigo-600">
                                 <div className="flex items-start gap-4">
-                                    <div className="bg-indigo-100 p-3 rounded-full text-indigo-600 flex-shrink-0">
+                                    <div className="bg-indigo-100 dark:bg-indigo-900/30 p-3 rounded-full text-indigo-600 dark:text-indigo-400 flex-shrink-0">
                                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                                         </svg>
                                     </div>
                                     <div className="flex-1">
-                                        <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900">
+                                        <Dialog.Title as="h3" className="text-xl font-bold leading-6 text-gray-900 dark:text-white">
                                             {title}
                                         </Dialog.Title>
                                         <div className="mt-1 flex items-center gap-2">
-                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
                                                 System Announcement
                                             </span>
-                                            <span className="text-xs text-gray-400">
+                                            <span className="text-xs text-gray-400 dark:text-gray-500">
                                                 {new Date(date).toLocaleDateString()}
                                             </span>
                                         </div>
                                         <div className="mt-4">
-                                            <p className="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
+                                            <p className="text-sm text-gray-600 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                                                 {message}
                                             </p>
                                         </div>

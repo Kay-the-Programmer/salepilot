@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import Joyride, { CallBackProps, STATUS, Step } from 'react-joyride';
 import { User } from '../types';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface TourGuideProps {
     user: User;
@@ -12,6 +13,8 @@ interface TourGuideProps {
 export default function TourGuide({ user, run: propsRun, page = 'dashboard', onTourEnd }: TourGuideProps) {
     const [run, setRun] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const { theme } = useTheme();
+    const isDark = theme === 'dark';
 
     useEffect(() => {
         // specific check for mobile screens
@@ -400,9 +403,9 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 options: {
                     zIndex: 10000,
                     primaryColor: '#3B82F6', // Blue-500
-                    backgroundColor: '#ffffff',
-                    arrowColor: '#ffffff',
-                    textColor: '#333333',
+                    backgroundColor: isDark ? '#1e293b' : '#ffffff', // slate-800 : white
+                    arrowColor: isDark ? '#1e293b' : '#ffffff',
+                    textColor: isDark ? '#f1f5f9' : '#333333', // slate-100 : gray-800
                 },
                 buttonNext: {
                     backgroundColor: '#3B82F6',
