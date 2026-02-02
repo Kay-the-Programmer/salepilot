@@ -388,7 +388,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
     if (variant === 'embedded') {
         return (
-            <div className="w-full h-full flex flex-col bg-white overflow-hidden rounded-xl border border-slate-200 shadow-inner relative">
+            <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner relative">
                 {/* Scanner Area */}
                 <div className="relative bg-black flex-1 w-full overflow-hidden">
                     {isInitializing && !error && (
@@ -399,15 +399,15 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     )}
 
                     {error ? (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 bg-slate-50">
-                            <div className="w-10 h-10 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-2">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center z-10 bg-slate-50 dark:bg-slate-900">
+                            <div className="w-10 h-10 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-full flex items-center justify-center mb-2">
                                 <FiX className="w-5 h-5" />
                             </div>
-                            <h4 className="font-bold text-slate-900 text-sm mb-1">Camera Error</h4>
-                            <p className="text-slate-500 text-xs leading-relaxed mb-3 break-words max-w-full px-2">{error}</p>
+                            <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-1">Camera Error</h4>
+                            <p className="text-slate-500 dark:text-slate-400 text-xs leading-relaxed mb-3 break-words max-w-full px-2">{error}</p>
                             <button
                                 onClick={onClose}
-                                className="px-4 py-2 bg-slate-900 text-white rounded-lg font-semibold text-xs shadow-sm active:scale-95 transition-all"
+                                className="px-4 py-2 bg-slate-900 dark:bg-slate-800 text-white rounded-lg font-semibold text-xs shadow-sm active:scale-95 transition-all"
                             >
                                 Dismiss
                             </button>
@@ -481,11 +481,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4 animate-fade-in">
-            <div className="bg-white/95 backdrop-blur-md rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-slide-up ring-1 ring-white/20 border border-white/10">
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-slide-up ring-1 ring-white/20 dark:ring-white/10 border border-white/10 dark:border-white/5">
                 {/* Header */}
-                <div className="p-5 border-b border-gray-100/50 flex items-center justify-between bg-white/50 backdrop-blur-sm">
+                <div className="p-5 border-b border-gray-100/50 dark:border-slate-700/50 flex items-center justify-between bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm">
                     <div>
-                        <h3 className="font-bold text-gray-900 text-lg leading-tight">{title}</h3>
+                        <h3 className="font-bold text-gray-900 dark:text-white text-lg leading-tight">{title}</h3>
                         {continuous && (
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
@@ -495,7 +495,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2.5 rounded-2xl hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all active:scale-95"
+                        className="p-2.5 rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all active:scale-95"
                     >
                         <XMarkIcon className="w-6 h-6" />
                     </button>
@@ -511,15 +511,15 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     )}
 
                     {error ? (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center z-10 bg-gray-50">
-                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center z-10 bg-gray-50 dark:bg-slate-800">
+                            <div className="w-16 h-16 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-full flex items-center justify-center mb-4">
                                 <FiX className="w-8 h-8" />
                             </div>
-                            <h4 className="font-bold text-gray-900 mb-2">Camera Error</h4>
-                            <p className="text-gray-500 text-sm leading-relaxed mb-6">{error}</p>
+                            <h4 className="font-bold text-gray-900 dark:text-white mb-2">Camera Error</h4>
+                            <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed mb-6">{error}</p>
                             <button
                                 onClick={onClose}
-                                className="px-6 py-2.5 bg-gray-900 text-white rounded-xl font-semibold text-sm shadow-lg active:scale-95 transition-all"
+                                className="px-6 py-2.5 bg-gray-900 dark:bg-slate-700 text-white rounded-xl font-semibold text-sm shadow-lg active:scale-95 transition-all"
                             >
                                 Dismiss
                             </button>
@@ -590,9 +590,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 </div>
 
                 {/* Footer Info */}
-                <div className="p-6 bg-gray-50/50 border-t border-gray-100/50 backdrop-blur-sm">
-                    <div className="bg-white/60 p-4 rounded-2xl border border-gray-200/50 shadow-sm backdrop-blur-sm">
-                        <p className="text-center text-gray-600 text-sm font-medium">
+                <div className="p-6 bg-gray-50/50 dark:bg-slate-800/50 border-t border-gray-100/50 dark:border-slate-700/50 backdrop-blur-sm">
+                    <div className="bg-white/60 dark:bg-slate-700/60 p-4 rounded-2xl border border-gray-200/50 dark:border-slate-600/50 shadow-sm backdrop-blur-sm">
+                        <p className="text-center text-gray-600 dark:text-gray-400 text-sm font-medium">
                             {continuous
                                 ? "Items will be added automatically as you scan."
                                 : "Position code within the box to scan."

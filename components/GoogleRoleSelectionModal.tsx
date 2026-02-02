@@ -18,24 +18,24 @@ const GoogleRoleSelectionModal: React.FC<GoogleRoleSelectionModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20 dark:border-white/10">
 
-                <div className="p-8 text-center bg-gradient-to-br from-slate-50 to-slate-100/50">
-                    <h2 className="text-2xl font-black text-slate-900 mb-2">Welcome, {userName}!</h2>
-                    <p className="text-slate-500 font-medium text-sm">How would you like to use SalePilot today?</p>
+                <div className="p-8 text-center bg-gradient-to-br from-slate-50 to-slate-100/50 dark:from-slate-800 dark:to-slate-900/50">
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Welcome, {userName}!</h2>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium text-sm">How would you like to use SalePilot today?</p>
                 </div>
 
-                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white">
+                <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4 bg-white dark:bg-slate-900">
                     {/* Business Option */}
                     <button
                         onClick={() => onSelectRole('business')}
-                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-600 hover:bg-blue-50/30 transition-all duration-300 text-center"
+                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-blue-600 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-900/30 transition-all duration-300 text-center"
                     >
-                        <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-blue-200">
+                        <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-blue-200 dark:group-hover:shadow-blue-900/50">
                             <HiOutlineBuildingStorefront className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800 group-hover:text-blue-700 transition-colors">Create a Store</h3>
-                        <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">Create a Store</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium leading-relaxed">
                             Manage inventory, track sales, and grow your business.
                         </p>
                     </button>
@@ -43,22 +43,22 @@ const GoogleRoleSelectionModal: React.FC<GoogleRoleSelectionModalProps> = ({
                     {/* Customer Option */}
                     <button
                         onClick={() => onSelectRole('customer')}
-                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50/30 transition-all duration-300 text-center"
+                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 dark:border-slate-700 hover:border-orange-500 dark:hover:border-orange-400 hover:bg-orange-50/30 dark:hover:bg-orange-900/30 transition-all duration-300 text-center"
                     >
-                        <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-orange-200">
+                        <div className="w-16 h-16 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-orange-200 dark:group-hover:shadow-orange-900/50">
                             <HiOutlineShoppingBag className="w-8 h-8" />
                         </div>
-                        <h3 className="text-lg font-bold text-slate-800 group-hover:text-orange-600 transition-colors">Start Shopping</h3>
-                        <p className="text-xs text-slate-500 mt-2 font-medium leading-relaxed">
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">Start Shopping</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium leading-relaxed">
                             Browse products, track orders, and discover deals.
                         </p>
                     </button>
                 </div>
 
-                <div className="bg-slate-50 px-6 py-4 flex justify-center">
+                <div className="bg-slate-50 dark:bg-slate-800 px-6 py-4 flex justify-center">
                     <button
                         onClick={onCancel}
-                        className="text-xs font-bold text-slate-400 hover:text-slate-600 uppercase tracking-widest transition-colors py-2 px-4"
+                        className="text-xs font-bold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 uppercase tracking-widest transition-colors py-2 px-4"
                     >
                         Cancel Login
                     </button>
