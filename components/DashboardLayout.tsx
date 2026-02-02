@@ -7,7 +7,7 @@ import { dbService } from '../services/dbService'; // Adjust paths
 import { User, StoreSettings, Announcement } from '../types'; // Adjust paths
 import Snackbar from './Snackbar';
 import LoadingSpinner from './LoadingSpinner';
-import LogoutConfirmationModal from './LogoutConfirmationModal';
+import ConfirmationModal from './ConfirmationModal';
 import StoreCompletionModal from './StoreCompletionModal';
 import SystemNotificationModal from './SystemNotificationModal';
 import TourGuide from './TourGuide';
@@ -427,12 +427,20 @@ export default function DashboardLayout() {
                             ))}
                         </div>
                     )}
-                    <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => {
-                        logout();
-                        setCurrentUser(null);
-                        setIsLogoutModalOpen(false);
-                        navigate('/login');
-                    }} />
+                    <ConfirmationModal
+                        isOpen={isLogoutModalOpen}
+                        onClose={() => setIsLogoutModalOpen(false)}
+                        onConfirm={() => {
+                            logout();
+                            setCurrentUser(null);
+                            setIsLogoutModalOpen(false);
+                            navigate('/login');
+                        }}
+                        title="Confirm Logout"
+                        message="Are you sure you want to log out of your account?"
+                        confirmText="Logout"
+                        confirmButtonVariant="danger"
+                    />
                     <TourGuide
                         user={currentUser}
                         run={!isStoreCompletionModalOpen && !priorityNotification && storeSettings !== null}
