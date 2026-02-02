@@ -23,15 +23,24 @@ const SyncIcon = () => (
 
 
 const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
+    const [isExiting, setIsExiting] = React.useState(false);
+
+    const handleClose = React.useCallback(() => {
+        setIsExiting(true);
+        setTimeout(() => {
+            onClose();
+        }, 280); // Wait slightly less than 300ms animation
+    }, [onClose]);
+
     useEffect(() => {
         const timer = setTimeout(() => {
-            onClose();
+            handleClose();
         }, 5000); // Auto-close after 5 seconds
 
         return () => {
             clearTimeout(timer);
         };
-    }, [onClose]);
+    }, [handleClose]);
 
     const typeClasses = {
         success: 'bg-green-100 border-green-400 text-green-700',
@@ -49,9 +58,12 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
         sync: <SyncIcon />,
     }[type];
 
+    // Animation class selection
+    const animationClass = isExiting ? 'snackbar-exit-anim' : 'snackbar-responsive-anim';
+
     return (
         <div
-            className={`fixed bottom-20 md:bottom-4 left-4 z-[200] max-w-sm rounded-md border-l-4 shadow-lg p-4 ${typeClasses[type]} animate-slide-in-left transition-all duration-300 ease-out transform`}
+            className={`fixed left-4 right-4 top-4 md:top-auto md:right-auto md:bottom-4 md:left-4 z-[200] md:max-w-sm rounded-md border-l-4 shadow-lg p-4 ${typeClasses[type]} ${animationClass} transition-all duration-300 ease-out transform`}
             role="alert"
         >
             <div className="flex">
@@ -63,7 +75,7 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose }) => {
                     <div className="-mx-1.5 -my-1.5">
                         <button
                             type="button"
-                            onClick={onClose}
+                            onClick={handleClose}
                             className={`inline-flex rounded-md p-1.5 focus:outline-none focus:ring-2 focus:ring-offset-2 ${type === 'success' ? 'bg-green-100 text-green-500 hover:bg-green-200 focus:ring-green-600 focus:ring-offset-green-100' :
                                 type === 'error' ? 'bg-red-100 text-red-500 hover:bg-red-200 focus:ring-red-600 focus:ring-offset-red-100' :
                                     type === 'warning' ? 'bg-yellow-100 text-yellow-500 hover:bg-yellow-200 focus:ring-yellow-600 focus:ring-offset-yellow-100' :

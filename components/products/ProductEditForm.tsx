@@ -85,10 +85,17 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
 
         try {
             const formData = prepareFormData();
-            const result = await api.putFormData<Product>(`/products/${productToEdit.id}`, formData);
+            let result;
+
+            if (productToEdit.id) {
+                result = await api.putFormData<Product>(`/products/${productToEdit.id}`, formData);
+            } else {
+                result = await api.postFormData<Product>('/products', formData);
+            }
 
             if ((result as any)?.offline) {
-                const payload = { ...productToEdit, ...product } as Product;
+                const tempId = productToEdit.id || `temp_${Date.now()}`;
+                const payload = { ...productToEdit, ...product, id: tempId } as Product;
                 await onSave(payload);
             } else {
                 await onSave(result as Product);

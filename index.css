@@ -656,3 +656,85 @@ textarea {
 .animate-pulse-glow {
   animation: pulse-glow 2s infinite ease-in-out;
 }
+
+@keyframes slideDownTop {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-down-top {
+  animation: slideDownTop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Responsive Snackbar Animation helpers */
+/* Mobile: Slide down from top */
+@media (max-width: 767px) {
+  .snackbar-responsive-anim {
+    animation: slideDownTop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+/* Desktop: Slide in from left */
+@media (min-width: 768px) {
+  .snackbar-responsive-anim {
+    animation: slideInFromLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+@keyframes slideBackTop {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes slideBackLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+}
+
+/* Responsive Snackbar EXIT Animation helpers */
+/* Mobile: Slide back up */
+@media (max-width: 767px) {
+  .snackbar-exit-anim {
+    animation: slideBackTop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
+
+/* Desktop: Slide back left */
+@media (min-width: 768px) {
+  .snackbar-exit-anim {
+    animation: slideBackLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+}
