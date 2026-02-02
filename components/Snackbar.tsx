@@ -46,45 +46,45 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, stackIndex 
         };
     }, [handleClose, adjustedDuration]);
 
-    // Premium glassmorphism + gradient backgrounds per type
+    // Premium glassmorphism - translucent glassy backgrounds
     const typeStyles = {
         success: {
-            container: 'bg-gradient-to-r from-emerald-500/90 to-teal-500/90 text-white',
-            progress: 'bg-white/40',
-            iconBg: 'bg-white/20',
-            closeHover: 'hover:bg-white/20',
+            container: 'bg-emerald-500/30 dark:bg-emerald-400/20 text-emerald-900 dark:text-emerald-100 border border-emerald-500/40',
+            progress: 'bg-emerald-500/60',
+            iconBg: 'bg-emerald-500/30',
+            closeHover: 'hover:bg-emerald-500/30',
         },
         error: {
-            container: 'bg-gradient-to-r from-rose-500/90 to-red-500/90 text-white',
-            progress: 'bg-white/40',
-            iconBg: 'bg-white/20',
-            closeHover: 'hover:bg-white/20',
+            container: 'bg-rose-500/30 dark:bg-rose-400/20 text-rose-900 dark:text-rose-100 border border-rose-500/40',
+            progress: 'bg-rose-500/60',
+            iconBg: 'bg-rose-500/30',
+            closeHover: 'hover:bg-rose-500/30',
         },
         info: {
-            container: 'bg-gradient-to-r from-blue-500/90 to-indigo-500/90 text-white',
-            progress: 'bg-white/40',
-            iconBg: 'bg-white/20',
-            closeHover: 'hover:bg-white/20',
+            container: 'bg-blue-500/30 dark:bg-blue-400/20 text-blue-900 dark:text-blue-100 border border-blue-500/40',
+            progress: 'bg-blue-500/60',
+            iconBg: 'bg-blue-500/30',
+            closeHover: 'hover:bg-blue-500/30',
         },
         warning: {
-            container: 'bg-gradient-to-r from-amber-500/90 to-orange-500/90 text-white',
-            progress: 'bg-white/40',
-            iconBg: 'bg-white/20',
-            closeHover: 'hover:bg-white/20',
+            container: 'bg-amber-500/30 dark:bg-amber-400/20 text-amber-900 dark:text-amber-100 border border-amber-500/40',
+            progress: 'bg-amber-500/60',
+            iconBg: 'bg-amber-500/30',
+            closeHover: 'hover:bg-amber-500/30',
         },
         sync: {
-            container: 'bg-gradient-to-r from-slate-600/90 to-slate-700/90 text-white',
-            progress: 'bg-white/40',
-            iconBg: 'bg-white/20',
-            closeHover: 'hover:bg-white/20',
+            container: 'bg-slate-500/30 dark:bg-slate-400/20 text-slate-900 dark:text-slate-100 border border-slate-500/40',
+            progress: 'bg-slate-500/60',
+            iconBg: 'bg-slate-500/30',
+            closeHover: 'hover:bg-slate-500/30',
         },
     };
 
     const Icon = {
-        success: <CheckCircleIcon className="h-5 w-5 text-white snackbar-icon-animated" />,
-        error: <XCircleIcon className="h-5 w-5 text-white snackbar-icon-animated" />,
-        info: <InformationCircleIcon className="h-5 w-5 text-white snackbar-icon-animated" />,
-        warning: <ExclamationTriangleIcon className="h-5 w-5 text-white snackbar-icon-animated" />,
+        success: <CheckCircleIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-300 snackbar-icon-animated" />,
+        error: <XCircleIcon className="h-5 w-5 text-rose-600 dark:text-rose-300 snackbar-icon-animated" />,
+        info: <InformationCircleIcon className="h-5 w-5 text-blue-600 dark:text-blue-300 snackbar-icon-animated" />,
+        warning: <ExclamationTriangleIcon className="h-5 w-5 text-amber-600 dark:text-amber-300 snackbar-icon-animated" />,
         sync: <SyncIcon />,
     }[type];
 
@@ -105,7 +105,7 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, stackIndex 
                     ? 'fixed left-4 right-4 top-4 md:top-auto md:right-auto md:bottom-6 md:left-6 z-[200] md:max-w-md'
                     : 'relative w-full'
                 }
-                rounded-2xl
+                rounded-full
                 shadow-2xl shadow-black/20
                 backdrop-blur-xl
                 overflow-hidden
@@ -121,9 +121,9 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, stackIndex 
             }}
         >
             {/* Main content */}
-            <div className="flex items-center gap-3 px-4 py-3.5">
+            <div className="flex items-center gap-3 px-5 py-3">
                 {/* Icon with subtle background */}
-                <div className={`flex-shrink-0 p-2 rounded-xl ${styles.iconBg}`}>
+                <div className={`flex-shrink-0 p-2 rounded-full ${styles.iconBg}`}>
                     {Icon}
                 </div>
 
@@ -138,16 +138,16 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, stackIndex 
                     onClick={handleClose}
                     className={`
                         flex-shrink-0
-                        p-2 rounded-xl
+                        p-2 rounded-full
                         transition-all duration-200
-                        focus:outline-none focus:ring-2 focus:ring-white/50
+                        focus:outline-none focus:ring-2 focus:ring-current/30
                         ${styles.closeHover}
                         active:scale-90
                     `}
                     aria-label="Dismiss"
                 >
                     <span className="sr-only">Dismiss</span>
-                    <XMarkIcon className="h-4 w-4 text-white/80" />
+                    <XMarkIcon className="h-4 w-4 opacity-70" />
                 </button>
             </div>
 
