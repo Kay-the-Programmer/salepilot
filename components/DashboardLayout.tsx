@@ -18,7 +18,8 @@ import Logo from '../assets/logo.png'; // Adjust paths
 import SocketService from '../services/socketService';
 
 export type SnackbarType = 'success' | 'error' | 'info' | 'warning' | 'sync';
-type SnackbarState = { message: string; type: SnackbarType; };
+type SnackbarState = { id: string; message: string; type: SnackbarType; };
+const MAX_VISIBLE_SNACKBARS = 5;
 
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
 const getSuperModeKey = (userId?: string) => userId ? `salePilot.superMode.${userId}` : 'salePilot.superMode';
@@ -50,7 +51,7 @@ export default function DashboardLayout() {
 
     // --- UI State ---
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
+    const [snackbars, setSnackbars] = useState<SnackbarState[]>([]);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [isStoreCompletionModalOpen, setIsStoreCompletionModalOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -77,7 +78,18 @@ export default function DashboardLayout() {
     const location = useLocation();
 
     const showSnackbar = useCallback((message: string, type: SnackbarType = 'info') => {
-        setSnackbar({ message, type });
+        const id = `snackbar-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        setSnackbars(prev => {
+            const newSnackbars = [...prev, { id, message, type }];
+            if (newSnackbars.length > MAX_VISIBLE_SNACKBARS) {
+                return newSnackbars.slice(-MAX_VISIBLE_SNACKBARS);
+            }
+            return newSnackbars;
+        });
+    }, []);
+
+    const closeSnackbar = useCallback((id: string) => {
+        setSnackbars(prev => prev.filter(s => s.id !== id));
     }, []);
 
     // --- Effects & Logic (Ported from Dashboard.tsx but simplified) ---
@@ -391,7 +403,30 @@ export default function DashboardLayout() {
                         )}
                     </div>
 
-                    {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
+                    {/* Stacked Snackbar Container */}
+                    {snackbars.length > 0 && (
+                        <div className="snackbar-stack fixed left-4 right-4 top-4 md:top-auto md:right-auto md:bottom-6 md:left-6 z-[200] md:max-w-md flex flex-col-reverse md:flex-col gap-3 pointer-events-none">
+                            {snackbars.map((snackbar, index) => (
+                                <div
+                                    key={snackbar.id}
+                                    className="pointer-events-auto"
+                                    style={{
+                                        animationDelay: `${index * 50}ms`,
+                                        opacity: 1 - (snackbars.length - 1 - index) * 0.05,
+                                        transform: `scale(${1 - (snackbars.length - 1 - index) * 0.02})`,
+                                    }}
+                                >
+                                    <Snackbar
+                                        message={snackbar.message}
+                                        type={snackbar.type}
+                                        onClose={() => closeSnackbar(snackbar.id)}
+                                        stackIndex={index}
+                                        totalInStack={snackbars.length}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
                     <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={() => {
                         logout();
                         setCurrentUser(null);

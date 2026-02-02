@@ -7,9 +7,9 @@ interface StatusBadgeProps {
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
     const config = {
-        active: { bg: 'bg-emerald-100', text: 'text-emerald-700', label: 'Active' },
-        archived: { bg: 'bg-slate-100', text: 'text-slate-700', label: 'Archived' },
-    }[status] || { bg: 'bg-slate-100', text: 'text-slate-700', label: 'Active' };
+        active: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', label: 'Active' },
+        archived: { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-400', label: 'Archived' },
+    }[status] || { bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-400', label: 'Active' };
 
     return (
         <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>

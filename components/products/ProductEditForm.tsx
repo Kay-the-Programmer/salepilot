@@ -11,6 +11,7 @@ import UnifiedScannerModal from '../UnifiedScannerModal';
 import ArrowLeftIcon from '../icons/ArrowLeftIcon';
 import { useProductForm } from '../../hooks/useProductForm';
 import { formatCurrency } from '@/utils/currency';
+import { useToast } from '../../contexts/ToastContext';
 
 interface ProductEditFormProps {
     product: Product;
@@ -60,6 +61,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { showToast } = useToast();
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
     const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
@@ -614,7 +616,11 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
             <CameraCaptureModal
                 isOpen={isCameraModalOpen}
                 onClose={() => setIsCameraModalOpen(false)}
-                onCapture={handleCameraCapture}
+                onCapture={(image) => {
+                    handleCameraCapture(image);
+                    setIsCameraModalOpen(false);
+                    showToast('Photo captured', 'success');
+                }}
             />
             <SupplierFormModal
                 isOpen={isSupplierModalOpen}

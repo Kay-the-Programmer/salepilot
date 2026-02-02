@@ -13,6 +13,7 @@ import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
 import { useProductForm } from '../hooks/useProductForm';
 import { formatCurrency } from '@/utils/currency';
+import { useToast } from '../contexts/ToastContext';
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -57,6 +58,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
     });
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const { showToast } = useToast();
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
     const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
@@ -1274,7 +1276,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
             <CameraCaptureModal
                 isOpen={isCameraModalOpen}
                 onClose={() => setIsCameraModalOpen(false)}
-                onCapture={handleCameraCapture}
+                onCapture={(image) => {
+                    handleCameraCapture(image);
+                    setIsCameraModalOpen(false);
+                    showToast('Photo captured', 'success');
+                }}
             />
             <SupplierFormModal
                 isOpen={isSupplierModalOpen}
