@@ -1,6 +1,7 @@
 import React from 'react';
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
 import { Button } from './ui/Button';
+import { Modal } from './ui/Modal';
 
 interface ConfirmationModalProps {
     isOpen: boolean;
@@ -11,6 +12,7 @@ interface ConfirmationModalProps {
     confirmText?: string;
     cancelText?: string;
     confirmButtonClass?: string;
+    confirmButtonVariant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'success';
     variant?: 'modal' | 'floating';
 }
 
@@ -22,10 +24,12 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     message,
     confirmText = 'Confirm',
     cancelText = 'Cancel',
-    confirmButtonClass = 'bg-red-600 hover:bg-red-500',
+    confirmButtonClass,
+    confirmButtonVariant,
     variant = 'modal'
 }) => {
-    if (!isOpen) return null;
+    // Determine button variant. Priority: prop > check class > default 'danger' (to match original behavior where default class was red)
+    const btnVariant = confirmButtonVariant || (confirmButtonClass && !confirmButtonClass.includes('red') ? 'primary' : 'danger');
 
     if (variant === 'floating') {
         return (
@@ -58,8 +62,8 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                         </Button>
                         <Button
                             type="button"
-                            variant={confirmButtonClass.includes('red') ? 'danger' : 'primary'}
-                            className={`flex-1 ${confirmButtonClass}`}
+                            variant={btnVariant}
+                            className={`flex-1 ${confirmButtonClass || ''}`}
                             onClick={onConfirm}
                         >
                             {confirmText}
@@ -70,58 +74,51 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         );
     }
 
-    return (
-        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={onClose}>
-            <div
-                glass-effect=""
-                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-md m-0 border border-gray-100 dark:bg-slate-900/80 dark:border-slate-700/50"
-                onClick={(e) => e.stopPropagation()}
+    const footerContent = (
+        <div className="flex items-center gap-3 w-full">
+            <Button
+                type="button"
+                variant="secondary"
+                className="flex-1 dark:bg-slate-800/50"
+                onClick={onClose}
             >
-                {/* iOS-style drag handle for mobile */}
-                <div className="sm:hidden pt-2 pb-0 flex justify-center">
-                    <div className="w-10 h-1 bg-gray-200 dark:bg-slate-800 rounded-full"></div>
-                </div>
+                {cancelText}
+            </Button>
+            <Button
+                type="button"
+                variant={btnVariant}
+                className={`flex-1 ${confirmButtonClass || ''}`}
+                onClick={onConfirm}
+            >
+                {confirmText}
+            </Button>
+        </div>
+    );
 
-                {/* Header */}
-                <div className="px-6 pt-5 pb-3">
-                    <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
-                            <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />
-                        </div>
-                        <div className="flex-1">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100" id="modal-title">
-                                {title}
-                            </h3>
-                            <div className="mt-1">
-                                <div className="text-sm text-gray-500 dark:text-slate-400">
-                                    {message}
-                                </div>
-                            </div>
+    return (
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            size="md"
+            footer={footerContent}
+            // We do not pass title to Modal because we use a custom header structure with icon in children
+        >
+            <div className="flex items-start gap-4">
+                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
+                    <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />
+                </div>
+                <div className="flex-1">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100" id="modal-title">
+                        {title}
+                    </h3>
+                    <div className="mt-1">
+                        <div className="text-sm text-gray-500 dark:text-slate-400">
+                            {message}
                         </div>
                     </div>
                 </div>
-
-                {/* Footer */}
-                <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex items-center gap-3">
-                    <Button
-                        type="button"
-                        variant="secondary"
-                        className="flex-1 dark:bg-slate-800/50"
-                        onClick={onClose}
-                    >
-                        {cancelText}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant={confirmButtonClass.includes('red') ? 'danger' : 'primary'}
-                        className={`flex-1 ${confirmButtonClass}`}
-                        onClick={onConfirm}
-                    >
-                        {confirmText}
-                    </Button>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };
 

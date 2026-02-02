@@ -11,6 +11,8 @@ import SupplierFormModal from './suppliers/SupplierFormModal';
 import UnifiedScannerModal from './UnifiedScannerModal';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
+import { Modal } from './ui/Modal';
+import { Select } from './ui/Select';
 import { useProductForm } from '../hooks/useProductForm';
 import { formatCurrency } from '@/utils/currency';
 import { useToast } from '../contexts/ToastContext';
@@ -678,89 +680,98 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
     return (
         <>
-            <div className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center animate-fade-in">
-                <div glass-effect="" className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
-                    {/* Header */}
-                    <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-20 border-b border-gray-200 dark:border-gray-700">
-                        <div className="px-4 py-3 sm:px-6 flex items-center justify-between">
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-                                    {productToEdit ? 'Edit Product' : 'Add Product'}
-                                </h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 sm:hidden">
-                                    {mobileSections.find(s => s.id === activeSection)?.label}
-                                </p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
-                            >
-                                <XMarkIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
-                            </button>
-                        </div>
-
-                        {/* Mobile Tabs */}
-                        <div className="sm:hidden overflow-x-auto hide-scrollbar border-t border-gray-200 dark:border-gray-700">
-                            <div className="flex">
-                                {mobileSections.map((section) => (
-                                    <button
-                                        key={section.id}
-                                        type="button"
-                                        onClick={() => setActiveSection(section.id)}
-                                        className={`flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeSection === section.id
-                                            ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                                            : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                                            }`}
-                                    >
-                                        {section.label}
-                                    </button>
-                                ))}
-                            </div>
+            <Modal
+                isOpen={isOpen}
+                onClose={onClose}
+                size="2xl"
+                title={
+                    <div>
+                        {productToEdit ? 'Edit Product' : 'Add Product'}
+                        <p className="text-sm font-normal text-gray-500 dark:text-gray-400 mt-1 sm:hidden">
+                            {mobileSections.find(s => s.id === activeSection)?.label}
+                        </p>
+                    </div>
+                }
+                subHeader={
+                    <div className="sm:hidden overflow-x-auto hide-scrollbar border-t border-gray-200 dark:border-gray-700">
+                        <div className="flex">
+                            {mobileSections.map((section) => (
+                                <button
+                                    key={section.id}
+                                    type="button"
+                                    onClick={() => setActiveSection(section.id)}
+                                    className={`flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeSection === section.id
+                                        ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                                        : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                                        }`}
+                                >
+                                    {section.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
+                }
+                footer={
+                    <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:justify-end w-full">
+                        <Button
+                            type="button"
+                            variant="secondary"
+                            onClick={onClose}
+                            disabled={isSaving}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="submit"
+                            form="product-form"
+                            variant="primary"
+                            disabled={isSaving}
+                            isLoading={isSaving}
+                            loadingText="Saving..."
+                        >
+                            {`Save ${productToEdit ? 'Changes' : 'Product'}`}
+                        </Button>
+                    </div>
+                }
+            >
+                <form id="product-form" onSubmit={handleSubmit} className="space-y-6">
+                    {error && (
+                        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-700">{error}</p>
+                        </div>
+                    )}
 
-                    {/* Content */}
-                    <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-                            {error && (
-                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                                    <p className="text-sm text-red-700">{error}</p>
-                                </div>
-                            )}
+                    {/* Mobile View - Sectioned Content */}
+                    <div className="sm:hidden">
+                        {renderMobileSectionContent()}
+                    </div>
 
-                            {/* Mobile View - Sectioned Content */}
-                            <div className="sm:hidden">
-                                {renderMobileSectionContent()}
-                            </div>
-
-                            {/* Desktop View - All Sections */}
-                            <div className="hidden sm:block space-y-6">
+                    {/* Desktop View - All Sections */}
+                    <div className="hidden sm:block space-y-6">
                                 {/* Product Details */}
                                 {renderSectionTitle('Product Details')}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="col-span-2">
-                                        <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Product Name *</label>
-                                        <input
-                                            type="text"
+                                        <InputField
+                                            label="Product Name"
                                             name="name"
                                             id="name"
                                             value={product.name}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Enter product name"
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="categoryId" className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
-                                        <div className="flex gap-2">
-                                            <select
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-400 mb-2">Category *</label>
+                                        <div className="flex gap-2 items-start">
+                                            <Select
                                                 name="categoryId"
                                                 id="categoryId"
                                                 value={product.categoryId || ''}
                                                 onChange={handleChange}
                                                 required
-                                                className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                containerClassName="flex-1 mb-0"
                                             >
                                                 <option value="" disabled>Select a category</option>
                                                 {categories.filter(c => c.parentId === null).map(c => (
@@ -771,11 +782,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                         ))}
                                                     </React.Fragment>
                                                 ))}
-                                            </select>
+                                            </Select>
                                             <button
                                                 type="button"
                                                 onClick={onAddCategory}
-                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
+                                                className="px-3 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700"
                                                 title="Add New Category"
                                             >
                                                 <span className="text-lg font-bold text-blue-600">+</span>
@@ -783,33 +794,32 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         </div>
                                     </div>
                                     <div>
-                                        <label htmlFor="brand" className="block text-sm font-medium text-gray-700 mb-1">Brand</label>
-                                        <input
-                                            type="text"
+                                        <InputField
+                                            label="Brand"
                                             name="brand"
                                             id="brand"
                                             value={product.brand || ''}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            placeholder="Enter brand name"
                                         />
                                     </div>
                                     <div>
-                                        <label htmlFor="supplierId" className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
-                                        <div className="flex gap-2">
-                                            <select
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-slate-400 mb-2">Supplier</label>
+                                        <div className="flex gap-2 items-start">
+                                            <Select
                                                 name="supplierId"
                                                 id="supplierId"
                                                 value={product.supplierId || ''}
                                                 onChange={handleChange}
-                                                className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                containerClassName="flex-1 mb-0"
                                             >
                                                 <option value="">No Supplier</option>
                                                 {localSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                            </select>
+                                            </Select>
                                             <button
                                                 type="button"
                                                 onClick={() => setIsSupplierModalOpen(true)}
-                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
+                                                className="px-3 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700"
                                                 title="Add New Supplier"
                                             >
                                                 <span className="text-lg font-bold text-blue-600">+</span>
@@ -837,23 +847,23 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
                                 {/* Description */}
                                 <div>
-                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                                    <div className="relative">
+                                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-slate-400 mb-2">Description</label>
+                                    <div className="relative mb-4">
                                         <textarea
                                             name="description"
                                             id="description"
                                             rows={3}
                                             value={product.description}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-28"
+                                            className="w-full px-4 py-3 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white/20 focus:border-transparent dark:text-slate-100 transition-all pr-32"
                                         />
                                         <button
                                             type="button"
                                             onClick={handleGenerateDescription}
                                             disabled={isGenerating || !product.name || !product.categoryId}
-                                            className="absolute top-2 right-2 inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
+                                            className="absolute top-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                                         >
-                                            <SparklesIcon className="w-3 h-3" />
+                                            <SparklesIcon className="w-4 h-4" />
                                             {isGenerating ? 'Generating...' : 'Generate AI'}
                                         </button>
                                     </div>
@@ -922,32 +932,30 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 <div className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
-                                            <input
-                                                type="text"
+                                            <InputField
+                                                label="SKU"
                                                 name="sku"
                                                 id="sku"
                                                 value={product.sku}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="barcode" className="block text-sm font-medium text-gray-700 mb-1">Barcode</label>
-                                            <div className="flex gap-2">
-                                                <input
-                                                    type="text"
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-slate-400 mb-2">Barcode</label>
+                                            <div className="flex gap-2 items-start">
+                                                <InputField
                                                     name="barcode"
                                                     id="barcode"
                                                     value={product.barcode || ''}
                                                     onChange={handleChange}
-                                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    containerClassName="flex-1 mb-0"
+                                                    className="mb-0"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsBarcodeScannerOpen(true)}
-                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
+                                                    className="px-3 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700"
                                                     title="Scan Barcode"
                                                 >
                                                     📷
@@ -956,14 +964,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                     type="button"
                                                     onClick={() => handleLookup()}
                                                     disabled={isGenerating}
-                                                    className="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-sm font-medium"
+                                                    className="px-3 py-3 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-sm font-medium"
                                                 >
                                                     {isGenerating ? '...' : 'Lookup'}
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={handleGenerateBarcode}
-                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
+                                                    className="px-3 py-3 rounded-xl border border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700 text-sm"
                                                 >
                                                     Generate
                                                 </button>
@@ -972,84 +980,75 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     </div>
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
-                                            <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
-                                                Stock{product.unitOfMeasure === 'kg' ? ' (kg)' : ''} *
-                                            </label>
-                                            <input
-                                                type="number"
+                                            <InputField
+                                                label={`Stock${product.unitOfMeasure === 'kg' ? ' (kg)' : ''}`}
                                                 name="stock"
                                                 id="stock"
+                                                type="number"
                                                 value={product.stock}
                                                 onChange={handleChange}
                                                 required
                                                 min="0"
                                                 step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="unitOfMeasure" className="block text-sm font-medium text-gray-700 mb-1">Unit of Measure</label>
-                                            <select
+                                            <Select
+                                                label="Unit of Measure"
                                                 name="unitOfMeasure"
                                                 id="unitOfMeasure"
                                                 value={product.unitOfMeasure || 'unit'}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="unit">Unit</option>
                                                 <option value="kg">Kilogram (kg)</option>
-                                            </select>
+                                            </Select>
                                         </div>
                                         <div>
-                                            <label htmlFor="reorderPoint" className="block text-sm font-medium text-gray-700 mb-1">Reorder Point</label>
-                                            <input
-                                                type="number"
+                                            <InputField
+                                                label="Reorder Point"
                                                 name="reorderPoint"
                                                 id="reorderPoint"
+                                                type="number"
                                                 value={product.reorderPoint || ''}
                                                 onChange={handleChange}
                                                 min="0"
                                                 step="1"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
-                                            <label htmlFor="safetyStock" className="block text-sm font-medium text-gray-700 mb-1">Safety Stock</label>
-                                            <input
-                                                type="number"
+                                            <InputField
+                                                label="Safety Stock"
                                                 name="safetyStock"
                                                 id="safetyStock"
+                                                type="number"
                                                 value={product.safetyStock || ''}
                                                 onChange={handleChange}
                                                 min="0"
                                                 step="1"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="weight" className="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
-                                            <input
-                                                type="number"
+                                            <InputField
+                                                label="Weight (kg)"
                                                 name="weight"
                                                 id="weight"
+                                                type="number"
                                                 value={product.weight || ''}
                                                 onChange={handleChange}
                                                 min="0"
                                                 step="0.001"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
-                                            <label htmlFor="dimensions" className="block text-sm font-medium text-gray-700 mb-1">Dimensions</label>
-                                            <input
-                                                type="text"
+                                            <InputField
+                                                label="Dimensions"
                                                 name="dimensions"
                                                 id="dimensions"
                                                 value={product.dimensions || ''}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="10 x 20 x 5 cm"
                                             />
                                         </div>
@@ -1222,55 +1221,29 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 {renderSectionTitle('Status')}
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Product Status</label>
-                                        <select
+                                        <Select
+                                            label="Product Status"
                                             id="status"
                                             name="status"
                                             value={product.status}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                         >
                                             <option value="active">Active</option>
                                             <option value="archived">Archived</option>
-                                        </select>
+                                        </Select>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
+                    </div>
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageUpload}
-                            className="hidden"
-                            accept="image/*"
-                        />
-
-                        {/* Footer */}
-                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6">
-                            <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:justify-end">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    onClick={onClose}
-                                    disabled={isSaving}
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    type="submit"
-                                    variant="primary"
-                                    disabled={isSaving}
-                                    isLoading={isSaving}
-                                    loadingText="Saving..."
-                                >
-                                    {`Save ${productToEdit ? 'Changes' : 'Product'}`}
-                                </Button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        accept="image/*"
+                    />
+                </form>
+            </Modal>
 
             {/* Modals */}
             <CameraCaptureModal

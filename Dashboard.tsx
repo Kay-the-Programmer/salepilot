@@ -48,7 +48,7 @@ const WhatsAppSettingsPage = lazy(() => import('@/pages/WhatsAppSettingsPage'));
 const SupportPage = lazy(() => import('@/pages/SupportPage'));
 
 import Snackbar from './components/Snackbar';
-import LogoutConfirmationModal from './components/LogoutConfirmationModal';
+import ConfirmationModal from './components/ConfirmationModal';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
@@ -1377,7 +1377,15 @@ export default function Dashboard() {
                     </div>
 
                     {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
-                    <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
+                    <ConfirmationModal
+                        isOpen={isLogoutModalOpen}
+                        onClose={() => setIsLogoutModalOpen(false)}
+                        onConfirm={handleConfirmLogout}
+                        title="Confirm Logout"
+                        message="Are you sure you want to log out of your account?"
+                        confirmText="Logout"
+                        confirmButtonVariant="danger"
+                    />
                     <TourGuide user={currentUser} />
 
 
