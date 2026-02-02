@@ -255,7 +255,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
 
     if (isMinimized) {
         return (
-            <div className="fixed bottom-6 right-6 z-[80]">
+            <div className="fixed bottom-6 right-6 z-[45]">
                 <button
                     onClick={() => setIsMinimized(false)}
                     className="group relative flex items-center gap-2 px-5 py-3 bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-white rounded-full shadow-2xl hover:shadow-indigo-500/40 transition-all duration-300 hover:scale-105 active:scale-95 border border-indigo-500/30 overflow-hidden backdrop-blur-md"
@@ -272,7 +272,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
     }
 
     return (
-        <div className="fixed inset-0 z-[90] md:inset-auto md:bottom-6 md:right-6 w-full md:max-w-[450px] animate-slide-up-fade font-sans">
+        <div className="fixed inset-0 z-[50] md:inset-auto md:bottom-6 md:right-6 w-full md:max-w-[450px] animate-slide-up-fade font-sans">
             <div className="relative bg-white/95 dark:bg-slate-900/95 h-full rounded-none md:h-[700px] md:rounded-3xl shadow-[0_0_50px_rgba(79,70,229,0.15)] border border-slate-200 dark:border-white/10 backdrop-blur-xl overflow-hidden flex flex-col transition-all duration-500">
 
                 {/* Decorative Elements */}
