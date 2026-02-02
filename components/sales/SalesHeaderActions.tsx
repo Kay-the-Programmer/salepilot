@@ -35,7 +35,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
     }, [isSearchExpanded]);
 
     return (
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3 ">
             <div id="pos-search-container" className={`flex items-center gap-2 transition-all duration-300 ${isSearchExpanded ? 'w-full md:w-64' : 'w-auto'}`}>
                 {isSearchExpanded ? (
                     <div className="relative flex-1">
@@ -50,7 +50,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                                 if (!searchTerm) setIsSearchExpanded(false);
                             }}
                             placeholder="Search products..."
-                            className="w-full pl-10 pr-10 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                            className="w-full pl-10 pr-10 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-lg"
                         />
                         <button
                             onClick={() => {
@@ -68,7 +68,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                 ) : (
                     <button
                         onClick={() => setIsSearchExpanded(true)}
-                        className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-sm group"
+                        className="p-2 px-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-lg group"
                         title="Search Products"
                     >
                         <MagnifyingGlassIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />
@@ -82,13 +82,13 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
             <button
                 id="pos-held-btn"
                 onClick={onOpenHeldSales}
-                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:text-amber-700 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-500/30 hover:bg-amber-50/50 dark:hover:bg-amber-500/10 transition-all shadow-sm flex items-center gap-2 group relative"
+                className="px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-300 text-sm font-medium rounded-xl hover:text-amber-700 dark:hover:text-amber-400 hover:border-amber-200 dark:hover:border-amber-500/30 hover:bg-amber-50/50 dark:hover:bg-amber-500/10 transition-all shadow-lg flex items-center gap-2 group relative"
                 title="View Held Sales"
             >
                 <ClockIcon className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                 <span className="hidden lg:inline">Held Sales</span>
                 {heldSalesCount > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 dark:bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-sm animate-in zoom-in">
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 dark:bg-red-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center border-2 border-white dark:border-slate-800 shadow-lg animate-in zoom-in">
                         {heldSalesCount}
                     </span>
                 )}
@@ -96,7 +96,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
 
             <button
                 onClick={onTourStart}
-                className="p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-sm group"
+                className="p-2 px-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-lg group"
                 title="Launch Help Guide"
             >
                 <QuestionMarkCircleIcon className="w-5 h-5 group-hover:scale-110 transition-transform" />

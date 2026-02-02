@@ -575,7 +575,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     return (
         <div className="h-screen w-full bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-hidden">
             <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
-                <div className="flex-none">
+                <div className="flex-none bg">
                     <Header
                         title="Point of Sale"
                         onMenuClick={onOpenSidebar}
@@ -597,7 +597,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 </div>
 
-                <div className="flex-1 overflow-hidden bg-gray-100 dark:bg-slate-950">
+                <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-slate-900">
                     <div className="h-full flex flex-col">
                         {/* Left Column - Products */}
                         <div className="flex-1 flex flex-col h-full min-w-0">

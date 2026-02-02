@@ -431,7 +431,7 @@ export default function Sidebar({
                                     }}
                                     className="flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 active:scale-95 transition-all group"
                                 >
-                                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors bg-white border border-blue-100 text-blue-600">
+                                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors bg-white  -blue-100 text-blue-600">
                                         <ArrowDownTrayIcon className="w-7 h-7" />
                                     </div>
                                     <span className="text-xs font-medium text-center leading-tight text-blue-700">
@@ -443,8 +443,8 @@ export default function Sidebar({
                     </div>
 
                     {/* Mobile Footer (User & Logout) */}
-                    <div className="p-4 border-t border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/20">
-                        <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm">
+                    <div className="p-4 -t -gray-100 dark:-white/10 bg-gray-50/50 dark:bg-black/20">
+                        <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-2xl  -gray-100 dark:-white/10 shadow-sm">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-md" onClick={() => handleNavigation('profile')}>
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
@@ -479,7 +479,7 @@ export default function Sidebar({
                     h-screen flex-col transition-all duration-300 ease-in-out z-50
                     relative translate-x-0
                     ${isExpanded ? 'w-64' : 'w-20'}
-                    shadow-none border-r border-gray-200 dark:border-white/10
+                    shadow-none -r -gray-200 dark:-white/10
                 `}
                 glass-effect=""
                 style={{
@@ -488,7 +488,7 @@ export default function Sidebar({
                 }}
             >
                 {/* Desktop Logo */}
-                <div className={`flex h-16 items-center border-b border-gray-200 dark:border-white/10 transition-all duration-300 ${isExpanded ? 'px-6 justify-between' : 'px-0 justify-center'}`}>
+                <div className={`flex h-16 items-center -b -gray-200 dark:-white/10 transition-all duration-300 ${isExpanded ? 'px-6 justify-between' : 'px-0 justify-center'}`}>
                     {/* Collapse/Expand Toggle (Top Left) */}
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
@@ -507,8 +507,8 @@ export default function Sidebar({
 
                 {/* Mode Switcher */}
                 {user.role === 'superadmin' && isExpanded && (
-                    <div className="px-4 py-3 border-b border-gray-200 dark:border-white/10">
-                        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-3 border border-gray-200 dark:border-white/10">
+                    <div className="px-4 py-3 -b -gray-200 dark:-white/10">
+                        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-3  -gray-200 dark:-white/10">
                             <div className="flex items-center justify-between mb-2">
                                 <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Mode</span>
                                 <SwatchIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -526,7 +526,7 @@ export default function Sidebar({
                                     <select
                                         value={selectedStoreId || ''}
                                         onChange={(e) => onSelectStore?.(e.target.value)}
-                                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                                        className="w-full px-3 py-2 text-sm  -gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:-blue-500 bg-white"
                                     >
                                         <option value="">Select Store</option>
                                         {storesForSelect.map(store => (
@@ -581,7 +581,7 @@ export default function Sidebar({
                 </nav>
 
                 {/* User Profile & Bottom Section */}
-                <div className="px-3 py-4 border-t border-gray-200 dark:border-white/10 space-y-4">
+                <div className="px-3 py-4 -t -gray-200 dark:-white/10 space-y-4">
                     {/* User Profile */}
                     <NavLink
                         id="sidebar-profile-section"
@@ -598,7 +598,7 @@ export default function Sidebar({
                                     {(user?.name || 'User').charAt(0).toUpperCase()}
                                 </span>
                             </div>
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full -2 -white dark:-slate-800 ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                         </div>
                         <div className={`flex-1 min-w-0 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
                             <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user?.name || 'Guest User'}</p>

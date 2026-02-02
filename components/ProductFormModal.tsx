@@ -11,6 +11,8 @@ import SupplierFormModal from './suppliers/SupplierFormModal';
 import UnifiedScannerModal from './UnifiedScannerModal';
 import { InputField } from './ui/InputField';
 import { Button } from './ui/Button';
+import { useProductForm } from '../hooks/useProductForm';
+import { formatCurrency } from '@/utils/currency';
 
 interface ProductFormModalProps {
     isOpen: boolean;
@@ -26,35 +28,34 @@ interface ProductFormModalProps {
 }
 
 const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, onSave, productToEdit, categories, suppliers, storeSettings, onAddCategory, storeId, initialValues }) => {
-    const getInitialProductState = (): Omit<Product, 'id'> => ({
-        name: '',
-        description: '',
-        sku: `${storeSettings.skuPrefix}${Math.floor(10000 + Math.random() * 90000)}`,
-        categoryId: undefined,
-        price: 0,
-        stock: 0,
-        imageUrls: [],
-        status: 'active',
-        barcode: '',
-        costPrice: 0,
-        supplierId: undefined,
-        brand: '',
-        reorderPoint: 0,
-        safetyStock: 0,
-        weight: 0,
-        dimensions: '',
-        variants: [],
-        customAttributes: {},
-        unitOfMeasure: 'unit',
+    const {
+        product,
+        setProduct,
+        images,
+        isGenerating,
+        isSaving,
+        error,
+        setError,
+        setIsSaving,
+        handleChange,
+        handleGenerateDescription,
+        handleGenerateBarcode,
+        handleLookup,
+        handleImageUpload,
+        removeImage,
+        handleCameraCapture,
+        profitMargin,
+        profitAmount,
+        validate,
+        prepareFormData,
+        relevantAttributes
+    } = useProductForm({
+        productToEdit,
+        initialValues,
+        categories,
+        storeSettings,
     });
 
-    const [product, setProduct] = useState<Omit<Product, 'id'>>(getInitialProductState());
-    const [images, setImages] = useState<string[]>([]);
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
-    const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
@@ -66,186 +67,21 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         setLocalSuppliers(suppliers);
     }, [suppliers]);
 
-    useEffect(() => {
-        if (isOpen) {
-            if (productToEdit) {
-                setProduct({ ...getInitialProductState(), ...productToEdit });
-                setImages(productToEdit.imageUrls || []);
-            } else if (initialValues) {
-                setProduct({ ...getInitialProductState(), ...initialValues });
-                setImages(initialValues.imageUrls || []);
-            } else {
-                setProduct(getInitialProductState());
-                setImages([]);
-            }
-            // Reset file-related states
-            setImageFiles([]);
-            setImagesToDelete([]);
-            setError('');
-            setIsSaving(false);
-            setActiveSection('details');
-        }
-    }, [productToEdit, isOpen, storeSettings]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        const numericFields = ['reorderPoint', 'safetyStock'];
-        const decimalFields = ['stock', 'weight'];
-        const stringNumericFields = ['price', 'costPrice'];
-
-        if (name.startsWith('custom_')) {
-            const attributeId = name.slice(7);
-            setProduct(prev => ({
-                ...prev,
-                customAttributes: {
-                    ...prev.customAttributes,
-                    [attributeId]: value
-                }
-            }));
-        } else {
-            if (numericFields.includes(name)) {
-                setProduct(prev => ({ ...prev, [name]: value === '' ? 0 : parseInt(value) }));
-            } else if (decimalFields.includes(name)) {
-                setProduct(prev => ({ ...prev, [name]: value === '' ? 0 : parseFloat(value) }));
-            } else if (stringNumericFields.includes(name)) {
-                setProduct(prev => ({ ...prev, [name]: value }));
-            } else if (name === 'categoryId' || name === 'supplierId') {
-                setProduct(prev => ({ ...prev, [name]: value === '' ? undefined : value }));
-            } else {
-                setProduct(prev => ({ ...prev, [name]: value }));
-            }
-        }
-    };
-
-    const categoryName = useMemo(() => {
-        return categories.find(c => c.id === product.categoryId)?.name || '';
-    }, [product.categoryId, categories]);
-
-    const handleGenerateDescription = async () => {
-        if (!product.name || !product.categoryId) {
-            setError('Please enter a Product Name and select a Category to generate a description.');
-            return;
-        }
-        setError('');
-        setIsGenerating(true);
-        try {
-            const description = await fetchAIDescription(product.name, categoryName);
-            setProduct(prev => ({ ...prev, description }));
-        } catch (err: any) {
-            setError(err.message || "An unknown error occurred.");
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-    const handleGenerateBarcode = () => {
-        setProduct(prev => ({ ...prev, barcode: prev.sku }));
-    };
-
-    const handleLookup = async (barcodeToUse?: string) => {
-        const code = barcodeToUse || product.barcode;
-        if (!code) {
-            if (!barcodeToUse) setError("Please enter a barcode to lookup.");
-            return;
-        }
-
-        setIsGenerating(true);
-        try {
-            const data = await api.get<any>(`/products/external-lookup/${code}`);
-            if (data) {
-                setProduct(prev => ({
-                    ...prev,
-                    barcode: code,
-                    name: prev.name || data.name,
-                    description: prev.description || data.description,
-                    brand: prev.brand || data.brand,
-                    weight: (prev.weight === 0 && data.weight) ? data.weight : prev.weight,
-                    unitOfMeasure: (prev.unitOfMeasure === 'unit' && data.unitOfMeasure) ? data.unitOfMeasure : prev.unitOfMeasure,
-                }));
-
-                if (data.imageUrls && Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
-                    setImages(prev => {
-                        const existing = new Set(prev);
-                        const newImgs = data.imageUrls.filter((url: string) => !existing.has(url));
-                        return [...prev, ...newImgs];
-                    });
-                }
-                setError('');
-            }
-        } catch (err: any) {
-            console.error("Lookup failed", err);
-            // Show error only for manual interactions or if explicit feedback is needed
-            if (!barcodeToUse) {
-                setError('Product not found in database');
-            }
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSaving) return;
 
-        const priceNum = parseFloat(product.price.toString());
-        if (!product.name || !product.categoryId || priceNum <= 0) {
-            setError("Please fill in all required fields: Name, Category, and Price.");
+        const validationError = validate();
+        if (validationError) {
+            setError(validationError);
             return;
         }
+
         setError('');
         setIsSaving(true);
 
         try {
-            const formData = new FormData();
-            formData.append('name', product.name);
-            formData.append('description', product.description);
-            formData.append('sku', product.sku);
-            formData.append('barcode', product.barcode || '');
-            formData.append('category_id', product.categoryId || '');
-            formData.append('supplier_id', product.supplierId || '');
-            formData.append('price', product.price.toString());
-            formData.append('cost_price', product.costPrice?.toString() || '');
-            formData.append('stock', product.stock.toString());
-            formData.append('unit_of_measure', (product.unitOfMeasure || 'unit'));
-            formData.append('brand', product.brand || '');
-            formData.append('status', product.status);
-            formData.append('reorder_point', product.reorderPoint?.toString() || '');
-            formData.append('safety_stock', product.safetyStock?.toString() || '');
-            formData.append('weight', product.weight?.toString() || '');
-            formData.append('dimensions', product.dimensions || '');
-            formData.append('variants', JSON.stringify(product.variants || []));
-            formData.append('custom_attributes', JSON.stringify(product.customAttributes || {}));
-
-            const dataUrlImages = images.filter(url => url.startsWith('data:'));
-
-            const imagesToKeep = productToEdit
-                ? productToEdit.imageUrls.filter(url =>
-                    !imagesToDelete.includes(url) && !url.startsWith('data:'))
-                : [];
-            formData.append('existing_images', JSON.stringify(imagesToKeep));
-
-            if (imagesToDelete.length > 0) {
-                formData.append('images_to_delete', JSON.stringify(imagesToDelete));
-            }
-
-            for (let i = 0; i < dataUrlImages.length; i++) {
-                const dataUrl = dataUrlImages[i];
-                const byteString = atob(dataUrl.split(',')[1]);
-                const mimeString = dataUrl.split(',')[0].split(':')[1].split(';')[0];
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-
-                for (let j = 0; j < byteString.length; j++) {
-                    ia[j] = byteString.charCodeAt(j);
-                }
-
-                const blob = new Blob([ab], { type: mimeString });
-                const fileName = `data-url-image-${Date.now()}-${i}.${mimeString.split('/')[1]}`;
-                const file = new File([blob], fileName, { type: mimeString });
-
-                formData.append('images', file);
-            }
+            const formData = prepareFormData();
 
             let result;
             if (productToEdit) {
@@ -256,13 +92,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
             if ((result as any)?.offline) {
                 const payload = productToEdit ? ({ ...productToEdit, ...product } as Product) : product;
-                await onSave(payload);
+                await onSave(payload as Product);
             } else {
                 await onSave(result as Product);
             }
-
-            setImageFiles([]);
-            setImagesToDelete([]);
+            onClose();
         } catch (error: any) {
             console.error('Save failed in modal', error);
             setError(error.message || 'Failed to save product');
@@ -270,112 +104,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
             setIsSaving(false);
         }
     };
-
-    const relevantAttributes = useMemo(() => {
-        if (!product.categoryId) return [];
-
-        const allAttributes = new Map<string, CustomAttribute>();
-        let currentId: string | null | undefined = product.categoryId;
-
-        while (currentId) {
-            const category = categories.find(c => c.id === currentId);
-            if (category) {
-                category.attributes.forEach(attr => {
-                    if (!allAttributes.has(attr.id)) {
-                        allAttributes.set(attr.id, attr);
-                    }
-                });
-                currentId = category.parentId;
-            } else {
-                currentId = null;
-            }
-        }
-        return Array.from(allAttributes.values());
-    }, [product.categoryId, categories]);
-
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (files) {
-            const newFiles = Array.from(files);
-
-            // Clear any previous errors
-            setError('');
-
-            // Validate file types and sizes
-            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-            const validFiles = newFiles.filter(file => {
-                if (!file.type.startsWith('image/')) {
-                    setError('Please select only image files');
-                    return false;
-                }
-                if (file.size > MAX_FILE_SIZE) {
-                    setError(`Image ${file.name} is too large. Maximum size is 5MB`);
-                    return false;
-                }
-                return true;
-            });
-
-            if (validFiles.length === 0) {
-                event.target.value = '';
-                return;
-            }
-
-            // Clear any previous images for single image mode
-            setImageFiles(validFiles.slice(0, 1));
-            setImages([]);
-            setImagesToDelete(productToEdit?.imageUrls || []);
-
-            const file = validFiles[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (typeof reader.result === 'string') {
-                    setImages([reader.result as string]);
-                }
-            };
-            reader.onerror = () => {
-                setError(`Failed to read file: ${file.name}`);
-            };
-            reader.readAsDataURL(file);
-
-            // Reset the input value to allow selecting the same file again
-            event.target.value = '';
-        }
-    };
-
-    const removeImage = (indexToRemove: number) => {
-        setImages(prev => prev.filter((_, index) => index !== indexToRemove));
-
-        if (indexToRemove < imageFiles.length) {
-            setImageFiles(prev => prev.filter((_, index) => index !== indexToRemove));
-        } else if (productToEdit && productToEdit.imageUrls) {
-            const imageToRemove = productToEdit.imageUrls[indexToRemove - imageFiles.length];
-            if (imageToRemove) {
-                setImagesToDelete(prev => [...prev, imageToRemove]);
-            }
-        }
-    };
-
-    const handleCameraCapture = (imageDataUrl: string) => {
-        setImages([imageDataUrl]);
-        setImagesToDelete(productToEdit?.imageUrls || []);
-
-        const byteString = atob(imageDataUrl.split(',')[1]);
-        const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-
-        const blob = new Blob([ab], { type: mimeString });
-        const fileName = `camera-capture-${Date.now()}.${mimeString.split('/')[1]}`;
-        const file = new File([blob], fileName, { type: mimeString });
-
-        setImageFiles([file]);
-        setIsCameraModalOpen(false);
-    };
-
 
     const handleCreateSupplier = async (newSupplier: Supplier) => {
         try {
@@ -398,25 +126,40 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
             setIsSupplierModalOpen(false);
         } catch (err: any) {
             console.error("Failed to create supplier:", err);
-            alert("Failed to create supplier: " + err.message);
+            setError("Failed to create supplier: " + err.message);
         }
     };
 
     if (!isOpen) return null;
 
     const renderSectionTitle = (title: string) => (
-        <h4 className="text-base font-semibold text-gray-800 mt-4 mb-3 pb-2 border-b border-gray-200">
-            {title}
-        </h4>
+        <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{title}</h3>
+    );
+
+    const renderMobileSectionTabs = () => (
+        <div className="flex border-b border-gray-100 overflow-x-auto hide-scrollbar sticky top-0 bg-white z-20">
+            {mobileSections.map(s => (
+                <button
+                    key={s.id}
+                    onClick={() => setActiveSection(s.id)}
+                    className={`flex-1 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeSection === s.id
+                        ? 'border-gray-900 text-gray-900'
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                        }`}
+                >
+                    {s.label}
+                </button>
+            ))}
+        </div>
     );
 
     // Mobile section navigation
     const mobileSections = [
-        { id: 'details', label: 'Details', icon: '📝' },
-        { id: 'pricing', label: 'Pricing', icon: '💰' },
-        { id: 'inventory', label: 'Inventory', icon: '📦' },
-        { id: 'variants', label: 'Variants', icon: '🎨' },
-        { id: 'images', label: 'Images', icon: '🖼️' },
+        { id: 'details', label: 'Details' },
+        { id: 'pricing', label: 'Pricing' },
+        { id: 'inventory', label: 'Inventory' },
+        { id: 'variants', label: 'Variants' },
+        { id: 'images', label: 'Images' },
     ];
 
 
@@ -581,6 +324,29 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     placeholder="0.00"
                                 />
                             </div>
+
+                            {(product.price > 0 && product.costPrice !== undefined) && (
+                                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                    <div className="flex justify-between items-center mb-1">
+                                        <span className="text-xs text-gray-500">Estimated Profit</span>
+                                        <span className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {formatCurrency(profitAmount, storeSettings)}
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-xs text-gray-500">Margin</span>
+                                        <span className={`text-sm font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {profitMargin.toFixed(2)}%
+                                        </span>
+                                    </div>
+                                    <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                        <div
+                                            className={`h-full transition-all duration-500 ${profitMargin >= 30 ? 'bg-green-500' : profitMargin >= 10 ? 'bg-blue-500' : 'bg-red-500'}`}
+                                            style={{ width: `${Math.max(0, Math.min(100, profitMargin))}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </>
                 );
@@ -1094,42 +860,60 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 {/* Pricing */}
                                 {renderSectionTitle('Pricing')}
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Retail Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''} *
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
-                                            <input
-                                                type="number"
-                                                name="price"
-                                                id="price"
-                                                value={product.price}
-                                                onChange={handleChange}
-                                                required
-                                                min="0.01"
-                                                step="0.01"
-                                                className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 mb-1">Cost Price</label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-sm">$</span>
-                                            <input
-                                                type="number"
-                                                name="costPrice"
-                                                id="costPrice"
-                                                value={product.costPrice || ''}
-                                                onChange={handleChange}
-                                                min="0"
-                                                step="0.01"
-                                                className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                            />
-                                        </div>
-                                    </div>
+                                    <InputField
+                                        label={`Retail Price ${product.unitOfMeasure === 'kg' ? '(per kg)' : ''}`}
+                                        name="price"
+                                        id="price"
+                                        type="number"
+                                        value={product.price}
+                                        onChange={handleChange}
+                                        required
+                                        min="0.01"
+                                        step="0.01"
+                                        icon={<span className="text-gray-500">$</span>}
+                                        placeholder="0.00"
+                                    />
+                                    <InputField
+                                        label="Cost Price"
+                                        name="costPrice"
+                                        id="costPrice"
+                                        type="number"
+                                        value={product.costPrice || ''}
+                                        onChange={handleChange}
+                                        min="0"
+                                        step="0.01"
+                                        icon={<span className="text-gray-500">$</span>}
+                                        placeholder="0.00"
+                                    />
                                 </div>
+
+                                {(product.price > 0 && product.costPrice !== undefined) && (
+                                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 mt-2">
+                                        <div className="flex items-center gap-6">
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <span className="text-xs text-gray-500 uppercase font-semibold">Profit Margin</span>
+                                                    <span className={`text-sm font-bold ${profitMargin >= 30 ? 'text-green-600' : profitMargin >= 10 ? 'text-blue-600' : 'text-red-600'}`}>
+                                                        {profitMargin.toFixed(2)}%
+                                                    </span>
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                                    <div
+                                                        className={`h-full transition-all duration-500 ${profitMargin >= 30 ? 'bg-green-500' : profitMargin >= 10 ? 'bg-blue-500' : 'bg-red-500'}`}
+                                                        style={{ width: `${Math.max(0, Math.min(100, profitMargin))}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="w-px h-10 bg-gray-200"></div>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs text-gray-500 uppercase font-semibold">Estimated Profit</span>
+                                                <span className={`text-lg font-bold ${profitAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                                    {formatCurrency(profitAmount, storeSettings)}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Inventory & Shipping */}
                                 {renderSectionTitle('Inventory & Shipping')}
@@ -1380,48 +1164,56 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
                                 {/* Images */}
                                 {renderSectionTitle('Images')}
-                                <div>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {images.length > 0 ? (
-                                            images.map((imgSrc, index) => (
-                                                <div key={index} className="relative group aspect-square col-span-2 max-w-[200px]">
-                                                    <img
-                                                        src={buildAssetUrl(imgSrc)}
-                                                        alt="Product image"
-                                                        className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeImage(index)}
-                                                        className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 shadow-lg hover:bg-red-700"
-                                                        aria-label="Remove image"
-                                                    >
-                                                        <XMarkIcon className="w-4 h-4" />
-                                                    </button>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-5 gap-4">
+                                        {images.map((imgSrc, index) => (
+                                            <div key={index} className="relative group aspect-square">
+                                                <img
+                                                    src={imgSrc.startsWith('data:') ? imgSrc : buildAssetUrl(imgSrc)}
+                                                    alt={`Product ${index + 1}`}
+                                                    className="w-full h-full object-cover rounded-xl shadow-sm border border-gray-200 group-hover:border-blue-500 transition-colors"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeImage(index)}
+                                                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 shadow-lg hover:bg-red-700 transition-all duration-200"
+                                                    aria-label="Remove image"
+                                                >
+                                                    <XMarkIcon className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        ))}
+
+                                        {images.length < 5 && (
+                                            <div className="flex gap-4 col-span-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group"
                                                 >
-                                                    <ArrowUpTrayIcon className="w-6 h-6 text-gray-400" />
-                                                    <span className="text-xs font-medium text-gray-600">Upload</span>
+                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600">
+                                                        <ArrowUpTrayIcon className="w-6 h-6" />
+                                                    </div>
+                                                    <span className="text-xs font-semibold">Upload</span>
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsCameraModalOpen(true)}
-                                                    className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-1 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group"
                                                 >
-                                                    <CameraIcon className="w-6 h-6 text-gray-400" />
-                                                    <span className="text-xs font-medium text-gray-600">Camera</span>
+                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600">
+                                                        <CameraIcon className="w-6 h-6" />
+                                                    </div>
+                                                    <span className="text-xs font-semibold">Camera</span>
                                                 </button>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
-                                    <p className="text-xs text-gray-500 mt-2">Only one image allowed per product.</p>
+                                    <p className="text-xs text-gray-500">
+                                        {images.length === 0
+                                            ? "Add up to 5 high-quality images of your product."
+                                            : `${images.length} of 5 images used.`}
+                                    </p>
                                 </div>
 
                                 {/* Status */}

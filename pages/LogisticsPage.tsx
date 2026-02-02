@@ -159,12 +159,12 @@ export default function LogisticsPage() {
     };
 
     return (
-        <div className="p-4 md:p-6 h-full flex flex-col bg-gray-50 dark:bg-slate-950">
+        <div className="p-0 h-full flex flex-col bg-gray-50 dark:bg-slate-950 ">
             {/* Header */}
-            <header className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md sticky top-0 z-10 border border-white/20 dark:border-slate-800/50 rounded-2xl p-6 mb-6 shadow-sm glass-effect">
+            <header className="dark:bg-slate-950 backdrop-blur-md sticky top-0 z-10 p-2 ">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-600 dark:bg-blue-500 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-none">
+                        <div className="p-3 text-blue-600 dark:shadow-none">
                             <TruckIcon className="w-8 h-8" />
                         </div>
                         <div>
@@ -234,9 +234,9 @@ export default function LogisticsPage() {
             </header>
 
             {/* Content - Split Layout */}
-            <div className="flex-1 flex gap-6 overflow-hidden">
+            <div className="flex-1 flex gap-1 overflow-hidden">
                 {/* Main List/Grid Area */}
-                <div className={`${isDetailPaneOpen ? 'hidden md:block' : ''} flex-1 overflow-auto bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-gray-100 dark:border-slate-800 transition-all custom-scrollbar`}>
+                <div className={`${isDetailPaneOpen ? 'hidden md:block' : ''} flex-1 overflow-auto bg-white/50 dark:bg-slate-900/50 p-2 transition-all custom-scrollbar`}>
                     {activeTab === 'shipments' && (
                         <ShipmentList
                             shipments={shipments}
@@ -285,7 +285,7 @@ export default function LogisticsPage() {
 
                             {/* Detail Panel */}
                             <div className="fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl z-50 lg:relative lg:z-0 lg:w-96 lg:max-w-none lg:shadow-none lg:border-l lg:border-gray-200 dark:lg:border-slate-800 overflow-y-auto animate-slide-in-right glass-effect">
-                                <div className="p-6">
+                                <div className="p-4">
                                     {/* Header */}
                                     <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
                                         <div>
@@ -688,7 +688,6 @@ export default function LogisticsPage() {
                     </div>
                 </div>
             )}
-            Refresh
 
             {/* Confirmation Modal */}
             {confirmationModal && confirmationModal.isOpen && (

@@ -3,8 +3,6 @@ import { CartItem, Customer, StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import {
     ShoppingCartIcon,
-    XMarkIcon,
-    QrCodeIcon,
     CreditCardIcon,
     ChevronDownIcon,
     ClockIcon,
@@ -133,39 +131,7 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
 
             {/* Scanner Toggle / Header */}
             <div className="flex items-center justify-between px-4 py-0 mt-2 z-10">
-                <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
-                    {isScannerOpen ? (
-                        <>
-                            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                            Scanning Mode
-                        </>
-                    ) : (
-                        <>
-                            <ShoppingCartIcon className="w-4 h-4 text-slate-500 dark:text-gray-400" />
-                            Checkout Actions
-                        </>
-                    )}
-                </h3>
-                <button
-                    id="pos-scanner-btn"
-                    onClick={() => setIsScannerOpen(!isScannerOpen)}
-                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${isScannerOpen
-                        ? 'bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/20'
-                        : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20'
-                        }`}
-                >
-                    {isScannerOpen ? (
-                        <>
-                            <XMarkIcon className="w-4 h-4" />
-                            Stop Scanning
-                        </>
-                    ) : (
-                        <>
-                            <QrCodeIcon className="w-4 h-4" />
-                            Scan Barcode
-                        </>
-                    )}
-                </button>
+                
             </div>
 
             {isScannerOpen ? (

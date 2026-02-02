@@ -133,12 +133,12 @@ textarea {
 
 .glass-effect,
 [glass-effect] {
-  @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-sm transition-all duration-300;
+  @apply bg-white/70 backdrop-blur-md transition-all duration-300;
 }
 
 .dark .glass-effect,
 .dark [glass-effect] {
-  @apply bg-slate-900/70 backdrop-blur-md border border-slate-700/50 shadow-lg shadow-black/20;
+  @apply bg-slate-900/70 backdrop-blur-md ;
 }
 
 @supports not (backdrop-filter: blur(4px)) {

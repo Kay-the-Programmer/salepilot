@@ -50,7 +50,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 </div>
 
                 {/* Row 3: Recent Orders & Top Sales */}
-                <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     {/* Recent Orders - 2 Cols */}
                     <RecentOrdersTable
                         recentOrders={reportData.sales.recentOrders}

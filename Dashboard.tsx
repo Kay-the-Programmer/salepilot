@@ -9,43 +9,43 @@ import { lazy, Suspense } from 'react';
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
 
-const QuickView = lazy(() => import('./pages/QuickView'));
-const InventoryPage = lazy(() => import('./pages/InventoryPage'));
-const SalesPage = lazy(() => import('./pages/SalesPage'));
-const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
-const StockTakePage = lazy(() => import('./pages/StockTakePage'));
-const ReturnsPage = lazy(() => import('./pages/ReturnsPage'));
-const CustomersPage = lazy(() => import('./pages/CustomersPage'));
-const SuppliersPage = lazy(() => import('./pages/SuppliersPage'));
-const PurchaseOrdersPage = lazy(() => import('./pages/PurchaseOrdersPage'));
-const ReportsPage = lazy(() => import('./pages/ReportsPage'));
-const LoginPage = lazy(() => import('./pages/LoginPage'));
-const StoreSetupPage = lazy(() => import('./pages/StoreSetupPage'));
-const ProfilePage = lazy(() => import('./pages/ProfilePage'));
-const SettingsPage = lazy(() => import('./pages/SettingsPage'));
-const UsersPage = lazy(() => import('./pages/UsersPage'));
-const AccountingPage = lazy(() => import('./pages/AccountingPage'));
-const AllSalesPage = lazy(() => import('./pages/AllSalesPage'));
-const AuditLogPage = lazy(() => import('./pages/AuditLogPage'));
-const OrdersPage = lazy(() => import('./pages/OrdersPage'));
-const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
-const SuperAdminDashboard = lazy(() => import('./pages/superadmin/SuperAdminDashboard'));
-const SuperAdminStores = lazy(() => import('./pages/superadmin/SuperAdminStores'));
-const SuperAdminNotifications = lazy(() => import('./pages/superadmin/SuperAdminNotifications'));
-const SuperAdminSubscriptions = lazy(() => import('./pages/superadmin/SuperAdminSubscriptions'));
-const SuperAdminStoreDetails = lazy(() => import('./pages/superadmin/SuperAdminStoreDetails'));
-const SuperAdminSettings = lazy(() => import('./pages/superadmin/SuperAdminSettings'));
-const MarketplacePage = lazy(() => import('./pages/shop/MarketplacePage'));
-const MarketplaceDashboard = lazy(() => import('./pages/shop/CustomerDashboard')); // The Marketplace Portal
-const CustomerOrdersPage = lazy(() => import('./pages/customers/CustomerDashboard')); // The My Orders Page
-const CustomerRequestTrackingPage = lazy(() => import('./pages/shop/CustomerRequestTrackingPage'));
-const MarketingPage = lazy(() => import('./pages/MarketingPage'));
-const MarketplaceRequestActionPage = lazy(() => import('./pages/MarketplaceRequestActionPage'));
-const LogisticsPage = lazy(() => import('./pages/LogisticsPage'));
-const UserGuidePage = lazy(() => import('./pages/UserGuidePage'));
-const WhatsAppConversationsPage = lazy(() => import('./pages/WhatsAppConversationsPage'));
-const WhatsAppSettingsPage = lazy(() => import('./pages/WhatsAppSettingsPage'));
-const SupportPage = lazy(() => import('./pages/SupportPage'));
+const QuickView = lazy(() => import('@/pages/QuickView'));
+const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
+const SalesPage = lazy(() => import('@/pages/SalesPage'));
+const CategoriesPage = lazy(() => import('@/pages/CategoriesPage'));
+const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
+const ReturnsPage = lazy(() => import('@/pages/ReturnsPage'));
+const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
+const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
+const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
+const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
+const LoginPage = lazy(() => import('@/pages/LoginPage'));
+const StoreSetupPage = lazy(() => import('@/pages/StoreSetupPage'));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
+const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
+const UsersPage = lazy(() => import('@/pages/UsersPage'));
+const AccountingPage = lazy(() => import('@/pages/AccountingPage'));
+const AllSalesPage = lazy(() => import('@/pages/AllSalesPage'));
+const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'));
+const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
+const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
+const SuperAdminDashboard = lazy(() => import('@/pages/superadmin/SuperAdminDashboard'));
+const SuperAdminStores = lazy(() => import('@/pages/superadmin/SuperAdminStores'));
+const SuperAdminNotifications = lazy(() => import('@/pages/superadmin/SuperAdminNotifications'));
+const SuperAdminSubscriptions = lazy(() => import('@/pages/superadmin/SuperAdminSubscriptions'));
+const SuperAdminStoreDetails = lazy(() => import('@/pages/superadmin/SuperAdminStoreDetails'));
+const SuperAdminSettings = lazy(() => import('@/pages/superadmin/SuperAdminSettings'));
+const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
+const MarketplaceDashboard = lazy(() => import('@/pages/shop/CustomerDashboard')); // The Marketplace Portal
+const CustomerOrdersPage = lazy(() => import('@/pages/customers/CustomerDashboard')); // The My Orders Page
+const CustomerRequestTrackingPage = lazy(() => import('@/pages/shop/CustomerRequestTrackingPage'));
+const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
+const MarketplaceRequestActionPage = lazy(() => import('@/pages/MarketplaceRequestActionPage'));
+const LogisticsPage = lazy(() => import('@/pages/LogisticsPage'));
+const UserGuidePage = lazy(() => import('@/pages/UserGuidePage'));
+const WhatsAppConversationsPage = lazy(() => import('@/pages/WhatsAppConversationsPage'));
+const WhatsAppSettingsPage = lazy(() => import('@/pages/WhatsAppSettingsPage'));
+const SupportPage = lazy(() => import('@/pages/SupportPage'));
 
 import Snackbar from './components/Snackbar';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
@@ -1184,7 +1184,7 @@ export default function Dashboard() {
                 case 'stock-takes':
                     return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
                 case 'reports':
-                    return <ReportsPage storeSettings={storeSettings!} />;
+                    return <ReportsPage storeSettings={storeSettings!} user={currentUser} />;
                 case 'accounting':
                     return <AccountingPage
                         accounts={accounts}

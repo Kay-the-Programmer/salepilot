@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StoreSettings } from '../types';
+import { StoreSettings, User } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { api } from '../services/api';
@@ -14,9 +14,6 @@ import UsersIcon from '../components/icons/UsersIcon';
 import HomeIcon from '../components/icons/HomeIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
-import FunnelIcon from '../components/icons/FunnelIcon';
-import GridIcon from '../components/icons/GridIcon';
-import ChartBarIcon from '../components/icons/ChartBarIcon';
 
 // Components
 import { OverviewTab } from '../components/reports/OverviewTab';
@@ -26,18 +23,11 @@ import { CustomersTab } from '../components/reports/CustomersTab';
 import { CashflowTab } from '../components/reports/CashflowTab';
 import { PersonalUseTab } from '../components/reports/PersonalUseTab';
 
-// - [x] Explore `ReportsPage.tsx` and sub-components
-// - [x] Define "filterable cards" implementation strategy
-// - [x] Implement global dark theme and glass effect enhancements
-// - [x] Refactor Inventory Report section
-// - [x] Refactor Customers Report section
-// - [x] Refactor Cashflow Report section
-// - [x] Refactor Personal Report section
-// - [/] Verify changes
 
 interface ReportsPageProps {
     storeSettings: StoreSettings;
     onClose?: () => void;
+    user?: User | null;
 }
 
 const toDateInputString = (date: Date): string => {
@@ -47,7 +37,15 @@ const toDateInputString = (date: Date): string => {
     return `${year}-${month}-${day}`;
 };
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => {
+const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Good morning';
+    if (hour >= 12 && hour < 17) return 'Good afternoon';
+    if (hour >= 17 && hour < 22) return 'Good evening';
+    return 'Good night';
+};
+
+const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user }) => {
     const [startDate, setStartDate] = useState(() => {
         const d = new Date();
         d.setDate(d.getDate() - 29);
@@ -312,18 +310,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
             {/* Header */}
             <header className="flex-none bg-white glass-effect px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
                 <div className="flex items-center gap-4">
-                    <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-xl">
-                        <ChartBarIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                    </div>
                     <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white leading-none">Dashboard</h1>
-                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1 uppercase tracking-wider font-semibold">Analytics & Performance</p>
+                        <h1 className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white leading-none">Dashboard</h1>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1  tracking-wider font-semibold">{getGreeting()} {user?.name?.split(' ')[0] || "User"}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
                     {/* Desktop Tabs Component (Hidden on mobile) */}
                     <div className="hidden min-[1100px]:flex items-center">
-                        <div className="relative border border-slate-200/50 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-slate-800/10 p-1 backdrop-blur-sm">
+                        <div className="relative bg-gray-200  rounded-2xl  dark:bg-slate-800/50 p-1 backdrop-blur-sm">
                             <div className="flex items-center gap-1">
                                 {tabs.map((tab) => (
                                     <button
@@ -339,7 +334,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                             whitespace-nowrap
                                             transition-all duration-200 active:scale-95
                                             ${activeTab === tab.id
-                                                ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-md'
+                                                ? 'bg-slate-50 dark:bg-slate-700 dark:text-slate-50  text-slate-700 shadow-md'
                                                 : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'
                                             }
                                         `}
@@ -353,112 +348,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                             </div>
                         </div>
                     </div>
-
-
-                    <div className="flex items-center  p-1 rounded-xl space-x-2">
-                        {/* Mobile Menu Button */}
-                        {/* Filter Button */}
-                        <div className="relative" ref={filterMenuRef}>
-                            <button
-                                onClick={() => setShowFilters(!showFilters)}
-                                className={`h-11 flex items-center gap-2 bg-white dark:bg-slate-800 shadow-md border border-slate-200/50 dark:border-white/10 rounded-2xl px-4 active:scale-95 transition-all
-                                    ${showFilters ? 'ring-2 ring-blue-500/50 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300'}`}
-                                aria-label="Filter options"
-                            >
-                                <FunnelIcon className="w-5 h-5" />
-                                <span className="text-sm font-bold tracking-tight">Filter</span>
-                            </button>
-
-                            {/* Floating Filter Popup */}
-                            {showFilters && (
-                                <div className="absolute right-0 top-full mt-2 w-[400px] bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-gray-100 dark:border-white/10 z-30 animate-fade-in origin-top-right p-4 hidden md:block">
-                                    <div className="flex flex-col gap-4">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <h3 className="font-bold text-gray-900 dark:text-white">Filter Report</h3>
-                                            <button onClick={() => setShowFilters(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white p-1">
-                                                <XMarkIcon className="w-4 h-4" />
-                                            </button>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                            <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Date Range</div>
-                                            <div className="grid grid-cols-2 gap-2">
-                                                <button
-                                                    onClick={() => setDateRange(7, '7d')}
-                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === '7d' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
-                                                >
-                                                    Last 7 Days
-                                                </button>
-                                                <button
-                                                    onClick={() => setDateRange(30, '30d')}
-                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === '30d' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
-                                                >
-                                                    Last 30 Days
-                                                </button>
-                                                <button
-                                                    onClick={setThisMonth}
-                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === 'month' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
-                                                >
-                                                    This Month
-                                                </button>
-                                                <button
-                                                    onClick={() => setDatePreset('custom')}
-                                                    className={`px-3 py-2.5 rounded-xl text-sm font-bold transition-all border ${datePreset === 'custom' ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-white/10 hover:border-blue-400'}`}
-                                                >
-                                                    Custom Range
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {datePreset === 'custom' && (
-                                            <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-                                                <div className="space-y-1 flex-1">
-                                                    <label className="text-xs font-medium text-gray-600">Start Date</label>
-                                                    <input
-                                                        type="date"
-                                                        value={startDate}
-                                                        onChange={(e) => setStartDate(e.target.value)}
-                                                        className="block w-full px-2 py-1.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                    />
-                                                </div>
-                                                <div className="space-y-1 flex-1">
-                                                    <label className="text-xs font-medium text-gray-600">End Date</label>
-                                                    <input
-                                                        type="date"
-                                                        value={endDate}
-                                                        onChange={(e) => setEndDate(e.target.value)}
-                                                        className="block w-full px-2 py-1.5 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                                    />
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="pt-2 border-t border-gray-100 flex justify-end">
-                                            <button
-                                                onClick={() => setShowFilters(false)}
-                                                className="text-sm text-blue-600 font-medium hover:text-blue-700"
-                                            >
-                                                Done
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        {/* Mobile Grid Menu Button */}
-                        <button
-                            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                            className="min-[1100px]:hidden h-11 w-11 flex items-center justify-center rounded-2xl bg-slate-900 dark:bg-slate-700 text-white shadow-lg active:scale-90 transition-all"
-                            aria-label="Menu"
-                        >
-                            <GridIcon className="w-5 h-5 font-bold" />
-                        </button>
-                    </div>
                 </div>
             </header>
 
             {/* Mobile Tab Scroller (Visible on mobile/tablet) */}
-            <div className="flex-none min-[1100px]:hidden bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5 sticky top-[72px] z-30">
+            <div className="flex-none min-[1100px]:hidden bg-white/80 rounded-full backdrop-blur-md dark:bg-slate-800/10 sticky top-[72px] z-30">
                 <div className="relative">
                     <div className="flex items-center overflow-x-auto gap-2 px-4 py-3 scrollbar-hide mask-fade-edges">
                         {tabs.map((tab) => {
@@ -471,12 +365,12 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
                                         flex items-center gap-2
                                         shrink-0
                                         px-4 py-2
-                                        rounded-xl
+                                        rounded-3xl
                                         text-sm font-bold
                                         whitespace-nowrap
                                         transition-all duration-200 active:scale-95
                                         ${isActive
-                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                            ? 'bg-blue-600/70 dark:bg-slate-700  text-white shadow-lg shadow-slate-500/20'
                                             : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-transparent'
                                         }
                                     `}
@@ -545,7 +439,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose }) => 
             {/* Content */}
             <main className="flex-1 overflow-y-auto p-4">
                 <div className="max-w-7xl mx-auto w-full">
-
                     {renderContent()}
                 </div>
             </main>

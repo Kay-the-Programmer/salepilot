@@ -23,7 +23,7 @@ const ListGridToggle: React.FC<ListGridToggleProps> = ({
     size = 'md',
 }) => {
     const isGrid = viewMode === 'grid';
-    const buttonSizeClasses = size === 'sm' ? 'p-2' : 'p-2.5';
+    const buttonSizeClasses = size === 'sm' ? 'p-3' : 'p-2.5';
     const iconSizeClasses = size === 'sm' ? 'w-4 h-4' : 'w-5 h-5';
 
     const handleToggle = (e: React.MouseEvent) => {
@@ -34,7 +34,7 @@ const ListGridToggle: React.FC<ListGridToggleProps> = ({
     return (
         <button
             onClick={handleToggle}
-            className={`flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-sm group ${buttonSizeClasses} ${className}`}
+            className={`flex items-center justify-center rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-500/30 hover:bg-blue-50/30 dark:hover:bg-blue-500/10 transition-all shadow-lg p-2 group ${buttonSizeClasses} ${className}`}
             title={isGrid ? "Switch to List View" : "Switch to Grid View"}
             aria-label={isGrid ? "Switch to List View" : "Switch to Grid View"}
         >

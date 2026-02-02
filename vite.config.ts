@@ -12,6 +12,7 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       dedupe: ['react', 'react-dom'],
+      extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json'],
       alias: {
         '@': path.resolve(__dirname, '.'),
       }

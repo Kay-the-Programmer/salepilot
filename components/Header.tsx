@@ -56,7 +56,7 @@ export default function Header({
     };
 
     return (
-        <header className={`glass-effect border-b border-gray-200/40 dark:border-white/10 sticky top-0 z-30 transition-all duration-300 ${className}`}>
+        <header className={`glass-effect sticky top-0 z-30 transition-all duration-300 ${className}`}>
             <div className="px-4 h-16 flex items-center justify-between">
                 {title && (
                     <div className="flex items-center flex-1 min-w-0 mr-4">
@@ -69,7 +69,7 @@ export default function Header({
                                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                             </button>
                         )}
-                        <h1 className="text-xl font-bold text-gray-700 dark:text-white truncate">{title}</h1>
+                        <h1 className="text-xl font-bold text-slate-700 uppercase dark:text-white truncate">{title}</h1>
                     </div>
                 )}
 
@@ -90,7 +90,7 @@ export default function Header({
                     )}
 
                     {(searchLeftContent || rightContent || showSearch || (buttonText && onButtonClick)) && (
-                        <div className="flex items-center gap-3 p-1 rounded-2xl bg-white/50 dark:bg-slate-800/50 border border-gray-100/50 dark:border-white/10 backdrop-blur-sm shadow-sm" glass-effect="">
+                        <div className="flex items-center gap-3 p-1 rounded-2xl bg-slate-200 dark:bg-slate-800/50 border border-gray-100/50 dark:border-white/10 backdrop-blur-sm shadow-sm" >
                             {searchLeftContent}
                             {rightContent}
 
@@ -119,7 +119,7 @@ export default function Header({
                                     ) : (
                                         <button
                                             onClick={() => setIsSearchActive(true)}
-                                            className="p-2 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100/80 dark:hover:bg-slate-800 transition-colors"
+                                            className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100/80 dark:hover:bg-slate-800 transition-colors"
                                             aria-label="Search"
                                         >
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

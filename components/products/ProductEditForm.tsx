@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Product, Category, CustomAttribute, Supplier, StoreSettings } from '../../types';
-import { generateDescription as fetchAIDescription } from '../../services/geminiService';
 import { api, buildAssetUrl } from '../../services/api';
 import SparklesIcon from '../icons/SparklesIcon';
 import XMarkIcon from '../icons/XMarkIcon';
@@ -10,7 +9,8 @@ import ArrowUpTrayIcon from '../icons/ArrowUpTrayIcon';
 import SupplierFormModal from '../suppliers/SupplierFormModal';
 import UnifiedScannerModal from '../UnifiedScannerModal';
 import ArrowLeftIcon from '../icons/ArrowLeftIcon';
-
+import { useProductForm } from '../../hooks/useProductForm';
+import { formatCurrency } from '@/utils/currency';
 
 interface ProductEditFormProps {
     product: Product;
@@ -31,35 +31,34 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     onCancel,
     onAddCategory
 }) => {
-    const getInitialProductState = (): Omit<Product, 'id'> => ({
-        name: '',
-        description: '',
-        sku: `${storeSettings.skuPrefix}${Math.floor(10000 + Math.random() * 90000)}`,
-        categoryId: undefined,
-        price: 0,
-        stock: 0,
-        imageUrls: [],
-        status: 'active',
-        barcode: '',
-        costPrice: 0,
-        supplierId: undefined,
-        brand: '',
-        reorderPoint: 0,
-        safetyStock: 0,
-        weight: 0,
-        dimensions: '',
-        variants: [],
-        customAttributes: {},
-        unitOfMeasure: 'unit',
+    const {
+        product,
+        setProduct, // Still needed for some direct updates
+        images,
+        isGenerating,
+        isSaving,
+        error,
+        setError,
+        setIsSaving,
+        handleChange,
+        handleGenerateDescription,
+        handleGenerateBarcode,
+        handleLookup,
+        handleImageUpload,
+        removeImage,
+        handleCameraCapture,
+        profitMargin,
+        profitAmount,
+        validate,
+        prepareFormData,
+        relevantAttributes
+    } = useProductForm({
+        productToEdit,
+        categories,
+        storeSettings,
+        onSaveSuccess: onCancel // Close on success
     });
 
-    const [product, setProduct] = useState<Omit<Product, 'id'>>({ ...getInitialProductState(), ...productToEdit });
-    const [images, setImages] = useState<string[]>(productToEdit.imageUrls || []);
-    const [imageFiles, setImageFiles] = useState<File[]>([]);
-    const [imagesToDelete, setImagesToDelete] = useState<string[]>([]);
-    const [isGenerating, setIsGenerating] = useState(false);
-    const [isSaving, setIsSaving] = useState(false);
-    const [error, setError] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
@@ -71,172 +70,21 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
         setLocalSuppliers(suppliers);
     }, [suppliers]);
 
-    useEffect(() => {
-        setProduct({ ...getInitialProductState(), ...productToEdit });
-        setImages(productToEdit.imageUrls || []);
-        setImageFiles([]);
-        setImagesToDelete([]);
-        setError('');
-        setIsSaving(false);
-        setActiveSection('details');
-    }, [productToEdit.id]);
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        const numericFields = ['reorderPoint', 'safetyStock'];
-        const decimalFields = ['stock', 'weight'];
-        const stringNumericFields = ['price', 'costPrice'];
-
-        if (name.startsWith('custom_')) {
-            const attributeId = name.slice(7);
-            setProduct(prev => ({
-                ...prev,
-                customAttributes: {
-                    ...prev.customAttributes,
-                    [attributeId]: value
-                }
-            }));
-        } else {
-            if (numericFields.includes(name)) {
-                setProduct(prev => ({ ...prev, [name]: value === '' ? 0 : parseInt(value) }));
-            } else if (decimalFields.includes(name)) {
-                setProduct(prev => ({ ...prev, [name]: value === '' ? 0 : parseFloat(value) }));
-            } else if (stringNumericFields.includes(name)) {
-                setProduct(prev => ({ ...prev, [name]: value }));
-            } else if (name === 'categoryId' || name === 'supplierId') {
-                setProduct(prev => ({ ...prev, [name]: value === '' ? undefined : value }));
-            } else {
-                setProduct(prev => ({ ...prev, [name]: value }));
-            }
-        }
-    };
-
-    const categoryName = useMemo(() => {
-        return categories.find(c => c.id === product.categoryId)?.name || '';
-    }, [product.categoryId, categories]);
-
-    const handleGenerateDescription = async () => {
-        if (!product.name || !product.categoryId) {
-            setError('Please enter a Product Name and select a Category to generate a description.');
-            return;
-        }
-        setError('');
-        setIsGenerating(true);
-        try {
-            const description = await fetchAIDescription(product.name, categoryName);
-            setProduct(prev => ({ ...prev, description }));
-        } catch (err: any) {
-            setError(err.message || "An unknown error occurred.");
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
-    const handleGenerateBarcode = () => {
-        setProduct(prev => ({ ...prev, barcode: prev.sku }));
-    };
-
-    const handleLookup = async (barcodeToUse?: string) => {
-        const code = barcodeToUse || product.barcode;
-        if (!code) {
-            if (!barcodeToUse) setError("Please enter a barcode to lookup.");
-            return;
-        }
-
-        setIsGenerating(true);
-        try {
-            const data = await api.get<any>(`/products/external-lookup/${code}`);
-            if (data) {
-                setProduct(prev => ({
-                    ...prev,
-                    barcode: code,
-                    name: prev.name || data.name,
-                    description: prev.description || data.description,
-                    brand: prev.brand || data.brand,
-                    weight: (prev.weight === 0 && data.weight) ? data.weight : prev.weight,
-                    unitOfMeasure: (prev.unitOfMeasure === 'unit' && data.unitOfMeasure) ? data.unitOfMeasure : prev.unitOfMeasure,
-                }));
-
-                if (data.imageUrls && Array.isArray(data.imageUrls) && data.imageUrls.length > 0) {
-                    setImages(prev => {
-                        const existing = new Set(prev);
-                        const newImgs = data.imageUrls.filter((url: string) => !existing.has(url));
-                        return [...prev, ...newImgs];
-                    });
-                }
-                setError('');
-            }
-        } catch (err: any) {
-            console.error("Lookup failed", err);
-            if (!barcodeToUse) {
-                setError('Product not found in database');
-            }
-        } finally {
-            setIsGenerating(false);
-        }
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (isSaving) return;
 
-        const priceNum = parseFloat(product.price.toString());
-        if (!product.name || !product.categoryId || priceNum <= 0) {
-            setError("Please fill in all required fields: Name, Category, and Price.");
+        const validationError = validate();
+        if (validationError) {
+            setError(validationError);
             return;
         }
+
         setError('');
         setIsSaving(true);
 
         try {
-            const formData = new FormData();
-            formData.append('name', product.name);
-            formData.append('description', product.description);
-            formData.append('sku', product.sku);
-            formData.append('barcode', product.barcode || '');
-            formData.append('category_id', product.categoryId || '');
-            formData.append('supplier_id', product.supplierId || '');
-            formData.append('price', product.price.toString());
-            formData.append('cost_price', product.costPrice?.toString() || '');
-            formData.append('stock', product.stock.toString());
-            formData.append('unit_of_measure', (product.unitOfMeasure || 'unit'));
-            formData.append('brand', product.brand || '');
-            formData.append('status', product.status);
-            formData.append('reorder_point', product.reorderPoint?.toString() || '');
-            formData.append('safety_stock', product.safetyStock?.toString() || '');
-            formData.append('weight', product.weight?.toString() || '');
-            formData.append('dimensions', product.dimensions || '');
-            formData.append('variants', JSON.stringify(product.variants || []));
-            formData.append('custom_attributes', JSON.stringify(product.customAttributes || {}));
-
-            const dataUrlImages = images.filter(url => url.startsWith('data:'));
-
-            const imagesToKeep = productToEdit.imageUrls.filter(url =>
-                !imagesToDelete.includes(url) && !url.startsWith('data:'));
-            formData.append('existing_images', JSON.stringify(imagesToKeep));
-
-            if (imagesToDelete.length > 0) {
-                formData.append('images_to_delete', JSON.stringify(imagesToDelete));
-            }
-
-            for (let i = 0; i < dataUrlImages.length; i++) {
-                const dataUrl = dataUrlImages[i];
-                const byteString = atob(dataUrl.split(',')[1]);
-                const mimeString = dataUrl.split(',')[0].split(':')[1].split(';')[0];
-                const ab = new ArrayBuffer(byteString.length);
-                const ia = new Uint8Array(ab);
-
-                for (let j = 0; j < byteString.length; j++) {
-                    ia[j] = byteString.charCodeAt(j);
-                }
-
-                const blob = new Blob([ab], { type: mimeString });
-                const fileName = `data-url-image-${Date.now()}-${i}.${mimeString.split('/')[1]}`;
-                const file = new File([blob], fileName, { type: mimeString });
-
-                formData.append('images', file);
-            }
-
+            const formData = prepareFormData();
             const result = await api.putFormData<Product>(`/products/${productToEdit.id}`, formData);
 
             if ((result as any)?.offline) {
@@ -245,115 +93,12 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
             } else {
                 await onSave(result as Product);
             }
-
-            setImageFiles([]);
-            setImagesToDelete([]);
         } catch (error: any) {
             console.error('Save failed', error);
             setError(error.message || 'Failed to save product');
         } finally {
             setIsSaving(false);
         }
-    };
-
-    const relevantAttributes = useMemo(() => {
-        if (!product.categoryId) return [];
-
-        const allAttributes = new Map<string, CustomAttribute>();
-        let currentId: string | null | undefined = product.categoryId;
-
-        while (currentId) {
-            const category = categories.find(c => c.id === currentId);
-            if (category) {
-                category.attributes.forEach(attr => {
-                    if (!allAttributes.has(attr.id)) {
-                        allAttributes.set(attr.id, attr);
-                    }
-                });
-                currentId = category.parentId;
-            } else {
-                currentId = null;
-            }
-        }
-        return Array.from(allAttributes.values());
-    }, [product.categoryId, categories]);
-
-    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const files = event.target.files;
-        if (files) {
-            const newFiles = Array.from(files);
-            setError('');
-
-            const MAX_FILE_SIZE = 5 * 1024 * 1024;
-            const validFiles = newFiles.filter(file => {
-                if (!file.type.startsWith('image/')) {
-                    setError('Please select only image files');
-                    return false;
-                }
-                if (file.size > MAX_FILE_SIZE) {
-                    setError(`Image ${file.name} is too large. Maximum size is 5MB`);
-                    return false;
-                }
-                return true;
-            });
-
-            if (validFiles.length === 0) {
-                event.target.value = '';
-                return;
-            }
-
-            setImageFiles(validFiles.slice(0, 1));
-            setImages([]);
-            setImagesToDelete(productToEdit?.imageUrls || []);
-
-            const file = validFiles[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                if (typeof reader.result === 'string') {
-                    setImages([reader.result as string]);
-                }
-            };
-            reader.onerror = () => {
-                setError(`Failed to read file: ${file.name}`);
-            };
-            reader.readAsDataURL(file);
-
-            event.target.value = '';
-        }
-    };
-
-    const removeImage = (indexToRemove: number) => {
-        setImages(prev => prev.filter((_, index) => index !== indexToRemove));
-
-        if (indexToRemove < imageFiles.length) {
-            setImageFiles(prev => prev.filter((_, index) => index !== indexToRemove));
-        } else if (productToEdit && productToEdit.imageUrls) {
-            const imageToRemove = productToEdit.imageUrls[indexToRemove - imageFiles.length];
-            if (imageToRemove) {
-                setImagesToDelete(prev => [...prev, imageToRemove]);
-            }
-        }
-    };
-
-    const handleCameraCapture = (imageDataUrl: string) => {
-        setImages([imageDataUrl]);
-        setImagesToDelete(productToEdit?.imageUrls || []);
-
-        const byteString = atob(imageDataUrl.split(',')[1]);
-        const mimeString = imageDataUrl.split(',')[0].split(':')[1].split(';')[0];
-        const ab = new ArrayBuffer(byteString.length);
-        const ia = new Uint8Array(ab);
-
-        for (let i = 0; i < byteString.length; i++) {
-            ia[i] = byteString.charCodeAt(i);
-        }
-
-        const blob = new Blob([ab], { type: mimeString });
-        const fileName = `camera-capture-${Date.now()}.${mimeString.split('/')[1]}`;
-        const file = new File([blob], fileName, { type: mimeString });
-
-        setImageFiles([file]);
-        setIsCameraModalOpen(false);
     };
 
     const handleCreateSupplier = async (newSupplier: Supplier) => {
@@ -549,6 +294,29 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
+
+                        {(product.price > 0 && product.costPrice !== undefined) && (
+                            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 mt-2">
+                                <div className="flex justify-between items-center mb-1">
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">Estimated Profit</span>
+                                    <span className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {formatCurrency(profitAmount, storeSettings)}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs text-slate-500 dark:text-slate-400">Margin</span>
+                                    <span className={`text-sm font-bold ${profitMargin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                                        {profitMargin.toFixed(2)}%
+                                    </span>
+                                </div>
+                                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                    <div
+                                        className={`h-full transition-all duration-500 ${profitMargin >= 30 ? 'bg-green-500' : profitMargin >= 10 ? 'bg-blue-500' : 'bg-red-500'}`}
+                                        style={{ width: `${Math.max(0, Math.min(100, profitMargin))}%` }}
+                                    ></div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 );
 

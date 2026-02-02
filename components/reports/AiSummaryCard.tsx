@@ -17,6 +17,7 @@ interface Message {
     id: string;
     type: 'user' | 'ai';
     content: string;
+    thinking?: string;
     timestamp: Date;
     isTyped?: boolean;
 }
@@ -148,10 +149,17 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 }
             });
 
+            // Parse thinking and content
+            const rawResponse = result.response;
+            const thinkingMatch = rawResponse.match(/<THINKING>([\s\S]*?)<\/THINKING>/);
+            const thinking = thinkingMatch ? thinkingMatch[1].trim() : undefined;
+            const cleanContent = rawResponse.replace(/<THINKING>[\s\S]*?<\/THINKING>/, '').trim();
+
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),
                 type: 'ai',
-                content: result.response,
+                content: cleanContent,
+                thinking,
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, aiResponse]);
@@ -254,7 +262,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-pink-500/10 dark:from-indigo-500/20 dark:via-purple-500/20 dark:to-pink-500/20 animate-pulse-slow"></div>
                     <SparklesIcon className="w-5 h-5 animate-pulse text-indigo-600 dark:text-indigo-400 relative z-10" />
-                    <span className="font-bold text-sm tracking-widest uppercase relative z-10 font-mono">AI CORE</span>
+                    <span className="font-bold text-sm tracking-widest relative z-10 font-mono">Assistant</span>
                     <div className="flex gap-1 relative z-10">
                         <div className="w-1.5 h-1.5 bg-green-500 dark:bg-green-400 rounded-full animate-blink shadow-[0_0_8px_rgba(34,197,94,0.8)] dark:shadow-[0_0_8px_rgba(74,222,128,0.8)]"></div>
                     </div>
@@ -316,6 +324,19 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                                         : 'bg-white dark:bg-slate-800/60 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-white/10 rounded-2xl rounded-tl-sm shadow-sm dark:shadow-black/20'
                                     }
                                 `}>
+                                    {message.thinking && (
+                                        <details className="mb-3 group/think">
+                                            <summary className="text-[10px] font-bold text-indigo-500/60 dark:text-indigo-400/60 cursor-pointer hover:text-indigo-500 transition-colors uppercase tracking-[0.1em] list-none flex items-center gap-1.5 selection:bg-transparent">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                                                Deep Reasoning
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 group-open/think:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M19 9l-7 7-7-7" /></svg>
+                                            </summary>
+                                            <div className="mt-2 p-3 bg-indigo-50/50 dark:bg-slate-900/50 rounded-xl border border-indigo-100/50 dark:border-white/5 text-[11px] font-mono text-slate-500 dark:text-slate-400 leading-relaxed drop-shadow-sm">
+                                                {message.thinking}
+                                            </div>
+                                        </details>
+                                    )}
+
                                     {message.type === 'ai' ? (
                                         <div className="font-mono text-xs md:text-sm prose prose-sm max-w-none prose-p:my-1.5 prose-strong:text-indigo-600 dark:prose-strong:text-indigo-300 prose-ul:pl-4 prose-a:text-indigo-500 dark:prose-a:text-indigo-400 dark:prose-invert">
                                             {/* Only type out if it's an AI message that hasn't been typed yet */}

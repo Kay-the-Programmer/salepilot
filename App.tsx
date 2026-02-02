@@ -6,20 +6,20 @@ import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
 
 // Lazy load route components
-const Dashboard = lazy(() => import('./Dashboard'));
-const ShopLayout = lazy(() => import('./pages/shop/ShopLayout'));
-const ShopHomePage = lazy(() => import('./pages/shop/ShopHomePage'));
-const ShopProductList = lazy(() => import('./pages/shop/ShopProductList'));
-const ShopProductDetail = lazy(() => import('./pages/shop/ShopProductDetail'));
-const CartPage = lazy(() => import('./pages/shop/CartPage'));
-const MarketplacePage = lazy(() => import('./pages/shop/MarketplacePage'));
-const CustomerRequestTrackingPage = lazy(() => import('./pages/shop/CustomerRequestTrackingPage'));
-const OfferLiveTracking = lazy(() => import('./components/offers/OfferLiveTracking'));
-const SubscriptionPage = lazy(() => import('./pages/SubscriptionPage'));
-const SupplierRegisterPage = lazy(() => import('./pages/auth/SupplierRegisterPage'));
-const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
-const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
-const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'));
+const Dashboard = lazy(() => import('@/Dashboard'));
+const ShopLayout = lazy(() => import('@/pages/shop/ShopLayout'));
+const ShopHomePage = lazy(() => import('@/pages/shop/ShopHomePage'));
+const ShopProductList = lazy(() => import('@/pages/shop/ShopProductList'));
+const ShopProductDetail = lazy(() => import('@/pages/shop/ShopProductDetail'));
+const CartPage = lazy(() => import('@/pages/shop/CartPage'));
+const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
+const CustomerRequestTrackingPage = lazy(() => import('@/pages/shop/CustomerRequestTrackingPage'));
+const OfferLiveTracking = lazy(() => import('@/components/offers/OfferLiveTracking'));
+const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
+const SupplierRegisterPage = lazy(() => import('@/pages/auth/SupplierRegisterPage'));
+const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
