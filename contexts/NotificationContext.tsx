@@ -18,15 +18,35 @@ export const NotificationProvider: React.FC<{ children: ReactNode; user: User | 
     const [notifications, setNotifications] = useState<Announcement[]>([]);
     const { showToast } = useToast();
 
+    const knownNotificationIds = React.useRef<Set<string>>(new Set());
+    const isInitialLoad = React.useRef(true);
+
     const fetchNotifications = useCallback(async () => {
         if (!user?.currentStoreId || !getOnlineStatus()) return;
         try {
             const data = await api.get<Announcement[]>(`/notifications/stores/${user.currentStoreId}`);
-            setNotifications(data || []);
+            const fetchedNotifications = data || [];
+
+            // Identify new unread notifications
+            if (!isInitialLoad.current) {
+                const newUnread = fetchedNotifications.filter(n =>
+                    !n.isRead && !knownNotificationIds.current.has(n.id)
+                );
+
+                newUnread.forEach(n => {
+                    showToast(n.title, 'info');
+                });
+            }
+
+            // Update known IDs
+            fetchedNotifications.forEach(n => knownNotificationIds.current.add(n.id));
+
+            setNotifications(fetchedNotifications);
+            isInitialLoad.current = false;
         } catch (error) {
             console.warn('Failed to fetch notifications:', error);
         }
-    }, [user?.currentStoreId]);
+    }, [user?.currentStoreId, showToast]);
 
     const markAsRead = useCallback(async (id: string) => {
         try {

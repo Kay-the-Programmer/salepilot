@@ -34,7 +34,8 @@ const LowStockAlertModal: React.FC<LowStockAlertModalProps> = ({
                 productName: product.name,
                 currentStock: stockCount,
                 reorderPoint: product.reorderPoint || storeSettings.lowStockThreshold,
-                requestedBy: user.email || user.name
+                requestedBy: user.email || user.name,
+                storeId: user.currentStoreId
             });
             showSnackbar(`Admin notified about low stock for "${product.name}"`, 'success');
             onClose();

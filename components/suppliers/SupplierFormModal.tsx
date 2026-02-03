@@ -194,7 +194,6 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                             value={supplier.address || ''}
                             onChange={handleChange}
                             multiline
-                            icon={<MapPinIcon className="w-5 h-5" />}
                             placeholder="Full address including city, state, and ZIP"
                             rows={3}
                         />
@@ -204,7 +203,6 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                             name="paymentTerms"
                             value={supplier.paymentTerms || ''}
                             onChange={handleChange}
-                            icon={<BanknotesIcon className="w-5 h-5" />}
                             placeholder="e.g., Net 30, COD, 2/10 Net 30"
                         />
                     </div>
@@ -224,7 +222,6 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                             value={supplier.bankingDetails || ''}
                             onChange={handleChange}
                             multiline
-                            icon={<BankIcon className="w-5 h-5" />}
                             placeholder="Bank name, account number, routing number, SWIFT/BIC"
                             rows={4}
                         />

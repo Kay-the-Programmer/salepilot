@@ -268,7 +268,7 @@ export default function Dashboard() {
             setReturns(mapResult(results[11], [] as Return[]));
             setAuditLogs(mapResult(results[12], [] as AuditLog[]));
             setStockTakeSession(mapResult(results[13], null as any));
-            setExpenses(mapResult(results[14], [] as Expense[]));
+            setExpenses(mapResult(results[14], { items: [] as Expense[] } as any).items || []);
             setRecurringExpenses(mapResult(results[15], [] as RecurringExpense[]));
             setAnnouncements(mapResult(results[16], [] as Announcement[]));
 
@@ -1219,7 +1219,7 @@ export default function Dashboard() {
                 case 'users':
                     return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
                 case 'notifications':
-                    return <NotificationsPage announcements={announcements} onRefresh={fetchData} />;
+                    return <NotificationsPage announcements={announcements} onRefresh={fetchData} userId={currentUser?.id} showSnackbar={showSnackbar} />;
                 case 'directory':
                 case 'marketplace':
                     if (parts[1] === 'request' && parts[2]) {

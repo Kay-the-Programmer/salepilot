@@ -1,11 +1,14 @@
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+import { api } from './api';
 
 class NotificationService {
     async getVapidPublicKey() {
-        const response = await fetch(`${API_URL}/push/vapid-public-key`);
-        const data = await response.json();
-        return data.publicKey;
+        try {
+            const data = await api.get<{ publicKey: string }>('/push/vapid-public-key');
+            return data.publicKey;
+        } catch (error) {
+            console.error('Failed to get VAPID public key:', error);
+            throw error;
+        }
     }
 
     async subscribeUser(userId?: string) {
@@ -15,34 +18,33 @@ class NotificationService {
         }
 
         try {
+            console.log('Push subscription: checking service worker...');
             const registration = await navigator.serviceWorker.ready;
+            console.log('Push subscription: service worker ready');
 
             // Get public key from server
             const vapidPublicKey = await this.getVapidPublicKey();
             const convertedVapidKey = this.urlBase64ToUint8Array(vapidPublicKey);
 
+            console.log('Push subscription: requesting browser permission...');
             const subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: convertedVapidKey
             });
+            console.log('Push subscription: browser subscription obtained');
 
             // Send subscription to server
-            await fetch(`${API_URL}/push/subscribe`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    subscription,
-                    userId
-                })
-            });
+            await api.post('/push/subscribe', {
+                subscription,
+                userId
+            }, { skipQueue: true });
 
-            console.log('User subscribed to push notifications');
+            console.log('Push subscription: user subscribed successfully');
             return subscription;
         } catch (error) {
             console.error('Failed to subscribe user:', error);
-            return null;
+            // Re-throw so UI can handle it
+            throw error;
         }
     }
 
@@ -55,20 +57,15 @@ class NotificationService {
                 await subscription.unsubscribe();
 
                 // Notify server
-                await fetch(`${API_URL}/push/unsubscribe`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        endpoint: subscription.endpoint
-                    })
-                });
+                await api.post('/push/unsubscribe', {
+                    endpoint: subscription.endpoint
+                }, { skipQueue: true });
 
                 console.log('User unsubscribed from push notifications');
             }
         } catch (error) {
             console.error('Failed to unsubscribe user:', error);
+            throw error;
         }
     }
 
@@ -77,9 +74,21 @@ class NotificationService {
             return false;
         }
 
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
-        return !!subscription;
+        try {
+            // Use a timeout for .ready to avoid hanging if SW is broken
+            const registration = await Promise.race([
+                navigator.serviceWorker.ready,
+                new Promise<null>((_, reject) => setTimeout(() => reject(new Error('SW ready timeout')), 3000))
+            ]);
+
+            if (!registration) return false;
+
+            const subscription = await registration.pushManager.getSubscription();
+            return !!subscription;
+        } catch (error) {
+            console.warn('Failed to get subscription status:', error);
+            return false;
+        }
     }
 
     private urlBase64ToUint8Array(base64String: string) {

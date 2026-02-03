@@ -142,6 +142,8 @@ export interface Return {
         addToStock: boolean;
     }[];
     refundAmount: number;
+    taxAmount: number;
+    subtotalAmount: number;
     refundMethod: string;
 }
 
@@ -359,6 +361,30 @@ export interface RecurringExpense {
     createdBy: string;
     createdAt: string;
     updatedAt: string;
+}
+
+export interface FinancialSummary {
+    summary: {
+        inventoryValue: number;
+        accountsReceivable: number;
+        accountsPayable: number;
+        cashBalance: number;
+        totalAssets: number;
+        totalLiabilities: number;
+        equity: number;
+    };
+    period: {
+        revenue: number;
+        cogs: number;
+        expenses: number;
+        grossProfit: number;
+        netIncome: number;
+    };
+    checks: {
+        arMatch: boolean;
+        apMatch: boolean;
+        inventoryMatch: boolean;
+    };
 }
 
 export interface Announcement {

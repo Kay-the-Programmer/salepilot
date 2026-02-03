@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Expense, Account, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
+import { api } from '../../../services/api';
 import PlusIcon from '../../icons/PlusIcon';
 import PencilIcon from '../../icons/PencilIcon';
 import TrashIcon from '../../icons/TrashIcon';
@@ -9,9 +10,10 @@ import CalculatorIcon from '../../icons/CalculatorIcon';
 import CalendarIcon from '../../icons/CalendarIcon';
 import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
 import MagnifyingGlassIcon from '../../icons/MagnifyingGlassIcon';
+import LoadingSpinner from '../../LoadingSpinner';
 
 interface ExpensesViewProps {
-    expenses: Expense[];
+    expenses: Expense[]; // Still receive from parent for initial/sync
     accounts: Account[];
     storeSettings: StoreSettings;
     onSave: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'> & { id?: string }) => void;
@@ -20,29 +22,46 @@ interface ExpensesViewProps {
     onOpenForm: () => void;
 }
 
-const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, storeSettings, onDelete, onEdit, onOpenForm }) => {
+const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses: parentExpenses, storeSettings, onDelete, onEdit, onOpenForm }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
 
-    const filteredExpenses = useMemo(() => {
-        return expenses.filter(exp => {
-            const matchesSearch = exp.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                exp.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                exp.reference?.toLowerCase().includes(searchTerm.toLowerCase());
+    const [items, setItems] = useState<Expense[]>(parentExpenses);
+    const [totalCount, setTotalCount] = useState(parentExpenses.length);
+    const [totalAmount, setTotalAmount] = useState(parentExpenses.reduce((sum, e) => sum + e.amount, 0));
+    const [isLoading, setIsLoading] = useState(false);
 
-            const expenseDate = new Date(exp.date);
-            const matchesStart = !startDate || expenseDate >= new Date(startDate);
-            const matchesEnd = !endDate || expenseDate <= new Date(endDate);
+    const fetchExpenses = useCallback(async () => {
+        setIsLoading(true);
+        try {
+            const params = new URLSearchParams();
+            if (searchTerm) params.append('search', searchTerm);
+            if (startDate) params.append('startDate', startDate);
+            if (endDate) params.append('endDate', endDate);
 
-            return matchesSearch && matchesStart && matchesEnd;
-        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-    }, [expenses, searchTerm, startDate, endDate]);
+            const response = await api.get<{ items: Expense[], totalCount: number, totalAmount: number }>(`/expenses?${params.toString()}`);
+            setItems(response.items);
+            setTotalCount(response.totalCount);
+            setTotalAmount(response.totalAmount);
+        } catch (error) {
+            console.error('Failed to fetch filtered expenses:', error);
+        } finally {
+            setIsLoading(false);
+        }
+    }, [searchTerm, startDate, endDate]);
 
-    const totalExpenseAmount = useMemo(() =>
-        filteredExpenses.reduce((sum, exp) => sum + exp.amount, 0),
-        [filteredExpenses]
-    );
+    // Initial load and sync with parent updates (after edit/delete)
+    useEffect(() => {
+        if (!searchTerm && !startDate && !endDate) {
+            setItems(parentExpenses);
+            setTotalCount(parentExpenses.length);
+            setTotalAmount(parentExpenses.reduce((sum, e) => sum + e.amount, 0));
+        } else {
+            const timer = setTimeout(fetchExpenses, 300);
+            return () => clearTimeout(timer);
+        }
+    }, [parentExpenses, searchTerm, startDate, endDate, fetchExpenses]);
 
     return (
         <div className="space-y-6 md:space-y-8 pb-10">
@@ -67,8 +86,8 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, storeSettings, on
                         <div className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-widest">Total Outflow</div>
                         <BanknotesIcon className="w-5 h-5 text-red-600 dark:text-red-400 opacity-60" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(totalExpenseAmount, storeSettings)}</div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Based on {filteredExpenses.length} records</p>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(totalAmount, storeSettings)}</div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Based on {totalCount} records</p>
                 </div>
 
                 <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
@@ -76,7 +95,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, storeSettings, on
                         <div className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-widest">Count</div>
                         <CalculatorIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 opacity-60" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{filteredExpenses.length}</div>
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{totalCount}</div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Total transactions</p>
                 </div>
 
@@ -86,7 +105,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, storeSettings, on
                         <CalendarIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 opacity-60" />
                     </div>
                     <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                        {formatCurrency(filteredExpenses.length > 0 ? totalExpenseAmount / filteredExpenses.length : 0, storeSettings)}
+                        {formatCurrency(totalCount > 0 ? totalAmount / totalCount : 0, storeSettings)}
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Per transaction average</p>
                 </div>
@@ -131,7 +150,12 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, storeSettings, on
             </div>
 
             {/* Expenses Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm relative min-h-[200px]">
+                {isLoading && (
+                    <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
+                        <LoadingSpinner />
+                    </div>
+                )}
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -144,7 +168,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, storeSettings, on
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                            {filteredExpenses.map(exp => (
+                            {items.map(exp => (
                                 <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(exp.date).toLocaleDateString()}</div>
@@ -202,7 +226,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses, storeSettings, on
                             ))}
                         </tbody>
                     </table>
-                    {filteredExpenses.length === 0 && (
+                    {items.length === 0 && !isLoading && (
                         <div className="text-center py-12">
                             <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-3">
                                 <BanknotesIcon className="w-6 h-6 text-slate-400" />

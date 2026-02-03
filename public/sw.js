@@ -87,7 +87,7 @@ self.addEventListener('fetch', (event) => {
         // Fresh copy of index.html to cache for offline
         if (url.pathname === '/' || url.pathname.endsWith('.html')) {
           const copy = network.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy)).catch(() => {});
+          caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy)).catch(() => { });
         }
         return network;
       } catch (_) {
@@ -171,4 +171,60 @@ self.addEventListener('fetch', (event) => {
       return new Response('Offline', { status: 503 });
     }
   })());
+});
+
+// --- Push Notification Handlers ---
+
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+
+  try {
+    const data = event.data.json();
+    const title = data.title || 'SalePilot Notification';
+    const options = {
+      body: data.body || 'New update available',
+      icon: data.icon || '/images/salepilot.png',
+      badge: '/vite.svg',
+      data: data.data || { url: '/' },
+      vibrate: [100, 50, 100],
+      actions: data.actions || []
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  } catch (error) {
+    console.error('Error handling push event:', error);
+
+    // Fallback if not JSON
+    const text = event.data.text();
+    event.waitUntil(
+      self.registration.showNotification('SalePilot', {
+        body: text,
+        icon: '/images/salepilot.png'
+      })
+    );
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((windowClients) => {
+        // If a window is already open at this URL, focus it
+        for (let client of windowClients) {
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Otherwise open a new window
+        if (self.clients.openWindow) {
+          return self.clients.openWindow(urlToOpen);
+        }
+      })
+  );
 });

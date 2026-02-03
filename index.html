@@ -44,6 +44,8 @@
         // Unregister SW in development to prevent caching interfering with HMR
         const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 
+        /* 
+        // TEMPORARILY DISABLED TO TEST PUSH NOTIFICATIONS IN DEV
         if (isDev) {
           navigator.serviceWorker.getRegistrations().then(registrations => {
             for (let registration of registrations) {
@@ -60,8 +62,9 @@
           }
           return;
         }
+        */
 
-        navigator.serviceWorker.register('/sw.js?v=9').then(registration => {
+        navigator.serviceWorker.register('/sw.js?v=10').then(registration => {
           console.log('SW registered: ', registration);
         }).catch(registrationError => {
           console.log('SW registration failed: ', registrationError);

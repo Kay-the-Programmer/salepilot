@@ -7,7 +7,7 @@ import { TimeRangeFilter, TimeFilter } from './TimeRangeFilter';
 
 interface FilterableStatCardProps {
     title: string;
-    type: 'revenue' | 'orders' | 'customers' | 'profit' | 'inventory_retail' | 'inventory_cost' | 'inventory_profit' | 'inventory_units' | 'active_customers' | 'new_customers' | 'store_credit' | 'total_inflow' | 'total_outflow' | 'net_cashflow' | 'cashflow_efficiency' | 'sale_margin' | 'personal_total' | 'personal_items' | 'personal_avg';
+    type: 'revenue' | 'orders' | 'customers' | 'profit' | 'net_income' | 'operating_expenses' | 'inventory_retail' | 'inventory_cost' | 'inventory_profit' | 'inventory_units' | 'active_customers' | 'new_customers' | 'store_credit' | 'total_inflow' | 'total_outflow' | 'net_cashflow' | 'cashflow_efficiency' | 'sale_margin' | 'personal_total' | 'personal_items' | 'personal_avg';
     icon: React.ReactNode;
     color: string; // Tailwind class for background color
     sparklineColor: string; // Hex color for sparkline
@@ -65,7 +65,7 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
                 const trendPoints = [];
                 for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
                     const dateStr = toDateInputString(d);
-                    const dayData = salesTrend[dateStr] || { revenue: 0, profit: 0, transactions: 0 };
+                    const dayData = salesTrend[dateStr] || { revenue: 0, profit: 0, netIncome: 0, expenses: 0, transactions: 0 };
                     trendPoints.push({ date: dateStr, ...dayData });
                 }
 
@@ -75,8 +75,16 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
                         trendData = trendPoints.map((t, i) => ({ name: i, value: t.revenue || 0 }));
                         break;
                     case 'profit':
-                        value = response.sales?.totalProfit || 0;
-                        trendData = trendPoints.map((t, i) => ({ name: i, value: t.profit || 0 }));
+                        value = response.sales?.grossProfit || response.sales?.totalProfit || 0;
+                        trendData = trendPoints.map((t, i) => ({ name: i, value: t.grossProfit || t.profit || 0 }));
+                        break;
+                    case 'net_income':
+                        value = response.sales?.netIncome || 0;
+                        trendData = trendPoints.map((t, i) => ({ name: i, value: t.netIncome || 0 }));
+                        break;
+                    case 'operating_expenses':
+                        value = response.sales?.totalOperatingExpenses || 0;
+                        trendData = trendPoints.map((t, i) => ({ name: i, value: t.expenses || 0 }));
                         break;
                     case 'orders':
                         value = response.sales?.totalTransactions || 0;
