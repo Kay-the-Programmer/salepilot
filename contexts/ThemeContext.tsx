@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect } from 'react';
 
 type Theme = 'light' | 'dark';
 
@@ -10,9 +10,13 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [theme, setTheme] = useState<Theme>(() => {
-        const savedTheme = localStorage.getItem('theme') as Theme;
-        if (savedTheme) return savedTheme;
+    const [theme, setTheme] = React.useState<Theme>(() => {
+        try {
+            const savedTheme = localStorage.getItem('theme') as Theme;
+            if (savedTheme === 'light' || savedTheme === 'dark') return savedTheme;
+        } catch (e) {
+            console.warn('Failed to access localStorage for theme:', e);
+        }
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     });
 

@@ -123,6 +123,8 @@ export interface Sale {
         address?: string;
     };
     amountPaid: number;
+    cashReceived?: number;
+    changeDue?: number;
     dueDate?: string;
     payments?: Payment[];
     // UI helper fields
@@ -368,6 +370,7 @@ export interface FinancialSummary {
         inventoryValue: number;
         accountsReceivable: number;
         accountsPayable: number;
+        storeCreditValue: number;
         cashBalance: number;
         totalAssets: number;
         totalLiabilities: number;
@@ -384,6 +387,10 @@ export interface FinancialSummary {
         arMatch: boolean;
         apMatch: boolean;
         inventoryMatch: boolean;
+        storeCreditMatch: boolean;
+        hasProductsMissingCost: boolean;
+        productsMissingCostCount: number;
+        isTaxRatioSkewed: boolean;
     };
 }
 

@@ -85,7 +85,7 @@ self.addEventListener('fetch', (event) => {
       try {
         const network = await fetch(request);
         // Fresh copy of index.html to cache for offline
-        if (url.pathname === '/' || url.pathname.endsWith('.html')) {
+        if ((url.pathname === '/' || url.pathname.endsWith('.html')) && request.url.startsWith('http')) {
           const copy = network.clone();
           caches.open(CACHE_NAME).then(cache => cache.put('/index.html', copy)).catch(() => { });
         }
@@ -108,7 +108,7 @@ self.addEventListener('fetch', (event) => {
       const cache = await caches.open(ASSET_CACHE);
       const cached = await cache.match(request);
       const fetchPromise = fetch(request).then(response => {
-        if (response && response.ok) cache.put(request, response.clone());
+        if (response && response.ok && request.url.startsWith('http')) cache.put(request, response.clone());
         return response;
       }).catch(() => undefined);
       return cached || fetchPromise || fetch(request);
@@ -124,7 +124,7 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
       try {
         const response = await fetch(request, { mode: request.mode });
-        if (response && (response.ok || response.type === 'opaque')) {
+        if (response && (response.ok || response.type === 'opaque') && request.url.startsWith('http')) {
           cache.put(request, response.clone());
           // Optional: prune old entries (best-effort)
           cache.keys().then(keys => { if (keys.length > 200) cache.delete(keys[0]); });
@@ -144,7 +144,7 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
       try {
         const response = await fetch(request);
-        if (response && (response.ok || response.type === 'opaque')) {
+        if (response && (response.ok || response.type === 'opaque') && request.url.startsWith('http')) {
           const cache = await caches.open(CACHE_NAME);
           cache.put(request, response.clone());
         }
@@ -162,7 +162,7 @@ self.addEventListener('fetch', (event) => {
     if (cached) return cached;
     try {
       const response = await fetch(request);
-      if (response && response.ok) {
+      if (response && response.ok && request.url.startsWith('http')) {
         const cache = await caches.open(CACHE_NAME);
         cache.put(request, response.clone());
       }

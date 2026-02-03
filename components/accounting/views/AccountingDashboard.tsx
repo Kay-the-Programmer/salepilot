@@ -6,12 +6,13 @@ import ArrowTrendingUpIcon from '../../icons/ArrowTrendingUpIcon';
 import BanknotesIcon from '../../icons/BanknotesIcon';
 import CalculatorIcon from '../../icons/CalculatorIcon';
 import BookOpenIcon from '../../icons/BookOpenIcon';
-import UsersIcon from '../../icons/UsersIcon';
 import TruckIcon from '../../icons/TruckIcon';
-import PackageIcon from '../../icons/PackageIcon';
-import ChartBarIcon from '../../icons/ChartBarIcon';
 import RefreshIcon from '../../icons/RefreshIcon';
 import CalendarIcon from '../../icons/CalendarIcon';
+import ExclamationTriangleIcon from '../../icons/ExclamationTriangleIcon';
+import CheckCircleIcon from '../../icons/CheckCircleIcon';
+import InformationCircleIcon from '../../icons/InformationCircleIcon';
+import ShieldCheckIcon from '../../icons/ShieldCheckIcon';
 
 interface AccountingDashboardProps {
     accounts: Account[];
@@ -83,9 +84,17 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
     }
 
     const { summary, period, checks } = summaryData || {
-        summary: { inventoryValue: 0, accountsReceivable: 0, accountsPayable: 0, cashBalance: 0, totalAssets: 0, totalLiabilities: 0, equity: 0 },
+        summary: { inventoryValue: 0, accountsReceivable: 0, accountsPayable: 0, storeCreditValue: 0, cashBalance: 0, totalAssets: 0, totalLiabilities: 0, equity: 0 },
         period: { revenue: 0, cogs: 0, expenses: 0, grossProfit: 0, netIncome: 0 },
-        checks: { arMatch: true, apMatch: true, inventoryMatch: true }
+        checks: {
+            arMatch: true,
+            apMatch: true,
+            inventoryMatch: true,
+            storeCreditMatch: true,
+            hasProductsMissingCost: false,
+            productsMissingCostCount: 0,
+            isTaxRatioSkewed: false
+        }
     };
 
     return (
@@ -124,9 +133,61 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                     </button>
                 </div>
             </div>
+            {/* Financial Health Check Section - Compacted */}
+            {((Object.values(checks).some(v => v === false || (typeof v === 'boolean' && v === true)) || summary.accountsPayable < 0)) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/40 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/50 shadow-inner">
+                    {/* Missing Cost Price Alert */}
+                    {checks.hasProductsMissingCost && (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-amber-100 dark:border-amber-900/20 rounded-xl shadow-sm">
+                            <ExclamationTriangleIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                            <p className="text-[10px] font-bold text-amber-800 dark:text-amber-400 leading-tight">
+                                {checks.productsMissingCostCount} items missing cost.
+                            </p>
+                        </div>
+                    )}
 
-            {/* Core Health Metrics */}
+                    {/* Tax Ratio Alert */}
+                    {checks.isTaxRatioSkewed && (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-rose-100 dark:border-rose-900/20 rounded-xl shadow-sm">
+                            <ExclamationTriangleIcon className="w-4 h-4 text-rose-500 shrink-0" />
+                            <p className="text-[10px] font-bold text-rose-800 dark:text-rose-400 leading-tight">
+                                Abnormal tax ratio detected.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* AP Negative Balance */}
+                    {summary.accountsPayable < 0 && (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/20 rounded-xl shadow-sm">
+                            <InformationCircleIcon className="w-4 h-4 text-indigo-500 shrink-0" />
+                            <p className="text-[10px] font-bold text-indigo-800 dark:text-indigo-400 leading-tight">
+                                Unmatched PO payments.
+                            </p>
+                        </div>
+                    )}
+
+                    {/* Ledger Sync Status */}
+                    {(!checks.arMatch || !checks.apMatch || !checks.inventoryMatch) ? (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-amber-100 dark:border-amber-900/20 rounded-xl shadow-sm">
+                            <ExclamationTriangleIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                            <p className="text-[10px] font-bold text-amber-800 dark:text-amber-400 leading-tight">
+                                GL sync discrepancy.
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/20 rounded-xl shadow-sm">
+                            <CheckCircleIcon className="w-4 h-4 text-emerald-500 shrink-0" />
+                            <p className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 leading-tight">
+                                Ledger is healthy & synced.
+                            </p>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Primary Financial KPIs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* 1. Net Income - The "Bottom Line" */}
                 <div className="bg-indigo-600 p-5 rounded-2xl shadow-lg border border-indigo-500 relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                     <div className="flex items-center justify-between mb-2 relative z-10">
@@ -136,120 +197,125 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                     <div className="text-3xl font-black text-white tracking-tight relative z-10">
                         {formatCurrency(period.netIncome, storeSettings)}
                     </div>
-                    <div className="text-[10px] text-indigo-200 mt-1 font-medium relative z-10">Bottom line for selected period</div>
+                    <div className="mt-2 flex items-center gap-2 relative z-10">
+                        <div className="px-1.5 py-0.5 rounded bg-white/10 text-[10px] font-bold text-indigo-100 border border-white/10">
+                            {((period.netIncome / (period.revenue || 1)) * 100).toFixed(1)}% Margin
+                        </div>
+                    </div>
                 </div>
 
+                {/* 2. Liquidity Card - Cash & AR */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Assets</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Liquidity</span>
+                            {(!checks.arMatch) && (
+                                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="Sync Discrepancy"></div>
+                            )}
+                        </div>
                         <BanknotesIcon className="w-4 h-4 text-emerald-500" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(summary.totalAssets, storeSettings)}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Cash + Inventory + Receivables</div>
-                </div>
-
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Net Worth (Equity)</span>
-                        <ChartBarIcon className="w-4 h-4 text-amber-500" />
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                        {formatCurrency(summary.cashBalance + summary.accountsReceivable, storeSettings)}
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(summary.equity, storeSettings)}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Assets minus Liabilities</div>
+                    <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-slate-50 dark:border-slate-800/50">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">Cash</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(summary.cashBalance, storeSettings)}</span>
+                        </div>
+                        <div className="w-px h-6 bg-slate-100 dark:bg-slate-800"></div>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">Receivable</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(summary.accountsReceivable, storeSettings)}</span>
+                        </div>
+                    </div>
                 </div>
 
+                {/* 3. Operational Card - Gross Profit & Inv */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Profit</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Profit</span>
+                            {(!checks.inventoryMatch) && (
+                                <div className="w-2 h-2 rounded-full bg-amber-500" title="Inventory Sync"></div>
+                            )}
+                        </div>
                         <ArrowTrendingUpIcon className="w-4 h-4 text-indigo-500" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(period.grossProfit, storeSettings)}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Period: {formatCurrency(period.revenue, storeSettings)} Rev.</div>
-                </div>
-            </div>
-
-            {/* Sub-ledger Accuracy Row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Inventory Value</span>
-                            {!checks.inventoryMatch && (
-                                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="GL mismatch detected"></div>
-                            )}
-                        </div>
-                        <PackageIcon className="w-4 h-4 text-blue-500" />
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+                        {formatCurrency(period.grossProfit, storeSettings)}
                     </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{formatCurrency(summary.inventoryValue, storeSettings)}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Sum of all product cost values</div>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Accounts Receivable</span>
-                            {!checks.arMatch && (
-                                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="GL mismatch detected"></div>
-                            )}
+                    <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-slate-50 dark:border-slate-800/50">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">Revenue</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(period.revenue, storeSettings)}</span>
                         </div>
-                        <UsersIcon className="w-4 h-4 text-emerald-500" />
+                        <div className="w-px h-6 bg-slate-100 dark:bg-slate-800"></div>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">Stock Value</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(summary.inventoryValue, storeSettings)}</span>
+                        </div>
                     </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{formatCurrency(summary.accountsReceivable, storeSettings)}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Money owed by customers</div>
                 </div>
 
-                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
+                {/* 4. Obligations Card - AP & Store Credit */}
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Accounts Payable</span>
-                            {!checks.apMatch && (
-                                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="GL mismatch detected"></div>
+                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Obligations</span>
+                            {(!checks.apMatch || !checks.storeCreditMatch) && (
+                                <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" title="Liability Sync"></div>
                             )}
                         </div>
                         <TruckIcon className="w-4 h-4 text-rose-500" />
                     </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{formatCurrency(summary.accountsPayable, storeSettings)}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Money owed to suppliers</div>
-                </div>
-
-                <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total COGS</span>
-                        <CalculatorIcon className="w-4 h-4 text-amber-600" />
+                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight text-rose-600 dark:text-rose-400">
+                        {formatCurrency(summary.accountsPayable + summary.storeCreditValue, storeSettings)}
                     </div>
-                    <div className="text-xl font-bold text-slate-900 dark:text-slate-100">{formatCurrency(period.cogs, storeSettings)}</div>
-                    <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-medium">Cost of goods sold (period)</div>
+                    <div className="flex items-center gap-3 mt-1.5 pt-1.5 border-t border-slate-50 dark:border-slate-800/50">
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">Payable</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(summary.accountsPayable, storeSettings)}</span>
+                        </div>
+                        <div className="w-px h-6 bg-slate-100 dark:bg-slate-800"></div>
+                        <div className="flex flex-col">
+                            <span className="text-[9px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-tighter">Store Credit</span>
+                            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(summary.storeCreditValue, storeSettings)}</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                            <h3 className="font-bold text-slate-900 dark:text-slate-100">Recent Activity</h3>
-                            <button onClick={() => window.location.hash = 'journal'} className="text-xs text-indigo-600 hover:text-indigo-700 font-bold uppercase tracking-wider transition-colors">View All</button>
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                        <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100">Recent Ledger Activity</h3>
+                            <button onClick={() => window.location.hash = 'journal'} className="text-xs text-indigo-600 hover:text-indigo-700 font-bold uppercase tracking-wider transition-colors px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">View Ledger</button>
                         </div>
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
                             {recentTransactions.map(entry => (
-                                <div key={entry.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex justify-between items-start mb-2">
+                                <div key={entry.id} className="p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <div className="flex justify-between items-start mb-3">
                                         <div>
-                                            <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                            <p className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
                                                 {entry.description}
                                             </p>
-                                            <div className="flex items-center gap-2 mt-1 text-xs text-slate-500 dark:text-slate-400">
+                                            <div className="flex items-center gap-2 mt-1 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                                                <CalendarIcon className="w-3 h-3" />
                                                 <span>{new Date(entry.date).toLocaleDateString()}</span>
-                                                {entry.reference && <span>• REF: {entry.reference}</span>}
+                                                {entry.reference && <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded ml-1">REF: {entry.reference}</span>}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-1">
+                                    <div className="space-y-1.5">
                                         {entry.lines.map((line, idx) => (
                                             <div key={idx} className="flex justify-between items-center text-xs">
-                                                <div className="flex items-center gap-2">
-                                                    <div className={`w-1 h-1 rounded-full ${line.type === 'debit' ? 'bg-blue-500' : 'bg-emerald-500'}`}></div>
-                                                    <span className="text-slate-600 dark:text-slate-400">{line.accountName}</span>
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${line.type === 'debit' ? 'bg-indigo-500' : 'bg-emerald-500'}`}></div>
+                                                    <span className="text-slate-600 dark:text-slate-400 font-medium">{line.accountName}</span>
                                                 </div>
-                                                <span className={`font-medium ${line.type === 'debit' ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
+                                                <span className={`font-bold ${line.type === 'debit' ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 dark:text-slate-400'}`}>
                                                     {line.type === 'debit' ? formatCurrency(line.amount, storeSettings) : `(${formatCurrency(line.amount, storeSettings)})`}
                                                 </span>
                                             </div>
@@ -271,46 +337,54 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    {/* Simplified Key Balances - Focus on remaining accounts */}
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
                         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
-                            <h3 className="font-bold text-slate-900 dark:text-slate-100">Key Balances</h3>
+                            <h3 className="font-bold text-slate-900 dark:text-slate-100">Other Accounts</h3>
                         </div>
-                        <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[480px] overflow-y-auto custom-scrollbar">
-                            {accounts.filter(a => a.subType).sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance)).slice(0, 10).map(account => (
-                                <div key={account.id} className="px-5 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <div className="flex items-center justify-between">
-                                        <div className="min-w-0 flex-1">
-                                            <div className="flex items-center gap-2">
-                                                <div className={`w-1.5 h-1.5 rounded-full ${account.type === 'asset' ? 'bg-blue-500' :
-                                                    account.type === 'liability' ? 'bg-red-500' :
-                                                        account.type === 'equity' ? 'bg-purple-500' :
-                                                            account.type === 'revenue' ? 'bg-emerald-500' : 'bg-amber-500'
-                                                    }`}></div>
-                                                <span className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{account.name}</span>
+                        <div className="divide-y divide-slate-100 dark:divide-slate-800 max-h-[520px] overflow-y-auto custom-scrollbar">
+                            {accounts
+                                .filter(a => a.subType && !['cash', 'ar', 'ap', 'inventory', 'store_credit'].includes(a.subType.toLowerCase()))
+                                .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
+                                .slice(0, 12)
+                                .map(account => (
+                                    <div key={account.id} className="px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <div className="flex items-center justify-between">
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-2">
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${account.type === 'asset' ? 'bg-blue-500' :
+                                                        account.type === 'liability' ? 'bg-rose-500' :
+                                                            account.type === 'equity' ? 'bg-purple-500' :
+                                                                account.type === 'revenue' ? 'bg-emerald-500' : 'bg-amber-500'
+                                                        }`}></div>
+                                                    <span className="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">{account.name}</span>
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 ml-3.5 font-medium">{account.number}</div>
                                             </div>
-                                            <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 ml-3.5">{account.number}</div>
-                                        </div>
-                                        <div className="text-right ml-4">
-                                            <div className={`text-sm font-bold ${account.balance >= 0 ? 'text-slate-900 dark:text-slate-100' : 'text-rose-600 dark:text-rose-400'
-                                                }`}>
-                                                {formatCurrency(account.balance, storeSettings)}
+                                            <div className="text-right ml-4">
+                                                <div className={`text-sm font-bold ${account.balance >= 0 ? 'text-slate-900 dark:text-slate-100' : 'text-rose-600 dark:text-rose-400'
+                                                    }`}>
+                                                    {formatCurrency(account.balance, storeSettings)}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
                         </div>
                     </div>
 
-                    <div className="p-6 rounded-2xl border-2 border-dashed border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-900/10">
-                        <div className="flex items-center gap-2 mb-3">
-                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-                                <ArrowTrendingUpIcon className="w-5 h-5 text-indigo-600" />
+                    <div className="p-6 rounded-3xl border border-indigo-100 dark:border-indigo-900/30 bg-indigo-50/20 dark:bg-indigo-900/10 backdrop-blur-sm">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2.5 bg-indigo-600 text-white rounded-xl shadow-indigo-200 dark:shadow-none shadow-lg">
+                                <ShieldCheckIcon className="w-5 h-5" />
                             </div>
-                            <h4 className="text-xs font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest px-1">Health Insight</h4>
+                            <div>
+                                <h4 className="text-xs font-black text-indigo-900 dark:text-indigo-400 uppercase tracking-widest">Global Equity</h4>
+                                <div className="text-xl font-black text-slate-900 dark:text-slate-100 mt-0.5">{formatCurrency(summary.equity, storeSettings)}</div>
+                            </div>
                         </div>
                         <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed font-medium">
-                            Your current liquidity ratio is robust. Cash on hand and receivables total <span className="font-bold text-slate-900 dark:text-slate-100">{formatCurrency(summary.cashBalance + summary.accountsReceivable, storeSettings)}</span>, which comfortably covers your immediate liabilities of <span className="font-bold text-slate-900 dark:text-slate-100">{formatCurrency(summary.accountsPayable, storeSettings)}</span>.
+                            Your liquidity ratio is robust. Total liquid assets are <span className="font-bold text-slate-900 dark:text-slate-100">{formatCurrency(summary.cashBalance + summary.accountsReceivable, storeSettings)}</span>, which covers obligations of <span className="font-bold text-slate-900 dark:text-slate-100">{formatCurrency(summary.accountsPayable + summary.storeCreditValue, storeSettings)}</span>.
                         </p>
                     </div>
                 </div>

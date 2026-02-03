@@ -101,19 +101,19 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
         <img src={logo} alt="SalePilot" className="h-16 w-auto object-contain" />
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-6 shadow-xl rounded-3xl sm:px-10">
-          <h2 className="text-2xl font-bold text-center text-gray-800">Create Your Store</h2>
-          <p className="text-center text-gray-600 mt-2">Finish setup by creating your first store. Your data will be isolated to this store.</p>
+        <div className="bg-white dark:bg-slate-900 py-8 px-6 shadow-xl rounded-3xl sm:px-10 border border-transparent dark:border-white/5 backdrop-blur-sm">
+          <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">Create Your Store</h2>
+          <p className="text-center text-gray-600 dark:text-slate-400 mt-2">Finish setup by creating your first store. Your data will be isolated to this store.</p>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-6" aria-live="polite">
             <div>
-              <label htmlFor="store-name" className="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
+              <label htmlFor="store-name" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Store Name</label>
               <input
                 id="store-name"
                 type="text"
@@ -121,37 +121,37 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                 minLength={MIN_LEN}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className={`w-full px-4 py-3 rounded-md border placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${nameError ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                className={`w-full px-4 py-3 rounded-md border placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${nameError ? 'border-red-500 bg-red-50 dark:bg-red-500/10 dark:border-red-500' : 'border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white'
                   }`}
                 placeholder="e.g., Acme Market"
                 aria-invalid={!!nameError}
                 aria-describedby="store-name-help"
                 autoFocus
               />
-              {nameError && <p className="mt-1 text-xs text-red-600 font-medium">{nameError}</p>}
-              {isCheckingName && <p className="mt-1 text-xs text-blue-600 animate-pulse">Scanning store name availability...</p>}
-              <div id="store-name-help" className="mt-2 text-xs text-gray-600 flex items-center justify-between">
+              {nameError && <p className="mt-1 text-xs text-red-600 dark:text-red-400 font-medium">{nameError}</p>}
+              {isCheckingName && <p className="mt-1 text-xs text-blue-600 dark:text-blue-400 animate-pulse">Scanning store name availability...</p>}
+              <div id="store-name-help" className="mt-2 text-xs text-gray-600 dark:text-slate-400 flex items-center justify-between">
                 <span>
                   Minimum {MIN_LEN} characters. Use your business or branch name. You can change this later in Settings.
                 </span>
-                <span className={`tabular-nums ${isValid ? 'text-gray-400' : 'text-red-600'}`}>{trimmedName.length}/{MIN_LEN}+</span>
+                <span className={`tabular-nums ${isValid ? 'text-gray-400 dark:text-slate-500' : 'text-red-600 dark:text-red-400'}`}>{trimmedName.length}/{MIN_LEN}+</span>
               </div>
             </div>
 
             <div>
-              <label htmlFor="store-phone" className="block text-sm font-medium text-gray-700 mb-1">Store Phone Number</label>
+              <label htmlFor="store-phone" className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">Store Phone Number</label>
               <input
                 id="store-phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-4 py-3 rounded-md border border-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-4 py-3 rounded-md border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="e.g., +260 971 234 567"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Store Location</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Store Location</label>
               <LocationPicker
                 onLocationPicked={(addr) => setAddress(addr)}
                 initialAddress={address}
@@ -159,7 +159,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">What does your business sell?</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">What does your business sell?</label>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {BUSINESS_TYPES.map((type) => (
                   <button
@@ -169,8 +169,8 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                     className={`
                       relative flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all duration-200
                       ${selectedTypes.includes(type.id)
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm scale-[1.02]'
-                        : 'border-gray-100 bg-gray-50 text-gray-600 hover:border-gray-200 hover:bg-white'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-400 shadow-sm scale-[1.02]'
+                        : 'border-gray-100 dark:border-slate-800 bg-gray-50 dark:bg-slate-800/50 text-gray-600 dark:text-slate-400 hover:border-gray-200 dark:hover:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:text-gray-900 dark:hover:text-slate-200'
                       }
                     `}
                   >
@@ -187,18 +187,18 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                   </button>
                 ))}
               </div>
-              <p className="mt-2 text-xs text-gray-500">Select one or more categories that best describe your store.</p>
+              <p className="mt-2 text-xs text-gray-500 dark:text-slate-500">Select one or more categories that best describe your store.</p>
             </div>
 
             {/* Process helper */}
-            <div className="rounded-md bg-blue-50 p-3 text-sm text-blue-800">
+            <div className="rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-100 dark:border-blue-500/20 p-4 text-sm text-blue-800 dark:text-blue-200">
               <div className="flex items-start">
-                <svg className="h-5 w-5 mr-2 text-blue-500 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg className="h-5 w-5 mr-3 text-blue-500 dark:text-blue-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-.75-11a.75.75 0 011.5 0v4.25a.75.75 0 01-1.5 0V7zm.75 6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
                 </svg>
                 <div>
-                  <p className="font-medium">What happens next?</p>
-                  <ul className="list-disc list-inside mt-1 space-y-1">
+                  <p className="font-semibold">What happens next?</p>
+                  <ul className="list-disc list-inside mt-2 space-y-1 opacity-90">
                     <li>We’ll create your store and make you its admin.</li>
                     <li>You’ll be redirected to the dashboard to start using SalePilot.</li>
                     <li>Requires internet connection. If you’re offline, please try again later.</li>
@@ -223,7 +223,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
               <span>{isLoading ? 'Creating your store…' : 'Create Store'}</span>
             </button>
 
-            <div className="text-xs text-gray-500 text-center">By continuing, you agree to follow your local tax and business rules.</div>
+            <div className="text-xs text-gray-500 dark:text-slate-500 text-center">By continuing, you agree to follow your local tax and business rules.</div>
           </form>
         </div>
       </div>

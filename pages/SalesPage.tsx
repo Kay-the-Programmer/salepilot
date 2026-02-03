@@ -436,6 +436,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 customerId: selectedCustomer?.id,
                 customerName: selectedCustomer?.name,
                 refundStatus: 'none' as const,
+                cashReceived: isCashMethod ? cashReceivedNumber : undefined,
+                changeDue: isCashMethod ? changeDue : undefined,
             };
 
             let saleData: Partial<Sale>;

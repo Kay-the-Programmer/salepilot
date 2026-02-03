@@ -66,7 +66,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationPicked, initi
 
     return (
         <div className="space-y-3">
-            <div className="relative h-64 w-full rounded-xl overflow-hidden border border-gray-200 shadow-sm z-0">
+            <div className="relative h-64 w-full rounded-xl overflow-hidden border border-gray-200 dark:border-slate-800 shadow-sm z-0">
                 <MapContainer
                     center={position}
                     zoom={13}
@@ -81,7 +81,7 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationPicked, initi
                 </MapContainer>
 
                 {isLoading && (
-                    <div className="absolute inset-0 bg-white/50 backdrop-blur-[1px] flex items-center justify-center z-[1000]">
+                    <div className="absolute inset-0 bg-white/50 dark:bg-slate-900/50 backdrop-blur-[1px] flex items-center justify-center z-[1000]">
                         <div className="flex flex-col items-center gap-2">
                             <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -93,22 +93,22 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationPicked, initi
                 )}
             </div>
 
-            <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 flex items-start gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg text-blue-600 shrink-0">
+            <div className="bg-gray-50 dark:bg-slate-800/50 p-4 rounded-xl border border-gray-100 dark:border-slate-700/50 flex items-start gap-3">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg text-blue-600 dark:text-blue-400 shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </div>
                 <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Store Location</p>
-                    <p className="text-sm text-gray-700 font-medium leading-relaxed break-words">
+                    <p className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-1">Store Location</p>
+                    <p className="text-sm text-gray-700 dark:text-slate-200 font-medium leading-relaxed break-words">
                         {address || "Click on the map to set your store location"}
                     </p>
                 </div>
             </div>
 
-            <p className="text-[10px] text-gray-400 text-center italic">
+            <p className="text-[10px] text-gray-400 dark:text-slate-500 text-center italic">
                 You can also drag the marker or click anywhere on the map to update the location.
             </p>
         </div>
