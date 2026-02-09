@@ -1255,7 +1255,7 @@ export default function Dashboard() {
                     if (parts[1] === 'settings') {
                         return <WhatsAppSettingsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
                     }
-                    return <WhatsAppConversationsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
+                    return <WhatsAppConversationsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} currentUser={currentUser} superMode={superMode} />;
                 case 'support':
                     return <SupportPage />;
                 default:

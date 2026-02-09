@@ -20,7 +20,14 @@ const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
+import usePageTracking from "./src/hooks/usePageTracking";
+import { initGA } from "./src/utils/analytics";
+
+// Initialize GA
+initGA();
+
 export default function App() {
+    usePageTracking();
     return (
         <ThemeProvider>
             <ToastProvider>

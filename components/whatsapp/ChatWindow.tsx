@@ -9,9 +9,10 @@ interface ChatWindowProps {
     conversationId: string;
     onBack: () => void;
     showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
+    isSystem?: boolean;
 }
 
-export default function ChatWindow({ conversationId, onBack, showSnackbar }: ChatWindowProps) {
+export default function ChatWindow({ conversationId, onBack, showSnackbar, isSystem }: ChatWindowProps) {
     const [messages, setMessages] = useState<WhatsAppMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +31,10 @@ export default function ChatWindow({ conversationId, onBack, showSnackbar }: Cha
 
     const fetchMessages = async () => {
         try {
-            const data = await api.get<WhatsAppMessage[]>(`/whatsapp/conversations/${conversationId}/messages`);
+            const url = isSystem
+                ? `/whatsapp/conversations/${conversationId}/messages?system=true`
+                : `/whatsapp/conversations/${conversationId}/messages`;
+            const data = await api.get<WhatsAppMessage[]>(url);
             setMessages(data || []);
             if (isLoading) setIsLoading(false);
         } catch (error) {
@@ -50,7 +54,8 @@ export default function ChatWindow({ conversationId, onBack, showSnackbar }: Cha
         try {
             await api.post('/whatsapp/send', {
                 conversationId,
-                content: newMessage
+                content: newMessage,
+                system: isSystem
             });
             setNewMessage('');
             fetchMessages(); // Instant refresh
@@ -86,8 +91,8 @@ export default function ChatWindow({ conversationId, onBack, showSnackbar }: Cha
                         >
                             <div
                                 className={`max-w-[75%] p-3 rounded-2xl shadow-sm text-sm ${msg.direction === 'outbound'
-                                        ? 'bg-blue-600 text-white rounded-br-none'
-                                        : 'bg-white text-gray-800 rounded-bl-none'
+                                    ? 'bg-blue-600 text-white rounded-br-none'
+                                    : 'bg-white text-gray-800 rounded-bl-none'
                                     }`}
                             >
                                 <p>{msg.content}</p>

@@ -8,9 +8,10 @@ import { MagnifyingGlassIcon } from '../icons';
 interface ConversationListProps {
     onSelectConversation: (id: string) => void;
     selectedId: string | null;
+    isSystem?: boolean;
 }
 
-export default function ConversationList({ onSelectConversation, selectedId }: ConversationListProps) {
+export default function ConversationList({ onSelectConversation, selectedId, isSystem }: ConversationListProps) {
     const [conversations, setConversations] = useState<WhatsAppConversation[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -23,7 +24,8 @@ export default function ConversationList({ onSelectConversation, selectedId }: C
 
     const fetchConversations = async () => {
         try {
-            const data = await api.get<WhatsAppConversation[]>('/whatsapp/conversations');
+            const url = isSystem ? '/whatsapp/conversations?system=true' : '/whatsapp/conversations';
+            const data = await api.get<WhatsAppConversation[]>(url);
             setConversations(data || []);
         } catch (error) {
             console.error('Failed to load conversations', error);

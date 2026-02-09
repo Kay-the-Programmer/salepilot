@@ -1,16 +1,19 @@
-
-import { useState, useEffect } from 'react';
-import { StoreSettings } from '../types';
+import { useState } from 'react';
 import ConversationList from '../components/whatsapp/ConversationList';
 import ChatWindow from '../components/whatsapp/ChatWindow';
 
+import { User } from '../types';
+
 interface WhatsAppConversationsPageProps {
-    storeSettings: StoreSettings | null;
     showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
+    currentUser: User;
+    superMode?: 'superadmin' | 'store';
 }
 
-export default function WhatsAppConversationsPage({ storeSettings, showSnackbar }: WhatsAppConversationsPageProps) {
+export default function WhatsAppConversationsPage({ showSnackbar, currentUser, superMode }: WhatsAppConversationsPageProps) {
     const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+    const isSystem = currentUser.role === 'superadmin' && superMode === 'superadmin';
+
 
     return (
         <div className="h-full flex overflow-hidden bg-white">
@@ -18,6 +21,7 @@ export default function WhatsAppConversationsPage({ storeSettings, showSnackbar 
                 <ConversationList
                     onSelectConversation={setSelectedConversationId}
                     selectedId={selectedConversationId}
+                    isSystem={isSystem}
                 />
             </div>
 
@@ -27,6 +31,7 @@ export default function WhatsAppConversationsPage({ storeSettings, showSnackbar 
                         conversationId={selectedConversationId}
                         onBack={() => setSelectedConversationId(null)}
                         showSnackbar={showSnackbar}
+                        isSystem={isSystem}
                     />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-gray-400 bg-gray-50">
