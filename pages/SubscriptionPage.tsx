@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Sidebar from '../components/Sidebar';
 import PlanCard from '../components/subscription/PlanCard';
 import FAQSection from '../components/subscription/FAQSection';
+import SubscriptionHistory from '../components/subscription/SubscriptionHistory';
 import { getCurrentUser } from '../services/authService';
 import { NotificationProvider } from '../contexts/NotificationContext';
 import { useToast } from '../contexts/ToastContext';
@@ -21,6 +22,8 @@ declare global {
     }
 }
 
+type TabType = 'plans' | 'history';
+
 const SubscriptionPage: React.FC = () => {
     const navigate = useNavigate();
     const { showToast } = useToast();
@@ -33,6 +36,7 @@ const SubscriptionPage: React.FC = () => {
     const [planToPay, setPlanToPay] = useState<BackendPlan | null>(null);
     const [currentReference, setCurrentReference] = useState<string | null>(null);
     const [isAnnual, setIsAnnual] = useState(false);
+    const [activeTab, setActiveTab] = useState<TabType>('plans');
     const stopPollingRef = React.useRef(false);
 
     useEffect(() => {
@@ -229,90 +233,195 @@ const SubscriptionPage: React.FC = () => {
         [handlePayment]
     );
 
+
+
+    const PlanSkeleton = () => (
+        <div className="relative flex flex-col p-8 rounded-2xl glass-card h-[600px] border border-slate-200 dark:border-slate-800">
+            <div className="h-8 bg-slate-200/50 dark:bg-slate-700/50 rounded w-1/2 mb-4 animate-pulse" />
+            <div className="h-4 bg-slate-200/50 dark:bg-slate-700/50 rounded w-3/4 mb-12 animate-pulse" />
+
+            <div className="mb-8 flex items-baseline gap-1">
+                <div className="h-10 bg-slate-200/50 dark:bg-slate-700/50 rounded w-1/3 animate-pulse" />
+            </div>
+
+            <div className="space-y-6 flex-1">
+                {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="flex items-center gap-3">
+                        <div className="w-5 h-5 rounded-full bg-slate-200/50 dark:bg-slate-700/50 flex-shrink-0 animate-pulse" />
+                        <div className="h-4 bg-slate-200/50 dark:bg-slate-700/50 rounded w-full animate-pulse" />
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-8 h-12 bg-slate-200/50 dark:bg-slate-700/50 rounded-xl w-full animate-pulse" />
+        </div>
+    );
+
     return (
         <NotificationProvider user={user}>
-            <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500">
+            <div className="flex h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500 overflow-hidden">
                 <Sidebar
                     user={user || {}}
                     onLogout={handleLogout}
                     isOnline={navigator.onLine}
                 />
-                <div className="flex-1 flex flex-col overflow-hidden relative">
+                <div className="flex-1 flex flex-col relative">
                     <Header title="Subscription" />
 
-                    <main className="flex-1 overflow-y-auto p-4 md:p-8 scroll-smooth">
-                        <div className="max-w-5xl mx-auto">
+                    <main className="flex-1 overflow-y-auto relative scroll-smooth bg-grid-slate-100 dark:bg-grid-slate-900 bg-[size:40px_40px]">
+
+                        {/* Animated Background Blobs */}
+                        <div className="fixed inset-0 pointer-events-none overflow-hidden touch-none select-none z-0">
+                            <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-200/30 dark:bg-purple-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] opacity-70 animate-blob" />
+                            <div className="absolute top-0 right-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-indigo-200/30 dark:bg-indigo-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] opacity-70 animate-blob animation-delay-2000" />
+                            <div className="absolute -bottom-32 left-1/3 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-pink-200/30 dark:bg-pink-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-blob animation-delay-4000" />
+                        </div>
+
+                        <div className="relative z-10 p-3 md:p-8 max-w-7xl mx-auto min-h-full flex flex-col">
                             {/* Back button */}
                             <button
                                 onClick={() => navigate(-1)}
-                                className="mb-6 inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                                className="mb-6 md:mb-8 inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors group"
                             >
-                                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                                </svg>
-                                Back
+                                <div className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm mr-3 group-hover:scale-110 transition-transform">
+                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                                    </svg>
+                                </div>
+                                <span className="opacity-80 group-hover:opacity-100">Back onto Dashboard</span>
                             </button>
 
-                            {/* Header Section */}
-                            <div className="text-center max-w-2xl mx-auto mb-16 mt-8">
-                                <h1 className="text-3xl md:text-4xl font-bold text-slate-900 dark:text-white mb-4 tracking-tight">
-                                    Simple, transparent pricing
-                                </h1>
-                                <p className="text-lg text-slate-600 dark:text-slate-400">
-                                    Choose the plan that's right for your business. No hidden fees.
-                                </p>
-                            </div>
+                            {/* Main Content Card */}
+                            <div className="glass-panel rounded-3xl p-1 md:p-2 flex-1 flex flex-col">
 
-                            {/* Billing Toggle */}
-                            <div className="flex justify-center mb-16">
-                                <div className="bg-slate-100 dark:bg-slate-900 p-1 rounded-xl inline-flex relative">
-                                    <button
-                                        onClick={() => setIsAnnual(false)}
-                                        className={`relative z-10 px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 ${!isAnnual ? 'bg-white shadow-sm text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                                            }`}
-                                    >
-                                        Monthly
-                                    </button>
-                                    <button
-                                        onClick={() => setIsAnnual(true)}
-                                        className={`relative z-10 px-6 py-2 rounded-lg text-sm font-semibold transition-all duration-200 flex items-center gap-2 ${isAnnual ? 'bg-white shadow-sm text-slate-900 dark:bg-slate-800 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                                            }`}
-                                    >
-                                        Annual
-                                        <span className="text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300 px-2 py-0.5 rounded-full">
-                                            -20%
-                                        </span>
-                                    </button>
+                                {/* Tabs Navigation */}
+                                <div className="flex justify-center border-b border-slate-200/50 dark:border-slate-800/50 pt-6 pb-0 px-6">
+                                    <div className="flex space-x-8 relative">
+                                        <button
+                                            onClick={() => setActiveTab('plans')}
+                                            className={`pb-4 px-2 text-sm font-bold tracking-wide transition-all uppercase ${activeTab === 'plans'
+                                                ? 'text-indigo-600 dark:text-indigo-400'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                                }`}
+                                        >
+                                            Plans & Pricing
+                                            {activeTab === 'plans' && (
+                                                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-full shadow-[0_-2px_6px_rgba(99,102,241,0.4)]" />
+                                            )}
+                                        </button>
+                                        <button
+                                            onClick={() => setActiveTab('history')}
+                                            className={`pb-4 px-2 text-sm font-bold tracking-wide transition-all uppercase ${activeTab === 'history'
+                                                ? 'text-indigo-600 dark:text-indigo-400'
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                                                }`}
+                                        >
+                                            Billing History
+                                            {activeTab === 'history' && (
+                                                <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-t-full shadow-[0_-2px_6px_rgba(99,102,241,0.4)]" />
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 md:p-12 lg:p-16 flex-1">
+                                    {/* PLANS TAB CONTENT */}
+                                    {activeTab === 'plans' && (
+                                        <div className="animate-fade-in max-w-6xl mx-auto">
+                                            {/* Header Section */}
+                                            <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16 animate-slide-down-top">
+                                                <h1 className="text-3xl md:text-5xl lg:text-6xl font-black mb-4 md:mb-6 tracking-tight text-gradient-premium">
+                                                    Upgrade your business
+                                                </h1>
+                                                <p className="text-base md:text-xl text-slate-600 dark:text-slate-400 leading-relaxed font-light px-4">
+                                                    Unlock powerful tools to manage and grow your store. <br className="hidden md:block" />
+                                                    Simple pricing, no hidden fees.
+                                                </p>
+                                            </div>
+
+                                            {/* Billing Toggle */}
+                                            <div className="flex justify-center mb-12 md:mb-20 animate-fade-in animation-delay-500">
+                                                <div className="bg-slate-200/50 dark:bg-slate-800/50 p-1 md:p-1.5 rounded-full inline-flex relative shadow-inner">
+                                                    <div
+                                                        className={`absolute inset-y-1 md:inset-y-1.5 rounded-full bg-white dark:bg-slate-700 shadow-sm transition-all duration-300 ease-spring ${isAnnual ? 'left-[calc(50%)] w-[calc(50%-4px)] md:w-[calc(50%-6px)]' : 'left-1 md:left-1.5 w-[calc(50%-4px)] md:w-[calc(50%-6px)]'
+                                                            }`}
+                                                    />
+                                                    <button
+                                                        onClick={() => setIsAnnual(false)}
+                                                        className={`relative z-10 px-4 py-2 md:px-8 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-colors duration-300 ${!isAnnual ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                                            }`}
+                                                    >
+                                                        Monthly
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setIsAnnual(true)}
+                                                        className={`relative z-10 px-4 py-2 md:px-8 md:py-2.5 rounded-full text-xs md:text-sm font-bold transition-colors duration-300 flex items-center gap-2 ${isAnnual ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                                                            }`}
+                                                    >
+                                                        Annual
+                                                        <span className="text-[9px] md:text-[10px] font-black bg-gradient-to-r from-emerald-400 to-teal-500 text-white px-1.5 md:px-2 py-0.5 rounded-full shadow-sm">
+                                                            -20%
+                                                        </span>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Plans Grid */}
+                                            <div id="plans-grid">
+                                                {fetchingPlans ? (
+                                                    <div className="grid md:grid-cols-3 gap-8 items-start">
+                                                        <PlanSkeleton />
+                                                        <PlanSkeleton />
+                                                        <PlanSkeleton />
+                                                    </div>
+                                                ) : (
+                                                    <div className="grid md:grid-cols-3 gap-8 items-start relative perspective-1000">
+                                                        {plans.map((plan, index) => (
+                                                            <div key={plan.id} style={{ animationDelay: `${index * 100}ms` }} className="animate-fade-in-up">
+                                                                <PlanCard
+                                                                    plan={plan}
+                                                                    isAnnual={isAnnual}
+                                                                    isFeatured={plan.id === 'plan_pro'}
+                                                                    isActive={user?.subscriptionPlan === plan.id}
+                                                                    isLoading={loading}
+                                                                    isSelected={selectedPlan === plan.id}
+                                                                    onSelect={handleSelectPlan}
+                                                                />
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* FAQ Section */}
+                                            <div className="mt-24 pt-16 border-t border-slate-200/50 dark:border-slate-800/50">
+                                                <FAQSection />
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* HISTORY TAB CONTENT */}
+                                    {activeTab === 'history' && (
+                                        <div className="animate-fade-in max-w-4xl mx-auto">
+                                            {user?.currentStoreId ? (
+                                                <SubscriptionHistory storeId={user.currentStoreId} />
+                                            ) : (
+                                                <div className="text-center py-20">
+                                                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                                        <svg className="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                        </svg>
+                                                    </div>
+                                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Select a Store</h3>
+                                                    <p className="text-slate-500 max-w-sm mx-auto">Please select a store from the sidebar to view its billing history.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
-                            {/* Plans Grid */}
-                            {fetchingPlans ? (
-                                <div className="flex justify-center items-center h-64">
-                                    <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin dark:border-slate-800 dark:border-t-white" />
-                                </div>
-                            ) : (
-                                <div className="grid md:grid-cols-3 gap-8 items-start">
-                                    {plans.map((plan) => (
-                                        <PlanCard
-                                            key={plan.id}
-                                            plan={plan}
-                                            isAnnual={isAnnual}
-                                            isFeatured={plan.id === 'plan_pro'}
-                                            isActive={user?.subscriptionPlan === plan.id}
-                                            isLoading={loading}
-                                            isSelected={selectedPlan === plan.id}
-                                            onSelect={handleSelectPlan}
-                                        />
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* FAQ Section */}
-                            <FAQSection />
-
-                            {/* Footer Spacer */}
-                            <div className="h-20" />
+                            <div className="h-8" />
                         </div>
                     </main>
                 </div>
