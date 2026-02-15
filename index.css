@@ -903,3 +903,77 @@ textarea {
   border-radius: 10px;
   backdrop-filter: blur(4px);
 }
+
+/* ====================================
+   SUBSCRIPTION PAGE ANIMATIONS
+   ==================================== */
+
+/* Plan card entrance — staggered via animation-delay in JSX */
+@keyframes planCardEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(32px) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-plan-card {
+  animation: planCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Rotating shimmer border for the featured plan */
+@keyframes shimmerBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.shimmer-border {
+  background: linear-gradient(135deg, #6366f1, #3b82f6, #8b5cf6, #6366f1);
+  background-size: 300% 300%;
+  animation: shimmerBorder 4s ease infinite;
+  padding: 2px;
+  border-radius: 2rem;
+}
+
+.dark .shimmer-border {
+  background: linear-gradient(135deg, #818cf8, #60a5fa, #a78bfa, #818cf8);
+  background-size: 300% 300%;
+}
+
+/* Section heading entrance */
+@keyframes sectionEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-section-entrance {
+  animation: sectionEntrance 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* FAQ expand/collapse */
+.faq-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-content.faq-open {
+  max-height: 200px;
+}
