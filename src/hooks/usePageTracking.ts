@@ -3,10 +3,18 @@ import { useLocation } from "react-router-dom";
 import { logPageView } from "../utils/analytics";
 
 const usePageTracking = () => {
-    const location = useLocation();
+    let location: ReturnType<typeof useLocation> | null = null;
+    try {
+        location = useLocation();
+    } catch {
+        // Router context not available (e.g. during HMR)
+        return;
+    }
 
     useEffect(() => {
-        logPageView(location.pathname + location.search);
+        if (location) {
+            logPageView(location.pathname + location.search);
+        }
     }, [location]);
 };
 

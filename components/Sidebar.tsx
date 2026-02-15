@@ -352,11 +352,11 @@ export default function Sidebar({
 
     const getRoleColor = (role: User['role']) => {
         switch (role) {
-            case 'admin': return 'bg-red-100 text-red-800';
-            case 'staff': return 'bg-blue-100 text-blue-800';
-            case 'inventory_manager': return 'bg-yellow-100 text-yellow-800';
-            case 'superadmin': return 'bg-purple-100 text-purple-800';
-            default: return 'bg-gray-100 text-gray-800';
+            case 'admin': return 'bg-red-100 text-red-800 dark:bg-red-500/20 dark:text-red-300';
+            case 'staff': return 'bg-blue-100 text-blue-800 dark:bg-blue-500/20 dark:text-blue-300';
+            case 'inventory_manager': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/20 dark:text-yellow-300';
+            case 'superadmin': return 'bg-purple-100 text-purple-800 dark:bg-purple-500/20 dark:text-purple-300';
+            default: return 'bg-gray-100 text-gray-800 dark:bg-gray-500/20 dark:text-gray-300';
         }
     };
 
@@ -377,6 +377,45 @@ export default function Sidebar({
         if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
         if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
         return new Date(timestamp).toLocaleDateString();
+    };
+
+    // Shared nav link renderer for both desktop sidebar and mobile
+    const renderNavItem = (item: typeof navItems[0], compact = false) => {
+        const IconComponent = item.icon;
+        return (
+            <NavLink
+                id={`sidebar-nav-${item.page.replace('/', '-')}`}
+                key={item.page}
+                to={`/${item.page}`}
+                end={item.page === 'superadmin'}
+                onClick={() => window.innerWidth < 768 && onMobileClose?.()}
+                className={({ isActive }) => `
+                    w-full flex items-center gap-3 px-4 py-2.5 rounded-xl
+                    transition-all duration-200 group relative
+                    ${isActive
+                        ? 'bg-gray-100 dark:bg-white/[0.08] text-gray-900 dark:text-white active-link font-semibold'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/70 dark:hover:bg-white/[0.05] hover:text-gray-900 dark:hover:text-white'
+                    }
+                    ${compact ? 'justify-center' : ''}
+                `}
+                title={compact ? item.name : undefined}
+            >
+                <div className="flex-shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 [[.active-link]_&]:text-blue-600 dark:[[.active-link]_&]:text-blue-400 transition-colors">
+                    <IconComponent className="w-5 h-5" />
+                </div>
+                {!compact && (
+                    <div className="flex-1 text-left">
+                        <span className="text-sm whitespace-nowrap">{item.name}</span>
+                    </div>
+                )}
+                {item.badge && !compact && (
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-full">
+                        {item.badge}
+                    </span>
+                )}
+                {compact && <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-1.5 h-1.5 bg-blue-500 rounded-full opacity-0 [[.active-link]_&]:opacity-100 transition-opacity"></div>}
+            </NavLink>
+        );
     };
 
     return (
@@ -471,62 +510,97 @@ export default function Sidebar({
                 </div>
             )}
 
-            {/* Desktop Sidebar (Existing Layout) */}
+            {/* Desktop Sidebar — Unified single-column layout */}
             <aside
                 className={`
                     hidden md:flex
                     bg-white dark:bg-slate-900/50
                     h-screen flex-col transition-all duration-300 ease-in-out z-50
-                    relative translate-x-0
+                    relative translate-x-0 border-r border-gray-200/80 dark:border-white/[0.06]
                     ${isExpanded ? 'w-64' : 'w-20'}
-                    shadow-none -r -gray-200 dark:-white/10
                 `}
-                glass-effect=""
                 style={{
                     scrollbarWidth: 'thin',
                     scrollbarColor: '#9CA3AF transparent'
                 }}
             >
-                {/* Desktop Logo */}
-                <div className={`flex h-16 items-center -b -gray-200 dark:-white/10 transition-all duration-300 ${isExpanded ? 'px-6 justify-between' : 'px-0 justify-center'}`}>
-                    {/* Collapse/Expand Toggle (Top Left) */}
+                {/* ─── Header (Logo + Toggle) ─── */}
+                <div className={`flex h-14 items-center shrink-0 transition-all duration-300 ${isExpanded ? 'px-5 justify-between' : 'px-0 justify-center'}`}>
                     <button
                         onClick={() => setIsExpanded(!isExpanded)}
-                        className={`p-2 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-200 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/10 transition-colors ${!isExpanded && 'absolute left-1/2 -translate-x-1/2'}`}
+                        className={`p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:text-white dark:hover:bg-white/[0.06] transition-colors ${!isExpanded && 'absolute left-1/2 -translate-x-1/2'}`}
                         aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
                     >
-                        <Bars3Icon className="w-6 h-6" />
+                        <Bars3Icon className="w-5 h-5" />
                     </button>
 
                     <img
                         src={logo}
                         alt="SalePilot"
-                        className={`transition-all duration-300 object-contain ${isExpanded ? 'h-8 w-auto' : 'hidden'}`}
+                        className={`transition-all duration-300 object-contain ${isExpanded ? 'h-7 w-auto' : 'hidden'}`}
                     />
                 </div>
 
-                {/* Mode Switcher */}
-                {user.role === 'superadmin' && isExpanded && (
-                    <div className="px-4 py-3 -b -gray-200 dark:-white/10">
-                        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl p-3  -gray-200 dark:-white/10">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">Mode</span>
-                                <SwatchIcon className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                {/* ─── User Profile Card ─── */}
+                <div className={`shrink-0 px-3 ${isExpanded ? 'pt-2 pb-3' : 'py-3'}`}>
+                    <NavLink
+                        id="sidebar-profile-section"
+                        to="/profile"
+                        className={({ isActive }) => `
+                            flex items-center gap-3 rounded-xl cursor-pointer transition-all duration-200
+                            ${isExpanded ? 'p-3' : 'p-2 justify-center'}
+                            ${isActive
+                                ? 'bg-blue-50/80 dark:bg-blue-500/10'
+                                : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.05]'
+                            }
+                        `}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => e.key === 'Enter' && handleNavigation('profile')}
+                        aria-label="View profile"
+                    >
+                        <div className="relative flex-shrink-0">
+                            <div className={`rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm ${isExpanded ? 'w-9 h-9' : 'w-10 h-10'}`}>
+                                <span className={`text-white font-semibold ${isExpanded ? 'text-sm' : 'text-base'}`}>
+                                    {(user?.name || 'User').charAt(0).toUpperCase()}
+                                </span>
                             </div>
-                            <div className="flex gap-2">
+                            <div className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white dark:border-slate-900 ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
+                        </div>
+                        {isExpanded && (
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user?.name || 'Guest User'}</p>
+                                <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-medium rounded-md mt-0.5 ${getRoleColor(user?.role || 'staff')}`}>
+                                    <span>{getRoleIcon(user?.role || 'staff')}</span>
+                                    {(user?.role || 'staff').replace('_', ' ')}
+                                </span>
+                            </div>
+                        )}
+                    </NavLink>
+                </div>
+
+                {/* ─── Mode Switcher (Superadmin only) ─── */}
+                {user.role === 'superadmin' && isExpanded && (
+                    <div className="shrink-0 px-3 pb-2">
+                        <div className="bg-gray-50/80 dark:bg-white/[0.03] rounded-xl p-2.5">
+                            <div className="flex items-center justify-between mb-2 px-1">
+                                <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">Mode</span>
+                                <SwatchIcon className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                            </div>
+                            <div className="flex gap-1.5">
                                 <button
                                     onClick={() => onChangeSuperMode?.('superadmin')}
-                                    className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${superMode === 'superadmin' ? 'bg-purple-600 text-white shadow-sm' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                    className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${superMode === 'superadmin' ? 'bg-purple-600 text-white shadow-sm' : 'bg-white dark:bg-white/[0.06] text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/[0.1]'}`}
                                 >
                                     Superadmin
                                 </button>
                             </div>
                             {superMode === 'store' && storesForSelect && (
-                                <div className="mt-3">
+                                <div className="mt-2">
                                     <select
                                         value={selectedStoreId || ''}
                                         onChange={(e) => onSelectStore?.(e.target.value)}
-                                        className="w-full px-3 py-2 text-sm  -gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:-blue-500 bg-white"
+                                        className="w-full px-3 py-1.5 text-xs border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 dark:text-white"
                                     >
                                         <option value="">Select Store</option>
                                         {storesForSelect.map(store => (
@@ -541,76 +615,19 @@ export default function Sidebar({
                     </div>
                 )}
 
-                {/* Navigation Items */}
-                <nav className="custom-scrollbar flex-1 px-3 py-4 space-y-1 overflow-y-auto overflow-x-hidden">
-                    {navItems.map(item => {
-                        const IconComponent = item.icon;
+                {/* ─── Subtle separator ─── */}
+                <div className="mx-4 border-t border-gray-100 dark:border-white/[0.04]" />
 
-                        return (
-                            <NavLink
-                                id={`sidebar-nav-${item.page.replace('/', '-')}`}
-                                key={item.page}
-                                to={`/${item.page}`}
-                                end={item.page === 'superadmin'}
-                                className={({ isActive }) => `
-                                    w-full flex items-center gap-3 px-4 py-3 rounded-xl
-                                    transition-all duration-200 group relative
-                                    ${isActive
-                                        ? 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-white active-link font-bold'
-                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white'
-                                    }
-                                    ${!isExpanded && 'justify-center'}
-                                `}
-                                title={!isExpanded ? item.name : undefined}
-                            >
-                                <div className="flex-shrink-0 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-white [[.active-link]_&]:text-blue-600 dark:[[.active-link]_&]:text-blue-400">
-                                    <IconComponent className="w-5 h-5" />
-                                </div>
-                                <div className={`flex-1 text-left transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                    <span className="text-sm font-medium whitespace-nowrap">{item.name}</span>
-                                </div>
-                                {item.badge && isExpanded && (
-                                    <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-                                        {item.badge}
-                                    </span>
-                                )}
-                                {!isExpanded && <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-2 h-2 bg-blue-500 rounded-full opacity-0 [[.active-link]_&]:opacity-100"></div>}
-                            </NavLink>
-                        );
-                    })}
+                {/* ─── Navigation ─── */}
+                <nav className="custom-scrollbar flex-1 px-3 py-2 space-y-0.5 overflow-y-auto overflow-x-hidden">
+                    {navItems.map(item => renderNavItem(item, !isExpanded))}
                 </nav>
 
-                {/* User Profile & Bottom Section */}
-                <div className="px-3 py-4 -t -gray-200 dark:-white/10 space-y-4">
-                    {/* User Profile */}
-                    <NavLink
-                        id="sidebar-profile-section"
-                        to="/profile"
-                        className={({ isActive }) => `flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-500/10' : 'hover:bg-gray-100 dark:hover:bg-white/10'}`}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => e.key === 'Enter' && handleNavigation('profile')}
-                        aria-label="View profile"
-                    >
-                        <div className="relative">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                                <span className="text-white font-semibold">
-                                    {(user?.name || 'User').charAt(0).toUpperCase()}
-                                </span>
-                            </div>
-                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full -2 -white dark:-slate-800 ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
-                        </div>
-                        <div className={`flex-1 min-w-0 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user?.name || 'Guest User'}</p>
-                            <div className="flex items-center gap-2 mt-0.5">
-                                <span className={`px-2 py-0.5 text-xs rounded-full ${getRoleColor(user?.role || 'staff')} dark:opacity-80`}>
-                                    <span className="mr-1">{getRoleIcon(user?.role || 'staff')}</span>
-                                    {(user?.role || 'staff').replace('_', ' ')}
-                                </span>
-                            </div>
-                        </div>
-                    </NavLink>
+                {/* ─── Subtle separator ─── */}
+                <div className="mx-4 border-t border-gray-100 dark:border-white/[0.04]" />
 
+                {/* ─── Bottom Actions (integrated, no separate panel) ─── */}
+                <div className={`shrink-0 px-3 py-2 space-y-0.5`}>
                     {/* Visit Online Store */}
                     {(selectedStoreId || user.currentStoreId) && (storeSettings?.isOnlineStoreEnabled !== false) && (
                         <a
@@ -618,45 +635,41 @@ export default function Sidebar({
                             target="_blank"
                             rel="noopener noreferrer"
                             className={`
-                                flex items-center gap-3 px-3 py-3 rounded-xl
-                                text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700
+                                flex items-center gap-3 px-4 py-2.5 rounded-xl
+                                text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50/80 dark:hover:bg-indigo-500/[0.08] hover:text-indigo-700 dark:hover:text-indigo-300
                                 transition-colors duration-200
                                 ${!isExpanded && 'justify-center'}
                             `}
                             title={!isExpanded ? 'Visit Online Store' : undefined}
                         >
                             <HiOutlineArrowTopRightOnSquare className="w-5 h-5 flex-shrink-0" />
-                            <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                Visit Online Store
-                            </span>
+                            {isExpanded && <span className="text-sm font-medium">Visit Online Store</span>}
                         </a>
                     )}
 
-                    {/* Install App Link (Manual Trigger) */}
+                    {/* Install App */}
                     {installPrompt && (
                         <button
                             onClick={onInstall}
                             className={`
-                                flex items-center gap-3 px-3 py-3 rounded-xl
-                                text-blue-600 hover:bg-blue-50 hover:text-blue-700
+                                flex items-center gap-3 px-4 py-2.5 rounded-xl w-full
+                                text-blue-600 dark:text-blue-400 hover:bg-blue-50/80 dark:hover:bg-blue-500/[0.08] hover:text-blue-700 dark:hover:text-blue-300
                                 transition-colors duration-200
                                 ${!isExpanded && 'justify-center'}
                             `}
                             title={!isExpanded ? 'Install App' : undefined}
                         >
                             <ArrowDownTrayIcon className="w-5 h-5 flex-shrink-0" />
-                            <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                Install App
-                            </span>
+                            {isExpanded && <span className="text-sm font-medium">Install App</span>}
                         </button>
                     )}
 
-                    {/* Theme Toggle Button */}
+                    {/* Theme Toggle */}
                     <button
                         onClick={toggleTheme}
                         className={`
-                            w-full flex items-center gap-3 px-3 py-3 rounded-xl
-                            text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white
+                            w-full flex items-center gap-3 px-4 py-2.5 rounded-xl
+                            text-gray-500 dark:text-gray-400 hover:bg-gray-100/70 dark:hover:bg-white/[0.05] hover:text-gray-700 dark:hover:text-white
                             transition-colors duration-200
                             ${!isExpanded && 'justify-center'}
                         `}
@@ -665,58 +678,51 @@ export default function Sidebar({
                         {theme === 'light' ? (
                             <>
                                 <MoonIcon className="w-5 h-5 flex-shrink-0" />
-                                <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                    Dark Theme
-                                </span>
+                                {isExpanded && <span className="text-sm font-medium">Dark Mode</span>}
                             </>
                         ) : (
                             <>
                                 <SunIcon className="w-5 h-5 flex-shrink-0" />
-                                <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                                    Light Theme
-                                </span>
+                                {isExpanded && <span className="text-sm font-medium">Light Mode</span>}
                             </>
                         )}
                     </button>
 
-                    {/* Logout Button */}
+                    {/* Logout */}
                     <button
                         onClick={onLogout}
                         className={`
-                            w-full flex items-center gap-3 px-3 py-3 rounded-xl
-                            text-gray-600 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-500/20 hover:text-red-700 dark:hover:text-red-400
+                            w-full flex items-center gap-3 px-4 py-2.5 rounded-xl
+                            text-gray-500 dark:text-gray-400 hover:bg-red-50/80 dark:hover:bg-red-500/[0.08] hover:text-red-600 dark:hover:text-red-400
                             transition-colors duration-200
                             ${!isExpanded && 'justify-center'}
                         `}
                         title={!isExpanded ? 'Logout' : undefined}
                     >
                         <ArrowLeftOnRectangleIcon className="w-5 h-5 flex-shrink-0" />
-                        <span className={`text-sm font-medium transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                            Logout
-                        </span>
+                        {isExpanded && <span className="text-sm font-medium">Logout</span>}
                     </button>
+                </div>
 
-                    {/* Status & Toggle */}
-                    <div className={`flex items-center justify-between px-3 ${!isExpanded && 'justify-center'}`}>
-                        <div className={`flex flex-col gap-1 transition-all duration-300 ${isExpanded ? 'opacity-100' : 'opacity-0 w-0'}`}>
-                            <div className="flex items-center gap-2">
-                                <div className={`w-2 h-2 rounded-full ${isOnline ? (isSyncing ? 'bg-blue-500 animate-spin' : 'bg-green-500 animate-pulse') : 'bg-yellow-500'}`}></div>
-                                <span className="text-xs text-gray-500">
-                                    {isOnline ? (isSyncing ? 'Syncing...' : 'Online') : 'Offline'}
+                {/* ─── Status Bar ─── */}
+                <div className={`shrink-0 px-4 py-2 ${!isExpanded && 'flex justify-center'}`}>
+                    <div className={`flex items-center gap-2 ${!isExpanded ? 'justify-center' : ''}`}>
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOnline ? (isSyncing ? 'bg-blue-500 animate-pulse' : 'bg-emerald-500') : 'bg-amber-500'}`} />
+                        {isExpanded && (
+                            <div className="flex flex-col">
+                                <span className="text-[11px] text-gray-400 dark:text-gray-500 font-medium">
+                                    {isOnline ? (isSyncing ? 'Syncing…' : 'Online') : 'Offline'}
                                 </span>
+                                {lastSync && (
+                                    <span className="text-[10px] text-gray-300 dark:text-gray-600">
+                                        Synced {formatLastSync(lastSync)}
+                                    </span>
+                                )}
                             </div>
-                            {lastSync && isExpanded && (
-                                <span className="text-[10px] text-gray-400 pl-4">
-                                    Synced {formatLastSync(lastSync)}
-                                </span>
-                            )}
-                        </div>
-
+                        )}
                     </div>
-
                 </div>
             </aside>
         </>
     );
 };
-
