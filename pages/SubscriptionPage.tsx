@@ -268,14 +268,7 @@ const SubscriptionPage: React.FC = () => {
                 <div className="flex-1 flex flex-col relative">
                     <Header title="Subscription" />
 
-                    <main className="flex-1 overflow-y-auto relative scroll-smooth bg-grid-slate-100 dark:bg-grid-slate-900 bg-[size:40px_40px]">
-
-                        {/* Animated Background Blobs */}
-                        <div className="fixed inset-0 pointer-events-none overflow-hidden touch-none select-none z-0">
-                            <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-purple-200/30 dark:bg-purple-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] opacity-70 animate-blob" />
-                            <div className="absolute top-0 right-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] bg-indigo-200/30 dark:bg-indigo-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[80px] opacity-70 animate-blob animation-delay-2000" />
-                            <div className="absolute -bottom-32 left-1/3 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-pink-200/30 dark:bg-pink-900/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-blob animation-delay-4000" />
-                        </div>
+                    <main className="flex-1 overflow-y-auto relative scroll-smooth">
 
                         <div className="relative z-10 p-3 md:p-8 max-w-7xl mx-auto min-h-full flex flex-col">
                             {/* Back button */}

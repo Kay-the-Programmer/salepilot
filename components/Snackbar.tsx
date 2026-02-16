@@ -51,25 +51,25 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, stackIndex 
         success: {
             container: 'bg-emerald-500/30 dark:bg-emerald-400/20 text-emerald-900 dark:text-emerald-100 border border-emerald-500/40',
             progress: 'bg-emerald-500/60',
-            iconBg: 'bg-emerald-500/30',
+            iconBg: 'bg-transparent',
             closeHover: 'hover:bg-emerald-500/30',
         },
         error: {
             container: 'bg-rose-500/30 dark:bg-rose-400/20 text-rose-900 dark:text-rose-100 border border-rose-500/40',
             progress: 'bg-rose-500/60',
-            iconBg: 'bg-rose-500/30',
+            iconBg: 'bg-transparent',
             closeHover: 'hover:bg-rose-500/30',
         },
         info: {
             container: 'bg-blue-500/30 dark:bg-blue-400/20 text-blue-900 dark:text-blue-100 border border-blue-500/40',
             progress: 'bg-blue-500/60',
-            iconBg: 'bg-blue-500/30',
+            iconBg: 'bg-transparent',
             closeHover: 'hover:bg-blue-500/30',
         },
         warning: {
             container: 'bg-amber-500/30 dark:bg-amber-400/20 text-amber-900 dark:text-amber-100 border border-amber-500/40',
             progress: 'bg-amber-500/60',
-            iconBg: 'bg-amber-500/30',
+            iconBg: 'bg-transparent',
             closeHover: 'hover:bg-amber-500/30',
         },
         sync: {

@@ -273,14 +273,10 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
 
     return (
         <div className="fixed inset-0 z-[50] md:inset-auto md:bottom-6 md:right-6 w-full md:max-w-[450px] animate-slide-up-fade font-sans">
-            <div className="relative bg-white/95 dark:bg-slate-900/95 h-full rounded-none md:h-[700px] md:rounded-3xl shadow-[0_0_50px_rgba(79,70,229,0.15)] border border-slate-200 dark:border-white/10 backdrop-blur-xl overflow-hidden flex flex-col transition-all duration-500">
-
-                {/* Decorative Elements */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]"></div>
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-indigo-500/5 dark:bg-indigo-500/20 blur-[100px] rounded-full pointer-events-none"></div>
+            <div className="relative bg-white/95 dark:bg-slate-900/95 h-full rounded-none md:h-[700px] md:max-h-[calc(100vh-6rem)] md:rounded-3xl shadow-[0_0_50px_rgba(79,70,229,0.15)] border border-slate-200 dark:border-white/10 backdrop-blur-xl overflow-hidden flex flex-col transition-all duration-500">
 
                 {/* Header */}
-                <div className="relative flex items-center justify-between px-6 py-5 bg-slate-50/80 dark:bg-slate-800/40 border-b border-slate-200 dark:border-white/5 backdrop-blur-md z-10">
+                <div className="relative flex items-center justify-between px-6 py-5 bg-slate-50/80 dark:bg-slate-800/40 backdrop-blur-md z-10">
                     <div className="flex items-center gap-3">
                         <div className="relative">
                             <div className="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center shadow-lg group-hover:shadow-indigo-500/20 transition-all">
