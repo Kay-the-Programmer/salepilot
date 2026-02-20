@@ -462,14 +462,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                     if (isMobileMoney) {
                         try {
-                            // Fetch reference from backend first
-                            const refResponse = await api.post<any>('/payments/lenco/initiate', { prefix: 'SP_SALE' });
-                            if (refResponse.status && refResponse.data.reference) {
+                            // If Merchant Key is set, generate local reference and skip backend initiation
+                            if (storeSettings.lencoPublicKey) {
+                                const localRef = `SP-${Date.now()}`;
+                                setLencoReference(localRef);
                                 setShowPaymentChoiceModal(true);
-                                // We don't return here, we wait for the modal to call processTransaction again with the reference
-                                // But we need to save the reference somewhere. 
-                                // Actually, it's better to just set the reference in the modal or state.
-                                setLencoReference(refResponse.data.reference);
+                            } else {
+                                // Standard flow: Fetch reference from backend
+                                const refResponse = await api.post<any>('/payments/lenco/initiate', { prefix: 'SP_SALE' });
+                                if (refResponse.status && refResponse.data.reference) {
+                                    setShowPaymentChoiceModal(true);
+                                    setLencoReference(refResponse.data.reference);
+                                }
                             }
                         } catch (err) {
                             console.error('Failed to initiate Lenco reference:', err);
@@ -911,15 +915,30 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 customerPhone={mobileMoneyNumber || selectedCustomer?.phone || ''}
                 storeSettings={storeSettings}
                 reference={lencoReference}
-                onLencoSuccess={async (response) => {
-                    handleLencoVerification(response.reference);
+                merchantPublicKey={storeSettings.lencoPublicKey}
+                onLencoSuccess={(response) => {
+                    if (storeSettings.lencoPublicKey) {
+                        // Direct settlement: Trust the widget callback and finalize immediately
+                        setShowPaymentChoiceModal(false);
+                        processTransaction('paid', response.reference);
+                        showSnackbar('Payment confirmed via Merchant Account', 'success');
+                    } else {
+                        // Standard platform settlement: Backend verification required
+                        handleLencoVerification(response.reference);
+                    }
                 }}
-                onConfirmationPending={async (response) => {
-                    handleLencoVerification(response.reference);
+                onConfirmationPending={(response) => {
+                    if (storeSettings.lencoPublicKey) {
+                        // For merchant keys, we can't really track pending status via backend
+                        setShowPaymentChoiceModal(false);
+                        showSnackbar('Payment initiated. Please confirm on your device.', 'info');
+                    } else {
+                        handleLencoVerification(response.reference);
+                    }
                 }}
                 onManualConfirm={() => {
                     setShowPaymentChoiceModal(false);
-                    processTransaction('paid', 'manual-verfication');
+                    processTransaction('paid', `MANUAL-${Date.now()}`);
                 }}
             />
 

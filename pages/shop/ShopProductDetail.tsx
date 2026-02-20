@@ -6,6 +6,7 @@ import { Product } from '../../types';
 import { HiOutlineCheck, HiOutlinePlus, HiOutlineMinus } from 'react-icons/hi2';
 import { useOutletContext } from 'react-router-dom';
 import { formatCurrency } from '../../utils/currency';
+import { logEvent } from '../../src/utils/analytics';
 
 const ShopProductDetail: React.FC = () => {
     const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
@@ -55,6 +56,7 @@ const ShopProductDetail: React.FC = () => {
 
         localStorage.setItem(cartKey, JSON.stringify(cart));
         window.dispatchEvent(new Event('cart-updated'));
+        logEvent('Shop', 'Add to Cart', product.name);
         setAddedToCart(true);
         setTimeout(() => setAddedToCart(false), 2000);
     };

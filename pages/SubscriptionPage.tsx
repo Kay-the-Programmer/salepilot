@@ -10,6 +10,7 @@ import { NotificationProvider } from '../contexts/NotificationContext';
 import { useToast } from '../contexts/ToastContext';
 import { api } from '../services/api';
 import { BackendPlan } from '../types/subscription';
+import { logEvent } from '../src/utils/analytics';
 
 // Lazy-load the payment modal
 const CustomPaymentModal = React.lazy(
@@ -85,6 +86,7 @@ const SubscriptionPage: React.FC = () => {
 
                 if (data.success) {
                     showToast('Payment Successful! Your subscription is now active.', 'success');
+                    logEvent('Subscription', 'Subscribe', planToPay?.name);
                     setLoading(false);
                     setIsPaymentModalOpen(false);
                     setTimeout(() => navigate('/reports'), 2000);

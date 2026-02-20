@@ -1,18 +1,10 @@
 /* ============================================
-   SalePilot Ultra-Premium Loader
-   Captivating Brand Experience
+   SalePilot Minimalistic Loader
    ============================================ */
 
 :root {
     --sp-navy: #0A2E5C;
-    --sp-navy-light: #154180;
-    --sp-navy-dark: #061C3A;
     --sp-orange: #FF7F27;
-    --sp-orange-light: #FFA35C;
-    --sp-orange-dark: #E66B1F;
-    --sp-green: #2E8B57;
-    --sp-glow-orange: rgba(255, 127, 39, 0.6);
-    --sp-glow-navy: rgba(10, 46, 92, 0.4);
 }
 
 /* ============================================
@@ -22,812 +14,83 @@
 .sp-loader-overlay {
     position: fixed;
     inset: 0;
-    background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 50%, #f1f5f9 100%);
+    background: rgba(255, 255, 255, 0.9);
     z-index: 9999;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    backdrop-filter: blur(4px);
 }
 
 .dark .sp-loader-overlay {
-    background: linear-gradient(145deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
-}
-
-.sp-backdrop-blur {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 50% 40%,
-            rgba(255, 127, 39, 0.06) 0%,
-            transparent 50%);
-}
-
-.dark .sp-backdrop-blur {
-    background: radial-gradient(ellipse at 50% 40%,
-            rgba(255, 127, 39, 0.1) 0%,
-            transparent 50%);
+    background: rgba(15, 23, 42, 0.9);
 }
 
 .sp-loader-container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 32px;
-    z-index: 1;
-    position: relative;
+    gap: 16px;
+}
+
+.sp-loader-container.sm {
+    transform: scale(0.7);
+}
+
+.sp-loader-container.lg {
+    transform: scale(1.3);
 }
 
 /* ============================================
-   Ambient Background Orbs
+   Minimal Spinner
    ============================================ */
 
-.sp-ambient {
-    position: absolute;
-    width: 300px;
-    height: 300px;
-    pointer-events: none;
-}
-
-.sp-ambient-orb {
-    position: absolute;
+.sp-minimal-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid rgba(10, 46, 92, 0.1);
+    border-top-color: var(--sp-orange);
     border-radius: 50%;
-    filter: blur(40px);
-    opacity: 0.4;
-    animation: sp-orb-float 8s ease-in-out infinite;
+    animation: sp-spin 0.8s ease-in-out infinite;
 }
 
-.sp-orb-1 {
-    width: 120px;
-    height: 120px;
-    background: var(--sp-orange);
-    top: -30px;
-    left: -40px;
-    animation-delay: 0s;
+.dark .sp-minimal-spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: var(--sp-orange);
 }
 
-.sp-orb-2 {
-    width: 80px;
-    height: 80px;
-    background: var(--sp-navy-light);
-    bottom: 0;
-    right: -30px;
-    animation-delay: 2s;
-}
-
-.sp-orb-3 {
-    width: 60px;
-    height: 60px;
-    background: var(--sp-orange-light);
-    top: 50%;
-    right: -50px;
-    animation-delay: 4s;
-}
-
-@keyframes sp-orb-float {
-
-    0%,
-    100% {
-        transform: translate(0, 0) scale(1);
-        opacity: 0.3;
-    }
-
-    25% {
-        transform: translate(10px, -15px) scale(1.1);
-        opacity: 0.5;
-    }
-
-    50% {
-        transform: translate(-5px, 10px) scale(0.95);
-        opacity: 0.4;
-    }
-
-    75% {
-        transform: translate(15px, 5px) scale(1.05);
-        opacity: 0.5;
-    }
-}
-
-/* ============================================
-   Logo Stage
-   ============================================ */
-
-.sp-logo-stage {
-    position: relative;
-    width: 130px;
-    height: 130px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* ============================================
-   Outer Glow Ring
-   ============================================ */
-
-.sp-glow-ring {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: radial-gradient(circle,
-            transparent 45%,
-            var(--sp-glow-orange) 50%,
-            transparent 55%);
-    opacity: 0;
-    animation: sp-glow-pulse 2s ease-in-out infinite;
-}
-
-@keyframes sp-glow-pulse {
-
-    0%,
-    100% {
-        opacity: 0;
-        transform: scale(0.9);
-    }
-
-    50% {
-        opacity: 0.6;
-        transform: scale(1.15);
-    }
-}
-
-/* ============================================
-   Rotating Arc Ring
-   ============================================ */
-
-.sp-arc-ring {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    animation: sp-arc-spin 1.8s linear infinite;
-}
-
-@keyframes sp-arc-spin {
-    from {
-        transform: rotate(0deg);
-    }
-
+@keyframes sp-spin {
     to {
         transform: rotate(360deg);
     }
 }
 
 /* ============================================
-   Pixel Cascade
+   Text
    ============================================ */
 
-.sp-pixels-cascade {
-    position: absolute;
-    width: 70px;
-    height: 50px;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.sp-cascade-pixel {
-    position: absolute;
-    background: var(--sp-navy);
-    border-radius: 2px;
-    box-shadow: 0 2px 8px var(--sp-glow-navy);
-    animation: sp-pixel-cascade 2.4s ease-in-out infinite;
-}
-
-.dark .sp-cascade-pixel {
-    background: #64748b;
-    box-shadow: 0 2px 12px rgba(100, 116, 139, 0.5);
-}
-
-.sp-cp-1 {
-    width: 8px;
-    height: 8px;
-    left: 32px;
-    top: 0;
-    animation-delay: 0s;
-}
-
-.sp-cp-2 {
-    width: 6px;
-    height: 6px;
-    left: 20px;
-    top: 8px;
-    animation-delay: 0.2s;
-}
-
-.sp-cp-3 {
-    width: 7px;
-    height: 7px;
-    left: 44px;
-    top: 6px;
-    animation-delay: 0.35s;
-}
-
-.sp-cp-4 {
-    width: 5px;
-    height: 5px;
-    left: 12px;
-    top: 16px;
-    animation-delay: 0.5s;
-}
-
-.sp-cp-5 {
-    width: 6px;
-    height: 6px;
-    left: 54px;
-    top: 14px;
-    animation-delay: 0.15s;
-}
-
-.sp-cp-6 {
-    width: 4px;
-    height: 4px;
-    left: 28px;
-    top: 18px;
-    animation-delay: 0.45s;
-}
-
-.sp-cp-7 {
-    width: 5px;
-    height: 5px;
-    left: 38px;
-    top: 22px;
-    animation-delay: 0.6s;
-}
-
-@keyframes sp-pixel-cascade {
-
-    0%,
-    100% {
-        transform: translateY(0) scale(1);
-        opacity: 0.3;
-    }
-
-    20% {
-        opacity: 1;
-    }
-
-    50% {
-        transform: translateY(-10px) scale(1.1);
-        opacity: 1;
-    }
-
-    80% {
-        opacity: 0.8;
-    }
-}
-
-/* ============================================
-   Cart Assembly
-   ============================================ */
-
-.sp-cart-assembly {
-    position: relative;
-    width: 72px;
-    height: 72px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Speed Trail */
-.sp-speed-trail {
-    position: absolute;
-    left: -22px;
-    top: 50%;
-    transform: translateY(-50%);
-    height: 36px;
-    width: 25px;
-}
-
-.sp-trail {
-    position: absolute;
-    height: 3px;
-    background: linear-gradient(to left, var(--sp-orange), transparent);
-    border-radius: 3px;
-    animation: sp-trail-streak 0.7s ease-out infinite;
-}
-
-.sp-trail-1 {
-    width: 20px;
-    top: 6px;
-    animation-delay: 0s;
-}
-
-.sp-trail-2 {
-    width: 28px;
-    top: 16px;
-    animation-delay: 0.12s;
-}
-
-.sp-trail-3 {
-    width: 18px;
-    top: 26px;
-    animation-delay: 0.06s;
-}
-
-@keyframes sp-trail-streak {
-    0% {
-        opacity: 0;
-        transform: translateX(12px) scaleX(0.3);
-    }
-
-    25% {
-        opacity: 1;
-        transform: translateX(0) scaleX(1);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translateX(-18px) scaleX(0.5);
-    }
-}
-
-/* Cart Core */
-.sp-cart-core {
-    position: relative;
-    width: 56px;
-    height: 56px;
-    animation: sp-cart-ride 0.9s ease-in-out infinite;
-}
-
-@keyframes sp-cart-ride {
-
-    0%,
-    100% {
-        transform: translateX(-3px) translateY(0);
-    }
-
-    25% {
-        transform: translateX(0) translateY(-2px);
-    }
-
-    50% {
-        transform: translateX(3px) translateY(0);
-    }
-
-    75% {
-        transform: translateX(0) translateY(1px);
-    }
-}
-
-.sp-cart-svg {
-    width: 100%;
-    height: 100%;
-}
-
-.sp-cart-path {
-    stroke-dasharray: 0;
-    animation: sp-cart-draw 2s ease-out forwards;
-}
-
-@keyframes sp-cart-draw {
-    from {
-        stroke-dashoffset: 100;
-    }
-
-    to {
-        stroke-dashoffset: 0;
-    }
-}
-
-.sp-wheel {
-    fill: var(--sp-navy);
-    transform-origin: center;
-    animation: sp-wheel-roll 0.4s linear infinite;
-}
-
-.dark .sp-wheel {
-    fill: #94a3b8;
-}
-
-@keyframes sp-wheel-roll {
-    from {
-        transform: rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-/* ============================================
-   Lightning Core
-   ============================================ */
-
-.sp-lightning-core {
-    position: absolute;
-    top: 50%;
-    left: 52%;
-    transform: translate(-50%, -48%);
-    width: 26px;
-    height: 26px;
-}
-
-.sp-bolt {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 2;
-}
-
-.sp-bolt-shape {
-    animation: sp-bolt-pulse 0.6s ease-in-out infinite;
-}
-
-@keyframes sp-bolt-pulse {
-
-    0%,
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 0.9;
-        transform: scale(1.12);
-    }
-}
-
-/* Energy Ring around Bolt */
-.sp-energy-ring {
-    position: absolute;
-    inset: -8px;
-    border: 2px solid var(--sp-orange);
-    border-radius: 50%;
-    opacity: 0;
-    animation: sp-energy-expand 1.2s ease-out infinite;
-}
-
-@keyframes sp-energy-expand {
-    0% {
-        transform: scale(0.5);
-        opacity: 0.8;
-    }
-
-    100% {
-        transform: scale(1.8);
-        opacity: 0;
-    }
-}
-
-/* ============================================
-   Particle Sparks
-   ============================================ */
-
-.sp-particle-field {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-}
-
-.sp-spark {
-    position: absolute;
-    width: 4px;
-    height: 4px;
-    background: var(--sp-orange);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--sp-glow-orange);
-    animation: sp-spark-fly 1.5s ease-out infinite;
-}
-
-.sp-spark-1 {
-    top: 40%;
-    right: 5px;
-    animation-delay: 0s;
-}
-
-.sp-spark-2 {
-    top: 25%;
-    right: 15px;
-    animation-delay: 0.3s;
-}
-
-.sp-spark-3 {
-    top: 55%;
-    right: 10px;
-    animation-delay: 0.6s;
-}
-
-.sp-spark-4 {
-    top: 35%;
-    right: 0;
-    animation-delay: 0.9s;
-}
-
-@keyframes sp-spark-fly {
-    0% {
-        opacity: 0;
-        transform: translate(0, 0) scale(0);
-    }
-
-    20% {
-        opacity: 1;
-        transform: translate(5px, -5px) scale(1);
-    }
-
-    100% {
-        opacity: 0;
-        transform: translate(30px, -25px) scale(0.3);
-    }
-}
-
-/* ============================================
-   Brand Identity
-   ============================================ */
-
-.sp-brand-identity {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-}
-
-.sp-brand-name {
-    display: flex;
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-}
-
-.sp-name-sale {
-    color: var(--sp-navy);
-    animation: sp-name-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.dark .sp-name-sale {
-    color: #f1f5f9;
-}
-
-.sp-name-pilot {
-    color: var(--sp-orange);
-    opacity: 0;
-    animation: sp-name-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards;
-}
-
-@keyframes sp-name-reveal {
-    from {
-        opacity: 0;
-        transform: translateY(12px);
-        filter: blur(4px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-        filter: blur(0);
-    }
-}
-
-.sp-tagline {
-    font-size: 12px;
+.sp-minimal-text {
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 14px;
     font-weight: 500;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #64748b;
-    opacity: 0;
-    animation: sp-tagline-fade 0.8s ease-out 0.4s forwards;
+    color: var(--sp-navy);
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+    animation: sp-pulse 1.5s ease-in-out infinite;
 }
 
-.dark .sp-tagline {
-    color: #94a3b8;
+.dark .sp-minimal-text {
+    color: #e2e8f0;
 }
 
-@keyframes sp-tagline-fade {
-    from {
-        opacity: 0;
-        transform: translateY(8px);
-    }
-
-    to {
-        opacity: 0.8;
-        transform: translateY(0);
-    }
-}
-
-/* ============================================
-   Premium Progress Bar
-   ============================================ */
-
-.sp-progress-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-}
-
-.sp-progress-bar {
-    width: 160px;
-    height: 3px;
-    background: rgba(10, 46, 92, 0.08);
-    border-radius: 3px;
-    overflow: hidden;
-    position: relative;
-}
-
-.dark .sp-progress-bar {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-.sp-progress-fill {
-    position: absolute;
-    width: 40%;
-    height: 100%;
-    background: linear-gradient(90deg,
-            var(--sp-navy) 0%,
-            var(--sp-orange) 50%,
-            var(--sp-orange-light) 100%);
-    border-radius: 3px;
-    animation: sp-progress-flow 1.4s ease-in-out infinite;
-}
-
-.sp-progress-shimmer {
-    position: absolute;
-    width: 30%;
-    height: 100%;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(255, 255, 255, 0.4),
-            transparent);
-    animation: sp-shimmer 1.4s ease-in-out infinite;
-}
-
-@keyframes sp-progress-flow {
-    0% {
-        left: -40%;
-    }
-
-    100% {
-        left: 100%;
-    }
-}
-
-@keyframes sp-shimmer {
-    0% {
-        left: -30%;
-    }
-
-    100% {
-        left: 100%;
-    }
-}
-
-/* Loading Dots */
-.sp-progress-dots {
-    display: flex;
-    gap: 6px;
-}
-
-.sp-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--sp-navy);
-    border-radius: 50%;
-    opacity: 0.3;
-    animation: sp-dot-bounce 1.4s ease-in-out infinite;
-}
-
-.dark .sp-dot {
-    background: #94a3b8;
-}
-
-.sp-dot-1 {
-    animation-delay: 0s;
-}
-
-.sp-dot-2 {
-    animation-delay: 0.15s;
-}
-
-.sp-dot-3 {
-    animation-delay: 0.3s;
-}
-
-@keyframes sp-dot-bounce {
+@keyframes sp-pulse {
 
     0%,
-    60%,
     100% {
-        transform: translateY(0);
-        opacity: 0.3;
+        opacity: 0.6;
     }
 
-    30% {
-        transform: translateY(-6px);
+    50% {
         opacity: 1;
-    }
-}
-
-/* ============================================
-   Performance
-   ============================================ */
-
-.sp-arc-ring,
-.sp-glow-ring,
-.sp-cascade-pixel,
-.sp-cart-core,
-.sp-wheel,
-.sp-bolt-shape,
-.sp-energy-ring,
-.sp-spark,
-.sp-trail,
-.sp-progress-fill,
-.sp-progress-shimmer,
-.sp-dot,
-.sp-ambient-orb {
-    will-change: transform, opacity;
-}
-
-.sp-logo-stage,
-.sp-cart-assembly {
-    transform: translateZ(0);
-    backface-visibility: hidden;
-}
-
-/* ============================================
-   Reduced Motion
-   ============================================ */
-
-@media (prefers-reduced-motion: reduce) {
-
-    .sp-arc-ring,
-    .sp-glow-ring,
-    .sp-cascade-pixel,
-    .sp-cart-core,
-    .sp-wheel,
-    .sp-bolt-shape,
-    .sp-energy-ring,
-    .sp-spark,
-    .sp-trail,
-    .sp-progress-fill,
-    .sp-progress-shimmer,
-    .sp-dot,
-    .sp-ambient-orb {
-        animation: none !important;
-    }
-
-    .sp-glow-ring {
-        opacity: 0.4;
-        transform: scale(1.05);
-    }
-
-    .sp-cascade-pixel {
-        opacity: 0.6;
-    }
-
-    .sp-progress-fill {
-        left: 30%;
-    }
-
-    .sp-dot {
-        opacity: 0.6;
-    }
-}
-
-/* ============================================
-   Responsive
-   ============================================ */
-
-@media (max-width: 480px) {
-    .sp-loader-container {
-        gap: 28px;
-    }
-
-    .sp-brand-name {
-        font-size: 24px;
-    }
-
-    .sp-tagline {
-        font-size: 10px;
-        letter-spacing: 1.5px;
-    }
-
-    .sp-progress-bar {
-        width: 140px;
-    }
-
-    .sp-ambient-orb {
-        filter: blur(30px);
     }
 }

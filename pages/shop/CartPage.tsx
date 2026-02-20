@@ -14,6 +14,7 @@ import { buildAssetUrl } from '../../services/api';
 import { ShopInfo, shopService } from '../../services/shop.service';
 import { formatCurrency } from '../../utils/currency';
 import { getCurrentUser } from '../../services/authService';
+import { logEvent } from '../../src/utils/analytics';
 
 const CartPage: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
@@ -115,9 +116,11 @@ const CartPage: React.FC = () => {
             }
 
             const response = await shopService.createOrder(storeId, payload);
+            logEvent('Shop', 'Begin Checkout', `Items: ${cartItems.length}`);
 
             setOrderData(response);
             setOrderComplete(true);
+            logEvent('Shop', 'Purchase', `Order ID: ${(response as any).orderId}`);
             localStorage.removeItem(`cart_${storeId}`);
             window.dispatchEvent(new Event('cart-updated'));
         } catch (err: any) {

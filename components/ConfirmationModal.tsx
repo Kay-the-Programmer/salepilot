@@ -74,7 +74,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={onClose}>
             <div
                 glass-effect=""
-                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-md m-0 border border-gray-100 dark:bg-slate-900/80 dark:border-slate-700/50"
+                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-md m-0 border border-gray-100 dark:bg-slate-900/80 dark:border-slate-700/50 max-h-[85vh] overflow-y-auto custom-scrollbar"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}

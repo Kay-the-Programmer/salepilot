@@ -5,6 +5,7 @@ import UnifiedRecordPaymentModal from '../components/accounting/UnifiedRecordPay
 import SupplierInvoiceFormModal from '../components/accounting/SupplierInvoiceFormModal';
 import SupplierInvoiceDetailModal from '../components/accounting/SupplierInvoiceDetailModal';
 import SalesInvoiceDetailModal from '../components/accounting/SalesInvoiceDetailModal';
+import { logEvent } from '../src/utils/analytics';
 import ArrowTrendingUpIcon from '../components/icons/ArrowTrendingUpIcon';
 import ArrowTrendingDownIcon from '../components/icons/ArrowTrendingDownIcon';
 import BanknotesIcon from '../components/icons/BanknotesIcon';
@@ -101,7 +102,11 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     }, []);
 
     const setActiveTabAndHash = (tabName: string) => {
+        const previousTab = activeTab;
         setActiveTab(tabName);
+        if (previousTab !== tabName) {
+            logEvent('Accounting', 'navigate_tab', tabName);
+        }
         if (typeof window !== 'undefined') {
             window.history.replaceState(null, '', `#${tabName}`);
         }
@@ -135,6 +140,8 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 offsetAccountName,
                 description
             });
+
+            logEvent('Accounting', 'adjust_account', accountId);
 
             // Trigger a page reload to refresh data
             window.location.reload();
@@ -200,8 +207,14 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 return <ChartOfAccountsView
                     accounts={accounts}
                     storeSettings={storeSettings}
-                    onSaveAccount={onSaveAccount}
-                    onDeleteAccount={onDeleteAccount}
+                    onSaveAccount={(account) => {
+                        logEvent('Accounting', account.id ? 'update_account' : 'create_account', account.name);
+                        onSaveAccount(account);
+                    }}
+                    onDeleteAccount={(id) => {
+                        logEvent('Accounting', 'delete_account', id);
+                        onDeleteAccount(id);
+                    }}
                     onAdjustAccount={(account) => {
                         setAccountToAdjust(account);
                         setIsAdjustmentModalOpen(true);
@@ -216,8 +229,14 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         expenses={expenses}
                         accounts={accounts}
                         storeSettings={storeSettings}
-                        onSave={onSaveExpense}
-                        onDelete={onDeleteExpense}
+                        onSave={(expense) => {
+                            logEvent('Accounting', expense.id ? 'edit_expense' : 'create_expense', expense.id);
+                            onSaveExpense(expense);
+                        }}
+                        onDelete={(id) => {
+                            logEvent('Accounting', 'delete_expense', id);
+                            onDeleteExpense(id);
+                        }}
                         onEdit={handleEditExpense}
                         onOpenForm={() => { setEditingExpense(null); setIsExpenseFormOpen(true); }}
                     />
@@ -228,8 +247,14 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         expenses={recurringExpenses}
                         accounts={accounts}
                         storeSettings={storeSettings}
-                        onSave={onSaveRecurringExpense}
-                        onDelete={onDeleteRecurringExpense}
+                        onSave={(expense) => {
+                            logEvent('Accounting', expense.id ? 'edit_recurring_expense' : 'create_recurring_expense', expense.id);
+                            onSaveRecurringExpense(expense);
+                        }}
+                        onDelete={(id) => {
+                            logEvent('Accounting', 'delete_recurring_expense', id);
+                            onDeleteRecurringExpense(id);
+                        }}
                         onEdit={handleEditRecurringExpense}
                         onOpenForm={() => { setEditingRecurringExpense(null); setIsRecurringExpenseFormOpen(true); }}
                     />
@@ -370,7 +395,10 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         balanceDue={invoiceToPayAP.amount - (invoiceToPayAP.amountPaid || 0)}
                         customerOrSupplierName={suppliers.find(s => s.id === invoiceToPayAP.supplierId)?.name || 'Unknown Supplier'}
                         paymentMethods={storeSettings.paymentMethods}
-                        onSave={onRecordSupplierPayment}
+                        onSave={(invoiceId, payment) => {
+                            logEvent('Accounting', 'record_supplier_payment', invoiceId);
+                            onRecordSupplierPayment(invoiceId, payment);
+                        }}
                         storeSettings={storeSettings}
                     />
                 )
@@ -397,7 +425,10 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         balanceDue={invoiceToPayAR.total - (invoiceToPayAR.payments?.reduce((s, p) => s + p.amount, 0) || invoiceToPayAR.amountPaid || 0)}
                         customerOrSupplierName={invoiceToPayAR.customerName || (invoiceToPayAR.customerId ? (customers.find(c => c.id === invoiceToPayAR.customerId)?.name) : undefined)}
                         paymentMethods={storeSettings.paymentMethods}
-                        onSave={(invoiceId, payment) => onRecordPayment(invoiceId, payment)}
+                        onSave={(invoiceId, payment) => {
+                            logEvent('Accounting', 'record_sale_payment', invoiceId);
+                            onRecordPayment(invoiceId, payment);
+                        }}
                         storeSettings={storeSettings}
                     />
                 )

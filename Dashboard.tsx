@@ -63,6 +63,7 @@ import SystemNotificationModal from './components/SystemNotificationModal';
 import TourGuide from './components/TourGuide';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './contexts/NotificationContext';
+import { logEvent } from './src/utils/analytics';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -191,6 +192,7 @@ export default function Dashboard() {
         installPrompt.prompt();
         installPrompt.userChoice.then((choiceResult: { outcome: string }) => {
             if (choiceResult.outcome === 'accepted') {
+                logEvent('System', 'Install PWA');
                 showSnackbar('SalePilot has been installed!', 'success');
             }
             setInstallPrompt(null);
@@ -482,6 +484,7 @@ export default function Dashboard() {
             }
         } catch { }
         setCurrentUser(user);
+        logEvent('Auth', 'Login', user.role);
         const desired = user.role === 'superadmin' ? 'superadmin' : DEFAULT_PAGES[user.role];
         // Persist last page for this user for consistency across reloads
         try {
@@ -498,6 +501,7 @@ export default function Dashboard() {
         logout();
         setCurrentUser(null);
         setIsLogoutModalOpen(false);
+        logEvent('Auth', 'Logout');
         showSnackbar('You have been logged out.', 'info');
     };
 
@@ -574,6 +578,7 @@ export default function Dashboard() {
                 return tempProduct;
             } else {
                 showSnackbar(`Product ${isUpdating ? 'updated' : 'added'} successfully!`, 'success');
+                logEvent('Inventory', isUpdating ? 'Update Product' : 'Create Product');
                 // Update state directly instead of calling fetchData()
                 if (isUpdating) {
                     setProducts(prev => prev.map(p => p.id === (savedProduct as Product).id ? (savedProduct as Product) : p));
@@ -695,6 +700,7 @@ export default function Dashboard() {
                 return tempSale;
             } else {
                 showSnackbar('Sale completed successfully!', 'success');
+                logEvent('Sales', 'Process Sale', `Total: ${sale.total}`);
                 fetchData();
                 return result;
             }

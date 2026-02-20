@@ -25,6 +25,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 
 import { barcodeService } from '../services/barcodeService';
 import BarcodeLookupModal from '../components/BarcodeLookupModal';
+import { logEvent } from '../src/utils/analytics';
 
 interface InventoryPageProps {
     products: Product[];
@@ -91,6 +92,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     // Category Management State
     const [activeTab, setActiveTab] = useState<'products' | 'categories'>('products');
+
+    // Analytics for tab change
+    useEffect(() => {
+        logEvent('Inventory', 'navigate_tab', activeTab);
+    }, [activeTab]);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -151,7 +157,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
-        }, 300);
+            if (searchTerm.length > 2) {
+                logEvent('Inventory', 'search', searchTerm);
+            }
+        }, 500);
 
         return () => clearTimeout(handler);
     }, [searchTerm]);
@@ -259,6 +268,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             if (detailedProduct && detailedProduct.id === savedProduct.id) {
                 setDetailedProduct(savedProduct);
             }
+            const eventType = 'id' in productData ? 'update_product' : 'create_product';
+            logEvent('Inventory', eventType, savedProduct.name);
         } catch (error) {
             console.error("Failed to save product:", error);
         }
@@ -310,6 +321,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 return { ...prev, stock: nextStock };
             });
         }
+        logEvent('Inventory', 'adjust_stock', reason);
         handleCloseStockModal();
     };
 
@@ -396,6 +408,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const handleSaveCategoryInternal = (category: Category) => {
         if (onSaveCategory) {
             onSaveCategory(category);
+            logEvent('Inventory', category.id ? 'update_category' : 'create_category', category.name);
         }
         handleCloseCategoryModal();
     };
@@ -403,6 +416,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const handleOpenPrintModal = (product: Product) => {
         setProductToPrint(product);
         setIsPrintModalOpen(true);
+        logEvent('Inventory', 'print_label', product.sku);
     };
 
     const handleClosePrintModal = () => {
@@ -423,6 +437,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const handleConfirmDelete = () => {
         if (productToDelete) {
             onDeleteProduct(productToDelete.id);
+            logEvent('Inventory', 'delete_product', productToDelete.id);
             handleBackToList();
         }
         handleCloseDeleteModal();
@@ -708,7 +723,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             user={currentUser}
                                             onEdit={handleOpenEditModal}
                                             onDelete={handleOpenDeleteModal}
-                                            onArchive={onArchiveProduct}
+                                            onArchive={(id) => {
+                                                logEvent('Inventory', 'archive_product', id);
+                                                onArchiveProduct(id);
+                                            }}
                                             onPrintLabel={handleOpenPrintModal}
                                             onAdjustStock={handleOpenStockModal}
                                             onPersonalUse={(p) => handleOpenStockModal(p, 'Personal Use')}
@@ -796,6 +814,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     if (scannedProduct) {
                         setSelectedProductId(scannedProduct.id);
                         setIsScanModalOpen(false);
+                        logEvent('Inventory', 'scan_barcode', 'success');
                     } else {
                         // Product not found locally, try to look it up using API
                         setIsScanModalOpen(false);

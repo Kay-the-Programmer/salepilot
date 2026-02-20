@@ -5,6 +5,7 @@ interface LencoPayProps {
     email: string;
     currency?: string;
     reference?: string; // New prop
+    merchantPublicKey?: string; // New prop for Direct Settlement
     paymentChannel?: 'card' | 'mobile-money'; // New prop
     customerDetails?: {
         firstName?: string;
@@ -29,6 +30,7 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
     email,
     currency,
     reference: providedReference,
+    merchantPublicKey,
     paymentChannel = 'mobile-money',
     customerDetails,
     onSuccess,
@@ -73,18 +75,21 @@ const LencoPayButton: React.FC<LencoPayProps> = ({
     const handlePayment = async () => {
         console.log('Proceed with Lenco clicked', { paymentChannel, providedReference });
 
-        const reference = providedReference || 'ref-' + Date.now();
-        const publicKey = import.meta.env.VITE_LENCO_PUBLIC_KEY;
+        // Use merchant key if provided, otherwise fallback to env
+        const publicKey = merchantPublicKey || import.meta.env.VITE_LENCO_PUBLIC_KEY;
+        // If it's a merchant key, we MUST generate a client-side reference because our backend won't know about this transaction
+        const reference = providedReference || (merchantPublicKey ? `SP-${Date.now()}` : 'ref-' + Date.now());
 
         if (!publicKey) {
-            console.error('VITE_LENCO_PUBLIC_KEY is missing');
+            console.error('Lenco Public Key is missing');
             alert('Payment configuration error: Public key missing');
             return;
         }
 
         // 1. If it's Mobile Money and we have a reference, let's try direct charge via backend first
         // This avoids the Lenco popup if a reference was already generated server-side
-        if (paymentChannel === 'mobile-money' && providedReference && customerDetails?.phone) {
+        // CRITICAL: We SKIP this if using a Merchant Key because our backend cannot authorize charges for their account!
+        if (!merchantPublicKey && paymentChannel === 'mobile-money' && providedReference && customerDetails?.phone) {
             setIsInternalProcessing(true);
             try {
                 const { api } = await import('@/services/api');

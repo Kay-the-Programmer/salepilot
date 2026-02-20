@@ -26,3 +26,15 @@ export const logPageView = (path: string) => {
         ReactGA.send({ hitType: "pageview", page: path });
     }
 };
+
+export const setUserId = (id: string) => {
+    if (GOOGLE_ANALYTICS_ID) {
+        ReactGA.set({ userId: id });
+    }
+};
+
+export const setUserProperties = (properties: any) => {
+    if (GOOGLE_ANALYTICS_ID) {
+        ReactGA.set(properties);
+    }
+};

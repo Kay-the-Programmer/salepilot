@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Shipment, Courier, Bus } from '../types';
 
 import { PlusIcon, TruckIcon, XMarkIcon, TrashIcon } from '../components/icons/index';
-import Button from '../components/ui/Button';
+
 import InputField from '../components/ui/InputField';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils/currency';
@@ -10,6 +10,8 @@ import ListGridToggle from '../components/ui/ListGridToggle';
 import ShipmentList from '../components/logistics/ShipmentList';
 import CourierList from '../components/logistics/CourierList';
 import BusList from '../components/logistics/BusList';
+
+import { logEvent } from '../src/utils/analytics';
 
 export default function LogisticsPage() {
     const [activeTab, setActiveTab] = useState<'shipments' | 'couriers' | 'buses'>('shipments');
@@ -52,6 +54,9 @@ export default function LogisticsPage() {
 
     // Close detail pane when switching tabs
     const handleTabChange = (tab: 'shipments' | 'couriers' | 'buses') => {
+        if (activeTab !== tab) {
+            logEvent('Logistics', 'navigate_tab', tab);
+        }
         setActiveTab(tab);
         setSelectedShipment(null);
         setSelectedCourier(null);
@@ -85,6 +90,7 @@ export default function LogisticsPage() {
             setCouriers(prev => [created, ...prev]);
             setIsCourierModalOpen(false);
             setNewCourier({ isActive: true });
+            logEvent('Logistics', 'create_courier');
         } catch (err) {
             alert('Failed to create courier');
         }
@@ -97,6 +103,7 @@ export default function LogisticsPage() {
             setBuses(prev => [created, ...prev]);
             setIsBusModalOpen(false);
             setNewBus({ isActive: true });
+            logEvent('Logistics', 'create_bus');
         } catch (err) {
             alert('Failed to create bus');
         }
@@ -113,6 +120,7 @@ export default function LogisticsPage() {
             setShipments(prev => [created, ...prev]);
             setIsShipmentModalOpen(false);
             setNewShipment({ status: 'pending', shipping_cost: 0, method: 'courier' });
+            logEvent('Logistics', 'create_shipment', newShipment.method);
         } catch (err) {
             alert('Failed to create shipment');
         }
@@ -131,6 +139,7 @@ export default function LogisticsPage() {
                     if (type === 'courier') setCouriers(prev => prev.filter(c => c.id !== id));
                     if (type === 'bus') setBuses(prev => prev.filter(b => b.id !== id));
                     setConfirmationModal(null);
+                    logEvent('Logistics', `delete_${type}`, id);
                 } catch (err) {
                     alert('Failed to delete');
                 }
@@ -151,6 +160,7 @@ export default function LogisticsPage() {
                         setSelectedShipment(updated);
                     }
                     setConfirmationModal(null);
+                    logEvent('Logistics', 'update_shipment_status', newStatus);
                 } catch (err) {
                     alert('Failed to update status');
                 }
@@ -520,8 +530,8 @@ export default function LogisticsPage() {
 
             {/* Modals */}
             {isCourierModalOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in">
+                <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
                             <div>
                                 <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Add Courier</h3>
@@ -559,8 +569,8 @@ export default function LogisticsPage() {
             )}
 
             {isBusModalOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in">
+                <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
                             <div>
                                 <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Add Bus</h3>
@@ -599,8 +609,8 @@ export default function LogisticsPage() {
             )}
 
             {isShipmentModalOpen && (
-                <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in">
+                <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
                             <div>
                                 <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">New Shipment</h3>
@@ -691,8 +701,8 @@ export default function LogisticsPage() {
 
             {/* Confirmation Modal */}
             {confirmationModal && confirmationModal.isOpen && (
-                <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-8 animate-scale-in border border-gray-100 dark:border-slate-800">
+                <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-8 animate-scale-in border border-gray-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="w-16 h-16 bg-red-50 dark:bg-red-900/10 rounded-2xl flex items-center justify-center mb-6">
                             <TrashIcon className="w-8 h-8 text-red-600 dark:text-red-400" />
                         </div>

@@ -270,6 +270,9 @@ export interface StoreSettings {
     cashAccountId?: string;
     arAccountId?: string;
     apAccountId?: string;
+
+    // Integrations
+    lencoPublicKey?: string; // Merchant's own public key for direct settlement
 }
 
 // --- Accounting Types ---

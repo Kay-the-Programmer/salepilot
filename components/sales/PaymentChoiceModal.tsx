@@ -17,6 +17,7 @@ interface PaymentChoiceModalProps {
     onManualConfirm: () => void;
     storeSettings: any;
     reference?: string; // New prop
+    merchantPublicKey?: string; // New prop
 }
 
 const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
@@ -30,7 +31,8 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
     onConfirmationPending,
     onManualConfirm,
     storeSettings,
-    reference
+    reference,
+    merchantPublicKey
 }) => {
     if (!isOpen) return null;
 
@@ -75,6 +77,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
                                             email={customerEmail}
                                             currency={storeSettings?.currencySymbol || 'ZMW'}
                                             reference={reference}
+                                            merchantPublicKey={merchantPublicKey}
                                             paymentChannel="mobile-money"
                                             customerDetails={{
                                                 firstName: customerName.split(' ')[0],

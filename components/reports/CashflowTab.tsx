@@ -17,12 +17,9 @@ export const CashflowTab: React.FC<CashflowTabProps> = ({ reportData, storeSetti
 
     return (
         <div className="space-y-8 animate-fade-in pb-10">
-
             <CashflowStatsRow cashflow={cashflow} storeSettings={storeSettings} />
-
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <FilterableCashflowTrend storeSettings={storeSettings} />
-
                 <div className="space-y-8">
                     <OutflowBreakdown
                         outflowBreakdown={cashflow.outflowBreakdown}
