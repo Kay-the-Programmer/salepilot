@@ -178,7 +178,7 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
     };
 
     return (
-        <div className={`glass-effect dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-white/10 flex flex-col justify-between h-40 relative group hover:shadow-md transition-all ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+        <div className={`glass-effect dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-white/10 flex flex-col justify-between h-40 relative group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-start z-10">
                 <div>
                     <div className="flex items-center gap-2 mb-1">

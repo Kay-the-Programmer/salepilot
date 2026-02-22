@@ -56,7 +56,7 @@ interface SidebarProps {
 
 const NAV_ITEMS = [
     {
-        name: 'Quick View',
+        name: 'Business Assistant',
         page: 'quick-view',
         icon: SparklesIcon,
         roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer', 'supplier'],

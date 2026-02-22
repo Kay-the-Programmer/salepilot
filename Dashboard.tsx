@@ -1190,7 +1190,7 @@ export default function Dashboard() {
                 case 'stock-takes':
                     return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
                 case 'reports':
-                    return <ReportsPage storeSettings={storeSettings!} user={currentUser} />;
+                    return <ReportsPage storeSettings={storeSettings!} user={currentUser} announcements={announcements} onRefreshNotifications={fetchData} />;
                 case 'accounting':
                     return <AccountingPage
                         accounts={accounts}

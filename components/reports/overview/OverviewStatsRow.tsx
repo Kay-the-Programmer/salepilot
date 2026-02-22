@@ -13,7 +13,7 @@ interface OverviewStatsRowProps {
 
 export const OverviewStatsRow: React.FC<OverviewStatsRowProps> = ({ storeSettings }) => {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="grid gap-4" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}>
             {/* Card 1: Total Earnings */}
             <FilterableStatCard
                 title="Total Earnings"

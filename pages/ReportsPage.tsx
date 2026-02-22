@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { StoreSettings, User } from '../types';
+import { StoreSettings, User, Announcement } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils/currency';
+import { useNavigate } from 'react-router-dom';
 
 // Icons
 import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
@@ -14,6 +15,8 @@ import UsersIcon from '../components/icons/UsersIcon';
 import HomeIcon from '../components/icons/HomeIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
+import BellAlertIcon from '../components/icons/BellAlertIcon';
+import UserCircleIcon from '../components/icons/UserCircleIcon';
 
 // Components
 import { OverviewTab } from '../components/reports/OverviewTab';
@@ -28,6 +31,8 @@ interface ReportsPageProps {
     storeSettings: StoreSettings;
     onClose?: () => void;
     user?: User | null;
+    announcements?: Announcement[];
+    onRefreshNotifications?: () => Promise<void>;
 }
 
 const toDateInputString = (date: Date): string => {
@@ -45,7 +50,8 @@ const getGreeting = () => {
     return 'Good night';
 };
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user, announcements = [], onRefreshNotifications }) => {
+    const navigate = useNavigate();
     const [startDate, setStartDate] = useState(() => {
         const d = new Date();
         d.setDate(d.getDate() - 29);
@@ -60,6 +66,32 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
     const [datePreset, setDatePreset] = useState<'7d' | '30d' | 'month' | 'custom'>('30d');
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [recentOrdersTab, setRecentOrdersTab] = useState<'all' | 'online' | 'pos'>('all');
+    const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+    const notificationsRef = useRef<HTMLDivElement>(null);
+
+    const unreadCount = announcements.filter(n => !n.isRead).length;
+    const sortedAnnouncements = [...announcements].sort((a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+
+    const handleMarkAsRead = async (id: string) => {
+        try {
+            await api.patch(`/notifications/${id}/read`, {});
+            onRefreshNotifications?.();
+        } catch (error) {
+            console.error('Failed to mark notification as read:', error);
+        }
+    };
+
+    const handleMarkAllAsRead = async () => {
+        try {
+            const unread = announcements.filter(n => !n.isRead);
+            await Promise.all(unread.map(n => api.patch(`/notifications/${n.id}/read`, {})));
+            onRefreshNotifications?.();
+        } catch (error) {
+            console.error('Failed to mark all as read:', error);
+        }
+    };
 
     const [reportData, setReportData] = useState<any | null>(null);
     const [dailySales, setDailySales] = useState<any[] | null>(null);
@@ -315,7 +347,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                         <p className="text-xs text-slate-500 dark:text-gray-400 mt-1  tracking-wider font-semibold">Here's what's happening in your store</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                     {/* Desktop Tabs Component (Hidden on mobile) */}
                     <div className="hidden min-[1100px]:flex items-center">
                         <div className="relative bg-gray-200  rounded-2xl  dark:bg-slate-800/50 p-1 backdrop-blur-sm">
@@ -348,6 +380,31 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                             </div>
                         </div>
                     </div>
+
+                    {/* Notifications Button */}
+                    <div className="relative" ref={notificationsRef}>
+                        <button
+                            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                            className="relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-90"
+                            aria-label="Notifications"
+                        >
+                            <BellAlertIcon className="w-5 h-5" />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/30">
+                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                </span>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Profile Icon */}
+                    <button
+                        onClick={() => navigate('/profile')}
+                        className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-90"
+                        aria-label="Profile"
+                    >
+                        <UserCircleIcon className="w-5 h-5" />
+                    </button>
                 </div>
             </header>
 
@@ -431,6 +488,92 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                             <p className="text-blue-600 dark:text-blue-400 text-xs font-bold text-center">
                                 Select a report to view detailed analytics and performance metrics for your business.
                             </p>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Notifications Modal */}
+            {isNotificationsOpen && (
+                <div className="fixed inset-0 z-[100]" onClick={() => setIsNotificationsOpen(false)}>
+                    <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" />
+                    <div
+                        className="absolute top-[70px] right-4 md:right-8 w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden animate-notification-slide-down"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/10">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-slate-800 dark:text-white">Notifications</h3>
+                                {unreadCount > 0 && (
+                                    <span className="px-2 py-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 rounded-full">
+                                        {unreadCount} new
+                                    </span>
+                                )}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                {unreadCount > 0 && (
+                                    <button
+                                        onClick={handleMarkAllAsRead}
+                                        className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
+                                    >
+                                        Mark all read
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => setIsNotificationsOpen(false)}
+                                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-90"
+                                >
+                                    <XMarkIcon className="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="max-h-[60vh] overflow-y-auto">
+                            {sortedAnnouncements.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12 px-4">
+                                    <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-full mb-3">
+                                        <BellAlertIcon className="w-6 h-6 text-slate-400 dark:text-slate-500" />
+                                    </div>
+                                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No notifications yet</p>
+                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">You're all caught up!</p>
+                                </div>
+                            ) : (
+                                <div className="divide-y divide-slate-100 dark:divide-white/5">
+                                    {sortedAnnouncements.map((notification) => (
+                                        <button
+                                            key={notification.id}
+                                            onClick={() => handleMarkAsRead(notification.id)}
+                                            className={`w-full text-left px-5 py-3.5 transition-all hover:bg-slate-50 dark:hover:bg-white/5 ${!notification.isRead ? 'bg-indigo-50/50 dark:bg-indigo-500/5' : ''
+                                                }`}
+                                        >
+                                            <div className="flex items-start gap-3">
+                                                <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${notification.isRead ? 'bg-transparent' : 'bg-indigo-500 animate-pulse'
+                                                    }`} />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className={`text-sm font-semibold truncate ${notification.isRead ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'
+                                                        }`}>{notification.title}</p>
+                                                    <p className="text-xs text-slate-500 dark:text-slate-500 line-clamp-2 mt-0.5">{notification.message}</p>
+                                                    <p className="text-[10px] text-slate-400 dark:text-slate-600 mt-1">
+                                                        {new Date(notification.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="px-5 py-3 border-t border-slate-100 dark:border-white/10">
+                            <button
+                                onClick={() => { setIsNotificationsOpen(false); navigate('/notifications'); }}
+                                className="w-full py-2 text-center text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
+                            >
+                                View all notifications
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -540,11 +683,18 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                     from { transform: translateY(100%); }
                     to { transform: translateY(0); }
                 }
+                @keyframes notification-slide-down {
+                    from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
+                }
                 .animate-fade-in {
                     animation: fade-in 0.2s ease-out;
                 }
                 .animate-slide-up {
                     animation: slide-up 0.3s ease-out;
+                }
+                .animate-notification-slide-down {
+                    animation: notification-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
                 }
                 .safe-area-top {
                     padding-top: env(safe-area-inset-top, 0px);
