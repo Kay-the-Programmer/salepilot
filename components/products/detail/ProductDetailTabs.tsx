@@ -59,7 +59,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                         <div className="space-y-12 animate-glass-appear">
                             {/* Description */}
                             {product.description && (
-                                <div className="liquid-glass-card rounded-[2rem] p-8 border border-white/10">
+                                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                     <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6">Description</h4>
                                     <div className="text-[16px] text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap font-google">
                                         {product.description}
@@ -68,7 +68,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                             )}
 
                             {/* Basic Info */}
-                            <div className="liquid-glass-card rounded-[2rem] p-8 border border-white/10">
+                            <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                 <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-8">{product.description ? 'Technical Specs' : 'Product Details'}</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
                                     <div className="space-y-6">
@@ -87,7 +87,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                             {/* Supplier & Physical Info */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 {supplier && (
-                                    <div className="liquid-glass-card rounded-[2rem] p-8 border border-white/10">
+                                    <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                         <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-8">Supplier</h4>
                                         <div className="space-y-6">
                                             <DetailItem label="Company" value={supplier.name} icon={<TruckIcon />} />
@@ -102,7 +102,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                                 )}
 
                                 {(product.weight || product.dimensions) && (
-                                    <div className="liquid-glass-card rounded-[2rem] p-8 border border-white/10">
+                                    <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                         <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-8">Dimensions</h4>
                                         <div className="space-y-6">
                                             {product.weight && <DetailItem label="Weight" value={`${product.weight} kg`} icon={<ScaleIcon />} />}
@@ -118,7 +118,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                     {activeTab === 'inventory' && (
                         <div className="space-y-12 animate-glass-appear">
                             {/* Stock Status */}
-                            <div className="liquid-glass-card rounded-[2rem] p-8 border border-white/10">
+                            <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                 <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-8">Stock Status</h4>
                                 <div>
                                     <StockIndicator product={product} storeSettings={storeSettings} />
@@ -126,7 +126,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                             </div>
 
                             {/* Financial Summary */}
-                            <div className="liquid-glass-card rounded-[2rem] p-8 border border-white/10">
+                            <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                 <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-8">Financial Summary</h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
                                     <div className="flex flex-col">

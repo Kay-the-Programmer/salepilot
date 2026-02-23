@@ -94,9 +94,9 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
             role="dialog"
             aria-modal="true"
         >
-            <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md animate-fade-in" onClick={onClose} />
+            <div className="absolute inset-0 bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
             <div
-                className="w-full liquid-glass rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-glass-appear sm:max-w-lg border-none relative z-10"
+                className="w-full bg-white dark:bg-slate-900 rounded-t-[32px] sm:rounded-[32px] shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-glass-appear sm:max-w-lg border border-slate-200/50 dark:border-white/5 relative z-10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -105,7 +105,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                 </div>
 
                 {/* Header */}
-                <div className="sticky top-0 liquid-glass-header px-6 pt-6 pb-4 sm:px-10 z-10 shadow-none">
+                <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 px-6 pt-6 pb-4 sm:px-10 z-10">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-2xl font-black text-slate-900 dark:text-white font-google" id="modal-title">

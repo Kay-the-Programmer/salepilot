@@ -109,7 +109,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
             <div className="px-4 py-12 sm:px-6">
                 <div className="text-center">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
-                    <p className="mt-3 text-lg font-medium text-gray-700 dark:text-gray-300">Loading categories...</p>
+                    <p className="mt-3 text-[15px] font-bold tracking-wide text-slate-700 dark:text-slate-300">Loading categories...</p>
                 </div>
             </div>
         );
@@ -119,13 +119,13 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         return (
             <div className="px-4 py-12 sm:px-6">
                 <div className="text-center">
-                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20">
-                        <svg className="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div className="mx-auto flex items-center justify-center p-3 rounded-[16px] bg-rose-100 dark:bg-rose-900/20 w-fit">
+                        <svg className="h-6 w-6 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                     </div>
-                    <p className="mt-3 text-lg font-medium text-gray-900 dark:text-gray-100">Error loading categories</p>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{error}</p>
+                    <p className="mt-4 text-[15px] font-bold text-slate-900 dark:text-slate-100 tracking-wide">Error loading categories</p>
+                    <p className="mt-1 text-[13px] font-medium text-slate-500 dark:text-slate-400">{error}</p>
                 </div>
             </div>
         );
@@ -136,12 +136,12 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     if (displayedCategories.length === 0) {
         return (
             <div className="px-4 py-12 sm:px-6">
-                <div className="text-center">
-                    <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-gray-100 dark:bg-slate-800">
-                        <FolderIcon className="h-6 w-6 text-gray-400 dark:text-gray-500" />
+                <div className="text-center bg-white dark:bg-slate-900/60 p-8 rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5">
+                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-[20px] bg-slate-50 dark:bg-slate-800 rotate-3 transition-transform hover:rotate-6">
+                        <FolderIcon className="h-8 w-8 text-slate-400 dark:text-slate-500" />
                     </div>
-                    <p className="mt-3 text-lg font-medium text-gray-900 dark:text-gray-100">No categories found</p>
-                    <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <h3 className="mt-5 text-[18px] font-bold text-slate-900 dark:text-white tracking-tight">No categories found</h3>
+                    <p className="mt-2 text-[14px] font-medium text-slate-500 dark:text-slate-400">
                         {searchTerm
                             ? `No categories match "${searchTerm}"`
                             : "Get started by creating your first category"}
@@ -161,7 +161,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         return (
             <div
                 key={category.id}
-                className={`group border-b border-gray-100 dark:border-white/5 last:border-0 transition-all duration-300 ease-out cursor-pointer active:scale-[0.99] ${isSelected ? 'bg-blue-600/10' : 'hover:bg-white/40 dark:hover:bg-slate-800/40'
+                className={`group border-b border-slate-100 dark:border-white/5 last:border-0 transition-all duration-300 ease-out cursor-pointer active:scale-[0.99] ${isSelected ? 'bg-blue-600/5 dark:bg-blue-500/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/40'
                     }`}
                 onClick={() => onSelectCategory?.(category.id)}
             >
@@ -201,7 +201,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
 
                     <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-start gap-2">
-                            <h3 className={`text-base font-medium truncate ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white'}`}>
+                            <h3 className={`text-[15px] font-bold tracking-tight truncate ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-white'}`}>
                                 {category.name}
                             </h3>
                             {/* Mobile Actions */}
@@ -211,7 +211,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                         e.stopPropagation();
                                         onEdit(category);
                                     }}
-                                    className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all active:scale-90 active:scale-95 transition-all duration-300"
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-[12px] transition-all duration-300 active:scale-95"
                                 >
                                     <PencilIcon className="w-5 h-5" />
                                 </button>
@@ -220,14 +220,14 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                         e.stopPropagation();
                                         setCategoryToDelete(category);
                                     }}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all active:scale-90 active:scale-95 transition-all duration-300"
+                                    className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-[12px] transition-all duration-300 active:scale-95"
                                 >
                                     <TrashIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
 
-                        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+                        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] font-medium text-slate-500 dark:text-slate-400">
                             <span>{attributeCount} attributes</span>
                             {hasChildren && (
                                 <span>{subCatCount} sub-categories</span>
@@ -263,17 +263,17 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
 
                         {/* Icon */}
                         <div className="flex-shrink-0 mr-3">
-                            <div className={`p-1.5 rounded-md ${isExpanded ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 border border-transparent group-hover:border-gray-200 dark:group-hover:border-white/10'}`}>
+                            <div className={`p-1.5 rounded-[12px] ${isExpanded ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 border border-transparent group-hover:border-slate-200 dark:group-hover:border-white/10 transition-colors'}`}>
                                 {hasChildren && isExpanded ? (
-                                    <FolderOpenIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                    <FolderOpenIcon className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
                                 ) : (
-                                    <FolderIcon className={`w-4 h-4 ${hasChildren ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`} />
+                                    <FolderIcon className={`w-4.5 h-4.5 ${hasChildren ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
                                 )}
                             </div>
                         </div>
 
                         {/* Name */}
-                        <span className={`font-medium truncate ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
+                        <span className={`text-[15px] font-bold tracking-tight truncate ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>
                             {category.name}
                         </span>
                     </div>
@@ -281,22 +281,22 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                     {/* Column 2: Attributes (spans 3) */}
                     <div className="col-span-3">
                         {attributeCount > 0 ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-gray-50 dark:bg-slate-800 text-xs font-medium text-gray-600 dark:text-slate-300 border border-gray-100 dark:border-white/5">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-[8px] bg-slate-50 dark:bg-slate-800/80 text-[12px] font-bold tracking-wide text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5 shadow-sm">
                                 {attributeCount} {attributeCount === 1 ? 'attribute' : 'attributes'}
                             </span>
                         ) : (
-                            <span className="text-xs text-gray-400 dark:text-gray-600">-</span>
+                            <span className="text-[13px] font-medium text-slate-400 dark:text-slate-500">-</span>
                         )}
                     </div>
 
                     {/* Column 3: Sub-categories (spans 2) */}
                     <div className="col-span-2">
                         {hasChildren ? (
-                            <span className="inline-flex items-center px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-xs font-medium text-blue-700 dark:text-blue-300">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-[8px] bg-blue-50 dark:bg-blue-900/20 shadow-sm border border-blue-100 dark:border-blue-500/20 text-[12px] font-bold tracking-wide text-blue-700 dark:text-blue-300">
                                 {subCatCount} items
                             </span>
                         ) : (
-                            <span className="text-xs text-gray-400 dark:text-gray-600">-</span>
+                            <span className="text-[13px] font-medium text-slate-400 dark:text-slate-500">-</span>
                         )}
                     </div>
 
@@ -307,20 +307,20 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                 e.stopPropagation();
                                 onEdit(category);
                             }}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors active:scale-95 transition-all duration-300"
+                            className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-[10px] transition-colors active:scale-95 transition-all duration-300"
                             title="Edit"
                         >
-                            <PencilIcon className="w-4 h-4" />
+                            <PencilIcon className="w-4.5 h-4.5" />
                         </button>
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
                                 setCategoryToDelete(category);
                             }}
-                            className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors active:scale-95 transition-all duration-300"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-[10px] transition-colors active:scale-95 transition-all duration-300"
                             title="Delete"
                         >
-                            <TrashIcon className="w-4 h-4" />
+                            <TrashIcon className="w-4.5 h-4.5" />
                         </button>
                     </div>
                 </div>
@@ -332,31 +332,31 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         <div className="px-4 py-4 sm:px-6 lg:px-8">
             {/* Header stats */}
             <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="liquid-glass-card rounded-[2rem] p-6 border transition-all duration-300 hover:shadow-2xl relative overflow-hidden group">
+                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-md relative overflow-hidden group">
                     <div className="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                         <FolderIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Categories</p>
-                    <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 font-google tracking-tight">{categories.length}</p>
+                    <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase mb-1">Total Categories</p>
+                    <p className="text-[32px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">{categories.length}</p>
                 </div>
-                <div className="liquid-glass-card rounded-[2rem] p-6 border transition-all duration-300 hover:shadow-2xl group">
-                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Top-Level</p>
-                    <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 font-google tracking-tight">
+                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-md group">
+                    <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase mb-1">Top-Level</p>
+                    <p className="text-[32px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">
                         {categories.filter(c => !c.parentId).length}
                     </p>
                 </div>
-                <div className="liquid-glass-card rounded-[2rem] p-6 border transition-all duration-300 hover:shadow-2xl group">
-                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">With Attributes</p>
-                    <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 font-google tracking-tight">
+                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-md group">
+                    <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase mb-1">With Attributes</p>
+                    <p className="text-[32px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">
                         {categories.filter(c => c.attributes.length > 0).length}
                     </p>
                 </div>
             </div>
 
             {/* Category list container */}
-            <div className="liquid-glass rounded-[2rem] shadow-xl overflow-hidden border-none animate-glass-appear stagger-2">
+            <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 overflow-hidden animate-glass-appear stagger-2">
                 {/* Desktop header */}
-                <div className="hidden sm:grid grid-cols-12 gap-4 bg-slate-50/50 dark:bg-slate-900/50 px-8 py-4 border-b border-gray-200 dark:border-white/10 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest backdrop-blur-xl">
+                <div className="hidden sm:grid grid-cols-12 gap-4 bg-slate-50/50 dark:bg-slate-800/20 px-8 py-4 border-b border-slate-100 dark:border-white/5 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest backdrop-blur-xl">
                     <div className="col-span-6">Category Name</div>
                     <div className="col-span-3">Attributes</div>
                     <div className="col-span-2">Sub-categories</div>
@@ -364,12 +364,12 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                 </div>
 
                 {/* List items */}
-                <div className="divide-y divide-gray-100 dark:divide-white/5">
+                <div className="divide-y divide-slate-100 dark:divide-white/5">
                     {displayedCategories.map(category => renderCategoryRow(category))}
                 </div>
 
                 {/* Empty State / Footer usage */}
-                <div className="bg-gray-50 dark:bg-slate-900/50 px-6 py-3 border-t border-gray-200 dark:border-white/10 text-xs text-gray-500 dark:text-gray-400 flex justify-between">
+                <div className="bg-slate-50/50 dark:bg-slate-800/20 px-6 py-4 border-t border-slate-100 dark:border-white/5 text-[13px] font-bold tracking-wide text-slate-500 dark:text-slate-400 flex justify-between">
                     <span>{displayedCategories.length} categories shown</span>
                 </div>
             </div>

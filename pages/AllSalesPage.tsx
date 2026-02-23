@@ -15,7 +15,7 @@ import ChartBarIcon from '../components/icons/ChartBarIcon';
 
 // New Modular Components
 import SalesHeader from '../components/sales/all_sales/SalesHeader';
-import MobileViewMenu from '../components/sales/all_sales/MobileViewMenu';
+// Removed unused MobileViewMenu import
 import SalesFilterSheet from '../components/sales/all_sales/SalesFilterSheet';
 
 import DashboardStats from '../components/sales/all_sales/DashboardStats';
@@ -261,7 +261,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
     };
 
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-slate-50 dark:bg-slate-950 relative">
+        <div className="flex flex-col min-h-[100dvh] bg-slate-50 dark:bg-slate-950 relative selection:bg-blue-500/30">
             <SalesHeader
                 selectedStatus={selectedStatus}
                 setSelectedStatus={setSelectedStatus}
@@ -280,7 +280,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
             />
 
 
-            <main className="flex-1 overflow-hidden bg-transparent min-w-0 flex flex-col">
+            <main className="flex-1 overflow-hidden bg-transparent min-w-0 flex flex-col max-w-[1400px] mx-auto w-full">
                 <div className="w-full h-full flex flex-col">
 
                     {/* Filter Toggle Button is now inside SalesHeader */}
@@ -301,27 +301,27 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="bg-white dark:bg-slate-800 rounded-2xl p-8 border border-gray-200 dark:border-white/10 mt-4">
+                        <div className="bg-white dark:bg-slate-900/60 rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 mt-4 shadow-sm mx-4 md:mx-6">
                             <div className="flex flex-col items-center justify-center space-y-4">
-                                <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                                <div className="text-gray-600 dark:text-gray-400">Loading sales data...</div>
+                                <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin"></div>
+                                <div className="text-[15px] font-bold text-slate-600 dark:text-slate-400 tracking-wide">Loading sales data...</div>
                             </div>
                         </div>
                     )}
 
                     {/* Error State */}
                     {error && (
-                        <div className="bg-gradient-to-r from-red-50 to-red-100 border border-red-200 rounded-2xl p-6 mt-4">
-                            <div className="flex items-start gap-3">
-                                <div className="p-2 bg-red-100 rounded-lg">
-                                    <XMarkIcon className="w-5 h-5 text-red-600" />
+                        <div className="bg-rose-50/80 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-[24px] p-6 mt-4 mx-4 md:mx-6 shadow-sm">
+                            <div className="flex items-start gap-4">
+                                <div className="p-2.5 bg-rose-100 dark:bg-rose-500/20 rounded-[14px]">
+                                    <XMarkIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
                                 </div>
-                                <div>
-                                    <h3 className="font-semibold text-red-900">Unable to Load Data</h3>
-                                    <p className="text-red-700 mt-1">{error}</p>
+                                <div className="flex-1">
+                                    <h3 className="text-[15px] font-bold text-rose-900 dark:text-rose-200 mb-1">Unable to Load Data</h3>
+                                    <p className="text-[13px] font-medium text-rose-700 dark:text-rose-300">{error}</p>
                                     <button
                                         onClick={() => window.location.reload()}
-                                        className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors active:scale-95 transition-all duration-300"
+                                        className="mt-4 px-5 py-2.5 bg-rose-600 text-white rounded-[14px] text-[13px] font-bold tracking-wide shadow-sm hover:bg-rose-700 transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         Retry
                                     </button>
@@ -344,42 +344,44 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                             {/* Split View Container */}
                             <div className="flex-1 flex min-h-0 m-0">
                                 {/* Left Column: Sales List */}
-                                <div className={`flex-1 flex flex-col bg-white dark:bg-slate-900 overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:flex'}`}>
+                                <div className={`flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:flex'}`}>
 
-                                    <div className="flex-1 overflow-y-auto min-h-0">
+                                    <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 px-4 md:px-6 pb-6">
                                         {salesData.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center h-full p-8 text-center">
-                                                <div className="w-16 h-16 bg-gray-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
-                                                    <ChartBarIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+                                            <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-white dark:bg-slate-900/60 rounded-[24px] border border-slate-200/50 dark:border-white/5 shadow-sm">
+                                                <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-[20px] flex items-center justify-center mb-5 rotate-3 transition-transform hover:rotate-6">
+                                                    <ChartBarIcon className="w-8 h-8 text-slate-400 dark:text-slate-500" />
                                                 </div>
-                                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No sales found</h3>
-                                                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                                                <h3 className="text-[18px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight">No sales found</h3>
+                                                <p className="text-[14px] font-medium text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
                                                     {hasActiveFilters
-                                                        ? 'Try adjusting your filters to see more results'
-                                                        : 'Sales will appear here once transactions are processed'}
+                                                        ? 'Try adjusting your filters to see more results.'
+                                                        : 'Sales will appear here once transactions are processed.'}
                                                 </p>
                                                 {hasActiveFilters && (
                                                     <button
                                                         onClick={resetFilters}
-                                                        className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-blue-800 transition-colors"
+                                                        className="px-6 py-3 bg-blue-600 text-white text-[14px] font-bold tracking-wide rounded-[16px] hover:bg-blue-700 transition-colors active:scale-95 shadow-md"
                                                     >
                                                         Clear All Filters
                                                     </button>
                                                 )}
                                             </div>
                                         ) : (
-                                            <SalesList
-                                                sales={enrichedSales}
-                                                onSelectSale={setSelectedSale}
-                                                storeSettings={storeSettings}
-                                                viewMode={salesListViewMode}
-                                                selectedSaleId={selectedSale?.transactionId}
-                                            />
+                                            <div className="bg-white dark:bg-slate-900/60 rounded-[24px] border border-slate-200/50 dark:border-white/5 shadow-sm overflow-hidden">
+                                                <SalesList
+                                                    sales={enrichedSales}
+                                                    onSelectSale={setSelectedSale}
+                                                    storeSettings={storeSettings}
+                                                    viewMode={salesListViewMode}
+                                                    selectedSaleId={selectedSale?.transactionId}
+                                                />
+                                            </div>
                                         )}
                                     </div>
 
                                     {/* Pagination Controls (Fixed Bottom) */}
-                                    <div className="p-0 flex-none">
+                                    <div className="p-4 md:px-6 flex-none bg-slate-50 dark:bg-slate-950 border-t border-transparent z-10">
                                         <Pagination
                                             total={total}
                                             page={page}
@@ -393,26 +395,26 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                                 {/* Right Column: Sale Details (Desktop) */}
                                 {selectedSale && (
-                                    <div className="hidden xl:flex w-[450px] flex-col bg-slate-50 dark:bg-slate-900 border-l border-gray-200 dark:border-white/10 shadow-sm overflow-hidden animate-fade-in-right" glass-effect="">
-                                        <div className="p-2 px-4 glass-effect flex justify-between items-center flex-none">
-                                            <h3 className="font-bold text-gray-900 dark:text-white">Sale Details</h3>
+                                    <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-900/90 backdrop-blur-3xl border-l border-slate-200/50 dark:border-white/5 shadow-2xl overflow-hidden animate-fade-in-right z-20">
+                                        <div className="p-5 px-6 flex justify-between items-center flex-none border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/20">
+                                            <h3 className="text-[17px] font-bold text-slate-900 dark:text-white tracking-tight">Sale Details</h3>
                                             <button
                                                 onClick={() => setSelectedSale(null)}
-                                                className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95 transition-all duration-300"
+                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all duration-300 active:scale-95 touch-manipulation"
                                             >
-                                                <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                                                <XMarkIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                                             </button>
                                         </div>
-                                        <div className="flex-1 overflow-y-auto p-2 py-2 scrollbar-thin">
+                                        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
                                             <SaleDetailContent sale={selectedSale} storeSettings={storeSettings} />
                                         </div>
-                                        <div className="p-4 px-6 dark:border-white/10 bg-white dark:bg-slate-900 flex-none">
-                                            <div className="flex gap-2">
+                                        <div className="p-5 px-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/20 flex-none">
+                                            <div className="flex gap-3">
                                                 <button
-                                                    className="flex-1 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                                                    className="flex-1 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-[16px] text-[14px] font-bold tracking-wide text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                                     onClick={() => setIsReceiptOpen(true)}
                                                 >
-                                                    <PrinterIcon className="w-4 h-4" />
+                                                    <PrinterIcon className="w-4.5 h-4.5" />
                                                     Print Receipt
                                                 </button>
                                             </div>

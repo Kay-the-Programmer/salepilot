@@ -48,7 +48,7 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
     }, []);
 
     return (
-        <header className="px-5 sm:px-8 py-4 liquid-glass-header flex items-center justify-between sticky top-0 z-10 w-full animate-glass-appear shadow-none">
+        <header className="px-5 sm:px-8 py-4 bg-slate-50/80 dark:bg-slate-900/90 backdrop-blur-3xl border-b border-slate-200/50 dark:border-white/5 flex items-center justify-between sticky top-0 z-10 w-full animate-glass-appear shadow-sm">
             <div className="flex items-center gap-3">
                 {onBack && (
                     <button
@@ -70,7 +70,7 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                 {canManage && (
                     <button
                         onClick={() => onEdit(product)}
-                        className="px-5 py-2 liquid-glass-pill rounded-full border text-sm font-bold tracking-wide flex items-center gap-2 text-slate-700 dark:text-slate-300 transition-all duration-200 active:scale-95"
+                        className="px-5 py-2.5 bg-white dark:bg-slate-800/80 rounded-[16px] shadow-sm border border-slate-200/50 dark:border-white/5 text-[13px] font-bold tracking-wide flex items-center gap-2 text-slate-700 dark:text-slate-300 transition-all duration-300 hover:shadow-md active:scale-95"
                     >
                         <PencilIcon className="w-4 h-4" />
                         <span className="hidden sm:inline">Edit</span>
@@ -80,13 +80,13 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="p-2.5 rounded-full liquid-glass-pill border transition-all duration-200 active:scale-90 active:scale-95 transition-all duration-300"
+                        className="p-2.5 bg-white dark:bg-slate-800/80 rounded-[16px] shadow-sm border border-slate-200/50 dark:border-white/5 transition-all duration-300 hover:shadow-md active:scale-95"
                         aria-label="More options"
                     >
                         <EllipsisVerticalIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     </button>
                     {isMenuOpen && (
-                        <div className="absolute right-0 top-full mt-3 w-56 liquid-glass rounded-2xl shadow-2xl border-none z-50 p-2 animate-glass-appear">
+                        <div className="absolute right-0 top-full mt-3 w-56 bg-white/90 dark:bg-slate-800/90 backdrop-blur-3xl rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-slate-200/50 dark:border-white/5 z-50 p-2 animate-glass-appear">
                             <div className="p-2 space-y-1">
                                 {canManage && (
                                     <>

@@ -95,7 +95,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in"
+            className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
@@ -103,8 +103,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
         >
             <form
                 onSubmit={handleSave}
-                glass-effect=""
-                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md dark:bg-slate-900/80 dark:border-slate-700/50"
+                className="w-full bg-white dark:bg-slate-900 rounded-t-[32px] sm:rounded-[32px] shadow-2xl border border-slate-200/50 dark:border-white/5 max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}

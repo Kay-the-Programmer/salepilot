@@ -56,7 +56,7 @@ const ProductCard: React.FC<{
           onSelect();
         }
       }}
-      className={`group liquid-glass-card rounded-[2rem] border transition-all duration-350 ease-out flex flex-col overflow-hidden cursor-pointer h-full active:scale-95 ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-xl scale-[1.02]' : 'border-gray-100 dark:border-white/10'
+      className={`group bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] border transition-all duration-300 shadow-sm dark:shadow-none hover:shadow-md flex flex-col overflow-hidden cursor-pointer h-full active:scale-95 ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-lg scale-100' : 'border-slate-200/50 dark:border-white/5'
         }`}
     >
       {/* Card Header / Image Area */}
@@ -78,9 +78,9 @@ const ProductCard: React.FC<{
 
         {/* Status Badge */}
         <div className="absolute top-2 right-2">
-          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-lg backdrop-blur-md border border-white/20 shadow-sm ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold)
-            ? 'bg-red-500/90 text-white'
-            : 'bg-white/90 text-gray-700'
+          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-[8px] backdrop-blur-md border shadow-sm ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold)
+            ? 'bg-rose-500/90 text-white border-rose-500/20'
+            : 'bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-white/20 dark:border-slate-700/50'
             }`}>
             {asNumber(product.stock)} in stock
           </span>
@@ -124,28 +124,28 @@ const ProductListRow: React.FC<{
 
   return (
     <div
-      className={`liquid-glass-card rounded-2xl border p-4 flex items-center justify-between transition-all duration-300 ease-out cursor-pointer active:scale-[0.98] ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-lg scale-[1.01]' : 'border-gray-100 dark:border-white/10'
+      className={`bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm dark:shadow-none border border-slate-200/50 dark:border-white/5 p-4 flex items-center justify-between transition-all duration-300 ease-out cursor-pointer hover:shadow-md active:scale-95 ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md scale-100' : ''
         }`}
       onClick={onSelect}
     >
       <div className="flex-1 min-w-0 mr-4">
         <div className="flex items-center">
-          <h3 className={`font-semibold cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-white'}`}>
+          <h3 className={`font-semibold cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-white'}`}>
             {product.name}
           </h3>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300' : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'}`}>
+          <span className={`text-xs px-2 py-0.5 font-bold tracking-wide rounded-[8px] ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300'}`}>
             {asNumber(product.stock)} in stock
           </span>
         </div>
-        <div className="text-sm text-gray-500 dark:text-gray-400 flex flex-wrap gap-x-4">
-          <span className="font-mono text-xs">SKU: {product.sku}</span>
+        <div className="text-[13px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-4 mt-1">
+          <span className="font-mono text-[12px]">SKU: {product.sku}</span>
           <span>Category: {categoryName}</span>
-          <span className="font-medium text-gray-700 dark:text-gray-300">Price: {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? ' / kg' : ''}</span>
+          <span className="font-medium text-slate-700 dark:text-slate-300">Price: {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? ' / kg' : ''}</span>
         </div>
       </div>
       <div className="flex gap-2 shrink-0">
         <button
-          className={`px-4 py-2 text-sm font-bold tracking-wide rounded-full transition-all duration-200 active:scale-95 ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'liquid-glass-pill text-slate-700 dark:text-slate-300'
+          className={`px-5 py-2.5 text-[13px] font-bold tracking-wide rounded-full transition-all duration-300 active:scale-95 ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-white/5'
             }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -156,7 +156,7 @@ const ProductListRow: React.FC<{
         </button>
         {canManage && (
           <button
-            className="px-4 py-2 text-sm bg-emerald-500 text-white font-bold tracking-wide rounded-full hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-all duration-200 active:scale-95"
+            className="px-5 py-2.5 text-[13px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-bold tracking-wide rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all duration-300 active:scale-95"
             onClick={(e) => {
               e.stopPropagation();
               onAdjustStock();

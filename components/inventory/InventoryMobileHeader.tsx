@@ -22,25 +22,25 @@ const InventoryMobileHeader: React.FC<InventoryMobileHeaderProps> = ({
         <div className={`sticky top-2 z-30 bg-transparent pointer-events-none md:hidden ${selectedItem ? 'hidden' : ''}`}>
             <div className="px-4 py-2 flex items-center justify-between gap-3 relative pointer-events-auto">
                 {/* Segmented Control */}
-                <div className="flex bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg p-1.5 rounded-2xl shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-white/20 dark:border-slate-700/50 flex-1 relative z-10">
+                <div className="flex bg-slate-200/50 dark:bg-slate-800/80 backdrop-blur-xl p-1.5 rounded-[16px] shadow-inner flex-1 relative z-10 items-center">
                     <button
                         onClick={() => setActiveTab('products')}
-                        className={`flex-1 flex items-center justify-center py-2 px-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 ${activeTab === 'products'
+                        className={`flex-1 flex items-center justify-center py-2 px-3 rounded-[12px] text-[13px] font-bold tracking-wide transition-all duration-300 active:scale-95 ${activeTab === 'products'
                             ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                     >
-                        <CubeIcon className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                        <CubeIcon className="w-4.5 h-4.5 mr-1.5 flex-shrink-0" />
                         <span className="truncate">Products</span>
                     </button>
                     <button
                         onClick={() => setActiveTab('categories')}
-                        className={`flex-1 flex items-center justify-center py-2 px-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 ${activeTab === 'categories'
+                        className={`flex-1 flex items-center justify-center py-2 px-3 rounded-[12px] text-[13px] font-bold tracking-wide transition-all duration-300 active:scale-95 ${activeTab === 'categories'
                             ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
                             }`}
                     >
-                        <TagIcon className="w-4 h-4 mr-1 sm:mr-2 flex-shrink-0" />
+                        <TagIcon className="w-4.5 h-4.5 mr-1.5 flex-shrink-0" />
                         <span className="truncate">Categories</span>
                     </button>
                 </div>
@@ -49,7 +49,7 @@ const InventoryMobileHeader: React.FC<InventoryMobileHeaderProps> = ({
                     {/* Direct List/Grid Toggle */}
                     <button
                         onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                        className="p-2.5 rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur-lg shadow-lg shadow-slate-200/50 dark:shadow-slate-900/50 border border-white/20 dark:border-slate-700/50 text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-all duration-200 active:scale-95 flex items-center justify-center h-[44px] w-[44px]"
+                        className="p-2.5 rounded-[16px] bg-slate-200/50 dark:bg-slate-800/80 shadow-inner text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-blue-400 transition-all duration-300 active:scale-95 flex items-center justify-center h-[44px] w-[44px] ml-1"
                         aria-label={viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
                     >
                         {viewMode === 'grid' ? (

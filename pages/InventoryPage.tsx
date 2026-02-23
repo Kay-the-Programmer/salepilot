@@ -539,44 +539,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return suppliers.find(s => s.id === detailedProduct.supplierId);
     }, [detailedProduct, suppliers]);
 
-    const displayedAttributes = useMemo(() => {
-        if (!detailedProduct?.categoryId) return [];
-
-        const attributeDefinitions = new Map<string, string>();
-        let currentCatId: string | null | undefined = detailedProduct.categoryId;
-        while (currentCatId) {
-            const category = categories.find(c => c.id === currentCatId);
-            if (category) {
-                category.attributes.forEach(attr => {
-                    if (!attributeDefinitions.has(attr.id)) {
-                        attributeDefinitions.set(attr.id, attr.name);
-                    }
-                });
-                currentCatId = category.parentId;
-            } else {
-                currentCatId = null;
-            }
-        }
-
-        const attrs: { name: string; value: string }[] = [];
-        if (detailedProduct.customAttributes) {
-            for (const attrId in detailedProduct.customAttributes) {
-                if (attributeDefinitions.has(attrId)) {
-                    attrs.push({
-                        name: attributeDefinitions.get(attrId)!,
-                        value: detailedProduct.customAttributes[attrId]
-                    });
-                }
-            }
-        }
-        return attrs;
-    }, [detailedProduct, categories]);
 
     // Desktop: Two-panel layout with left having header + products, right having full-height details
     const selectedItem = activeTab === 'products' ? (selectedProductId || (isEditingProduct && editingProduct)) : selectedCategoryId;
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-mesh-light font-google overflow-hidden relative">
+        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-950 overflow-hidden relative selection:bg-blue-500/30">
             {/* Skip to content link for accessibility */}
             <a
                 href="#inventory-content"
@@ -629,7 +597,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             <div className="flex-1 flex overflow-hidden max-w-[1400px] mx-auto w-full px-4 md:px-8 pb-6 md:pb-8 gap-6 stagger-1 animate-glass-appear" id="inventory-content">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex flex-col h-full liquid-glass-card rounded-2xl overflow-hidden transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    className={`flex flex-col h-full bg-white dark:bg-slate-900/60 backdrop-blur-3xl shadow-sm border border-slate-200/50 dark:border-white/5 rounded-[24px] overflow-hidden transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
                     style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '400px' : 'none' }}
                 >
                     <div className="flex-1 overflow-hidden relative">
@@ -685,13 +653,13 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             e.preventDefault();
                             setIsResizing(true);
                         }}
-                        className="hidden md:block w-1 hover:w-2 bg-gray-200 dark:bg-slate-700 hover:bg-blue-500 dark:hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600 active:scale-95 transition-all duration-300"
+                        className="hidden md:block w-1 hover:w-2 bg-slate-200 dark:bg-slate-700 hover:bg-blue-500 dark:hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600 active:scale-95 transition-all duration-300"
                     />
                 )}
 
                 {/* Right Panel: Detail View */}
                 <div
-                    className={`flex-1 flex flex-col liquid-glass rounded-2xl h-full relative overflow-hidden transition-all duration-300 ${!selectedItem ? 'hidden md:flex md:bg-gray-50/50 dark:md:bg-slate-900/50' : 'flex w-full'}`}
+                    className={`flex-1 flex flex-col bg-white dark:bg-slate-900/90 backdrop-blur-3xl shadow-sm border border-slate-200/50 dark:border-white/5 rounded-[24px] h-full relative overflow-hidden transition-all duration-300 ${!selectedItem ? 'hidden md:flex md:bg-slate-50/50 dark:md:bg-slate-950/50' : 'flex w-full'}`}
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
                 >
                     {selectedItem ? (
@@ -748,7 +716,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             onBack={handleBackToList}
                                         />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-gray-400 dark:text-slate-500 italic">
+                                        <div className="flex items-center justify-center h-full text-slate-400 dark:text-slate-500 font-medium">
                                             Category not found
                                         </div>
                                     )}
@@ -766,17 +734,17 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 <div className="md:hidden fixed bottom-6 right-4 flex flex-col gap-3 z-40 animate-slide-up">
                     <button
                         onClick={() => setIsScanModalOpen(true)}
-                        className="w-12 h-12 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-full shadow-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 active:scale-90 border border-slate-100 dark:border-white/10 self-end"
+                        className="w-13 h-13 bg-white dark:bg-slate-800 backdrop-blur-2xl text-slate-700 dark:text-slate-300 rounded-[20px] shadow-lg flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 active:scale-95 border border-slate-200/50 dark:border-slate-700 self-end"
                         aria-label="Scan Barcode"
                     >
-                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-5.5 h-5.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </button>
                     <button
                         onClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
-                        className="w-14 h-14 bg-blue-600 text-white rounded-full shadow-xl shadow-blue-500/30 flex items-center justify-center hover:bg-blue-700 transition-all duration-300 active:scale-90 self-end"
+                        className="w-14 h-14 bg-blue-600 text-white rounded-[20px] shadow-lg flex items-center justify-center hover:bg-blue-700 transition-all duration-300 active:scale-95 self-end"
                         aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
                     >
                         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

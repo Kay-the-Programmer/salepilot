@@ -36,7 +36,7 @@ const ProductOverview: React.FC<ProductOverviewProps> = ({ product, storeSetting
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Image Section - Full width on mobile, 1/3 on desktop */}
             <div className="lg:col-span-1">
-                <div className="liquid-glass-card rounded-[2rem] border border-slate-200 dark:border-white/10 overflow-hidden relative aspect-square shadow-xl transition-all duration-300 hover:scale-102">
+                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] border border-slate-200/50 dark:border-white/5 overflow-hidden relative aspect-square shadow-sm transition-all duration-300 hover:shadow-md">
                     {mainImage ? (
                         <>
                             <img
@@ -63,13 +63,13 @@ const ProductOverview: React.FC<ProductOverviewProps> = ({ product, storeSetting
             {/* Key Information - 2/3 on desktop */}
             <div className="lg:col-span-2 space-y-4">
                 <div className="grid grid-cols-2 gap-6">
-                    <div className="liquid-glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-lg">
+                    <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-6 border border-slate-200/50 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Price</div>
                         <div className="text-3xl font-black text-slate-900 dark:text-white font-google">
                             {formatCurrency(price, storeSettings)}
                         </div>
                     </div>
-                    <div className="liquid-glass-card rounded-2xl p-6 border border-slate-200 dark:border-white/10 shadow-lg">
+                    <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-6 border border-slate-200/50 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
                         <div className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Profit</div>
                         <div className="flex items-baseline gap-2">
                             <span className={`text-3xl font-black font-google ${profitAmount > 0 ? 'text-emerald-500' : 'text-slate-900 dark:text-white'}`}>
@@ -85,7 +85,7 @@ const ProductOverview: React.FC<ProductOverviewProps> = ({ product, storeSetting
                 </div>
 
                 {/* Stock Status */}
-                <div className="liquid-glass-card rounded-[2rem] p-6 border border-slate-200 dark:border-white/10 shadow-lg">
+                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] p-6 border border-slate-200/50 dark:border-white/5 shadow-sm hover:shadow-md transition-all duration-300">
                     <StockIndicator product={product} storeSettings={storeSettings} />
                 </div>
             </div>
