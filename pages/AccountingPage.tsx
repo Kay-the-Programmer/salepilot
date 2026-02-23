@@ -15,7 +15,7 @@ import BookOpenIcon from '../components/icons/BookOpenIcon';
 import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import ChartBarIcon from '../components/icons/ChartBarIcon';
 
-import CalendarDaysIcon from '../components/icons/CalendarDaysIcon';
+
 import ExpenseFormModal from '../components/accounting/ExpenseFormModal';
 import AccountAdjustmentModal from '../components/accounting/AccountAdjustmentModal';
 import RecurringExpenseFormModal from '../components/accounting/RecurringExpenseFormModal';
@@ -27,7 +27,6 @@ import JournalView from '../components/accounting/views/JournalView';
 import ARManagementView from '../components/accounting/views/ARManagementView';
 import APManagementView from '../components/accounting/views/APManagementView';
 import ExpensesView from '../components/accounting/views/ExpensesView';
-import RecurringExpensesView from '../components/accounting/views/RecurringExpensesView';
 import TaxReportView from '../components/accounting/views/TaxReportView';
 import FinancialStatementsView from '../components/accounting/views/FinancialStatementsView';
 
@@ -227,6 +226,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                 return (
                     <ExpensesView
                         expenses={expenses}
+                        recurringExpenses={recurringExpenses}
                         accounts={accounts}
                         storeSettings={storeSettings}
                         onSave={(expense) => {
@@ -239,24 +239,16 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                         }}
                         onEdit={handleEditExpense}
                         onOpenForm={() => { setEditingExpense(null); setIsExpenseFormOpen(true); }}
-                    />
-                );
-            case 'recurring_expenses':
-                return (
-                    <RecurringExpensesView
-                        expenses={recurringExpenses}
-                        accounts={accounts}
-                        storeSettings={storeSettings}
-                        onSave={(expense) => {
+                        onSaveRecurring={(expense) => {
                             logEvent('Accounting', expense.id ? 'edit_recurring_expense' : 'create_recurring_expense', expense.id);
                             onSaveRecurringExpense(expense);
                         }}
-                        onDelete={(id) => {
+                        onDeleteRecurring={(id) => {
                             logEvent('Accounting', 'delete_recurring_expense', id);
                             onDeleteRecurringExpense(id);
                         }}
-                        onEdit={handleEditRecurringExpense}
-                        onOpenForm={() => { setEditingRecurringExpense(null); setIsRecurringExpenseFormOpen(true); }}
+                        onEditRecurring={handleEditRecurringExpense}
+                        onOpenRecurringForm={() => { setEditingRecurringExpense(null); setIsRecurringExpenseFormOpen(true); }}
                     />
                 );
             case 'taxes':
@@ -275,60 +267,64 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
         { tabName: 'ar_management', label: 'Accounts Receivable', shortLabel: 'A/R', icon: <ArrowTrendingUpIcon className="w-4 h-4" /> },
         { tabName: 'ap_management', label: 'Accounts Payable', shortLabel: 'A/P', icon: <ArrowTrendingDownIcon className="w-4 h-4" /> },
         { tabName: 'expenses', label: 'Expenses', shortLabel: 'Expenses', icon: <BanknotesIcon className="w-4 h-4" /> },
-        { tabName: 'recurring_expenses', label: 'Recurring', shortLabel: 'Recur', icon: <CalendarDaysIcon className="w-4 h-4" /> },
         { tabName: 'taxes', label: 'Taxes', shortLabel: 'Taxes', icon: <ReceiptPercentIcon className="w-4 h-4" /> },
         { tabName: 'chart_of_accounts', label: 'Chart of Accounts', shortLabel: 'Accounts', icon: <BookOpenIcon className="w-4 h-4" /> },
         { tabName: 'journal', label: 'Journal', shortLabel: 'Journal', icon: <ClipboardDocumentListIcon className="w-4 h-4" /> },
     ];
 
     return (
-        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 transition-colors duration-200 font-google">
-            {/* Unified Header */}
-            <header className="liquid-glass-header sticky top-0 z-40 /80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/10 transition-all duration-300">
-                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center justify-between py-3 h-auto lg:h-20 gap-4">
-                        {/* Title Section */}
-                        <div className="flex items-center justify-between shrink-0">
-                            <div className="flex items-center gap-4">
-                                <div className="p-2.5 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20">
-                                    <BookOpenIcon className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h1 className="text-xl font-black tracking-tight text-slate-900 dark:text-white leading-none">
-                                        Accounting
-                                    </h1>
-                                    <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest">
-                                        Financial Control Center
-                                    </p>
-                                </div>
-                            </div>
-
+        <div className="flex flex-col h-[100dvh] bg-mesh-light dark:bg-slate-950 transition-colors duration-200 font-google overflow-hidden relative">
+            {/* Header — compact on mobile */}
+            <header className="flex-none liquid-glass-header sticky top-0 z-40" role="banner">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-5 flex items-center justify-between">
+                    <div className="flex items-center gap-4 min-w-0">
+                        <div className="p-2 md:p-2.5 bg-blue-600 rounded-xl md:rounded-2xl shadow-lg shadow-blue-500/20 flex-shrink-0">
+                            <BookOpenIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
                         </div>
-
-                        {/* Navigation Tabs - Unified Google-like Liquid Glass Scrollable Tab Bar */}
-                        <nav className="flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory lg:ml-auto w-full lg:w-auto -mx-4 px-4 lg:mx-0 lg:px-0 py-1 scroll-smooth">
-                            {tabConfig.map((tab) => {
-                                const isActive = activeTab === tab.tabName;
-                                return (
-                                    <button
-                                        key={tab.tabName}
-                                        onClick={() => setActiveTabAndHash(tab.tabName)}
-                                        className={`liquid-glass-pill flex-none snap-start flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap active:scale-95 transition-all duration-300 ${isActive ? 'active' : ''}`}
-                                    >
-                                        <span className={`transition-transform duration-300 ${isActive ? 'scale-110 opacity-100' : 'opacity-70'}`}>
-                                            {React.cloneElement(tab.icon as React.ReactElement, { className: "w-4 h-4" })}
-                                        </span>
-                                        {tab.shortLabel || tab.label}
-                                    </button>
-                                );
-                            })}
-                        </nav>
+                        <div className="min-w-0">
+                            <h1 className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                                Accounting
+                            </h1>
+                            <p className="text-[11px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5 tracking-wide font-medium truncate uppercase">
+                                Financial Control Center
+                            </p>
+                        </div>
                     </div>
                 </div>
             </header>
 
-            <main className="px-4 sm:px-6 lg:px-8 py-8">
-                <div className="max-w-[1600px] mx-auto">
+            {/* Universal Google-style Pill Tab Bar */}
+            <nav
+                className="flex-none liquid-glass sticky top-[60px] md:top-[80px] z-30 transition-all duration-300 border-b border-transparent dark:border-white/5"
+                role="tablist"
+                aria-label="Accounting sections"
+            >
+                <div className="max-w-[1400px] mx-auto px-3 md:px-8 py-2 md:py-3 flex items-center justify-between">
+                    <div className="flex overflow-x-auto scrollbar-hide gap-2 snap-x snap-mandatory pb-1 max-w-full">
+                        {tabConfig.map((tab) => {
+                            const isActive = activeTab === tab.tabName;
+                            return (
+                                <button
+                                    key={tab.tabName}
+                                    role="tab"
+                                    aria-selected={isActive}
+                                    tabIndex={isActive ? 0 : -1}
+                                    onClick={() => setActiveTabAndHash(tab.tabName)}
+                                    className={`flex-shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 md:py-3 rounded-full text-[13px] md:text-sm font-bold tracking-wide whitespace-nowrap outline-none flex-shrink-0 focus-visible:ring-2 focus-visible:ring-blue-500 liquid-glass-pill transition-all duration-200 ${isActive ? 'active scale-105 shadow-md shadow-blue-500/20' : 'hover:scale-102'}`}
+                                >
+                                    <span className={`transition-transform duration-300 ${isActive ? 'scale-110 opacity-100' : 'opacity-70'}`}>
+                                        {React.cloneElement(tab.icon as any, { className: "w-4 h-4 md:w-4.5 md:h-4.5" })}
+                                    </span>
+                                    <span>{tab.shortLabel || tab.label}</span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            </nav>
+
+            <main className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8 scroll-smooth">
+                <div className="max-w-[1400px] mx-auto w-full">
 
                     {/* Content */}
                     <div className="animate-fade-in">
@@ -336,6 +332,9 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                     </div>
                 </div>
             </main>
+
+            {/* Mobile Footer Spacing */}
+            <div className="h-20 md:hidden flex-none"></div>
 
 
             {/* Modals */}
