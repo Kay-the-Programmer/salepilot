@@ -415,10 +415,29 @@ export default function Sidebar({
                     </div>
 
                     {/* Grid Content */}
-                    <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
-                        <div className="grid grid-cols-4 gap-x-2 gap-y-6">
+                    <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar mt-2">
+                        <div className="grid grid-cols-4 gap-x-2 gap-y-7">
                             {navItems.map((item) => {
                                 const IconComponent = item.icon;
+
+                                // Helper to determine vibrant, native-app-like colors
+                                const getAppIconStyle = (page: string) => {
+                                    if (page === 'quick-view') return 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-indigo-500/30';
+                                    if (page === 'reports' || page === 'superadmin') return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/30';
+                                    if (page === 'sales') return 'bg-gradient-to-br from-emerald-400 to-emerald-600 text-white shadow-emerald-500/30';
+                                    if (page === 'inventory') return 'bg-gradient-to-br from-orange-400 to-orange-600 text-white shadow-orange-500/30';
+                                    if (page === 'customers' || page === 'users') return 'bg-gradient-to-br from-cyan-400 to-cyan-600 text-white shadow-cyan-500/30';
+                                    if (page === 'settings' || page === 'superadmin/settings') return 'bg-gradient-to-br from-slate-500 to-slate-700 text-white shadow-slate-500/30';
+                                    if (page === 'notifications' || page === 'superadmin/notifications') return 'bg-gradient-to-br from-red-500 to-rose-600 text-white shadow-rose-500/30';
+                                    if (page === 'profile') return 'bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-blue-500/30';
+                                    if (page === 'directory' || page === 'superadmin/stores') return 'bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-pink-500/30';
+                                    if (page === 'accounting' || page === 'superadmin/subscriptions') return 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-amber-500/30';
+                                    // Default Apple-like gray generic icon
+                                    return 'bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-700 dark:to-slate-800 text-gray-700 dark:text-gray-200 shadow-gray-400/20 dark:shadow-black/40';
+                                };
+
+                                const iconStyle = getAppIconStyle(item.page);
+
                                 return (
                                     <NavLink
                                         key={item.page}
@@ -430,18 +449,20 @@ export default function Sidebar({
                                         `}
                                     >
                                         <div className="relative">
-                                            <div className="w-[60px] h-[60px] mx-auto rounded-[1.25rem] flex items-center justify-center transition-all duration-200 
-                                                bg-white dark:bg-slate-800 shadow-[0_2px_10px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-gray-100/50 dark:border-white/5
-                                                text-gray-600 dark:text-gray-300 group-hover:scale-105 group-active:scale-95 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400">
-                                                <IconComponent className="w-[26px] h-[26px]" />
+                                            <div className={`w-[64px] h-[64px] mx-auto rounded-[1.4rem] flex items-center justify-center transition-all duration-300 
+                                                shadow-lg group-hover:scale-[1.03] group-active:scale-[0.93] 
+                                                group-[.active]:ring-4 ring-offset-2 ring-offset-white dark:ring-offset-black group-[.active]:ring-blue-500/50
+                                                ${iconStyle}
+                                                `}>
+                                                <IconComponent className="w-[30px] h-[30px]" />
                                             </div>
                                             {item.badge && (
-                                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 shadow-sm z-10">
+                                                <div className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 bg-red-500 text-white text-[11px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 shadow-md z-10">
                                                     {item.badge}
                                                 </div>
                                             )}
                                         </div>
-                                        <span className="text-[11px] font-medium text-center leading-tight text-gray-700 dark:text-gray-300 mt-1.5 truncate w-full px-1 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-semibold">
+                                        <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-semibold tracking-tight">
                                             {item.name}
                                         </span>
                                     </NavLink>
@@ -455,12 +476,14 @@ export default function Sidebar({
                                     }}
                                     className="flex flex-col items-center group"
                                 >
-                                    <div className="w-[60px] h-[60px] mx-auto rounded-[1.25rem] flex items-center justify-center transition-all duration-200 
-                                        bg-white dark:bg-slate-800 shadow-[0_2px_10px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-gray-100/50 dark:border-white/5
-                                        text-blue-500 group-hover:scale-105 group-active:scale-95">
-                                        <ArrowDownTrayIcon className="w-[26px] h-[26px]" />
+                                    <div className="relative">
+                                        <div className="w-[64px] h-[64px] mx-auto rounded-[1.4rem] flex items-center justify-center transition-all duration-300 
+                                            shadow-lg group-hover:scale-[1.03] group-active:scale-[0.93] 
+                                            bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/30">
+                                            <ArrowDownTrayIcon className="w-[30px] h-[30px]" />
+                                        </div>
                                     </div>
-                                    <span className="text-[11px] font-medium text-center leading-tight text-blue-600 dark:text-blue-400 mt-1.5 truncate w-full px-1 group-[.active]:font-semibold">
+                                    <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-semibold tracking-tight">
                                         Install App
                                     </span>
                                 </button>

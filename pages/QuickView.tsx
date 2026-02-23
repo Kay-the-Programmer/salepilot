@@ -50,7 +50,15 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
     const [isRecording, setIsRecording] = useState(false);
     const [recognition, setRecognition] = useState<any>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
+    const inputRef = useRef<HTMLTextAreaElement>(null);
+
+    // Auto-resize textarea
+    useEffect(() => {
+        if (inputRef.current) {
+            inputRef.current.style.height = 'auto';
+            inputRef.current.style.height = Math.min(inputRef.current.scrollHeight, 120) + 'px';
+        }
+    }, [aiQuery]);
 
     // Initialize Speech Recognition
     useEffect(() => {
@@ -113,10 +121,10 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
 
     useEffect(() => {
         scrollToBottom();
-    }, [messages, isTyping, isChatMode]);
+    }, [messages, isTyping, isChatMode, aiQuery]); // Add aiQuery so it scrolls if textarea expands
 
-    const handleAiSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleAiSubmit = async (e?: React.FormEvent) => {
+        e?.preventDefault();
         if (!aiQuery.trim()) return;
 
         if (isRecording) {
@@ -192,6 +200,16 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
             setIsTyping(false);
             // Re-focus input after sending
             setTimeout(() => inputRef.current?.focus(), 100);
+        }
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        // Submit on Enter, add newline on Shift+Enter
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (aiQuery.trim() && !isTyping) {
+                handleAiSubmit();
+            }
         }
     };
 
@@ -312,7 +330,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
 
                 {/* Chat Mode View */}
                 <div className={`flex-1 flex flex-col min-h-0 transition-opacity duration-500 ${isChatMode ? 'opacity-100 z-20' : 'opacity-0 pointer-events-none absolute inset-0'}`}>
-                    <div className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-6 scroll-smooth pb-40">
+                    <div className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-6 scroll-smooth pb-56">
                         <div className="max-w-3xl mx-auto space-y-8 pt-4">
                             {messages.map((msg) => (
                                 <div key={msg.id} className={`flex gap-4 group animate-slide-up ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -424,14 +442,16 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                     {isRecording ? <StopIcon className="w-5 h-5" /> : <MicrophoneIcon className="w-5 h-5" />}
                                 </button>
 
-                                <div className="flex-1 min-h-[44px] flex flex-col justify-center px-2">
-                                    <input
+                                <div className="flex-1 min-h-[44px] flex flex-col justify-end px-2">
+                                    <textarea
                                         ref={inputRef}
-                                        type="text"
                                         value={aiQuery}
                                         onChange={(e) => setAiQuery(e.target.value)}
+                                        onKeyDown={handleKeyDown}
                                         placeholder={isRecording ? "Listening..." : "Ask SalePilot..."}
-                                        className="w-full bg-transparent border-none focus:ring-0 text-[#1f1f1f] dark:text-[#e3e3e3] placeholder-[#444746] dark:placeholder-[#c4c7c5] text-base focus:outline-none"
+                                        rows={1}
+                                        className="w-full bg-transparent border-none focus:ring-0 text-[#1f1f1f] dark:text-[#e3e3e3] placeholder-[#444746] dark:placeholder-[#c4c7c5] text-base focus:outline-none resize-none overflow-y-auto custom-scrollbar py-2.5 leading-relaxed"
+                                        style={{ minHeight: '44px', maxHeight: '120px' }}
                                     />
                                 </div>
 
