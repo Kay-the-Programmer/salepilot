@@ -163,8 +163,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                 api.get(`/reports/personal-use?startDate=${startDate}&endDate=${endDate}`)
             ]);
             setReportData(statsRes);
-            setDailySales(salesRes.dailySales || []);
-            setPersonalUse(personalRes.personalUse || []);
+            setDailySales((salesRes as any).dailySales || []);
+            setPersonalUse((personalRes as any).personalUse || []);
         } catch (err) {
             console.error("Failed to fetch report data", err);
         } finally {
@@ -327,7 +327,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
     const datePresetLabel = datePreset === '7d' ? '7D' : datePreset === '30d' ? '30D' : datePreset === 'month' ? 'Mo' : 'Custom';
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-mesh-light font-google overflow-hidden relative">
+        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-950 font-google overflow-hidden relative">
             {/* Skip to content link for accessibility */}
             <a
                 href="#report-content"
@@ -337,24 +337,23 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
             </a>
 
             {/* Header — compact on mobile */}
-            <header className="flex-none liquid-glass-header sticky top-0 z-40" role="banner">
+            <header className="flex-none sticky top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300" role="banner">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 md:py-6 flex items-center justify-between">
                     <div className="flex items-center gap-4 min-w-0">
                         <div className="min-w-0">
-                            <h1 className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
-                                {getGreeting()}, {user?.name?.split(' ')[0] || "User"}
-                            </h1>
-                            <p className="text-[11px] md:text-sm text-slate-500 dark:text-slate-400 mt-1 tracking-wide font-medium truncate flex items-center gap-2">
-                                <CalendarIcon className="w-3.5 h-3.5" />
+                            <p className="text-[13px] md:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 tracking-wide uppercase">
                                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                             </p>
+                            <h1 className="text-2xl md:text-[34px] font-bold md:font-semibold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                                {getGreeting()}, {user?.name?.split(' ')[0] || "User"}
+                            </h1>
                         </div>
                     </div>
                     <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
                         <div className="flex md:hidden items-center gap-2" ref={filterMenuRef}>
                             <button
                                 onClick={() => navigate('/profile')}
-                                className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 flex-shrink-0 active:scale-95 transition-transform bg-white dark:bg-slate-800"
+                                className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 flex-shrink-0 active:scale-95 transition-transform bg-white dark:bg-slate-800 shadow-sm"
                                 aria-label="Go to profile"
                             >
                                 {user?.profilePicture ? (
@@ -366,23 +365,22 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                             <div className="relative">
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center gap-1.5 p-2 px-3 rounded-full liquid-glass-pill transition-all duration-200 active:scale-95"
+                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
                                     aria-label={`Date filter: ${datePresetLabel}`}
                                     aria-expanded={showFilters}
                                 >
-                                    <CalendarIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">{datePresetLabel}</span>
+                                    <CalendarIcon className="w-5 h-5 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 transition-colors" />
                                 </button>
 
                                 {showFilters && (
-                                    <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 z-50 animate-notification-slide-down">
+                                    <div className="absolute top-full right-0 mt-3 w-48 bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/50 dark:border-white/10 z-50 transform origin-top-right transition-all animate-notification-slide-down">
                                         {(['7d', '30d', 'month'] as const).map((preset) => (
                                             <button
                                                 key={preset}
                                                 onClick={() => { handleDatePreset(preset); setShowFilters(false); }}
-                                                className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors ${datePreset === preset
-                                                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                className={`w-full text-left px-5 py-3.5 text-[15px] font-medium transition-colors ${datePreset === preset
+                                                    ? 'bg-blue-50/50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-700/50'
                                                     }`}
                                             >
                                                 {preset === '7d' ? 'Last 7 Days' : preset === '30d' ? 'Last 30 Days' : 'This Month'}
@@ -396,14 +394,14 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         <div className="relative hidden md:block" ref={notificationsRef}>
                             <button
                                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                                className="relative p-3 rounded-full liquid-glass-pill transition-all duration-200 hover:shadow-lg active:scale-95 group"
+                                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
                                 aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
                                 aria-expanded={isNotificationsOpen}
                                 aria-haspopup="true"
                             >
-                                <BellAlertIcon className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-blue-600 transition-colors" />
+                                <BellAlertIcon className="w-5 h-5 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 transition-colors" />
                                 {unreadCount > 0 && (
-                                    <span className="absolute top-0 right-0 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-blue-600 rounded-full animate-pulse shadow-md shadow-blue-500/40" aria-hidden="true">
+                                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-md border-2 border-slate-50 dark:border-slate-900 animate-pulse" aria-hidden="true">
                                         {unreadCount > 99 ? '99+' : unreadCount}
                                     </span>
                                 )}
@@ -412,41 +410,41 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
 
                         <button
                             onClick={() => navigate('/profile')}
-                            className="hidden md:flex p-3 rounded-full liquid-glass-pill transition-all duration-200 hover:shadow-lg active:scale-95 group"
+                            className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
                             aria-label="Go to profile"
                         >
-                            <UserCircleIcon className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-blue-600 transition-colors" />
+                            <UserCircleIcon className="w-5 h-5 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 transition-colors" />
                         </button>
 
                         <div className="relative hidden md:block" ref={exportMenuRef}>
                             <button
                                 onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide transition-all duration-300 active:scale-95 ${isExportMenuOpen
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                                    : 'liquid-glass-pill hover:shadow-md'
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-[15px] tracking-wide transition-all duration-300 active:scale-95 ${isExportMenuOpen
+                                    ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900 shadow-lg'
+                                    : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 backdrop-blur-xl hover:shadow-sm'
                                     }`}
                                 aria-expanded={isExportMenuOpen}
                                 aria-haspopup="true"
                             >
-                                <ArrowDownTrayIcon className={`w-4.5 h-4.5 ${isExportMenuOpen ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`} />
+                                <ArrowDownTrayIcon className={`w-4.5 h-4.5`} />
                                 <span>Export</span>
                                 <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-300 ${isExportMenuOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {isExportMenuOpen && (
-                                <div className="absolute top-full right-0 mt-3 w-48 liquid-glass rounded-2xl overflow-hidden shadow-2xl animate-notification-slide-down border border-white/20 dark:border-white/10 z-50">
+                                <div className="absolute top-full right-0 mt-3 w-48 bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/50 dark:border-white/10 z-50 transform origin-top-right transition-all animate-notification-slide-down">
                                     <button
                                         onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }}
-                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors flex items-center gap-3 active:scale-95 transition-all duration-300"
+                                        className="w-full text-left px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-3 active:scale-95 transition-all duration-300"
                                     >
-                                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
                                         Export as CSV
                                     </button>
                                     <button
                                         onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }}
-                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors border-t border-slate-100 dark:border-white/5 flex items-center gap-3 active:scale-95 transition-all duration-300"
+                                        className="w-full text-left px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors border-t border-slate-100 dark:border-white/5 flex items-center gap-3 active:scale-95 transition-all duration-300"
                                     >
-                                        <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
                                         Export as PDF
                                     </button>
                                 </div>
@@ -456,16 +454,16 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                 </div>
             </header>
 
-            {/* Universal Google-style Pill Tab Bar */}
+            {/* Apple-style Segmented Control Tab Bar */}
             <nav
                 ref={tabBarRef}
-                className="flex-none liquid-glass sticky top-[80px] md:top-[90px] z-30 transition-all duration-300"
+                className="flex-none sticky top-[80px] md:top-[90px] z-30 transition-all duration-300 bg-slate-50 dark:bg-slate-950 pb-2 border-b border-slate-200/50 dark:border-white/5"
                 role="tablist"
                 aria-label="Report sections"
                 onKeyDown={handleTabKeyDown}
             >
-                <div className="max-w-[1400px] mx-auto px-3 md:px-8 py-2 md:py-3 flex items-center justify-between">
-                    <div className="flex overflow-x-auto scrollbar-hide gap-2 snap-x snap-mandatory pb-1 max-w-full">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between">
+                    <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-1 rounded-[16px] md:rounded-[20px] overflow-x-auto scrollbar-hide gap-1 w-full max-w-full relative shadow-inner">
                         {TABS.map((tab) => {
                             const isActive = activeTab === tab.id;
                             const Icon = tab.Icon;
@@ -478,30 +476,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                                     aria-controls={`tabpanel-${tab.id}`}
                                     tabIndex={isActive ? 0 : -1}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`flex-shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 md:py-3 rounded-full text-[13px] md:text-sm font-bold tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500 liquid-glass-pill transition-all duration-200 ${isActive ? 'active scale-105 shadow-md shadow-blue-500/20' : 'hover:scale-102'}`}
+                                    className={`flex-shrink-0 flex-1 flex items-center justify-center gap-2 px-4 py-2 md:py-2.5 rounded-xl md:rounded-[16px] text-[13px] md:text-sm font-medium tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-300 ${isActive ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
                                 >
-                                    <Icon className={isActive ? 'w-4.5 h-4.5' : 'w-4 h-4'} />
+                                    <Icon className={isActive ? 'w-4.5 h-4.5 text-blue-600 dark:text-blue-400' : 'w-4 h-4'} />
                                     <span>{tab.label}</span>
                                 </button>
                             );
                         })}
-                    </div>
-
-                    <div className="hidden md:flex items-center gap-3 border-l border-slate-200 dark:border-white/10 pl-6 ml-4">
-                        <div className="flex bg-slate-100/50 dark:bg-white/5 p-1 rounded-full border border-slate-200 dark:border-white/10">
-                            {(['7d', '30d', 'month'] as const).map((preset) => (
-                                <button
-                                    key={preset}
-                                    onClick={() => handleDatePreset(preset)}
-                                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${datePreset === preset
-                                        ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
-                                        }`}
-                                >
-                                    {preset === '7d' ? '7D' : preset === '30d' ? '30D' : 'This Month'}
-                                </button>
-                            ))}
-                        </div>
                     </div>
                 </div>
             </nav>
