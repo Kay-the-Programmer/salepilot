@@ -52,105 +52,104 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
             </div>
 
             {/* Tab Content */}
-            <div glass-effect="" className="rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden">
-                <div className="p-6">
-                    <div className="min-h-[200px]">
-                        {/* Details Tab */}
-                        {activeTab === 'details' && (
-                            <div className="space-y-6">
-                                {/* Description */}
-                                {product.description && (
-                                    <div>
-                                        <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-2">Description</h4>
-                                        <div className="text-sm text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                                            {product.description}
-                                        </div>
+            <div className="py-6">
+                <div className="min-h-[200px]">
+                    {/* Details Tab */}
+                    {activeTab === 'details' && (
+                        <div className="space-y-10">
+                            {/* Description */}
+                            {product.description && (
+                                <div>
+                                    <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Description</h4>
+                                    <div className="text-[15px] text-slate-800 dark:text-slate-200 leading-relaxed whitespace-pre-wrap">
+                                        {product.description}
                                     </div>
-                                )}
+                                </div>
+                            )}
 
-                                {/* Basic Info */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-3">
+                            {/* Basic Info */}
+                            <div>
+                                {!product.description && <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Product Specs</h4>}
+                                <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-12">
+                                    <div className="flex flex-col">
                                         <DetailItem label="SKU" value={product.sku || 'N/A'} icon={<BarcodeIcon />} />
                                         <DetailItem label="Barcode" value={product.barcode || 'N/A'} icon={<BarcodeIcon />} />
                                         <DetailItem label="Category" value={category?.name || 'Uncategorized'} icon={<TagIcon />} />
                                     </div>
-                                    <div className="space-y-3">
+                                    <div className="flex flex-col">
                                         <DetailItem label="Brand" value={product.brand || 'Generic'} />
                                         <DetailItem label="Unit" value={product.unitOfMeasure || 'Unit'} icon={<CubeIcon />} />
-                                        <DetailItem label="Status" value={<StatusBadge status={product.status} />} />
+                                        <DetailItem label="Status" value={<span className="inline-block mt-0.5"><StatusBadge status={product.status} /></span>} />
                                     </div>
                                 </div>
-
-                                {/* Supplier Info (if exists) */}
-                                {supplier && (
-                                    <div>
-                                        <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Supplier</h4>
-                                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 space-y-3">
-                                            <DetailItem label="Company" value={supplier.name} icon={<TruckIcon />} />
-                                            {supplier.contactPerson && <DetailItem label="Contact" value={supplier.contactPerson} />}
-                                            {supplier.phone && (
-                                                <DetailItem label="Phone" value={
-                                                    <a href={`tel:${supplier.phone}`} className="text-blue-600 hover:underline">{supplier.phone}</a>
-                                                } />
-                                            )}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Additional Info (if exists) */}
-                                {(product.weight || product.dimensions) && (
-                                    <div>
-                                        <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Physical Properties</h4>
-                                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 grid grid-cols-2 gap-3">
-                                            {product.weight && <DetailItem label="Weight" value={`${product.weight} kg`} icon={<ScaleIcon />} />}
-                                            {product.dimensions && <DetailItem label="Dimensions" value={product.dimensions} icon={<CubeIcon />} />}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
-                        )}
 
-                        {/* Inventory Tab */}
-                        {activeTab === 'inventory' && (
-                            <div className="space-y-6">
-                                {/* Stock Status */}
-                                <div>
-                                    <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Stock Status</h4>
-                                    <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                                        <StockIndicator product={product} storeSettings={storeSettings} />
+                            {/* Supplier Info (if exists) */}
+                            {supplier && (
+                                <div className="pt-8 border-t border-slate-100 dark:border-white/5">
+                                    <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Supplier Information</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-12">
+                                        <DetailItem label="Company" value={supplier.name} icon={<TruckIcon />} />
+                                        {supplier.contactPerson && <DetailItem label="Contact" value={supplier.contactPerson} />}
+                                        {supplier.phone && (
+                                            <DetailItem label="Phone" value={
+                                                <a href={`tel:${supplier.phone}`} className="text-blue-600 dark:text-blue-400 hover:underline">{supplier.phone}</a>
+                                            } />
+                                        )}
                                     </div>
                                 </div>
+                            )}
 
-                                {/* Financial Summary */}
+                            {/* Additional Info (if exists) */}
+                            {(product.weight || product.dimensions) && (
+                                <div className="pt-8 border-t border-slate-100 dark:border-white/5">
+                                    <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Physical Properties</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 md:gap-x-12">
+                                        {product.weight && <DetailItem label="Weight" value={`${product.weight} kg`} icon={<ScaleIcon />} />}
+                                        {product.dimensions && <DetailItem label="Dimensions" value={product.dimensions} icon={<CubeIcon />} />}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Inventory Tab */}
+                    {activeTab === 'inventory' && (
+                        <div className="space-y-10">
+                            {/* Stock Status */}
+                            <div>
+                                <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Stock Status</h4>
                                 <div>
-                                    <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100 mb-3">Financial Summary</h4>
-                                    <div className="space-y-3">
-                                        <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
-                                            <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total Stock Value</div>
-                                            <div className="text-xl font-bold text-slate-900 dark:text-slate-100">
-                                                {formatCurrency(price * product.stock, storeSettings)}
-                                            </div>
+                                    <StockIndicator product={product} storeSettings={storeSettings} />
+                                </div>
+                            </div>
+
+                            {/* Financial Summary */}
+                            <div className="pt-8 border-t border-slate-100 dark:border-white/5">
+                                <h4 className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Financial Summary</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
+                                    <div className="flex flex-col">
+                                        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 opacity-70">Total Stock Value</div>
+                                        <div className="text-3xl font-light text-slate-900 dark:text-slate-100 tracking-tight">
+                                            {formatCurrency(price * product.stock, storeSettings)}
                                         </div>
-                                        <div className="grid grid-cols-2 gap-3">
-                                            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
-                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Reorder Point</div>
-                                                <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                                    {product.reorderPoint || storeSettings.lowStockThreshold}
-                                                </div>
-                                            </div>
-                                            <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-3">
-                                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-1">Safety Stock</div>
-                                                <div className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                                    {product.safetyStock || 0}
-                                                </div>
-                                            </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 opacity-70">Reorder Point</div>
+                                        <div className="text-2xl font-light text-slate-800 dark:text-slate-200">
+                                            {product.reorderPoint || storeSettings.lowStockThreshold}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <div className="text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2 opacity-70">Safety Stock</div>
+                                        <div className="text-2xl font-light text-slate-800 dark:text-slate-200">
+                                            {product.safetyStock || 0}
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

@@ -3,7 +3,6 @@ import { Sale, StoreSettings } from '@/types.ts';
 import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
 import ReceiptModal from './ReceiptModal';
-import { Button } from '../ui/Button';
 import SaleDetailContent from './SaleDetailContent';
 
 interface SaleDetailModalProps {
@@ -20,66 +19,61 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
 
     return (
         <>
-            {/* Mobile-optimized backdrop with native feel */}
             <div
-                className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center animate-fade-in"
-                aria-labelledby="modal-title"
+                className="fixed inset-0 z-[100] bg-black/40 dark:bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
+                aria-labelledby="sale-detail-title"
                 role="dialog"
                 aria-modal="true"
                 onClick={onClose}
             >
                 <div
-                    glass-effect=""
-                    className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl"
+                    className="w-full sm:max-w-xl bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl max-h-[92vh] sm:max-h-[85vh] overflow-hidden flex flex-col shadow-xl sm:mx-4"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* iOS-style drag handle for mobile */}
-                    <div className="sm:hidden pt-3 pb-1 flex justify-center">
-                        <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                    {/* Mobile drag handle */}
+                    <div className="sm:hidden pt-2.5 pb-1 flex justify-center">
+                        <div className="w-9 h-1 bg-slate-300 dark:bg-slate-600 rounded-full" />
                     </div>
 
-                    {/* Header with fixed position on scroll */}
-                    <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 py-3 sm:px-6 border-b border-gray-200 dark:border-gray-700 z-10">
-                        <div className="flex items-start justify-between">
-                            <div>
-                                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Sale Details</h3>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">{sale.transactionId}</p>
-                            </div>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                className="p-2 -m-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 active:bg-gray-100 dark:active:bg-gray-700 rounded-full transition-colors"
-                                aria-label="Close"
-                            >
-                                <XMarkIcon className="h-6 w-6" />
-                            </button>
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-white/5">
+                        <div>
+                            <h3 id="sale-detail-title" className="text-base font-semibold text-slate-900 dark:text-white">Sale Details</h3>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-mono">{sale.transactionId}</p>
                         </div>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="p-1.5 -mr-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                            aria-label="Close sale details"
+                        >
+                            <XMarkIcon className="h-5 w-5" />
+                        </button>
                     </div>
 
-                    {/* Scrollable content area */}
-                    <div className="overflow-y-auto max-h-[calc(85vh-130px)] px-4 sm:px-6 py-3">
+                    {/* Scrollable content */}
+                    <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
                         <SaleDetailContent sale={sale} storeSettings={storeSettings} />
                     </div>
 
-                    {/* Fixed bottom action bar - iOS style */}
-                    <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 py-3 sm:px-6 border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex flex-col-1 sm:flex-row justify-end gap-3">
-                            <Button
+                    {/* Bottom action bar */}
+                    <div className="flex-none px-5 py-3 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900 safe-area-bottom">
+                        <div className="flex gap-2">
+                            <button
                                 type="button"
-                                variant="secondary"
                                 onClick={() => setIsReceiptOpen(true)}
-                                icon={<PrinterIcon className="w-5 h-5" />}
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
-                                View Receipt
-                            </Button>
-                            <Button
+                                <PrinterIcon className="w-4 h-4" />
+                                Receipt
+                            </button>
+                            <button
                                 type="button"
-                                variant="primary"
                                 onClick={onClose}
-                                className="dark:bg-blue-600 dark:hover:bg-blue-700"
+                                className="flex-1 py-2.5 text-sm font-medium text-white bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                             >
-                                Close
-                            </Button>
+                                Done
+                            </button>
                         </div>
                     </div>
                 </div>

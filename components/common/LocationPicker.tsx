@@ -31,6 +31,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationPicked, initi
                 reverseGeocode(pos.coords.latitude, pos.coords.longitude);
             }, (err) => {
                 console.warn("Geolocation failed or denied", err);
+            }, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             });
         }
     }, []);

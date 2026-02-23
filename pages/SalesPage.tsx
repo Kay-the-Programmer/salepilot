@@ -584,34 +584,32 @@ const SalesPage: React.FC<SalesPageProps> = ({
     return (
         <div className="h-screen w-full bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-hidden">
             <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
-                <div className="flex-none bg">
-                    <Header
-                        title="Point of Sale"
-                        onMenuClick={onOpenSidebar}
-                        searchTerm={searchTerm}
-                        setSearchTerm={setSearchTerm}
-                        hideSearchOnMobile={true}
-                        showSearch={false}
-                        rightContent={
-                            <SalesHeaderActions
-                                searchTerm={searchTerm}
-                                setSearchTerm={setSearchTerm}
-                                viewMode={viewMode}
-                                setViewMode={setViewMode}
-                                heldSalesCount={heldSales.length}
-                                onOpenHeldSales={() => setShowHeldPanel(true)}
-                                onTourStart={() => setRunTour(true)}
-                            />
-                        }
-                    />
-                </div>
+                <Header
+                    title="Point of Sale"
+                    onMenuClick={onOpenSidebar}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    hideSearchOnMobile={true}
+                    showSearch={false}
+                    rightContent={
+                        <SalesHeaderActions
+                            searchTerm={searchTerm}
+                            setSearchTerm={setSearchTerm}
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            heldSalesCount={heldSales.length}
+                            onOpenHeldSales={() => setShowHeldPanel(true)}
+                            onTourStart={() => setRunTour(true)}
+                        />
+                    }
+                />
 
-                <div className="flex-1 overflow-hidden bg-gray-50 dark:bg-slate-900">
+                <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">
                     <div className="h-full flex flex-col">
                         {/* Left Column - Products */}
                         <div className="flex-1 flex flex-col h-full min-w-0">
                             {/* Products Grid/List */}
-                            <div id="pos-product-list" className="flex-1 overflow-y-auto p-4 scroll-smooth">
+                            <div id="pos-product-list" className="flex-1 overflow-y-auto p-4 scroll-smooth" role="region" aria-label="Product catalog">
                                 {isLoading ? (
                                     <div className="max-w-7xl mx-auto w-full">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
@@ -667,10 +665,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         )}
 
                                         {filteredProducts.length === 0 && (
-                                            <div className="text-center py-12">
-                                                <MagnifyingGlassIcon className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                                                <p className="text-slate-600 dark:text-gray-400">No products found</p>
-                                                <p className="text-sm text-slate-500 dark:text-gray-500 mt-1">Try a different search term</p>
+                                            <div className="text-center py-12" role="status">
+                                                <MagnifyingGlassIcon className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
+                                                <p className="text-slate-500 dark:text-slate-400 font-medium">No products found</p>
+                                                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Try a different search term</p>
                                             </div>
                                         )}
                                     </div>
@@ -691,30 +689,26 @@ const SalesPage: React.FC<SalesPageProps> = ({
             </div>
 
             {/* Right Column - Cart & Checkout */}
-            <div className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-gray-50 dark:bg-slate-900 z-20 " >
+            <aside className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/10 z-20" aria-label="Shopping cart">
                 {/* Cart Header */}
-                <div className="flex-none p-4 py-2 border-b border-slate-100 dark:border-white/5 shadow-sm bg-transparent" >
+                <div className="flex-none px-4 py-3 border-b border-slate-100 dark:border-white/5">
                     <div className="flex items-center justify-between">
-                        <div className="hidden md:flex items-center gap-3">
-                            <div>
-                                <h2 className="font-bold text-lg text-slate-700 dark:text-white">Shopping Cart</h2>
-                                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
-                                    <span>{cart.length} items</span>
-                                    {cart.length > 0 && (
-                                        <>
-                                            <span className="w-1 h-1 bg-slate-400 dark:bg-slate-600 rounded-full"></span>
-                                            <span>{formatCurrency(subtotal, storeSettings)}</span>
-                                        </>
-                                    )}
-                                </div>
-                            </div>
+                        <div className="hidden md:block">
+                            <h2 className="text-base font-semibold text-slate-800 dark:text-white">Cart</h2>
+                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 tabular-nums">
+                                {cart.length} {cart.length === 1 ? 'item' : 'items'}
+                                {cart.length > 0 && (
+                                    <span className="ml-1.5">· {formatCurrency(subtotal, storeSettings)}</span>
+                                )}
+                            </p>
                         </div>
                         {cart.length > 0 && (
                             <button
                                 onClick={clearCart}
-                                className="px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                className="text-xs font-medium text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded px-1 py-0.5"
+                                aria-label="Clear all items from cart"
                             >
-                                Clear All
+                                Clear
                             </button>
                         )}
                     </div>
@@ -774,7 +768,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     onOpenSidebar={onOpenSidebar}
                     onTourStart={() => setRunTour(true)}
                 />
-            </div>
+            </aside>
 
             {/* Mobile Cart View */}
             <MobileCartView
@@ -812,17 +806,19 @@ const SalesPage: React.FC<SalesPageProps> = ({
             />
 
             {/* Modals */}
-            {activeTab !== 'cart' && (
-                <SalesFAB
-                    isFabVisible={isFabVisible}
-                    setIsScannerOpen={setIsScannerOpen}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    cartCount={cart.length}
-                    setShowHeldPanel={setShowHeldPanel}
-                    heldSalesCount={heldSales.length}
-                />
-            )}
+            {
+                activeTab !== 'cart' && (
+                    <SalesFAB
+                        isFabVisible={isFabVisible}
+                        setIsScannerOpen={setIsScannerOpen}
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        cartCount={cart.length}
+                        setShowHeldPanel={setShowHeldPanel}
+                        heldSalesCount={heldSales.length}
+                    />
+                )
+            }
 
             <HeldSalesModal
                 isOpen={showHeldPanel}
@@ -943,21 +939,23 @@ const SalesPage: React.FC<SalesPageProps> = ({
             />
 
             {/* Verification Loading Overlay */}
-            {isVerifyingPayment && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
-                        <LoadingSpinner size="lg" fullScreen={false} text="" />
-                        <p className="font-semibold text-slate-900">{verifyingMessage}</p>
-                        <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
-                        <button
-                            onClick={handleCancelVerification}
-                            className="mt-4 px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all text-sm"
-                        >
-                            Cancel Transaction
-                        </button>
+            {
+                isVerifyingPayment && (
+                    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                        <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
+                            <LoadingSpinner size="lg" fullScreen={false} text="" />
+                            <p className="font-semibold text-slate-900">{verifyingMessage}</p>
+                            <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
+                            <button
+                                onClick={handleCancelVerification}
+                                className="mt-4 px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all text-sm"
+                            >
+                                Cancel Transaction
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <TourGuide
                 user={user}

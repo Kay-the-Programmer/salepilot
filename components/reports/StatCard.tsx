@@ -15,9 +15,8 @@ interface StatCardProps {
 
 // Enhanced StatCard with better mobile styling
 export const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, noWrap = false, compact = false, tooltip }) => (
-    <div className={`relative overflow-hidden rounded-2xl glass-effect shadow-lg border border-slate-200/50 dark:border-white/10 
-        ${compact ? 'p-3' : 'p-4 sm:p-5'} 
-        transition-all duration-200 hover:shadow-xl active:scale-[0.99]`}>
+    <div className={`relative overflow-hidden rounded-3xl liquid-glass-card 
+        ${compact ? 'p-4' : 'p-5 sm:p-6'}`}>
         {tooltip && (
             <div className="absolute top-3 right-3 z-10 group/tooltip">
                 <InformationCircleIcon className="w-3.5 h-3.5 text-slate-300 dark:text-slate-500 hover:text-blue-500 transition-colors cursor-help" />
@@ -26,7 +25,7 @@ export const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, n
                 </div>
             </div>
         )}
-        <div className={`absolute -top-6 -right-6 h-20 w-20 rounded-full ${color} opacity-10 dark:opacity-20`}></div>
+        <div className={`absolute -top-8 -right-8 h-32 w-32 rounded-full ${color} opacity-20 dark:opacity-30 blur-2xl mix-blend-multiply dark:mix-blend-screen`}></div>
         <div className="flex items-start">
             <div className={`flex-shrink-0 rounded-xl p-2.5 sm:p-3 ${color} bg-opacity-15 dark:bg-opacity-25`}>
                 {icon}

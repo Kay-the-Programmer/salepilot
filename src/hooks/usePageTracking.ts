@@ -4,13 +4,7 @@ import { logPageView, setUserId, setUserProperties } from "../utils/analytics";
 import { getCurrentUser } from "../../services/authService";
 
 const usePageTracking = () => {
-    let location: ReturnType<typeof useLocation> | null = null;
-    try {
-        location = useLocation();
-    } catch {
-        // Router context not available (e.g. during HMR)
-        return;
-    }
+    const location = useLocation();
 
     useEffect(() => {
         if (location) {

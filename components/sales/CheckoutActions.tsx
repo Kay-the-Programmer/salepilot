@@ -76,15 +76,13 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
     setAppliedStoreCredit,
     cashInputRef
 }) => {
-    const [actionsPanelHeight, setActionsPanelHeight] = useState(400); // Default height
+    const [actionsPanelHeight, setActionsPanelHeight] = useState(400);
     const isResizing = useRef(false);
 
-    // Handle resizing
     useEffect(() => {
         const handleMouseMove = (e: MouseEvent) => {
             if (!isResizing.current) return;
             const newHeight = window.innerHeight - e.clientY;
-            // Min height: 200px, Max height: 80% of screen height
             if (newHeight > 200 && newHeight < window.innerHeight * 0.8) {
                 setActionsPanelHeight(newHeight);
             }
@@ -107,36 +105,38 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
     const startResizing = (e: React.MouseEvent) => {
         isResizing.current = true;
         document.body.style.cursor = 'ns-resize';
-        e.preventDefault(); // Prevent text selection
+        e.preventDefault();
     };
 
     const isCashMethod = (selectedPaymentMethod || '').toLowerCase().includes('cash');
     const cashReceivedNumber = parseFloat(cashReceived || '0') || 0;
-
     const isMobileMoney = (selectedPaymentMethod?.toLowerCase().includes('mobile') || selectedPaymentMethod?.toLowerCase().includes('lenco') || selectedPaymentMethod?.toLowerCase().includes('mtn') || selectedPaymentMethod?.toLowerCase().includes('airtel'));
 
+    const tabItems = [
+        { id: 'customer' as const, label: 'Customer' },
+        { id: 'summary' as const, label: 'Summary' },
+        { id: 'payment' as const, label: 'Payment' },
+    ];
 
     return (
         <div
-            className="hidden md:flex flex-none bg-gray-50 dark:bg-slate-900 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] dark:shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.3)] relative flex flex-col transition-all duration-75 ease-linear"
+            className="hidden md:flex flex-none bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/10 relative flex-col transition-all duration-75 ease-linear"
             style={{ height: `${actionsPanelHeight}px` }}
         >
             {/* Drag Handle */}
             <div
-                className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-white/10 cursor-ns-resize flex items-center justify-center py-0 absolute top-0 left-0 right-0 z-10"
+                className="flex items-center justify-center py-1.5 cursor-ns-resize absolute top-0 left-0 right-0 z-10"
                 onMouseDown={startResizing}
+                role="separator"
+                aria-orientation="horizontal"
+                aria-label="Resize checkout panel"
             >
-                <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700 "></div>
-            </div>
-
-            {/* Scanner Toggle / Header */}
-            <div className="flex items-center justify-between px-4 py-0 mt-2 z-10">
-                
+                <div className="w-10 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
             </div>
 
             {isScannerOpen ? (
-                <div className="flex-1 p-4 bg-slate-50/50 dark:bg-white/5 overflow-hidden flex flex-col">
-                    <div className="flex-1 w-full relative min-h-0 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden">
+                <div className="flex-1 p-4 overflow-hidden flex flex-col mt-4">
+                    <div className="flex-1 w-full relative min-h-0 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 overflow-hidden">
                         <UnifiedScannerModal
                             isOpen={true}
                             variant="embedded"
@@ -147,54 +147,44 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                             delayBetweenScans={1500}
                         />
                     </div>
-                    <p className="text-center text-xs text-slate-500 dark:text-gray-500 mt-2">
+                    <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-2">
                         Point camera at a barcode to add to cart
                     </p>
                 </div>
             ) : (
                 <>
                     {/* Tab Navigation */}
-                    <div className="flex border-b border-slate-200 dark:border-white/10 bg-gray-50 dark:bg-slate-900 z-10 flex-none px-4">
-                        <button
-                            id="pos-tab-customer"
-                            onClick={() => setCartActionTab('customer')}
-                            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${cartActionTab === 'customer'
-                                ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10'
-                                : 'border-transparent text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5'
-                                }`}
-                        >
-                            Customer
-                        </button>
-                        <button
-                            id="pos-tab-summary"
-                            onClick={() => setCartActionTab('summary')}
-                            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${cartActionTab === 'summary'
-                                ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10'
-                                : 'border-transparent text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5'
-                                }`}
-                        >
-                            Summary
-                        </button>
-                        <button
-                            id="pos-tab-payment"
-                            onClick={() => setCartActionTab('payment')}
-                            className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${cartActionTab === 'payment'
-                                ? 'border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-blue-500/10'
-                                : 'border-transparent text-slate-500 dark:text-gray-500 hover:text-slate-700 dark:hover:text-gray-300 hover:bg-slate-50 dark:hover:bg-white/5'
-                                }`}
-                        >
-                            Payment
-                        </button>
-                    </div>
+                    <nav
+                        className="flex border-b border-slate-100 dark:border-white/5 flex-none px-4 mt-4"
+                        role="tablist"
+                        aria-label="Checkout sections"
+                    >
+                        {tabItems.map((tab) => (
+                            <button
+                                key={tab.id}
+                                id={`pos-tab-${tab.id}`}
+                                role="tab"
+                                aria-selected={cartActionTab === tab.id}
+                                aria-controls={`pos-panel-${tab.id}`}
+                                onClick={() => setCartActionTab(tab.id)}
+                                className={`flex-1 py-2.5 text-sm font-medium border-b-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-1 ${cartActionTab === tab.id
+                                    ? 'border-slate-900 dark:border-white text-slate-900 dark:text-white'
+                                    : 'border-transparent text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                                    }`}
+                            >
+                                {tab.label}
+                            </button>
+                        ))}
+                    </nav>
 
-                    <div className="flex-1 overflow-y-auto bg-slate-50/50 dark:bg-white/5 p-4">
+                    <div className="flex-1 overflow-y-auto p-4" role="tabpanel" id={`pos-panel-${cartActionTab}`}>
                         {cart.length > 0 ? (
                             <>
-                                {/* Customer Tab Content */}
+                                {/* Customer Tab */}
                                 {cartActionTab === 'customer' && (
-                                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm">
-                                            <label className="block text-sm font-medium text-slate-900 dark:text-white mb-3">
+                                    <div className="space-y-5">
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
                                                 Select Customer
                                             </label>
                                             <CustomerSelect
@@ -208,22 +198,23 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                         </div>
 
                                         {selectedCustomer && selectedCustomer.storeCredit > 0 && storeSettings.enableStoreCredit && (
-                                            <div className="p-4 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-xl border border-emerald-200 shadow-sm">
+                                            <div className="py-4 border-t border-slate-100 dark:border-white/5">
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-sm font-medium text-emerald-900">Store Credit Available</p>
-                                                        <p className="text-2xl font-bold text-emerald-700 mt-1">
+                                                        <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Store Credit</p>
+                                                        <p className="text-2xl font-light text-emerald-600 dark:text-emerald-400 mt-1">
                                                             {formatCurrency(selectedCustomer.storeCredit, storeSettings)}
                                                         </p>
                                                     </div>
                                                     <button
                                                         onClick={onApplyStoreCredit}
-                                                        className={`px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-95 ${finalAppliedCredit > 0
-                                                            ? 'bg-white text-red-600 border border-red-200 hover:bg-red-50'
-                                                            : 'bg-emerald-600 text-white hover:bg-emerald-700 hover:shadow-emerald-200'
+                                                        aria-label={finalAppliedCredit > 0 ? 'Remove store credit' : 'Apply store credit'}
+                                                        className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 ${finalAppliedCredit > 0
+                                                            ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 focus-visible:ring-red-500'
+                                                            : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 focus-visible:ring-emerald-500'
                                                             }`}
                                                     >
-                                                        {finalAppliedCredit > 0 ? 'Remove Credit' : 'Apply Credit'}
+                                                        {finalAppliedCredit > 0 ? 'Remove' : 'Apply'}
                                                     </button>
                                                 </div>
                                             </div>
@@ -231,180 +222,186 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                     </div>
                                 )}
 
-                                {/* Summary Tab Content */}
+                                {/* Summary Tab */}
                                 {cartActionTab === 'summary' && (
-                                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        <div className="p-4 bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/5">
-                                            <h3 className="font-semibold text-slate-900 dark:text-white">Order Summary</h3>
+                                    <div className="space-y-0">
+                                        <div className="flex justify-between items-center py-3">
+                                            <span className="text-sm text-slate-500 dark:text-slate-400">Subtotal</span>
+                                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200 tabular-nums">{formatCurrency(subtotal, storeSettings)}</span>
                                         </div>
-                                        <div className="p-4 space-y-3">
-                                            <div className="flex justify-between items-center text-slate-600 dark:text-gray-400">
-                                                <span>Subtotal</span>
-                                                <span className="font-mono text-slate-900 dark:text-white">{formatCurrency(subtotal, storeSettings)}</span>
-                                            </div>
 
-                                            <div className="flex justify-between items-center py-2 border-t border-dashed border-slate-200 dark:border-white/10">
-                                                <span className="text-slate-600 dark:text-gray-400">Discount</span>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-sm text-slate-400 dark:text-gray-500">{storeSettings.currency.symbol}</span>
-                                                    <input
-                                                        type="number"
-                                                        value={discount}
-                                                        onChange={(e) => setDiscount(e.target.value)}
-                                                        className="w-28 px-2 py-1 border border-slate-300 dark:border-white/10 rounded text-right text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white dark:bg-slate-700 text-slate-900 dark:text-white"
-                                                        placeholder="0.00"
-                                                        min="0"
-                                                    />
-                                                </div>
+                                        <div className="flex justify-between items-center py-3 border-t border-slate-100 dark:border-white/5">
+                                            <span className="text-sm text-slate-500 dark:text-slate-400">Discount</span>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="text-xs text-slate-300 dark:text-slate-600">{storeSettings.currency.symbol}</span>
+                                                <input
+                                                    type="number"
+                                                    value={discount}
+                                                    onChange={(e) => setDiscount(e.target.value)}
+                                                    aria-label="Discount amount"
+                                                    className="w-24 px-2 py-1.5 bg-transparent border border-slate-200 dark:border-white/10 rounded-lg text-right text-sm font-medium tabular-nums focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all text-slate-800 dark:text-white"
+                                                    placeholder="0.00"
+                                                    min="0"
+                                                />
                                             </div>
+                                        </div>
 
-                                            {finalAppliedCredit > 0 && (
-                                                <div className="flex justify-between items-center py-2 border-t border-dashed border-slate-200 dark:border-white/10">
-                                                    <span className="text-slate-600 dark:text-gray-400">Store Credit</span>
-                                                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-medium">-{formatCurrency(finalAppliedCredit, storeSettings)}</span>
-                                                </div>
-                                            )}
-
-                                            <div className="flex justify-between items-center py-2 border-t border-dashed border-slate-200 dark:border-white/10">
-                                                <span className="text-slate-600 dark:text-gray-400">Tax ({storeSettings.taxRate}%)</span>
-                                                <span className="font-mono text-slate-900 dark:text-white">{formatCurrency(taxAmount, storeSettings)}</span>
+                                        {finalAppliedCredit > 0 && (
+                                            <div className="flex justify-between items-center py-3 border-t border-slate-100 dark:border-white/5">
+                                                <span className="text-sm text-slate-500 dark:text-slate-400">Store Credit</span>
+                                                <span className="text-sm font-medium text-emerald-600 dark:text-emerald-400 tabular-nums">−{formatCurrency(finalAppliedCredit, storeSettings)}</span>
                                             </div>
+                                        )}
 
-                                            <div className="flex justify-between items-center pt-3 border-t-2 border-slate-100 dark:border-white/5 mt-2">
-                                                <span className="text-lg font-bold text-slate-900 dark:text-white">Total</span>
-                                                <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(total, storeSettings)}</span>
-                                            </div>
+                                        <div className="flex justify-between items-center py-3 border-t border-slate-100 dark:border-white/5">
+                                            <span className="text-sm text-slate-500 dark:text-slate-400">Tax ({storeSettings.taxRate}%)</span>
+                                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200 tabular-nums">{formatCurrency(taxAmount, storeSettings)}</span>
+                                        </div>
+
+                                        <div className="flex justify-between items-center pt-4 mt-2 border-t border-slate-200 dark:border-white/10">
+                                            <span className="text-base font-semibold text-slate-900 dark:text-white">Total</span>
+                                            <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{formatCurrency(total, storeSettings)}</span>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Payment Tab Content */}
+                                {/* Payment Tab */}
                                 {cartActionTab === 'payment' && (
-                                    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                        {/* Big Total Display */}
-                                        <div className="text-center py-2 bg-gradient-to-br flex justify-between px-4 m-auto from-blue-500 to-indigo-700 rounded-xl shadow-lg shadow-blue-500/20 text-white">
-                                            <p className="text-blue-100 text-sm font-medium uppercase tracking-wider mb-1">Total to Pay</p>
-                                            <p className="text-3xl font-bold tracking-tight">{formatCurrency(total, storeSettings)}</p>
+                                    <div className="space-y-5">
+                                        {/* Total Display */}
+                                        <div className="text-center py-3">
+                                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Total</p>
+                                            <p className="text-3xl font-bold text-slate-900 dark:text-white tabular-nums tracking-tight">{formatCurrency(total, storeSettings)}</p>
                                         </div>
 
-                                        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-white/10 shadow-sm space-y-4">
-                                            <div>
-                                                <label className="block text-xs font-semibold text-slate-500 dark:text-gray-500 uppercase tracking-wider mb-2">
-                                                    Payment Method
-                                                </label>
-                                                <div className="relative group">
-                                                    <select
-                                                        value={selectedPaymentMethod}
-                                                        onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                                                        className="w-full pl-10 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-lg text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600"
-                                                    >
-                                                        {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
-                                                            ? storeSettings.paymentMethods.map(method => (
-                                                                <option key={method.id} value={method.name}>
-                                                                    {method.name}
-                                                                </option>
-                                                            ))
-                                                            : [
-                                                                { id: 'pm_cash', name: 'Cash' },
-                                                                { id: 'pm_card', name: 'Card' }
-                                                            ].map(method => (
-                                                                <option key={method.id} value={method.name}>
-                                                                    {method.name}
-                                                                </option>
-                                                            ))
-                                                        }
-                                                    </select>
-                                                    <CreditCardIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
-                                                    <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 pointer-events-none transition-colors" />
-                                                </div>
+                                        {/* Payment Method */}
+                                        <div>
+                                            <label htmlFor="payment-method-select" className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+                                                Payment Method
+                                            </label>
+                                            <div className="relative">
+                                                <select
+                                                    id="payment-method-select"
+                                                    value={selectedPaymentMethod}
+                                                    onChange={(e) => setSelectedPaymentMethod(e.target.value)}
+                                                    className="w-full pl-9 pr-9 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700"
+                                                >
+                                                    {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
+                                                        ? storeSettings.paymentMethods.map(method => (
+                                                            <option key={method.id} value={method.name}>
+                                                                {method.name}
+                                                            </option>
+                                                        ))
+                                                        : [
+                                                            { id: 'pm_cash', name: 'Cash' },
+                                                            { id: 'pm_card', name: 'Card' }
+                                                        ].map(method => (
+                                                            <option key={method.id} value={method.name}>
+                                                                {method.name}
+                                                            </option>
+                                                        ))
+                                                    }
+                                                </select>
+                                                <CreditCardIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                                                <ChevronDownIcon className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                             </div>
-                                            {isMobileMoney && (
-                                                <div className="animate-in fade-in zoom-in-95 duration-200">
-                                                    <label className="block text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                                                        Payer Mobile Number
-                                                    </label>
+                                        </div>
+
+                                        {/* Mobile Money Number */}
+                                        {isMobileMoney && (
+                                            <div>
+                                                <label htmlFor="mobile-money-input" className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+                                                    Payer Mobile Number
+                                                </label>
+                                                <input
+                                                    id="mobile-money-input"
+                                                    type="text"
+                                                    value={mobileMoneyNumber}
+                                                    onChange={(e) => setMobileMoneyNumber(e.target.value)}
+                                                    className="w-full px-3 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg text-sm font-medium text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                    placeholder="e.g. 0961111111"
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Cash Received */}
+                                        {isCashMethod && (
+                                            <div>
+                                                <label htmlFor="cash-received-input" className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
+                                                    Cash Received
+                                                </label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none">
+                                                        {storeSettings.currency.symbol}
+                                                    </span>
                                                     <input
-                                                        type="text"
-                                                        value={mobileMoneyNumber}
-                                                        onChange={(e) => setMobileMoneyNumber(e.target.value)}
-                                                        className="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-lg text-lg font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                                                        placeholder="e.g. 0961111111"
+                                                        id="cash-received-input"
+                                                        ref={cashInputRef}
+                                                        type="number"
+                                                        value={cashReceived}
+                                                        onChange={(e) => setCashReceived(e.target.value)}
+                                                        className="w-full pl-9 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg text-right text-lg font-semibold tabular-nums text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                                                        placeholder="0.00"
                                                     />
                                                 </div>
-                                            )}
-
-                                            {isCashMethod && (
-                                                <div className="animate-in fade-in zoom-in-95 duration-200">
-                                                    <label className="block text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider mb-2">
-                                                        Cash Received
-                                                    </label>
-                                                    <div className="relative group">
-                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-lg font-medium text-slate-400 group-focus-within:text-blue-500 transition-colors">
-                                                            {storeSettings.currency.symbol}
+                                                {changeDue > 0 && (
+                                                    <div className="flex justify-between items-center mt-3 py-2.5 px-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg">
+                                                        <span className="text-sm text-emerald-700 dark:text-emerald-400">Change Due</span>
+                                                        <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400 tabular-nums">
+                                                            {formatCurrency(changeDue, storeSettings)}
                                                         </span>
-                                                        <input
-                                                            ref={cashInputRef}
-                                                            type="number"
-                                                            value={cashReceived}
-                                                            onChange={(e) => setCashReceived(e.target.value)}
-                                                            className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-white/10 rounded-lg text-right text-xl font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all bg-white dark:bg-slate-700"
-                                                            placeholder="0.00"
-                                                        />
                                                     </div>
-                                                    {changeDue > 0 && (
-                                                        <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg border border-emerald-100 dark:border-emerald-500/20 flex justify-between items-center animate-in slide-in-from-top-2">
-                                                            <span className="text-sm font-medium text-emerald-800 dark:text-emerald-400">Change Due</span>
-                                                            <span className="text-xl font-bold text-emerald-600 dark:text-emerald-500">
-                                                                {formatCurrency(changeDue, storeSettings)}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Primary Actions */}
-                                        <div className="grid grid-cols-2 gap-3 pt-2">
-                                            <button
-                                                id="pos-hold-btn"
-                                                onClick={onHoldSale}
-                                                className="py-3.5 px-4 bg-white dark:bg-slate-800 border-2 border-amber-100 dark:border-amber-500/20 text-amber-700 dark:text-amber-500 font-bold rounded-xl hover:bg-amber-50 dark:hover:bg-amber-500/10 hover:border-amber-200 transition-all flex items-center justify-center gap-2 active:scale-95"
-                                            >
-                                                <ClockIcon className="w-5 h-5" />
-                                                Hold
-                                            </button>
-                                            <button
-                                                id="pos-pay-btn"
-                                                onClick={() => processTransaction('paid')}
-                                                disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
-                                                className="py-3.5 px-4 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-600/40 disabled:opacity-50 disabled:shadow-none disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-95 transform"
-                                            >
-                                                {isProcessing ? (
-                                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                                ) : (
-                                                    <CreditCardIcon className="w-5 h-5" />
                                                 )}
-                                                <span className="truncate">
-                                                    {isProcessing ? 'Processing' : `Pay ${formatCurrency(total, storeSettings)}`}
-                                                </span>
+                                            </div>
+                                        )}
+
+                                        {/* Action Buttons */}
+                                        <div className="pt-2 space-y-2">
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    id="pos-hold-btn"
+                                                    onClick={onHoldSale}
+                                                    aria-label="Hold this sale for later"
+                                                    className="py-3 px-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 font-semibold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center justify-center gap-2 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+                                                >
+                                                    <ClockIcon className="w-4 h-4" />
+                                                    <span className="text-sm">Hold</span>
+                                                </button>
+                                                <button
+                                                    id="pos-pay-btn"
+                                                    onClick={() => processTransaction('paid')}
+                                                    disabled={total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing}
+                                                    aria-label={`Pay ${formatCurrency(total, storeSettings)}`}
+                                                    className="py-3 px-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-semibold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.97] focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-900 dark:focus-visible:ring-white"
+                                                >
+                                                    {isProcessing ? (
+                                                        <div className="w-4 h-4 border-2 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin" />
+                                                    ) : (
+                                                        <CreditCardIcon className="w-4 h-4" />
+                                                    )}
+                                                    <span className="text-sm truncate">
+                                                        {isProcessing ? 'Processing…' : `Pay ${formatCurrency(total, storeSettings)}`}
+                                                    </span>
+                                                </button>
+                                            </div>
+
+                                            <button
+                                                onClick={() => processTransaction('invoice')}
+                                                disabled={!selectedCustomer || isProcessing}
+                                                aria-label="Create an invoice for this sale"
+                                                className="w-full py-2.5 text-sm text-slate-500 dark:text-slate-400 font-medium hover:text-slate-700 dark:hover:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 rounded-lg"
+                                            >
+                                                <DocumentPlusIcon className="w-4 h-4" />
+                                                Invoice
                                             </button>
                                         </div>
-
-                                        <button
-                                            onClick={() => processTransaction('invoice')}
-                                            disabled={!selectedCustomer || isProcessing}
-                                            className="w-full py-3 px-4 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-gray-400 font-semibold rounded-xl border border-slate-200 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 transition-all flex items-center justify-center gap-2"
-                                        >
-                                            <DocumentPlusIcon className="w-5 h-5" />
-                                            Charge to Account (Invoice)
-                                        </button>
                                     </div>
                                 )}
                             </>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-400 dark:text-gray-600">
-                                <ShoppingCartIcon className="w-12 h-12 mb-2 opacity-20" />
-                                <p className="text-sm">Cart is empty</p>
+                            <div className="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-700">
+                                <ShoppingCartIcon className="w-10 h-10 mb-2" />
+                                <p className="text-sm text-slate-400 dark:text-slate-600">Cart is empty</p>
                             </div>
                         )}
                     </div>

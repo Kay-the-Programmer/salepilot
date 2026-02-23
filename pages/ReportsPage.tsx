@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { StoreSettings, User, Announcement } from '../types';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -17,6 +17,8 @@ import XMarkIcon from '../components/icons/XMarkIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
 import BellAlertIcon from '../components/icons/BellAlertIcon';
 import UserCircleIcon from '../components/icons/UserCircleIcon';
+import ArrowDownTrayIcon from '../components/icons/ArrowDownTrayIcon';
+import ChevronDownIcon from '../components/icons/ChevronDownIcon';
 
 // Components
 import { OverviewTab } from '../components/reports/OverviewTab';
@@ -25,7 +27,6 @@ import { InventoryTab } from '../components/reports/InventoryTab';
 import { CustomersTab } from '../components/reports/CustomersTab';
 import { CashflowTab } from '../components/reports/CashflowTab';
 import { PersonalUseTab } from '../components/reports/PersonalUseTab';
-
 
 interface ReportsPageProps {
     storeSettings: StoreSettings;
@@ -50,6 +51,15 @@ const getGreeting = () => {
     return 'Good night';
 };
 
+const TABS = [
+    { id: 'overview', label: 'Overview', Icon: HomeIcon },
+    { id: 'sales', label: 'Sales', Icon: CurrencyDollarIcon },
+    { id: 'inventory', label: 'Inventory', Icon: ArchiveBoxIcon },
+    { id: 'customers', label: 'Customers', Icon: UsersIcon },
+    { id: 'cashflow', label: 'Cashflow', Icon: TrendingUpIcon },
+    { id: 'personal-use', label: 'Personal', Icon: ReceiptTaxIcon },
+];
+
 const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user, announcements = [], onRefreshNotifications }) => {
     const navigate = useNavigate();
     const [startDate, setStartDate] = useState(() => {
@@ -64,11 +74,45 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
     const filterMenuRef = useRef<HTMLDivElement>(null);
     const [showFilters, setShowFilters] = useState(false);
     const [datePreset, setDatePreset] = useState<'7d' | '30d' | 'month' | 'custom'>('30d');
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [recentOrdersTab, setRecentOrdersTab] = useState<'all' | 'online' | 'pos'>('all');
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const notificationsRef = useRef<HTMLDivElement>(null);
+    const tabBarRef = useRef<HTMLDivElement>(null);
+    const contentRef = useRef<HTMLDivElement>(null);
 
+    // Sales Pagination State
+    const [dailyPage, setDailyPage] = useState(1);
+    const [dailyPageSize, setDailyPageSize] = useState(10);
+
+    // Keyboard navigation for tabs (arrow keys)
+    const handleTabKeyDown = useCallback((e: React.KeyboardEvent) => {
+        const tabIds = TABS.map(t => t.id);
+        const currentIndex = tabIds.indexOf(activeTab);
+        let nextIndex = -1;
+
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+            e.preventDefault();
+            nextIndex = (currentIndex + 1) % tabIds.length;
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+            e.preventDefault();
+            nextIndex = (currentIndex - 1 + tabIds.length) % tabIds.length;
+        } else if (e.key === 'Home') {
+            e.preventDefault();
+            nextIndex = 0;
+        } else if (e.key === 'End') {
+            e.preventDefault();
+            nextIndex = tabIds.length - 1;
+        }
+
+        if (nextIndex !== -1) {
+            const nextTabId = tabIds[nextIndex];
+            setActiveTab(nextTabId);
+            const nextTabElement = document.getElementById(`tab-${nextTabId}`);
+            nextTabElement?.focus();
+        }
+    }, [activeTab]);
+
+    // Announcements logic
     const unreadCount = announcements.filter(n => !n.isRead).length;
     const sortedAnnouncements = [...announcements].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -76,8 +120,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
 
     const handleMarkAsRead = async (id: string) => {
         try {
-            await api.patch(`/notifications/${id}/read`, {});
-            onRefreshNotifications?.();
+            await api.post(`/notifications/${id}/read`, {});
+            if (onRefreshNotifications) await onRefreshNotifications();
         } catch (error) {
             console.error('Failed to mark notification as read:', error);
         }
@@ -85,58 +129,54 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
 
     const handleMarkAllAsRead = async () => {
         try {
-            const unread = announcements.filter(n => !n.isRead);
-            await Promise.all(unread.map(n => api.patch(`/notifications/${n.id}/read`, {})));
-            onRefreshNotifications?.();
+            await api.post('/notifications/read-all', {});
+            if (onRefreshNotifications) await onRefreshNotifications();
+            setIsNotificationsOpen(false);
         } catch (error) {
             console.error('Failed to mark all as read:', error);
         }
     };
 
-    const [reportData, setReportData] = useState<any | null>(null);
-    const [dailySales, setDailySales] = useState<any[] | null>(null);
-    const [dailyPage, setDailyPage] = useState<number>(1);
-    const [dailyPageSize, setDailyPageSize] = useState<number>(5);
-    const [personalUse, setPersonalUse] = useState<any[] | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    const tabs = [
-        { id: 'overview', label: 'Overview', icon: <HomeIcon className="w-4 h-4" /> },
-        { id: 'sales', label: 'Sales', icon: <CurrencyDollarIcon className="w-4 h-4" /> },
-        { id: 'inventory', label: 'Inventory', icon: <ArchiveBoxIcon className="w-4 h-4" /> },
-        { id: 'customers', label: 'Customers', icon: <UsersIcon className="w-4 h-4" /> },
-        { id: 'cashflow', label: 'Cashflow', icon: <TrendingUpIcon className="w-4 h-4" /> },
-        { id: 'personal-use', label: 'Personal', icon: <ReceiptTaxIcon className="w-4 h-4" /> },
-    ];
-
+    // Auto-scroll tab into view
     useEffect(() => {
+        if (activeTab && tabBarRef.current) {
+            const activeElement = document.getElementById(`tab-${activeTab}`);
+            if (activeElement) {
+                activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
         localStorage.setItem('reports.activeTab', activeTab);
     }, [activeTab]);
 
-    useEffect(() => {
-        const fetchReportData = async () => {
-            setIsLoading(true);
-            setError(null);
-            try {
-                const [dash, daily, pu] = await Promise.all([
-                    api.get<any>(`/reports/dashboard?startDate=${startDate}&endDate=${endDate}`),
-                    api.get<any>(`/reports/daily-sales?startDate=${startDate}&endDate=${endDate}`),
-                    api.get<any>(`/reports/personal-use?startDate=${startDate}&endDate=${endDate}`),
-                ]);
-                setReportData(dash);
-                setDailySales(daily.daily || []);
-                setPersonalUse(pu.items || []);
-            } catch (err: any) {
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
-            }
-        };
+    // Data fetching logic
+    const [reportData, setReportData] = useState<any | null>(null);
+    const [dailySales, setDailySales] = useState<any[] | null>(null);
+    const [personalUse, setPersonalUse] = useState<any[] | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-        fetchReportData();
+    const fetchData = useCallback(async () => {
+        setIsRefreshing(true);
+        try {
+            const [statsRes, salesRes, personalRes] = await Promise.all([
+                api.get(`/reports/dashboard?startDate=${startDate}&endDate=${endDate}`),
+                api.get(`/reports/daily-sales?startDate=${startDate}&endDate=${endDate}`),
+                api.get(`/reports/personal-use?startDate=${startDate}&endDate=${endDate}`)
+            ]);
+            setReportData(statsRes);
+            setDailySales(salesRes.dailySales || []);
+            setPersonalUse(personalRes.personalUse || []);
+        } catch (err) {
+            console.error("Failed to fetch report data", err);
+        } finally {
+            setIsRefreshing(false);
+        }
     }, [startDate, endDate]);
 
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    // Close menus on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
@@ -145,147 +185,99 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
             if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
                 setShowFilters(false);
             }
+            if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
+                setIsNotificationsOpen(false);
+            }
         };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const setDateRange = (days: number, preset: '7d' | '30d' | 'month') => {
-        const end = new Date();
-        const start = new Date();
-        start.setDate(end.getDate() - (days - 1));
-        setStartDate(toDateInputString(start));
-        setEndDate(toDateInputString(end));
-        setDatePreset(preset);
-    };
-
-    const setThisMonth = () => {
-        const end = new Date();
-        const start = new Date(end.getFullYear(), end.getMonth(), 1);
-        setStartDate(toDateInputString(start));
-        setEndDate(toDateInputString(end));
-        setDatePreset('month');
-    }
-
-
-
-
+    // Export functionality
     const handleExportCSV = () => {
-        const dateString = `${startDate}_to_${endDate}`;
-        let headers: string[] = [];
-        let rows: any[][] = [];
+        if (!dailySales) return;
+        const headers = ['Date', 'Revenue', 'Profit', 'Transactions'];
+        const rows = dailySales.map(day => [
+            day.date,
+            day.revenue,
+            day.profit,
+            day.transactions
+        ]);
 
-        if (activeTab === 'sales' && reportData?.sales) {
-            headers = ['Product Name', 'Units Sold', 'Total Revenue'];
-            rows = reportData.sales.topProductsByRevenue.map((p: any) => [p.name, p.quantity, p.revenue]);
-        }
+        const csvContent = [
+            headers.join(','),
+            ...rows.map(row => row.join(','))
+        ].join('\n');
 
-        if (headers.length === 0) {
-            alert("No data to export for this tab.");
-            return;
-        }
-
-        const escapeCsvCell = (cell: any) => {
-            if (cell == null) return '';
-            const cellStr = String(cell);
-            if (cellStr.includes(',') || cellStr.includes('"') || cellStr.includes('\n')) {
-                return `"${cellStr.replace(/"/g, '""')}"`;
-            }
-            return cellStr;
-        };
-
-        const csvContent = "data:text/csv;charset=utf-8,"
-            + [headers, ...rows].map(e => e.map(escapeCsvCell).join(",")).join("\n");
-
-        const link = document.createElement("a");
-        link.setAttribute("href", encodeURI(csvContent));
-        link.setAttribute("download", `${activeTab}_report_${dateString}.csv`);
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `sales_report_${startDate}_to_${endDate}.csv`);
+        link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
 
     const handleExportPDF = () => {
-        const doc = new jsPDF();
-        const dateString = `${new Date(startDate).toLocaleDateString()} to ${new Date(endDate).toLocaleDateString()}`;
+        if (!reportData || !dailySales) return;
+        const doc = new jsPDF() as any;
 
-        doc.setFontSize(18);
-        doc.text(`${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Report`, 14, 22);
+        doc.setFontSize(20);
+        doc.text('Sales Report', 14, 22);
         doc.setFontSize(11);
-        doc.setTextColor(100);
-        doc.text(`Date Range: ${dateString}`, 14, 29);
+        doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
 
-        if (activeTab === 'sales' && reportData?.sales) {
-            (doc as any).autoTable({
-                startY: 35,
-                body: [
-                    [`Revenue: ${formatCurrency(reportData.sales.totalRevenue, storeSettings)}`, `Gross Profit: ${formatCurrency(reportData.sales.totalProfit, storeSettings)}`],
-                    [`Transactions: ${reportData.sales.totalTransactions}`, `Avg. Sale: ${formatCurrency(reportData.sales.avgSaleValue, storeSettings)}`],
-                ],
-                theme: 'plain',
-            });
-            (doc as any).autoTable({
-                head: [['Top Products by Revenue', 'Revenue']],
-                body: reportData.sales.topProductsByRevenue.map((p: any) => [p.name, formatCurrency(p.revenue, storeSettings)]),
-                startY: (doc as any).lastAutoTable.finalY + 10,
-            });
+        const tableColumn = ["Date", "Revenue", "Profit", "Transactions"];
+        const tableRows = dailySales.map(day => [
+            day.date,
+            formatCurrency(day.revenue, storeSettings),
+            formatCurrency(day.profit, storeSettings),
+            day.transactions
+        ]);
+
+        doc.autoTable({
+            head: [tableColumn],
+            body: tableRows,
+            startY: 40,
+        });
+
+        doc.save(`sales_report_${startDate}_to_${endDate}.pdf`);
+    };
+
+    const handleDatePreset = (preset: '7d' | '30d' | 'month') => {
+        setDatePreset(preset);
+        const end = new Date();
+        const start = new Date();
+
+        if (preset === '7d') {
+            start.setDate(end.getDate() - 6);
+        } else if (preset === '30d') {
+            start.setDate(end.getDate() - 29);
+        } else if (preset === 'month') {
+            start.setDate(1);
         }
 
-        doc.save(`${activeTab}_report_${dateString}.pdf`);
+        setStartDate(toDateInputString(start));
+        setEndDate(toDateInputString(end));
     };
 
     const renderContent = () => {
-        if (isLoading) {
-            return (
-                <div className="flex items-center justify-center py-20">
-                    <div className="text-center">
-                        <div className="w-16 h-16 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin mx-auto mb-4"></div>
-                        <div className="text-gray-600">Loading report data...</div>
-                    </div>
-                </div>
-            );
-        }
-
-        if (error) {
-            return (
-                <div className="p-6 text-center">
-                    <div className="text-red-500 mb-2">⚠️ Error loading report</div>
-                    <div className="text-gray-600 text-sm mb-4">{error}</div>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium"
-                    >
-                        Retry
-                    </button>
-                </div>
-            );
-        }
-
-        if (!reportData) {
-            return (
-                <div className="p-6 text-center text-gray-500">
-                    No data available for the selected period.
-                </div>
-            );
-        }
+        if (!reportData) return <div className="p-8 text-center text-slate-500">Loading data...</div>;
 
         switch (activeTab) {
-            case 'overview': {
-                const userJson = localStorage.getItem('salePilotUser');
-                const userName = userJson ? JSON.parse(userJson).name : undefined;
-
+            case 'overview':
                 return (
                     <OverviewTab
                         reportData={reportData}
                         storeSettings={storeSettings}
-                        userName={userName}
+                        userName={user?.name}
                         recentOrdersTab={recentOrdersTab}
                         setRecentOrdersTab={setRecentOrdersTab}
                     />
                 );
-            }
             case 'sales':
                 return (
                     <SalesTab
@@ -298,7 +290,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         setDailyPageSize={setDailyPageSize}
                     />
                 );
-
             case 'inventory':
                 return (
                     <InventoryTab
@@ -306,7 +297,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         storeSettings={storeSettings}
                     />
                 );
-
             case 'customers':
                 return (
                     <CustomersTab
@@ -314,7 +304,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         storeSettings={storeSettings}
                     />
                 );
-
             case 'cashflow':
                 return (
                     <CashflowTab
@@ -323,7 +312,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         onClose={onClose}
                     />
                 );
-
             case 'personal-use':
                 return (
                     <PersonalUseTab
@@ -331,385 +319,222 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         storeSettings={storeSettings}
                     />
                 );
-
             default:
                 return null;
         }
     };
 
+    const datePresetLabel = datePreset === '7d' ? '7D' : datePreset === '30d' ? '30D' : datePreset === 'month' ? 'Mo' : 'Custom';
+
     return (
-        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-900 overflow-hidden relative">
-            {/* Header */}
-            <header className="flex-none bg-white glass-effect px-4 md:px-8 py-4 flex items-center justify-between sticky top-0 z-40">
-                <div className="flex items-center gap-4">
-                    <div>
-                        <h1 className="text-xl md:text-2xl font-bold text-slate-700 dark:text-white leading-none">{getGreeting()} {user?.name?.split(' ')[0] || "User"}</h1>
-                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1  tracking-wider font-semibold">Here's what's happening in your store</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-3">
-                    {/* Desktop Tabs Component (Hidden on mobile) */}
-                    <div className="hidden min-[1100px]:flex items-center">
-                        <div className="relative bg-gray-200  rounded-2xl  dark:bg-slate-800/50 p-1 backdrop-blur-sm">
-                            <div className="flex items-center gap-1">
-                                {tabs.map((tab) => (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`
-                                            flex items-center gap-2
-                                            shrink-0
-                                            px-4 
-                                            py-2
-                                            rounded-xl
-                                            text-sm font-bold
-                                            whitespace-nowrap
-                                            transition-all duration-200 active:scale-95
-                                            ${activeTab === tab.id
-                                                ? 'bg-slate-50 dark:bg-slate-700 dark:text-slate-50  text-slate-700 shadow-md'
-                                                : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/5'
-                                            }
-                                        `}
-                                    >
-                                        <span className="flex items-center justify-center opacity-70">
-                                            {tab.icon}
-                                        </span>
-                                        <span>{tab.label}</span>
-                                    </button>
-                                ))}
-                            </div>
+        <div className="flex flex-col h-[100dvh] bg-mesh-light font-google overflow-hidden relative">
+            {/* Skip to content link for accessibility */}
+            <a
+                href="#report-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none"
+            >
+                Skip to report content
+            </a>
+
+            {/* Header — compact on mobile */}
+            <header className="flex-none liquid-glass-header sticky top-0 z-40" role="banner">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 md:py-6 flex items-center justify-between">
+                    <div className="flex items-center gap-4 min-w-0">
+                        <div className="min-w-0">
+                            <h1 className="text-xl md:text-3xl font-bold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                                {getGreeting()}, {user?.name?.split(' ')[0] || "User"}
+                            </h1>
+                            <p className="text-[11px] md:text-sm text-slate-500 dark:text-slate-400 mt-1 tracking-wide font-medium truncate flex items-center gap-2">
+                                <CalendarIcon className="w-3.5 h-3.5" />
+                                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                            </p>
                         </div>
                     </div>
-
-                    {/* Notifications Button */}
-                    <div className="relative" ref={notificationsRef}>
+                    <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
+                        {/* Mobile Date Filter */}
                         <button
-                            onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                            className="relative p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-90"
-                            aria-label="Notifications"
+                            onClick={() => setShowFilters(true)}
+                            className="flex md:hidden items-center gap-1.5 p-2 px-3 rounded-full liquid-glass-pill transition-all duration-200 active:scale-90"
+                            aria-label={`Date filter: ${datePresetLabel}`}
                         >
-                            <BellAlertIcon className="w-5 h-5" />
-                            {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full animate-pulse shadow-lg shadow-red-500/30">
-                                    {unreadCount > 99 ? '99+' : unreadCount}
-                                </span>
-                            )}
+                            <CalendarIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">{datePresetLabel}</span>
                         </button>
-                    </div>
 
-                    {/* Profile Icon */}
-                    <button
-                        onClick={() => navigate('/profile')}
-                        className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-90"
-                        aria-label="Profile"
-                    >
-                        <UserCircleIcon className="w-5 h-5" />
-                    </button>
+                        <div className="relative hidden md:block" ref={notificationsRef}>
+                            <button
+                                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                                className="relative p-3 rounded-full liquid-glass-pill transition-all duration-200 hover:shadow-lg active:scale-95 group"
+                                aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
+                                aria-expanded={isNotificationsOpen}
+                                aria-haspopup="true"
+                            >
+                                <BellAlertIcon className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-blue-600 transition-colors" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-0 right-0 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-blue-600 rounded-full animate-pulse shadow-md shadow-blue-500/40" aria-hidden="true">
+                                        {unreadCount > 99 ? '99+' : unreadCount}
+                                    </span>
+                                )}
+                            </button>
+                        </div>
+
+                        <button
+                            onClick={() => navigate('/profile')}
+                            className="hidden md:flex p-3 rounded-full liquid-glass-pill transition-all duration-200 hover:shadow-lg active:scale-95 group"
+                            aria-label="Go to profile"
+                        >
+                            <UserCircleIcon className="w-5 h-5 text-slate-600 dark:text-slate-300 group-hover:text-blue-600 transition-colors" />
+                        </button>
+
+                        <div className="relative hidden md:block" ref={exportMenuRef}>
+                            <button
+                                onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
+                                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm tracking-wide transition-all duration-300 active:scale-95 ${isExportMenuOpen
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                    : 'liquid-glass-pill hover:shadow-md'
+                                    }`}
+                                aria-expanded={isExportMenuOpen}
+                                aria-haspopup="true"
+                            >
+                                <ArrowDownTrayIcon className={`w-4.5 h-4.5 ${isExportMenuOpen ? 'text-white' : 'text-slate-600 dark:text-slate-300'}`} />
+                                <span>Export</span>
+                                <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-300 ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {isExportMenuOpen && (
+                                <div className="absolute top-full right-0 mt-3 w-48 liquid-glass rounded-2xl overflow-hidden shadow-2xl animate-notification-slide-down border border-white/20 dark:border-white/10 z-50">
+                                    <button
+                                        onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }}
+                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors flex items-center gap-3"
+                                    >
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                        Export as CSV
+                                    </button>
+                                    <button
+                                        onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }}
+                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors border-t border-slate-100 dark:border-white/5 flex items-center gap-3"
+                                    >
+                                        <div className="w-2 h-2 rounded-full bg-rose-500"></div>
+                                        Export as PDF
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </header>
 
-            {/* Mobile Tab Scroller (Visible on mobile/tablet) */}
-            <div className="flex-none min-[1100px]:hidden bg-white/80 rounded-full backdrop-blur-md dark:bg-slate-800/10 sticky top-[72px] z-30">
-                <div className="relative">
-                    <div className="flex items-center overflow-x-auto gap-2 px-4 py-3 scrollbar-hide mask-fade-edges">
-                        {tabs.map((tab) => {
+            {/* Universal Google-style Pill Tab Bar */}
+            <nav
+                ref={tabBarRef}
+                className="flex-none liquid-glass sticky top-[80px] md:top-[90px] z-30 transition-all duration-300"
+                role="tablist"
+                aria-label="Report sections"
+                onKeyDown={handleTabKeyDown}
+            >
+                <div className="max-w-[1400px] mx-auto px-3 md:px-8 py-2 md:py-3 flex items-center justify-between">
+                    <div className="flex overflow-x-auto scrollbar-hide gap-2 snap-x snap-mandatory pb-1 max-w-full">
+                        {TABS.map((tab) => {
                             const isActive = activeTab === tab.id;
+                            const Icon = tab.Icon;
                             return (
                                 <button
                                     key={tab.id}
+                                    role="tab"
+                                    id={`tab-${tab.id}`}
+                                    aria-selected={isActive}
+                                    aria-controls={`tabpanel-${tab.id}`}
+                                    tabIndex={isActive ? 0 : -1}
                                     onClick={() => setActiveTab(tab.id)}
-                                    className={`
-                                        flex items-center gap-2
-                                        shrink-0
-                                        px-4 py-2
-                                        rounded-3xl
-                                        text-sm font-bold
-                                        whitespace-nowrap
-                                        transition-all duration-200 active:scale-95
-                                        ${isActive
-                                            ? 'bg-blue-600/70 dark:bg-slate-700  text-white shadow-lg shadow-slate-500/20'
-                                            : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 border border-transparent'
-                                        }
-                                    `}
+                                    className={`flex-shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 md:py-3 rounded-full text-[13px] md:text-sm font-bold tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500 liquid-glass-pill transition-all duration-200 ${isActive ? 'active scale-105 shadow-md shadow-blue-500/20' : 'hover:scale-102'}`}
                                 >
-                                    {isActive && React.cloneElement(tab.icon as React.ReactElement<any>, { className: "w-4 h-4" })}
+                                    <Icon className={isActive ? 'w-4.5 h-4.5' : 'w-4 h-4'} />
                                     <span>{tab.label}</span>
                                 </button>
                             );
                         })}
                     </div>
-                </div>
-            </div>
 
-            {/* Mobile Grid Menu Popup */}
-            {isMobileMenuOpen && (
-                <div className="fixed inset-0 z-[100] md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
-                    <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md animate-fade-in" />
-
-                    <div
-                        className="absolute top-[80px] left-4 right-4 bg-white dark:bg-slate-800 rounded-[2.5rem] shadow-2xl p-6 border border-slate-200 dark:border-white/10 animate-fade-in-up overflow-hidden"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <div className="flex items-center justify-between mb-6 px-2">
-                            <h3 className="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Quick Access</h3>
-                            <button
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400"
-                            >
-                                <XMarkIcon className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        <div className="grid grid-cols-3 gap-3">
-                            {tabs.map((tab) => {
-                                const isActive = activeTab === tab.id;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        onClick={() => {
-                                            setActiveTab(tab.id);
-                                            setIsMobileMenuOpen(false);
-                                        }}
-                                        className={`flex flex-col items-center justify-center p-4 rounded-3xl transition-all active:scale-95 group ${isActive
-                                            ? 'bg-blue-600 text-white shadow-xl shadow-blue-500/30'
-                                            : 'bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10'
-                                            }`}
-                                    >
-                                        <div className={`mb-3 p-3 rounded-2xl transition-transform group-hover:scale-110 ${isActive ? 'bg-white/20' : 'bg-white dark:bg-slate-800 shadow-sm'}`}>
-                                            {React.cloneElement(tab.icon as React.ReactElement<any>, { className: "w-6 h-6" })}
-                                        </div>
-                                        <span className="text-[10px] font-black uppercase tracking-widest">{tab.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-500/10 rounded-2xl border border-blue-100 dark:border-blue-400/20">
-                            <p className="text-blue-600 dark:text-blue-400 text-xs font-bold text-center">
-                                Select a report to view detailed analytics and performance metrics for your business.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Notifications Modal */}
-            {isNotificationsOpen && (
-                <div className="fixed inset-0 z-[100]" onClick={() => setIsNotificationsOpen(false)}>
-                    <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm animate-fade-in" />
-                    <div
-                        className="absolute top-[70px] right-4 md:right-8 w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden animate-notification-slide-down"
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {/* Modal Header */}
-                        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-white/10">
-                            <div className="flex items-center gap-2">
-                                <h3 className="text-lg font-bold text-slate-800 dark:text-white">Notifications</h3>
-                                {unreadCount > 0 && (
-                                    <span className="px-2 py-0.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 rounded-full">
-                                        {unreadCount} new
-                                    </span>
-                                )}
-                            </div>
-                            <div className="flex items-center gap-2">
-                                {unreadCount > 0 && (
-                                    <button
-                                        onClick={handleMarkAllAsRead}
-                                        className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
-                                    >
-                                        Mark all read
-                                    </button>
-                                )}
+                    <div className="hidden md:flex items-center gap-3 border-l border-slate-200 dark:border-white/10 pl-6 ml-4">
+                        <div className="flex bg-slate-100/50 dark:bg-white/5 p-1 rounded-full border border-slate-200 dark:border-white/10">
+                            {(['7d', '30d', 'month'] as const).map((preset) => (
                                 <button
-                                    onClick={() => setIsNotificationsOpen(false)}
-                                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/20 transition-all active:scale-90"
+                                    key={preset}
+                                    onClick={() => handleDatePreset(preset)}
+                                    className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 ${datePreset === preset
+                                        ? 'bg-white dark:bg-slate-800 text-blue-600 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                                        }`}
                                 >
-                                    <XMarkIcon className="w-4 h-4" />
+                                    {preset === '7d' ? '7D' : preset === '30d' ? '30D' : 'This Month'}
                                 </button>
-                            </div>
-                        </div>
-
-                        {/* Modal Body */}
-                        <div className="max-h-[60vh] overflow-y-auto">
-                            {sortedAnnouncements.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-12 px-4">
-                                    <div className="p-3 bg-slate-100 dark:bg-slate-700 rounded-full mb-3">
-                                        <BellAlertIcon className="w-6 h-6 text-slate-400 dark:text-slate-500" />
-                                    </div>
-                                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">No notifications yet</p>
-                                    <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">You're all caught up!</p>
-                                </div>
-                            ) : (
-                                <div className="divide-y divide-slate-100 dark:divide-white/5">
-                                    {sortedAnnouncements.map((notification) => (
-                                        <button
-                                            key={notification.id}
-                                            onClick={() => handleMarkAsRead(notification.id)}
-                                            className={`w-full text-left px-5 py-3.5 transition-all hover:bg-slate-50 dark:hover:bg-white/5 ${!notification.isRead ? 'bg-indigo-50/50 dark:bg-indigo-500/5' : ''
-                                                }`}
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                <div className={`mt-0.5 w-2 h-2 rounded-full flex-shrink-0 ${notification.isRead ? 'bg-transparent' : 'bg-indigo-500 animate-pulse'
-                                                    }`} />
-                                                <div className="flex-1 min-w-0">
-                                                    <p className={`text-sm font-semibold truncate ${notification.isRead ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'
-                                                        }`}>{notification.title}</p>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-500 line-clamp-2 mt-0.5">{notification.message}</p>
-                                                    <p className="text-[10px] text-slate-400 dark:text-slate-600 mt-1">
-                                                        {new Date(notification.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Modal Footer */}
-                        <div className="px-5 py-3 border-t border-slate-100 dark:border-white/10">
-                            <button
-                                onClick={() => { setIsNotificationsOpen(false); navigate('/notifications'); }}
-                                className="w-full py-2 text-center text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-500/10"
-                            >
-                                View all notifications
-                            </button>
+                            ))}
                         </div>
                     </div>
                 </div>
-            )}
+            </nav>
 
-            {/* Content */}
-            <main className="flex-1 overflow-y-auto p-4">
-                <div className="max-w-7xl mx-auto w-full">
+            <main
+                ref={contentRef}
+                id="report-content"
+                className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8 scroll-smooth"
+                tabIndex={-1}
+            >
+                <div className="max-w-[1400px] mx-auto w-full">
                     {renderContent()}
                 </div>
             </main>
 
-            {/* Mobile Filter Modal */}
-            {showFilters && (
-                <div className="fixed inset-0 z-[100] bg-slate-950/40 backdrop-blur-sm animate-fade-in flex items-end md:items-center justify-center min-[1100px]:hidden">
-                    <div className="bg-white dark:bg-slate-900 w-full rounded-t-[2.5rem] shadow-2xl animate-slide-up max-h-[85vh] overflow-hidden border-t border-slate-200 dark:border-white/10">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Filters</h2>
-                                <button
-                                    onClick={() => setShowFilters(false)}
-                                    className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-white/10 text-slate-500 dark:text-slate-400 active:scale-90 transition-all font-bold"
-                                    aria-label="Close filters"
-                                >
-                                    <XMarkIcon className="w-6 h-6" />
+            {/* Mobile Footer Spacing */}
+            <div className="h-20 md:hidden flex-none"></div>
+
+            {/* Notification Drawer - simplified for this component */}
+            {isNotificationsOpen && (
+                <div className="fixed inset-0 z-[100] flex justify-end">
+                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)}></div>
+                    <div className="relative w-full max-w-md h-full bg-white dark:bg-slate-900 shadow-2xl animate-notification-slide-left flex flex-col">
+                        <div className="p-6 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
+                            <h2 className="text-xl font-bold dark:text-white">Notifications</h2>
+                            <div className="flex items-center gap-2">
+                                {unreadCount > 0 && (
+                                    <button onClick={handleMarkAllAsRead} className="text-xs font-bold text-blue-600 hover:underline">Mark all as read</button>
+                                )}
+                                <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors">
+                                    <XMarkIcon className="w-5 h-5 dark:text-white" />
                                 </button>
                             </div>
-
-                            <div className="space-y-8">
-                                <div>
-                                    <label className="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">
-                                        Time Range
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {[
-                                            { id: '7d', label: '7 Days', action: () => setDateRange(7, '7d') },
-                                            { id: '30d', label: '30 Days', action: () => setDateRange(30, '30d') },
-                                            { id: 'month', label: 'This Month', action: setThisMonth },
-                                            { id: 'custom', label: 'Custom', action: () => setDatePreset('custom') }
-                                        ].map((preset) => (
-                                            <button
-                                                key={preset.id}
-                                                onClick={() => { preset.action(); if (preset.id !== 'custom') setShowFilters(false); }}
-                                                className={`p-4 rounded-2xl border-2 transition-all active:scale-95 ${datePreset === preset.id
-                                                    ? 'border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                                    : 'border-slate-100 dark:border-white/5 bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400'}`}
-                                            >
-                                                <div className="text-sm font-bold">{preset.label}</div>
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {datePreset === 'custom' && (
-                                    <div className="space-y-4 animate-fade-in">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-xs font-bold text-slate-500 mb-2">Start Date</label>
-                                                <div className="relative">
-                                                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                    <input
-                                                        type="date"
-                                                        value={startDate}
-                                                        onChange={(e) => setStartDate(e.target.value)}
-                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-800 dark:text-white"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div>
-                                                <label className="block text-xs font-bold text-slate-500 mb-2">End Date</label>
-                                                <div className="relative">
-                                                    <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
-                                                    <input
-                                                        type="date"
-                                                        value={endDate}
-                                                        onChange={(e) => setEndDate(e.target.value)}
-                                                        className="w-full pl-10 pr-4 py-3 bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 rounded-xl text-sm font-bold text-slate-800 dark:text-white"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="pt-6">
-                                    <button
-                                        onClick={() => setShowFilters(false)}
-                                        className="w-full py-4 bg-slate-900 dark:bg-blue-600 text-white font-black uppercase tracking-widest rounded-2xl shadow-xl active:scale-[0.98] transition-all"
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                            {sortedAnnouncements.length > 0 ? (
+                                sortedAnnouncements.map((n) => (
+                                    <div
+                                        key={n.id}
+                                        onClick={() => !n.isRead && handleMarkAsRead(n.id)}
+                                        className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${n.isRead
+                                            ? 'bg-slate-50 dark:bg-white/5 border-transparent'
+                                            : 'bg-white dark:bg-slate-800 border-blue-100 dark:border-blue-900 shadow-sm'
+                                            }`}
                                     >
-                                        Apply Filters
-                                    </button>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h3 className={`font-bold text-sm ${n.isRead ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'}`}>{n.title}</h3>
+                                            {!n.isRead && <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5"></div>}
+                                        </div>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 line-clamp-2 leading-relaxed">{n.message}</p>
+                                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{new Date(n.createdAt).toLocaleDateString()}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
+                                    <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
+                                        <BellAlertIcon className="w-8 h-8 opacity-20" />
+                                    </div>
+                                    <p className="text-sm font-medium">No notifications yet</p>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
-
-            {/* CSS for safe areas and animations */}
-            <style dangerouslySetInnerHTML={{
-                __html: `
-                @keyframes fade-in {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-                @keyframes slide-up {
-                    from { transform: translateY(100%); }
-                    to { transform: translateY(0); }
-                }
-                @keyframes notification-slide-down {
-                    from { opacity: 0; transform: translateY(-12px) scale(0.96); }
-                    to { opacity: 1; transform: translateY(0) scale(1); }
-                }
-                .animate-fade-in {
-                    animation: fade-in 0.2s ease-out;
-                }
-                .animate-slide-up {
-                    animation: slide-up 0.3s ease-out;
-                }
-                .animate-notification-slide-down {
-                    animation: notification-slide-down 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-                }
-                .safe-area-top {
-                    padding-top: env(safe-area-inset-top, 0px);
-                }
-                .safe-area-bottom {
-                    padding-bottom: env(safe-area-inset-bottom, 0px);
-                }
-                .scrollbar-hide {
-                    -ms-overflow-style: none;
-                    scrollbar-width: none;
-                }
-                .scrollbar-hide::-webkit-scrollbar {
-                    display: none;
-                }
-            ` }} />
         </div>
     );
 };

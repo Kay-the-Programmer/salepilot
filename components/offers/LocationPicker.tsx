@@ -166,6 +166,11 @@ const LocationPicker = ({ initialLat, initialLng, onLocationSelect }: LocationPi
                     console.error("Geolocation error", err);
                     setIsSearching(false);
                     alert("Could not access your location. Please check browser permissions.");
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
                 }
             );
         } else {

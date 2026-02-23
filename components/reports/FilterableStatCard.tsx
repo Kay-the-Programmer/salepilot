@@ -178,28 +178,35 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
     };
 
     return (
-        <div className={`glass-effect dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-white/10 flex flex-col justify-between h-40 relative group hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 ease-in-out ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+        <div className={`liquid-glass-card rounded-[2rem] p-7 flex flex-col justify-between h-44 relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-start z-10">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
-                        <div className={`w-6 h-6 rounded-full ${color} flex items-center justify-center bg-opacity-15 dark:bg-opacity-25`}>
-                            {icon}
+                <div className="flex-1">
+                    <div className="flex items-center gap-2.5 mb-3">
+                        <div className={`w-8 h-8 rounded-xl ${color} flex items-center justify-center bg-opacity-20 dark:bg-opacity-30 shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                            {icon && React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'w-5 h-5' }) : null}
                         </div>
-                        <span className="text-slate-500 dark:text-slate-400 font-medium text-sm">{title}</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">{title}</span>
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-white mt-2 min-h-[32px] flex items-center">
+                    <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1 tracking-tight min-h-[40px] flex items-center">
                         {loading ? (
-                            <div className="w-4 h-4 rounded-full border-2 border-slate-200 border-t-slate-600 dark:border-slate-700 dark:border-t-slate-400 animate-spin"></div>
+                            <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400 animate-spin"></div>
                         ) : (
                             formatValue(data.value)
                         )}
                     </div>
                 </div>
-                <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
+                </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-40 group-hover:opacity-60 transition-opacity rounded-b-2xl overflow-hidden pointer-events-none">
-                {!loading && <StatSparkline data={data.trend} color={sparklineColor} height={60} />}
+
+            {/* Background Sparkline */}
+            <div className="absolute bottom-0 left-0 right-0 h-20 opacity-30 group-hover:opacity-50 transition-all duration-500 rounded-b-[2rem] overflow-hidden pointer-events-none">
+                {!loading && <StatSparkline data={data.trend} color={sparklineColor} height={80} />}
             </div>
+
+            {/* Subtle glow effect on hover */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/20 dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem]"></div>
         </div>
     );
 };

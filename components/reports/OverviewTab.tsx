@@ -44,23 +44,31 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 <OverviewStatsRow storeSettings={storeSettings} />
 
                 {/* Row 2: Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                    <FilterableSalesTrend storeSettings={storeSettings} />
-                    <FilterableSalesChannelChart totalRevenue={sales.totalRevenue} />
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                        <FilterableSalesTrend storeSettings={storeSettings} />
+                    </div>
+                    <div>
+                        <FilterableSalesChannelChart totalRevenue={sales.totalRevenue} />
+                    </div>
                 </div>
 
                 {/* Row 3: Recent Orders & Top Sales */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Recent Orders - 2 Cols */}
-                    <RecentOrdersTable
-                        recentOrders={reportData.sales.recentOrders}
-                        recentOrdersTab={recentOrdersTab}
-                        setRecentOrdersTab={setRecentOrdersTab}
-                        storeSettings={storeSettings}
-                    />
+                    <div className="lg:col-span-2">
+                        <RecentOrdersTable
+                            recentOrders={reportData.sales.recentOrders}
+                            recentOrdersTab={recentOrdersTab}
+                            setRecentOrdersTab={setRecentOrdersTab}
+                            storeSettings={storeSettings}
+                        />
+                    </div>
 
                     {/* Top Sale - 1 Col */}
-                    <FilterableTopSales storeSettings={storeSettings} />
+                    <div>
+                        <FilterableTopSales storeSettings={storeSettings} />
+                    </div>
                 </div>
             </>
         </div>

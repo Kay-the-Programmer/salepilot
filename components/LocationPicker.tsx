@@ -70,6 +70,10 @@ const LocationPicker: React.FC<LocationPickerProps> = ({ onLocationSelect, onClo
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((pos) => {
                 setCenter([pos.coords.latitude, pos.coords.longitude]);
+            }, undefined, {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
             });
         }
     }, []);

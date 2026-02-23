@@ -33,7 +33,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
     return (
         <div className="space-y-6 animate-fade-in pb-10">
             {/* Row 1: Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <FilterableStatCard
                     title="Revenue"
                     type="revenue"
@@ -70,58 +70,73 @@ export const SalesTab: React.FC<SalesTabProps> = ({
 
             {/* Row 2: Charts & Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <FilterableSalesTrend storeSettings={storeSettings} />
-                <FilterableTopProducts storeSettings={storeSettings} />
+                <div className="lg:col-span-2">
+                    <FilterableSalesTrend storeSettings={storeSettings} />
+                </div>
+                <div>
+                    <FilterableTopProducts storeSettings={storeSettings} />
+                </div>
             </div>
 
             {/* Row 3: Daily Sales Table */}
             {dailySales && dailySales.length > 0 && (
-                <div className="glass-effect dark:bg-slate-800 rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-white/10">
-                    <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
-                        <h3 className="font-bold text-slate-900 dark:text-white text-lg uppercase tracking-wider">Daily Sales History</h3>
-                        <select
-                            className="text-sm border-slate-200 dark:border-white/10 border rounded-xl px-4 py-2.5 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none font-bold"
-                            value={dailyPageSize}
-                            onChange={(e) => {
-                                setDailyPageSize(parseInt(e.target.value));
-                                setDailyPage(1);
-                            }}
-                        >
-                            <option value={5}>Show 5 days</option>
-                            <option value={10}>Show 10 days</option>
-                            <option value={15}>Show 15 days</option>
-                        </select>
+                <div className="liquid-glass-card rounded-[2.5rem] p-8 shadow-2xl border border-white/20 dark:border-white/5">
+                    <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-6">
+                        <div>
+                            <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Daily Sales History</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Detailed breakdown of revenue per day</p>
+                        </div>
+                        <div className="flex items-center gap-3 liquid-glass-pill p-1.5 rounded-2xl">
+                            <span className="text-xs font-bold uppercase tracking-wider ml-3 text-slate-500">Show</span>
+                            <select
+                                className="text-sm bg-blue-600 text-white rounded-xl px-4 py-2 font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+                                value={dailyPageSize}
+                                onChange={(e) => {
+                                    setDailyPageSize(parseInt(e.target.value));
+                                    setDailyPage(1);
+                                }}
+                            >
+                                <option value={5}>5 Days</option>
+                                <option value={10}>10 Days</option>
+                                <option value={15}>15 Days</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
                         {dailySales
                             .slice((dailyPage - 1) * dailyPageSize, dailyPage * dailyPageSize)
                             .map((day) => (
-                                <div key={day.date} className="p-5 bg-white/50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/50 dark:border-white/5 hover:border-blue-500/50 dark:hover:border-blue-400/50 transition-all group">
-                                    <div className="flex items-center justify-between mb-4 border-b border-slate-100 dark:border-white/5 pb-3">
-                                        <div className="font-bold text-slate-900 dark:text-white">
+                                <div key={day.date} className="group p-6 bg-white/40 dark:bg-slate-800/20 rounded-3xl border border-slate-200/40 dark:border-white/5 hover:border-blue-500/50 dark:hover:border-blue-400/50 hover:bg-white/60 dark:hover:bg-slate-800/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                                    <div className="flex flex-col mb-4">
+                                        <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-400 mb-1">
+                                            {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
+                                        </span>
+                                        <div className="font-extrabold text-slate-900 dark:text-white text-lg">
                                             {new Date(day.date).toLocaleDateString('en-US', {
-                                                weekday: 'short',
                                                 month: 'short',
                                                 day: 'numeric'
                                             })}
                                         </div>
-                                        <div className="text-sm font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-3 py-1 rounded-lg">
+                                    </div>
+                                    <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-2xl mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                                        <div className="text-xs font-bold opacity-70 mb-0.5">Revenue</div>
+                                        <div className="text-lg font-black tracking-tight">
                                             {formatCurrency(day.totalRevenue, storeSettings)}
                                         </div>
                                     </div>
                                     <div className="space-y-3">
                                         {day.items.slice(0, 3).map((item: any, idx: number) => (
-                                            <div key={idx} className="flex items-center justify-between text-xs">
-                                                <span className="text-slate-600 dark:text-slate-400 truncate flex-1 mr-2 font-medium">{item.name}</span>
-                                                <span className="font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                                                    {item.quantity} × {formatCurrency(item.revenue / item.quantity, storeSettings)}
+                                            <div key={idx} className="flex items-center justify-between text-[11px] font-medium">
+                                                <span className="text-slate-500 dark:text-slate-400 truncate flex-1 mr-2">{item.name}</span>
+                                                <span className="font-bold text-slate-900 dark:text-white">
+                                                    {item.quantity}
                                                 </span>
                                             </div>
                                         ))}
                                         {day.items.length > 3 && (
-                                            <div className="text-[10px] uppercase tracking-widest font-bold text-center text-slate-400 pt-2 opacity-60">
-                                                +{day.items.length - 3} more items
+                                            <div className="text-[9px] uppercase tracking-widest font-black text-blue-500 pt-2 opacity-80 text-center">
+                                                +{day.items.length - 3} More
                                             </div>
                                         )}
                                     </div>
@@ -130,25 +145,25 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                     </div>
 
                     {dailySales.length > dailyPageSize && (
-                        <div className="flex items-center justify-center gap-6 mt-10">
+                        <div className="flex items-center justify-center gap-4 mt-12 pb-2">
                             <button
-                                className="flex items-center px-6 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group"
                                 onClick={() => setDailyPage(p => Math.max(1, p - 1))}
                                 disabled={dailyPage === 1}
+                                aria-label="Previous page"
                             >
-                                <ChevronLeftIcon className="w-4 h-4 mr-2" />
-                                Previous
+                                <ChevronLeftIcon className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
                             </button>
-                            <span className="text-sm font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-4 py-1.5 rounded-lg">
-                                {dailyPage} <span className="mx-1 opacity-50">/</span> {Math.ceil(dailySales.length / dailyPageSize)}
+                            <span className="px-6 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 text-sm font-black text-slate-500 dark:text-slate-400 tracking-widest border border-slate-200/50 dark:border-white/5">
+                                {dailyPage} <span className="mx-2 opacity-30">/</span> {Math.ceil(dailySales.length / dailyPageSize)}
                             </span>
                             <button
-                                className="flex items-center px-6 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-white/5 transition-all shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group"
                                 onClick={() => setDailyPage(p => Math.min(Math.ceil(dailySales.length / dailyPageSize), p + 1))}
                                 disabled={dailyPage >= Math.ceil(dailySales.length / dailyPageSize)}
+                                aria-label="Next page"
                             >
-                                Next
-                                <ChevronRightIcon className="w-4 h-4 ml-2" />
+                                <ChevronRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </div>
                     )}

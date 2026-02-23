@@ -8,17 +8,17 @@ interface DetailItemProps {
 }
 
 const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon, className = '' }) => (
-    <div className={`flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-4 py-2 ${className}`}>
-        <div className="flex items-center gap-2 min-w-0">
+    <div className={`py-3 border-b border-slate-100 dark:border-white/5 last:border-0 ${className}`}>
+        <div className="flex items-center gap-2 mb-1.5 opacity-70">
             {icon && (
-                <div className="text-slate-400 dark:text-slate-500 flex-shrink-0">
+                <div className="flex-shrink-0">
                     {React.isValidElement(icon) ?
-                        React.cloneElement(icon as React.ReactElement<any>, { className: 'w-4 h-4' }) : icon}
+                        React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3.5 h-3.5' }) : icon}
                 </div>
             )}
-            <span className="text-sm text-slate-600 dark:text-slate-400 truncate">{label}</span>
+            <span className="text-[11px] font-bold uppercase tracking-widest">{label}</span>
         </div>
-        <div className="text-sm sm:text-base font-medium text-slate-900 dark:text-slate-100 text-right sm:text-left truncate pl-6 sm:pl-0">
+        <div className="text-sm font-medium text-slate-900 dark:text-slate-100 break-words md:pl-[1.375rem]">
             {value}
         </div>
     </div>
