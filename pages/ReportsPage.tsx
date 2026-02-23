@@ -351,15 +351,47 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         </div>
                     </div>
                     <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-                        {/* Mobile Date Filter */}
-                        <button
-                            onClick={() => setShowFilters(true)}
-                            className="flex md:hidden items-center gap-1.5 p-2 px-3 rounded-full liquid-glass-pill transition-all duration-200 active:scale-90 active:scale-95 transition-all duration-300"
-                            aria-label={`Date filter: ${datePresetLabel}`}
-                        >
-                            <CalendarIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-                            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">{datePresetLabel}</span>
-                        </button>
+                        <div className="flex md:hidden items-center gap-2" ref={filterMenuRef}>
+                            <button
+                                onClick={() => navigate('/profile')}
+                                className="w-8 h-8 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 flex-shrink-0 active:scale-95 transition-transform bg-white dark:bg-slate-800"
+                                aria-label="Go to profile"
+                            >
+                                {user?.profilePicture ? (
+                                    <img src={user.profilePicture} alt={user?.name || 'Profile'} className="w-full h-full object-cover" />
+                                ) : (
+                                    <UserCircleIcon className="w-full h-full text-slate-400 dark:text-slate-500" />
+                                )}
+                            </button>
+                            <div className="relative">
+                                <button
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className="flex items-center gap-1.5 p-2 px-3 rounded-full liquid-glass-pill transition-all duration-200 active:scale-95"
+                                    aria-label={`Date filter: ${datePresetLabel}`}
+                                    aria-expanded={showFilters}
+                                >
+                                    <CalendarIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                                    <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-200">{datePresetLabel}</span>
+                                </button>
+
+                                {showFilters && (
+                                    <div className="absolute top-full right-0 mt-2 w-40 bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-xl border border-slate-100 dark:border-slate-700 z-50 animate-notification-slide-down">
+                                        {(['7d', '30d', 'month'] as const).map((preset) => (
+                                            <button
+                                                key={preset}
+                                                onClick={() => { handleDatePreset(preset); setShowFilters(false); }}
+                                                className={`w-full text-left px-4 py-3 text-sm font-bold transition-colors ${datePreset === preset
+                                                        ? 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                                                        : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                    }`}
+                                            >
+                                                {preset === '7d' ? 'Last 7 Days' : preset === '30d' ? 'Last 30 Days' : 'This Month'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
 
                         <div className="relative hidden md:block" ref={notificationsRef}>
                             <button

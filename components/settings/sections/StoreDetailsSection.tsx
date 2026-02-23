@@ -54,7 +54,6 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
         <SettingsCard
             title="Store Details"
             description="Configure your store's public information displayed on receipts and invoices."
-            icon={<BuildingStorefrontIcon />}
             isEditing={isEditing}
             onEdit={onEdit}
             onSave={onSave}
@@ -151,71 +150,66 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                        <DetailItem
-                            label="Store Name"
-                            value={settings.name}
-                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                            highlight={true}
-                        />
-                        <DetailItem
-                            label="Contact Email"
-                            value={settings.email || 'Not set'}
-                            icon={<EnvelopeIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                        />
-                        <DetailItem
-                            label="Website"
-                            value={
-                                settings.website ? (
-                                    <a
-                                        href={settings.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-150 inline-flex items-center gap-1"
-                                    >
-                                        {settings.website}
-                                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                        </svg>
-                                    </a>
-                                ) : 'Not set'
-                            }
-                            icon={<GlobeAltIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                        />
-                        <DetailItem
-                            label="Online Store Status"
-                            value={
-                                <div className="flex items-center gap-2">
-                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full border ${settings.isOnlineStoreEnabled !== false
-                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-100 dark:border-emerald-800/30'
-                                        : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'
-                                        }`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${settings.isOnlineStoreEnabled !== false ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                                        {settings.isOnlineStoreEnabled !== false ? 'Active' : 'Disabled'}
-                                    </span>
-                                </div>
-                            }
-                            icon={<BuildingStorefrontIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <span className="lg:hidden h-px bg-slate-100 dark:bg-slate-800 block my-2"></span>
-                        <DetailItem
-                            label="Phone Number"
-                            value={settings.phone || 'Not set'}
-                            icon={<PhoneIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                        />
-                        <DetailItem
-                            label="Address"
-                            value={
-                                <div className="text-slate-900 dark:text-slate-100 leading-relaxed whitespace-pre-wrap">
-                                    {settings.address || 'Not set'}
-                                </div>
-                            }
-                            icon={<MapPinIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                        />
-                    </div>
+                <div className="flex flex-col">
+                    <DetailItem
+                        label="Store Name"
+                        value={settings.name}
+                        icon={<BuildingStorefrontIcon className="w-5 h-5" />}
+                        highlight={true}
+                    />
+                    <DetailItem
+                        label="Contact Email"
+                        value={settings.email || 'Not set'}
+                        icon={<EnvelopeIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Website"
+                        value={
+                            settings.website ? (
+                                <a
+                                    href={settings.website}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors inline-flex items-center gap-1"
+                                >
+                                    {settings.website}
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            ) : 'Not set'
+                        }
+                        icon={<GlobeAltIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Phone Number"
+                        value={settings.phone || 'Not set'}
+                        icon={<PhoneIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Address"
+                        value={
+                            <div className="text-slate-900 dark:text-slate-100 whitespace-pre-wrap text-right">
+                                {settings.address || 'Not set'}
+                            </div>
+                        }
+                        icon={<MapPinIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Online Store Status"
+                        value={
+                            <div className="flex items-center justify-end gap-2">
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[13px] font-semibold rounded-full ${settings.isOnlineStoreEnabled !== false
+                                    ? 'bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                                    }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${settings.isOnlineStoreEnabled !== false ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                                    {settings.isOnlineStoreEnabled !== false ? 'Active' : 'Disabled'}
+                                </span>
+                            </div>
+                        }
+                        icon={<BuildingStorefrontIcon className="w-5 h-5" />}
+                    />
                 </div>
             )}
         </SettingsCard>

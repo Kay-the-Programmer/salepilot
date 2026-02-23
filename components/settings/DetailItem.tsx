@@ -8,20 +8,23 @@ interface DetailItemProps {
 }
 
 const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon, highlight = false }) => (
-    <div className="py-4 border-b border-slate-100/50 dark:border-white/5 last:border-b-0 group">
-        <div className="flex items-start gap-4">
+    <div className="group relative flex flex-col sm:flex-row sm:items-center justify-between py-3 px-4 sm:px-5 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-white/5 last:border-b-0 min-h-[44px]">
+        <div className="flex items-center gap-3 mb-1 sm:mb-0">
             {icon && (
-                <div className="flex-shrink-0 mt-0.5">
-                    <div className="p-2 bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 rounded-xl border border-slate-100 dark:border-slate-700/50 group-hover:border-indigo-200 dark:group-hover:border-indigo-500/30 transition-colors">
+                <div className="flex-shrink-0">
+                    <div className="text-slate-400 dark:text-slate-500 flex items-center justify-center">
                         {icon}
                     </div>
                 </div>
             )}
-            <div className="flex-grow min-w-0">
-                <div className="text-[10px] uppercase font-bold tracking-widest text-slate-400 dark:text-slate-500 mb-1.5">{label}</div>
-                <div className={`${highlight ? 'font-bold text-slate-900 dark:text-white' : 'font-semibold text-slate-700 dark:text-slate-200'} ${typeof value === 'string' ? 'text-base' : ''} leading-relaxed`}>
-                    {value}
-                </div>
+            <div className={`text-[17px] tracking-tight ${highlight ? 'font-semibold text-slate-900 dark:text-white' : 'font-medium text-slate-900 dark:text-white'}`}>
+                {label}
+            </div>
+        </div>
+
+        <div className="flex items-center sm:justify-end sm:max-w-[60%] w-full sm:w-auto">
+            <div className="text-[17px] text-slate-500 dark:text-slate-400 sm:text-right w-full">
+                {value}
             </div>
         </div>
     </div>

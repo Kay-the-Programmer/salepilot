@@ -50,6 +50,7 @@ export interface User {
     phone?: string;
     token?: string; // JWT returned on login (stored client-side)
     currentStoreId?: string; // Multi-tenant: currently selected store
+    profilePicture?: string;
     onboardingState?: {
         completedActions: string[];
         dismissedHelpers: string[];

@@ -1,6 +1,6 @@
 import React from 'react';
 import { StoreSettings } from '../../../types';
-import { BanknotesIcon, ChartBarIcon, CreditCardIcon, CurrencyDollarIcon } from '../../icons';
+import { CreditCardIcon, CurrencyDollarIcon, ChartBarIcon } from '../../icons';
 import SettingsCard from '../SettingsCard';
 import DetailItem from '../DetailItem';
 
@@ -30,7 +30,6 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
         <SettingsCard
             title="Financial Settings"
             description="Configure tax rates, currency, and payment settings for transactions."
-            icon={<BanknotesIcon />}
             isEditing={isEditing}
             onEdit={onEdit}
             onSave={onSave}
@@ -109,40 +108,26 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-1">
-                        <DetailItem
-                            label="Tax Rate"
-                            value={
-                                <div className="flex items-center gap-2">
-                                    <div className="px-3 py-1.5 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 text-blue-700 dark:text-blue-400 border border-blue-100 dark:border-blue-800/30 font-bold rounded-lg">
-                                        {settings.taxRate}%
-                                    </div>
-                                    <span className="text-sm text-slate-500 dark:text-slate-400">applied to all sales</span>
-                                </div>
-                            }
-                            icon={<ChartBarIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                        />
-                    </div>
-                    <div className="space-y-1">
-                        <DetailItem
-                            label="Currency"
-                            value={
-                                <div className="flex items-center gap-3">
-                                    <div className="px-3 py-2 bg-gradient-to-r from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                                        <span className="font-bold text-slate-900 dark:text-white text-lg">{settings.currency.symbol}</span>
-                                    </div>
-                                    <div>
-                                        <div className="font-semibold text-slate-900 dark:text-white">{settings.currency.code}</div>
-                                        <div className="text-sm text-slate-500 dark:text-slate-400">
-                                            {settings.currency.position === 'before' ? 'Before amount' : 'After amount'}
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                            icon={<CurrencyDollarIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
-                        />
-                    </div>
+                <div className="flex flex-col">
+                    <DetailItem
+                        label="Tax Rate"
+                        value={
+                            <div className="flex items-center justify-end gap-2">
+                                <span className="text-[15px] font-semibold text-slate-900 dark:text-white">{settings.taxRate}%</span>
+                            </div>
+                        }
+                        icon={<ChartBarIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Currency"
+                        value={
+                            <div className="flex items-center justify-end gap-2 text-[15px]">
+                                <span className="font-semibold text-slate-900 dark:text-white">{settings.currency.symbol}</span>
+                                <span className="text-slate-500 dark:text-slate-400">({settings.currency.code})</span>
+                            </div>
+                        }
+                        icon={<CurrencyDollarIcon className="w-5 h-5" />}
+                    />
                 </div>
             )}
         </SettingsCard>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StoreSettings } from '../../../types';
 import { ReceiptPercentIcon, CreditCardIcon, TrashIcon, PlusIcon, BuildingStorefrontIcon } from '../../icons';
 import SettingsCard from '../SettingsCard';
+import DetailItem from '../DetailItem';
 
 interface POSSettingsSectionProps {
     settings: StoreSettings;
@@ -38,7 +39,6 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
         <SettingsCard
             title="POS & Receipts"
             description="Customize Point of Sale behavior, payment methods, and receipt formatting."
-            icon={<ReceiptPercentIcon />}
             isEditing={isEditing}
             onEdit={onEdit}
             onSave={onSave}
@@ -184,45 +184,42 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="space-y-6">
-                    <div className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                        <h4 className="text-[10px] uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400 mb-2">Receipt Footer</h4>
-                        <p className="text-slate-900 dark:text-slate-100 text-sm leading-relaxed italic">"{settings.receiptMessage || 'No footer message set'}"</p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                                <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg">
-                                    <CreditCardIcon className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
-                                </div>
-                                Customer Payment Methods
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
+                <div className="flex flex-col">
+                    <DetailItem
+                        label="Receipt Footer"
+                        value={
+                            <div className="text-[15px] italic text-slate-500 dark:text-slate-400 sm:text-right max-w-[250px] sm:max-w-none truncate">
+                                "{settings.receiptMessage || 'No footer message set'}"
+                            </div>
+                        }
+                        icon={<ReceiptPercentIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Customer Payment Methods"
+                        value={
+                            <div className="flex flex-wrap gap-1.5 sm:justify-end mt-1 sm:mt-0">
                                 {(settings.paymentMethods || []).map(pm => (
-                                    <span key={pm.id} className="liquid-glass-card rounded-[2rem] px-3 py-1.5 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                    <span key={pm.id} className="px-2 py-0.5 bg-slate-100/80 dark:bg-slate-800 rounded-md text-[13px] font-medium text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                         {pm.name}
                                     </span>
                                 ))}
                             </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-sm font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                                <div className="p-1.5 bg-blue-50 dark:bg-blue-900/40 rounded-lg">
-                                    <BuildingStorefrontIcon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                                </div>
-                                Supplier Payment Methods
-                            </h4>
-                            <div className="flex flex-wrap gap-2">
+                        }
+                        icon={<CreditCardIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Supplier Payment Methods"
+                        value={
+                            <div className="flex flex-wrap gap-1.5 sm:justify-end mt-1 sm:mt-0">
                                 {(settings.supplierPaymentMethods || []).map(pm => (
-                                    <span key={pm.id} className="liquid-glass-card rounded-[2rem] px-3 py-1.5 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
+                                    <span key={pm.id} className="px-2 py-0.5 bg-slate-100/80 dark:bg-slate-800 rounded-md text-[13px] font-medium text-slate-700 dark:text-slate-300 border border-slate-200/50 dark:border-white/5 shadow-sm">
                                         {pm.name}
                                     </span>
                                 ))}
                             </div>
-                        </div>
-                    </div>
+                        }
+                        icon={<BuildingStorefrontIcon className="w-5 h-5" />}
+                    />
                 </div>
             )}
         </SettingsCard>

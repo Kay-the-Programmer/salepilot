@@ -1,6 +1,6 @@
 import React from 'react';
 import { StoreSettings } from '../../../types';
-import { ArchiveBoxIcon, BellAlertIcon, TagIcon } from '../../icons';
+import { BellAlertIcon, TagIcon } from '../../icons';
 import SettingsCard from '../SettingsCard';
 import DetailItem from '../DetailItem';
 
@@ -30,7 +30,6 @@ const InventorySettingsSection: React.FC<InventorySettingsSectionProps> = ({
         <SettingsCard
             title="Inventory Settings"
             description="Configure stock alerts, SKU formatting, and inventory management rules."
-            icon={<ArchiveBoxIcon />}
             isEditing={isEditing}
             onEdit={onEdit}
             onSave={onSave}
@@ -78,42 +77,24 @@ const InventorySettingsSection: React.FC<InventorySettingsSectionProps> = ({
                     </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <div className="flex flex-col">
                     <DetailItem
                         label="Low Stock Alert"
                         value={
-                            <div className="flex items-center gap-4">
-                                <div className="px-5 py-4 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/20 dark:to-orange-900/20 rounded-2xl border border-amber-200 dark:border-amber-800/30 shadow-sm shrink-0">
-                                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-500">{settings.lowStockThreshold}</div>
-                                    <div className="text-[10px] uppercase font-bold tracking-widest text-amber-600 dark:text-amber-500/70">Units</div>
-                                </div>
-                                <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                                    Threshold for triggering <span className="font-bold text-slate-900 dark:text-slate-200">low stock warnings</span> across all products.
-                                </div>
-                            </div>
+                            <span className="text-[17px] font-medium text-slate-900 dark:text-white">{settings.lowStockThreshold} Units</span>
                         }
-                        icon={<BellAlertIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
+                        icon={<BellAlertIcon className="w-5 h-5" />}
                     />
                     <DetailItem
                         label="SKU Prefix"
                         value={
                             settings.skuPrefix ? (
-                                <div className="flex items-center gap-4">
-                                    <div className="px-5 py-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm shrink-0">
-                                        <code className="text-lg font-bold text-slate-900 dark:text-slate-100 font-mono">
-                                            {settings.skuPrefix}
-                                        </code>
-                                        <div className="text-[10px] uppercase font-bold tracking-widest text-slate-500 dark:text-slate-400">Prefix</div>
-                                    </div>
-                                    <div className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-                                        This identifier is <span className="font-bold text-slate-900 dark:text-slate-200">appended</span> to all newly generated product SKUs.
-                                    </div>
-                                </div>
+                                <span className="text-[17px] font-mono font-medium text-slate-900 dark:text-white uppercase tracking-wider">{settings.skuPrefix}</span>
                             ) : (
-                                <span className="text-slate-400 dark:text-slate-500 italic text-sm">No prefix configured</span>
+                                <span className="text-slate-400 dark:text-slate-500 italic">None</span>
                             )
                         }
-                        icon={<TagIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />}
+                        icon={<TagIcon className="w-5 h-5" />}
                     />
                 </div>
             )}
