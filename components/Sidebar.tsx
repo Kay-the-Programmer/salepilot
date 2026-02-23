@@ -390,22 +390,22 @@ export default function Sidebar({
                 end={item.page === 'superadmin'}
                 onClick={() => window.innerWidth < 768 && onMobileClose?.()}
                 className={({ isActive }) => `
-                    w-full flex items-center gap-3 px-4 py-2.5 rounded-xl
+                    w-full flex items-center gap-3 px-3 py-2 rounded-xl
                     transition-all duration-200 group relative
                     ${isActive
-                        ? 'bg-gray-100 dark:bg-white/[0.08] text-gray-900 dark:text-white active-link font-semibold'
-                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100/70 dark:hover:bg-white/[0.05] hover:text-gray-900 dark:hover:text-white'
+                        ? 'bg-gray-200/50 dark:bg-white/10 text-gray-900 dark:text-white active-link font-medium'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100/50 dark:hover:bg-white/5'
                     }
                     ${compact ? 'justify-center' : ''}
                 `}
                 title={compact ? item.name : undefined}
             >
-                <div className="flex-shrink-0 text-gray-400 dark:text-gray-500 group-hover:text-gray-600 dark:group-hover:text-gray-300 [[.active-link]_&]:text-blue-600 dark:[[.active-link]_&]:text-blue-400 transition-colors">
+                <div className="flex-shrink-0 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-100 [[.active-link]_&]:text-blue-500 dark:[[.active-link]_&]:text-blue-400 transition-colors">
                     <IconComponent className="w-5 h-5" />
                 </div>
                 {!compact && (
                     <div className="flex-1 text-left">
-                        <span className="text-sm whitespace-nowrap">{item.name}</span>
+                        <span className="text-[13px] leading-tight">{item.name}</span>
                     </div>
                 )}
                 {item.badge && !compact && (
@@ -424,23 +424,23 @@ export default function Sidebar({
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden fixed inset-0 w-full h-full glass-effect backdrop-blur-md z-[70] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden dark:bg-slate-900/50"
+                    className="md:hidden fixed inset-0 w-full h-full bg-white/70 dark:bg-black/70 backdrop-blur-2xl z-[70] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
                 >
                     {/* Header with Close Button */}
-                    <div className="flex items-center justify-between h-8 bg-gray-900 dark:bg-black text-white select-none overflow-hidden" style={{ WebkitAppRegion: 'drag' } as any}>
-                        <h2 className="text-lg font-bold text-gray-800 dark:text-white">Menu</h2>
+                    <div className="flex items-center justify-between px-6 pt-12 pb-4 text-gray-900 dark:text-white select-none">
+                        <h2 className="text-3xl font-bold tracking-tight">Menu</h2>
                         <button
                             onClick={onMobileClose}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors active:scale-95 transition-all duration-300"
+                            className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
                             aria-label="Close menu"
                         >
-                            <XMarkIcon className="w-6 h-6 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white" />
+                            <XMarkIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
                         </button>
                     </div>
 
                     {/* Grid Content */}
-                    <div className="flex-1 overflow-y-auto p-4">
-                        <div className="grid grid-cols-3 gap-4">
+                    <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
+                        <div className="grid grid-cols-4 gap-x-2 gap-y-6">
                             {navItems.map((item) => {
                                 const IconComponent = item.icon;
                                 return (
@@ -449,14 +449,23 @@ export default function Sidebar({
                                         to={`/${item.page}`}
                                         onClick={() => window.innerWidth < 768 && onMobileClose?.()}
                                         className={({ isActive }) => `
-                                            flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-gray-200 dark:hover:bg-white/10 bg-white dark:bg-slate-800 shadow-sm active:scale-95 transition-all group
-                                            ${isActive ? 'bg-blue-50/50 dark:bg-blue-500/20 backdrop-blur-lg active' : ''}
+                                            flex flex-col items-center group
+                                            ${isActive ? 'active' : ''}
                                         `}
                                     >
-                                        <div className="w-14 h-14 rounded-2xl flex items-center justify-center transition-colors text-gray-600 dark:text-gray-400 group-[.active]:bg-gray-100 dark:group-[.active]:bg-white/10 group-[.active]:text-gray-900 dark:group-[.active]:text-white">
-                                            <IconComponent className="w-7 h-7" />
+                                        <div className="relative">
+                                            <div className="w-[60px] h-[60px] mx-auto rounded-[1.25rem] flex items-center justify-center transition-all duration-200 
+                                                bg-white dark:bg-slate-800 shadow-[0_2px_10px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-gray-100/50 dark:border-white/5
+                                                text-gray-600 dark:text-gray-300 group-hover:scale-105 group-active:scale-95 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400">
+                                                <IconComponent className="w-[26px] h-[26px]" />
+                                            </div>
+                                            {item.badge && (
+                                                <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 shadow-sm z-10">
+                                                    {item.badge}
+                                                </div>
+                                            )}
                                         </div>
-                                        <span className="text-xs font-medium text-center leading-tight text-gray-900 dark:text-white group-[.active]:text-blue-700 dark:group-[.active]:text-blue-400">
+                                        <span className="text-[11px] font-medium text-center leading-tight text-gray-700 dark:text-gray-300 mt-1.5 truncate w-full px-1 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-semibold">
                                             {item.name}
                                         </span>
                                     </NavLink>
@@ -468,12 +477,14 @@ export default function Sidebar({
                                         onInstall?.();
                                         onMobileClose?.();
                                     }}
-                                    className="flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 active:scale-95 transition-all group"
+                                    className="flex flex-col items-center group"
                                 >
-                                    <div className="liquid-glass-card rounded-[2rem] w-14 h-14 flex items-center justify-center transition-colors -blue-100 text-blue-600">
-                                        <ArrowDownTrayIcon className="w-7 h-7" />
+                                    <div className="w-[60px] h-[60px] mx-auto rounded-[1.25rem] flex items-center justify-center transition-all duration-200 
+                                        bg-white dark:bg-slate-800 shadow-[0_2px_10px_rgba(0,0,0,0.06)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-gray-100/50 dark:border-white/5
+                                        text-blue-500 group-hover:scale-105 group-active:scale-95">
+                                        <ArrowDownTrayIcon className="w-[26px] h-[26px]" />
                                     </div>
-                                    <span className="text-xs font-medium text-center leading-tight text-blue-700">
+                                    <span className="text-[11px] font-medium text-center leading-tight text-blue-600 dark:text-blue-400 mt-1.5 truncate w-full px-1 group-[.active]:font-semibold">
                                         Install App
                                     </span>
                                 </button>
@@ -482,25 +493,25 @@ export default function Sidebar({
                     </div>
 
                     {/* Mobile Footer (User & Logout) */}
-                    <div className="p-4 -t -gray-100 dark:-white/10 bg-gray-50/50 dark:bg-black/20">
-                        <div className="liquid-glass-card rounded-[2rem] flex items-center gap-3 p-3 dark:bg-slate-800 -gray-100 dark:-white/10">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-md" onClick={() => handleNavigation('profile')}>
+                    <div className="p-6 pb-8 mx-auto w-full max-w-sm">
+                        <div className="flex items-center gap-4 p-4 rounded-[1.75rem] bg-white/60 dark:bg-white/10 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-inner text-lg" onClick={() => handleNavigation('profile')}>
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0" onClick={() => handleNavigation('profile')}>
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{user.name}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.role}</p>
+                                <p className="text-base font-semibold text-gray-900 dark:text-white truncate tracking-tight">{user.name}</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate tracking-tight">{user.role}</p>
                             </div>
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-2">
                                 <button
                                     onClick={toggleTheme}
-                                    className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all duration-300"
+                                    className="p-3 rounded-full bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:scale-105 active:scale-95 transition-all duration-300"
                                 >
                                     {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
                                 </button>
                                 <button
                                     onClick={onLogout}
-                                    className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all duration-300"
+                                    className="p-3 rounded-full bg-red-50/80 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:scale-105 active:scale-95 transition-all duration-300"
                                 >
                                     <ArrowLeftOnRectangleIcon className="w-5 h-5" />
                                 </button>
@@ -514,9 +525,9 @@ export default function Sidebar({
             <aside
                 className={`
                     hidden md:flex
-                    bg-white dark:bg-slate-900/50
+                    bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl
                     h-screen flex-col transition-all duration-300 ease-in-out z-50
-                    relative translate-x-0 border-r border-gray-200/80 dark:border-white/[0.06]
+                    relative translate-x-0 border-r border-gray-200/50 dark:border-white/10
                     ${isExpanded ? 'w-64' : 'w-20'}
                 `}
                 style={{

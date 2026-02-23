@@ -56,11 +56,11 @@ const ProductCard: React.FC<{
           onSelect();
         }
       }}
-      className={`group bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] border transition-all duration-300 shadow-sm dark:shadow-none hover:shadow-md flex flex-col overflow-hidden cursor-pointer h-full active:scale-95 ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-lg scale-100' : 'border-slate-200/50 dark:border-white/5'
+      className={`group bg-white dark:bg-slate-900 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] rounded-[1.5rem] transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full active:scale-[0.98] ${isSelected ? 'ring-2 ring-blue-500 shadow-lg scale-100 border-transparent dark:border-transparent' : 'border border-gray-100/50 dark:border-white/5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
         }`}
     >
       {/* Card Header / Image Area */}
-      <div className="relative aspect-[4/3] bg-gray-50 dark:bg-slate-900 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gray-50/50 dark:bg-slate-800/50 flex items-center justify-center overflow-hidden">
         {showImage ? (
           <img
             src={imageUrl!}
@@ -77,10 +77,10 @@ const ProductCard: React.FC<{
         )}
 
         {/* Status Badge */}
-        <div className="absolute top-2 right-2">
-          <span className={`px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-[8px] backdrop-blur-md border shadow-sm ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold)
+        <div className="absolute top-2.5 right-2.5">
+          <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full backdrop-blur-xl border shadow-sm ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold)
             ? 'bg-rose-500/90 text-white border-rose-500/20'
-            : 'bg-white/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-white/20 dark:border-slate-700/50'
+            : 'bg-white/80 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 border-white/40 dark:border-white/10'
             }`}>
             {asNumber(product.stock)} in stock
           </span>
@@ -88,19 +88,19 @@ const ProductCard: React.FC<{
       </div>
 
       {/* Card Body */}
-      <div className="p-3 flex-1 flex flex-col justify-between">
+      <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex justify-between items-start mb-0.5">
-            <div className={`text-[10px] font-bold uppercase tracking-wider ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}>{categoryName}</div>
-            <div className="text-[10px] text-gray-300 dark:text-gray-600 font-mono">{product.sku}</div>
+          <div className="flex justify-between items-start mb-1">
+            <div className={`text-[11px] font-medium tracking-wide ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>{categoryName}</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500 font-mono tracking-wider">{product.sku}</div>
           </div>
-          <h3 className={`font-bold text-sm sm:text-base mb-1 line-clamp-2 leading-tight transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
+          <h3 className={`font-semibold text-[15px] sm:text-[16px] leading-[1.3] mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
             {product.name}
           </h3>
         </div>
-        <div className="text-lg sm:text-xl font-black text-gray-900 dark:text-white mt-2">
+        <div className="text-[17px] sm:text-[19px] font-semibold tracking-tight text-gray-900 dark:text-white mt-3">
           {formatPrice(product.price)}
-          {product.unitOfMeasure === 'kg' && <span className="text-xs text-gray-500 dark:text-gray-400 font-normal"> / kg</span>}
+          {product.unitOfMeasure === 'kg' && <span className="text-sm font-medium text-gray-400 dark:text-gray-500"> / kg</span>}
         </div>
       </div>
     </div>
@@ -124,28 +124,28 @@ const ProductListRow: React.FC<{
 
   return (
     <div
-      className={`bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm dark:shadow-none border border-slate-200/50 dark:border-white/5 p-4 flex items-center justify-between transition-all duration-300 ease-out cursor-pointer hover:shadow-md active:scale-95 ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md scale-100' : ''
+      className={`bg-white dark:bg-slate-900 rounded-[1.25rem] shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-gray-100/50 dark:border-white/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between transition-all duration-300 ease-out cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] active:scale-[0.98] ${isSelected ? 'ring-2 ring-blue-500 shadow-lg scale-100 border-transparent dark:border-transparent' : ''
         }`}
       onClick={onSelect}
     >
-      <div className="flex-1 min-w-0 mr-4">
-        <div className="flex items-center">
-          <h3 className={`font-semibold cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-white'}`}>
+      <div className="flex-1 min-w-0 mb-3 sm:mb-0 sm:mr-4 w-full">
+        <div className="flex flex-col mb-1 items-start gap-1 sm:gap-2">
+          <h3 className={`font-semibold text-[16px] cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-white'}`}>
             {product.name}
           </h3>
-          <span className={`text-xs px-2 py-0.5 font-bold tracking-wide rounded-[8px] ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-800 dark:text-rose-300' : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-800 dark:text-emerald-300'}`}>
+          <span className={`text-[10px] px-2 py-0.5 font-bold tracking-wide uppercase rounded-full mt-1 ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300' : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'}`}>
             {asNumber(product.stock)} in stock
           </span>
         </div>
-        <div className="text-[13px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-4 mt-1">
-          <span className="font-mono text-[12px]">SKU: {product.sku}</span>
-          <span>Category: {categoryName}</span>
-          <span className="font-medium text-slate-700 dark:text-slate-300">Price: {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? ' / kg' : ''}</span>
+        <div className="text-[13px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-4 mt-2">
+          <span className="font-mono text-[12px] text-gray-400 dark:text-gray-500">SKU: {product.sku}</span>
+          <span><span className="text-gray-400 dark:text-gray-500">Category:</span> <span className="font-medium text-slate-700 dark:text-slate-300">{categoryName}</span></span>
+          <span className="font-medium text-slate-900 dark:text-white text-[14px]">{formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? <span className="text-xs text-gray-500 font-normal"> / kg</span> : ''}</span>
         </div>
       </div>
-      <div className="flex gap-2 shrink-0">
+      <div className="flex gap-2 shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
         <button
-          className={`px-5 py-2.5 text-[13px] font-bold tracking-wide rounded-full transition-all duration-300 active:scale-95 ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-white/5'
+          className={`flex-1 sm:flex-none px-4 py-2 text-[13px] font-semibold tracking-wide rounded-full transition-all duration-300 active:scale-95 ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -156,7 +156,7 @@ const ProductListRow: React.FC<{
         </button>
         {canManage && (
           <button
-            className="px-5 py-2.5 text-[13px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20 font-bold tracking-wide rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all duration-300 active:scale-95"
+            className="flex-1 sm:flex-none px-4 py-2 text-[13px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold tracking-wide rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all duration-300 active:scale-95"
             onClick={(e) => {
               e.stopPropagation();
               onAdjustStock();

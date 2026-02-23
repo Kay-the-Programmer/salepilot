@@ -100,7 +100,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-    const [isSearchActive, setIsSearchActive] = useState(false);
     const [showFilters, setShowFilters] = useState(false);
 
     // Resizable panel state
@@ -557,8 +556,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             <InventoryHeader
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                isSearchActive={isSearchActive}
-                setIsSearchActive={setIsSearchActive}
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 viewMode={viewMode}

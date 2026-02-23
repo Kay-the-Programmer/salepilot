@@ -1,13 +1,10 @@
 import React from 'react';
-import Header from '../../components/Header';
 import { FiFilter } from 'react-icons/fi';
 import { GridIcon, ListIcon } from '../icons';
 
 interface InventoryHeaderProps {
     searchTerm: string;
     setSearchTerm: (term: string) => void;
-    isSearchActive: boolean;
-    setIsSearchActive: (active: boolean) => void;
     activeTab: 'products' | 'categories';
     setActiveTab: (tab: 'products' | 'categories') => void;
     viewMode: 'grid' | 'list';
@@ -41,104 +38,125 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     onOpenAddCategory
 }) => {
     return (
-        <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/5 hidden md:block">
-            <Header
-                title={activeTab === 'products' ? 'Products' : 'Categories'}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                isSearchActive={isSearchActive}
-                setIsSearchActive={setIsSearchActive}
-                className="!static !border-none !shadow-none !bg-transparent"
-                buttonText={canManageProducts ? (activeTab === 'products' ? 'Add Product' : 'Add Category') : undefined}
-                onButtonClick={canManageProducts ? (activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory) : undefined}
-                searchLeftContent={
-                    <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-1.5 rounded-[16px] shadow-inner shrink-0 items-center">
+        <div className="hidden dark:bg-slate-950/90 bg-slate-50/90 backdrop-blur-2xl md:flex items-center justify-between px-8 py-4 sticky top-0 z-30 border-b border-transparent transition-all duration-300">
+            <div className="flex justify-between items-center w-full max-w-[1400px] mx-auto">
+                <div>
+                    <h1 className="text-[34px] font-semibold text-slate-900 dark:text-white leading-tight tracking-tight">
+                        {activeTab === 'products' ? 'Products' : 'Categories'}
+                    </h1>
+                    <p className="text-[13px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">
+                        Inventory Management
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-4 flex-shrink-0">
+
+                    {/* Search Bar */}
+                    <div className="relative">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span className="text-slate-400">🔍</span>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-64 pl-9 pr-4 py-2 bg-white dark:bg-slate-800/80 border border-slate-200/50 dark:border-white/10 rounded-[16px] text-[14px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-sm transition-all"
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                ✕
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Segmented Control */}
+                    <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-1.5 rounded-[16px] shadow-inner items-center">
                         <button
-                            onClick={() => {
-                                setActiveTab('products');
-                                setSearchTerm('');
-                            }}
-                            className={`px-5 py-2 rounded-[12px] text-[14px] font-bold tracking-wide transition-all duration-300 active:scale-95 ${activeTab === 'products'
-                                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                            onClick={() => { setActiveTab('products'); setSearchTerm(''); }}
+                            className={`px-4 py-2 rounded-[12px] text-[13px] font-bold tracking-wide transition-all duration-300 ${activeTab === 'products'
+                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                                 }`}
                         >
                             Products
                         </button>
                         <button
-                            onClick={() => {
-                                setActiveTab('categories');
-                                setSearchTerm('');
-                            }}
-                            className={`px-5 py-2 rounded-[12px] text-[14px] font-bold tracking-wide transition-all duration-300 active:scale-95 ${activeTab === 'categories'
-                                ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
-                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                            onClick={() => { setActiveTab('categories'); setSearchTerm(''); }}
+                            className={`px-4 py-2 rounded-[12px] text-[13px] font-bold tracking-wide transition-all duration-300 ${activeTab === 'categories'
+                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
                                 }`}
                         >
                             Categories
                         </button>
                     </div>
-                }
-                rightContent={
-                    activeTab === 'products' ? (
+
+                    {/* Right side actions */}
+                    {activeTab === 'products' && (
                         <div className="flex items-center gap-1.5 bg-slate-200/50 dark:bg-slate-800/80 p-1.5 rounded-[16px] shadow-inner">
-                            {/* Barcode Lookup - Primary Action */}
+                            {/* Barcode Lookup */}
                             <button
                                 onClick={() => setIsManualLookupOpen(true)}
-                                className="hidden lg:flex items-center justify-center p-2 rounded-[12px] text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700 transition-all duration-300 active:scale-95 hover:shadow-sm"
+                                className="p-2 rounded-[12px] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all duration-300 hover:bg-white dark:hover:bg-slate-700 active:scale-95"
                                 title="Lookup Barcode"
-                                aria-label="Lookup Barcode"
                             >
-                                <span className="text-xl leading-none">⌨️</span>
+                                ⌨️
                             </button>
 
-                            <div className="h-5 w-px bg-slate-300/50 dark:bg-slate-700 mx-1 hidden lg:block"></div>
+                            <div className="h-4 w-px bg-slate-300/50 dark:bg-slate-700 mx-0.5" />
 
                             {/* Filters Toggle */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`flex items-center justify-center p-2.5 rounded-[12px] transition-all duration-300 active:scale-95 hover:shadow-sm ${showFilters
-                                    ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+                                className={`p-2 rounded-[12px] transition-all duration-300 active:scale-95 ${showFilters
+                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
                                     : 'text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700'
                                     }`}
                                 title={showFilters ? "Hide Filters" : "Show Filters"}
-                                aria-label={showFilters ? "Hide Filters" : "Show Filters"}
                             >
-                                <FiFilter className={`w-4 h-4 ${showFilters ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                                <FiFilter className="w-4.5 h-4.5" />
                             </button>
 
                             {/* Archived Toggle */}
                             <button
                                 onClick={() => setShowArchived(!showArchived)}
-                                className={`flex items-center justify-center p-2 rounded-[12px] transition-all duration-300 active:scale-95 hover:shadow-sm ${showArchived
-                                    ? 'bg-white dark:bg-slate-700 text-blue-600 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10'
+                                className={`p-2 rounded-[12px] transition-all duration-300 active:scale-95 ${showArchived
+                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
                                     : 'text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700'
                                     }`}
                                 title={showArchived ? "Hide Archived" : "Show Archived"}
-                                aria-label={showArchived ? "Hide Archived" : "Show Archived"}
                             >
                                 <span className="w-5 h-5 flex items-center justify-center text-[15px] leading-none">📦</span>
                             </button>
 
-                            <div className="h-5 w-px bg-slate-300/50 dark:bg-slate-700 mx-1"></div>
+                            <div className="h-4 w-px bg-slate-300/50 dark:bg-slate-700 mx-0.5" />
 
-                            {/* Direct List/Grid Toggle */}
+                            {/* View Mode Toggle */}
                             <button
                                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                                className="flex items-center justify-center p-2.5 rounded-[12px] text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700 transition-all duration-300 active:scale-95 hover:shadow-sm"
-                                aria-label={viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
-                                title={viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
+                                className="p-2 rounded-[12px] text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700 transition-all duration-300 active:scale-95"
                             >
-                                {viewMode === 'grid' ? (
-                                    <ListIcon className="w-5 h-5 flex-shrink-0" />
-                                ) : (
-                                    <GridIcon className="w-5 h-5 flex-shrink-0" />
-                                )}
+                                {viewMode === 'grid' ? <ListIcon className="w-4.5 h-4.5" /> : <GridIcon className="w-4.5 h-4.5" />}
                             </button>
                         </div>
-                    ) : null
-                }
-            />
+                    )}
+
+                    {/* Add Button */}
+                    {canManageProducts && (
+                        <button
+                            onClick={activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory}
+                            className="flex items-center gap-2 px-5 py-2 hover:bg-white dark:hover:bg-slate-800 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-white/10 text-slate-900 dark:text-white rounded-full text-[14px] font-bold tracking-wide shadow-sm hover:shadow-md transition-all active:scale-95"
+                        >
+                            <span className="text-lg leading-none">+</span>
+                            {activeTab === 'products' ? 'Add Product' : 'Add Category'}
+                        </button>
+                    )}
+                </div>
+            </div>
         </div>
     );
 });
