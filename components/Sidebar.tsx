@@ -432,6 +432,19 @@ export default function Sidebar({
                                     if (page === 'profile') return 'bg-gradient-to-br from-sky-400 to-blue-600 text-white shadow-blue-500/30';
                                     if (page === 'directory' || page === 'superadmin/stores') return 'bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white shadow-pink-500/30';
                                     if (page === 'accounting' || page === 'superadmin/subscriptions') return 'bg-gradient-to-br from-amber-400 to-amber-600 text-white shadow-amber-500/30';
+
+                                    // Additional pages
+                                    if (page === 'sales-history') return 'bg-gradient-to-br from-violet-500 to-purple-600 text-white shadow-purple-500/30';
+                                    if (page === 'returns') return 'bg-gradient-to-br from-rose-400 to-pink-600 text-white shadow-pink-500/30';
+                                    if (page === 'suppliers') return 'bg-gradient-to-br from-teal-400 to-emerald-600 text-white shadow-emerald-500/30';
+                                    if (page === 'purchase-orders') return 'bg-gradient-to-br from-yellow-400 to-amber-600 text-white shadow-amber-500/30';
+                                    if (page === 'stock-takes') return 'bg-gradient-to-br from-lime-400 to-green-600 text-white shadow-green-500/30';
+                                    if (page === 'audit-trail') return 'bg-gradient-to-br from-zinc-500 to-slate-600 text-white shadow-slate-500/30';
+                                    if (page === 'subscription') return 'bg-gradient-to-br from-yellow-500 to-orange-600 text-white shadow-orange-500/30';
+                                    if (page === 'user-guide') return 'bg-gradient-to-br from-blue-400 to-indigo-600 text-white shadow-indigo-500/30';
+                                    if (page === 'whatsapp/conversations') return 'bg-gradient-to-br from-green-400 to-emerald-600 text-white shadow-emerald-500/30';
+                                    if (page === 'support') return 'bg-gradient-to-br from-pink-400 to-rose-600 text-white shadow-rose-500/30';
+
                                     // Default Apple-like gray generic icon
                                     return 'bg-gradient-to-br from-gray-200 to-gray-300 dark:from-slate-700 dark:to-slate-800 text-gray-700 dark:text-gray-200 shadow-gray-400/20 dark:shadow-black/40';
                                 };
