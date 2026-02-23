@@ -354,7 +354,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
             </div>
 
             {/* Category list container */}
-            <div className="liquid-glass rounded-[2rem] shadow-xl overflow-hidden border-none stagger-2">
+            <div className="liquid-glass rounded-[2rem] shadow-xl overflow-hidden border-none animate-glass-appear stagger-2">
                 {/* Desktop header */}
                 <div className="hidden sm:grid grid-cols-12 gap-4 bg-slate-50/50 dark:bg-slate-900/50 px-8 py-4 border-b border-gray-200 dark:border-white/10 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest backdrop-blur-xl">
                     <div className="col-span-6">Category Name</div>
