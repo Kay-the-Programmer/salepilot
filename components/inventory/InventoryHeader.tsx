@@ -22,8 +22,6 @@ interface InventoryHeaderProps {
 const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     searchTerm,
     setSearchTerm,
-    isSearchActive,
-    setIsSearchActive,
     activeTab,
     setActiveTab,
     viewMode,
