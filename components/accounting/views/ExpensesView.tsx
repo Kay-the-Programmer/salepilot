@@ -10,7 +10,7 @@ import CalculatorIcon from '../../icons/CalculatorIcon';
 import CalendarIcon from '../../icons/CalendarIcon';
 import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
 import MagnifyingGlassIcon from '../../icons/MagnifyingGlassIcon';
-import ArrowPathIcon from '../../icons/ArrowPathIcon';
+import RefreshIcon from '../../icons/RefreshIcon';
 import LoadingSpinner from '../../LoadingSpinner';
 import RecurringExpensesView from './RecurringExpensesView';
 
@@ -101,7 +101,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({
                         onClick={() => setActiveSubTab('recurring')}
                         className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 active:scale-95 whitespace-nowrap lg:whitespace-normal ${activeSubTab === 'recurring' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                     >
-                        <ArrowPathIcon className={`w-5 h-5 ${activeSubTab === 'recurring' ? 'opacity-100' : 'opacity-60'}`} />
+                        <RefreshIcon className={`w-5 h-5 ${activeSubTab === 'recurring' ? 'opacity-100' : 'opacity-60'}`} />
                         Recurring Expenses
                     </button>
                 </nav>
