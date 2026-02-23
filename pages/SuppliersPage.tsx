@@ -95,30 +95,30 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
 
     if (selectedSupplier) {
         return (
-            <div className="flex flex-col h-full">
-                <header className="bg-gray-100/80 dark:bg-slate-900/80 backdrop-blur-[2px] sticky top-0 z-10 border-b border-gray-200/50 dark:border-slate-800/50 glass-effect">
-                    <div className="mx-auto px-4 sm:px-4 lg:px-4">
-                        <div className="flex items-center h-16">
-                            <button
-                                onClick={handleBackToList}
-                                className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400 transition-colors active:scale-95 transition-all duration-300"
-                                aria-label="Back to supplier list"
-                            >
-                                <ArrowLeftIcon className="w-6 h-6" />
-                            </button>
-                            <h1 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:truncate">
-                                {selectedSupplier.name}
-                            </h1>
-                        </div>
+            <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-google">
+                <header className="flex-none sticky top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300">
+                    <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 md:py-6 flex items-center h-16 sm:h-auto">
+                        <button
+                            onClick={handleBackToList}
+                            className="mr-4 p-2.5 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 transition-colors active:scale-95 duration-300 backdrop-blur-md"
+                            aria-label="Back to supplier list"
+                        >
+                            <ArrowLeftIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+                        </button>
+                        <h1 className="text-[22px] sm:text-[34px] font-bold sm:font-semibold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                            {selectedSupplier.name}
+                        </h1>
                     </div>
                 </header>
-                <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-slate-950">
-                    <SupplierDetailView
-                        supplier={selectedSupplier}
-                        products={supplierProducts}
-                        onEdit={handleOpenEditModal}
-                        storeSettings={storeSettings}
-                    />
+                <main className="flex-1 overflow-x-hidden overflow-y-auto w-full">
+                    <div className="max-w-[1400px] mx-auto w-full">
+                        <SupplierDetailView
+                            supplier={selectedSupplier}
+                            products={supplierProducts}
+                            onEdit={handleOpenEditModal}
+                            storeSettings={storeSettings}
+                        />
+                    </div>
                 </main>
                 <SupplierFormModal
                     isOpen={isModalOpen}
@@ -131,42 +131,48 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
     }
 
     return (
-        <>
+        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-950 font-google overflow-hidden relative">
             <Header
                 title="Suppliers"
                 buttonText="Add Supplier"
                 onButtonClick={handleOpenAddModal}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-            />
-            <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100 dark:bg-slate-950">
-                <div className="px-4 py-3 flex justify-end">
+                rightContent={
                     <ListGridToggle
                         viewMode={viewMode}
                         onViewModeChange={setViewMode}
                         size="sm"
                     />
+                }
+            />
+            <main className="flex-1 overflow-y-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 scroll-smooth" id="suppliers-content" tabIndex={-1}>
+                <div className="max-w-[1400px] mx-auto w-full">
+                    <SupplierList
+                        suppliers={paginatedSuppliers}
+                        onSelectSupplier={handleSelectSupplier}
+                        onEdit={handleOpenEditModal}
+                        onDelete={onDeleteSupplier}
+                        onAddNew={handleOpenAddModal}
+                        isLoading={isLoading}
+                        error={error}
+                        viewMode={viewMode}
+                        selectedSupplierId={selectedSupplierId}
+                    />
+
+                    {filteredSuppliers.length > 0 && (
+                        <div className="mt-8 mb-20 md:mb-0">
+                            <Pagination
+                                total={filteredSuppliers.length}
+                                page={page}
+                                pageSize={pageSize}
+                                onPageChange={setPage}
+                                onPageSizeChange={setPageSize}
+                                label="suppliers"
+                            />
+                        </div>
+                    )}
                 </div>
-                <SupplierList
-                    suppliers={paginatedSuppliers}
-                    onSelectSupplier={handleSelectSupplier}
-                    onEdit={handleOpenEditModal}
-                    onDelete={onDeleteSupplier}
-                    onAddNew={handleOpenAddModal}
-                    isLoading={isLoading}
-                    error={error}
-                    viewMode={viewMode}
-                    selectedSupplierId={selectedSupplierId}
-                />
-                <Pagination
-                    total={filteredSuppliers.length}
-                    page={page}
-                    pageSize={pageSize}
-                    onPageChange={setPage}
-                    onPageSizeChange={setPageSize}
-                    label="suppliers"
-                    className="border-t border-gray-200 dark:border-slate-800 backdrop-blur-[2px] sticky bottom-0 glass-effect !bg-white/80 dark:!bg-slate-900/80"
-                />
             </main>
             <SupplierFormModal
                 isOpen={isModalOpen}
@@ -174,7 +180,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                 onSave={handleSave}
                 supplierToEdit={editingSupplier}
             />
-        </>
+        </div>
     );
 };
 

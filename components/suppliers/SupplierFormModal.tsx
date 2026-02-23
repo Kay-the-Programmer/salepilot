@@ -255,63 +255,60 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-black/40 flex items-end justify-center md:items-center safe-area-bottom"
+            className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex items-end justify-center md:items-center safe-area-bottom transition-all duration-300 font-google"
             onClick={onClose}
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
         >
             <div
-                className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/95 w-full max-w-md md:max-w-2xl md: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up backdrop-blur-sm border-t md:border border-gray-100 dark:border-slate-800 glass-effect"
+                className="bg-white/90 dark:bg-slate-900/95 w-full max-w-md md:max-w-2xl max-h-[90vh] md:max-h-[85vh] rounded-t-[32px] md:rounded-[32px] overflow-hidden flex flex-col animate-slide-up md:animate-scale-in backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={handleKeyDown}
             >
                 {/* Header */}
-                <div className="liquid-glass-header sticky top-0 z-10 /80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 glass-effect">
+                <div className="sticky top-0 z-10 bg-white/50 dark:bg-slate-900/50 backdrop-blur-md border-b border-slate-200/50 dark:border-white/5 px-6 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center">
+                        <div className="flex items-center gap-4">
                             <button
                                 onClick={onClose}
-                                className="p-2 -ml-2 rounded-xl active:bg-gray-100 dark:active:bg-slate-800 text-gray-600 dark:text-slate-400 transition-colors"
+                                className="p-2.5 -ml-2.5 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/80 text-slate-500 dark:text-slate-400 transition-colors active:scale-95"
                                 aria-label="Close modal"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
-                            <div className="ml-2">
-                                <h1 id="modal-title" className="text-lg font-bold text-gray-900 dark:text-white">
+                            <div>
+                                <h1 id="modal-title" className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                                     {supplierToEdit ? 'Edit Supplier' : 'New Supplier'}
                                 </h1>
-                                <div className="text-xs text-gray-500 dark:text-slate-400">
-                                    {activeSection === 'basic' && 'Basic Information'}
-                                    {activeSection === 'details' && 'Address & Terms'}
-                                    {activeSection === 'banking' && 'Banking Details'}
-                                    {activeSection === 'notes' && 'Additional Notes'}
+                                <div className="text-[13px] font-medium text-slate-500 dark:text-slate-400 tracking-wide mt-0.5">
+                                    {activeSection === 'basic' && 'Step 1: Basic Information'}
+                                    {activeSection === 'details' && 'Step 2: Address & Terms'}
+                                    {activeSection === 'banking' && 'Step 3: Banking Details'}
+                                    {activeSection === 'notes' && 'Step 4: Additional Notes'}
                                 </div>
                             </div>
                         </div>
-
-                        
                     </div>
                 </div>
 
                 {/* Progress Indicator */}
-                <div className="px-4 pt-4">
+                <div className="px-6 pt-6 pb-2">
                     <SectionProgress activeSection={activeSection} setActiveSection={setActiveSection} />
                 </div>
 
                 {/* Content */}
-                <div className="flex-1 overflow-y-auto px-4 pb-4">
+                <div className="flex-1 overflow-y-auto px-6 pb-6 custom-scrollbar">
                     <form onSubmit={handleSubmit} className="pb-4">
                         {renderSection()}
                     </form>
                 </div>
 
                 {/* Footer Navigation */}
-                <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-t border-gray-200 dark:border-slate-800 px-4 py-3 glass-effect">
-                    <div className="flex items-center justify-between">
-                        <Button
+                <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-200/50 dark:border-white/5 px-6 py-4">
+                    <div className="flex items-center justify-between gap-4">
+                        <button
                             type="button"
-                            variant={isFirstSection ? 'ghost' : 'secondary'}
                             onClick={() => {
                                 const sections: SupplierFormSection[] = ['basic', 'details', 'banking', 'notes'];
                                 const currentIndex = sections.indexOf(activeSection);
@@ -320,15 +317,18 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                                 }
                             }}
                             disabled={isFirstSection}
+                            className={`px-6 py-3 rounded-full font-semibold transition-all duration-300 ${isFirstSection ? 'opacity-0 pointer-events-none' : 'text-slate-700 dark:text-slate-200 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 active:scale-95'}`}
                         >
                             Back
-                        </Button>
+                        </button>
 
-                        <div className="text-xs text-gray-500 dark:text-slate-500 font-medium">
-                            {activeSection === 'basic' && 'Step 1 of 4'}
-                            {activeSection === 'details' && 'Step 2 of 4'}
-                            {activeSection === 'banking' && 'Step 3 of 4'}
-                            {activeSection === 'notes' && 'Step 4 of 4'}
+                        <div className="flex items-center gap-1.5 flex-1 justify-center">
+                            {(['basic', 'details', 'banking', 'notes'] as const).map((section) => (
+                                <div
+                                    key={`dot-${section}`}
+                                    className={`h-1.5 rounded-full transition-all duration-300 ${activeSection === section ? 'w-6 bg-blue-600 dark:bg-blue-400' : 'w-1.5 bg-slate-200 dark:bg-slate-700'}`}
+                                />
+                            ))}
                         </div>
 
                         <button
@@ -342,9 +342,9 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                                     handleSubmit();
                                 }
                             }}
-                            className={`px-4 py-2.5 rounded-xl font-semibold transition-all shadow-sm ${isLastSection
-                                ? 'bg-gray-900 dark:bg-slate-100 text-white dark:text-gray-900 active:scale-95 hover:bg-gray-800 dark:hover:bg-white'
-                                : 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-slate-100 active:scale-95 hover:bg-gray-200 dark:hover:bg-slate-700'
+                            className={`px-8 py-3 rounded-full font-semibold transition-all duration-300 shadow-lg active:scale-95 ${isLastSection
+                                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-blue-600/20'
+                                : 'bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-100 text-white dark:text-slate-900 shadow-slate-900/10 dark:shadow-white/10'
                                 }`}
                         >
                             {isLastSection ? 'Save Supplier' : 'Next'}

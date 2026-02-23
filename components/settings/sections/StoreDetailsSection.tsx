@@ -76,34 +76,6 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                             placeholder: "https://example.com"
                         })}
 
-                        <div className="pt-2">
-                            <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
-                                <div>
-                                    <label htmlFor="isOnlineStoreEnabled" className="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer block active:scale-95 transition-all duration-300">
-                                        Online Store Status
-                                    </label>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-                                        {currentSettings.isOnlineStoreEnabled !== false
-                                            ? 'Your store is currently visible to customers'
-                                            : 'Your store is hidden (maintenance mode)'}
-                                    </p>
-                                </div>
-
-                                <label className="relative cursor-pointer active:scale-95 transition-all duration-300">
-                                    <input
-                                        id="isOnlineStoreEnabled"
-                                        name="isOnlineStoreEnabled"
-                                        type="checkbox"
-                                        checked={currentSettings.isOnlineStoreEnabled !== false}
-                                        onChange={(e) => setCurrentSettings(prev => ({ ...prev, isOnlineStoreEnabled: e.target.checked }))}
-                                        className="peer sr-only"
-                                    />
-                                    <div className="w-12 h-6 bg-slate-300 dark:bg-slate-700 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
-                                        <div className="liquid-glass-card rounded-[2rem] absolute w-5 h-5 left-1 top-0.5 peer-checked:left-7 transition-all duration-300"></div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
                     </div>
                     <div className="space-y-6">
                         {renderInput("Phone Number", "phone", "tel", {
@@ -194,21 +166,6 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                             </div>
                         }
                         icon={<MapPinIcon className="w-5 h-5" />}
-                    />
-                    <DetailItem
-                        label="Online Store Status"
-                        value={
-                            <div className="flex items-center justify-end gap-2">
-                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 text-[13px] font-semibold rounded-full ${settings.isOnlineStoreEnabled !== false
-                                    ? 'bg-emerald-100/50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-                                    }`}>
-                                    <span className={`w-1.5 h-1.5 rounded-full ${settings.isOnlineStoreEnabled !== false ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                                    {settings.isOnlineStoreEnabled !== false ? 'Active' : 'Disabled'}
-                                </span>
-                            </div>
-                        }
-                        icon={<BuildingStorefrontIcon className="w-5 h-5" />}
                     />
                 </div>
             )}

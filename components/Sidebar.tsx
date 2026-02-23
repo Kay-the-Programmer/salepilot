@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { User, StoreSettings } from '../types';
+import { User } from '../types';
 import {
     HomeIcon,
     ShoppingCartIcon,
@@ -30,7 +30,6 @@ import {
     MoonIcon
 } from './icons';
 import { useTheme } from '../contexts/ThemeContext';
-import { HiOutlineArrowTopRightOnSquare } from 'react-icons/hi2';
 import logo from '../assets/logo.png';
 
 interface SidebarProps {
@@ -45,7 +44,6 @@ interface SidebarProps {
     onSelectStore?: (storeId: string) => void;
     showOnMobile?: boolean;
     onMobileClose?: () => void;
-    storeSettings?: StoreSettings | null;
     lastSync?: number | null;
     isSyncing?: boolean;
     unreadNotificationsCount?: number;
@@ -91,23 +89,9 @@ const NAV_ITEMS = [
         badge: null
     },
     {
-        name: 'Logistics',
-        page: 'logistics',
-        icon: TruckIcon,
-        roles: ['admin', 'staff', 'inventory_manager'],
-        badge: null
-    },
-    {
         name: 'Sales History',
         page: 'sales-history',
         icon: ClockIcon,
-        roles: ['admin', 'staff'],
-        badge: null
-    },
-    {
-        name: 'Online Orders',
-        page: 'orders',
-        icon: TruckIcon,
         roles: ['admin', 'staff'],
         badge: null
     },
@@ -245,13 +229,6 @@ const NAV_ITEMS = [
         badge: null
     },
     {
-        name: 'Marketing',
-        page: 'marketing',
-        icon: SparklesIcon,
-        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
-        badge: 'New'
-    },
-    {
         name: 'User Guide',
         page: 'user-guide',
         icon: BookOpenIcon,
@@ -286,7 +263,6 @@ export default function Sidebar({
     onSelectStore,
     showOnMobile = false,
     onMobileClose,
-    storeSettings,
     lastSync,
     isSyncing,
     unreadNotificationsCount,
@@ -639,25 +615,6 @@ export default function Sidebar({
 
                 {/* ─── Bottom Actions (integrated, no separate panel) ─── */}
                 <div className={`shrink-0 px-3 py-2 space-y-0.5`}>
-                    {/* Visit Online Store */}
-                    {(selectedStoreId || user.currentStoreId) && (storeSettings?.isOnlineStoreEnabled !== false) && (
-                        <a
-                            href={`/shop/${selectedStoreId || user.currentStoreId}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={`
-                                flex items-center gap-3 px-4 py-2.5 rounded-xl
-                                text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50/80 dark:hover:bg-indigo-500/[0.08] hover:text-indigo-700 dark:hover:text-indigo-300
-                                transition-colors duration-200
-                                ${!isExpanded && 'justify-center'}
-                            `}
-                            title={!isExpanded ? 'Visit Online Store' : undefined}
-                        >
-                            <HiOutlineArrowTopRightOnSquare className="w-5 h-5 flex-shrink-0" />
-                            {isExpanded && <span className="text-sm font-medium">Visit Online Store</span>}
-                        </a>
-                    )}
-
                     {/* Install App */}
                     {installPrompt && (
                         <button

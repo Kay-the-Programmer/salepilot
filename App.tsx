@@ -7,11 +7,6 @@ import LoadingSpinner from './components/LoadingSpinner';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
-const ShopLayout = lazy(() => import('@/pages/shop/ShopLayout'));
-const ShopHomePage = lazy(() => import('@/pages/shop/ShopHomePage'));
-const ShopProductList = lazy(() => import('@/pages/shop/ShopProductList'));
-const ShopProductDetail = lazy(() => import('@/pages/shop/ShopProductDetail'));
-const CartPage = lazy(() => import('@/pages/shop/CartPage'));
 const OfferLiveTracking = lazy(() => import('@/components/offers/OfferLiveTracking'));
 const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
@@ -42,13 +37,7 @@ export default function App() {
                                     element={<Dashboard />}
                                 />
 
-                                {/* Public Online Store Routes */}
-                                <Route path="/shop/:storeId" element={<ShopLayout />}>
-                                    <Route index element={<ShopHomePage />} />
-                                    <Route path="products" element={<ShopProductList />} />
-                                    <Route path="product/:productId" element={<ShopProductDetail />} />
-                                    <Route path="cart" element={<CartPage />} />
-                                </Route>
+
 
                                 {/* Authentication & Onboarding handled by Dashboard */}
                                 <Route path="/login" element={<Dashboard />} />
@@ -66,7 +55,7 @@ export default function App() {
                                 <Route path="/inventory" element={<Dashboard />} />
                                 <Route path="/sales" element={<Dashboard />} />
                                 <Route path="/sales-history" element={<Dashboard />} />
-                                <Route path="/orders" element={<Dashboard />} />
+
                                 <Route path="/returns" element={<Dashboard />} />
                                 <Route path="/customers" element={<Dashboard />} />
                                 <Route path="/suppliers" element={<Dashboard />} />
@@ -77,7 +66,7 @@ export default function App() {
                                 <Route path="/audit-trail" element={<Dashboard />} />
                                 <Route path="/users" element={<Dashboard />} />
                                 <Route path="/notifications" element={<Dashboard />} />
-                                <Route path="/logistics" element={<Dashboard />} />
+
                                 <Route path="/profile" element={<Dashboard />} />
                                 <Route path="/settings" element={<Dashboard />} />
                                 <Route path="/subscription" element={<SubscriptionPage />} />
@@ -89,8 +78,7 @@ export default function App() {
                                 <Route path="/superadmin/notifications" element={<Dashboard />} />
                                 <Route path="/superadmin/subscriptions" element={<Dashboard />} />
 
-                                <Route path="/marketing" element={<Dashboard />} />
-                                <Route path="/marketing" element={<Dashboard />} />
+
                                 {/* <Route path="/directory" element={<MarketplacePage />} />
                                 <Route path="/directory/request/:requestId" element={<Dashboard />} />
                                 <Route path="/marketplace" element={<MarketplacePage />} />

@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../types';
-import { SparklesIcon, ChartBarIcon, CubeIcon, MicrophoneIcon, StopIcon, ArrowDownTrayIcon } from '../components/icons';
+import { SparklesIcon, ChartBarIcon, MicrophoneIcon, StopIcon, ArrowDownTrayIcon } from '../components/icons';
 import { api } from '../services/api';
 import ReactMarkdown from 'react-markdown';
 import * as XLSX from 'xlsx';
@@ -259,72 +259,51 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
     ];
 
     return (
-        <div className="flex flex-col h-full bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-900 relative overflow-hidden transition-colors duration-500">
-            {/* Background Decor */}
-            <div className="absolute top-0 right-0 -mt-20 -mr-20 w-80 h-80 bg-indigo-50 dark:bg-indigo-900/10 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
-            <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-blue-50 dark:bg-blue-900/10 rounded-full blur-3xl opacity-60 pointer-events-none"></div>
-
-            {/* Header - Minimal & Functional */}
-            <div className={`flex-shrink-0 px-6 py-4 md:px-8 transition-all duration-300 ${isChatMode ? 'bg-white/40 dark:bg-slate-900/40 backdrop-blur-xl border-b border-gray-100 dark:border-slate-800' : ''}`}>
-                <div className="max-w-4xl mx-auto flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="p-1.5 bg-indigo-600 rounded-lg shadow-sm">
-                            <SparklesIcon className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100 tracking-tight">Business Assistant</h1>
-                            {!isChatMode && <p className="text-[10px] text-gray-500 dark:text-gray-400 font-medium tracking-wide uppercase">Powered by SalePilot AI</p>}
-                        </div>
-                    </div>
+        <div className="flex flex-col h-full bg-white dark:bg-[#131314] font-google relative overflow-hidden transition-colors duration-500">
+            {/* Header - Minimal, typical of Gemini */}
+            <div className="flex-shrink-0 px-4 py-4 md:px-6 flex items-center justify-between absolute top-0 left-0 right-0 z-10">
+                <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-medium text-slate-800 dark:text-slate-200 tracking-tight flex items-center gap-2">
+                        SalePilot <span className="text-blue-600 dark:text-blue-400 font-bold">AI</span>
+                    </h1>
                 </div>
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-hidden relative flex flex-col">
+            <div className="flex-1 overflow-hidden relative flex flex-col mt-16">
 
                 {/* Default View (Landing state) */}
                 <div className={`absolute inset-0 overflow-y-auto custom-scrollbar transition-all duration-700 ease-in-out ${isChatMode ? 'opacity-0 translate-y-4 pointer-events-none' : 'opacity-100 translate-y-0 z-10'}`}>
-                    <div className="max-w-4xl mx-auto px-6 py-12 flex flex-col items-center justify-center min-h-[70%]">
+                    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 flex flex-col justify-center min-h-[80%]">
 
-                        {/* Welcome Text - Modern & Clean */}
-                        <div className="text-center mb-12 space-y-4 animate-fade-in-up">
-                            <h2 className="text-4xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 tracking-tighter">
-                                Hello, <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 dark:from-indigo-400 dark:to-violet-400">{user?.name?.split(' ')[0] || 'Partner'}</span>
+                        {/* Welcome Text - Gemini Style */}
+                        <div className="mb-12 space-y-2 animate-fade-in-up">
+                            <h2 className="text-[40px] md:text-[56px] font-semibold tracking-tight leading-tight">
+                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-violet-600 dark:from-blue-400 dark:to-violet-400">
+                                    Hello, {user?.name?.split(' ')[0] || 'Partner'}
+                                </span>
                             </h2>
-                            <p className="text-xl text-gray-500 dark:text-gray-400 max-w-2xl mx-auto font-light leading-relaxed">
-                                I'm your AI business assistant. How can I help you grow your business today?
+                            <p className="text-[40px] md:text-[56px] font-semibold tracking-tight text-[#c4c7c5] dark:text-[#444746] leading-tight">
+                                How can I help you today?
                             </p>
                         </div>
 
-                        {/* Suggestion Grid - More like Gemini cards */}
-                        <div className="w-full max-w-4xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
-                                {chipCategories.map((cat, idx) => (
-                                    <div key={idx} className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all cursor-pointer group active:scale-95 transition-all duration-300" onClick={() => handleChipClick(cat.chips[0].query)}>
-                                        <div className={`w-8 h-8 rounded-lg ${cat.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
-                                            {idx === 0 ? <ChartBarIcon className="w-4 h-4 text-white" /> : idx === 1 ? <CubeIcon className="w-4 h-4 text-white" /> : <SparklesIcon className="w-4 h-4 text-white" />}
-                                        </div>
-                                        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">{cat.category}</h3>
-                                        <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed italic">
-                                            "{cat.chips[0].label}"
-                                        </p>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <p className="text-center text-gray-400 dark:text-gray-500 text-xs font-medium mb-6 tracking-widest uppercase">
-                                Quick Actions
-                            </p>
-
-                            <div className="flex flex-wrap justify-center gap-3">
-                                {chipCategories.flatMap(c => c.chips).slice(0, 8).map((chip, idx) => (
-                                    <button
+                        {/* Suggestion Grid */}
+                        <div className="w-full animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+                                {chipCategories.flatMap(c => c.chips).slice(0, 4).map((chip, idx) => (
+                                    <div
                                         key={idx}
                                         onClick={() => handleChipClick(chip.query)}
-                                        className="px-4 py-2 bg-gray-100/50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-600 dark:text-gray-300 text-sm rounded-xl border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-200 active:scale-95 transition-all duration-300"
+                                        className="bg-[#f0f4f9] dark:bg-[#1e1f20] hover:bg-[#e1e5ea] dark:hover:bg-[#2a2b2c] p-4 rounded-2xl cursor-pointer group active:scale-95 transition-all duration-200 flex flex-col justify-between min-h-[120px]"
                                     >
-                                        {chip.label}
-                                    </button>
+                                        <p className="text-sm text-[#1f1f1f] dark:text-[#e3e3e3] font-medium leading-relaxed">
+                                            {chip.label}
+                                        </p>
+                                        <div className="self-end p-2 bg-white dark:bg-[#131314] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <SparklesIcon className="w-4 h-4 text-[#444746] dark:text-[#c4c7c5]" />
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -333,39 +312,25 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
 
                 {/* Chat Mode View */}
                 <div className={`flex-1 flex flex-col min-h-0 transition-opacity duration-500 ${isChatMode ? 'opacity-100 z-20' : 'opacity-0 pointer-events-none absolute inset-0'}`}>
-                    {/* Messages Area - OpenAI/Gemini Centered Layout */}
-                    <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-8 scroll-smooth pb-32">
-                        <div className="max-w-4xl mx-auto space-y-10">
-                            {/* Intro message */}
-                            <div className="flex items-start gap-4 group">
-                                <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 animate-scale-in">
-                                    <SparklesIcon className="w-4 h-4 text-white" />
-                                </div>
-                                <div className="pt-1.5 prose prose-sm max-w-none dark:prose-invert text-gray-700 dark:text-gray-300 font-medium">
-                                    I'm ready to help. You can ask me about your sales performance, inventory levels, or customer insights.
-                                </div>
-                            </div>
-
+                    <div className="flex-1 overflow-y-auto custom-scrollbar px-4 sm:px-6 scroll-smooth pb-40">
+                        <div className="max-w-3xl mx-auto space-y-8 pt-4">
                             {messages.map((msg) => (
-                                <div key={msg.id} className={`flex items-start gap-4 group animate-slide-up`}>
-                                    {/* Avatar Column */}
-                                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0
-                                        ${msg.role === 'user'
-                                            ? 'bg-gradient-to-br from-gray-700 to-gray-900 dark:from-slate-700 dark:to-slate-800 text-white font-bold text-xs uppercase'
-                                            : 'bg-indigo-600'}`}>
-                                        {msg.role === 'user'
-                                            ? (user?.name?.charAt(0) || 'U')
-                                            : <SparklesIcon className="w-4 h-4 text-white" />}
-                                    </div>
+                                <div key={msg.id} className={`flex gap-4 group animate-slide-up ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                    {/* Assistant Avatar */}
+                                    {msg.role === 'assistant' && (
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-blue-500 to-violet-500 mt-1">
+                                            <SparklesIcon className="w-4 h-4 text-white" />
+                                        </div>
+                                    )}
 
-                                    {/* Content Column */}
-                                    <div className="flex-1 pt-1.5">
+                                    {/* Content Area */}
+                                    <div className={`max-w-[85%] ${msg.role === 'user' ? 'bg-[#f0f4f9] dark:bg-[#1e1f20] px-5 py-3.5 rounded-3xl rounded-tr-sm' : 'pt-1'}`}>
                                         <div className={`
-                                            prose prose-sm max-w-none dark:prose-invert leading-relaxed
-                                            ${msg.role === 'user' ? 'text-gray-900 dark:text-gray-100 font-medium' : 'text-gray-800 dark:text-gray-200'}
+                                            prose prose-sm md:prose-base max-w-none dark:prose-invert leading-relaxed
+                                            ${msg.role === 'user' ? 'text-[#1f1f1f] dark:text-[#e3e3e3]' : 'text-[#1f1f1f] dark:text-[#e3e3e3]'}
                                         `}>
                                             {msg.role === 'assistant' ? (
-                                                <div className="prose-p:my-2 prose-strong:text-indigo-600 dark:prose-strong:text-indigo-400 prose-strong:font-bold">
+                                                <div className="prose-p:my-2 prose-strong:text-[#1f1f1f] dark:prose-strong:text-white prose-strong:font-semibold">
                                                     {messages.indexOf(msg) === messages.length - 1 ? (
                                                         <TypingMarkdown content={msg.content} />
                                                     ) : (
@@ -373,22 +338,31 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                                     )}
 
                                                     {msg.reportData && (
-                                                        <div className="mt-4 p-4 bg-gray-50 dark:bg-slate-800/50 rounded-xl border border-gray-100 dark:border-slate-700 not-prose">
-                                                            <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">Generated Report: {msg.reportData.title}</p>
+                                                        <div className="mt-5 p-4 bg-[#f0f4f9] dark:bg-[#1e1f20] rounded-2xl not-prose border border-[#e1e5ea] dark:border-[#333537]">
+                                                            <div className="flex items-center gap-3 mb-4">
+                                                                <div className="p-2 bg-white dark:bg-[#131314] rounded-lg">
+                                                                    <ChartBarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-sm font-semibold text-[#1f1f1f] dark:text-[#e3e3e3]">Report Generated</p>
+                                                                    <p className="text-xs text-[#444746] dark:text-[#c4c7c5]">{msg.reportData.title}</p>
+                                                                </div>
+                                                            </div>
+
                                                             <div className="flex flex-wrap gap-2">
                                                                 <button
                                                                     onClick={() => downloadPDF(msg.reportData!)}
-                                                                    className="flex items-center gap-2 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-all active:scale-95"
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#131314] hover:bg-gray-50 dark:hover:bg-[#2a2b2c] text-[#1f1f1f] dark:text-[#e3e3e3] text-xs font-semibold rounded-xl transition-all border border-[#e1e5ea] dark:border-[#333537]"
                                                                 >
-                                                                    <ArrowDownTrayIcon className="w-3.5 h-3.5" />
-                                                                    Download PDF
+                                                                    <ArrowDownTrayIcon className="w-4 h-4" />
+                                                                    PDF
                                                                 </button>
                                                                 <button
                                                                     onClick={() => downloadExcel(msg.reportData!)}
-                                                                    className="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all active:scale-95"
+                                                                    className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#131314] hover:bg-gray-50 dark:hover:bg-[#2a2b2c] text-[#1f1f1f] dark:text-[#e3e3e3] text-xs font-semibold rounded-xl transition-all border border-[#e1e5ea] dark:border-[#333537]"
                                                                 >
-                                                                    <ChartBarIcon className="w-3.5 h-3.5" />
-                                                                    Download Excel
+                                                                    <ChartBarIcon className="w-4 h-4" />
+                                                                    Excel
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -399,93 +373,100 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* User Avatar */}
+                                    {msg.role === 'user' && (
+                                        <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 bg-gray-200 dark:bg-gray-700 ml-1 mt-1">
+                                            {user?.profilePicture ? (
+                                                <img src={user.profilePicture} alt="User" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-[#1f1f1f] dark:text-[#e3e3e3] text-xs font-medium uppercase">
+                                                    {user?.name?.charAt(0) || 'U'}
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
                             ))}
 
                             {isTyping && (
-                                <div className="flex items-start gap-4 group">
-                                    <div className="w-8 h-8 rounded-full bg-indigo-600 flex items-center justify-center flex-shrink-0 animate-pulse">
+                                <div className="flex gap-4 group items-center justify-start">
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-blue-500 to-violet-500 animate-pulse mt-1">
                                         <SparklesIcon className="w-4 h-4 text-white" />
                                     </div>
-                                    <div className="pt-3.5">
-                                        <div className="flex gap-1.5 items-center">
-                                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce"></div>
-                                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                            <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-bounce" style={{ animationDelay: '0.4s' }}></div>
-                                        </div>
+                                    <div className="flex gap-1.5 items-center bg-[#f0f4f9] dark:bg-[#1e1f20] px-4 py-3 rounded-2xl">
+                                        <div className="w-2 h-2 bg-[#444746] dark:bg-[#c4c7c5] rounded-full animate-bounce"></div>
+                                        <div className="w-2 h-2 bg-[#444746] dark:bg-[#c4c7c5] rounded-full animate-bounce" style={{ animationDelay: '0.15s' }}></div>
+                                        <div className="w-2 h-2 bg-[#444746] dark:bg-[#c4c7c5] rounded-full animate-bounce" style={{ animationDelay: '0.3s' }}></div>
                                     </div>
                                 </div>
                             )}
                             <div ref={messagesEndRef} className="h-4" />
                         </div>
                     </div>
+                </div>
 
-                    {/* Chat Input Area - Pill Floating Design */}
-                    <div className="absolute bottom-0 left-0 right-0 p-4 md:p-8 pointer-events-none z-30">
-                        <div className="max-w-4xl mx-auto relative pointer-events-auto">
-
-                            {/* Actions bar above input */}
-                            <div className="flex items-center gap-2 mb-3">
+                {/* Chat Input Area - Gemini Style */}
+                <div className="absolute bottom-0 left-0 right-0 pt-10 pb-4 px-4 sm:px-6 bg-gradient-to-t from-white via-white/90 to-transparent dark:from-[#131314] dark:via-[#131314]/90 z-30 pointer-events-none">
+                    <div className="max-w-3xl mx-auto relative pointer-events-auto">
+                        <form onSubmit={handleAiSubmit} className="relative group">
+                            <div className={`
+                                relative bg-[#f0f4f9] dark:bg-[#1e1f20] 
+                                rounded-[24px] flex items-end p-2 sm:p-3 transition-all duration-300 shadow-sm
+                                ${isRecording ? 'ring-2 ring-red-500/50' : 'focus-within:bg-white dark:focus-within:bg-[#131314] focus-within:shadow-[0_4px_16px_rgba(0,0,0,0.08)] outline outline-1 outline-transparent focus-within:outline-[#e1e5ea] dark:focus-within:outline-[#333537]'}
+                            `}>
                                 <button
-                                    onClick={() => {
-                                        setIsChatMode(false);
-                                        setMessages([]);
-                                    }}
-                                    className="liquid-glass-card rounded-[2rem] flex items-center gap-1.5 px-3 py-1.5 /60 dark:bg-slate-800/60 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"
+                                    type="button"
+                                    onClick={toggleRecording}
+                                    className={`p-3 rounded-full transition-all active:scale-95 flex-shrink-0 mt-auto ${isRecording ? 'text-red-500 bg-red-50 dark:bg-red-500/10 animate-pulse' : 'text-[#444746] dark:text-[#c4c7c5] hover:bg-[#e1e5ea] dark:hover:bg-[#2a2b2c]'}`}
+                                    title={isRecording ? "Stop recording" : "Record voice"}
                                 >
-                                    <span>Clear Chat</span>
+                                    {isRecording ? <StopIcon className="w-5 h-5" /> : <MicrophoneIcon className="w-5 h-5" />}
                                 </button>
-                                {!isChatMode && (
-                                    <div className="text-[10px] font-medium text-gray-400 dark:text-gray-500 ml-2 animate-pulse">
-                                        Ask your first question to begin...
-                                    </div>
-                                )}
-                            </div>
 
-                            <form onSubmit={handleAiSubmit} className="relative group">
-                                {/* Gradient Glow Background */}
-                                <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-violet-600 rounded-[2rem] opacity-0 group-focus-within:opacity-20 blur-xl transition-all duration-500"></div>
-
-                                <div className={`relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl border ${isRecording ? 'border-red-500/50 ring-2 ring-red-500/20' : 'border-gray-200/80 dark:border-slate-700/80'} rounded-[2rem] shadow-2xl flex items-center p-2 transition-all duration-300 group-focus-within:border-indigo-500/50`}>
-                                    {isRecording && (
-                                        <div className="absolute -top-10 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full animate-bounce shadow-lg flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                                            LISTENING...
-                                        </div>
-                                    )}
+                                <div className="flex-1 min-h-[44px] flex flex-col justify-center px-2">
                                     <input
                                         ref={inputRef}
                                         type="text"
                                         value={aiQuery}
                                         onChange={(e) => setAiQuery(e.target.value)}
-                                        placeholder={isRecording ? "Listening to your voice..." : isChatMode ? "Ask a follow-up..." : "What can I help you with today?"}
-                                        className="flex-1 pl-6 pr-4 py-3 bg-transparent border-none focus:ring-0 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 text-base rounded-full focus:outline-none"
+                                        placeholder={isRecording ? "Listening..." : "Ask SalePilot..."}
+                                        className="w-full bg-transparent border-none focus:ring-0 text-[#1f1f1f] dark:text-[#e3e3e3] placeholder-[#444746] dark:placeholder-[#c4c7c5] text-base focus:outline-none"
                                     />
-                                    <button
-                                        type="button"
-                                        onClick={toggleRecording}
-                                        className={`p-2 transition-all hover:scale-110 active:scale-90 mr-1 ${isRecording ? 'text-red-500 animate-pulse' : 'text-gray-400 hover:text-indigo-500'}`}
-                                        title={isRecording ? "Stop recording" : "Record voice"}
-                                    >
-                                        {isRecording ? <StopIcon className="w-6 h-6" /> : <MicrophoneIcon className="w-6 h-6" />}
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={!aiQuery.trim() || isTyping}
-                                        className="p-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition-all disabled:opacity-30 disabled:grayscale hover:scale-105 active:scale-95 shadow-lg shadow-indigo-500/20"
-                                    >
-                                        <SparklesIcon className="w-5 h-5" />
-                                    </button>
                                 </div>
-                            </form>
 
-                            <p className="mt-4 text-[10px] text-center text-gray-400 dark:text-gray-500 font-medium">
-                                Assistant can make mistakes. Verify important business data.
+                                <button
+                                    type="submit"
+                                    disabled={!aiQuery.trim() || isTyping}
+                                    className={`p-3 rounded-full transition-all flex-shrink-0 mt-auto
+                                        ${(!aiQuery.trim() || isTyping)
+                                            ? 'text-[#444746] dark:text-[#c4c7c5] opacity-50'
+                                            : 'text-white bg-black dark:text-[#1f1f1f] dark:bg-[#e3e3e3] hover:scale-105 active:scale-95 shadow-sm'
+                                        }`}
+                                >
+                                    <SparklesIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </form>
+
+                        <div className="flex items-center justify-between mt-3 px-2">
+                            <p className="text-[11px] text-[#444746] dark:text-[#c4c7c5] font-medium hidden sm:block">
+                                SalePilot can make mistakes. Consider verifying important information.
                             </p>
+                            {isChatMode && (
+                                <button
+                                    onClick={() => {
+                                        setIsChatMode(false);
+                                        setMessages([]);
+                                    }}
+                                    className="text-[11px] font-medium text-[#444746] dark:text-[#c4c7c5] hover:text-[#1f1f1f] dark:hover:text-[#e3e3e3] transition-colors ml-auto sm:ml-0 px-3 py-1 bg-gray-100 dark:bg-[#1e1f20] hover:bg-gray-200 dark:hover:bg-[#2a2b2c] rounded-full"
+                                >
+                                    Clear Chat
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
     );
