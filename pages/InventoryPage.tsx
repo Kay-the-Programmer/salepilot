@@ -622,10 +622,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 selectedItem={!!selectedItem}
-                onScanClick={() => setIsScanModalOpen(true)}
-                onAddClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
-                showArchived={showArchived}
-                setShowArchived={setShowArchived}
                 viewMode={viewMode}
                 setViewMode={setViewMode}
             />

@@ -33,8 +33,16 @@ const InventoryOnboardingHelpers: React.FC<InventoryOnboardingHelpersProps> = ({
         completeAction(ONBOARDING_ACTIONS.CREATED_FIRST_CATEGORY);
     };
 
+    const showProductHelper = activeTab === 'products' && products.length === 0;
+    const showCategoryHelper = activeTab === 'categories' && categories.length === 0;
+    const showSupplierHelper = activeTab === 'products' && products.length > 0 && suppliers.length === 0;
+
+    if (!showProductHelper && !showCategoryHelper && !showSupplierHelper) {
+        return null;
+    }
+
     return (
-        <div className="px-max mx-auto w-full mb-6">
+        <div className="px-max mx-auto w-full mt-4 md:mt-0 mb-6">
             {/* Add first product helper */}
             {activeTab === 'products' && (
                 <OnboardingHelper
