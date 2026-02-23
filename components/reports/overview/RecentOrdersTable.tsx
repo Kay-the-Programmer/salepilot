@@ -16,7 +16,7 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({
     storeSettings,
 }) => {
     return (
-        <div className="liquid-glass-card rounded-[2rem] lg:col-span-2 dark:bg-slate-800 p-5 border border-slate-100 dark:border-white/10">
+        <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none rounded-[24px] lg:col-span-2 p-5 lg:p-6 border border-slate-200/50 dark:border-white/5">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 dark:text-white text-lg">Recent Orders</h3>
                 <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg">

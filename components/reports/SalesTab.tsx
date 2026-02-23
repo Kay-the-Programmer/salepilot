@@ -80,16 +80,16 @@ export const SalesTab: React.FC<SalesTabProps> = ({
 
             {/* Row 3: Daily Sales Table */}
             {dailySales && dailySales.length > 0 && (
-                <div className="liquid-glass-card rounded-[2.5rem] p-8 shadow-2xl border border-white/20 dark:border-white/5">
+                <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-8 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none border border-slate-200/50 dark:border-white/5">
                     <div className="flex flex-col sm:flex-row items-center justify-between mb-8 gap-6">
                         <div>
                             <h3 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Daily Sales History</h3>
                             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Detailed breakdown of revenue per day</p>
                         </div>
-                        <div className="flex items-center gap-3 liquid-glass-pill p-1.5 rounded-2xl">
-                            <span className="text-xs font-bold uppercase tracking-wider ml-3 text-slate-500">Show</span>
+                        <div className="flex items-center gap-3 bg-slate-100/80 dark:bg-slate-900/50 backdrop-blur-xl p-1.5 rounded-[16px]">
+                            <span className="text-[13px] font-medium tracking-wide ml-3 text-slate-500">Show</span>
                             <select
-                                className="text-sm bg-blue-600 text-white rounded-xl px-4 py-2 font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer active:scale-95 transition-all duration-300"
+                                className="text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-xl px-4 py-2 font-medium outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer active:scale-95 shadow-sm"
                                 value={dailyPageSize}
                                 onChange={(e) => {
                                     setDailyPageSize(parseInt(e.target.value));
@@ -107,7 +107,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                         {dailySales
                             .slice((dailyPage - 1) * dailyPageSize, dailyPage * dailyPageSize)
                             .map((day) => (
-                                <div key={day.date} className="group p-6 bg-white/40 dark:bg-slate-800/20 rounded-3xl border border-slate-200/40 dark:border-white/5 hover:border-blue-500/50 dark:hover:border-blue-400/50 hover:bg-white/60 dark:hover:bg-slate-800/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all duration-300">
+                                <div key={day.date} className="group p-6 bg-slate-50/50 dark:bg-slate-900/20 rounded-[20px] border border-slate-100 dark:border-white/5 hover:border-slate-200 dark:hover:border-white/10 hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-all duration-300 active:scale-[0.98]">
                                     <div className="flex flex-col mb-4">
                                         <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-400 mb-1">
                                             {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
@@ -119,9 +119,9 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                             })}
                                         </div>
                                     </div>
-                                    <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-2xl mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 active:scale-95 transition-all duration-300">
-                                        <div className="text-xs font-bold opacity-70 mb-0.5">Revenue</div>
-                                        <div className="text-lg font-black tracking-tight">
+                                    <div className="bg-white dark:bg-slate-800 p-3 rounded-xl mb-5 border border-slate-100 dark:border-white/5 shadow-sm group-hover:shadow-[0_4px_12px_rgb(0,0,0,0.05)] transition-all duration-300">
+                                        <div className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-0.5">Revenue</div>
+                                        <div className="text-lg font-semibold tracking-tight text-slate-900 dark:text-white">
                                             {formatCurrency(day.totalRevenue, storeSettings)}
                                         </div>
                                     </div>
@@ -147,23 +147,23 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                     {dailySales.length > dailyPageSize && (
                         <div className="flex items-center justify-center gap-4 mt-12 pb-2">
                             <button
-                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group active:scale-95 transition-all duration-300"
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed group"
                                 onClick={() => setDailyPage(p => Math.max(1, p - 1))}
                                 disabled={dailyPage === 1}
                                 aria-label="Previous page"
                             >
-                                <ChevronLeftIcon className="w-6 h-6 group-hover:-translate-x-1 transition-transform" />
+                                <ChevronLeftIcon className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
                             </button>
-                            <span className="px-6 py-3 rounded-2xl bg-slate-100 dark:bg-slate-800/80 text-sm font-black text-slate-500 dark:text-slate-400 tracking-widest border border-slate-200/50 dark:border-white/5">
-                                {dailyPage} <span className="mx-2 opacity-30">/</span> {Math.ceil(dailySales.length / dailyPageSize)}
+                            <span className="px-5 py-2 rounded-full bg-transparent text-[14px] font-medium text-slate-500 dark:text-slate-400">
+                                {dailyPage} <span className="mx-1.5 opacity-40">/</span> {Math.ceil(dailySales.length / dailyPageSize)}
                             </span>
                             <button
-                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group active:scale-95 transition-all duration-300"
+                                className="w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-300 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed group"
                                 onClick={() => setDailyPage(p => Math.min(Math.ceil(dailySales.length / dailyPageSize), p + 1))}
                                 disabled={dailyPage >= Math.ceil(dailySales.length / dailyPageSize)}
                                 aria-label="Next page"
                             >
-                                <ChevronRightIcon className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+                                <ChevronRightIcon className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
                             </button>
                         </div>
                     )}

@@ -41,7 +41,7 @@ export const OnboardingTaskList: React.FC<OnboardingTaskListProps> = ({ stats })
     if (allCompleted) return null;
 
     return (
-        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 p-6 border border-slate-100 dark:border-white/10 mb-6 animate-fade-in">
+        <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none rounded-[24px] p-6 lg:p-8 border border-slate-200/50 dark:border-white/5 mb-6 animate-fade-in group hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] transition-all duration-300">
             <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">Welcome to SalePilot! 🚀</h3>
             <p className="text-slate-500 dark:text-slate-400 mb-6 font-medium">Follow these simple steps to get your store up and running.</p>
 

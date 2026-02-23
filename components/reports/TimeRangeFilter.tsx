@@ -45,7 +45,7 @@ export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({ value, onChang
                 <ChevronDownIcon className="w-3 h-3" />
             </button>
             {isOpen && (
-                <div className="liquid-glass-card rounded-[2rem] absolute right-0 top-full mt-1 w-32 dark:bg-slate-800 border border-slate-100 dark:border-white/10 py-1 z-50 animate-fade-in-up">
+                <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl rounded-[20px] shadow-[0_8px_30px_rgb(0,0,0,0.12)] absolute right-0 top-full mt-2 w-36 border border-slate-200/50 dark:border-white/10 py-1.5 z-50 animate-fade-in-up">
                     {(Object.keys(filterLabels) as TimeFilter[]).map((f) => (
                         <button
                             key={f}

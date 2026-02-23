@@ -356,7 +356,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
             <div className="fixed bottom-[72px] md:bottom-6 right-4 md:right-6 z-[45]">
                 <button
                     onClick={() => setIsMinimized(false)}
-                    className="group relative flex items-center gap-2.5 px-4 md:px-5 py-2.5 md:py-3 bg-white dark:bg-slate-900 text-slate-700 dark:text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 border border-slate-200/80 dark:border-white/10"
+                    className="group relative flex items-center gap-2.5 px-4 md:px-5 py-2.5 md:py-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl text-slate-700 dark:text-white rounded-full shadow-[0_4px_16px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_24px_rgb(0,0,0,0.12)] transition-all duration-300 hover:scale-105 active:scale-[0.96] border border-slate-200/50 dark:border-white/10"
                     aria-label="Open AI Assistant"
                 >
                     <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-indigo-500 dark:text-indigo-400" />
@@ -370,7 +370,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
     // === FULL CHAT PANEL — Gemini-style ===
     return (
         <div className="fixed inset-0 z-[60] md:inset-auto md:bottom-6 md:right-6 w-full md:max-w-[460px] animate-slide-up-fade">
-            <div className="liquid-glass-card rounded-[2rem] relative dark:bg-[#1a1a2e] h-full rounded-none md:h-[700px] md:max-h-[calc(100vh-6rem)] md: border border-slate-200/60 dark:border-white/[0.06] overflow-hidden flex flex-col">
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[24px] relative h-full md:h-[700px] md:max-h-[calc(100vh-6rem)] shadow-[0_16px_40px_rgb(0,0,0,0.16)] border border-slate-200/50 dark:border-white/[0.06] overflow-hidden flex flex-col">
 
                 {/* ─── Header ─── */}
                 <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.04]">
@@ -503,7 +503,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 </div>
 
                 {/* ─── Input Area ─── */}
-                <div className="px-4 pb-4 pt-2 bg-white dark:bg-[#1a1a2e]">
+                <div className="px-4 pb-4 pt-2 bg-transparent">
                     {isRecording && (
                         <div className="mb-2 text-center">
                             <span className="text-[11px] font-medium text-red-500 animate-pulse inline-flex items-center gap-1.5">

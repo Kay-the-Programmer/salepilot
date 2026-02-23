@@ -15,7 +15,7 @@ interface StatCardProps {
 
 // Enhanced StatCard with better mobile styling
 export const StatCard: React.FC<StatCardProps> = ({ title, value, icon, color, noWrap = false, compact = false, tooltip }) => (
-    <div className={`relative overflow-hidden rounded-3xl liquid-glass-card 
+    <div className={`relative overflow-hidden rounded-[24px] bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none border border-slate-200/50 dark:border-white/5 transition-all duration-300 hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] active:scale-[0.98] ${color} bg-opacity-10 dark:bg-opacity-10 border border-transparent hover:border-black/5 dark:hover:border-white/10 group 
         ${compact ? 'p-4' : 'p-5 sm:p-6'}`}>
         {tooltip && (
             <div className="absolute top-3 right-3 z-10 group/tooltip">

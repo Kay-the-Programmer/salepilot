@@ -178,16 +178,16 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
     };
 
     return (
-        <div className={`liquid-glass-card rounded-[2rem] p-7 flex flex-col justify-between h-44 relative group transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+        <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-7 flex flex-col justify-between h-44 relative group transition-all duration-300 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] active:scale-[0.98] ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-start z-10">
                 <div className="flex-1">
                     <div className="flex items-center gap-2.5 mb-3">
                         <div className={`w-8 h-8 rounded-xl ${color} flex items-center justify-center bg-opacity-20 dark:bg-opacity-30 shadow-inner group-hover:scale-110 transition-transform duration-300`}>
                             {icon && React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'w-5 h-5' }) : null}
                         </div>
-                        <span className="text-slate-500 dark:text-slate-400 font-bold text-xs uppercase tracking-widest">{title}</span>
+                        <span className="text-slate-500 dark:text-slate-400 font-semibold text-xs tracking-wide">{title}</span>
                     </div>
-                    <div className="text-3xl font-extrabold text-slate-900 dark:text-white mt-1 tracking-tight min-h-[40px] flex items-center">
+                    <div className="text-[32px] font-semibold tracking-tight text-slate-900 dark:text-white mt-1 min-h-[40px] flex items-center">
                         {loading ? (
                             <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400 animate-spin"></div>
                         ) : (

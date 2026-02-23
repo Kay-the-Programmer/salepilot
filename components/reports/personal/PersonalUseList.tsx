@@ -33,7 +33,7 @@ export const PersonalUseList: React.FC<PersonalUseListProps> = ({ personalUse })
                             </div>
 
                             <div className="flex items-center justify-between sm:justify-end gap-8 w-full sm:w-auto px-2 sm:px-0">
-                                <div className="liquid-glass-card rounded-[2rem] text-[10px] font-black text-slate-500 dark:text-slate-400 dark:bg-slate-900 px-3 py-1.5 border border-slate-200 dark:border-white/5">
+                                <div className="bg-slate-100/80 dark:bg-slate-900/50 backdrop-blur-xl rounded-[16px] text-[10px] font-black text-slate-500 dark:text-slate-400 px-3 py-1.5 border border-slate-200/50 dark:border-white/5">
                                     {item.fromQty ?? 0} <span className="mx-2 opacity-30 text-[8px]">→</span> {item.toQty ?? 0}
                                 </div>
                                 <div className="font-black text-red-600 dark:text-red-400 text-2xl tracking-tighter">
