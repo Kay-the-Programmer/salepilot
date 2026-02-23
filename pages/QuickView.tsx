@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../types';
-import { SparklesIcon, ChartBarIcon, MicrophoneIcon, StopIcon, ArrowDownTrayIcon } from '../components/icons';
+import { CpuChipIcon, ChartBarIcon, MicrophoneIcon, StopIcon, ArrowDownTrayIcon } from '../components/icons';
 import { api } from '../services/api';
 import ReactMarkdown from 'react-markdown';
 import * as XLSX from 'xlsx';
@@ -301,7 +301,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                             {chip.label}
                                         </p>
                                         <div className="self-end p-2 bg-white dark:bg-[#131314] rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <SparklesIcon className="w-4 h-4 text-[#444746] dark:text-[#c4c7c5]" />
+                                            <CpuChipIcon className="w-4 h-4 text-[#444746] dark:text-[#c4c7c5]" />
                                         </div>
                                     </div>
                                 ))}
@@ -319,7 +319,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                     {/* Assistant Avatar */}
                                     {msg.role === 'assistant' && (
                                         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-blue-500 to-violet-500 mt-1">
-                                            <SparklesIcon className="w-4 h-4 text-white" />
+                                            <CpuChipIcon className="w-4 h-4 text-white" />
                                         </div>
                                     )}
 
@@ -392,7 +392,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                             {isTyping && (
                                 <div className="flex gap-4 group items-center justify-start">
                                     <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 bg-gradient-to-br from-blue-500 to-violet-500 animate-pulse mt-1">
-                                        <SparklesIcon className="w-4 h-4 text-white" />
+                                        <CpuChipIcon className="w-4 h-4 text-white" />
                                     </div>
                                     <div className="flex gap-1.5 items-center bg-[#f0f4f9] dark:bg-[#1e1f20] px-4 py-3 rounded-2xl">
                                         <div className="w-2 h-2 bg-[#444746] dark:bg-[#c4c7c5] rounded-full animate-bounce"></div>
@@ -444,7 +444,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                             : 'text-white bg-black dark:text-[#1f1f1f] dark:bg-[#e3e3e3] hover:scale-105 active:scale-95 shadow-sm'
                                         }`}
                                 >
-                                    <SparklesIcon className="w-5 h-5" />
+                                    <CpuChipIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         </form>

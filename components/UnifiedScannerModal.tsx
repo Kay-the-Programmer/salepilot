@@ -388,7 +388,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
     if (variant === 'embedded') {
         return (
-            <div className="liquid-glass-card rounded-[2rem] w-full h-full flex flex-col overflow-hidden border border-slate-200 relative">
+            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[2rem] shadow-sm w-full h-full flex flex-col overflow-hidden border border-slate-200/50 dark:border-white/10 relative">
                 {/* Scanner Area */}
                 <div className="relative bg-black flex-1 w-full overflow-hidden">
                     {isInitializing && !error && (
@@ -481,7 +481,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4 animate-fade-in">
-            <div className="liquid-glass-card rounded-[2rem] /95 backdrop-blur-md w-full max-w-lg overflow-hidden animate-slide-up ring-1 ring-white/20 border border-white/10">
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-lg overflow-hidden animate-slide-up shadow-2xl border border-white/20 dark:border-white/10">
                 {/* Header */}
                 <div className="p-5 border-b border-gray-100/50 flex items-center justify-between bg-white/50 backdrop-blur-sm">
                     <div>
@@ -590,9 +590,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                 </div>
 
                 {/* Footer Info */}
-                <div className="p-6 bg-gray-50/50 border-t border-gray-100/50 backdrop-blur-sm">
-                    <div className="liquid-glass-card rounded-[2rem] /60 p-4 border border-gray-200/50 backdrop-blur-sm">
-                        <p className="text-center text-gray-600 text-sm font-medium">
+                <div className="p-6 bg-slate-50/80 dark:bg-slate-800/80 border-t border-slate-200/50 dark:border-white/10 backdrop-blur-xl">
+                    <div className="bg-white/50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200/50 dark:border-white/5 backdrop-blur-md">
+                        <p className="text-center text-slate-600 dark:text-slate-300 text-[13px] font-medium tracking-wide">
                             {continuous
                                 ? "Items will be added automatically as you scan."
                                 : "Position code within the box to scan."

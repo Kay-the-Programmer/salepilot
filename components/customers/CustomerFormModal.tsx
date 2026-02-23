@@ -87,36 +87,35 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
 
     const SectionHeader = ({ icon: Icon, title }: { icon: any, title: string }) => (
         <div className="flex items-center gap-2 mb-4 mt-8 first:mt-0">
-            <div className="p-1.5 bg-blue-100/50 dark:bg-blue-900/30 rounded-lg">
+            <div className="p-1.5 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
                 <Icon className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <h4 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-[0.2em]">{title}</h4>
+            <h4 className="text-[11px] font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-widest">{title}</h4>
         </div>
     );
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-
-            <div className="liquid-glass-card rounded-[2rem] relative dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] border border-white/20 dark:border-slate-800 overflow-hidden flex flex-col animate-scale-in glass-effect">
+            <div className="relative w-full max-w-2xl max-h-[90vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl border border-slate-200/50 dark:border-white/10 overflow-hidden flex flex-col animate-scale-in">
                 {/* Header */}
-                <div className="px-8 py-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-900/50">
+                <div className="px-8 py-6 border-b border-slate-200/50 dark:border-white/10 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-4">
-                        <div className="p-3 bg-blue-600 rounded-2xl text-white shadow-lg shadow-blue-200 dark:shadow-none">
+                        <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-2xl text-blue-600 dark:text-blue-400 border border-blue-100/50 dark:border-blue-500/20">
                             <UserIcon className="w-6 h-6" />
                         </div>
                         <div>
-                            <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">
-                                {customerToEdit ? 'Edit Customer Profile' : 'New Customer Profile'}
+                            <h3 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">
+                                {customerToEdit ? 'Edit Customer' : 'New Customer'}
                             </h3>
-                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                            <p className="text-sm font-medium text-gray-500 dark:text-slate-400 mt-0.5">
                                 {customerToEdit ? `Updating ID: ${customerToEdit.id.substring(0, 8)}` : 'Create a new buyer account'}
                             </p>
                         </div>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all font-bold active:scale-95 transition-all duration-300"
+                        className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-all font-semibold active:scale-95 duration-300"
                     >
                         <XMarkIcon className="w-6 h-6" />
                     </button>
@@ -226,18 +225,18 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                 </form>
 
                 {/* Footer */}
-                <div className="px-8 py-6 border-t border-gray-100 dark:border-slate-800 bg-gray-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row justify-end gap-3">
+                <div className="px-8 py-6 border-t border-slate-200/50 dark:border-white/10 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row justify-end gap-3">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-3 text-sm font-black text-gray-500 dark:text-slate-400 uppercase tracking-widest hover:text-gray-900 dark:hover:text-white transition-all"
+                        className="px-6 py-3 text-sm font-semibold text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-all bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
                         type="submit"
-                        className="px-10 py-3 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
+                        className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all active:scale-[0.98] duration-300 text-sm shadow-sm"
                     >
                         {customerToEdit ? 'Save Changes' : 'Initialize Profile'}
                     </button>

@@ -136,7 +136,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
             onClick={onClose}
         >
             <div
-                className="liquid-glass-card rounded-[2rem] /95 dark:bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md border border-white/20 dark:border-white/10"
+                className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl w-full rounded-t-[2rem] sm:rounded-3xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md border border-slate-200/50 dark:border-white/10 shadow-2xl"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -145,16 +145,16 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 </div>
 
                 {/* Header with close button */}
-                <div className="liquid-glass-header sticky top-0 /80 dark:bg-slate-900/80 backdrop-blur-md px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200/50 dark:border-white/10 z-10">
+                <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-4 pt-4 pb-3 sm:px-6 border-b border-slate-200/50 dark:border-white/10 z-10 shadow-sm">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Receipt</h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Transaction #{transactionId}</p>
+                            <h3 className="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Receipt</h3>
+                            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-0.5">Transaction #{transactionId}</p>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2 -m-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white active:bg-gray-100 dark:active:bg-white/10 rounded-full transition-colors"
+                            className="p-2 -m-2 text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-all active:scale-95"
                             aria-label="Close"
                         >
                             <XMarkIcon className="h-6 w-6" />
@@ -183,13 +183,13 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
                         {/* Items list */}
                         <div className="mb-6">
-                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">Items ({cart.length})</h4>
+                            <h4 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-3">Items ({cart.length})</h4>
                             <div className="space-y-2">
                                 {cart.map(item => (
                                     <div key={item.productId} className="flex justify-between items-start py-2 border-b border-gray-100 dark:border-white/5 last:border-0">
                                         <div className="flex-1">
-                                            <p className="font-medium text-gray-900 dark:text-white">{item.name}</p>
-                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                            <p className="font-semibold text-gray-900 dark:text-white">{item.name}</p>
+                                            <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                                                 {item.quantity} × {formatCurrency(item.price, storeSettings)}
                                                 {item.returnedQuantity !== undefined && item.returnedQuantity > 0 && (
                                                     <span className="text-orange-600 ml-1 font-bold">
@@ -207,12 +207,12 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                         </div>
 
                         {/* Totals */}
-                        <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-5 mb-6">
-                            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Summary</h4>
+                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-[1.5rem] p-5 mb-6 border border-slate-200/50 dark:border-white/5">
+                            <h4 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-4">Summary</h4>
                             <div className="space-y-3">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-600 dark:text-gray-400">Subtotal</span>
-                                    <span className="font-medium dark:text-white">{formatCurrency(subtotal, storeSettings)}</span>
+                                <div className="flex justify-between text-[15px]">
+                                    <span className="font-medium text-gray-500 dark:text-gray-400">Subtotal</span>
+                                    <span className="font-semibold dark:text-white">{formatCurrency(subtotal, storeSettings)}</span>
                                 </div>
 
                                 {discount > 0 && (
@@ -275,7 +275,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 </div>
 
                 {/* Fixed action buttons */}
-                <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 py-4 sm:px-6 border-t border-gray-200/50 dark:border-white/10">
+                <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl px-4 py-4 sm:px-6 border-t border-slate-200/50 dark:border-white/10">
                     <div className="flex flex-col-1 sm:flex-row justify-end gap-3">
                         <Button
                             type="button"

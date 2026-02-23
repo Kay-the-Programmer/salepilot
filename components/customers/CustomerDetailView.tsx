@@ -18,8 +18,8 @@ interface CustomerDetailViewProps {
 }
 
 const InfoCard: React.FC<{ title: string; children: React.ReactNode; icon?: React.ReactNode; className?: string }> = ({ title, children, icon, className = "" }) => (
-    <div className={`bg-white dark:bg-slate-900/50 backdrop-blur-sm p-6 rounded-xl border border-gray-200 dark:border-slate-800 shadow-sm glass-effect ${className}`}>
-        <div className="flex items-center gap-2 mb-5 pb-3 border-b border-gray-100 dark:border-slate-800">
+    <div className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl p-6 rounded-3xl border border-slate-200/50 dark:border-white/10 shadow-sm ${className}`}>
+        <div className="flex items-center gap-2 mb-5 pb-3 border-b border-slate-200/50 dark:border-white/10">
             {icon && <div className="text-gray-400 dark:text-slate-500 w-5 h-5">{icon}</div>}
             <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{title}</h3>
         </div>
@@ -112,7 +112,7 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         {recentOrders.length > 0 ? (
                             <div className="space-y-3">
                                 {recentOrders.map((sale) => (
-                                    <div key={sale.transactionId} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300">
+                                    <div key={sale.transactionId} className="flex items-center justify-between p-3 rounded-2xl border border-slate-200/50 dark:border-white/10 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800 transition-colors active:scale-95 duration-300">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400">
                                                 <DocumentTextIcon className="w-5 h-5" />
@@ -150,7 +150,7 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         <InfoCard title="Outstanding Invoices" icon={<CreditCardIcon />}>
                             <div className="space-y-3">
                                 {unpaidInvoices.map((sale) => (
-                                    <div key={sale.transactionId} className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-500 transition-colors bg-white dark:bg-slate-900/50">
+                                    <div key={sale.transactionId} className="flex items-center justify-between p-4 rounded-2xl border border-slate-200/50 dark:border-slate-700/50 hover:border-blue-300 dark:hover:border-blue-500 transition-colors bg-white/50 dark:bg-slate-800/50 shadow-sm">
                                         <div className="flex flex-col">
                                             <span className="text-sm font-semibold text-gray-900 dark:text-white">Invoice #{sale.transactionId}</span>
                                             <span className="text-xs text-red-500 dark:text-red-400 font-medium">
@@ -171,10 +171,10 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         {paidSales.length > 0 ? (
                             <div className="space-y-4">
                                 {paidSales.map((sale) => (
-                                    <div key={sale.transactionId} className="p-4 rounded-lg border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300">
-                                        <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">
+                                    <div key={sale.transactionId} className="p-4 rounded-2xl border border-slate-200/50 dark:border-white/10 bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100/50 dark:hover:bg-slate-800 transition-colors active:scale-95 duration-300">
+                                        <div className="flex items-center justify-between mb-3 border-b border-slate-200/50 dark:border-white/10 pb-2">
                                             <div className="flex items-center gap-3">
-                                                <span className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 py-1 px-2 rounded text-xs font-mono font-medium border border-gray-200 dark:border-slate-700">#{sale.transactionId}</span>
+                                                <span className="bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 py-1 px-2 rounded-lg text-xs font-mono font-medium border border-slate-200/50 dark:border-white/10 shadow-sm">#{sale.transactionId}</span>
                                                 <span className="text-sm text-gray-500 dark:text-slate-500">{new Date(sale.timestamp).toLocaleDateString()}</span>
                                             </div>
                                             <div className="text-right">

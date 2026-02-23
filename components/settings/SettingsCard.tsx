@@ -56,12 +56,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
             )}
 
             {/* Card Content Envelope */}
-            <div className={`
-                bg-white dark:bg-slate-900 rounded-2xl border overflow-hidden
-                mx-4 sm:mx-0
-                ${isEditing ? 'border-blue-300 dark:border-blue-500/50 shadow-md shadow-blue-500/10 ring-1 ring-blue-500/20' : 'border-slate-200/80 dark:border-white/10 shadow-sm'}
-                transition-all duration-300
-            `}>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border overflow-hidden mx-4 sm:mx-0 border-slate-200/80 dark:border-white/10 shadow-sm transition-all duration-300">
                 <div className="p-0">
                     {children}
                 </div>

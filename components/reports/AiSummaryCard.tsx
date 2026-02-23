@@ -4,7 +4,7 @@ import { api } from '../../services/api';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import {
-    SparklesIcon,
+    CpuChipIcon,
     XMarkIcon,
     PaperAirplaneIcon,
     MicrophoneIcon,
@@ -359,7 +359,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                     className="group relative flex items-center gap-2.5 px-4 md:px-5 py-2.5 md:py-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl text-slate-700 dark:text-white rounded-full shadow-[0_4px_16px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_24px_rgb(0,0,0,0.12)] transition-all duration-300 hover:scale-105 active:scale-[0.96] border border-slate-200/50 dark:border-white/10"
                     aria-label="Open AI Assistant"
                 >
-                    <SparklesIcon className="w-4 h-4 md:w-5 md:h-5 text-indigo-500 dark:text-indigo-400" />
+                    <CpuChipIcon className="w-4 h-4 md:w-5 md:h-5 text-indigo-500 dark:text-indigo-400" />
                     <span className="font-medium text-xs md:text-sm">AI Assistant</span>
                     <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
                 </button>
@@ -376,7 +376,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.04]">
                     <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center">
-                            <SparklesIcon className="w-4 h-4 text-white" />
+                            <CpuChipIcon className="w-4 h-4 text-white" />
                         </div>
                         <div>
                             <h3 className="font-semibold text-[14px] text-slate-800 dark:text-white leading-tight">AI Assistant</h3>
@@ -418,7 +418,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                                 /* ── AI message: Gemini-style flowing text ── */
                                 <div className="flex gap-3 items-start">
                                     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
-                                        <SparklesIcon className="w-3.5 h-3.5 text-white" />
+                                        <CpuChipIcon className="w-3.5 h-3.5 text-white" />
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <div className="ai-content">
@@ -487,7 +487,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                     {isTyping && (
                         <div className="flex gap-3 items-start animate-fade-in">
                             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                                <SparklesIcon className="w-3.5 h-3.5 text-white animate-pulse" />
+                                <CpuChipIcon className="w-3.5 h-3.5 text-white animate-pulse" />
                             </div>
                             <div className="flex items-center gap-2 pt-1.5">
                                 <div className="flex gap-1">

@@ -12,112 +12,7 @@ import ConfirmationModal from '../components/ConfirmationModal';
 import Pagination from '../components/ui/Pagination';
 import ListGridToggle from '../components/ui/ListGridToggle';
 
-// Inline CSS for mobile responsiveness
-const styles = `
-  /* Safe area insets for modern mobile browsers */
-  .safe-area-padding {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  /* Better touch interactions */
-  .touch-manipulation {
-    touch-action: manipulation;
-  }
-  
-  /* Prevent pull-to-refresh on non-scrollable areas */
-  .no-pull-to-refresh {
-    overscroll-behavior-y: none;
-  }
-  
-  /* Smooth scrolling for iOS */
-  .smooth-scroll {
-    -webkit-overflow-scrolling: touch;
-  }
-  
-  /* Mobile-optimized transitions */
-  .mobile-transition {
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-                opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  
-  /* Desktop hover effects */
-  @media (min-width: 769px) {
-    .desktop-hover:hover {
-      background-color: rgba(243, 244, 246, 1);
-    }
-  }
-  
-  /* Mobile tap targets */
-  @media (max-width: 768px) {
-    .mobile-tap-target {
-      min-height: 44px;
-      min-width: 44px;
-    }
-  }
-  
-  /* Custom scrollbar for desktop */
-  @media (min-width: 769px) {
-    .desktop-scrollbar::-webkit-scrollbar {
-      width: 8px;
-      height: 8px;
-    }
-    
-    .desktop-scrollbar::-webkit-scrollbar-track {
-      background: transparent;
-      border-radius: 4px;
-    }
-    
-    .desktop-scrollbar::-webkit-scrollbar-thumb {
-      background: #c1c1c1;
-      border-radius: 4px;
-    }
-    
-    .desktop-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #a1a1a1;
-    }
 
-    .dark .desktop-scrollbar::-webkit-scrollbar-thumb {
-      background: #334155;
-    }
-
-    .dark .desktop-scrollbar::-webkit-scrollbar-thumb:hover {
-      background: #475569;
-    }
-  }
-  
-  /* Glass effect for mobile modals */
-  .mobile-modal-backdrop {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-`;
-
-// Custom media query hook
-const useMediaQuery = (query: string): boolean => {
-    const [matches, setMatches] = useState(false);
-
-    useEffect(() => {
-        const media = window.matchMedia(query);
-
-        const updateMatches = () => {
-            setMatches(media.matches);
-        };
-
-        updateMatches();
-
-        const listener = () => updateMatches();
-        media.addEventListener('change', listener);
-
-        return () => media.removeEventListener('change', listener);
-    }, [query]);
-
-    return matches;
-};
 
 // Mobile-optimized Header Component (simplified inline version)
 const MobileHeader = ({
@@ -131,13 +26,13 @@ const MobileHeader = ({
     showBack?: boolean;
     rightAction?: React.ReactNode;
 }) => (
-    <header className="liquid-glass-header sticky top-0 z-50 /80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-gray-100 dark:border-slate-800 shadow-sm no-pull-to-refresh glass-effect">
+    <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 shadow-sm no-pull-to-refresh">
         <div className="px-4">
             <div className="flex items-center h-16">
                 {showBack && onBack && (
                     <button
                         onClick={onBack}
-                        className="p-2 -ml-2 rounded-xl h-10 w-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all mobile-tap-target text-gray-400 dark:text-slate-500 active:scale-95 transition-all duration-300"
+                        className="p-2 -ml-2 rounded-xl h-10 w-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all text-gray-500 dark:text-gray-400 active:scale-95"
                         aria-label="Go back"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -146,7 +41,7 @@ const MobileHeader = ({
                     </button>
                 )}
                 <div className="flex-1 ml-2">
-                    <h1 className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tight truncate">{title}</h1>
+                    <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white truncate">{title}</h1>
                 </div>
                 {rightAction}
             </div>
@@ -176,7 +71,7 @@ const EmptyState = ({
         {actionLabel && onAction && (
             <button
                 onClick={onAction}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-manipulation mobile-tap-target active:scale-95 transition-all duration-300"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 active:scale-95 transition-all duration-300"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
             >
                 {actionLabel}
@@ -284,21 +179,20 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
     const canManageCustomers = currentUser.role === 'admin';
 
-    // Responsive breakpoints
-    const isMobile = useMediaQuery('(max-width: 768px)');
-    const isTablet = useMediaQuery('(max-width: 1024px)');
-    const isDesktop = !isMobile && !isTablet;
-    const isLargeDesktop = useMediaQuery('(min-width: 1280px)');
+    // Removing manual useMediaQuery dependencies where possible:
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    const [isDesktop, setIsDesktop] = useState(window.innerWidth > 1024);
+    const [isLargeDesktop, setIsLargeDesktop] = useState(window.innerWidth >= 1280);
 
     useEffect(() => {
-        // Add styles to document head
-        const styleElement = document.createElement('style');
-        styleElement.innerHTML = styles;
-        document.head.appendChild(styleElement);
-
-        return () => {
-            document.head.removeChild(styleElement);
+        const handleResize = () => {
+            const width = window.innerWidth;
+            setIsMobile(width <= 768);
+            setIsDesktop(width > 1024);
+            setIsLargeDesktop(width >= 1280);
         };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     useEffect(() => {
@@ -394,11 +288,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     // Desktop Layout - Split View
     if (isDesktop && selectedCustomerId) {
         return (
-            <div className="flex flex-col h-screen bg-white dark:bg-slate-950">
-                <style>{styles}</style>
-
+            <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950">
                 {/* Desktop Header - Minimal */}
-                <header className="liquid-glass-header sticky top-0 z-40 /80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 h-16 flex items-center justify-between px-6 glass-effect">
+                <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 h-16 flex items-center justify-between px-6">
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-bold text-gray-900 dark:text-white">Customers</h1>
                         <span className="text-gray-300 dark:text-slate-700">|</span>
@@ -420,8 +312,8 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                 {/* Split View */}
                 <main className="flex flex-1 overflow-hidden">
                     {/* Left Panel - Customer List */}
-                    <div className={`${isLargeDesktop ? 'w-[360px]' : 'w-[320px]'} flex-shrink-0 border-r border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex flex-col`}>
-                        <div className="p-4 border-b border-gray-100 dark:border-slate-800 flex flex-col gap-3">
+                    <div className={`${isLargeDesktop ? 'w-[360px]' : 'w-[320px]'} flex-shrink-0 border-r border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-slate-900/50 flex flex-col`}>
+                        <div className="p-4 border-b border-slate-200/50 dark:border-white/10 flex flex-col gap-3">
                             <div className="flex items-center justify-between">
                                 <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Directory</h2>
                                 {canManageCustomers && (
@@ -440,7 +332,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     placeholder="Filter list..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-9 pr-3 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm dark:text-slate-200"
+                                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm dark:text-slate-200 shadow-sm"
                                 />
                                 <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
                             </div>
@@ -489,11 +381,11 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                     </div>
 
                     {/* Right Panel - Customer Detail */}
-                    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 desktop-scrollbar">
-                        <div className="liquid-glass-header sticky top-0 z-10 /80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 px-8 py-5 glass-effect">
+                    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 custom-scrollbar">
+                        <div className="sticky top-0 z-10 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 px-8 py-5">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg border border-blue-100 dark:border-blue-900/30">
+                                    <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg border border-blue-100/50 dark:border-blue-500/20 shadow-sm">
                                         {detailedCustomer ? detailedCustomer.name.substring(0, 2).toUpperCase() : '??'}
                                     </div>
                                     <div>
@@ -502,9 +394,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                         </h1>
                                         {detailedCustomer && (
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400 uppercase tracking-wide">Customer</span>
+                                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 text-slate-600 dark:text-slate-400">Customer</span>
                                                 <span className="text-sm text-gray-400 dark:text-slate-600">•</span>
-                                                <span className="text-sm text-gray-500 dark:text-slate-400">ID: {detailedCustomer.id.substring(0, 8)}</span>
+                                                <span className="text-sm font-medium text-gray-500 dark:text-slate-400">ID: {detailedCustomer.id.substring(0, 8)}</span>
                                             </div>
                                         )}
                                     </div>
@@ -513,7 +405,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                                            className="inline-flex items-center px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-all shadow-sm active:scale-95 transition-all duration-300"
+                                            className="inline-flex items-center px-4 py-2 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm active:scale-95 duration-300"
                                         >
                                             <PencilIcon className="w-4 h-4 mr-2 text-gray-500 dark:text-slate-400" />
                                             Edit
@@ -521,7 +413,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
                                         <button
                                             onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
-                                            className="inline-flex items-center px-3 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/10 transition-all shadow-sm active:scale-95 transition-all duration-300"
+                                            className="inline-flex items-center px-4 py-2 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-900/10 transition-all shadow-sm active:scale-95 duration-300"
                                         >
                                             <TrashIcon className="w-4 h-4 mr-2 pointer-events-none" />
                                             Delete
@@ -573,15 +465,13 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     if (selectedCustomerId) {
         return (
             <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950">
-                <style>{styles}</style>
-
                 <MobileHeader
                     title={detailedCustomer?.name || 'Customer Details'}
                     onBack={handleBackToList}
                     rightAction={detailedCustomer && canManageCustomers && (
                         <button
                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all mobile-tap-target active:scale-95 transition-all duration-300"
+                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all active:scale-95 duration-300"
                             style={{ WebkitTapHighlightColor: 'transparent' }}
                             aria-label="Edit customer"
                         >
@@ -612,17 +502,17 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
                 {/* Mobile Bottom Action - Primary */}
                 {isMobile && detailedCustomer && canManageCustomers && (
-                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-gray-100 dark:border-slate-800 p-4 safe-area-bottom shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center gap-2 glass-effect">
+                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-t border-slate-200/50 dark:border-white/10 p-4 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center gap-2">
                         <button
                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                            className="flex-1 py-4 px-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                            className="flex-1 py-4 px-4 bg-blue-600 text-white font-semibold rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
                         >
                             <PencilIcon className="w-4 h-4" />
                             Edit
                         </button>
                         <button
                             onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
-                            className="p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all active:scale-95 transition-all duration-300"
+                            className="p-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-95 duration-300 border border-red-100/50 dark:border-red-500/20"
                             aria-label="Delete Customer"
                         >
                             <TrashIcon className="w-5 h-5 pointer-events-none" />
@@ -655,10 +545,8 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     // Mobile/Tablet - List View
     return (
         <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950">
-            <style>{styles}</style>
-
             {/* Mobile/Tablet Header */}
-            <header className="liquid-glass-header sticky top-0 z-40 /80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm no-pull-to-refresh glass-effect">
+            <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 shadow-sm no-pull-to-refresh">
                 <div className="px-4">
                     <div className="flex items-center h-14 justify-between">
                         {isMobile && isMobileSearchOpen ? (
@@ -670,7 +558,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         autoFocus
-                                        className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-slate-200 transition-all outline-none"
+                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-slate-200 transition-all outline-none shadow-sm"
                                     />
                                     <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -724,9 +612,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                                         className="fixed inset-0 z-40"
                                                         onClick={() => setIsViewMenuOpen(false)}
                                                     />
-                                                    <div className="liquid-glass-card rounded-[2rem] absolute top-12 right-12 z-50 w-48 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 py-2 animate-fade-in-up origin-top-right glass-effect">
-                                                        <div className="px-4 py-2 border-b border-gray-50 dark:border-slate-800">
-                                                            <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Sort Customers</span>
+                                                    <div className="absolute top-12 right-12 z-50 w-48 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-white/10 shadow-lg py-2 animate-fade-in-up origin-top-right">
+                                                        <div className="px-4 py-2 border-b border-slate-100 dark:border-white/10">
+                                                            <span className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Sort Customers</span>
                                                         </div>
                                                         <button
                                                             onClick={() => { setViewMode('all'); setIsViewMenuOpen(false); }}

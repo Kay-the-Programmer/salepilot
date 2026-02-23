@@ -20,7 +20,7 @@ import {
     ClipboardDocumentListIcon,
     SwatchIcon,
     BellAlertIcon,
-    SparklesIcon,
+    CpuChipIcon,
     CreditCardIcon,
     Bars3Icon,
     BookOpenIcon,
@@ -56,7 +56,7 @@ const NAV_ITEMS = [
     {
         name: 'Business Assistant',
         page: 'quick-view',
-        icon: SparklesIcon,
+        icon: CpuChipIcon,
         roles: ['superadmin', 'admin', 'staff', 'inventory_manager', 'customer', 'supplier'],
         badge: null
     },

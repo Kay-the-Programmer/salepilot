@@ -99,3 +99,4 @@ export { default as PaperAirplaneIcon } from './PaperAirplaneIcon';
 export { default as MicrophoneIcon } from './MicrophoneIcon';
 export { default as SpeakerWaveIcon } from './SpeakerWaveIcon';
 export { default as StopIcon } from './StopIcon';
+export { default as CpuChipIcon } from './CpuChipIcon';

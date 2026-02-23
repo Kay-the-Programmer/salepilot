@@ -23,72 +23,6 @@ interface ReturnsPageProps {
 
 const returnReasons = ["Unwanted item", "Damaged goods", "Incorrect size/color", "Doesn't match description", "Other"];
 
-// Inline CSS for mobile responsiveness
-const styles = `
-  .safe-area-padding {
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-  }
-  
-  .safe-area-bottom {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .touch-manipulation {
-    touch-action: manipulation;
-  }
-  
-  .no-pull-to-refresh {
-    overscroll-behavior-y: none;
-  }
-  
-  .smooth-scroll {
-    -webkit-overflow-scrolling: touch;
-  }
-
-  @media (min-width: 769px) {
-    .desktop-hover:hover {
-      background-color: rgba(243, 244, 246, 1);
-    }
-  }
-  
-  @media (max-width: 768px) {
-    .mobile-tap-target {
-      min-height: 44px;
-      min-width: 44px;
-    }
-  }
-
-  /* Glass effect */
-  .glass-morphism {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-  }
-
-  .dark .glass-morphism {
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(51, 65, 85, 0.3);
-  }
-`;
-
-// Custom media query hook
-const useMediaQuery = (query: string): boolean => {
-    const [matches, setMatches] = useState(false);
-
-    useEffect(() => {
-        const media = window.matchMedia(query);
-        const updateMatches = () => setMatches(media.matches);
-        updateMatches();
-        const listener = () => updateMatches();
-        media.addEventListener('change', listener);
-        return () => media.removeEventListener('change', listener);
-    }, [query]);
-
-    return matches;
-};
-
 const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessReturn, showSnackbar, storeSettings }) => {
     const [lookupId, setLookupId] = useState('');
     const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
@@ -101,10 +35,9 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [isDetailPaneOpen, setIsDetailPaneOpen] = useState(false);
 
-    // Responsive breakpoints
-    const isMobile = useMediaQuery('(max-width: 768px)');
-    const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1024px)');
-    const isDesktop = useMediaQuery('(min-width: 1025px)');
+    const isMobile = window.innerWidth <= 768; // We can typically rely on Tailwind `md:`, `lg:` classes instead of doing this via JS for the main layout.
+    const isDesktop = window.innerWidth > 1024;
+
 
     const taxRate = storeSettings.taxRate / 100;
 
@@ -112,16 +45,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
     const [itemsToReturn, setItemsToReturn] = useState<{ [productId: string]: { quantity: number; reason: string; addToStock: boolean; name: string; price: number; } }>({});
     const [refundMethod, setRefundMethod] = useState('original_method');
 
-    useEffect(() => {
-        // Add styles to document head
-        const styleElement = document.createElement('style');
-        styleElement.innerHTML = styles;
-        document.head.appendChild(styleElement);
-
-        return () => {
-            document.head.removeChild(styleElement);
-        };
-    }, []);
+    // Removed manual style injection
 
     const handleSelectReturn = (ret: Return) => {
         setSelectedReturnForDetails(ret);
@@ -255,10 +179,10 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                 <Header title="Returns & Refunds" />
                 <main className="flex-1 overflow-hidden flex flex-col">
                     {/* Hero Search Section - Fixed at top of main */}
-                    <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 py-12 px-4 shadow-sm glass-effect flex-none">
+                    <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 py-12 px-4 shadow-sm flex-none">
                         <div className="max-w-2xl mx-auto text-center">
-                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl uppercase tracking-tight">Find a Past Sale</h2>
-                            <p className="mt-2 text-[10px] font-bold text-gray-500 dark:text-slate-400 uppercase tracking-widest">
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white sm:text-3xl tracking-tight">Find a Past Sale</h2>
+                            <p className="mt-2 text-sm font-medium text-gray-500 dark:text-slate-400">
                                 Enter the Transaction ID from the receipt or scan the barcode to start a return.
                             </p>
 
@@ -287,7 +211,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                     </button>
                                     <button
                                         onClick={handleLookup}
-                                        className="flex-[2] sm:flex-none inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all mobile-tap-target uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
+                                        className="flex-[2] sm:flex-none inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-semibold rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-95 transition-all duration-300"
                                     >
                                         Find Sale
                                     </button>
@@ -297,10 +221,10 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                     </div>
 
                     {/* Content - Split Layout */}
-                    <div className="flex-1 flex gap-6 overflow-hidden p-4 md:p-6">
+                    <div className="flex-1 flex gap-6 overflow-hidden p-4 md:p-6 max-w-[1400px] mx-auto w-full">
                         {/* Left side: List (main content) */}
-                        <div className={`flex-1 flex flex-col overflow-hidden bg-white/50 dark:bg-slate-900/50 rounded-3xl border border-gray-100 dark:border-slate-800 transition-all ${isDetailPaneOpen && isMobile ? 'hidden' : 'flex'}`}>
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 border-b border-gray-100 dark:border-slate-800 gap-4">
+                        <div className={`flex-1 flex flex-col overflow-hidden bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-3xl border border-slate-200/50 dark:border-white/10 shadow-sm transition-all ${isDetailPaneOpen && isMobile ? 'hidden' : 'flex'}`}>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-6 border-b border-slate-200/50 dark:border-white/10 gap-4">
                                 <div>
                                     <h3 className="text-lg font-black text-gray-900 dark:text-white flex items-center gap-2 uppercase tracking-tight">
                                         <ArrowUturnLeftIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -343,7 +267,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                                 title={`Sale Ref: ${ret.originalSaleId}`}
                                                 subtitle={ret.id}
                                                 status={
-                                                    <div className="bg-blue-600 text-white font-black px-3 py-1 rounded-full text-[10px] uppercase tracking-widest shadow-sm">
+                                                    <div className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold px-3 py-1 rounded-full text-xs shadow-sm">
                                                         {formatCurrency(ret.refundAmount, storeSettings)}
                                                     </div>
                                                 }
@@ -371,12 +295,12 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                                 primaryMeta={formatCurrency(ret.refundAmount, storeSettings)}
                                                 secondaryMeta={new Date(ret.timestamp).toLocaleDateString()}
                                                 details={[
-                                                    <span key="items" className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">
+                                                    <span key="items" className="text-xs font-medium text-gray-500 dark:text-slate-400">
                                                         {ret.returnedItems.reduce((acc, i) => acc + i.quantity, 0)} Items Returned
                                                     </span>
                                                 ]}
                                                 actions={
-                                                    <div className="text-[10px] text-blue-600 dark:text-blue-400 font-black whitespace-nowrap px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl uppercase tracking-widest border border-blue-100 dark:border-blue-900/30">View Analysis</div>
+                                                    <div className="text-xs text-blue-600 dark:text-blue-400 font-semibold whitespace-nowrap px-4 py-2 bg-blue-50 dark:bg-blue-500/10 rounded-xl transition-colors hover:bg-blue-100 dark:hover:bg-blue-500/20">View Analysis</div>
                                                 }
                                             />
                                         )}
@@ -427,22 +351,22 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                 <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
                                     {/* Meta Info Stats */}
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="bg-blue-50 dark:bg-blue-900/20 p-5 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                                        <div className="bg-blue-50 dark:bg-blue-500/10 p-5 rounded-2xl border border-blue-100/50 dark:border-blue-500/20">
                                             <div className="flex items-center gap-2 text-blue-700 dark:text-blue-400 mb-2">
                                                 <CalendarIcon className="w-4 h-4" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Recorded On</span>
+                                                <span className="text-xs font-semibold uppercase tracking-wider">Recorded On</span>
                                             </div>
-                                            <p className="font-black text-gray-900 dark:text-white text-lg tracking-tight">
+                                            <p className="font-semibold text-gray-900 dark:text-white text-lg tracking-tight">
                                                 {new Date(selectedReturnForDetails.timestamp).toLocaleDateString()}
                                             </p>
-                                            <p className="text-[10px] font-bold text-gray-500 dark:text-slate-500 uppercase tracking-widest mt-0.5">
+                                            <p className="text-xs font-medium text-gray-500 dark:text-slate-400 mt-0.5">
                                                 {new Date(selectedReturnForDetails.timestamp).toLocaleTimeString()}
                                             </p>
                                         </div>
-                                        <div className="bg-gray-50 dark:bg-slate-800/50 p-5 rounded-2xl border border-gray-100 dark:border-slate-800">
-                                            <div className="flex items-center gap-2 text-gray-500 dark:text-slate-400 mb-2">
+                                        <div className="bg-slate-50 dark:bg-slate-800/80 p-5 rounded-2xl border border-slate-200/50 dark:border-white/5">
+                                            <div className="flex items-center gap-2 text-slate-500 dark:text-slate-400 mb-2">
                                                 <PackageIcon className="w-4 h-4" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Source Sale</span>
+                                                <span className="text-xs font-semibold uppercase tracking-wider">Source Sale</span>
                                             </div>
                                             <p className="font-mono font-black text-gray-900 dark:text-white text-lg tracking-tight">
                                                 {selectedReturnForDetails.originalSaleId}
@@ -452,32 +376,32 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
 
                                     {/* Items Analysis */}
                                     <div>
-                                        <div className="flex items-center justify-between mb-4 border-b border-gray-100 dark:border-slate-800 pb-2">
-                                            <h4 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest">Returned Inventory</h4>
-                                            <span className="bg-gray-900 dark:bg-blue-600 text-white px-2 py-0.5 rounded-lg text-[10px] font-black">
+                                        <div className="flex items-center justify-between mb-4 border-b border-slate-200/50 dark:border-white/10 pb-2">
+                                            <h4 className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Returned Inventory</h4>
+                                            <span className="bg-slate-900 dark:bg-blue-600 text-white px-2 py-0.5 rounded-lg text-xs font-semibold">
                                                 {selectedReturnForDetails.returnedItems.length} SKU
                                             </span>
                                         </div>
                                         <div className="space-y-4">
                                             {selectedReturnForDetails.returnedItems.map((item, index) => (
-                                                <div key={index} className="liquid-glass-card rounded-[2rem] p-5 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 flex justify-between items-start gap-4">
+                                                <div key={index} className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[2rem] p-5 border border-slate-200/50 dark:border-white/10 shadow-sm flex justify-between items-start gap-4">
                                                     <div className="flex-1">
-                                                        <p className="font-black text-gray-900 dark:text-white uppercase tracking-tight text-sm leading-tight">{item.productName}</p>
+                                                        <p className="font-semibold text-gray-900 dark:text-white tracking-tight text-sm leading-tight">{item.productName}</p>
                                                         <div className="flex flex-wrap gap-2 mt-3">
-                                                            <span className="text-[10px] font-black px-2.5 py-1 bg-gray-100 dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-600 dark:text-slate-400 uppercase tracking-widest">
+                                                            <span className="text-xs font-medium px-2.5 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 rounded-lg text-slate-600 dark:text-slate-400">
                                                                 Qty: {item.quantity}
                                                             </span>
                                                             {item.addToStock && (
-                                                                <span className="text-[10px] font-black px-2.5 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg uppercase tracking-widest flex items-center gap-1">
-                                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                                                <span className="text-xs font-medium px-2.5 py-1 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 rounded-lg flex items-center gap-1.5 border border-emerald-100/50 dark:border-emerald-500/20">
+                                                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                                                                     Restocked
                                                                 </span>
                                                             )}
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <span className="text-[10px] font-black text-gray-400 dark:text-slate-500 block uppercase tracking-widest mb-1.5">Resolution</span>
-                                                        <span className="text-[10px] font-black text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1.5 rounded-xl border border-blue-100 dark:border-blue-900/30 inline-block uppercase tracking-widest">
+                                                        <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 block uppercase tracking-wider mb-1.5">Resolution</span>
+                                                        <span className="text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-2.5 py-1.5 rounded-xl border border-blue-100/50 dark:border-blue-500/20 inline-block">
                                                             {item.reason}
                                                         </span>
                                                     </div>
@@ -571,16 +495,16 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                     }
 
                                     return (
-                                        <div key={item.productId} className={`p-6 rounded-2xl bg-white dark:bg-slate-900 border ${isReturning ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-100 dark:border-slate-800'} shadow-sm transition-all`}>
+                                        <div key={item.productId} className={`p-6 rounded-3xl bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border ${isReturning ? 'border-blue-500 ring-1 ring-blue-500' : 'border-slate-200/50 dark:border-white/10'} shadow-sm transition-all`}>
                                             <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                                                 <div className="flex-1">
                                                     <div className="flex items-center gap-2">
-                                                        <p className="font-bold text-gray-900 dark:text-white text-lg">{item.name}</p>
-                                                        {isReturning && <span className="bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded">Selected</span>}
+                                                        <p className="font-semibold text-gray-900 dark:text-white text-lg">{item.name}</p>
+                                                        {isReturning && <span className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 text-xs font-semibold px-2 py-0.5 rounded-md">Selected</span>}
                                                     </div>
                                                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-2 text-sm text-gray-500 dark:text-slate-500">
-                                                        <span className="flex items-center gap-1"><PackageIcon className="w-4 h-4" /> Purchased: {item.quantity}</span>
-                                                        <span className="flex items-center gap-1"><CurrencyDollarIcon className="w-4 h-4" /> {formatCurrency(item.price, storeSettings)}</span>
+                                                        <span className="flex items-center gap-1.5"><PackageIcon className="w-4 h-4" /> Purchased: {item.quantity}</span>
+                                                        <span className="flex items-center gap-1.5"><CurrencyDollarIcon className="w-4 h-4" /> {formatCurrency(item.price, storeSettings)}</span>
                                                     </div>
                                                 </div>
 
@@ -638,26 +562,26 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                         <div className={`${isDesktop ? 'lg:col-span-4' : ''}`}>
                             <div className={`${isDesktop ? 'sticky top-24' : ''} space-y-6`}>
                                 {/* Detailed Refund Calculations */}
-                                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-gray-100 dark:border-slate-800 overflow-hidden">
-                                    <div className="p-6 bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
-                                        <h3 className="text-lg font-bold text-gray-900 dark:text-white">Refund Summary</h3>
+                                <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-[2rem] border border-slate-200/50 dark:border-white/10 overflow-hidden shadow-sm">
+                                    <div className="p-6 bg-slate-50/50 dark:bg-slate-800/30 border-b border-slate-200/50 dark:border-white/10">
+                                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Refund Summary</h3>
                                     </div>
                                     <div className="p-6 space-y-4">
                                         <div className="flex justify-between text-sm text-gray-600 dark:text-slate-400 font-medium">
                                             <span>Subtotal</span>
                                             <span>{formatCurrency(refundSubtotal, storeSettings)}</span>
                                         </div>
-                                        <div className="flex justify-between text-sm text-green-600 dark:text-green-400 font-bold">
+                                        <div className="flex justify-between text-sm text-green-600 dark:text-emerald-400 font-semibold">
                                             <span>Discount Adjustment</span>
                                             <span>-{formatCurrency(refundDiscount, storeSettings)}</span>
                                         </div>
-                                        <div className="flex justify-between text-sm text-gray-600 dark:text-slate-400 font-medium pb-4 border-b border-gray-50 dark:border-slate-800">
+                                        <div className="flex justify-between text-sm text-gray-600 dark:text-slate-400 font-medium pb-4 border-b border-slate-100 dark:border-white/10">
                                             <span>Estimated Tax Refund</span>
                                             <span>{formatCurrency(refundTax, storeSettings)}</span>
                                         </div>
                                         <div className="flex justify-between items-center py-2">
-                                            <span className="text-lg font-black text-gray-900 dark:text-white uppercase tracking-tighter">Total Refund</span>
-                                            <span className="text-2xl font-black text-blue-600 dark:text-blue-400">{formatCurrency(refundTotal, storeSettings)}</span>
+                                            <span className="text-lg font-bold text-gray-900 dark:text-white tracking-tight">Total Refund</span>
+                                            <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatCurrency(refundTotal, storeSettings)}</span>
                                         </div>
                                     </div>
                                 </div>
