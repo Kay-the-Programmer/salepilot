@@ -83,7 +83,7 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
 
             {/* Tax Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-widest">Taxable Sales</div>
                         <ArrowTrendingUpIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 opacity-60" />
@@ -92,7 +92,7 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Subject to Tax</div>
                 </div>
 
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">Tax Collected</div>
                         <BanknotesIcon className="w-5 h-5 text-emerald-600 dark:text-emerald-400 opacity-60" />
@@ -101,7 +101,7 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">At {taxRate}% tax rate</div>
                 </div>
 
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase tracking-widest">Transactions</div>
                         <ReceiptPercentIcon className="w-5 h-5 text-purple-600 dark:text-purple-400 opacity-60" />
@@ -110,7 +110,7 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
                     <div className="text-xs text-slate-500 dark:text-slate-400 mt-1">Total Count</div>
                 </div>
 
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">Avg Transaction</div>
                         <CalculatorIcon className="w-5 h-5 text-slate-500 dark:text-slate-400 opacity-60" />
@@ -121,7 +121,7 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
             </div>
 
             {/* Tax Calculation Details */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                     <div className="flex items-center gap-2">
                         <CalculatorIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />

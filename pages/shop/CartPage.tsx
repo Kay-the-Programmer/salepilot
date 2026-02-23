@@ -143,7 +143,7 @@ const CartPage: React.FC = () => {
     if (orderComplete) {
         return (
             <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-                <div className="max-w-2xl w-full bg-white rounded-[40px] shadow-2xl shadow-indigo-100 border border-slate-100 p-8 sm:p-16 text-center animate-in zoom-in-95 duration-500">
+                <div className="liquid-glass-card rounded-[2rem] max-w-2xl w-full rounded-[40px] -indigo-100 border border-slate-100 p-8 sm:p-16 text-center animate-in zoom-in-95 duration-500">
                     <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-8">
                         <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center">
                             <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -191,7 +191,7 @@ const CartPage: React.FC = () => {
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
                 <div className="w-32 h-32 bg-slate-100 rounded-[40px] flex items-center justify-center mx-auto mb-8 relative">
                     <HiOutlineShoppingBag className="w-16 h-16 text-slate-300" />
-                    <div className="absolute top-0 right-0 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-sm">
+                    <div className="liquid-glass-card rounded-[2rem] absolute top-0 right-0 w-8 h-8 flex items-center justify-center">
                         <span className="text-xs font-black text-slate-400">0</span>
                     </div>
                 </div>
@@ -222,7 +222,7 @@ const CartPage: React.FC = () => {
                     </button>
                     <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900">Checkout</h1>
                 </div>
-                <div className="bg-white px-6 py-4 rounded-[24px] border border-slate-100 shadow-sm flex items-center gap-4">
+                <div className="liquid-glass-card rounded-[2rem] px-6 py-4 rounded-[24px] border border-slate-100 flex items-center gap-4">
                     <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
                         <HiOutlineShoppingBag className="w-6 h-6 text-indigo-600" />
                     </div>
@@ -236,7 +236,7 @@ const CartPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
                 {/* Cart Items Section */}
                 <div className="lg:col-span-7 space-y-6">
-                    <div className="bg-white rounded-[40px] shadow-sm border border-slate-100 overflow-hidden">
+                    <div className="liquid-glass-card rounded-[2rem] rounded-[40px] border border-slate-100 overflow-hidden">
                         <div className="flex items-center justify-between px-8 py-6 border-b border-slate-50">
                             <h2 className="text-lg font-black text-slate-900">Review Items</h2>
                             <button
@@ -246,14 +246,14 @@ const CartPage: React.FC = () => {
                                         saveCart([]);
                                     }
                                 }}
-                                className="text-xs font-black text-rose-500 uppercase tracking-widest hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors"
+                                className="text-xs font-black text-rose-500 uppercase tracking-widest hover:bg-rose-50 px-3 py-2 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                             >
                                 Clear All
                             </button>
                         </div>
                         <ul className="divide-y divide-slate-50">
                             {cartItems.map((item, index) => (
-                                <li key={`${item.id}-${index}`} className="flex flex-col sm:flex-row py-8 px-6 sm:px-8 hover:bg-slate-50/30 transition-colors gap-6 group">
+                                <li key={`${item.id}-${index}`} className="flex flex-col sm:flex-row py-8 px-6 sm:px-8 hover:bg-slate-50/30 transition-colors gap-6 group active:scale-95 transition-all duration-300">
                                     <div className="h-32 w-full sm:w-32 flex-shrink-0 overflow-hidden rounded-[24px] bg-slate-100 border border-slate-200/50">
                                         {item.image ? (
                                             <img
@@ -288,14 +288,14 @@ const CartPage: React.FC = () => {
                                             <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200/50">
                                                 <button
                                                     onClick={() => updateQuantity(index, item.quantity - 1)}
-                                                    className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all"
+                                                    className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all active:scale-95 transition-all duration-300"
                                                 >
                                                     <HiOutlineMinus className="w-4 h-4" />
                                                 </button>
                                                 <div className="px-4 font-black text-slate-900 min-w-[3rem] text-center">{item.quantity}</div>
                                                 <button
                                                     onClick={() => updateQuantity(index, item.quantity + 1)}
-                                                    className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all"
+                                                    className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all active:scale-95 transition-all duration-300"
                                                 >
                                                     <HiOutlinePlus className="w-4 h-4" />
                                                 </button>
@@ -304,7 +304,7 @@ const CartPage: React.FC = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => removeItem(index)}
-                                                className="flex items-center gap-2 text-xs font-black text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest bg-slate-100 hover:bg-rose-50 px-4 py-3 rounded-2xl"
+                                                className="flex items-center gap-2 text-xs font-black text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest bg-slate-100 hover:bg-rose-50 px-4 py-3 rounded-2xl active:scale-95 transition-all duration-300"
                                             >
                                                 <HiOutlineTrash className="w-4 h-4" />
                                                 Remove
@@ -341,7 +341,7 @@ const CartPage: React.FC = () => {
 
                 {/* Checkout Column */}
                 <div className="lg:col-span-5 sticky top-28 space-y-6">
-                    <div className="bg-white rounded-[40px] shadow-2xl shadow-slate-200 border border-slate-100 overflow-hidden">
+                    <div className="liquid-glass-card rounded-[2rem] rounded-[40px] -slate-200 border border-slate-100 overflow-hidden">
                         <div className="p-8 sm:p-10">
                             <h2 className="text-2xl font-black text-slate-900 mb-8">Order Summary</h2>
 

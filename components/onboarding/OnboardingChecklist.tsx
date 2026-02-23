@@ -54,10 +54,10 @@ export default function OnboardingChecklist() {
     const progress = (completedCount / totalCount) * 100;
 
     return (
-        <div className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden">
+        <div className="liquid-glass-card rounded-[2rem] border border-gray-200 overflow-hidden">
             {/* Header */}
             <div
-                className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white cursor-pointer"
+                className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white cursor-pointer active:scale-95 transition-all duration-300"
                 onClick={() => setIsExpanded(!isExpanded)}
             >
                 <div className="flex items-center justify-between">

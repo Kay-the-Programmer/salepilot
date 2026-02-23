@@ -223,7 +223,7 @@ const SocialProof: React.FC = () => {
                         <div className="absolute top-1/2 left-4 right-4 transform -translate-y-1/2 flex justify-between pointer-events-none z-40">
                             <button
                                 onClick={goToPrev}
-                                className="pointer-events-auto w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-white hover:shadow-xl transition-all shadow-lg"
+                                className="pointer-events-auto w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-white hover:shadow-xl transition-all shadow-lg active:scale-95 transition-all duration-300"
                                 aria-label="Previous business"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +232,7 @@ const SocialProof: React.FC = () => {
                             </button>
                             <button
                                 onClick={goToNext}
-                                className="pointer-events-auto w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-white hover:shadow-xl transition-all shadow-lg"
+                                className="pointer-events-auto w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-white hover:shadow-xl transition-all shadow-lg active:scale-95 transition-all duration-300"
                                 aria-label="Next business"
                             >
                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

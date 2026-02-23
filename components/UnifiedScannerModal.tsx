@@ -388,7 +388,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
     if (variant === 'embedded') {
         return (
-            <div className="w-full h-full flex flex-col bg-white overflow-hidden rounded-xl border border-slate-200 shadow-inner relative">
+            <div className="liquid-glass-card rounded-[2rem] w-full h-full flex flex-col overflow-hidden border border-slate-200 relative">
                 {/* Scanner Area */}
                 <div className="relative bg-black flex-1 w-full overflow-hidden">
                     {isInitializing && !error && (
@@ -442,7 +442,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                                         <button
                                             onClick={handleCameraSwitch}
                                             disabled={isInitializing}
-                                            className="absolute bottom-3 left-3 pointer-events-auto p-2 rounded-full backdrop-blur-md bg-black/30 text-white border border-white/20 hover:bg-black/50 transition-all active:scale-90 disabled:opacity-50"
+                                            className="absolute bottom-3 left-3 pointer-events-auto p-2 rounded-full backdrop-blur-md bg-black/30 text-white border border-white/20 hover:bg-black/50 transition-all active:scale-90 disabled:opacity-50 active:scale-95 transition-all duration-300"
                                             title="Switch Camera"
                                         >
                                             <FiRefreshCw className={`w-4 h-4 ${isInitializing ? 'animate-spin' : ''}`} />
@@ -481,7 +481,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4 animate-fade-in">
-            <div className="bg-white/95 backdrop-blur-md rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-slide-up ring-1 ring-white/20 border border-white/10">
+            <div className="liquid-glass-card rounded-[2rem] /95 backdrop-blur-md w-full max-w-lg overflow-hidden animate-slide-up ring-1 ring-white/20 border border-white/10">
                 {/* Header */}
                 <div className="p-5 border-b border-gray-100/50 flex items-center justify-between bg-white/50 backdrop-blur-sm">
                     <div>
@@ -565,7 +565,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                                         <button
                                             onClick={handleCameraSwitch}
                                             disabled={isInitializing}
-                                            className="absolute bottom-6 left-6 pointer-events-auto p-4 rounded-full backdrop-blur-xl bg-white/10 text-white border border-white/20 transition-all active:scale-90 disabled:opacity-50"
+                                            className="absolute bottom-6 left-6 pointer-events-auto p-4 rounded-full backdrop-blur-xl bg-white/10 text-white border border-white/20 transition-all active:scale-90 disabled:opacity-50 active:scale-95 transition-all duration-300"
                                         >
                                             <FiRefreshCw className={`w-6 h-6 transition-transform duration-500 ${isInitializing ? 'animate-spin' : ''}`} />
                                         </button>
@@ -591,7 +591,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                 {/* Footer Info */}
                 <div className="p-6 bg-gray-50/50 border-t border-gray-100/50 backdrop-blur-sm">
-                    <div className="bg-white/60 p-4 rounded-2xl border border-gray-200/50 shadow-sm backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] /60 p-4 border border-gray-200/50 backdrop-blur-sm">
                         <p className="text-center text-gray-600 text-sm font-medium">
                             {continuous
                                 ? "Items will be added automatically as you scan."

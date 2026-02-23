@@ -105,7 +105,7 @@ const JournalView: React.FC<JournalViewProps> = ({ entries, sales, customers, st
                     <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">General Journal</h3>
                     <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">View and manage all accounting entries</p>
                 </div>
-                <div className="flex items-center gap-6 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm self-start lg:self-auto">
+                <div className="liquid-glass-card rounded-[2rem] flex items-center gap-6 px-4 py-2 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 self-start lg:self-auto">
                     <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Dr:</span>
                         <span className="font-bold text-blue-600 dark:text-blue-400 text-base">{formatCurrency(totalDebits, storeSettings)}</span>
@@ -157,7 +157,7 @@ const JournalView: React.FC<JournalViewProps> = ({ entries, sales, customers, st
                     </div>
                 ) : (
                     filteredEntries.map(entry => (
-                        <div key={entry.id} className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-md transition-shadow">
+                        <div key={entry.id} className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden hover: transition-">
                             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                 <div>
                                     <div className="flex items-center gap-2 mb-1">
@@ -183,7 +183,7 @@ const JournalView: React.FC<JournalViewProps> = ({ entries, sales, customers, st
                             </div>
                             <div className="p-2">
                                 {entry.lines.map((line, idx) => (
-                                    <div key={idx} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors">
+                                    <div key={idx} className="flex items-center justify-between p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center gap-3">
                                             <div className={`w-1 h-8 rounded-full ${line.type === 'debit' ? 'bg-blue-500' : 'bg-emerald-500'}`}></div>
                                             <div>

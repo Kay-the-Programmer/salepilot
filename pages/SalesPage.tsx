@@ -942,13 +942,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
             {
                 isVerifyingPayment && (
                     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div className="bg-white p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-4">
+                        <div className="liquid-glass-card rounded-[2rem] p-6 flex flex-col items-center gap-4">
                             <LoadingSpinner size="lg" fullScreen={false} text="" />
                             <p className="font-semibold text-slate-900">{verifyingMessage}</p>
                             <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
                             <button
                                 onClick={handleCancelVerification}
-                                className="mt-4 px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all text-sm"
+                                className="mt-4 px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all text-sm active:scale-95 transition-all duration-300"
                             >
                                 Cancel Transaction
                             </button>

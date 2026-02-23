@@ -194,7 +194,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                             </div>
                                             <button
                                                 onClick={() => handleRemoveWithAnimation(item.productId)}
-                                                className="text-slate-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors"
+                                                className="text-slate-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                                 title="Remove item"
                                             >
                                                 <XMarkIcon className="w-6 h-6" />
@@ -255,7 +255,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                 <select
                                                     value={selectedPaymentMethod}
                                                     onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                                                    className="w-full pl-3 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-white/10 rounded-lg text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600"
+                                                    className="w-full pl-3 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-white/10 rounded-lg text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-95 transition-all duration-300"
                                                 >
                                                     {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
                                                         ? storeSettings.paymentMethods.map(method => (

@@ -176,7 +176,7 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
             {/* Close Button */}
             <button
                 onClick={onClose}
-                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-[110]"
+                className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-[110] active:scale-95 transition-all duration-300"
             >
                 <HiOutlineXMark className="w-6 h-6" />
             </button>
@@ -211,7 +211,7 @@ const RequestWizard: React.FC<RequestWizardProps> = ({ isOpen, onClose, onSubmit
                         {/* Question Animated Area */}
                         <div key={currentStep} className="w-full mb-12 animate-in slide-in-from-bottom-8 fade-in duration-700">
                             <div className="flex items-center justify-center mb-6">
-                                <div className="p-4 bg-white/10 rounded-3xl text-[#FF7F27] backdrop-blur-md border border-white/10 shadow-xl">
+                                <div className="liquid-glass-card rounded-[2rem] p-4 /10 text-[#FF7F27] backdrop-blur-md border border-white/10">
                                     {step.icon}
                                 </div>
                             </div>

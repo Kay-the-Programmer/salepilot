@@ -57,13 +57,13 @@ const ShopLayout: React.FC = () => {
     }
 
     if (!shopInfo) {
-        return <div className="min-h-screen flex items-center justify-center bg-gray-50">Store not found</div>;
+        return <div className="min-h-screen flex items-center justify-center bg-mesh-light font-google">Store not found</div>;
     }
 
     // Check if store is enabled
     if (shopInfo.settings.isOnlineStoreEnabled === false) { // Explicit check as undefined should default to true or be handled safely
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+            <div className="min-h-screen flex flex-col items-center justify-center bg-mesh-light p-4 text-center font-google">
                 <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-6">
                     <HiOutlineShoppingBag className="w-8 h-8 text-gray-400" />
                 </div>
@@ -74,9 +74,9 @@ const ShopLayout: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-900">
+        <div className="min-h-screen flex flex-col font-google bg-mesh-light text-slate-900">
             {/* Header */}
-            <header className="bg-white shadow-sm sticky top-0 z-50">
+            <header className="liquid-glass-header sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link to={`/shop/${storeId}`} className="flex items-center gap-2">
                         {/* Placeholder for Logo */}

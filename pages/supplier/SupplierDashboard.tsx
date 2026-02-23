@@ -53,7 +53,7 @@ export default function SupplierDashboard() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+                <div className="liquid-glass-card rounded-[2rem] p-6 border border-gray-100 flex items-center gap-4">
                     <div className="p-4 bg-blue-50 text-blue-600 rounded-xl">
                         <HiOutlineShoppingBag className="w-8 h-8" />
                     </div>
@@ -63,7 +63,7 @@ export default function SupplierDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+                <div className="liquid-glass-card rounded-[2rem] p-6 border border-gray-100 flex items-center gap-4">
                     <div className="p-4 bg-green-50 text-green-600 rounded-xl">
                         <HiOutlineCurrencyDollar className="w-8 h-8" />
                     </div>
@@ -76,7 +76,7 @@ export default function SupplierDashboard() {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center gap-4">
+                <div className="liquid-glass-card rounded-[2rem] p-6 border border-gray-100 flex items-center gap-4">
                     <div className="p-4 bg-purple-50 text-purple-600 rounded-xl">
                         <HiOutlineClock className="w-8 h-8" />
                     </div>
@@ -88,7 +88,7 @@ export default function SupplierDashboard() {
             </div>
 
             {/* Recent Orders */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="liquid-glass-card rounded-[2rem] border border-gray-100 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                     <h3 className="font-bold text-gray-900">Recent Orders</h3>
                     <button className="text-sm text-blue-600 font-medium hover:text-blue-700">View All</button>
@@ -96,7 +96,7 @@ export default function SupplierDashboard() {
                 <div className="divide-y divide-gray-100">
                     {recentOrders.length > 0 ? (
                         recentOrders.map(order => (
-                            <div key={order.transactionId} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors">
+                            <div key={order.transactionId} className="p-6 flex items-center justify-between hover:bg-gray-50 transition-colors active:scale-95 transition-all duration-300">
                                 <div>
                                     <p className="font-semibold text-gray-900">Order #{order.transactionId.slice(-6)}</p>
                                     <p className="text-sm text-gray-500">{new Date(order.timestamp).toLocaleDateString()}</p>

@@ -67,7 +67,7 @@ const BusinessVerificationSection: React.FC<BusinessVerificationSectionProps> = 
                 {verificationStatus?.verificationDocuments && verificationStatus.verificationDocuments.length > 0 ? (
                     <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {verificationStatus.verificationDocuments.map((doc) => (
-                            <li key={doc.id} className="flex items-center justify-between p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                            <li key={doc.id} className="liquid-glass-card rounded-[2rem] flex items-center justify-between p-4 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 hover: transition-">
                                 <div className="flex items-center gap-3 min-w-0">
                                     <div className="p-2.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl shrink-0">
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
@@ -92,7 +92,7 @@ const BusinessVerificationSection: React.FC<BusinessVerificationSectionProps> = 
                 <div className="pt-6 border-t border-slate-100 dark:border-slate-800">
                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">Upload Document</label>
                     <div className="flex flex-wrap items-center gap-4">
-                        <label className="cursor-pointer inline-flex items-center px-5 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-700 dark:text-slate-300 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-sm shadow-sm group">
+                        <label className="cursor-pointer inline-flex items-center px-5 py-2.5 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl font-bold text-slate-700 dark:text-slate-300 hover:border-blue-500 dark:hover:border-blue-400 hover:text-blue-600 dark:hover:text-blue-400 transition-all text-sm shadow-sm group active:scale-95 transition-all duration-300">
                             <svg className="w-5 h-5 mr-2 text-slate-400 group-hover:text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                             <span>Choose Documentation</span>
                             <input type="file" className="hidden" onChange={handleFileUpload} accept=".pdf,image/*" disabled={uploading} />

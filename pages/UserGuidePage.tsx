@@ -52,7 +52,7 @@ const UserGuidePage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <HomeIcon className="w-6 h-6 text-blue-500" /> Dashboard
                     </h2>
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div className="liquid-glass-card rounded-[2rem] border border-gray-100 p-6 space-y-4">
                         <p className="text-gray-600 leading-relaxed">
                             The Dashboard provides a real-time overview of your business. Here you can see key metrics such as total sales, recent transactions, and low stock alerts.
                         </p>
@@ -68,7 +68,7 @@ const UserGuidePage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <ShoppingCartIcon className="w-6 h-6 text-blue-500" /> POS Terminal
                     </h2>
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div className="liquid-glass-card rounded-[2rem] border border-gray-100 p-6 space-y-4">
                         <p className="text-gray-600 leading-relaxed">
                             The Point of Sale (POS) terminal is where you process customer transactions. It is designed for speed and ease of use.
                         </p>
@@ -96,7 +96,7 @@ const UserGuidePage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <ArchiveBoxIcon className="w-6 h-6 text-blue-500" /> Inventory Management
                     </h2>
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div className="liquid-glass-card rounded-[2rem] border border-gray-100 p-6 space-y-4">
                         <p className="text-gray-600 leading-relaxed">
                             Keep track of your stock levels, manage product details, and organize items into categories.
                         </p>
@@ -113,7 +113,7 @@ const UserGuidePage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <UsersIcon className="w-6 h-6 text-blue-500" /> Customer Management
                     </h2>
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div className="liquid-glass-card rounded-[2rem] border border-gray-100 p-6 space-y-4">
                         <p className="text-gray-600 leading-relaxed">
                             Build relationships with your customers by tracking their purchases and contact information.
                         </p>
@@ -130,7 +130,7 @@ const UserGuidePage: React.FC = () => {
                     <h2 className="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                         <CalculatorIcon className="w-6 h-6 text-blue-500" /> Accounting
                     </h2>
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
+                    <div className="liquid-glass-card rounded-[2rem] border border-gray-100 p-6 space-y-4">
                         <p className="text-gray-600 leading-relaxed">
                             Manage your business finances directly within the app.
                         </p>
@@ -158,10 +158,10 @@ const GuideCard: React.FC<GuideCardProps> = ({ title, icon, description, link })
     return (
         <a
             href={link}
-            className="block p-6 bg-white border border-gray-200 rounded-xl hover:shadow-md transition-shadow hover:border-blue-200 group"
+            className="liquid-glass-card rounded-[2rem] block p-6 border border-gray-200 hover: transition- hover:border-blue-200 group"
         >
             <div className="flex items-start justify-between mb-4">
-                <div className="p-3 bg-gray-50 rounded-lg text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                <div className="p-3 bg-gray-50 rounded-lg text-gray-600 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors active:scale-95 transition-all duration-300">
                     {icon}
                 </div>
             </div>

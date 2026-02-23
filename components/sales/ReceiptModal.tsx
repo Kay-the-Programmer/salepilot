@@ -136,7 +136,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
             onClick={onClose}
         >
             <div
-                className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md border border-white/20 dark:border-white/10"
+                className="liquid-glass-card rounded-[2rem] /95 dark:bg-slate-900/95 backdrop-blur-xl w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md border border-white/20 dark:border-white/10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -145,7 +145,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 </div>
 
                 {/* Header with close button */}
-                <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200/50 dark:border-white/10 z-10">
+                <div className="liquid-glass-header sticky top-0 /80 dark:bg-slate-900/80 backdrop-blur-md px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200/50 dark:border-white/10 z-10">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Receipt</h3>

@@ -131,13 +131,13 @@ const MobileHeader = ({
     showBack?: boolean;
     rightAction?: React.ReactNode;
 }) => (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-gray-100 dark:border-slate-800 shadow-sm no-pull-to-refresh glass-effect">
+    <header className="liquid-glass-header sticky top-0 z-50 /80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-gray-100 dark:border-slate-800 shadow-sm no-pull-to-refresh glass-effect">
         <div className="px-4">
             <div className="flex items-center h-16">
                 {showBack && onBack && (
                     <button
                         onClick={onBack}
-                        className="p-2 -ml-2 rounded-xl h-10 w-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all mobile-tap-target text-gray-400 dark:text-slate-500"
+                        className="p-2 -ml-2 rounded-xl h-10 w-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all mobile-tap-target text-gray-400 dark:text-slate-500 active:scale-95 transition-all duration-300"
                         aria-label="Go back"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -176,7 +176,7 @@ const EmptyState = ({
         {actionLabel && onAction && (
             <button
                 onClick={onAction}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-manipulation mobile-tap-target"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 touch-manipulation mobile-tap-target active:scale-95 transition-all duration-300"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
             >
                 {actionLabel}
@@ -398,7 +398,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                 <style>{styles}</style>
 
                 {/* Desktop Header - Minimal */}
-                <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 h-16 flex items-center justify-between px-6 glass-effect">
+                <header className="liquid-glass-header sticky top-0 z-40 /80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 h-16 flex items-center justify-between px-6 glass-effect">
                     <div className="flex items-center gap-4">
                         <h1 className="text-xl font-bold text-gray-900 dark:text-white">Customers</h1>
                         <span className="text-gray-300 dark:text-slate-700">|</span>
@@ -427,7 +427,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                 {canManageCustomers && (
                                     <button
                                         onClick={handleOpenAddModal}
-                                        className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm"
+                                        className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm active:scale-95 transition-all duration-300"
                                         title="Add New Customer"
                                     >
                                         <PlusIcon className="w-4 h-4" />
@@ -490,7 +490,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
                     {/* Right Panel - Customer Detail */}
                     <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 desktop-scrollbar">
-                        <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 px-8 py-5 glass-effect">
+                        <div className="liquid-glass-header sticky top-0 z-10 /80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 px-8 py-5 glass-effect">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg border border-blue-100 dark:border-blue-900/30">
@@ -513,7 +513,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                                            className="inline-flex items-center px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-all shadow-sm"
+                                            className="inline-flex items-center px-3 py-2 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-slate-700 transition-all shadow-sm active:scale-95 transition-all duration-300"
                                         >
                                             <PencilIcon className="w-4 h-4 mr-2 text-gray-500 dark:text-slate-400" />
                                             Edit
@@ -521,7 +521,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
                                         <button
                                             onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
-                                            className="inline-flex items-center px-3 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/10 transition-all shadow-sm"
+                                            className="inline-flex items-center px-3 py-2 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-50 dark:hover:bg-red-900/10 transition-all shadow-sm active:scale-95 transition-all duration-300"
                                         >
                                             <TrashIcon className="w-4 h-4 mr-2 pointer-events-none" />
                                             Delete
@@ -581,7 +581,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                     rightAction={detailedCustomer && canManageCustomers && (
                         <button
                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all mobile-tap-target"
+                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all mobile-tap-target active:scale-95 transition-all duration-300"
                             style={{ WebkitTapHighlightColor: 'transparent' }}
                             aria-label="Edit customer"
                         >
@@ -615,14 +615,14 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                     <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-gray-100 dark:border-slate-800 p-4 safe-area-bottom shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center gap-2 glass-effect">
                         <button
                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                            className="flex-1 py-4 px-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2"
+                            className="flex-1 py-4 px-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                         >
                             <PencilIcon className="w-4 h-4" />
                             Edit
                         </button>
                         <button
                             onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
-                            className="p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all"
+                            className="p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all active:scale-95 transition-all duration-300"
                             aria-label="Delete Customer"
                         >
                             <TrashIcon className="w-5 h-5 pointer-events-none" />
@@ -658,7 +658,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
             <style>{styles}</style>
 
             {/* Mobile/Tablet Header */}
-            <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm no-pull-to-refresh glass-effect">
+            <header className="liquid-glass-header sticky top-0 z-40 /80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-slate-800 shadow-sm no-pull-to-refresh glass-effect">
                 <div className="px-4">
                     <div className="flex items-center h-14 justify-between">
                         {isMobile && isMobileSearchOpen ? (
@@ -724,7 +724,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                                         className="fixed inset-0 z-40"
                                                         onClick={() => setIsViewMenuOpen(false)}
                                                     />
-                                                    <div className="absolute top-12 right-12 z-50 w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-gray-100 dark:border-slate-800 py-2 animate-fade-in-up origin-top-right glass-effect">
+                                                    <div className="liquid-glass-card rounded-[2rem] absolute top-12 right-12 z-50 w-48 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 py-2 animate-fade-in-up origin-top-right glass-effect">
                                                         <div className="px-4 py-2 border-b border-gray-50 dark:border-slate-800">
                                                             <span className="text-xs font-bold text-gray-400 dark:text-slate-500 uppercase tracking-wider">Sort Customers</span>
                                                         </div>
@@ -763,7 +763,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     {/* Search Icon Button */}
                                     <button
                                         onClick={() => setIsMobileSearchOpen(true)}
-                                        className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors"
+                                        className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors active:scale-95 transition-all duration-300"
                                         aria-label="Search"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -775,7 +775,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     {canManageCustomers && isMobile && (
                                         <button
                                             onClick={handleOpenAddModal}
-                                            className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 text-blue-600 dark:text-blue-400 transition-colors"
+                                            className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 text-blue-600 dark:text-blue-400 transition-colors active:scale-95 transition-all duration-300"
                                             aria-label="Add Customer"
                                         >
                                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -788,7 +788,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     {canManageCustomers && !isMobile && (
                                         <button
                                             onClick={handleOpenAddModal}
-                                            className="ml-2 inline-flex items-center px-3 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                            className="ml-2 inline-flex items-center px-3 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 active:scale-95 transition-all duration-300"
                                         >
                                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

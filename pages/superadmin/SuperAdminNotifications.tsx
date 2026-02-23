@@ -232,7 +232,7 @@ const SuperAdminNotifications: React.FC = () => {
     const stats = getStats();
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-500 selection:bg-indigo-500/30 relative overflow-hidden">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 transition-colors duration-500 selection:bg-indigo-500/30 relative overflow-hidden font-google">
             {/* Background Atmosphere */}
             <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
                 <div className="absolute top-[-10%] right-[-5%] w-[40%] h-[40%] bg-indigo-500/5 dark:bg-indigo-900/10 rounded-full blur-[120px]"></div>
@@ -262,7 +262,7 @@ const SuperAdminNotifications: React.FC = () => {
                         <button
                             onClick={loadNotifications}
                             disabled={loading}
-                            className="group flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all disabled:opacity-50 shadow-sm backdrop-blur-md"
+                            className="group flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-white/10 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-all disabled:opacity-50 shadow-sm backdrop-blur-md active:scale-95 transition-all duration-300"
                         >
                             <ClockIcon className={`w-4 h-4 transition-transform group-hover:rotate-180 ${loading ? 'animate-spin' : ''}`} />
                             SYNC_SYSTEM
@@ -272,8 +272,8 @@ const SuperAdminNotifications: React.FC = () => {
 
                 {/* Stats Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div className="relative group overflow-hidden bg-white/40 dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-2xl transition-all hover:shadow-2xl hover:shadow-indigo-500/10">
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-colors"></div>
+                    <div className="liquid-glass-card rounded-[2rem] relative group overflow-hidden /40 dark:bg-slate-900/40 p-6 border border-slate-200 dark:border-white/10 backdrop-blur-2xl transition-all hover: hover:-indigo-500/10">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-3xl group-hover:bg-indigo-500/20 transition-colors active:scale-95 transition-all duration-300"></div>
                         <div className="flex justify-between items-start relative z-10">
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-1">Total_Transmission</p>
@@ -289,8 +289,8 @@ const SuperAdminNotifications: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="relative group overflow-hidden bg-white/40 dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-2xl transition-all hover:shadow-2xl hover:shadow-emerald-500/10">
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors"></div>
+                    <div className="liquid-glass-card rounded-[2rem] relative group overflow-hidden /40 dark:bg-slate-900/40 p-6 border border-slate-200 dark:border-white/10 backdrop-blur-2xl transition-all hover: hover:-emerald-500/10">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-colors active:scale-95 transition-all duration-300"></div>
                         <div className="flex justify-between items-start relative z-10">
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-1">Avg_Acknowledge_Rate</p>
@@ -306,8 +306,8 @@ const SuperAdminNotifications: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="relative group overflow-hidden bg-white/40 dark:bg-slate-900/40 p-6 rounded-2xl border border-slate-200 dark:border-white/10 backdrop-blur-2xl transition-all hover:shadow-2xl hover:shadow-purple-500/10 sm:col-span-2 lg:col-span-1">
-                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-colors"></div>
+                    <div className="liquid-glass-card rounded-[2rem] relative group overflow-hidden /40 dark:bg-slate-900/40 p-6 border border-slate-200 dark:border-white/10 backdrop-blur-2xl transition-all hover: hover:-purple-500/10 sm:col-span-2 lg:col-span-1">
+                        <div className="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 transition-colors active:scale-95 transition-all duration-300"></div>
                         <div className="flex justify-between items-start relative z-10">
                             <div>
                                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-1">Terminal_Fleet_Size</p>
@@ -328,7 +328,7 @@ const SuperAdminNotifications: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
                     {/* Form Column */}
                     <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-10">
-                        <div className="relative overflow-hidden bg-white/60 dark:bg-slate-900/60 p-8 rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl backdrop-blur-3xl group">
+                        <div className="liquid-glass-card rounded-[2rem] relative overflow-hidden /60 dark:bg-slate-900/60 p-8 border border-slate-200 dark:border-white/10 backdrop-blur-3xl group">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
 
                             <div className="flex items-center gap-4 mb-8">
@@ -345,7 +345,7 @@ const SuperAdminNotifications: React.FC = () => {
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Priority_Rank</label>
                                     <select
-                                        className="w-full bg-slate-100 dark:bg-slate-800/50 border border-transparent dark:border-white/5 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer ring-1 ring-indigo-500/10 hover:ring-indigo-500/30"
+                                        className="w-full bg-slate-100 dark:bg-slate-800/50 border border-transparent dark:border-white/5 rounded-2xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer ring-1 ring-indigo-500/10 hover:ring-indigo-500/30 active:scale-95 transition-all duration-300"
                                         value={notificationType}
                                         onChange={(e) => setNotificationType(e.target.value as any)}
                                     >
@@ -382,7 +382,7 @@ const SuperAdminNotifications: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={sending || !title.trim() || !message.trim()}
-                                    className="w-full group/btn relative overflow-hidden h-14 bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 rounded-2xl text-white font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale"
+                                    className="w-full group/btn relative overflow-hidden h-14 bg-gradient-to-r from-indigo-600 via-indigo-500 to-purple-600 rounded-2xl text-white font-black text-xs uppercase tracking-[0.3em] shadow-xl shadow-indigo-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:grayscale active:scale-95 transition-all duration-300"
                                 >
                                     <div className="absolute inset-0 bg-white/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
                                     <div className="relative z-10 flex items-center justify-center gap-3">
@@ -414,7 +414,7 @@ const SuperAdminNotifications: React.FC = () => {
 
                     {/* History Section */}
                     <div className="lg:col-span-2">
-                        <div className="relative overflow-hidden bg-white/60 dark:bg-slate-900/60 rounded-3xl border border-slate-200 dark:border-white/10 shadow-xl backdrop-blur-3xl flex flex-col h-[calc(100vh-280px)] min-h-[600px] group">
+                        <div className="liquid-glass-card rounded-[2rem] relative overflow-hidden /60 dark:bg-slate-900/60 border border-slate-200 dark:border-white/10 backdrop-blur-3xl flex flex-col h-[calc(100vh-280px)] min-h-[600px] group">
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500/50 to-transparent"></div>
 
                             <div className="p-8 border-b border-slate-100 dark:border-white/5 relative bg-gradient-to-br from-indigo-500/5 via-transparent to-transparent">
@@ -457,7 +457,7 @@ const SuperAdminNotifications: React.FC = () => {
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Type_Classification</label>
                                             <select
-                                                className="w-full bg-slate-100 dark:bg-slate-800/80 border border-transparent dark:border-white/5 rounded-xl py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
+                                                className="w-full bg-slate-100 dark:bg-slate-800/80 border border-transparent dark:border-white/5 rounded-xl py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer active:scale-95 transition-all duration-300"
                                                 value={filters.type}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, type: e.target.value as any }))}
                                             >
@@ -471,7 +471,7 @@ const SuperAdminNotifications: React.FC = () => {
                                         <div className="space-y-2">
                                             <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 ml-1">Temporal_Window</label>
                                             <select
-                                                className="w-full bg-slate-100 dark:bg-slate-800/80 border border-transparent dark:border-white/5 rounded-xl py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer"
+                                                className="w-full bg-slate-100 dark:bg-slate-800/80 border border-transparent dark:border-white/5 rounded-xl py-2.5 px-4 text-sm text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all appearance-none cursor-pointer active:scale-95 transition-all duration-300"
                                                 value={filters.dateRange}
                                                 onChange={(e) => setFilters(prev => ({ ...prev, dateRange: e.target.value as any }))}
                                             >
@@ -511,7 +511,7 @@ const SuperAdminNotifications: React.FC = () => {
                                             return (
                                                 <div
                                                     key={notification.id}
-                                                    className="group/item relative overflow-hidden bg-white/40 dark:bg-slate-800/10 border border-slate-200 dark:border-white/5 rounded-3xl p-6 transition-all hover:bg-white dark:hover:bg-slate-800/30 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1"
+                                                    className="group/item relative overflow-hidden bg-white/40 dark:bg-slate-800/10 border border-slate-200 dark:border-white/5 rounded-3xl p-6 transition-all hover:bg-white dark:hover:bg-slate-800/30 hover:shadow-xl hover:shadow-indigo-500/5 hover:-translate-y-1 active:scale-95 transition-all duration-300"
                                                 >
                                                     <div className="absolute top-0 left-0 w-1.5 h-full bg-indigo-500 opacity-0 group-hover/item:opacity-100 transition-all duration-300"></div>
 
@@ -601,7 +601,7 @@ const SuperAdminNotifications: React.FC = () => {
                         onClick={() => setIsModalOpen(false)}
                     >
                         <div
-                            className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_0_100px_-20px_rgba(79,70,229,0.3)] w-full max-w-5xl max-h-full flex flex-col animate-in fade-in zoom-in-95 duration-500 border border-white/20 dark:border-white/10 overflow-hidden"
+                            className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 rounded-[2.5rem] -[0_0_100px_-20px_rgba(79,70,229,0.3)] w-full max-w-5xl max-h-full flex flex-col animate-in fade-in zoom-in-95 duration-500 border border-white/20 dark:border-white/10 overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Modal Header */}
@@ -636,7 +636,7 @@ const SuperAdminNotifications: React.FC = () => {
                                         <div className="flex items-center gap-4">
                                             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 font-mono">Filter_Status:</span>
                                             <select
-                                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl py-2 px-4 text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white transition-all shadow-sm appearance-none cursor-pointer pr-10 min-w-[160px]"
+                                                className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl py-2 px-4 text-xs font-bold focus:ring-2 focus:ring-indigo-500 outline-none text-slate-900 dark:text-white transition-all shadow-sm appearance-none cursor-pointer pr-10 min-w-[160px] active:scale-95 transition-all duration-300"
                                                 value={statusFilter}
                                                 onChange={(e) => setStatusFilter(e.target.value as any)}
                                             >
@@ -682,7 +682,7 @@ const SuperAdminNotifications: React.FC = () => {
                                     <div className="overflow-x-auto">
                                         <table className="min-w-full border-separate border-spacing-0">
                                             <thead>
-                                                <tr className="sticky top-0 bg-white dark:bg-slate-900 z-10">
+                                                <tr className="liquid-glass-header sticky top-0 dark:bg-slate-900 z-10">
                                                     <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 border-b border-slate-100 dark:border-white/5 font-mono">Terminal_Location</th>
                                                     <th className="px-8 py-5 text-left text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 border-b border-slate-100 dark:border-white/5 font-mono">Signal_Status</th>
                                                     <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-600 border-b border-slate-100 dark:border-white/5 font-mono">Transmission_Metadata</th>
@@ -691,7 +691,7 @@ const SuperAdminNotifications: React.FC = () => {
                                             <tbody className="divide-y divide-slate-50 dark:divide-white/5">
                                                 {filteredStatuses.length > 0 ? (
                                                     filteredStatuses.map((status, i) => (
-                                                        <tr key={i} className="group/row hover:bg-indigo-500/[0.02] transition-colors">
+                                                        <tr key={i} className="group/row hover:bg-indigo-500/[0.02] transition-colors active:scale-95 transition-all duration-300">
                                                             <td className="px-8 py-6">
                                                                 <div className="flex items-center gap-3">
                                                                     <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-white/5 flex items-center justify-center border border-transparent dark:border-white/10 group-hover/row:border-indigo-500/30 transition-all">

@@ -104,7 +104,7 @@ const SubscriptionHistory: React.FC<SubscriptionHistoryProps> = ({ storeId }) =>
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
                             {history.map((item) => (
-                                <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group">
+                                <tr key={item.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors group active:scale-95 transition-all duration-300">
                                     <td className="px-4 py-3 md:px-8 md:py-5 text-slate-600 dark:text-slate-400 font-medium whitespace-nowrap">
                                         {new Date(item.createdAt).toLocaleDateString(undefined, {
                                             year: 'numeric',

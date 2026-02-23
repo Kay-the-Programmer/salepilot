@@ -181,7 +181,7 @@ const MarketingPage: React.FC = () => {
                         </div>
                     ) : (
                         <div className="text-gray-400 dark:text-slate-700 text-center flex flex-col items-center max-w-sm">
-                            <div className="p-8 rounded-full bg-white dark:bg-slate-900 border border-gray-100 dark:border-slate-800 shadow-2xl mb-6 scale-login">
+                            <div className="liquid-glass-card rounded-[2rem] p-8 dark:bg-slate-900 border border-gray-100 dark:border-slate-800 mb-6 scale-login">
                                 <SparklesIcon className="w-16 h-16 opacity-10" />
                             </div>
                             <h3 className="text-sm font-bold uppercase tracking-[0.2em] text-gray-500 dark:text-slate-400 mb-2">Workspace Empty</h3>

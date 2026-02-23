@@ -86,7 +86,7 @@ const NotificationsPage: React.FC<{
     return (
         <div className="bg-gray-50 dark:bg-slate-900 min-h-full font-sans pb-10 transition-colors duration-200">
             {/* Header */}
-            <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10 shadow-sm transition-colors duration-200">
+            <div className="liquid-glass-header dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 sticky top-0 z-10 shadow-sm transition-colors duration-200">
                 <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Notifications</h1>
                     <div className="flex gap-2">
@@ -134,7 +134,7 @@ const NotificationsPage: React.FC<{
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-2 space-y-4">
                 {sortedAnnouncements.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-700 transition-colors duration-200">
+                    <div className="liquid-glass-card rounded-[2rem] flex flex-col items-center justify-center py-20 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 transition-colors duration-200">
                         <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-full mb-4">
                             <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />

@@ -18,7 +18,7 @@ const GoogleRoleSelectionModal: React.FC<GoogleRoleSelectionModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
-            <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
+            <div className="liquid-glass-card rounded-[2rem] w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-300 border border-white/20">
 
                 <div className="p-8 text-center bg-gradient-to-br from-slate-50 to-slate-100/50">
                     <h2 className="text-2xl font-black text-slate-900 mb-2">Welcome, {userName}!</h2>
@@ -29,7 +29,7 @@ const GoogleRoleSelectionModal: React.FC<GoogleRoleSelectionModalProps> = ({
                     {/* Business Option */}
                     <button
                         onClick={() => onSelectRole('business')}
-                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-600 hover:bg-blue-50/30 transition-all duration-300 text-center"
+                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 hover:border-blue-600 hover:bg-blue-50/30 transition-all duration-300 text-center active:scale-95 transition-all duration-300"
                     >
                         <div className="w-16 h-16 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-blue-200">
                             <HiOutlineBuildingStorefront className="w-8 h-8" />
@@ -43,7 +43,7 @@ const GoogleRoleSelectionModal: React.FC<GoogleRoleSelectionModalProps> = ({
                     {/* Customer Option */}
                     <button
                         onClick={() => onSelectRole('customer')}
-                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50/30 transition-all duration-300 text-center"
+                        className="group relative flex flex-col items-center p-6 rounded-2xl border-2 border-slate-100 hover:border-orange-500 hover:bg-orange-50/30 transition-all duration-300 text-center active:scale-95 transition-all duration-300"
                     >
                         <div className="w-16 h-16 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-sm group-hover:shadow-orange-200">
                             <HiOutlineShoppingBag className="w-8 h-8" />

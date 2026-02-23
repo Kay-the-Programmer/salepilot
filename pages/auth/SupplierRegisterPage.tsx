@@ -65,7 +65,7 @@ const SupplierRegisterPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-mesh-light flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-google">
             <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
                 <div className="mx-auto h-16 w-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
                     <HiOutlineBuildingStorefront className="w-8 h-8 text-indigo-600" />
@@ -79,7 +79,7 @@ const SupplierRegisterPage: React.FC = () => {
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-4 shadow-xl shadow-slate-200 sm:rounded-xl sm:px-10 border border-slate-100">
+                <div className="liquid-glass-card rounded-[2rem] py-8 px-4 -slate-200 sm: sm:px-10 border border-slate-100">
                     <form className="space-y-6" onSubmit={handleSubmit}>
                         {errors.submit && (
                             <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-4">
@@ -166,7 +166,7 @@ const SupplierRegisterPage: React.FC = () => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+                            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors active:scale-95 transition-all duration-300"
                         >
                             {isLoading ? 'Creating Account...' : 'Register as Supplier'}
                         </button>

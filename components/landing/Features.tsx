@@ -48,7 +48,7 @@ const Features: React.FC = () => {
                 inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
             >
-              <div className="relative h-full bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-transparent transition-all duration-300">
+              <div className="liquid-glass-card rounded-[2rem] relative h-full border border-gray-200 p-8 hover: hover:border-transparent transition-all duration-300">
                 {/* Gradient Background on Hover */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-300`}></div>
                 
@@ -56,7 +56,7 @@ const Features: React.FC = () => {
                   <div className="text-4xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
                     {feature.icon}
                   </div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-gray-900 group-hover:to-gray-700">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text group-hover:from-gray-900 group-hover:to-gray-700 active:scale-95 transition-all duration-300">
                     {feature.title}
                   </h3>
                   <p className="text-gray-600 leading-relaxed">

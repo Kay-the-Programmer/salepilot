@@ -97,7 +97,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
             {/* Header */}
-            <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5 shadow-sm">
+            <header className="liquid-glass-header sticky top-0 z-30 /80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5 shadow-sm">
                 <div className="max-w-6xl mx-auto px-6 py-5">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
@@ -144,7 +144,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
 
                     {/* Content Area */}
                     <div className="flex-1 min-w-0">
-                        <div className="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-white/5 shadow-sm overflow-hidden min-h-[600px]">
+                        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 border border-slate-200/60 dark:border-white/5 overflow-hidden min-h-[600px]">
                             {activeCategory === 'store' && (
                                 <div className="p-1">
                                     <StoreDetailsSection
@@ -230,7 +230,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                 <div className="p-8">
                                     <div className="flex flex-col md:flex-row items-center gap-6 justify-between p-8 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-500/10 dark:to-blue-500/10 rounded-2xl border border-indigo-100/50 dark:border-indigo-500/20">
                                         <div className="flex items-center gap-5">
-                                            <div className="p-4 bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 rounded-2xl shadow-sm border border-indigo-100 dark:border-indigo-500/20">
+                                            <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-500/20">
                                                 <CreditCardIcon className="w-8 h-8" />
                                             </div>
                                             <div>
@@ -240,7 +240,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                         </div>
                                         <a
                                             href="/subscription"
-                                            className="w-full md:w-auto px-8 py-3.5 bg-indigo-600 dark:bg-indigo-500 text-white font-bold rounded-2xl hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:-translate-y-0.5"
+                                            className="w-full md:w-auto px-8 py-3.5 bg-indigo-600 dark:bg-indigo-500 text-white font-bold rounded-2xl hover:bg-indigo-700 dark:hover:bg-indigo-600 shadow-lg shadow-indigo-200 dark:shadow-none transition-all hover:-translate-y-0.5 active:scale-95 transition-all duration-300"
                                         >
                                             Manage Subscription
                                         </a>

@@ -103,7 +103,7 @@ const RecurringExpenseFormModal: React.FC<RecurringExpenseFormModalProps> = ({ i
             {/* Backdrop with blur */}
             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity -z-10" />
 
-            <div className="relative z-10 glass-effect !bg-white/95 dark:!bg-slate-900/95 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+            <div className="liquid-glass-card rounded-[2rem] relative z-10 glass-effect !/95 dark:!bg-slate-900/95 w-full max-w-2xl overflow-hidden flex flex-col animate-scale-up max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
                 <form onSubmit={handleSubmit} className="flex flex-col h-full">
                     <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800">
                         <div className="flex items-center justify-between">
@@ -115,7 +115,7 @@ const RecurringExpenseFormModal: React.FC<RecurringExpenseFormModalProps> = ({ i
                                     {expenseToEdit ? 'Edit Recurring Expense' : 'Create Recurring Expense'}
                                 </h3>
                             </div>
-                            <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                            <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                                 <XMarkIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
@@ -262,7 +262,7 @@ const RecurringExpenseFormModal: React.FC<RecurringExpenseFormModalProps> = ({ i
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
+                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 active:scale-95 transition-all duration-300"
                         >
                             Cancel
                         </button>

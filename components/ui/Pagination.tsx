@@ -47,7 +47,7 @@ const Pagination: React.FC<PaginationProps> = ({
                                     onPageSizeChange(parseInt(e.target.value, 10));
                                     onPageChange(1);
                                 }}
-                                className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all hover:border-slate-300 dark:hover:border-white/20 cursor-pointer"
+                                className="appearance-none pl-3 pr-8 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-sm font-semibold text-slate-700 dark:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm transition-all hover:border-slate-300 dark:hover:border-white/20 cursor-pointer active:scale-95 transition-all duration-300"
                             >
                                 {[10, 20, 50, 100].map(sz => (
                                     <option key={sz} value={sz}>{sz}</option>
@@ -62,7 +62,7 @@ const Pagination: React.FC<PaginationProps> = ({
                     {/* Pagination Buttons */}
                     <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
                         <button
-                            className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-600 dark:text-gray-400 hover:bg-white dark:hover:bg-white/10 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-600 transition-all"
+                            className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-600 dark:text-gray-400 hover:bg-white dark:hover:bg-white/10 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-600 transition-all active:scale-95 transition-all duration-300"
                             onClick={() => onPageChange(Math.max(1, page - 1))}
                             disabled={page <= 1}
                         >
@@ -72,7 +72,7 @@ const Pagination: React.FC<PaginationProps> = ({
                             {page}
                         </div>
                         <button
-                            className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-600 dark:text-gray-400 hover:bg-white dark:hover:bg-white/10 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-600 transition-all"
+                            className="px-3 py-1.5 rounded-lg text-sm font-bold text-slate-600 dark:text-gray-400 hover:bg-white dark:hover:bg-white/10 hover:text-indigo-600 dark:hover:text-indigo-400 hover:shadow-sm disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-slate-600 transition-all active:scale-95 transition-all duration-300"
                             onClick={() => onPageChange(page * pageSize < total ? page + 1 : page)}
                             disabled={page * pageSize >= total}
                         >

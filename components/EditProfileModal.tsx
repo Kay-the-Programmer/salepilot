@@ -48,7 +48,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onClose, on
 
     return (
         <div className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-lg border-t dark:border-slate-800">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-lg border-t dark:border-slate-800">
                 <form onSubmit={handleSubmit}>
                     <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b dark:border-slate-800">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-slate-100">Edit Profile</h3>

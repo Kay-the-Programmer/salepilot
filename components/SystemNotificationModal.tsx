@@ -43,7 +43,7 @@ const SystemNotificationModal: React.FC<SystemNotificationModalProps> = ({
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-2xl transition-all border-t-4 border-indigo-600">
+                            <Dialog.Panel className="liquid-glass-card rounded-[2rem] w-full max-w-md transform overflow-hidden p-6 text-left align-middle transition-all border-t-4 border-indigo-600">
                                 <div className="flex items-start gap-4">
                                     <div className="bg-indigo-100 p-3 rounded-full text-indigo-600 flex-shrink-0">
                                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@ const SystemNotificationModal: React.FC<SystemNotificationModalProps> = ({
                                 <div className="mt-8 flex justify-end">
                                     <button
                                         type="button"
-                                        className="inline-flex justify-center rounded-lg border border-transparent bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors w-full sm:w-auto"
+                                        className="inline-flex justify-center rounded-lg border border-transparent bg-indigo-600 px-6 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors w-full sm:w-auto active:scale-95 transition-all duration-300"
                                         onClick={onAcknowledge}
                                     >
                                         Acknowledge & Dismiss

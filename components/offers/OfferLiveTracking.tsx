@@ -140,7 +140,7 @@ export default function OfferLiveTracking() {
                                     await offersService.accept(offer.id);
                                     window.location.reload();
                                 }}
-                                className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700"
+                                className="px-3 py-1 bg-blue-600 text-white text-xs rounded hover:bg-blue-700 active:scale-95 transition-all duration-300"
                             >
                                 Accept Offer
                             </button>

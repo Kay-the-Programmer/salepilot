@@ -208,7 +208,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
             {/* View toggle */}
             <button
                 onClick={() => setViewMode(viewMode === 'list' ? 'cards' : 'list')}
-                className="p-2 rounded-lg bg-slate-800/80 border border-slate-700/50 text-slate-400 hover:bg-slate-700/80 hover:text-slate-300 shadow-sm transition-colors"
+                className="p-2 rounded-lg bg-slate-800/80 border border-slate-700/50 text-slate-400 hover:bg-slate-700/80 hover:text-slate-300 shadow-sm transition-colors active:scale-95 transition-all duration-300"
             >
                 {viewMode === 'list' ? <GridIcon className="w-5 h-5" /> : <ListIcon className="w-5 h-5" />}
             </button>
@@ -236,7 +236,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                             <h3 className="text-lg font-bold text-white">Filter & Sort</h3>
                             <button
                                 onClick={() => setShowFilters(false)}
-                                className="p-2 rounded-lg hover:bg-slate-800 text-slate-500"
+                                className="p-2 rounded-lg hover:bg-slate-800 text-slate-500 active:scale-95 transition-all duration-300"
                             >
                                 <XMarkIcon className="w-5 h-5" />
                             </button>
@@ -315,13 +315,13 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                         <div className="px-6 py-4 border-t border-slate-800 bg-slate-900/80 flex gap-3">
                             <button
                                 onClick={resetFilters}
-                                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-semibold text-sm hover:bg-slate-800 transition-all"
+                                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 font-semibold text-sm hover:bg-slate-800 transition-all active:scale-95 transition-all duration-300"
                             >
                                 Reset
                             </button>
                             <button
                                 onClick={() => setShowFilters(false)}
-                                className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-500 transition-all shadow-md"
+                                className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 text-white font-semibold text-sm hover:bg-blue-500 transition-all shadow-md active:scale-95 transition-all duration-300"
                             >
                                 Apply
                             </button>
@@ -378,7 +378,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                                                 >
                                                     <td className="px-4 md:px-6 py-3 whitespace-nowrap">
                                                         <div className="flex items-center gap-2 md:gap-3">
-                                                            <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-xs md:text-sm group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0">
+                                                            <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-slate-800 text-slate-400 flex items-center justify-center font-bold text-xs md:text-sm group-hover:bg-blue-600 group-hover:text-white transition-all shrink-0 active:scale-95 transition-all duration-300">
                                                                 {log.userName.charAt(0).toUpperCase()}
                                                             </div>
                                                             <span className="text-sm font-semibold text-white truncate max-w-[100px] md:max-w-none">{log.userName}</span>
@@ -415,7 +415,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                                         >
                                             <div className="flex items-start justify-between mb-3 md:mb-4">
                                                 <div className="flex items-center gap-2 md:gap-3">
-                                                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-slate-700 text-slate-400 flex items-center justify-center font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-all">
+                                                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-slate-700 text-slate-400 flex items-center justify-center font-bold text-sm group-hover:bg-blue-600 group-hover:text-white transition-all active:scale-95 transition-all duration-300">
                                                         {log.userName.charAt(0).toUpperCase()}
                                                     </div>
                                                     <div>
@@ -456,7 +456,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                                     {activeFilterCount > 0 && (
                                         <button
                                             onClick={resetFilters}
-                                            className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-md"
+                                            className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-all shadow-md active:scale-95 transition-all duration-300"
                                         >
                                             Clear Filters
                                         </button>
@@ -491,7 +491,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                             e.preventDefault();
                             setIsResizing(true);
                         }}
-                        className="hidden md:block w-1 hover:w-2 bg-slate-700 hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600"
+                        className="hidden md:block w-1 hover:w-2 bg-slate-700 hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600 active:scale-95 transition-all duration-300"
                     />
                 )}
 
@@ -507,7 +507,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={handleBackToList}
-                                        className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors md:hidden"
+                                        className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors md:hidden active:scale-95 transition-all duration-300"
                                     >
                                         <ArrowLeftIcon className="w-5 h-5" />
                                     </button>
@@ -515,7 +515,7 @@ const AuditLogPage: React.FC<AuditLogPageProps> = ({ logs, users }) => {
                                 </div>
                                 <button
                                     onClick={handleBackToList}
-                                    className="p-2 rounded-lg hover:bg-slate-800 text-slate-500 hidden md:block"
+                                    className="p-2 rounded-lg hover:bg-slate-800 text-slate-500 hidden md:block active:scale-95 transition-all duration-300"
                                 >
                                     <XMarkIcon className="w-5 h-5" />
                                 </button>

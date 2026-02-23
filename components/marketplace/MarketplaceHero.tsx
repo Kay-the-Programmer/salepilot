@@ -29,7 +29,7 @@ const MarketplaceHero: React.FC = () => {
                             const element = document.getElementById('store-grid');
                             element?.scrollIntoView({ behavior: 'smooth' });
                         }}
-                        className="bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors flex items-center group"
+                        className="bg-black text-white px-8 py-3 rounded-full font-medium hover:bg-gray-800 transition-colors flex items-center group active:scale-95 transition-all duration-300"
                     >
                         Shop Collection
                         <svg className="w-5 h-5 ml-2 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

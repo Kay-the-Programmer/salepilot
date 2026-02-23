@@ -130,7 +130,7 @@ const markdownComponents = {
         <td className="px-3 py-2 text-slate-600 dark:text-slate-400 border-b border-slate-100 dark:border-white/5" {...props}>{children}</td>
     ),
     tr: ({ children, ...props }: any) => (
-        <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors" {...props}>{children}</tr>
+        <tr className="hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors active:scale-95 transition-all duration-300" {...props}>{children}</tr>
     ),
     blockquote: ({ children, ...props }: any) => (
         <blockquote className="my-2.5 pl-3 border-l-2 border-indigo-300 dark:border-indigo-500/50 text-slate-500 dark:text-slate-400 italic text-[13px]" {...props}>{children}</blockquote>
@@ -370,7 +370,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
     // === FULL CHAT PANEL — Gemini-style ===
     return (
         <div className="fixed inset-0 z-[60] md:inset-auto md:bottom-6 md:right-6 w-full md:max-w-[460px] animate-slide-up-fade">
-            <div className="relative bg-white dark:bg-[#1a1a2e] h-full rounded-none md:h-[700px] md:max-h-[calc(100vh-6rem)] md:rounded-2xl shadow-2xl border border-slate-200/60 dark:border-white/[0.06] overflow-hidden flex flex-col">
+            <div className="liquid-glass-card rounded-[2rem] relative dark:bg-[#1a1a2e] h-full rounded-none md:h-[700px] md:max-h-[calc(100vh-6rem)] md: border border-slate-200/60 dark:border-white/[0.06] overflow-hidden flex flex-col">
 
                 {/* ─── Header ─── */}
                 <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-white/[0.04]">
@@ -388,7 +388,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                         {messages.length > 1 && (
                             <button
                                 onClick={handleClearChat}
-                                className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
+                                className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 active:scale-95 transition-all duration-300"
                                 title="New chat"
                             >
                                 <TrashIcon className="w-4 h-4" />
@@ -396,7 +396,7 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                         )}
                         <button
                             onClick={() => setIsMinimized(true)}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-white"
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-full transition-colors text-slate-400 hover:text-slate-600 dark:hover:text-white active:scale-95 transition-all duration-300"
                         >
                             <XMarkIcon className="w-5 h-5" />
                         </button>
@@ -442,14 +442,14 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                                             <div className="flex items-center gap-1 mt-2 opacity-0 group-hover/msg:opacity-100 transition-opacity duration-200">
                                                 <button
                                                     onClick={() => speakMessage(message.content)}
-                                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors active:scale-95 transition-all duration-300"
                                                     title={isSpeaking ? "Stop" : "Listen"}
                                                 >
                                                     {isSpeaking ? <StopIcon className="w-3.5 h-3.5" /> : <SpeakerWaveIcon className="w-3.5 h-3.5" />}
                                                 </button>
                                                 <button
                                                     onClick={() => copyToClipboard(message.content)}
-                                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                                                    className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors active:scale-95 transition-all duration-300"
                                                     title="Copy"
                                                 >
                                                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">

@@ -330,14 +330,14 @@ export const SuperAdminAiCard: React.FC<SuperAdminAiCardProps> = ({ userName, pl
                                         </span>
                                         <button
                                             onClick={() => speakMessage(message.content)}
-                                            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-indigo-400 transition-colors"
+                                            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-indigo-400 transition-colors active:scale-95 transition-all duration-300"
                                             title={isSpeaking ? "Stop" : "Listen"}
                                         >
                                             {isSpeaking ? <StopIcon className="w-3.5 h-3.5" /> : <SpeakerWaveIcon className="w-3.5 h-3.5" />}
                                         </button>
                                         <button
                                             onClick={() => copyToClipboard(message.content)}
-                                            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-indigo-400 transition-colors"
+                                            className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 hover:text-indigo-400 transition-colors active:scale-95 transition-all duration-300"
                                             title="Copy"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-3.5 h-3.5">

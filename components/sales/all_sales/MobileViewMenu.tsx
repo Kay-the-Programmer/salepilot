@@ -14,13 +14,13 @@ export default function MobileViewMenu({ isOpen, onClose }: MobileViewMenuProps)
             <div className="absolute inset-0 bg-black/50 animate-fade-in" />
             {/* Position below header roughly */}
             <div
-                className="absolute top-[60px] right-4 left-auto w-48 bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden animate-fade-in-up border border-gray-100 dark:border-white/10 p-2"
+                className="liquid-glass-card rounded-[2rem] absolute top-[60px] right-4 left-auto w-48 dark:bg-slate-900 overflow-hidden animate-fade-in-up border border-gray-100 dark:border-white/10 p-2"
                 onClick={e => e.stopPropagation()}
             >
                 <div className="flex flex-col gap-1">
                     <button
                         onClick={onClose}
-                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-gray-700 dark:text-gray-300 font-medium"
+                        className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-gray-700 dark:text-gray-300 font-medium active:scale-95 transition-all duration-300"
                     >
                         <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center">
                             <ChartBarIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />

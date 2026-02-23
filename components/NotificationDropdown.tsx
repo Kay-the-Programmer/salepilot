@@ -26,7 +26,7 @@ export default function NotificationDropdown({ notifications, onMarkAsRead, onVi
 
     return (
         <Menu as="div" className="relative inline-block text-left">
-            <Menu.Button className="relative p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+            <Menu.Button className="relative p-2 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors active:scale-95 transition-all duration-300">
                 <span className="sr-only">View notifications</span>
                 <BellAlertIcon className="h-6 w-6" aria-hidden="true" />
                 {unreadCount > 0 && (
@@ -43,7 +43,7 @@ export default function NotificationDropdown({ notifications, onMarkAsRead, onVi
                 leaveFrom="transform opacity-100 scale-100"
                 leaveTo="transform opacity-0 scale-95"
             >
-                <Menu.Items className="absolute right-0 mt-2 w-80 sm:w-96 origin-top-right divide-y divide-gray-100 dark:divide-slate-700 rounded-xl bg-white dark:bg-slate-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden border border-transparent dark:border-slate-700">
+                <Menu.Items className="liquid-glass-card rounded-[2rem] absolute right-0 mt-2 w-80 sm:w-96 origin-top-right divide-y divide-gray-100 dark:divide-slate-700 dark:bg-slate-800 ring-1 ring-black ring-opacity-5 focus:outline-none z-50 overflow-hidden border border-transparent dark:border-slate-700">
                     <div className="px-4 py-3 bg-gray-50 dark:bg-slate-900/50 border-b border-gray-100 dark:border-slate-700 flex items-center justify-between">
                         <p className="text-sm font-semibold text-gray-900 dark:text-white">Notifications</p>
                         {unreadCount > 0 && (
@@ -83,33 +83,7 @@ export default function NotificationDropdown({ notifications, onMarkAsRead, onVi
                                             </div>
                                         )}
                                     </Menu.Item>
-                                {
-                                        recentNotifications.map((notification) => (
-                                            <Menu.Item key={notification.id}>
-                                                {({ active }) => (
-                                                    <div
-                                                        onClick={() => handleNotificationClick(notification)}
-                                                        className={`
-                                                    ${active ? 'bg-gray-50 dark:bg-slate-700/50' : ''}
-                                                    ${!notification.isRead ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}
-                                                    block px-4 py-3 cursor-pointer transition-colors border-l-4
-                                                    ${!notification.isRead ? 'border-indigo-500' : 'border-transparent'}
-                                                `}
-                                                    >
-                                                        <div className="flex justify-between items-start mb-1">
-                                                            <p className={`text-sm font-medium ${!notification.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-slate-300'}`}>
-                                                                {notification.title}
-                                                            </p>
-                                                            <p className="text-xs text-gray-400 dark:text-slate-500 whitespace-nowrap ml-2">
-                                                                {new Date(notification.createdAt).toLocaleDateString()}
-                                                            </p>
-                                                        </div>
-                                                        <p className="text-xs text-gray-500 dark:text-slate-400 line-clamp-2">{notification.message}</p>
-                                                    </div>
-                                                )}
-                                            </Menu.Item>
-                                        ))
-                                    }
+                                ))}
                             </div>
                         )}
                     </div>

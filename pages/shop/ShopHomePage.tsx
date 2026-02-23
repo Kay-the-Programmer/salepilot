@@ -18,7 +18,7 @@ const ShopHomePage: React.FC = () => {
                 <div className="pt-4 flex flex-col sm:flex-row gap-4 justify-center">
                     <Link
                         to={`/shop/${shopInfo.id}/products`}
-                        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:text-lg transition-colors"
+                        className="inline-flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 md:text-lg transition-colors active:scale-95 transition-all duration-300"
                     >
                         <HiOutlineShoppingBag className="w-5 h-5 mr-2" />
                         Browse Catalog

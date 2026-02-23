@@ -66,7 +66,7 @@ const BusList: React.FC<BusListProps> = ({
                         actions={
                             <button
                                 onClick={(e) => handleDeleteClick(bus.id, e)}
-                                className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors"
+                                className="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                 title="Delete"
                             >
                                 <XMarkIcon className="w-4 h-4" />
@@ -92,7 +92,7 @@ const BusList: React.FC<BusListProps> = ({
                         actions={
                             <button
                                 onClick={(e) => handleDeleteClick(bus.id, e)}
-                                className="text-red-600 hover:text-red-900 text-sm font-medium px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                                className="text-red-600 hover:text-red-900 text-sm font-medium px-3 py-1 bg-red-50 hover:bg-red-100 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                             >
                                 Delete
                             </button>

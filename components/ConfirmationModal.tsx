@@ -71,10 +71,10 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true" onClick={onClose}>
+        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md animate-fade-in" onClick={onClose} />
             <div
-                glass-effect=""
-                className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-md m-0 border border-gray-100 dark:bg-slate-900/80 dark:border-slate-700/50 max-h-[85vh] overflow-y-auto custom-scrollbar"
+                className="w-full liquid-glass rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-glass-appear sm:max-w-md border-none relative z-10 max-h-[85vh]"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -83,17 +83,17 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </div>
 
                 {/* Header */}
-                <div className="px-6 pt-5 pb-3">
-                    <div className="flex items-start gap-4">
-                        <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl bg-red-50 dark:bg-red-900/20">
-                            <ExclamationTriangleIcon className="h-6 w-6 text-red-600 dark:text-red-400" aria-hidden="true" />
+                <div className="px-8 pt-8 pb-4">
+                    <div className="flex items-start gap-5">
+                        <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-[1.25rem] bg-red-100 dark:bg-red-500/20 shadow-inner">
+                            <ExclamationTriangleIcon className="h-7 w-7 text-red-600 dark:text-red-400" aria-hidden="true" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="text-lg font-bold text-gray-900 dark:text-slate-100" id="modal-title">
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white font-google" id="modal-title">
                                 {title}
                             </h3>
-                            <div className="mt-1">
-                                <div className="text-sm text-gray-500 dark:text-slate-400">
+                            <div className="mt-2">
+                                <div className="text-sm font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
                                     {message}
                                 </div>
                             </div>
@@ -102,11 +102,11 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-gray-100 dark:border-slate-800 flex items-center gap-3">
+                <div className="px-8 py-6 flex items-center gap-4">
                     <Button
                         type="button"
                         variant="secondary"
-                        className="flex-1 dark:bg-slate-800/50"
+                        className="flex-1 py-3 px-6 rounded-full font-bold active:scale-95 transition-all border border-slate-200 dark:border-white/10"
                         onClick={onClose}
                     >
                         {cancelText}
@@ -114,7 +114,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     <Button
                         type="button"
                         variant={confirmButtonClass.includes('red') ? 'danger' : 'primary'}
-                        className={`flex-1 ${confirmButtonClass}`}
+                        className={`flex-1 py-3 px-6 rounded-full font-bold shadow-lg active:scale-95 transition-all ${confirmButtonClass.includes('red') ? 'shadow-red-500/20' : 'shadow-blue-500/20'}`}
                         onClick={onConfirm}
                     >
                         {confirmText}

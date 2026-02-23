@@ -47,7 +47,7 @@ const LowStockAlertModal: React.FC<LowStockAlertModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 overflow-hidden animate-scale-up">
+            <div className="liquid-glass-card rounded-[2rem] max-w-md w-full mx-4 overflow-hidden animate-scale-up">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-amber-50 to-orange-50 px-6 py-5 border-b border-amber-100">
                     <div className="flex items-center gap-3">
@@ -106,7 +106,7 @@ const LowStockAlertModal: React.FC<LowStockAlertModalProps> = ({
                 <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-1 px-4 py-2.5 text-sm font-bold text-slate-700 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200"
+                        className="flex-1 px-4 py-2.5 text-sm font-bold text-slate-700 bg-white border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-all duration-200 active:scale-95 transition-all duration-300"
                     >
                         Cancel
                     </button>

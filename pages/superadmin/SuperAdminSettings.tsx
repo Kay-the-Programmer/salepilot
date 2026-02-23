@@ -55,7 +55,7 @@ const SuperAdminSettings: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 p-6 transition-colors duration-300">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 p-6 transition-colors duration-300 font-google">
             <div className="max-w-4xl mx-auto space-y-6">
                 <div className="flex items-center justify-between">
                     <div>
@@ -73,7 +73,7 @@ const SuperAdminSettings: React.FC = () => {
                     </div>
                 )}
 
-                <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
                     <div className="p-6 border-b border-gray-100 dark:border-white/5 flex items-center gap-3">
                         <div className="p-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 rounded-lg">
                             <ChatBubbleLeftRightIcon className="w-6 h-6" />
@@ -122,7 +122,7 @@ const SuperAdminSettings: React.FC = () => {
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 disabled:opacity-50 transition-colors"
+                                className="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 disabled:opacity-50 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 {isSaving ? 'Saving...' : 'Save Changes'}
                             </button>

@@ -120,7 +120,7 @@ const LabelPrintModal: React.FC<LabelPrintModalProps> = ({ isOpen, onClose, prod
                         type="button"
                         variant="secondary"
                         onClick={onClose}
-                        className="flex-1 sm:flex-none dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600"
+                        className="flex-1 sm:flex-none dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 dark:hover:bg-slate-600 active:scale-95 transition-all duration-300"
                     >
                         Close
                     </Button>

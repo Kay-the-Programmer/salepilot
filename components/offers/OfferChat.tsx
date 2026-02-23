@@ -76,7 +76,7 @@ export default function OfferChat({ offerId, currentUserId }: OfferChatProps) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="liquid-glass-card rounded-[2rem] flex flex-col h-full border border-gray-200">
             <div className="p-3 border-b border-gray-200 font-medium">Chat</div>
 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
@@ -146,7 +146,7 @@ export default function OfferChat({ offerId, currentUserId }: OfferChatProps) {
                 <button
                     type="submit"
                     disabled={loading || (!newMessage.trim() && !image)}
-                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all duration-300"
                 >
                     {loading ? <Loader className="animate-spin" size={20} /> : <Send size={20} />}
                 </button>

@@ -94,7 +94,7 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
         <div className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-[2px] flex items-end sm:items-center justify-center animate-fade-in" onClick={onClose}>
             <div
                 glass-effect=""
-                className="bg-white/95 dark:bg-slate-900/80 w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl border border-gray-100 dark:border-slate-700/50"
+                className="liquid-glass-card rounded-[2rem] /95 dark:bg-slate-900/80 w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl border border-gray-100 dark:border-slate-700/50"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -201,14 +201,14 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
                     <div className="flex-1 w-full flex gap-3">
                         <button
                             onClick={onClose}
-                            className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                            className="flex-1 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors active:scale-95 transition-all duration-300"
                         >
                             Cancel
                         </button>
                         {itemsToReceive.length > 0 && (
                             <button
                                 onClick={handleReceiveAll}
-                                className="flex-1 px-4 py-2 border border-blue-200 dark:border-blue-900/50 text-blue-600 dark:text-blue-400 font-semibold rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                className="flex-1 px-4 py-2 border border-blue-200 dark:border-blue-900/50 text-blue-600 dark:text-blue-400 font-semibold rounded-xl hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 Receive All
                             </button>
@@ -218,7 +218,7 @@ export function ReceiveStockModal({ isOpen, onClose, po, onReceive, storeSetting
                         <button
                             onClick={handleSubmit}
                             disabled={Object.values(receivedQuantities).every(val => !val || parseInt(val) === 0)}
-                            className="w-full sm:w-auto sm:min-w-[160px] px-6 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+                            className="w-full sm:w-auto sm:min-w-[160px] px-6 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm active:scale-95 transition-all duration-300"
                         >
                             Confirm Receipt
                         </button>
@@ -371,7 +371,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                 <div className="flex items-center">
                     <button
                         onClick={onCancel}
-                        className="p-2 -ml-2 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        className="p-2 -ml-2 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                     >
                         <ArrowLeftIcon className="w-6 h-6" />
                     </button>
@@ -390,7 +390,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
             <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950">
                 <div className="p-4 sm:p-6 max-w-6xl mx-auto pb-24 space-y-6">
                     {/* Supplier Selection */}
-                    <div id="po-supplier-select" glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                    <div id="po-supplier-select" glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                             <TruckIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                             Supplier Selection
@@ -425,7 +425,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                             {/* Add Products */}
                             <div id="po-available-products" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Available Products */}
-                                <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                                <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                                     <div className="flex items-center justify-between mb-4">
                                         <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                                             <PackageIcon className="w-5 h-5 text-blue-500" />
@@ -440,7 +440,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                             <button
                                                 key={p.id}
                                                 onClick={() => addProductToPO(p)}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left"
+                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-200 dark:border-slate-800 hover:border-blue-300 dark:hover:border-blue-900 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors text-left active:scale-95 transition-all duration-300"
                                             >
                                                 <div className="flex-1 min-w-0">
                                                     <div className="font-medium text-gray-900 dark:text-white truncate">
@@ -462,7 +462,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                 </div>
 
                                 {/* Suggested Products */}
-                                <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                                <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
                                             <h4 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
@@ -476,7 +476,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                         {suggestedProducts.length > 0 && (
                                             <button
                                                 onClick={handleAddAllSuggested}
-                                                className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                                className="px-3 py-1.5 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                             >
                                                 Add All ({suggestedProducts.length})
                                             </button>
@@ -487,7 +487,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                             <button
                                                 key={p.id}
                                                 onClick={() => addProductToPO(p, p.suggestedQty)}
-                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-yellow-200 dark:border-yellow-900/50 hover:border-yellow-300 dark:hover:border-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors text-left"
+                                                className="w-full flex items-center justify-between p-3 rounded-xl border border-yellow-200 dark:border-yellow-900/50 hover:border-yellow-300 dark:hover:border-yellow-700 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors text-left active:scale-95 transition-all duration-300"
                                             >
                                                 <div className="flex-1 min-w-0">
                                                     <div className="font-medium text-gray-900 dark:text-white truncate">
@@ -512,7 +512,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                             </div>
 
                             {/* Items Table */}
-                            <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden">
+                            <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-gray-200 dark:border-slate-800 overflow-hidden">
                                 <div className="px-5 py-4 border-b border-gray-200 dark:border-slate-800">
                                     <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                                         PO Items ({po.items.length})
@@ -522,7 +522,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                 {po.items.length > 0 ? (
                                     <div className="divide-y divide-gray-200 dark:divide-slate-800">
                                         {po.items.map(item => (
-                                            <div key={item.productId} className="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                                            <div key={item.productId} className="p-5 hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors active:scale-95 transition-all duration-300">
                                                 <div className="flex items-start justify-between mb-3">
                                                     <div className="flex-1 min-w-0">
                                                         <h4 className="font-semibold text-gray-900 dark:text-white">
@@ -534,7 +534,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                                                     </div>
                                                     <button
                                                         onClick={() => removeItem(item.productId)}
-                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                        className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                                     >
                                                         <TrashIcon className="w-5 h-5" />
                                                     </button>
@@ -601,7 +601,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                     {/* Details and Summary */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Details */}
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <DocumentTextIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                                 Order Details
@@ -636,7 +636,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                         </div>
 
                         {/* Costs Summary */}
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <CurrencyDollarIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                                 Cost Summary
@@ -686,7 +686,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                         <button
                             onClick={() => handleSaveAndExit(false)}
                             disabled={isLoading}
-                            className="px-6 py-3.5 border-2 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 active:bg-gray-100 dark:active:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="px-6 py-3.5 border-2 border-gray-300 dark:border-slate-700 text-gray-700 dark:text-slate-300 font-semibold rounded-xl hover:bg-gray-50 dark:hover:bg-slate-800 active:bg-gray-100 dark:active:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                         >
                             {isLoading && <div className="w-5 h-5 border-2 border-gray-600 dark:border-slate-400 border-t-transparent rounded-full animate-spin" />}
                             Save as Draft
@@ -694,7 +694,7 @@ export function PurchaseOrderForm({ poToEdit, suppliers, products, onSave, onCan
                         <button
                             onClick={() => handleSaveAndExit(true)}
                             disabled={isLoading}
-                            className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="px-6 py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 active:bg-blue-800 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                         >
                             {isLoading && <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
                             Place Order
@@ -929,9 +929,9 @@ export default function PurchaseOrdersPage({
         };
 
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-slate-950">
+            <div className="min-h-screen bg-mesh-light dark:bg-slate-950 font-google">
                 {/* Header */}
-                <div className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3">
+                <div className="liquid-glass-header sticky top-0 z-40 /80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <h1 className="text-xl font-bold text-gray-900 dark:text-white">Purchase Orders</h1>
@@ -941,7 +941,7 @@ export default function PurchaseOrdersPage({
                                     localStorage.removeItem('salePilot.poMainTourSeen');
                                     setRunMainTour(true);
                                 }}
-                                className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                className="p-1 text-gray-400 hover:text-blue-600 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors active:scale-95 transition-all duration-300"
                                 title="Start Tour"
                             >
                                 <InformationCircleIcon className="w-5 h-5" />
@@ -997,7 +997,7 @@ export default function PurchaseOrdersPage({
                     <div className="fixed inset-0 z-50 bg-black/60 dark:bg-black/80 backdrop-blur-sm md:hidden animate-fade-in" onClick={() => setIsMobileMenuOpen(false)}>
                         <div
                             glass-effect=""
-                            className="absolute top-[70px] right-4 left-4 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-5 animate-fade-in-up border border-gray-100 dark:border-slate-800"
+                            className="liquid-glass-card rounded-[2rem] absolute top-[70px] right-4 left-4 dark:bg-slate-900 p-5 animate-fade-in-up border border-gray-100 dark:border-slate-800"
                             onClick={e => e.stopPropagation()}
                         >
                             <div className="grid grid-cols-2 gap-4">
@@ -1029,19 +1029,19 @@ export default function PurchaseOrdersPage({
                 {/* Stats Cards */}
                 <div className="px-4 py-4 sm:px-6">
                     <div id="po-stats" className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-4 border border-gray-200 dark:border-slate-800">
                             <div className="text-sm font-medium text-gray-500 dark:text-slate-400">Draft</div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">{stats.draft}</div>
                         </div>
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-4 border border-gray-200 dark:border-slate-800">
                             <div className="text-sm font-medium text-gray-500 dark:text-slate-400">Ordered</div>
                             <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.ordered}</div>
                         </div>
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-4 border border-gray-200 dark:border-slate-800">
                             <div className="text-sm font-medium text-gray-500 dark:text-slate-400">In Transit</div>
                             <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.partially_received}</div>
                         </div>
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-4 border border-gray-200 dark:border-slate-800">
                             <div className="text-sm font-medium text-gray-500 dark:text-slate-400">Total Value</div>
                             <div className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats.totalValue, storeSettings)}</div>
                         </div>
@@ -1060,7 +1060,7 @@ export default function PurchaseOrdersPage({
                     />
 
                     {!isLoading && paginatedPOs.length > 0 && (
-                        <div glass-effect="" className="p-4 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 rounded-b-2xl shadow-sm border-x border-b">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border-t border-gray-200 dark:border-slate-800 rounded-b-2xl border-x border-b">
                             <Pagination
                                 total={filteredPOs.length}
                                 page={page}
@@ -1079,14 +1079,14 @@ export default function PurchaseOrdersPage({
 
     const renderDetailView = (po: PurchaseOrder) => {
         return (
-            <div className="min-h-screen bg-gray-50 dark:bg-slate-950 pb-20">
+            <div className="min-h-screen bg-mesh-light dark:bg-slate-950 pb-20 font-google">
                 {/* Header */}
-                <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 sm:px-6">
+                <div className="liquid-glass-header sticky top-0 z-10 /80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 sm:px-6">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
                             <button
                                 onClick={handleBackToList}
-                                className="p-2 -ml-2 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                                className="p-2 -ml-2 text-gray-700 dark:text-slate-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                             >
                                 <ArrowLeftIcon className="w-6 h-6" />
                             </button>
@@ -1106,7 +1106,7 @@ export default function PurchaseOrdersPage({
                             {po.status === 'draft' && (
                                 <button
                                     onClick={() => handleEditPO(po)}
-                                    className="p-2 text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                                    className="p-2 text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                     title="Edit PO"
                                 >
                                     <PencilIcon className="w-5 h-5" />
@@ -1123,7 +1123,7 @@ export default function PurchaseOrdersPage({
                             )}
                             <button
                                 onClick={() => handleOpenDeleteModal(po)}
-                                className="p-2 text-gray-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                className="p-2 text-gray-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                 title="Delete PO"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -1135,7 +1135,7 @@ export default function PurchaseOrdersPage({
                 <div className="p-4 sm:p-6 max-w-6xl mx-auto space-y-6">
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                                     <TruckIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -1152,7 +1152,7 @@ export default function PurchaseOrdersPage({
                             </div>
                         </div>
 
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                                     <InformationCircleIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
@@ -1175,7 +1175,7 @@ export default function PurchaseOrdersPage({
                             </div>
                         </div>
 
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-5 border border-gray-200 dark:border-slate-800">
                             <div className="flex items-center gap-3 mb-4">
                                 <div className="p-2 bg-green-50 dark:bg-emerald-900/20 rounded-lg">
                                     <CurrencyDollarIcon className="w-5 h-5 text-green-600 dark:text-emerald-400" />
@@ -1198,7 +1198,7 @@ export default function PurchaseOrdersPage({
                     </div>
 
                     {/* Items Table */}
-                    <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800 overflow-hidden">
+                    <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-gray-200 dark:border-slate-800 overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Order Items</h3>
                         </div>
@@ -1215,7 +1215,7 @@ export default function PurchaseOrdersPage({
                                 </thead>
                                 <tbody className="bg-white dark:bg-slate-900 divide-y divide-gray-200 dark:divide-slate-800">
                                     {po.items.map((item) => (
-                                        <tr key={item.productId} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors">
+                                        <tr key={item.productId} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors active:scale-95 transition-all duration-300">
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 <div className="text-sm font-medium text-gray-900 dark:text-white">{item.productName}</div>
                                                 <div className="text-xs text-gray-500 dark:text-slate-400">SKU: {item.sku}</div>
@@ -1243,7 +1243,7 @@ export default function PurchaseOrdersPage({
 
                     {/* Financial Summary and Notes */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-6 border border-gray-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <DocumentTextIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                                 Notes
@@ -1253,7 +1253,7 @@ export default function PurchaseOrdersPage({
                             </div>
                         </div>
 
-                        <div glass-effect="" className="bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-sm border border-gray-200 dark:border-slate-800">
+                        <div glass-effect="" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 p-6 border border-gray-200 dark:border-slate-800">
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Financial Summary</h3>
                             <div className="space-y-3">
                                 <div className="flex justify-between text-sm">

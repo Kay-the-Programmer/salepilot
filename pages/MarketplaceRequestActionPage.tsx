@@ -64,14 +64,14 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
     };
 
     if (loading) return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8 animate-pulse">
+        <div className="min-h-screen bg-mesh-light flex flex-col items-center justify-center p-8 animate-pulse font-google">
             <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
             <p className="text-sm font-black text-slate-400 uppercase tracking-widest">Loading Request...</p>
         </div>
     );
 
     if (!request) return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-8">
+        <div className="min-h-screen bg-mesh-light flex flex-col items-center justify-center p-8 font-google">
             <HiOutlineShoppingBag className="w-16 h-16 text-slate-200 mb-6" />
             <h2 className="text-2xl font-black text-slate-900">Request not found</h2>
             <button onClick={onBack} className="mt-6 px-8 py-3 bg-slate-900 text-white rounded-2xl font-bold active:scale-95 transition-all">Go Back</button>
@@ -84,11 +84,11 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
     );
 
     return (
-        <div className="bg-slate-50 min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900">
+        <div className="bg-mesh-light min-h-screen font-sans selection:bg-indigo-100 selection:text-indigo-900 font-google">
             {/* Header */}
-            <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-[60] h-16 sm:h-20 flex items-center shadow-sm">
+            <header className="liquid-glass-header /80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-[60] h-16 sm:h-20 flex items-center shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex items-center gap-4">
-                    <button onClick={onBack} className="p-2.5 bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-2xl transition-all active:scale-90">
+                    <button onClick={onBack} className="p-2.5 bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-2xl transition-all active:scale-90 active:scale-95 transition-all duration-300">
                         <HiOutlineArrowLeft className="w-6 h-6" />
                     </button>
                     <div>
@@ -99,7 +99,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
             </header>
 
             <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-                <div className="bg-white rounded-[40px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden mb-12 animate-in slide-in-from-bottom-6 duration-700">
+                <div className="liquid-glass-card rounded-[2rem] rounded-[40px] -slate-200/50 border border-slate-100 overflow-hidden mb-12 animate-in slide-in-from-bottom-6 duration-700">
                     <div className="p-8 sm:p-12">
                         {/* Status & Date */}
                         <div className="flex items-center justify-between mb-10">
@@ -132,7 +132,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
                         <div className="mb-12">
                             <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 px-1">Customer Profile</h3>
                             <div className="flex items-center gap-4 p-6 bg-white border border-slate-100 rounded-[32px] group hover:border-indigo-100 transition-all">
-                                <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white text-xl font-black group-hover:bg-indigo-600 transition-colors">
+                                <div className="w-14 h-14 rounded-2xl bg-slate-900 flex items-center justify-center text-white text-xl font-black group-hover:bg-indigo-600 transition-colors active:scale-95 transition-all duration-300">
                                     {request.customerName.charAt(0)}
                                 </div>
                                 <div className="flex-1">
@@ -149,7 +149,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
                             <div>
                                 <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4 px-1">Select Catalog Item</label>
                                 <select
-                                    className="w-full px-6 py-4 bg-slate-50 border-none rounded-[24px] focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700 outline-none transition-all appearance-none cursor-pointer"
+                                    className="w-full px-6 py-4 bg-slate-50 border-none rounded-[24px] focus:ring-2 focus:ring-indigo-500 font-bold text-slate-700 outline-none transition-all appearance-none cursor-pointer active:scale-95 transition-all duration-300"
                                     value={selectedProductId}
                                     onChange={e => setSelectedProductId(e.target.value)}
                                 >

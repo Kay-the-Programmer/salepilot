@@ -163,7 +163,7 @@ const Hero: React.FC<HeroProps> = ({ onStartTrial }) => {
             <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex items-center gap-4">
                 <button
                     onClick={prevSlide}
-                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors active:scale-95 transition-all duration-300"
                     aria-label="Previous slide"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -172,7 +172,7 @@ const Hero: React.FC<HeroProps> = ({ onStartTrial }) => {
                 </button>
                 <button
                     onClick={nextSlide}
-                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors"
+                    className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center text-white hover:bg-white/20 transition-colors active:scale-95 transition-all duration-300"
                     aria-label="Next slide"
                 >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

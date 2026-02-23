@@ -89,15 +89,14 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center animate-fade-in"
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
-            onClick={onClose}
         >
+            <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md animate-fade-in" onClick={onClose} />
             <div
-                glass-effect=""
-                className="w-full bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-lg border border-white/20"
+                className="w-full liquid-glass rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-glass-appear sm:max-w-lg border-none relative z-10"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -106,13 +105,13 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                 </div>
 
                 {/* Header */}
-                <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 dark:border-white/10 z-10">
+                <div className="sticky top-0 liquid-glass-header px-6 pt-6 pb-4 sm:px-10 z-10 shadow-none">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl font-semibold text-gray-900 dark:text-white" id="modal-title">
+                            <h3 className="text-2xl font-black text-slate-900 dark:text-white font-google" id="modal-title">
                                 {categoryToEdit ? 'Edit Category' : 'New Category'}
                             </h3>
-                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">
                                 {categoryToEdit ? 'Update category details' : 'Create a new product category'}
                             </p>
                         </div>
@@ -146,25 +145,25 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                         )}
 
                         {/* Mobile accordion navigation for sections */}
-                        <div className="sm:hidden flex border-b border-gray-200 dark:border-gray-700">
+                        <div className="sm:hidden flex gap-2 p-2 bg-slate-50/50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10 overflow-x-auto scrollbar-hide">
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('basic')}
-                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'basic' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'basic' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 dark:text-slate-400'}`}
                             >
                                 Basic Info
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('attributes')}
-                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'attributes' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'attributes' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 dark:text-slate-400'}`}
                             >
                                 Attributes
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('accounting')}
-                                className={`flex-1 py-3 text-center font-medium text-sm border-b-2 ${activeSection === 'accounting' ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'accounting' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 dark:text-slate-400'}`}
                             >
                                 Accounting
                             </button>
@@ -238,7 +237,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                                 <button
                                                     type="button"
                                                     onClick={() => removeAttribute(index)}
-                                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                                     aria-label="Remove attribute"
                                                 >
                                                     <TrashIcon className="w-5 h-5" />
@@ -256,7 +255,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                 <button
                                     type="button"
                                     onClick={addAttribute}
-                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-white/10 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-colors"
+                                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 dark:border-white/10 text-base font-medium rounded-xl text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     <PlusIcon className="w-5 h-5" />
                                     Add Attribute
@@ -328,21 +327,27 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                     </div>
 
                     {/* Fixed action buttons */}
-                    <div className="sticky bottom-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm px-4 py-4 sm:px-6 border-t border-gray-200 dark:border-white/10">
+                    <div className="sticky bottom-0 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md px-6 py-6 sm:px-10 border-t border-slate-200 dark:border-white/10">
                         <div className="flex flex-col sm:flex-row justify-end gap-3">
-                            <Button
-                                type="button"
-                                variant="secondary"
-                                onClick={onClose}
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                type="submit"
-                                variant="primary"
-                            >
-                                {categoryToEdit ? 'Update Category' : 'Create Category'}
-                            </Button>
+                            <div className="flex-1 sm:flex-none">
+                                <Button
+                                    type="button"
+                                    variant="secondary"
+                                    onClick={onClose}
+                                    className="w-full sm:w-auto px-8 py-3 rounded-full font-bold active:scale-95 transition-all"
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                            <div className="flex-1 sm:flex-none">
+                                <Button
+                                    type="submit"
+                                    variant="primary"
+                                    className="w-full sm:w-auto px-8 py-3 rounded-full font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+                                >
+                                    {categoryToEdit ? 'Save Changes' : 'Create Category'}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </form>

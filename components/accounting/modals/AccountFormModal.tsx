@@ -44,7 +44,7 @@ const AccountFormModal: React.FC<AccountFormModalProps> = ({ isOpen, onClose, on
 
     return createPortal(
         <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in p-4">
-            <div className="glass-effect !bg-white/95 dark:!bg-slate-900/95 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up">
+            <div className="liquid-glass-card rounded-[2rem] glass-effect !/95 dark:!bg-slate-900/95 w-full max-w-lg overflow-hidden flex flex-col animate-scale-up">
                 <form onSubmit={handleSubmit}>
                     <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
                         <div className="flex items-center justify-between">
@@ -56,7 +56,7 @@ const AccountFormModal: React.FC<AccountFormModalProps> = ({ isOpen, onClose, on
                                     {accountToEdit ? 'Edit Account' : 'Add New Account'}
                                 </h3>
                             </div>
-                            <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500 dark:text-slate-400">
+                            <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500 dark:text-slate-400 active:scale-95 transition-all duration-300">
                                 <XMarkIcon className="w-5 h-5" />
                             </button>
                         </div>
@@ -128,7 +128,7 @@ const AccountFormModal: React.FC<AccountFormModalProps> = ({ isOpen, onClose, on
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
+                            className="w-full sm:w-auto px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 active:scale-95 transition-all duration-300"
                         >
                             Cancel
                         </button>

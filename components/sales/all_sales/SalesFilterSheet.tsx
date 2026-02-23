@@ -56,7 +56,7 @@ export default function SalesFilterSheet({
         <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none" onClick={onClose}>
             <div className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-fade-in pointer-events-auto" />
             <div
-                className="relative w-full max-w-md mx-4 bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden animate-fade-in-up border border-gray-100 dark:border-white/10 flex flex-col max-h-[90vh] pointer-events-auto"
+                className="liquid-glass-card rounded-[2rem] relative w-full max-w-md mx-4 dark:bg-slate-900 overflow-hidden animate-fade-in-up border border-gray-100 dark:border-white/10 flex flex-col max-h-[90vh] pointer-events-auto"
                 onClick={e => e.stopPropagation()}
             >
                 {/* Header */}
@@ -100,7 +100,7 @@ export default function SalesFilterSheet({
                         </div>
                         <button
                             onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                            className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                            className="mt-2 w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all duration-300"
                         >
                             <span>Order: {sortOrder === 'asc' ? 'Ascending' : 'Descending'}</span>
                             <span>{sortOrder === 'asc' ? '↑' : '↓'}</span>
@@ -188,13 +188,13 @@ export default function SalesFilterSheet({
                     <div className="flex gap-2">
                         <button
                             onClick={handleResetAndClose}
-                            className="flex-1 py-2.5 px-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                            className="flex-1 py-2.5 px-4 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-sm font-semibold shadow-sm hover:bg-gray-50 dark:hover:bg-white/5 transition-colors active:scale-95 transition-all duration-300"
                         >
                             Reset
                         </button>
                         <button
                             onClick={handleApply}
-                            className="flex-1 py-2.5 px-4 bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-md active:scale-[0.98] transition-all hover:bg-blue-700"
+                            className="flex-1 py-2.5 px-4 bg-blue-600 text-white rounded-xl text-sm font-semibold shadow-md active:scale-[0.98] transition-all hover:bg-blue-700 active:scale-95 transition-all duration-300"
                         >
                             Apply Filters
                         </button>
@@ -205,7 +205,7 @@ export default function SalesFilterSheet({
                             {onExportCSV && (
                                 <button
                                     onClick={onExportCSV}
-                                    className="flex-1 py-2 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-2 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                 >
                                     CSV
                                 </button>
@@ -213,7 +213,7 @@ export default function SalesFilterSheet({
                             {onExportPDF && (
                                 <button
                                     onClick={onExportPDF}
-                                    className="flex-1 py-2 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-2 px-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                 >
                                     PDF
                                 </button>

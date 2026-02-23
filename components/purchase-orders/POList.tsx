@@ -29,7 +29,7 @@ const POList: React.FC<POListProps> = ({
     handleCreateNew,
 }) => {
     return (
-        <div glass-effect="" className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-800/50 overflow-hidden">
+        <div glass-effect="" className="liquid-glass-card rounded-[2rem] flex flex-col h-full dark:bg-slate-900 border border-gray-200 dark:border-slate-800/50 overflow-hidden">
             <UnifiedListGrid<PurchaseOrder>
                 items={orders}
                 viewMode={viewMode}
@@ -47,7 +47,7 @@ const POList: React.FC<POListProps> = ({
                         {handleCreateNew && (
                             <button
                                 onClick={handleCreateNew}
-                                className="px-6 py-3 bg-blue-600 dark:bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors"
+                                className="px-6 py-3 bg-blue-600 dark:bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 dark:hover:bg-blue-700 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 <PlusIcon className="w-5 h-5 inline mr-2" />
                                 Create Purchase Order

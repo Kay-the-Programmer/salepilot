@@ -122,7 +122,7 @@ export default function ChatWindow({ conversationId, onBack, showSnackbar, isSys
                     <button
                         type="submit"
                         disabled={isSending || !newMessage.trim()}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium active:scale-95 transition-all duration-300"
                     >
                         {isSending ? '...' : 'Send'}
                     </button>

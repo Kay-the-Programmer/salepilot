@@ -43,7 +43,7 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                             {onOpenSidebar && (
                                 <button
                                     onClick={onOpenSidebar}
-                                    className="p-2 -ml-2 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none"
+                                    className="p-2 -ml-2 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none active:scale-95 transition-all duration-300"
                                 >
                                     <GridIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
                                 </button>
@@ -56,12 +56,12 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                             <button
                                 id="pos-mobile-help-btn"
                                 onClick={onTourStart}
-                                className="p-2 rounded-full hover:bg-slate-100"
+                                className="p-2 rounded-full hover:bg-slate-100 active:scale-95 transition-all duration-300"
                                 title="Help Guide"
                             >
                                 <QuestionMarkCircleIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
                             </button>
-                            <button className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 relative">
+                            <button className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 relative active:scale-95 transition-all duration-300">
                                 <BellAlertIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
                                 {/* Optional: Add notification badge here if needed */}
                             </button>

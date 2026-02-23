@@ -262,12 +262,12 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
             aria-labelledby="modal-title"
         >
             <div
-                className="bg-white dark:bg-slate-900/95 w-full max-w-md md:max-w-2xl md:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up backdrop-blur-sm border-t md:border border-gray-100 dark:border-slate-800 glass-effect"
+                className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/95 w-full max-w-md md:max-w-2xl md: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up backdrop-blur-sm border-t md:border border-gray-100 dark:border-slate-800 glass-effect"
                 onClick={(e) => e.stopPropagation()}
                 onKeyDown={handleKeyDown}
             >
                 {/* Header */}
-                <div className="sticky top-0 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 glass-effect">
+                <div className="liquid-glass-header sticky top-0 z-10 /80 dark:bg-slate-900/80 backdrop-blur-[2px] border-b border-gray-200 dark:border-slate-800 px-4 py-3 glass-effect">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center">
                             <button

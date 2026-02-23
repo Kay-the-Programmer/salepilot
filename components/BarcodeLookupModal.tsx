@@ -40,7 +40,7 @@ const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({
                     <h3 className="font-bold text-gray-900 dark:text-gray-100">Manual Barcode Lookup</h3>
                     <button
                         onClick={onClose}
-                        className="p-2 -mr-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                        className="p-2 -mr-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors active:scale-95 transition-all duration-300"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
@@ -74,7 +74,7 @@ const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({
                         </Button>
                         <Button
                             type="submit"
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white"
+                            className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white active:scale-95 transition-all duration-300"
                             disabled={!barcode.trim() || isSubmitting}
                         >
                             {isSubmitting ? 'Searching...' : 'Lookup Product'}

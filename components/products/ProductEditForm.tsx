@@ -184,7 +184,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                     <button
                                         type="button"
                                         onClick={onAddCategory}
-                                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold"
+                                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
                                     >
                                         +
                                     </button>
@@ -220,7 +220,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setIsSupplierModalOpen(true)}
-                                    className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold"
+                                    className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
                                 >
                                     +
                                 </button>
@@ -242,7 +242,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                     type="button"
                                     onClick={handleGenerateDescription}
                                     disabled={isGenerating || !product.name || !product.categoryId}
-                                    className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 text-xs font-medium"
+                                    className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 text-xs font-medium active:scale-95 transition-all duration-300"
                                 >
                                     <SparklesIcon className="w-3 h-3" />
                                     {isGenerating ? 'Generating...' : 'AI'}
@@ -359,7 +359,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setIsBarcodeScannerOpen(true)}
-                                    className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                                    className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300"
                                 >
                                     📷
                                 </button>
@@ -368,7 +368,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 <button
                                     type="button"
                                     onClick={handleGenerateBarcode}
-                                    className="flex-1 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm"
+                                    className="flex-1 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm active:scale-95 transition-all duration-300"
                                 >
                                     Generate from SKU
                                 </button>
@@ -376,7 +376,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                     type="button"
                                     onClick={() => handleLookup()}
                                     disabled={isGenerating}
-                                    className="flex-1 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-sm disabled:opacity-50"
+                                    className="flex-1 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-sm disabled:opacity-50 active:scale-95 transition-all duration-300"
                                 >
                                     {isGenerating ? 'Searching...' : 'Lookup Info'}
                                 </button>
@@ -530,13 +530,13 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
 
     return (
         <>
-            <div className="flex flex-col h-full bg-white dark:bg-slate-900">
+            <div className="flex flex-col h-full bg-transparent overflow-hidden">
                 {/* Header */}
-                <div className="px-4 sm:px-6 py-3 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-10">
+                <div className="px-5 sm:px-8 py-4 liquid-glass-header flex items-center justify-between sticky top-0 z-10 w-full shadow-none">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onCancel}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors md:hidden"
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors md:hidden active:scale-95 transition-all duration-300"
                             aria-label="Go back"
                         >
                             <ArrowLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
@@ -556,14 +556,14 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                         <button
                             onClick={onCancel}
                             disabled={isSaving}
-                            className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-sm text-slate-700 dark:text-slate-300 transition-colors hidden sm:block"
+                            className="px-5 py-2 liquid-glass-pill rounded-full border text-sm font-bold tracking-wide text-slate-700 dark:text-slate-300 transition-all duration-200 active:scale-95 hidden sm:block"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={isSaving}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+                            className="px-6 py-2 bg-blue-600 text-white rounded-full text-sm font-bold tracking-wide hover:bg-blue-700 transition-all duration-300 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
                         >
                             {isSaving ? 'Saving...' : (productToEdit.id ? 'Save Changes' : 'Create Product')}
                         </button>
@@ -571,16 +571,16 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                 </div>
 
                 {/* Section Tabs */}
-                <div className="border-b border-slate-200 dark:border-slate-700 overflow-x-auto hide-scrollbar bg-white dark:bg-slate-900">
-                    <div className="flex px-4 sm:px-6">
+                <div className="p-2 border-b border-slate-200 dark:border-white/10 overflow-x-auto scrollbar-hide bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-md">
+                    <div className="flex gap-2">
                         {sections.map((section) => (
                             <button
                                 key={section.id}
                                 type="button"
                                 onClick={() => setActiveSection(section.id)}
-                                className={`flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeSection === section.id
-                                    ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                                    : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                                className={`px-6 py-2 text-sm font-bold tracking-wide whitespace-nowrap transition-all duration-300 rounded-full active:scale-95 ${activeSection === section.id
+                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                                     }`}
                             >
                                 {section.label}
@@ -591,14 +591,16 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
 
                 {/* Content */}
                 <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
-                    <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                    <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-8">
                         {error && (
-                            <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                                <p className="text-sm text-red-700 dark:text-red-400">{error}</p>
+                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
+                                <p className="text-sm font-bold text-red-600 dark:text-red-400">{error}</p>
                             </div>
                         )}
 
-                        {renderSectionContent()}
+                        <div className="liquid-glass-card rounded-[2rem] p-6 sm:p-8 border border-white/10 shadow-xl animate-glass-appear">
+                            {renderSectionContent()}
+                        </div>
                     </div>
 
                     {/* Hidden file input */}

@@ -23,7 +23,7 @@ export default function DashboardStats({
         <div className={`md:hidden space-y-4 mt-4 mb-6 ${mobileView === 'summary' ? 'block' : 'hidden'}`}>
             {/* 1. Top Stats Cards */}
             <div className="grid grid-cols-2 gap-3">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-sm relative overflow-hidden">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 p-4 border border-gray-100 dark:border-white/10 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3 opacity-5">
                         <ChartBarIcon className="w-16 h-16 dark:text-white" />
                     </div>
@@ -38,7 +38,7 @@ export default function DashboardStats({
                         )}
                     </div>
                 </div>
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-sm relative overflow-hidden">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 p-4 border border-gray-100 dark:border-white/10 relative overflow-hidden">
                     <div className="absolute top-0 right-0 p-3 opacity-5">
                         <ChartBarIcon className="w-16 h-16 dark:text-white" />
                     </div>
@@ -51,7 +51,7 @@ export default function DashboardStats({
             </div>
 
             {/* 2. Graph Chart Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 border border-gray-100 dark:border-white/10 shadow-sm">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 p-4 border border-gray-100 dark:border-white/10">
                 <div className="flex items-center justify-between mb-4">
                     <div>
                         <h3 className="font-bold text-gray-900 dark:text-white">Sales Trend</h3>
@@ -59,7 +59,7 @@ export default function DashboardStats({
                     </div>
                     <button
                         onClick={() => !hasActiveFilters && onOpenFilterSheet()}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors"
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors active:scale-95 transition-all duration-300"
                     >
                         <FilterIcon className="w-3 h-3" />
                         <span>{hasActiveFilters ? 'Filtered' : 'Filter Chart'}</span>

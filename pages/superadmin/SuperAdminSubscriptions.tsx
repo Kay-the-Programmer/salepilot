@@ -215,7 +215,7 @@ const SuperAdminSubscriptions: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 transition-colors duration-300 font-google">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -234,7 +234,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                         <button
                             onClick={loadStores}
                             disabled={loading}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 shadow-sm active:scale-95 transition-all duration-300"
                         >
                             <RefreshIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             Refresh
@@ -251,27 +251,27 @@ const SuperAdminSubscriptions: React.FC = () => {
 
                 {/* Stats */}
                 <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Total Stores</div>
                         <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stats.total}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Active</div>
                         <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{stats.active}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Trial</div>
                         <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">{stats.trial}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Past Due</div>
                         <div className="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{stats.pastDue}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Canceled</div>
                         <div className="text-2xl font-bold text-gray-600 dark:text-slate-500 mt-1">{stats.canceled}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Total Revenue</div>
                         <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-1">
                             {formatCurrency(stats.totalRevenue)}
@@ -280,7 +280,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
                     <div className="p-4 border-b border-gray-100 dark:border-white/5">
                         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                             <div className="relative flex-1">
@@ -310,7 +310,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     <span className="text-sm font-medium text-gray-700 dark:text-slate-300">More Filters</span>
                                     <ChevronDownIcon className={`w-4 h-4 text-gray-500 dark:text-slate-400 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
@@ -391,7 +391,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                         const config = getSubscriptionConfig(store.subscriptionStatus);
 
                                         return (
-                                            <tr key={store.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group">
+                                            <tr key={store.id} className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300">
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
                                                         <div className="font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
@@ -450,7 +450,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                                     <div className="flex items-center justify-end gap-2">
                                                         <button
                                                             onClick={() => openPaymentModal(store)}
-                                                            className="px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors flex items-center gap-1"
+                                                            className="px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-500/20 transition-colors flex items-center gap-1 active:scale-95 transition-all duration-300"
                                                         >
                                                             <CreditCardIcon className="w-4 h-4" />
                                                             Record Payment
@@ -494,7 +494,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
                     onClick={() => !processing && setPaymentModalOpen(false)}
                 >
-                    <div className="bg-white dark:bg-slate-900 rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-300 border border-gray-200 dark:border-slate-800">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 w-full max-w-lg max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-300 border border-gray-200 dark:border-slate-800">
                         <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center">
                             <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                                 <CreditCardIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
@@ -503,7 +503,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                             <button
                                 onClick={() => !processing && setPaymentModalOpen(false)}
                                 disabled={processing}
-                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50"
+                                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-lg transition-colors disabled:opacity-50 active:scale-95 transition-all duration-300"
                             >
                                 <XCircleIcon className="w-5 h-5" />
                             </button>
@@ -527,7 +527,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                             <button
                                                 key={s.id}
                                                 onClick={() => setSelectedStore(s)}
-                                                className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-slate-800/50 flex items-center justify-between group transition-colors"
+                                                className="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-slate-800/50 flex items-center justify-between group transition-colors active:scale-95 transition-all duration-300"
                                             >
                                                 <div>
                                                     <div className="font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{s.name}</div>
@@ -666,7 +666,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                                 type="button"
                                                 onClick={() => !processing && setPaymentModalOpen(false)}
                                                 disabled={processing}
-                                                className="flex-1 py-3 text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                                className="flex-1 py-3 text-gray-600 dark:text-slate-300 bg-gray-100 dark:bg-slate-800 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50 active:scale-95 transition-all duration-300"
                                             >
                                                 Cancel
                                             </button>

@@ -41,7 +41,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                         {onBack && (
                             <button
                                 onClick={onBack}
-                                className="md:hidden p-2 -ml-2 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                                className="md:hidden p-2 -ml-2 text-gray-400 hover:text-gray-900 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
@@ -99,7 +99,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                             <p className="text-blue-100 text-xs md:text-sm font-medium mb-1">Attributes</p>
                             <p className="text-3xl md:text-4xl font-bold tracking-tight">{category.attributes.length}</p>
                         </div>
-                        <div className="p-4 md:p-5 bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl border border-gray-100 dark:border-white/5 shadow-sm relative overflow-hidden">
+                        <div className="liquid-glass-card rounded-[2rem] p-4 md:p-5 dark:bg-slate-800 md: border border-gray-100 dark:border-white/5 relative overflow-hidden">
                             <div className="absolute top-0 right-0 p-3 opacity-[0.03] dark:opacity-[0.05] transform translate-x-1/3 -translate-y-1/3 scale-150">
                                 <FolderIcon className="w-24 h-24" />
                             </div>
@@ -110,7 +110,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Attributes Section */}
-                        <section className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-5 border border-gray-100 dark:border-white/5 shadow-sm">
+                        <section className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 md: p-5 border border-gray-100 dark:border-white/5">
                             <div className="flex items-center gap-2 mb-4">
                                 <TagIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                 <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
@@ -137,7 +137,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                         </section>
 
                         {/* Subcategories Section */}
-                        <section className="bg-white dark:bg-slate-800 rounded-2xl md:rounded-3xl p-5 border border-gray-100 dark:border-white/5 shadow-sm">
+                        <section className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 md: p-5 border border-gray-100 dark:border-white/5">
                             <div className="flex items-center gap-2 mb-4">
                                 <FolderIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                 <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
@@ -150,7 +150,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                                     {subcategories.map(sub => (
                                         <div key={sub.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700/30 border border-gray-100 dark:border-white/5 rounded-xl">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-white dark:bg-slate-800 rounded-lg shadow-sm">
+                                                <div className="liquid-glass-card rounded-[2rem] p-2 dark:bg-slate-800">
                                                     <FolderIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                                                 </div>
                                                 <span className="font-medium text-gray-700 dark:text-gray-200">{sub.name}</span>
@@ -174,7 +174,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
             {/* Mobile Sticky Action Bar */}
             {canManage && (
                 <div className="md:hidden absolute bottom-4 left-4 right-4 z-30">
-                    <div className="p-2 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 rounded-2xl shadow-2xl flex items-center gap-2">
+                    <div className="liquid-glass-card rounded-[2rem] p-2 /90 dark:bg-slate-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 flex items-center gap-2">
                         <button
                             onClick={() => onEdit(category)}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold active:scale-95 transition-transform"

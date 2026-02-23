@@ -67,7 +67,7 @@ const UseCases: React.FC = () => {
                 inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
             >
-              <div className="relative h-full bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl hover:border-[#008060]/30 transition-all duration-300">
+              <div className="liquid-glass-card rounded-[2rem] relative h-full border border-gray-200 p-8 hover: hover:border-[#008060]/30 transition-all duration-300">
                 <div className="text-5xl mb-6 transform group-hover:scale-110 transition-transform duration-300">
                   {useCase.icon}
                 </div>
@@ -153,7 +153,7 @@ const UseCases: React.FC = () => {
                   </li>
                 ))}
               </ul>
-              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors">
+              <button className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors active:scale-95 transition-all duration-300">
                 Learn about wholesale features
               </button>
             </div>

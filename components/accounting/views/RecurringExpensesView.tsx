@@ -45,7 +45,7 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
                 </div>
                 <button
                     onClick={onOpenForm}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-colors"
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-colors active:scale-95 transition-all duration-300"
                 >
                     <PlusIcon className="w-4 h-4" />
                     Set Recurring Expense
@@ -54,7 +54,7 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
 
             {/* Summary Card */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Monthly Commitment</div>
                         <BanknotesIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400 opacity-60" />
@@ -81,7 +81,7 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
             </div>
 
             {/* Recurring Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
@@ -96,7 +96,7 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {filteredExpenses.map(exp => (
-                                <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
+                                <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300">
                                     <td className="px-6 py-4 text-slate-900 dark:text-slate-100">
                                         <div className="text-sm font-medium">{exp.description}</div>
                                         <div className="flex flex-wrap gap-1 mt-1">

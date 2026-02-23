@@ -9,7 +9,7 @@ interface InventoryEmptyStateProps {
 const InventoryEmptyState: React.FC<InventoryEmptyStateProps> = ({ activeTab }) => {
     return (
         <div className="hidden md:flex flex-col items-center justify-center h-full text-gray-400 p-8 text-center">
-            <div className="p-4 bg-white rounded-3xl shadow-sm mb-4 border border-gray-100">
+            <div className="liquid-glass-card rounded-[2rem] p-4 mb-4 border border-gray-100">
                 {activeTab === 'products' ? (
                     <CubeIcon className="w-12 h-12 text-gray-300" />
                 ) : (

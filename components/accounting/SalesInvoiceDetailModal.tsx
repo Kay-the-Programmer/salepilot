@@ -135,13 +135,13 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
 
     return (
         <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in">
-            <div className="glass-effect !bg-white/95 dark:!bg-slate-900/95 w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-4xl">
+            <div className="liquid-glass-card rounded-[2rem] glass-effect !/95 dark:!bg-slate-900/95 w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-4xl">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b border-slate-200 dark:border-slate-800">
                     <div>
                         <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Invoice Details</h3>
                         <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{invoice.transactionId}</p>
                     </div>
-                    <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                    <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                         <XMarkIcon className="h-6 w-6" />
                     </button>
                 </div>
@@ -186,7 +186,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                                     <div className="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-xl">
                                         <ul className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
                                             {invoice.payments?.map(p => (
-                                                <li key={p.id} className="px-4 py-2.5 flex justify-between hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                                <li key={p.id} className="px-4 py-2.5 flex justify-between hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors active:scale-95 transition-all duration-300">
                                                     <span className="text-slate-500 dark:text-slate-400 font-medium">{new Date(p.date).toLocaleDateString()} · {p.method}</span>
                                                     <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(p.amount, storeSettings)}</span>
                                                 </li>
@@ -209,7 +209,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                     <button
                         type="button"
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200"
+                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 active:scale-95 transition-all duration-300"
                     >
                         <PrinterIcon className="w-5 h-5" />
                         Print

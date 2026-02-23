@@ -145,7 +145,7 @@ const CustomizationControls: React.FC<Props> = ({
                         placeholder="e.g. Limited Edition Collection, Weekend Sale, Fresh Daily..."
                         className="w-full p-4 bg-gray-50 dark:bg-slate-800/50 border border-gray-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm xl:text-base text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500 min-h-[100px] resize-none outline-none transition-all duration-300"
                     />
-                    <div className="absolute right-4 bottom-4 p-2 bg-white dark:bg-slate-700 rounded-xl shadow-lg border border-gray-100 dark:border-slate-600 transition-transform duration-300 group-focus-within:scale-110">
+                    <div className="liquid-glass-card rounded-[2rem] absolute right-4 bottom-4 p-2 dark:bg-slate-700 border border-gray-100 dark:border-slate-600 transition-transform duration-300 group-focus-within:scale-110">
                         <SparklesIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                     </div>
                 </div>
@@ -155,7 +155,7 @@ const CustomizationControls: React.FC<Props> = ({
             <div className="pt-4 sticky bottom-0 bg-white dark:bg-slate-950/80 backdrop-blur-md">
                 <button
                     onClick={onGenerate}
-                    className="w-full relative overflow-hidden flex items-center justify-center gap-3 py-5 px-6 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl transition-all active:scale-[0.97] group"
+                    className="w-full relative overflow-hidden flex items-center justify-center gap-3 py-5 px-6 bg-slate-900 dark:bg-blue-600 hover:bg-slate-800 dark:hover:bg-blue-500 text-white font-bold rounded-2xl shadow-xl transition-all active:scale-[0.97] group active:scale-95 transition-all duration-300"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]"></div>
                     <SparklesIcon className="w-5 h-5 group-hover:rotate-12 transition-transform duration-500" />

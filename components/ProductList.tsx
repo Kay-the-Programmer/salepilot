@@ -52,12 +52,11 @@ const ProductCard: React.FC<{
   return (
     <div
       onClick={(e) => {
-        // Only trigger selection if not handled by child elements
         if (!e.defaultPrevented) {
           onSelect();
         }
       }}
-      className={`group bg-white dark:bg-slate-800 rounded-2xl shadow-sm border transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-md transform scale-[1.02]' : 'border-gray-100 dark:border-white/10 hover:shadow-lg dark:hover:shadow-blue-900/20 hover:border-blue-100 dark:hover:border-blue-900/50'
+      className={`group liquid-glass-card rounded-[2rem] border transition-all duration-350 ease-out flex flex-col overflow-hidden cursor-pointer h-full active:scale-95 ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-xl scale-[1.02]' : 'border-gray-100 dark:border-white/10'
         }`}
     >
       {/* Card Header / Image Area */}
@@ -125,7 +124,7 @@ const ProductListRow: React.FC<{
 
   return (
     <div
-      className={`rounded-xl border shadow-sm p-4 flex items-center justify-between transition-all duration-200 cursor-pointer ${isSelected ? 'bg-blue-50 dark:bg-blue-500/10 border-blue-200 dark:border-blue-500/20 ring-1 ring-blue-500/20' : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-white/10 hover:border-blue-200 dark:hover:border-blue-900/50 hover:shadow-md'
+      className={`liquid-glass-card rounded-2xl border p-4 flex items-center justify-between transition-all duration-300 ease-out cursor-pointer active:scale-[0.98] ${isSelected ? 'border-blue-500 ring-2 ring-blue-500/20 shadow-lg scale-[1.01]' : 'border-gray-100 dark:border-white/10'
         }`}
       onClick={onSelect}
     >
@@ -146,7 +145,7 @@ const ProductListRow: React.FC<{
       </div>
       <div className="flex gap-2 shrink-0">
         <button
-          className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-slate-600'
+          className={`px-4 py-2 text-sm font-bold tracking-wide rounded-full transition-all duration-200 active:scale-95 ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'liquid-glass-pill text-slate-700 dark:text-slate-300'
             }`}
           onClick={(e) => {
             e.stopPropagation();
@@ -157,7 +156,7 @@ const ProductListRow: React.FC<{
         </button>
         {canManage && (
           <button
-            className="px-3 py-1.5 text-sm bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
+            className="px-4 py-2 text-sm bg-emerald-500 text-white font-bold tracking-wide rounded-full hover:bg-emerald-600 shadow-md shadow-emerald-500/20 transition-all duration-200 active:scale-95"
             onClick={(e) => {
               e.stopPropagation();
               onAdjustStock();

@@ -72,7 +72,7 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
                 onClick={onClose}
             />
 
-            <div className="relative glass-effect !bg-white/95 dark:!bg-slate-900/95 w-full sm:max-w-lg max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50">
+            <div className="liquid-glass-card rounded-[2rem] relative glass-effect !/95 dark:!bg-slate-900/95 w-full sm:max-w-lg max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50">
                 <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
                     <div className="px-6 py-6 sm:px-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
@@ -98,7 +98,7 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-800 shadow-sm"
+                            className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-800 shadow-sm active:scale-95 transition-all duration-300"
                         >
                             <XMarkIcon className="h-5 w-5" />
                         </button>
@@ -183,7 +183,7 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
                         <button
                             type="submit"
                             disabled={isInvalid}
-                            className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/10 dark:shadow-blue-900/20 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/10 dark:shadow-blue-900/20 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                         >
                             <CurrencyDollarIcon className="w-5 h-5" />
                             Finalize Payment
@@ -191,7 +191,7 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center"
+                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center active:scale-95 transition-all duration-300"
                         >
                             Discard
                         </button>

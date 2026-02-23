@@ -69,7 +69,7 @@ const ShopProductDetail: React.FC = () => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+        <div className="liquid-glass-card rounded-[2rem] border border-gray-100 overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
                 {/* Image Gallery */}
                 <div className="space-y-4">
@@ -123,7 +123,7 @@ const ShopProductDetail: React.FC = () => {
                                     <div className="flex items-center border border-gray-300 rounded-md">
                                         <button
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="p-2 text-gray-500 hover:bg-gray-50"
+                                            className="p-2 text-gray-500 hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                         >
                                             <HiOutlineMinus className="w-4 h-4" />
                                         </button>
@@ -137,7 +137,7 @@ const ShopProductDetail: React.FC = () => {
                                         />
                                         <button
                                             onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                                            className="p-2 text-gray-500 hover:bg-gray-50"
+                                            className="p-2 text-gray-500 hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                         >
                                             <HiOutlinePlus className="w-4 h-4" />
                                         </button>

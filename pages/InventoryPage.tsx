@@ -576,7 +576,14 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const selectedItem = activeTab === 'products' ? (selectedProductId || (isEditingProduct && editingProduct)) : selectedCategoryId;
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden">
+        <div className="flex flex-col h-[100dvh] bg-mesh-light font-google overflow-hidden relative">
+            {/* Skip to content link for accessibility */}
+            <a
+                href="#inventory-content"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none"
+            >
+                Skip to inventory content
+            </a>
             {/* Desktop Header */}
             {/* Desktop Header */}
             <InventoryHeader
@@ -623,12 +630,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 setViewMode={setViewMode}
             />
 
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex overflow-hidden max-w-[1400px] mx-auto w-full px-4 md:px-8 pb-6 md:pb-8 gap-6 stagger-1 animate-glass-appear" id="inventory-content">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex flex-col h-full  dark:border-white/10 bg-white/50 dark:bg-slate-900/50 transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    className={`flex flex-col h-full liquid-glass-card rounded-2xl overflow-hidden transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
                     style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '400px' : 'none' }}
-                    glass-effect=""
                 >
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
@@ -683,15 +689,14 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             e.preventDefault();
                             setIsResizing(true);
                         }}
-                        className="hidden md:block w-1 hover:w-2 bg-gray-200 dark:bg-slate-700 hover:bg-blue-500 dark:hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600"
+                        className="hidden md:block w-1 hover:w-2 bg-gray-200 dark:bg-slate-700 hover:bg-blue-500 dark:hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600 active:scale-95 transition-all duration-300"
                     />
                 )}
 
                 {/* Right Panel: Detail View */}
                 <div
-                    className={`flex-1 flex flex-col bg-white/50 dark:bg-slate-800/50 h-full relative ${!selectedItem ? 'hidden md:flex md:bg-gray-50/50 dark:md:bg-slate-900/50' : 'flex w-full overflow-hidden'}`}
+                    className={`flex-1 flex flex-col liquid-glass rounded-2xl h-full relative overflow-hidden transition-all duration-300 ${!selectedItem ? 'hidden md:flex md:bg-gray-50/50 dark:md:bg-slate-900/50' : 'flex w-full'}`}
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
-                    glass-effect=""
                 >
                     {selectedItem ? (
                         <div className="h-full overflow-y-auto scroll-smooth">

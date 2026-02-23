@@ -44,7 +44,7 @@ const ShopProductList: React.FC = () => {
     return (
         <div className="flex flex-col md:flex-row gap-8">
             <aside className={`md:w-64 flex-shrink-0 ${mobileFiltersOpen ? 'block' : 'hidden md:block'}`}>
-                <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100 sticky top-24">
+                <div className="liquid-glass-card rounded-[2rem] p-6 border border-gray-100 sticky top-24">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="font-bold text-gray-900">Categories</h3>
                         <button onClick={() => setMobileFiltersOpen(false)} className="md:hidden text-gray-500">
@@ -99,17 +99,17 @@ const ShopProductList: React.FC = () => {
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-100 h-80 animate-pulse"></div>
+                            <div key={i} className="liquid-glass-card rounded-[2rem] border border-gray-100 h-80 animate-pulse"></div>
                         ))}
                     </div>
                 ) : products.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-gray-100">
+                    <div className="liquid-glass-card rounded-[2rem] text-center py-12 border border-gray-100">
                         <p className="text-gray-500">No products found.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {products.map(product => (
-                            <Link key={product.id} to={`/shop/${storeId}/product/${product.id}`} className="group block bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+                            <Link key={product.id} to={`/shop/${storeId}/product/${product.id}`} className="liquid-glass-card rounded-[2rem] group block border border-gray-100 overflow-hidden hover: transition-">
                                 <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-200 xl:aspect-w-7 xl:aspect-h-8 relative h-48">
                                     {product.imageUrls && product.imageUrls.length > 0 ? (
                                         <img

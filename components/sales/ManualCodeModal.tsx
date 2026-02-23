@@ -43,7 +43,7 @@ const ManualCodeModal: React.FC<ManualCodeModalProps> = ({ isOpen, onClose, onSu
       aria-modal="true"
       onClick={handleBackdropClick}
     >
-      <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md">
+      <div className="liquid-glass-card rounded-[2rem] w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md">
         <div className="p-4 flex justify-between items-center border-b">
           <h3 className="text-lg font-medium text-gray-900" id="manual-code-modal-title">
             {title}

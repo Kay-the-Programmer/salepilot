@@ -18,7 +18,7 @@ const ReturnDetailsModal: React.FC<ReturnDetailsModalProps> = ({ isOpen, onClose
 
     return (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden animate-scale-up">
+            <div className="liquid-glass-card rounded-[2rem] max-w-lg w-full overflow-hidden animate-scale-up">
                 {/* Header */}
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
                     <div>
@@ -27,7 +27,7 @@ const ReturnDetailsModal: React.FC<ReturnDetailsModalProps> = ({ isOpen, onClose
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-full hover:bg-gray-200 transition-colors text-gray-500 hover:text-gray-700"
+                        className="p-2 rounded-full hover:bg-gray-200 transition-colors text-gray-500 hover:text-gray-700 active:scale-95 transition-all duration-300"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>

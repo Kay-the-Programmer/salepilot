@@ -50,7 +50,7 @@ export default function OnboardingHelper({
                         {actionButton && (
                             <button
                                 onClick={actionButton.onClick}
-                                className="mt-3 inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+                                className="mt-3 inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 {actionButton.label}
                             </button>
@@ -87,7 +87,7 @@ export default function OnboardingHelper({
                         {actionButton && (
                             <button
                                 onClick={actionButton.onClick}
-                                className="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+                                className="px-2 py-1 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 {actionButton.label}
                             </button>
@@ -107,7 +107,7 @@ export default function OnboardingHelper({
 
     // Default: card variant
     return (
-        <div className="bg-white border-2 border-blue-200 rounded-lg shadow-md p-5 mb-4 hover:border-blue-300 transition-all">
+        <div className="liquid-glass-card rounded-[2rem] border-2 border-blue-200 p-5 mb-4 hover:border-blue-300 transition-all">
             <div className="flex items-start">
                 {icon && (
                     <div className="flex-shrink-0 mr-4 text-blue-500">
@@ -131,7 +131,7 @@ export default function OnboardingHelper({
                     {actionButton && (
                         <button
                             onClick={actionButton.onClick}
-                            className="mt-4 inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow transition-all"
+                            className="mt-4 inline-flex items-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 shadow-sm hover:shadow transition-all active:scale-95 transition-all duration-300"
                         >
                             {actionButton.label}
                             <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -42,7 +42,7 @@ const StoreCompletionModal: React.FC<StoreCompletionModalProps> = ({ isOpen, onS
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-sm transition-opacity">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg transform transition-all scale-100 overflow-hidden">
+            <div className="liquid-glass-card rounded-[2rem] w-full max-w-lg transform transition-all scale-100 overflow-hidden">
                 <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-6">
                     <h2 className="text-xl font-bold text-white">Complete Your Store Registration</h2>
                     <p className="text-blue-100 mt-1 text-sm">
@@ -93,7 +93,7 @@ const StoreCompletionModal: React.FC<StoreCompletionModalProps> = ({ isOpen, onS
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all"
+                                className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 disabled:cursor-not-allowed transition-all active:scale-95 transition-all duration-300"
                             >
                                 {isLoading ? (
                                     <>

@@ -97,7 +97,7 @@ export default function CustomerDashboard() {
     return (
         <div className="min-h-screen bg-white flex flex-col">
             {/* Header Navigation */}
-            <header className="border-b border-slate-200 sticky top-0 bg-white z-50">
+            <header className="liquid-glass-header border-b border-slate-200 sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-6">
                     <div className="flex items-center justify-between h-16">
                         <div className="flex items-center gap-8">
@@ -127,7 +127,7 @@ export default function CustomerDashboard() {
                             <span className="text-sm text-slate-600 hidden sm:block">{user?.name}</span>
                             <button
                                 onClick={() => setIsRequestModalOpen(true)}
-                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors flex items-center gap-2 active:scale-95 transition-all duration-300"
                             >
                                 <HiOutlinePlus className="w-4 h-4" />
                                 <span className="hidden sm:inline">New Request</span>
@@ -212,7 +212,7 @@ export default function CustomerDashboard() {
                                     <p className="text-slate-500 mb-4">No requests yet</p>
                                     <button
                                         onClick={() => setIsRequestModalOpen(true)}
-                                        className="px-6 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors"
+                                        className="px-6 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         Create First Request
                                     </button>
@@ -223,7 +223,7 @@ export default function CustomerDashboard() {
                                         <div
                                             key={req.id}
                                             onClick={() => navigate(`/marketplace/track/${req.id}`)}
-                                            className="border border-slate-200 rounded-xl p-4 hover:border-slate-300 transition-colors cursor-pointer"
+                                            className="border border-slate-200 rounded-xl p-4 hover:border-slate-300 transition-colors cursor-pointer active:scale-95 transition-all duration-300"
                                         >
                                             <div className="flex justify-between items-start mb-3">
                                                 <span className={`px-2 py-0.5 rounded text-xs font-medium ${req.status === 'completed' ? 'bg-emerald-50 text-emerald-700' :
@@ -261,7 +261,7 @@ export default function CustomerDashboard() {
                                 <p className="text-slate-500 mb-4">No requests found</p>
                                 <button
                                     onClick={() => setIsRequestModalOpen(true)}
-                                    className="px-6 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors"
+                                    className="px-6 py-2 bg-slate-900 text-white rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     Create Your First Request
                                 </button>
@@ -272,7 +272,7 @@ export default function CustomerDashboard() {
                                     <div
                                         key={req.id}
                                         onClick={() => navigate(`/marketplace/track/${req.id}`)}
-                                        className="border border-slate-200 rounded-xl p-6 hover:border-slate-300 hover:shadow-md transition-all cursor-pointer"
+                                        className="border border-slate-200 rounded-xl p-6 hover:border-slate-300 hover:shadow-md transition-all cursor-pointer active:scale-95 transition-all duration-300"
                                     >
                                         <div className="flex justify-between items-start mb-4">
                                             <span className={`px-2 py-0.5 rounded text-xs font-medium ${req.status === 'completed' ? 'bg-emerald-50 text-emerald-700' :

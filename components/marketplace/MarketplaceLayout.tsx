@@ -29,7 +29,7 @@ export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) 
     };
 
     return (
-        <div className="min-h-screen bg-slate-50">
+        <div className="min-h-screen bg-mesh-light font-google">
             {/* Navigation Tabs */}
             <div className="bg-white border-b border-slate-200 sticky top-20 z-40">
                 <div className="max-w-[1400px] mx-auto px-6">

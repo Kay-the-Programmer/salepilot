@@ -27,7 +27,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                 onClick={onClose}
             >
                 <div
-                    className="w-full sm:max-w-xl bg-white dark:bg-slate-900 rounded-t-2xl sm:rounded-2xl max-h-[92vh] sm:max-h-[85vh] overflow-hidden flex flex-col shadow-xl sm:mx-4"
+                    className="liquid-glass-card rounded-[2rem] w-full sm:max-w-xl dark:bg-slate-900 rounded-t-2xl sm: max-h-[92vh] sm:max-h-[85vh] overflow-hidden flex flex-col sm:mx-4"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Mobile drag handle */}
@@ -44,7 +44,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-1.5 -mr-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                            className="p-1.5 -mr-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
                             aria-label="Close sale details"
                         >
                             <XMarkIcon className="h-5 w-5" />
@@ -62,7 +62,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                             <button
                                 type="button"
                                 onClick={() => setIsReceiptOpen(true)}
-                                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
                             >
                                 <PrinterIcon className="w-4 h-4" />
                                 Receipt
@@ -70,7 +70,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 py-2.5 text-sm font-medium text-white bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                className="flex-1 py-2.5 text-sm font-medium text-white bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
                             >
                                 Done
                             </button>

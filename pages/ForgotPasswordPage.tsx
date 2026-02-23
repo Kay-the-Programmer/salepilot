@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+        <div className="min-h-screen bg-mesh-light flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans font-google">
             {/* Ambient Background Elements */}
             <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-100/40 blur-[100px] pointer-events-none animate-pulse" />
 
@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
                     <img src={Logo} alt="SalePilot" className="h-10 object-contain drop-shadow-sm" />
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 p-8 pt-10 border border-white/50 backdrop-blur-sm">
+                <div className="liquid-glass-card rounded-[2rem] rounded-[2.5rem] -slate-200/50 p-8 pt-10 border border-white/50 backdrop-blur-sm">
                     <button
                         onClick={() => navigate('/login')}
                         className="mb-6 flex items-center gap-2 text-sm text-slate-500 hover:text-slate-800 transition-colors"
@@ -83,7 +83,7 @@ export default function ForgotPasswordPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 transform transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 transform transition-all active:scale-[0.98] flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                         >
                             {isLoading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

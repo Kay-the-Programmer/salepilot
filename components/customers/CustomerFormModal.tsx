@@ -98,7 +98,7 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
 
-            <div className="relative bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] shadow-2xl border border-white/20 dark:border-slate-800 overflow-hidden flex flex-col animate-scale-in glass-effect">
+            <div className="liquid-glass-card rounded-[2rem] relative dark:bg-slate-900 w-full max-w-2xl max-h-[90vh] rounded-[2.5rem] border border-white/20 dark:border-slate-800 overflow-hidden flex flex-col animate-scale-in glass-effect">
                 {/* Header */}
                 <div className="px-8 py-6 border-b border-gray-100 dark:border-slate-800 flex justify-between items-center bg-gray-50/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-4">
@@ -116,7 +116,7 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all font-bold"
+                        className="p-2 rounded-xl text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-slate-800 transition-all font-bold active:scale-95 transition-all duration-300"
                     >
                         <XMarkIcon className="w-6 h-6" />
                     </button>
@@ -237,7 +237,7 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                     <button
                         onClick={handleSubmit}
                         type="submit"
-                        className="px-10 py-3 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                        className="px-10 py-3 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                     >
                         {customerToEdit ? 'Save Changes' : 'Initialize Profile'}
                     </button>

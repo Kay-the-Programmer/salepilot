@@ -87,7 +87,7 @@ export default function SuppliersView() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {suppliers.map(supplier => (
-                        <div key={supplier.id} className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow flex flex-col">
+                        <div key={supplier.id} className="liquid-glass-card rounded-[2rem] p-6 border border-slate-100 hover: transition- flex flex-col">
                             <div className="flex items-center gap-4 mb-4">
                                 <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xl">
                                     {supplier.name.charAt(0)}
@@ -106,12 +106,12 @@ export default function SuppliersView() {
                             <div className="mt-6 flex gap-3">
                                 <button
                                     onClick={() => handleViewProfile(supplier.name)}
-                                    className="flex-1 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors">
+                                    className="flex-1 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors active:scale-95 transition-all duration-300">
                                     View Profile
                                 </button>
                                 <button
                                     onClick={() => handleBuyFromSupplier(supplier)}
-                                    className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2"
+                                    className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                 >
                                     <HiShoppingCart className="w-4 h-4" />
                                     Order Now

@@ -65,7 +65,7 @@ const StoreGrid: React.FC<StoreGridProps> = ({ stores, loading }) => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                     {stores.map((store, index) => (
-                        <div key={store.id} className="group cursor-pointer" onClick={() => navigate(`/shop/${store.id}`)}>
+                        <div key={store.id} className="group cursor-pointer active:scale-95 transition-all duration-300" onClick={() => navigate(`/shop/${store.id}`)}>
                             <div className="relative aspect-[3/4] overflow-hidden rounded-lg mb-4 bg-gray-100">
                                 {/* Using distinct mock images for variety based on index loop */}
                                 <img
@@ -77,7 +77,7 @@ const StoreGrid: React.FC<StoreGridProps> = ({ stores, loading }) => {
                                     <span className="absolute top-4 left-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">-33%</span>
                                 )}
                                 <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                    <button className="bg-white text-black px-6 py-3 rounded-full font-medium transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 shadow-lg">
+                                    <button className="liquid-glass-card rounded-[2rem] text-black px-6 py-3 font-medium transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
                                         View Shop
                                     </button>
                                 </div>
@@ -89,13 +89,13 @@ const StoreGrid: React.FC<StoreGridProps> = ({ stores, loading }) => {
                                 )}
                                 <div className="mt-2 flex items-center space-x-2">
                                     {/* Color swatches mock */}
-                                    <div className="w-4 h-4 rounded-full border border-gray-300 p-0.5 cursor-pointer">
+                                    <div className="w-4 h-4 rounded-full border border-gray-300 p-0.5 cursor-pointer active:scale-95 transition-all duration-300">
                                         <div className="w-full h-full rounded-full bg-yellow-100"></div>
                                     </div>
-                                    <div className="w-4 h-4 rounded-full border border-transparent p-0.5 cursor-pointer">
+                                    <div className="w-4 h-4 rounded-full border border-transparent p-0.5 cursor-pointer active:scale-95 transition-all duration-300">
                                         <div className="w-full h-full rounded-full bg-black"></div>
                                     </div>
-                                    <div className="w-4 h-4 rounded-full border border-transparent p-0.5 cursor-pointer">
+                                    <div className="w-4 h-4 rounded-full border border-transparent p-0.5 cursor-pointer active:scale-95 transition-all duration-300">
                                         <div className="w-full h-full rounded-full bg-purple-100"></div>
                                     </div>
                                 </div>
@@ -105,7 +105,7 @@ const StoreGrid: React.FC<StoreGridProps> = ({ stores, loading }) => {
                 </div>
 
                 <div className="mt-16 text-center">
-                    <button className="px-8 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors">
+                    <button className="px-8 py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-colors active:scale-95 transition-all duration-300">
                         Load More
                     </button>
                     {/* Newsletter */}
@@ -120,7 +120,7 @@ const StoreGrid: React.FC<StoreGridProps> = ({ stores, loading }) => {
                                 placeholder="Enter your email"
                                 className="px-4 py-3 border border-gray-300 rounded-l-lg focus:outline-none w-full md:w-64"
                             />
-                            <button className="bg-black text-white px-6 py-3 rounded-r-lg font-medium hover:bg-gray-800">
+                            <button className="bg-black text-white px-6 py-3 rounded-r-lg font-medium hover:bg-gray-800 active:scale-95 transition-all duration-300">
                                 Subscribe
                             </button>
                         </div>

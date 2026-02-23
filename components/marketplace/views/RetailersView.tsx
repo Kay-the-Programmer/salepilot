@@ -34,7 +34,7 @@ export default function RetailersView() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {retailers.map(retailer => (
-                        <div key={retailer.id} className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow group cursor-pointer">
+                        <div key={retailer.id} className="bg-white p-6 rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow group cursor-pointer active:scale-95 transition-all duration-300">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">
                                     <HiOutlineBuildingStorefront className="w-6 h-6 text-indigo-600" />

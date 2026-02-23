@@ -56,7 +56,7 @@ const HowItWorks: React.FC = () => {
                   inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
               >
-                <div className="relative bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-all duration-300 text-center group">
+                <div className="liquid-glass-card rounded-[2rem] relative border border-gray-200 p-8 hover: transition-all duration-300 text-center group">
                   {/* Step Number */}
                   <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
                     <div className="w-10 h-10 bg-gradient-to-r from-[#008060] to-[#00a080] rounded-full flex items-center justify-center text-white font-bold text-lg">
@@ -121,7 +121,7 @@ const HowItWorks: React.FC = () => {
                     </li>
                   ))}
                 </ul>
-                <button className="bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                <button className="bg-white text-gray-900 px-6 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors active:scale-95 transition-all duration-300">
                   Watch Demo Video
                 </button>
               </div>

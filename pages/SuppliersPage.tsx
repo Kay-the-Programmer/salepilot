@@ -101,7 +101,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
                         <div className="flex items-center h-16">
                             <button
                                 onClick={handleBackToList}
-                                className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400 transition-colors"
+                                className="mr-4 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-slate-800 text-gray-600 dark:text-slate-400 transition-colors active:scale-95 transition-all duration-300"
                                 aria-label="Back to supplier list"
                             >
                                 <ArrowLeftIcon className="w-6 h-6" />

@@ -117,7 +117,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
     // ── Render helpers ──────────────────────────────────────────────
     const renderProfileCard = () => (
-        <div className="bg-white dark:bg-slate-900/60 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-5 sm:p-6 lg:sticky lg:top-8">
+        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 p-5 sm:p-6 lg:sticky lg:top-8">
             <div className="flex items-center gap-4 lg:flex-col lg:text-center">
                 {/* Avatar */}
                 <div className="relative shrink-0">
@@ -145,7 +145,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             {/* Edit Profile button */}
             <button
                 onClick={() => setIsEditProfileModalOpen(true)}
-                className="mt-5 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors active:scale-[0.98]"
+                className="mt-5 w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors active:scale-[0.98] active:scale-95 transition-all duration-300"
                 aria-label="Edit your profile"
             >
                 <PencilIcon className="w-4 h-4" />
@@ -195,7 +195,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                             <li key={order.transactionId}>
                                 <button
                                     onClick={() => setSelectedOrder(order)}
-                                    className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-indigo-800 hover:bg-blue-50/30 dark:hover:bg-indigo-900/10 transition-colors flex items-center justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                                    className="w-full text-left p-4 rounded-xl border border-gray-100 dark:border-slate-800 hover:border-blue-200 dark:hover:border-indigo-800 hover:bg-blue-50/30 dark:hover:bg-indigo-900/10 transition-colors flex items-center justify-between focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 active:scale-95 transition-all duration-300"
                                     aria-label={`Order ${order.transactionId.slice(-4)}, ${formatCurrency(order.total, storeSettings)}, ${order.fulfillmentStatus || 'Pending'}`}
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
@@ -278,7 +278,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                                         alert('Install prompt is not available yet. Try visiting a few pages and then return here, or use your browser menu: Install App/Add to Home Screen.');
                                     }
                                 }}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 dark:bg-slate-700 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 dark:hover:bg-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors active:scale-[0.98]"
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 dark:bg-slate-700 text-white text-sm font-semibold rounded-xl hover:bg-gray-800 dark:hover:bg-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors active:scale-[0.98] active:scale-95 transition-all duration-300"
                             >
                                 <ArrowDownTrayIcon className="w-5 h-5" />
                                 {isStandalone ? "Installed ✓" : "Install App Now"}
@@ -295,7 +295,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
             <div className="space-y-4">
                 <button
                     onClick={() => setIsChangePasswordModalOpen(true)}
-                    className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-indigo-700 hover:bg-blue-50/30 dark:hover:bg-indigo-900/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900"
+                    className="w-full flex items-center justify-between p-4 rounded-xl bg-gray-50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-700 hover:border-blue-200 dark:hover:border-indigo-700 hover:bg-blue-50/30 dark:hover:bg-indigo-900/10 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 active:scale-95 transition-all duration-300"
                 >
                     <div className="text-left">
                         <p className="text-sm font-semibold text-gray-900 dark:text-slate-100">Change Password</p>
@@ -315,7 +315,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
                     </p>
                     <button
                         onClick={onLogout}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 dark:bg-red-700 text-white text-sm font-semibold rounded-xl hover:bg-red-700 dark:hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors active:scale-[0.98]"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-600 dark:bg-red-700 text-white text-sm font-semibold rounded-xl hover:bg-red-700 dark:hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900 transition-colors active:scale-[0.98] active:scale-95 transition-all duration-300"
                     >
                         <ArrowLeftOnRectangleIcon className="w-5 h-5" />
                         Sign Out Now
@@ -335,7 +335,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
     return (
         <>
-            <div className="min-h-screen bg-gray-50 dark:bg-slate-950 md:min-h-0 md:h-full md:overflow-y-auto">
+            <div className="min-h-screen bg-mesh-light dark:bg-slate-950 md:min-h-0 md:h-full md:overflow-y-auto font-google">
                 <Header
                     title="Profile"
                     showSearch={false}
@@ -351,7 +351,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({
 
                                 {/* Desktop sidebar nav */}
                                 <nav className="hidden lg:block mt-4" aria-label="Profile sections">
-                                    <div role="tablist" aria-label="Profile sections" className="bg-white dark:bg-slate-900/60 rounded-2xl border border-gray-100 dark:border-slate-800 shadow-sm p-2 space-y-1">
+                                    <div role="tablist" aria-label="Profile sections" className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/60 border border-gray-100 dark:border-slate-800 p-2 space-y-1">
                                         {TABS.map(({ id, label, Icon }) => (
                                             <button
                                                 key={id}

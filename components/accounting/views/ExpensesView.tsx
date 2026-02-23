@@ -72,7 +72,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses: parentExpenses, s
                 </div>
                 <button
                     onClick={onOpenForm}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-colors"
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-colors active:scale-95 transition-all duration-300"
                 >
                     <PlusIcon className="w-4 h-4" />
                     Record Expense
@@ -81,7 +81,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses: parentExpenses, s
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-widest">Total Outflow</div>
                         <BanknotesIcon className="w-5 h-5 text-red-600 dark:text-red-400 opacity-60" />
@@ -90,7 +90,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses: parentExpenses, s
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Based on {totalCount} records</p>
                 </div>
 
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-widest">Count</div>
                         <CalculatorIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 opacity-60" />
@@ -99,7 +99,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses: parentExpenses, s
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Total transactions</p>
                 </div>
 
-                <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                     <div className="flex items-center justify-between mb-2">
                         <div className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-widest">Average</div>
                         <CalendarIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 opacity-60" />
@@ -150,7 +150,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses: parentExpenses, s
             </div>
 
             {/* Expenses Table */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm relative min-h-[200px]">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden relative min-h-[200px]">
                 {isLoading && (
                     <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
                         <LoadingSpinner />
@@ -169,7 +169,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({ expenses: parentExpenses, s
                         </thead>
                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                             {items.map(exp => (
-                                <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
+                                <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(exp.date).toLocaleDateString()}</div>
                                         <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">ID: {exp.id.substring(0, 8)}</div>

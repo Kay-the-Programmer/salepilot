@@ -138,7 +138,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
 
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans transition-colors duration-500">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans transition-colors duration-500 font-google">
             {/* Ambient Background Elements */}
             <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[60%] rounded-full bg-blue-100/40 dark:bg-blue-900/10 blur-[100px] pointer-events-none animate-pulse" />
             <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[60%] rounded-full bg-indigo-100/40 dark:bg-indigo-900/10 blur-[100px] pointer-events-none" />
@@ -150,7 +150,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                 </div>
 
                 {/* Main Card */}
-                <div glass-effect="" className="bg-white/80 dark:bg-slate-900/80 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 dark:shadow-black/50 p-8 pt-10 border border-white/50 dark:border-slate-800/50 backdrop-blur-xl">
+                <div glass-effect="" className="liquid-glass-card rounded-[2rem] /80 dark:bg-slate-900/80 rounded-[2.5rem] -slate-200/50 dark:-black/50 p-8 pt-10 border border-white/50 dark:border-slate-800/50 backdrop-blur-xl">
 
                     {/* Segmented Control - Tabs */}
                     <div className="relative flex bg-slate-100/80 dark:bg-slate-800/50 p-1.5 rounded-2xl mb-8">
@@ -275,7 +275,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 dark:shadow-white/10 transform transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:translate-y-[-2px]"
+                            className="w-full py-4 bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 dark:shadow-white/10 transform transition-all active:scale-[0.98] flex items-center justify-center gap-2 hover:translate-y-[-2px] active:scale-95 transition-all duration-300"
                         >
                             {isLoading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin" />
@@ -293,7 +293,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             <button
                                 type="button"
                                 onClick={handleGoogleLogin}
-                                className="bg-white dark:bg-slate-800 p-3 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 transform hover:scale-110"
+                                className="bg-white dark:bg-slate-800 p-3 rounded-full border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-300 transform hover:scale-110 active:scale-95 transition-all duration-300"
                                 aria-label="Login with Google"
                             >
                                 <FcGoogle className="w-6 h-6" />

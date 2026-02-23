@@ -80,7 +80,7 @@ export default function RequestsView() {
             ) : (
                 <div className="grid gap-6">
                     {requests.map(request => (
-                        <div key={request.id} className="bg-white p-6 md:p-8 rounded-3xl border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 transition-all group">
+                        <div key={request.id} className="liquid-glass-card rounded-[2rem] p-6 md:p-8 border border-slate-100 hover: hover:-slate-200/50 transition-all group">
                             <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-3 mb-2">
@@ -111,7 +111,7 @@ export default function RequestsView() {
                                     </div>
                                     <button
                                         onClick={() => navigate(`/marketplace/request/${request.id}`)}
-                                        className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-indigo-600 transition-colors flex items-center gap-2"
+                                        className="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-indigo-600 transition-colors flex items-center gap-2 active:scale-95 transition-all duration-300"
                                     >
                                         Post Offer
                                         <HiOutlineArrowRight className="w-4 h-4" />

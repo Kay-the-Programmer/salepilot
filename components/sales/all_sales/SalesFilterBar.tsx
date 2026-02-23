@@ -25,7 +25,7 @@ export default function SalesFilterBar({
 
     return (
         <div className="hidden md:block mb-6 animate-slideDown">
-            <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+            <div className="liquid-glass-card rounded-[2rem] p-4 border border-gray-200">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-3 items-center">
                     <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-600">Start Date</label>
@@ -60,13 +60,13 @@ export default function SalesFilterBar({
                     <div className="flex gap-2 lg:col-span-3 justify-end h-full items-end pb-1">
                         <button
                             onClick={resetFilters}
-                            className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-medium text-sm hover:bg-gray-200 transition-colors"
+                            className="px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 font-medium text-sm hover:bg-gray-200 transition-colors active:scale-95 transition-all duration-300"
                         >
                             Reset
                         </button>
                         <button
                             onClick={handleExportCSV}
-                            className="px-4 py-2.5 rounded-xl bg-white text-gray-700 font-medium text-sm border border-gray-300 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            className="px-4 py-2.5 rounded-xl bg-white text-gray-700 font-medium text-sm border border-gray-300 hover:bg-gray-50 transition-colors flex items-center gap-2 active:scale-95 transition-all duration-300"
                         >
                             <DownloadIcon className="w-4 h-4" />
                             CSV

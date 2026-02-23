@@ -129,11 +129,11 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
         <div className="h-full flex flex-col">
             {/* Mobile Header */}
             {onBack && (
-                <div className="md:hidden sticky top-0 z-10 bg-white border-b border-gray-200">
+                <div className="liquid-glass-header md:hidden sticky top-0 z-10 border-b border-gray-200">
                     <div className="px-4 py-3 flex items-center">
                         <button
                             onClick={onBack}
-                            className="p-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="p-2 -ml-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                             aria-label="Go back"
                         >
                             <ArrowLeftIcon className="w-6 h-6" />
@@ -144,7 +144,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                         </div>
                         <button
                             onClick={() => setShowActionMenu(!showActionMenu)}
-                            className="ml-auto p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                            className="ml-auto p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                             aria-label="More actions"
                         >
                             <EllipsisVerticalIcon className="w-6 h-6" />
@@ -156,7 +156,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
             {/* Mobile Action Menu */}
             {showActionMenu && (
                 <div className="md:hidden fixed inset-0 z-[100] bg-black/50 flex items-end justify-center animate-fade-in" onClick={() => setShowActionMenu(false)}>
-                    <div className="bg-white w-full rounded-t-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
+                    <div className="liquid-glass-card rounded-[2rem] w-full rounded-t-3xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up">
                         <div className="p-2">
                             <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto mb-4"></div>
                             <div className="space-y-1">
@@ -165,7 +165,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                                         onEdit(user);
                                         setShowActionMenu(false);
                                     }}
-                                    className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl transition-colors"
+                                    className="w-full flex items-center gap-3 p-4 hover:bg-gray-50 active:bg-gray-100 rounded-xl transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     <div className="p-2 bg-blue-100 rounded-lg">
                                         <PencilIcon className="w-5 h-5 text-blue-600" />
@@ -180,7 +180,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                                         setShowDeleteConfirm(true);
                                         setShowActionMenu(false);
                                     }}
-                                    className="w-full flex items-center gap-3 p-4 hover:bg-red-50 active:bg-red-100 rounded-xl transition-colors"
+                                    className="w-full flex items-center gap-3 p-4 hover:bg-red-50 active:bg-red-100 rounded-xl transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     <div className="p-2 bg-red-100 rounded-lg">
                                         <TrashIcon className="w-5 h-5 text-red-600" />
@@ -199,7 +199,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && (
                 <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in p-0 sm:p-4">
-                    <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md">
+                    <div className="liquid-glass-card rounded-[2rem] w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md">
                         <div className="sm:hidden pt-3 pb-1 flex justify-center">
                             <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
                         </div>
@@ -231,7 +231,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                             <div className="flex gap-3">
                                 <button
                                     onClick={closeDeleteModal}
-                                    className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors"
+                                    className="flex-1 px-4 py-3 rounded-xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     Cancel
                                 </button>
@@ -255,7 +255,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                 <div className="max-w-6xl mx-auto">
                     {/* User Profile Header */}
                     <div className="mb-6 md:mb-8">
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                        <div className="liquid-glass-card rounded-[2rem] border border-gray-200 p-6">
                             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
                                 <div className="flex-shrink-0">
                                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-100 to-blue-50 border-4 border-white shadow-md flex items-center justify-center">
@@ -281,14 +281,14 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                                 <div className="hidden md:flex items-center gap-3">
                                     <button
                                         onClick={() => onEdit(user)}
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-blue-300 text-blue-700 font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-blue-300 text-blue-700 font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         <PencilIcon className="w-5 h-5" />
                                         Edit
                                     </button>
                                     <button
                                         onClick={() => setShowDeleteConfirm(true)}
-                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-red-300 text-red-700 font-semibold hover:bg-red-50 active:bg-red-100 transition-colors"
+                                        className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-red-300 text-red-700 font-semibold hover:bg-red-50 active:bg-red-100 transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         <TrashIcon className="w-5 h-5" />
                                         Delete
@@ -382,7 +382,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                                 <div className="space-y-3">
                                     <button
                                         onClick={() => onEdit(user)}
-                                        className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+                                        className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-blue-100 rounded-lg">
@@ -397,7 +397,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                                     </button>
                                     <button
                                         onClick={() => setShowDeleteConfirm(true)}
-                                        className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-red-200 hover:border-red-300 hover:bg-red-50 transition-colors"
+                                        className="w-full flex items-center justify-between p-3 bg-white rounded-xl border border-red-200 hover:border-red-300 hover:bg-red-50 transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-red-100 rounded-lg">
@@ -414,7 +414,7 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                             </div>
 
                             {/* Account Status */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+                            <div className="liquid-glass-card rounded-[2rem] border border-gray-200 p-5">
                                 <div className="flex items-center justify-between mb-4">
                                     <h4 className="font-semibold text-gray-900">Account Status</h4>
                                     <div className="flex items-center gap-2">
@@ -436,13 +436,13 @@ const UserDetailsView: React.FC<UserDetailsViewProps> = ({ user, onEdit, onDelet
                 <div className="flex gap-3">
                     <button
                         onClick={() => onEdit(user)}
-                        className="flex-1 px-4 py-3.5 rounded-xl border-2 border-blue-300 text-blue-700 font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors"
+                        className="flex-1 px-4 py-3.5 rounded-xl border-2 border-blue-300 text-blue-700 font-semibold hover:bg-blue-50 active:bg-blue-100 transition-colors active:scale-95 transition-all duration-300"
                     >
                         Edit User
                     </button>
                     <button
                         onClick={() => setShowDeleteConfirm(true)}
-                        className="flex-1 px-4 py-3.5 rounded-xl border-2 border-red-300 text-red-700 font-semibold hover:bg-red-50 active:bg-red-100 transition-colors"
+                        className="flex-1 px-4 py-3.5 rounded-xl border-2 border-red-300 text-red-700 font-semibold hover:bg-red-50 active:bg-red-100 transition-colors active:scale-95 transition-all duration-300"
                     >
                         Delete
                     </button>

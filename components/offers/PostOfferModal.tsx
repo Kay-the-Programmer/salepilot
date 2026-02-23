@@ -73,7 +73,7 @@ export default function PostOfferModal({ isOpen, onClose, onOfferCreated }: Post
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                            <Dialog.Panel className="liquid-glass-card rounded-[2rem] w-full max-w-2xl transform overflow-hidden p-6 text-left align-middle transition-all">
                                 <div className="flex justify-between items-center mb-4">
                                     <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
                                         Post New Offer
@@ -127,7 +127,7 @@ export default function PostOfferModal({ isOpen, onClose, onOfferCreated }: Post
                                     <div className="mt-4 flex justify-end">
                                         <button
                                             type="button"
-                                            className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 mr-2"
+                                            className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 mr-2 active:scale-95 transition-all duration-300"
                                             onClick={onClose}
                                         >
                                             Cancel
@@ -135,7 +135,7 @@ export default function PostOfferModal({ isOpen, onClose, onOfferCreated }: Post
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50"
+                                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 active:scale-95 transition-all duration-300"
                                         >
                                             {loading ? 'Posting...' : 'Post Offer'}
                                         </button>

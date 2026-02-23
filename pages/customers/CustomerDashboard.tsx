@@ -142,7 +142,7 @@ export default function CustomerDashboard() {
             <div className="flex items-center gap-4">
               <button
                 onClick={() => window.location.href = '/directory'}
-                className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow"
+                className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow active:scale-95 transition-all duration-300"
               >
                 Shop More
               </button>
@@ -216,7 +216,7 @@ export default function CustomerDashboard() {
               return (
                 <div
                   key={order.transactionId}
-                  className="group bg-white rounded-xl border border-slate-200 hover:border-slate-300 hover:shadow-lg transition-all duration-200 overflow-hidden"
+                  className="liquid-glass-card rounded-[2rem] group border border-slate-200 hover:border-slate-300 hover: transition-all duration-200 overflow-hidden"
                 >
                   {/* Order Header */}
                   <div className="p-5 border-b border-slate-100">
@@ -332,16 +332,16 @@ export default function CustomerDashboard() {
         {/* Order Details Modal */}
         {selectedOrder && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setSelectedOrder(null)}>
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="liquid-glass-card rounded-[2rem] max-w-2xl w-full max-h-[90vh] overflow-hidden" onClick={(e) => e.stopPropagation()}>
               {/* Modal Header */}
-              <div className="sticky top-0 bg-white border-b border-slate-200 p-6 flex items-center justify-between">
+              <div className="liquid-glass-header sticky top-0 border-b border-slate-200 p-6 flex items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-slate-900">Order Details</h2>
                   <p className="text-sm text-slate-500 mt-1">Order #{selectedOrder.transactionId.substring(0, 8)}</p>
                 </div>
                 <button
                   onClick={() => setSelectedOrder(null)}
-                  className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                  className="p-2 hover:bg-slate-100 rounded-full transition-colors active:scale-95 transition-all duration-300"
                 >
                   <HiOutlineXMark className="w-6 h-6 text-slate-500" />
                 </button>
@@ -434,7 +434,7 @@ export default function CustomerDashboard() {
                   <div className="mt-6 pt-6 border-t border-slate-200">
                     <button
                       onClick={() => setShowCancelConfirm(true)}
-                      className="w-full px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-medium transition-colors border border-red-200"
+                      className="w-full px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-medium transition-colors border border-red-200 active:scale-95 transition-all duration-300"
                     >
                       Cancel Order
                     </button>
@@ -457,7 +457,7 @@ export default function CustomerDashboard() {
         {/* Cancel Confirmation Modal */}
         {showCancelConfirm && selectedOrder && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div className="liquid-glass-card rounded-[2rem] max-w-md w-full p-6">
               <div className="text-center">
                 <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <HiOutlineXCircle className="w-6 h-6 text-red-600" />
@@ -471,14 +471,14 @@ export default function CustomerDashboard() {
                   <button
                     onClick={() => setShowCancelConfirm(false)}
                     disabled={isCancelling}
-                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50 active:scale-95 transition-all duration-300"
                   >
                     Keep Order
                   </button>
                   <button
                     onClick={handleCancelOrder}
                     disabled={isCancelling}
-                    className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all duration-300"
                   >
                     {isCancelling ? 'Cancelling...' : 'Yes, Cancel'}
                   </button>

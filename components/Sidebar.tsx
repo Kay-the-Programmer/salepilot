@@ -431,7 +431,7 @@ export default function Sidebar({
                         <h2 className="text-lg font-bold text-gray-800 dark:text-white">Menu</h2>
                         <button
                             onClick={onMobileClose}
-                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                            className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors active:scale-95 transition-all duration-300"
                             aria-label="Close menu"
                         >
                             <XMarkIcon className="w-6 h-6 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white" />
@@ -470,7 +470,7 @@ export default function Sidebar({
                                     }}
                                     className="flex flex-col items-center gap-3 p-3 rounded-2xl hover:bg-blue-50 active:scale-95 transition-all group"
                                 >
-                                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-sm transition-colors bg-white  -blue-100 text-blue-600">
+                                    <div className="liquid-glass-card rounded-[2rem] w-14 h-14 flex items-center justify-center transition-colors -blue-100 text-blue-600">
                                         <ArrowDownTrayIcon className="w-7 h-7" />
                                     </div>
                                     <span className="text-xs font-medium text-center leading-tight text-blue-700">
@@ -483,7 +483,7 @@ export default function Sidebar({
 
                     {/* Mobile Footer (User & Logout) */}
                     <div className="p-4 -t -gray-100 dark:-white/10 bg-gray-50/50 dark:bg-black/20">
-                        <div className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-2xl  -gray-100 dark:-white/10 shadow-sm">
+                        <div className="liquid-glass-card rounded-[2rem] flex items-center gap-3 p-3 dark:bg-slate-800 -gray-100 dark:-white/10">
                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold shadow-md" onClick={() => handleNavigation('profile')}>
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
@@ -494,13 +494,13 @@ export default function Sidebar({
                             <div className="flex items-center gap-1">
                                 <button
                                     onClick={toggleTheme}
-                                    className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10"
+                                    className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95 transition-all duration-300"
                                 >
                                     {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
                                 </button>
                                 <button
                                     onClick={onLogout}
-                                    className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600"
+                                    className="p-2 rounded-xl text-red-500 hover:bg-red-50 hover:text-red-600 active:scale-95 transition-all duration-300"
                                 >
                                     <ArrowLeftOnRectangleIcon className="w-5 h-5" />
                                 </button>

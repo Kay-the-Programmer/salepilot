@@ -102,7 +102,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
                     {/* Quick Add Overlay */}
                     <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${cartItem ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                        <div className="w-12 h-12 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center shadow-lg transform transition-transform duration-200 hover:scale-110">
+                        <div className="liquid-glass-card rounded-[2rem] w-12 h-12 dark:bg-slate-800 flex items-center justify-center transform transition-transform duration-200 hover:scale-110">
                             {cartItem ? (
                                 <span className="font-bold text-blue-600 dark:text-blue-400 text-lg">{cartItem.quantity}</span>
                             ) : (
@@ -129,13 +129,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                 <button
                                     onClick={() => handleUpdateQuantity(-getStepFor(product.unitOfMeasure))}
-                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
+                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     -
                                 </button>
                                 <button
                                     onClick={() => handleUpdateQuantity(getStepFor(product.unitOfMeasure))}
-                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
+                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     +
                                 </button>
@@ -234,13 +234,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={() => handleUpdateQuantity(-getStepFor(product.unitOfMeasure))}
-                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
+                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 -
                             </button>
                             <button
                                 onClick={() => handleUpdateQuantity(getStepFor(product.unitOfMeasure))}
-                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors"
+                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 +
                             </button>

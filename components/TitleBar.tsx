@@ -52,19 +52,19 @@ const TitleBar: React.FC = () => {
             <div className="flex items-center h-full" style={{ WebkitAppRegion: 'no-drag' } as any}>
                 <button
                     onClick={handleMinimize}
-                    className="p-2 hover:bg-gray-800 transition-colors h-full flex items-center justify-center w-10"
+                    className="p-2 hover:bg-gray-800 transition-colors h-full flex items-center justify-center w-10 active:scale-95 transition-all duration-300"
                 >
                     <Minus className="w-4 h-4" />
                 </button>
                 <button
                     onClick={handleMaximize}
-                    className="p-2 hover:bg-gray-800 transition-colors h-full flex items-center justify-center w-10"
+                    className="p-2 hover:bg-gray-800 transition-colors h-full flex items-center justify-center w-10 active:scale-95 transition-all duration-300"
                 >
                     {isMaximized ? <Copy className="w-3.5 h-3.5" /> : <Square className="w-3.5 h-3.5" />}
                 </button>
                 <button
                     onClick={handleClose}
-                    className="p-2 hover:bg-red-600 transition-colors h-full flex items-center justify-center w-10"
+                    className="p-2 hover:bg-red-600 transition-colors h-full flex items-center justify-center w-10 active:scale-95 transition-all duration-300"
                 >
                     <X className="w-4 h-4" />
                 </button>

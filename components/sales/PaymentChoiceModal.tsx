@@ -47,7 +47,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
                 ></div>
 
                 {/* Modal Panel */}
-                <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div className="liquid-glass-card rounded-[2rem] relative transform overflow-hidden text-left transition-all sm:my-8 sm:w-full sm:max-w-lg">
                     <div className="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
                         <div className="sm:flex sm:items-start">
                             <div className="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
@@ -62,7 +62,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
 
                                 <div className="mt-6 flex flex-col gap-3">
                                     {/* Option 1: Pay with Lenco */}
-                                    <div className="rounded-md border border-gray-200 p-4 hover:bg-slate-50 transition-colors">
+                                    <div className="rounded-md border border-gray-200 p-4 hover:bg-slate-50 transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center gap-3 mb-3">
                                             <div className="h-10 w-10 flex items-center justify-center rounded-full bg-blue-100 text-blue-600">
                                                 <CreditCardIcon className="h-6 w-6" />
@@ -86,7 +86,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
                                             }}
                                             onSuccess={onLencoSuccess}
                                             onConfirmationPending={onConfirmationPending}
-                                            className="w-full inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:w-auto"
+                                            className="w-full inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:w-auto active:scale-95 transition-all duration-300"
                                         >
                                             Proceed with Lenco
                                         </LencoPayButton>
@@ -99,7 +99,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
                                     </div>
 
                                     {/* Option 2: Manual Confirmation */}
-                                    <div className="rounded-md border border-gray-200 p-4 hover:bg-slate-50 transition-colors">
+                                    <div className="rounded-md border border-gray-200 p-4 hover:bg-slate-50 transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center gap-3 mb-3">
                                             <div className="h-10 w-10 flex items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                                                 <CheckCircleIcon className="h-6 w-6" />
@@ -112,7 +112,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
                                         <button
                                             type="button"
                                             onClick={onManualConfirm}
-                                            className="w-full inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                                            className="w-full inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto active:scale-95 transition-all duration-300"
                                         >
                                             Just Confirm & Print Receipt
                                         </button>
@@ -124,7 +124,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
                     <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                         <button
                             type="button"
-                            className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                            className="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto active:scale-95 transition-all duration-300"
                             onClick={onClose}
                         >
                             Cancel

@@ -34,7 +34,7 @@ const InventoryOnboardingHelpers: React.FC<InventoryOnboardingHelpersProps> = ({
     };
 
     return (
-        <div className="px-4 md:px-6 ">
+        <div className="px-max mx-auto w-full mb-6">
             {/* Add first product helper */}
             {activeTab === 'products' && (
                 <OnboardingHelper

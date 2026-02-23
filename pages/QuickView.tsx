@@ -300,7 +300,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                         <div className="w-full max-w-4xl animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
                                 {chipCategories.map((cat, idx) => (
-                                    <div key={idx} className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all cursor-pointer group" onClick={() => handleChipClick(cat.chips[0].query)}>
+                                    <div key={idx} className="bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-2xl p-5 hover:bg-white/60 dark:hover:bg-slate-800/60 transition-all cursor-pointer group active:scale-95 transition-all duration-300" onClick={() => handleChipClick(cat.chips[0].query)}>
                                         <div className={`w-8 h-8 rounded-lg ${cat.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
                                             {idx === 0 ? <ChartBarIcon className="w-4 h-4 text-white" /> : idx === 1 ? <CubeIcon className="w-4 h-4 text-white" /> : <SparklesIcon className="w-4 h-4 text-white" />}
                                         </div>
@@ -321,7 +321,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                     <button
                                         key={idx}
                                         onClick={() => handleChipClick(chip.query)}
-                                        className="px-4 py-2 bg-gray-100/50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-600 dark:text-gray-300 text-sm rounded-xl border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-200"
+                                        className="px-4 py-2 bg-gray-100/50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 text-gray-600 dark:text-gray-300 text-sm rounded-xl border border-transparent hover:border-indigo-200 dark:hover:border-indigo-800 transition-all duration-200 active:scale-95 transition-all duration-300"
                                     >
                                         {chip.label}
                                     </button>
@@ -431,7 +431,7 @@ const QuickView: React.FC<QuickViewProps> = ({ user }) => {
                                         setIsChatMode(false);
                                         setMessages([]);
                                     }}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 rounded-full text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all shadow-sm"
+                                    className="liquid-glass-card rounded-[2rem] flex items-center gap-1.5 px-3 py-1.5 /60 dark:bg-slate-800/60 backdrop-blur-md border border-gray-200/50 dark:border-slate-700/50 text-[10px] font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all"
                                 >
                                     <span>Clear Chat</span>
                                 </button>

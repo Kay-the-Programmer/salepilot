@@ -101,13 +101,13 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-slate-950 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <div className="min-h-screen bg-mesh-light dark:bg-slate-950 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300 font-google">
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center">
         <img src={logo} alt="SalePilot" className="h-16 w-auto object-contain" />
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white dark:bg-slate-900 py-8 px-6 shadow-xl rounded-3xl sm:px-10 border border-transparent dark:border-white/5 backdrop-blur-sm">
+        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 py-8 px-6 sm:px-10 border border-transparent dark:border-white/5 backdrop-blur-sm">
           <h2 className="text-2xl font-bold text-center text-gray-800 dark:text-white">Create Your Store</h2>
           <p className="text-center text-gray-600 dark:text-slate-400 mt-2">Finish setup by creating your first store. Your data will be isolated to this store.</p>
 
@@ -212,7 +212,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
             <button
               type="submit"
               disabled={isLoading || !isValid}
-              className="w-full py-3 px-4 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-400 flex items-center justify-center gap-2"
+              className="w-full py-3 px-4 text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-400 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
             >
               {isLoading && (
                 <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">

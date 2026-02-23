@@ -53,7 +53,7 @@ const ValueProposition: React.FC = () => {
                   <div className="inline-block px-3 py-1 bg-white/10 rounded-full text-xs font-medium mb-3">
                     {card.stat}
                   </div>
-                  <h3 className="text-xl font-bold mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 group-hover:bg-clip-text">
+                  <h3 className="text-xl font-bold mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-white group-hover:to-gray-300 group-hover:bg-clip-text active:scale-95 transition-all duration-300">
                     {card.title}
                   </h3>
                   <p className="text-gray-300 leading-relaxed">

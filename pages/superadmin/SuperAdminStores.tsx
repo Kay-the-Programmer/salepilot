@@ -212,7 +212,7 @@ const SuperAdminStores: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 transition-colors duration-300">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 transition-colors duration-300 font-google">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -225,7 +225,7 @@ const SuperAdminStores: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <button
                             onClick={loadStores}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-all duration-300"
                         >
                             <RefreshIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             Refresh
@@ -235,23 +235,23 @@ const SuperAdminStores: React.FC = () => {
 
                 {/* Stats Summary */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-white/5 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Total Stores</div>
                         <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stores.length}</div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-emerald-500/20 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-emerald-500/20 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Active</div>
                         <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
                             {stores.filter(s => s.status === 'active').length}
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-purple-500/20 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-purple-500/20 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">On Trial</div>
                         <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
                             {stores.filter(s => s.subscriptionStatus === 'trial').length}
                         </div>
                     </div>
-                    <div className="bg-white dark:bg-slate-900/50 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-red-500/20 backdrop-blur-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-red-500/20 backdrop-blur-sm">
                         <div className="text-sm text-gray-600 dark:text-slate-400">Suspended</div>
                         <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
                             {stores.filter(s => s.status === 'suspended').length}
@@ -273,19 +273,19 @@ const SuperAdminStores: React.FC = () => {
                         <div className="flex items-center gap-2 flex-wrap">
                             <button
                                 onClick={() => bulkUpdateStatus('active')}
-                                className="px-3 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-500/30 transition-colors"
+                                className="px-3 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-500/30 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 Activate
                             </button>
                             <button
                                 onClick={() => bulkUpdateStatus('inactive')}
-                                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors"
+                                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 Deactivate
                             </button>
                             <button
                                 onClick={() => bulkUpdateStatus('suspended')}
-                                className="px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/30 transition-colors"
+                                className="px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/30 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 Suspend
                             </button>
@@ -300,7 +300,7 @@ const SuperAdminStores: React.FC = () => {
                 )}
 
                 {/* Filters & Search */}
-                <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
                     <div className="p-4 border-b border-gray-100 dark:border-white/5">
                         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                             {/* Search */}
@@ -318,7 +318,7 @@ const SuperAdminStores: React.FC = () => {
                             {/* Filter Toggle */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors"
+                                className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 <FilterIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                                 <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Filters</span>
@@ -410,7 +410,7 @@ const SuperAdminStores: React.FC = () => {
                                         return (
                                             <tr
                                                 key={store.id}
-                                                className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group"
+                                                className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300"
                                             >
                                                 <td className="px-6 py-4">
                                                     <input
@@ -488,7 +488,7 @@ const SuperAdminStores: React.FC = () => {
                                                             <button
                                                                 onClick={() => updateStoreStatus(store.id, 'suspended')}
                                                                 disabled={updatingId === store.id}
-                                                                className="px-3 py-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+                                                                className="px-3 py-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors disabled:opacity-50 active:scale-95 transition-all duration-300"
                                                             >
                                                                 Suspend
                                                             </button>
@@ -534,7 +534,7 @@ const SuperAdminStores: React.FC = () => {
                                 <button
                                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                     Previous
@@ -572,7 +572,7 @@ const SuperAdminStores: React.FC = () => {
                                 <button
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     Next
                                     <ChevronRightIcon className="w-4 h-4" />

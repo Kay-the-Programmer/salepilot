@@ -125,7 +125,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
         >
             <form
                 onSubmit={handleSubmit}
-                className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
+                className="liquid-glass-card rounded-[2rem] w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-md"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* iOS-style drag handle for mobile */}
@@ -134,7 +134,7 @@ const UserFormModal: React.FC<UserFormModalProps> = ({ isOpen, onClose, onSave, 
                 </div>
 
                 {/* Header */}
-                <div className="sticky top-0 bg-white px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
+                <div className="liquid-glass-header sticky top-0 px-4 pt-4 pb-3 sm:px-6 border-b border-gray-200 z-10">
                     <div className="flex items-center justify-between">
                         <div>
                             <h3 className="text-xl font-semibold text-gray-900">

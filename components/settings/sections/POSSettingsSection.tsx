@@ -72,12 +72,12 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                     className="peer sr-only"
                                 />
                                 <div className="w-12 h-6 bg-slate-300 dark:bg-slate-700 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
-                                    <div className="absolute w-5 h-5 bg-white dark:bg-slate-100 rounded-full left-1 top-0.5 peer-checked:left-7 transition-all duration-300 shadow-sm"></div>
+                                    <div className="liquid-glass-card rounded-[2rem] absolute w-5 h-5 dark:bg-slate-100 left-1 top-0.5 peer-checked:left-7 transition-all duration-300"></div>
                                 </div>
                             </div>
                         </div>
                         <div className="flex-1">
-                            <label htmlFor="enableStoreCredit" className="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer">
+                            <label htmlFor="enableStoreCredit" className="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer active:scale-95 transition-all duration-300">
                                 Enable Store Credit System
                             </label>
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -107,7 +107,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => removePaymentMethod('paymentMethods', pm.id)}
-                                            className="p-3 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-all duration-200 group-hover:opacity-100"
+                                            className="p-3 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-all duration-200 group-hover:opacity-100 active:scale-95 transition-all duration-300"
                                             aria-label={`Remove ${pm.name}`}
                                         >
                                             <TrashIcon className="w-5 h-5" />
@@ -154,7 +154,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                                         <button
                                             type="button"
                                             onClick={() => removePaymentMethod('supplierPaymentMethods', pm.id)}
-                                            className="p-3 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-all duration-200 group-hover:opacity-100"
+                                            className="p-3 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-red-200 dark:hover:border-red-800 transition-all duration-200 group-hover:opacity-100 active:scale-95 transition-all duration-300"
                                             aria-label={`Remove ${pm.name}`}
                                         >
                                             <TrashIcon className="w-5 h-5" />
@@ -200,7 +200,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                             </h4>
                             <div className="flex flex-wrap gap-2">
                                 {(settings.paymentMethods || []).map(pm => (
-                                    <span key={pm.id} className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg shadow-sm">
+                                    <span key={pm.id} className="liquid-glass-card rounded-[2rem] px-3 py-1.5 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
                                         {pm.name}
                                     </span>
                                 ))}
@@ -216,7 +216,7 @@ const POSSettingsSection: React.FC<POSSettingsSectionProps> = ({
                             </h4>
                             <div className="flex flex-wrap gap-2">
                                 {(settings.supplierPaymentMethods || []).map(pm => (
-                                    <span key={pm.id} className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold rounded-lg shadow-sm">
+                                    <span key={pm.id} className="liquid-glass-card rounded-[2rem] px-3 py-1.5 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold">
                                         {pm.name}
                                     </span>
                                 ))}

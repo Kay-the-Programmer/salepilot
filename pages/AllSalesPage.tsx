@@ -321,7 +321,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                     <p className="text-red-700 mt-1">{error}</p>
                                     <button
                                         onClick={() => window.location.reload()}
-                                        className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors"
+                                        className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         Retry
                                     </button>
@@ -379,7 +379,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                     </div>
 
                                     {/* Pagination Controls (Fixed Bottom) */}
-                                    <div className=" p-0 flex-none">
+                                    <div className="p-0 flex-none">
                                         <Pagination
                                             total={total}
                                             page={page}
@@ -394,11 +394,11 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                 {/* Right Column: Sale Details (Desktop) */}
                                 {selectedSale && (
                                     <div className="hidden xl:flex w-[450px] flex-col bg-slate-50 dark:bg-slate-900 border-l border-gray-200 dark:border-white/10 shadow-sm overflow-hidden animate-fade-in-right" glass-effect="">
-                                        <div className="p-2 px-4 glass-effect  flex justify-between items-center flex-none">
+                                        <div className="p-2 px-4 glass-effect flex justify-between items-center flex-none">
                                             <h3 className="font-bold text-gray-900 dark:text-white">Sale Details</h3>
                                             <button
                                                 onClick={() => setSelectedSale(null)}
-                                                className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors"
+                                                className="p-1 hover:bg-gray-100 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95 transition-all duration-300"
                                             >
                                                 <XMarkIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                                             </button>
@@ -409,7 +409,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                         <div className="p-4 px-6 dark:border-white/10 bg-white dark:bg-slate-900 flex-none">
                                             <div className="flex gap-2">
                                                 <button
-                                                    className="flex-1 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shadow-sm flex items-center justify-center gap-2"
+                                                    className="flex-1 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                                     onClick={() => setIsReceiptOpen(true)}
                                                 >
                                                     <PrinterIcon className="w-4 h-4" />

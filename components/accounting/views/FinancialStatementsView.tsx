@@ -111,7 +111,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Revenue Section */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -126,7 +126,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
                     <div className="p-4 flex-1">
                         <div className="space-y-1">
                             {pnlData.revenueAccounts.map(acc => (
-                                <div key={acc.name} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                <div key={acc.name} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{acc.name}</span>
                                     <span className="text-sm font-medium text-emerald-700 dark:text-emerald-400 tracking-tight">
                                         {formatCurrency(acc.balance, storeSettings)}
@@ -141,7 +141,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
                 </div>
 
                 {/* Expenses Section */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -156,7 +156,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
                     <div className="p-4 flex-1">
                         <div className="space-y-1">
                             {pnlData.expenseAccounts.map(acc => (
-                                <div key={acc.name} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                <div key={acc.name} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                                     <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{acc.name}</span>
                                     <span className="text-sm font-medium text-red-700 dark:text-red-400 tracking-tight">
                                         ({formatCurrency(acc.balance, storeSettings)})
@@ -210,7 +210,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                 {/* Assets */}
-                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col">
                     <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
@@ -225,7 +225,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
                     <div className="p-4 flex-1">
                         <div className="space-y-1">
                             {balanceSheetData.assets.map(acc => (
-                                <div key={acc.id} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                <div key={acc.id} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                                     <div className="flex items-center gap-2">
                                         <div className="w-1.5 h-1.5 rounded-full bg-blue-500 dark:bg-blue-400"></div>
                                         <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{acc.name}</span>
@@ -241,7 +241,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
 
                 <div className="space-y-4 md:space-y-6">
                     {/* Liabilities */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
                         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -256,7 +256,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
                         <div className="p-4">
                             <div className="space-y-1">
                                 {balanceSheetData.liabilities.map(acc => (
-                                    <div key={acc.id} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                    <div key={acc.id} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-red-500 dark:bg-red-400"></div>
                                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{acc.name}</span>
@@ -271,7 +271,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
                     </div>
 
                     {/* Equity */}
-                    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
                         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
@@ -286,7 +286,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
                         <div className="p-4">
                             <div className="space-y-1">
                                 {balanceSheetData.equity.map(acc => (
-                                    <div key={acc.id} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors">
+                                    <div key={acc.id} className="flex justify-between items-center p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center gap-2">
                                             <div className="w-1.5 h-1.5 rounded-full bg-purple-500 dark:bg-purple-400"></div>
                                             <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{acc.name}</span>
@@ -303,7 +303,7 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
             </div>
 
             {/* Balance Sheet Summary */}
-            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="text-center p-4">
                         <div className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1">Total Assets</div>

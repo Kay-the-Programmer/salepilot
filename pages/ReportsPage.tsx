@@ -354,7 +354,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                         {/* Mobile Date Filter */}
                         <button
                             onClick={() => setShowFilters(true)}
-                            className="flex md:hidden items-center gap-1.5 p-2 px-3 rounded-full liquid-glass-pill transition-all duration-200 active:scale-90"
+                            className="flex md:hidden items-center gap-1.5 p-2 px-3 rounded-full liquid-glass-pill transition-all duration-200 active:scale-90 active:scale-95 transition-all duration-300"
                             aria-label={`Date filter: ${datePresetLabel}`}
                         >
                             <CalendarIcon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
@@ -405,14 +405,14 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                                 <div className="absolute top-full right-0 mt-3 w-48 liquid-glass rounded-2xl overflow-hidden shadow-2xl animate-notification-slide-down border border-white/20 dark:border-white/10 z-50">
                                     <button
                                         onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }}
-                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors flex items-center gap-3"
+                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors flex items-center gap-3 active:scale-95 transition-all duration-300"
                                     >
                                         <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
                                         Export as CSV
                                     </button>
                                     <button
                                         onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }}
-                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors border-t border-slate-100 dark:border-white/5 flex items-center gap-3"
+                                        className="w-full text-left px-5 py-3.5 text-sm font-bold text-slate-700 dark:text-slate-200 hover:bg-blue-50 dark:hover:bg-blue-500/10 transition-colors border-t border-slate-100 dark:border-white/5 flex items-center gap-3 active:scale-95 transition-all duration-300"
                                     >
                                         <div className="w-2 h-2 rounded-full bg-rose-500"></div>
                                         Export as PDF
@@ -499,7 +499,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                                 {unreadCount > 0 && (
                                     <button onClick={handleMarkAllAsRead} className="text-xs font-bold text-blue-600 hover:underline">Mark all as read</button>
                                 )}
-                                <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors">
+                                <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95 transition-all duration-300">
                                     <XMarkIcon className="w-5 h-5 dark:text-white" />
                                 </button>
                             </div>

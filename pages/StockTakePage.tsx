@@ -105,7 +105,7 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                         <button
                             type="button"
                             onClick={onStart}
-                            className="w-full inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:translate-y-[-2px] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 uppercase tracking-widest"
+                            className="w-full inline-flex items-center justify-center rounded-2xl bg-blue-600 px-6 py-4 text-sm font-bold text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:translate-y-[-2px] transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 uppercase tracking-widest active:scale-95 transition-all duration-300"
                         >
                             Start New Stock Take
                         </button>
@@ -140,11 +140,11 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
                         <p className="text-sm font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest">Started at: {new Date(session.startTime).toLocaleString()}</p>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-3">
-                        <button onClick={handleCancel} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-red-500 px-5 py-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-500/20 dark:hover:shadow-slate-500/20 dark:hover:bg-slate-800 hover:translate-y-[-2px] transition-all uppercase tracking-widest">
+                        <button onClick={handleCancel} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-red-500 px-5 py-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-500/20 dark:hover:shadow-slate-500/20 dark:hover:bg-slate-800 hover:translate-y-[-2px] transition-all uppercase tracking-widest active:scale-95 transition-all duration-300">
                             <XMarkIcon className="h-4 w-4 text-slate-400" />
                             Cancel
                         </button>
-                        <button onClick={handleFinalize} type="button" className="rounded-md bg-blue-600 px-6 py-3 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-slate-50 dark:hover:bg-slate-800 hover:translate-y-[-2px] transition-all uppercase tracking-widest">
+                        <button onClick={handleFinalize} type="button" className="rounded-md bg-blue-600 px-6 py-3 text-xs font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-slate-50 dark:hover:bg-slate-800 hover:translate-y-[-2px] transition-all uppercase tracking-widest active:scale-95 transition-all duration-300">
                             Complete Count
                         </button>
                     </div>

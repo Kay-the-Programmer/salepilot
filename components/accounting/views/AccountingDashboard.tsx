@@ -106,7 +106,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                 </div>
 
                 <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1.5 shadow-sm">
+                    <div className="liquid-glass-card rounded-[2rem] flex items-center gap-2 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1.5">
                         <div className="flex items-center gap-2 px-3">
                             <CalendarIcon className="w-4 h-4 text-slate-400" />
                             <input
@@ -138,7 +138,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 bg-slate-50 dark:bg-slate-900/40 p-3 rounded-2xl border border-slate-100 dark:border-slate-800/50 shadow-inner">
                     {/* Missing Cost Price Alert */}
                     {checks.hasProductsMissingCost && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-amber-100 dark:border-amber-900/20 rounded-xl shadow-sm">
+                        <div className="liquid-glass-card rounded-[2rem] flex items-center gap-2 px-3 py-2 dark:bg-slate-900 border border-amber-100 dark:border-amber-900/20">
                             <ExclamationTriangleIcon className="w-4 h-4 text-amber-500 shrink-0" />
                             <p className="text-[10px] font-bold text-amber-800 dark:text-amber-400 leading-tight">
                                 {checks.productsMissingCostCount} items missing cost.
@@ -148,7 +148,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
 
                     {/* Tax Ratio Alert */}
                     {checks.isTaxRatioSkewed && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-rose-100 dark:border-rose-900/20 rounded-xl shadow-sm">
+                        <div className="liquid-glass-card rounded-[2rem] flex items-center gap-2 px-3 py-2 dark:bg-slate-900 border border-rose-100 dark:border-rose-900/20">
                             <ExclamationTriangleIcon className="w-4 h-4 text-rose-500 shrink-0" />
                             <p className="text-[10px] font-bold text-rose-800 dark:text-rose-400 leading-tight">
                                 Abnormal tax ratio detected.
@@ -158,7 +158,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
 
                     {/* AP Negative Balance */}
                     {summary.accountsPayable < 0 && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/20 rounded-xl shadow-sm">
+                        <div className="liquid-glass-card rounded-[2rem] flex items-center gap-2 px-3 py-2 dark:bg-slate-900 border border-indigo-100 dark:border-indigo-900/20">
                             <InformationCircleIcon className="w-4 h-4 text-indigo-500 shrink-0" />
                             <p className="text-[10px] font-bold text-indigo-800 dark:text-indigo-400 leading-tight">
                                 Unmatched PO payments.
@@ -168,14 +168,14 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
 
                     {/* Ledger Sync Status */}
                     {(!checks.arMatch || !checks.apMatch || !checks.inventoryMatch) ? (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-amber-100 dark:border-amber-900/20 rounded-xl shadow-sm">
+                        <div className="liquid-glass-card rounded-[2rem] flex items-center gap-2 px-3 py-2 dark:bg-slate-900 border border-amber-100 dark:border-amber-900/20">
                             <ExclamationTriangleIcon className="w-4 h-4 text-amber-500 shrink-0" />
                             <p className="text-[10px] font-bold text-amber-800 dark:text-amber-400 leading-tight">
                                 GL sync discrepancy.
                             </p>
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/20 rounded-xl shadow-sm">
+                        <div className="liquid-glass-card rounded-[2rem] flex items-center gap-2 px-3 py-2 dark:bg-slate-900 border border-emerald-100 dark:border-emerald-900/20">
                             <CheckCircleIcon className="w-4 h-4 text-emerald-500 shrink-0" />
                             <p className="text-[10px] font-bold text-emerald-800 dark:text-emerald-400 leading-tight">
                                 Ledger is healthy & synced.
@@ -205,7 +205,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                 </div>
 
                 {/* 2. Liquidity Card - Cash & AR */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 hover: transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Liquidity</span>
@@ -232,7 +232,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                 </div>
 
                 {/* 3. Operational Card - Gross Profit & Inv */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 hover: transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Gross Profit</span>
@@ -259,7 +259,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                 </div>
 
                 {/* 4. Obligations Card - AP & Store Credit */}
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 hover: transition-all duration-300">
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Obligations</span>
@@ -288,14 +288,14 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
                         <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
                             <h3 className="font-bold text-slate-900 dark:text-slate-100">Recent Ledger Activity</h3>
                             <button onClick={() => window.location.hash = 'journal'} className="text-xs text-indigo-600 hover:text-indigo-700 font-bold uppercase tracking-wider transition-colors px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">View Ledger</button>
                         </div>
                         <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
                             {recentTransactions.map(entry => (
-                                <div key={entry.id} className="p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                <div key={entry.id} className="p-5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:scale-95 transition-all duration-300">
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
                                             <p className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">
@@ -338,7 +338,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
 
                 <div className="space-y-6">
                     {/* Simplified Key Balances - Focus on remaining accounts */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
                         <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800">
                             <h3 className="font-bold text-slate-900 dark:text-slate-100">Other Accounts</h3>
                         </div>
@@ -348,7 +348,7 @@ const AccountingDashboard: React.FC<AccountingDashboardProps> = ({ accounts, jou
                                 .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
                                 .slice(0, 12)
                                 .map(account => (
-                                    <div key={account.id} className="px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <div key={account.id} className="px-5 py-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center justify-between">
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center gap-2">

@@ -169,9 +169,9 @@ export default function LogisticsPage() {
     };
 
     return (
-        <div className="p-0 h-full flex flex-col bg-gray-50 dark:bg-slate-950 ">
+        <div className="p-0 h-full flex flex-col bg-gray-50 dark:bg-slate-950">
             {/* Header */}
-            <header className="dark:bg-slate-900 backdrop-blur-md sticky top-0 z-10 p-2 ">
+            <header className="dark:bg-slate-900 backdrop-blur-md sticky top-0 z-10 p-2">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                     <div className="flex items-center gap-4">
                         <div className="p-3 text-blue-600 dark:shadow-none">
@@ -210,11 +210,11 @@ export default function LogisticsPage() {
                             <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
                         </div>
 
-                        <div className="flex gap-2 w-full sm:w-auto ">
+                        <div className="flex gap-2 w-full sm:w-auto">
                             {activeTab === 'shipments' && (
                                 <button
                                     onClick={() => setIsShipmentModalOpen(true)}
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2 active:scale-95 transition-all duration-300"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     New Shipment
@@ -223,7 +223,7 @@ export default function LogisticsPage() {
                             {activeTab === 'couriers' && (
                                 <button
                                     onClick={() => setIsCourierModalOpen(true)}
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2 active:scale-95 transition-all duration-300"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     Add Courier
@@ -232,7 +232,7 @@ export default function LogisticsPage() {
                             {activeTab === 'buses' && (
                                 <button
                                     onClick={() => setIsBusModalOpen(true)}
-                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600/90 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-3 dark:bg-slate-800 bg-blue-600/90 text-white font-black rounded-xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] gap-2 active:scale-95 transition-all duration-300"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     Add Bus
@@ -312,7 +312,7 @@ export default function LogisticsPage() {
                                                 setSelectedCourier(null);
                                                 setSelectedBus(null);
                                             }}
-                                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
+                                            className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500 active:scale-95 transition-all duration-300"
                                         >
                                             <XMarkIcon className="w-5 h-5" />
                                         </button>
@@ -385,7 +385,7 @@ export default function LogisticsPage() {
                                                 <h3 className="text-[10px] font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest border-b border-gray-100 dark:border-slate-800 pb-2">Shipping Provider</h3>
                                                 <div className="p-5 bg-gray-50 dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-800">
                                                     <div className="flex items-center gap-4">
-                                                        <div className="w-12 h-12 bg-white dark:bg-slate-700 rounded-xl shadow-sm flex items-center justify-center">
+                                                        <div className="liquid-glass-card rounded-[2rem] w-12 h-12 dark:bg-slate-700 flex items-center justify-center">
                                                             <TruckIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                                                         </div>
                                                         <div>
@@ -461,7 +461,7 @@ export default function LogisticsPage() {
                                                         handleDelete(selectedCourier.id, 'courier');
                                                         setSelectedCourier(null);
                                                     }}
-                                                    className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-black rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                                    className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-black rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                                 >
                                                     <TrashIcon className="w-4 h-4" />
                                                     Terminate Partner
@@ -513,7 +513,7 @@ export default function LogisticsPage() {
                                                         handleDelete(selectedBus.id, 'bus');
                                                         setSelectedBus(null);
                                                     }}
-                                                    className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-black rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                                    className="w-full flex items-center justify-center gap-2 p-4 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 font-black rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/20 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                                 >
                                                     <TrashIcon className="w-4 h-4" />
                                                     Retire Vehicle
@@ -531,7 +531,7 @@ export default function LogisticsPage() {
             {/* Modals */}
             {isCourierModalOpen && (
                 <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 max-w-md w-full p-8 border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
                             <div>
                                 <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Add Courier</h3>
@@ -539,7 +539,7 @@ export default function LogisticsPage() {
                             </div>
                             <button
                                 onClick={() => setIsCourierModalOpen(false)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500 active:scale-95 transition-all duration-300"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
@@ -552,13 +552,13 @@ export default function LogisticsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsCourierModalOpen(false)}
-                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                 >
                                     Save Courier
                                 </button>
@@ -570,7 +570,7 @@ export default function LogisticsPage() {
 
             {isBusModalOpen && (
                 <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 max-w-md w-full p-8 border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
                             <div>
                                 <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">Add Bus</h3>
@@ -578,7 +578,7 @@ export default function LogisticsPage() {
                             </div>
                             <button
                                 onClick={() => setIsBusModalOpen(false)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500 active:scale-95 transition-all duration-300"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
@@ -592,13 +592,13 @@ export default function LogisticsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsBusModalOpen(false)}
-                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                 >
                                     Save Bus
                                 </button>
@@ -610,7 +610,7 @@ export default function LogisticsPage() {
 
             {isShipmentModalOpen && (
                 <div className="fixed inset-0 z-[100] overflow-y-auto bg-black/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-8 shadow-2xl border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 max-w-lg w-full p-8 border border-gray-100 dark:border-slate-800 animate-scale-in max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="flex justify-between items-center mb-8 pb-4 border-b border-gray-100 dark:border-slate-800">
                             <div>
                                 <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">New Shipment</h3>
@@ -618,7 +618,7 @@ export default function LogisticsPage() {
                             </div>
                             <button
                                 onClick={() => setIsShipmentModalOpen(false)}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500"
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500 active:scale-95 transition-all duration-300"
                             >
                                 <XMarkIcon className="w-6 h-6" />
                             </button>
@@ -683,13 +683,13 @@ export default function LogisticsPage() {
                                 <button
                                     type="button"
                                     onClick={() => setIsShipmentModalOpen(false)}
-                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                                    className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                    className="flex-1 px-6 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                 >
                                     Create Shipment
                                 </button>
@@ -702,7 +702,7 @@ export default function LogisticsPage() {
             {/* Confirmation Modal */}
             {confirmationModal && confirmationModal.isOpen && (
                 <div className="fixed inset-0 bg-black/60 dark:bg-black/80 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl max-w-md w-full p-8 animate-scale-in border border-gray-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 max-w-md w-full p-8 animate-scale-in border border-gray-100 dark:border-slate-800 max-h-[90vh] overflow-y-auto custom-scrollbar">
                         <div className="w-16 h-16 bg-red-50 dark:bg-red-900/10 rounded-2xl flex items-center justify-center mb-6">
                             <TrashIcon className="w-8 h-8 text-red-600 dark:text-red-400" />
                         </div>
@@ -711,13 +711,13 @@ export default function LogisticsPage() {
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setConfirmationModal(null)}
-                                className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px]"
+                                className="flex-1 px-6 py-4 bg-gray-50 dark:bg-slate-800 text-gray-600 dark:text-slate-400 font-black rounded-2xl hover:bg-gray-100 dark:hover:bg-slate-700 transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={confirmationModal.onConfirm}
-                                className="flex-1 px-6 py-4 bg-red-600 text-white font-black rounded-2xl shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px]"
+                                className="flex-1 px-6 py-4 bg-red-600 text-white font-black rounded-2xl shadow-lg shadow-red-200 dark:shadow-none hover:bg-red-700 active:scale-[0.98] transition-all uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                             >
                                 Confirm
                             </button>

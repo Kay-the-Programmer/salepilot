@@ -39,13 +39,13 @@ export const TimeRangeFilter: React.FC<TimeRangeFilterProps> = ({ value, onChang
         <div className={`relative ${className}`} ref={menuRef}>
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 px-2 py-1 rounded-lg transition-colors border border-slate-200 dark:border-white/10"
+                className="flex items-center gap-1 text-xs font-medium text-slate-500 dark:text-gray-400 hover:text-slate-800 dark:hover:text-white bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 px-2 py-1 rounded-lg transition-colors border border-slate-200 dark:border-white/10 active:scale-95 transition-all duration-300"
             >
                 {filterLabels[value]}
                 <ChevronDownIcon className="w-3 h-3" />
             </button>
             {isOpen && (
-                <div className="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-100 dark:border-white/10 py-1 z-50 animate-fade-in-up">
+                <div className="liquid-glass-card rounded-[2rem] absolute right-0 top-full mt-1 w-32 dark:bg-slate-800 border border-slate-100 dark:border-white/10 py-1 z-50 animate-fade-in-up">
                     {(Object.keys(filterLabels) as TimeFilter[]).map((f) => (
                         <button
                             key={f}

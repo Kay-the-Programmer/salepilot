@@ -282,9 +282,9 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     ];
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 transition-colors duration-200 font-google">
             {/* Unified Header */}
-            <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/10 transition-all duration-300">
+            <header className="liquid-glass-header sticky top-0 z-40 /80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/60 dark:border-white/10 transition-all duration-300">
                 <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col lg:flex-row lg:items-center justify-between py-3 h-auto lg:h-20 gap-4">
                         {/* Title Section */}
@@ -305,44 +305,18 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
 
                         </div>
 
-                        {/* Navigation Tabs - Integrated into Header */}
-                        <nav className="hidden lg:flex items-center gap-1.5 p-1.5 bg-slate-100/50 dark:bg-slate-800/40 rounded-2xl backdrop-blur-sm border border-slate-200/50 dark:border-white/5 max-w-full overflow-x-auto no-scrollbar">
+                        {/* Navigation Tabs - Unified Google-like Liquid Glass Scrollable Tab Bar */}
+                        <nav className="flex items-center gap-2 overflow-x-auto no-scrollbar snap-x snap-mandatory lg:ml-auto w-full lg:w-auto -mx-4 px-4 lg:mx-0 lg:px-0 py-1 scroll-smooth">
                             {tabConfig.map((tab) => {
                                 const isActive = activeTab === tab.tabName;
                                 return (
                                     <button
                                         key={tab.tabName}
                                         onClick={() => setActiveTabAndHash(tab.tabName)}
-                                        className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold whitespace-nowrap transition-all duration-300 ${isActive
-                                            ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-600'
-                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
-                                            }`}
+                                        className={`liquid-glass-pill flex-none snap-start flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap active:scale-95 transition-all duration-300 ${isActive ? 'active' : ''}`}
                                     >
-                                        <span className={`transition-transform duration-300 ${isActive ? 'scale-110' : 'opacity-70'}`}>
-                                            {tab.icon}
-                                        </span>
-                                        {tab.label}
-                                    </button>
-                                );
-                            })}
-                        </nav>
-
-                        {/* Tablet/Mobile Horizontal Tabs (Visible when grid is closed) */}
-                        {/* Tablet/Mobile Horizontal Tabs (Bleed Layout) */}
-                        <nav className="lg:hidden flex items-center gap-2 overflow-x-auto no-scrollbar -mx-4 px-4 sm:-mx-6 sm:px-6 pb-1 scroll-smooth">
-                            {tabConfig.map((tab) => {
-                                const isActive = activeTab === tab.tabName;
-                                return (
-                                    <button
-                                        key={tab.tabName}
-                                        onClick={() => setActiveTabAndHash(tab.tabName)}
-                                        className={`flex-none flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-300 border ${isActive
-                                            ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 border-transparent shadow-md transform scale-105'
-                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                            }`}
-                                    >
-                                        <span className={isActive ? 'text-white/90 dark:text-slate-900/90' : 'text-slate-400 dark:text-slate-500'}>
-                                            {React.cloneElement(tab.icon as any, { className: "w-3.5 h-3.5" })}
+                                        <span className={`transition-transform duration-300 ${isActive ? 'scale-110 opacity-100' : 'opacity-70'}`}>
+                                            {React.cloneElement(tab.icon as React.ReactElement, { className: "w-4 h-4" })}
                                         </span>
                                         {tab.shortLabel || tab.label}
                                     </button>

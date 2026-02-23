@@ -37,12 +37,12 @@ const CustomPaymentModal: React.FC<CustomPaymentModalProps> = ({
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 glass-effect" glass-effect="true">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 w-full max-w-md rounded-[32px] overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 glass-effect" glass-effect="true">
                 {/* Header */}
                 <div className="relative p-7 border-b border-slate-50 dark:border-slate-800/50 bg-slate-50/50 dark:bg-white/5">
                     <button
                         onClick={onClose}
-                        className="absolute right-5 top-5 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+                        className="absolute right-5 top-5 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-95 transition-all duration-300"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
@@ -123,7 +123,7 @@ const CustomPaymentModal: React.FC<CustomPaymentModalProps> = ({
                     <Button
                         onClick={handleConfirm}
                         disabled={loading || (method === 'mobile-money' && !phoneNumber)}
-                        className="w-full py-4.5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-200 dark:shadow-none bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white transition-all transform hover:-translate-y-0.5"
+                        className="w-full py-4.5 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl shadow-indigo-200 dark:shadow-none bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-400 text-white transition-all transform hover:-translate-y-0.5 active:scale-95 transition-all duration-300"
                     >
                         {loading ? (
                             <div className="flex items-center justify-center gap-3">

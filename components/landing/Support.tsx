@@ -48,7 +48,7 @@ const Testimonial: React.FC = () => {
                 inView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
             >
-              <div className="relative h-full bg-white rounded-2xl border border-gray-200 p-8 hover:shadow-xl transition-all duration-300">
+              <div className="liquid-glass-card rounded-[2rem] relative h-full border border-gray-200 p-8 hover: transition-all duration-300">
                 {/* Quote Icon */}
                 <div className="text-4xl text-gray-200 mb-4">"</div>
                 

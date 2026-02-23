@@ -29,7 +29,7 @@ const HeldSalesModal: React.FC<HeldSalesModalProps> = ({
             onClick={onClose}
         >
             <div
-                className="bg-white w-full rounded-2xl shadow-2xl max-w-md overflow-hidden flex flex-col animate-slide-up"
+                className="liquid-glass-card rounded-[2rem] w-full max-w-md overflow-hidden flex flex-col animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -40,7 +40,7 @@ const HeldSalesModal: React.FC<HeldSalesModalProps> = ({
                     </h3>
                     <button
                         onClick={onClose}
-                        className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors"
+                        className="p-2 -mr-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-50 transition-colors active:scale-95 transition-all duration-300"
                     >
                         <XMarkIcon className="w-5 h-5" />
                     </button>
@@ -61,7 +61,7 @@ const HeldSalesModal: React.FC<HeldSalesModalProps> = ({
                                 const itemCount = heldCart.reduce((sum, item) => sum + item.quantity, 0);
 
                                 return (
-                                    <div key={index} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm hover:border-blue-300 transition-colors group">
+                                    <div key={index} className="liquid-glass-card rounded-[2rem] p-3 border border-slate-200 hover:border-blue-300 transition-colors group">
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-2">
                                                 <span className="w-6 h-6 rounded-full bg-amber-100 text-amber-700 text-xs font-bold flex items-center justify-center">
@@ -85,7 +85,7 @@ const HeldSalesModal: React.FC<HeldSalesModalProps> = ({
                                                     onRecallSale(index);
                                                     onClose();
                                                 }}
-                                                className="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-100 active:bg-blue-200 transition-colors"
+                                                className="px-3 py-1.5 bg-blue-50 text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-100 active:bg-blue-200 transition-colors active:scale-95 transition-all duration-300"
                                             >
                                                 Recall
                                             </button>

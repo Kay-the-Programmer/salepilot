@@ -112,7 +112,7 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         {recentOrders.length > 0 ? (
                             <div className="space-y-3">
                                 {recentOrders.map((sale) => (
-                                    <div key={sale.transactionId} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                                    <div key={sale.transactionId} className="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center gap-3">
                                             <div className="p-2 bg-gray-50 dark:bg-slate-800 rounded-lg text-gray-500 dark:text-slate-400">
                                                 <DocumentTextIcon className="w-5 h-5" />
@@ -171,7 +171,7 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                         {paidSales.length > 0 ? (
                             <div className="space-y-4">
                                 {paidSales.map((sale) => (
-                                    <div key={sale.transactionId} className="p-4 rounded-lg border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
+                                    <div key={sale.transactionId} className="p-4 rounded-lg border border-gray-200 dark:border-slate-800 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300">
                                         <div className="flex items-center justify-between mb-3 border-b border-gray-100 dark:border-slate-800 pb-2">
                                             <div className="flex items-center gap-3">
                                                 <span className="bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 py-1 px-2 rounded text-xs font-mono font-medium border border-gray-200 dark:border-slate-700">#{sale.transactionId}</span>

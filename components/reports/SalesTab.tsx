@@ -89,7 +89,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                         <div className="flex items-center gap-3 liquid-glass-pill p-1.5 rounded-2xl">
                             <span className="text-xs font-bold uppercase tracking-wider ml-3 text-slate-500">Show</span>
                             <select
-                                className="text-sm bg-blue-600 text-white rounded-xl px-4 py-2 font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+                                className="text-sm bg-blue-600 text-white rounded-xl px-4 py-2 font-bold outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer active:scale-95 transition-all duration-300"
                                 value={dailyPageSize}
                                 onChange={(e) => {
                                     setDailyPageSize(parseInt(e.target.value));
@@ -107,7 +107,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                         {dailySales
                             .slice((dailyPage - 1) * dailyPageSize, dailyPage * dailyPageSize)
                             .map((day) => (
-                                <div key={day.date} className="group p-6 bg-white/40 dark:bg-slate-800/20 rounded-3xl border border-slate-200/40 dark:border-white/5 hover:border-blue-500/50 dark:hover:border-blue-400/50 hover:bg-white/60 dark:hover:bg-slate-800/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-1">
+                                <div key={day.date} className="group p-6 bg-white/40 dark:bg-slate-800/20 rounded-3xl border border-slate-200/40 dark:border-white/5 hover:border-blue-500/50 dark:hover:border-blue-400/50 hover:bg-white/60 dark:hover:bg-slate-800/40 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 active:scale-95 transition-all duration-300">
                                     <div className="flex flex-col mb-4">
                                         <span className="text-[10px] uppercase tracking-[0.2em] font-black text-slate-400 mb-1">
                                             {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
@@ -119,7 +119,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                             })}
                                         </div>
                                     </div>
-                                    <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-2xl mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                                    <div className="bg-blue-50 dark:bg-blue-500/10 p-3 rounded-2xl mb-5 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300 active:scale-95 transition-all duration-300">
                                         <div className="text-xs font-bold opacity-70 mb-0.5">Revenue</div>
                                         <div className="text-lg font-black tracking-tight">
                                             {formatCurrency(day.totalRevenue, storeSettings)}
@@ -147,7 +147,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                     {dailySales.length > dailyPageSize && (
                         <div className="flex items-center justify-center gap-4 mt-12 pb-2">
                             <button
-                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group"
+                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group active:scale-95 transition-all duration-300"
                                 onClick={() => setDailyPage(p => Math.max(1, p - 1))}
                                 disabled={dailyPage === 1}
                                 aria-label="Previous page"
@@ -158,7 +158,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                                 {dailyPage} <span className="mx-2 opacity-30">/</span> {Math.ceil(dailySales.length / dailyPageSize)}
                             </span>
                             <button
-                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group"
+                                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all duration-300 shadow-md active:scale-90 disabled:opacity-30 disabled:cursor-not-allowed group active:scale-95 transition-all duration-300"
                                 onClick={() => setDailyPage(p => Math.min(Math.ceil(dailySales.length / dailyPageSize), p + 1))}
                                 disabled={dailyPage >= Math.ceil(dailySales.length / dailyPageSize)}
                                 aria-label="Next page"

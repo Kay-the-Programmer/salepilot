@@ -150,7 +150,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                     <select
                         onChange={e => e.target.value && handleGenerateStatement(e.target.value)}
                         value={''}
-                        className="w-full md:w-64 pl-9 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700 dark:text-slate-200 appearance-none cursor-pointer"
+                        className="w-full md:w-64 pl-9 pr-8 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-700 dark:text-slate-200 appearance-none cursor-pointer active:scale-95 transition-all duration-300"
                     >
                         <option value="" disabled className="dark:bg-slate-900">Generate Statement</option>
                         {customers.filter(c => c.accountBalance > 0).map(c => (
@@ -176,7 +176,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                     return (
                         <div
                             key={invoice.transactionId}
-                            className="p-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm"
+                            className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
                             onClick={() => onViewInvoice(invoice)}
                         >
                             <div className="flex justify-between items-start mb-3">
@@ -198,13 +198,13 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                         <EllipsisVerticalIcon className="w-5 h-5" />
                                     </button>
                                     {activeActionMenu === invoice.transactionId && (
-                                        <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 py-1">
+                                        <div className="liquid-glass-card rounded-[2rem] absolute right-0 top-full mt-1 w-48 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-20 py-1">
                                             <button
                                                 onClick={() => {
                                                     onViewInvoice(invoice);
                                                     setActiveActionMenu(null);
                                                 }}
-                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
                                             >
                                                 <EyeIcon className="w-4 h-4" />
                                                 View Details
@@ -215,7 +215,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                                         handleRecordPaymentClick(invoice);
                                                         setActiveActionMenu(null);
                                                     }}
-                                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-medium"
+                                                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-medium active:scale-95 transition-all duration-300"
                                                 >
                                                     <CalculatorIcon className="w-4 h-4" />
                                                     Record Payment
@@ -246,7 +246,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
             </div>
 
             {/* Desktop View: Table */}
-            <div className="hidden md:block bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+            <div className="liquid-glass-card rounded-[2rem] hidden md:block dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
                         <thead className="bg-slate-50 dark:bg-slate-800/50">
@@ -273,7 +273,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                     <tr
                                         key={invoice.transactionId}
                                         onClick={() => onViewInvoice(invoice)}
-                                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors"
+                                        className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <div className="flex items-center gap-2">
@@ -299,7 +299,7 @@ const ARManagementView: React.FC<ARManagementViewProps> = ({ sales, customers, s
                                             {!isPaid && (
                                                 <button
                                                     onClick={() => handleRecordPaymentClick(invoice)}
-                                                    className="px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                                                    className="px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors active:scale-95 transition-all duration-300"
                                                 >
                                                     Pay
                                                 </button>

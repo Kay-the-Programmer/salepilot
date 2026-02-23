@@ -81,7 +81,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
 
             <div className="grid grid-cols-1 gap-8">
                 {/* Items Section */}
-                <section glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden bg-white dark:bg-slate-900/50">
+                <section glass-effect="" className="liquid-glass-card rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden dark:bg-slate-900/50">
                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-800/50 to-white dark:to-slate-900/50">
                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></span>
@@ -90,7 +90,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                     </div>
                     <div className="divide-y divide-slate-100 dark:divide-slate-800">
                         {order.cart.map((item, idx) => (
-                            <div key={idx} className="p-5 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150">
+                            <div key={idx} className="p-5 flex items-center justify-between hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors duration-150 active:scale-95 transition-all duration-300">
                                 <div className="flex items-center gap-4">
                                     <div className="w-10 h-10 bg-gradient-to-br from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 rounded-xl flex items-center justify-center font-bold text-xs text-indigo-700 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800/30 shadow-sm shrink-0">
                                         {item.quantity}x
@@ -133,7 +133,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                 </section>
 
                 {/* Customer Card */}
-                <div glass-effect="" className="rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden bg-white dark:bg-slate-900/50">
+                <div glass-effect="" className="liquid-glass-card rounded-[2rem] border border-slate-200 dark:border-slate-800 overflow-hidden dark:bg-slate-900/50">
                     <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-gradient-to-r from-slate-50 dark:from-slate-800/50 to-white dark:to-slate-900/50">
                         <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>

@@ -84,7 +84,7 @@ const LinkToPOModal: React.FC<LinkToPOModalProps> = ({
                                         <button
                                             key={po.id}
                                             onClick={() => onLink(po)}
-                                            className="w-full text-left p-4 bg-white/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 rounded-2xl hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group"
+                                            className="w-full text-left p-4 bg-white/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 rounded-2xl hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group active:scale-95 transition-all duration-300"
                                         >
                                             <div className="flex justify-between items-start">
                                                 <div className="flex flex-col">
@@ -133,7 +133,7 @@ const LinkToPOModal: React.FC<LinkToPOModalProps> = ({
 
                     <button
                         onClick={onCreateNew}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-2xl text-gray-400 dark:text-slate-500 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all text-sm font-medium"
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-2xl text-gray-400 dark:text-slate-500 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all text-sm font-medium active:scale-95 transition-all duration-300"
                     >
                         <PlusIcon className="w-5 h-5" />
                         New Purchase Order

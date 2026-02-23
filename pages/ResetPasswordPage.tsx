@@ -51,8 +51,8 @@ export default function ResetPasswordPage() {
 
     if (!token) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-lg max-w-sm w-full text-center">
+            <div className="min-h-screen flex items-center justify-center bg-mesh-light p-4 font-google">
+                <div className="liquid-glass-card rounded-[2rem] p-8 max-w-sm w-full text-center">
                     <p className="text-rose-600 font-medium">Invalid Reset Link</p>
                     <button onClick={() => navigate('/login')} className="mt-4 text-blue-600 font-bold hover:underline">Return to Login</button>
                 </div>
@@ -61,13 +61,13 @@ export default function ResetPasswordPage() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+        <div className="min-h-screen bg-mesh-light flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans font-google">
             <div className="w-full max-w-[400px] relative z-10 animate-in fade-in zoom-in duration-500">
                 <div className="flex justify-center mb-8">
                     <img src={Logo} alt="SalePilot" className="h-10 object-contain drop-shadow-sm" />
                 </div>
 
-                <div className="bg-white rounded-[2.5rem] shadow-2xl shadow-slate-200/50 p-8 pt-10 border border-white/50 backdrop-blur-sm">
+                <div className="liquid-glass-card rounded-[2rem] rounded-[2.5rem] -slate-200/50 p-8 pt-10 border border-white/50 backdrop-blur-sm">
                     <h2 className="text-xl font-bold text-slate-900 mb-6 text-center">Reset Password</h2>
 
                     <form onSubmit={handleSubmit} className="space-y-5">
@@ -120,7 +120,7 @@ export default function ResetPasswordPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 transform transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                            className="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 transform transition-all active:scale-[0.98] flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                         >
                             {isLoading ? (
                                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

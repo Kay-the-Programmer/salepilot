@@ -62,7 +62,7 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
                     </div>
                     <button
                         onClick={handleClear}
-                        className="p-1 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-500/20"
+                        className="p-1 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-500/20 active:scale-95 transition-all duration-300"
                         aria-label="Remove customer"
                     >
                         <XMarkIcon className="w-5 h-5" />
@@ -84,13 +84,13 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
                     />
 
                     {isDropdownOpen && filteredCustomers.length > 0 && (
-                        <div className="absolute z-10 w-full mt-1 bg-white dark:bg-slate-800 border border-gray-300 dark:border-white/10 rounded-md shadow-lg max-h-60 overflow-auto">
+                        <div className="liquid-glass-card rounded-[2rem] absolute z-10 w-full mt-1 dark:bg-slate-800 border border-gray-300 dark:border-white/10 max-h-60 overflow-auto">
                             <ul>
                                 {filteredCustomers.map(customer => (
                                     <li
                                         key={customer.id}
                                         onClick={() => handleSelect(customer)}
-                                        className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer transition-colors"
+                                        className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-500/10 cursor-pointer transition-colors active:scale-95 transition-all duration-300"
                                     >
                                         <p className="font-medium text-sm text-slate-900 dark:text-white">{customer.name}</p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">{customer.email}</p>

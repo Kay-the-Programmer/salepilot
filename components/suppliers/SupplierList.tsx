@@ -115,7 +115,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                                         e.stopPropagation();
                                         onEdit(supplier);
                                     }}
-                                    className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-gray-100 dark:border-slate-800"
+                                    className="px-3 py-1.5 text-xs font-medium text-gray-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-gray-100 dark:border-slate-800 active:scale-95 transition-all duration-300"
                                 >
                                     Edit
                                 </button>
@@ -124,7 +124,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                                         e.stopPropagation();
                                         handleDeleteClick(supplier.id);
                                     }}
-                                    className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-gray-100 dark:border-slate-800"
+                                    className="px-3 py-1.5 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-gray-100 dark:border-slate-800 active:scale-95 transition-all duration-300"
                                 >
                                     Delete
                                 </button>
@@ -169,7 +169,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                                             e.stopPropagation();
                                             onEdit(supplier);
                                         }}
-                                        className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
+                                        className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors active:scale-95 transition-all duration-300"
                                         title="Edit"
                                     >
                                         <div className="text-xs font-medium">Edit</div>
@@ -179,7 +179,7 @@ const SupplierList: React.FC<SupplierListProps> = ({
                                             e.stopPropagation();
                                             handleDeleteClick(supplier.id);
                                         }}
-                                        className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
+                                        className="p-1.5 rounded-lg text-gray-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors active:scale-95 transition-all duration-300"
                                         title="Delete"
                                     >
                                         <TrashIcon className="w-4 h-4" />

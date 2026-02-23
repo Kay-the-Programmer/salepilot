@@ -56,7 +56,7 @@ const NotificationDetailsModal: React.FC<NotificationDetailsModalProps> = ({
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-slate-800 p-6 text-left align-middle shadow-xl transition-all border border-gray-100 dark:border-slate-700">
+                            <Dialog.Panel className="liquid-glass-card rounded-[2rem] w-full max-w-md transform overflow-hidden dark:bg-slate-800 p-6 text-left align-middle transition-all border border-gray-100 dark:border-slate-700">
                                 <div className="flex justify-between items-start mb-4">
                                     <Dialog.Title
                                         as="h3"
@@ -100,7 +100,7 @@ const NotificationDetailsModal: React.FC<NotificationDetailsModalProps> = ({
                                 <div className="mt-8 flex justify-end gap-3">
                                     <button
                                         type="button"
-                                        className="inline-flex justify-center rounded-xl border border-transparent bg-gray-100 dark:bg-slate-700 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+                                        className="inline-flex justify-center rounded-xl border border-transparent bg-gray-100 dark:bg-slate-700 px-4 py-2 text-sm font-medium text-gray-900 dark:text-white hover:bg-gray-200 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors active:scale-95 transition-all duration-300"
                                         onClick={onClose}
                                     >
                                         Close
@@ -108,7 +108,7 @@ const NotificationDetailsModal: React.FC<NotificationDetailsModalProps> = ({
                                     {notification.link && (
                                         <button
                                             type="button"
-                                            className="inline-flex justify-center rounded-xl border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors shadow-lg shadow-indigo-500/20"
+                                            className="inline-flex justify-center rounded-xl border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors shadow-lg shadow-indigo-500/20 active:scale-95 transition-all duration-300"
                                             onClick={handleAction}
                                         >
                                             Take Action

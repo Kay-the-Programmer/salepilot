@@ -80,7 +80,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                         <div className="pt-2">
                             <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-800">
                                 <div>
-                                    <label htmlFor="isOnlineStoreEnabled" className="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer block">
+                                    <label htmlFor="isOnlineStoreEnabled" className="text-sm font-semibold text-slate-900 dark:text-slate-100 cursor-pointer block active:scale-95 transition-all duration-300">
                                         Online Store Status
                                     </label>
                                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
@@ -90,7 +90,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                                     </p>
                                 </div>
 
-                                <label className="relative cursor-pointer">
+                                <label className="relative cursor-pointer active:scale-95 transition-all duration-300">
                                     <input
                                         id="isOnlineStoreEnabled"
                                         name="isOnlineStoreEnabled"
@@ -100,7 +100,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                                         className="peer sr-only"
                                     />
                                     <div className="w-12 h-6 bg-slate-300 dark:bg-slate-700 rounded-full peer-checked:bg-gradient-to-r peer-checked:from-emerald-500 peer-checked:to-green-500 transition-colors duration-300 relative">
-                                        <div className="absolute w-5 h-5 bg-white rounded-full left-1 top-0.5 peer-checked:left-7 transition-all duration-300 shadow-sm"></div>
+                                        <div className="liquid-glass-card rounded-[2rem] absolute w-5 h-5 left-1 top-0.5 peer-checked:left-7 transition-all duration-300"></div>
                                     </div>
                                 </label>
                             </div>

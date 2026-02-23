@@ -98,7 +98,7 @@ export default function CustomerRequestTrackingPage() {
                     <p className="text-slate-500 mb-6">{error || "This request doesn't exist"}</p>
                     <button
                         onClick={() => navigate('/directory')}
-                        className="px-6 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors"
+                        className="px-6 py-2 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
                     >
                         Back to Marketplace
                     </button>
@@ -112,18 +112,18 @@ export default function CustomerRequestTrackingPage() {
     return (
         <div className="min-h-screen bg-white">
             {/* Header */}
-            <header className="border-b border-slate-100 sticky top-0 bg-white z-50">
+            <header className="liquid-glass-header border-b border-slate-100 sticky top-0 z-50">
                 <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-slate-50 rounded-lg transition-colors"
+                        className="p-2 hover:bg-slate-50 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                     >
                         <HiOutlineArrowLeft className="w-5 h-5 text-slate-600" />
                     </button>
                     <span className="text-sm font-medium text-slate-500">Request Tracking</span>
                     <button
                         onClick={fetchRequestDetails}
-                        className="p-2 hover:bg-slate-50 rounded-lg transition-colors"
+                        className="p-2 hover:bg-slate-50 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                     >
                         <HiOutlineArrowPath className={`w-5 h-5 text-slate-600 ${loading ? 'animate-spin' : ''}`} />
                     </button>
@@ -162,7 +162,7 @@ export default function CustomerRequestTrackingPage() {
                         <div className="mt-6">
                             <button
                                 onClick={() => setShowCancelConfirm(true)}
-                                className="px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-medium transition-colors border border-red-200"
+                                className="px-6 py-3 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg font-medium transition-colors border border-red-200 active:scale-95 transition-all duration-300"
                             >
                                 Cancel Request
                             </button>
@@ -198,7 +198,7 @@ export default function CustomerRequestTrackingPage() {
                             {acceptedOffer.storePhone && (
                                 <a
                                     href={`tel:${acceptedOffer.storePhone}`}
-                                    className="flex items-center gap-3 p-4 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    className="flex items-center gap-3 p-4 bg-white/10 rounded-lg hover:bg-white/20 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     <HiOutlinePhone className="w-5 h-5" />
                                     <div className="text-left">
@@ -210,7 +210,7 @@ export default function CustomerRequestTrackingPage() {
                             {acceptedOffer.storeEmail && (
                                 <a
                                     href={`mailto:${acceptedOffer.storeEmail}`}
-                                    className="flex items-center gap-3 p-4 bg-white/10 rounded-lg hover:bg-white/20 transition-colors"
+                                    className="flex items-center gap-3 p-4 bg-white/10 rounded-lg hover:bg-white/20 transition-colors active:scale-95 transition-all duration-300"
                                 >
                                     <HiOutlineEnvelope className="w-5 h-5" />
                                     <div className="text-left">
@@ -268,7 +268,7 @@ export default function CustomerRequestTrackingPage() {
                                             <button
                                                 onClick={() => handleRespond(offer.id, 'accept')}
                                                 disabled={!!respondingTo}
-                                                className="flex-1 px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50 font-medium"
+                                                className="flex-1 px-6 py-3 bg-slate-900 text-white rounded-lg hover:bg-slate-800 transition-colors disabled:opacity-50 font-medium active:scale-95 transition-all duration-300"
                                             >
                                                 {respondingTo === offer.id ? (
                                                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mx-auto"></div>
@@ -279,7 +279,7 @@ export default function CustomerRequestTrackingPage() {
                                             <button
                                                 onClick={() => handleRespond(offer.id, 'decline')}
                                                 disabled={!!respondingTo}
-                                                className="px-6 py-3 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 font-medium"
+                                                className="px-6 py-3 border border-slate-200 text-slate-600 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50 font-medium active:scale-95 transition-all duration-300"
                                             >
                                                 Decline
                                             </button>
@@ -303,7 +303,7 @@ export default function CustomerRequestTrackingPage() {
             {/* Cancel Confirmation Modal */}
             {showCancelConfirm && request && (
                 <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+                    <div className="liquid-glass-card rounded-[2rem] max-w-md w-full p-6">
                         <div className="text-center">
                             <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <HiOutlineXCircle className="w-6 h-6 text-red-600" />
@@ -316,14 +316,14 @@ export default function CustomerRequestTrackingPage() {
                                 <button
                                     onClick={() => setShowCancelConfirm(false)}
                                     disabled={isCancelling}
-                                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50"
+                                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors disabled:opacity-50 active:scale-95 transition-all duration-300"
                                 >
                                     Keep Request
                                 </button>
                                 <button
                                     onClick={handleCancelRequest}
                                     disabled={isCancelling}
-                                    className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 transition-all duration-300"
                                 >
                                     {isCancelling ? 'Cancelling...' : 'Yes, Cancel'}
                                 </button>

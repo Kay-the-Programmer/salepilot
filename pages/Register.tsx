@@ -87,7 +87,7 @@ const RegisterPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans transition-colors duration-500">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden font-sans transition-colors duration-500 font-google">
             {/* Ambient Background Elements */}
             <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-blue-100/40 dark:bg-blue-900/10 blur-[100px] pointer-events-none animate-pulse" />
             <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-100/40 dark:bg-indigo-900/10 blur-[100px] pointer-events-none" />
@@ -103,7 +103,7 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-md relative z-10 animate-in slide-in-from-bottom-6 duration-700">
-                <div glass-effect="" className="bg-white/80 dark:bg-slate-900/80 py-10 px-6 shadow-2xl shadow-slate-200/50 dark:shadow-black/50 border border-white/50 dark:border-slate-800/50 backdrop-blur-xl sm:rounded-[2.5rem] sm:px-12">
+                <div glass-effect="" className="liquid-glass-card rounded-[2rem] /80 dark:bg-slate-900/80 py-10 px-6 -slate-200/50 dark:-black/50 border border-white/50 dark:border-slate-800/50 backdrop-blur-xl sm:rounded-[2.5rem] sm:px-12">
                     {errors.submit && (
                         <div className="mb-6 bg-rose-50 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20 p-4 rounded-2xl text-center">
                             <p className="text-[11px] font-bold text-rose-500 dark:text-rose-400 uppercase tracking-wide">{errors.submit}</p>
@@ -156,7 +156,7 @@ const RegisterPage: React.FC = () => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full flex justify-center py-5 px-4 bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 dark:shadow-white/10 transform transition-all active:scale-[0.98] hover:translate-y-[-2px]"
+                                className="w-full flex justify-center py-5 px-4 bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[11px] shadow-xl shadow-slate-900/20 dark:shadow-white/10 transform transition-all active:scale-[0.98] hover:translate-y-[-2px] active:scale-95 transition-all duration-300"
                             >
                                 {isLoading ? (
                                     <div className="w-5 h-5 border-2 border-white/30 dark:border-slate-900/30 border-t-white dark:border-t-slate-900 rounded-full animate-spin" />

@@ -161,7 +161,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         return (
             <div
                 key={category.id}
-                className={`group border-b border-gray-100 dark:border-white/5 last:border-0 transition-colors ${isSelected ? 'bg-blue-50/50 dark:bg-blue-900/10' : 'bg-white dark:bg-slate-900 hover:bg-gray-50 dark:hover:bg-slate-800/50'
+                className={`group border-b border-gray-100 dark:border-white/5 last:border-0 transition-all duration-300 ease-out cursor-pointer active:scale-[0.99] ${isSelected ? 'bg-blue-600/10' : 'hover:bg-white/40 dark:hover:bg-slate-800/40'
                     }`}
                 onClick={() => onSelectCategory?.(category.id)}
             >
@@ -211,18 +211,18 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                         e.stopPropagation();
                                         onEdit(category);
                                     }}
-                                    className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded"
+                                    className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all active:scale-90 active:scale-95 transition-all duration-300"
                                 >
-                                    <PencilIcon className="w-4 h-4" />
+                                    <PencilIcon className="w-5 h-5" />
                                 </button>
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setCategoryToDelete(category);
                                     }}
-                                    className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                                    className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all active:scale-90 active:scale-95 transition-all duration-300"
                                 >
-                                    <TrashIcon className="w-4 h-4" />
+                                    <TrashIcon className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
@@ -307,7 +307,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                 e.stopPropagation();
                                 onEdit(category);
                             }}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors active:scale-95 transition-all duration-300"
                             title="Edit"
                         >
                             <PencilIcon className="w-4 h-4" />
@@ -317,7 +317,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                 e.stopPropagation();
                                 setCategoryToDelete(category);
                             }}
-                            className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors active:scale-95 transition-all duration-300"
                             title="Delete"
                         >
                             <TrashIcon className="w-4 h-4" />
@@ -331,32 +331,32 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     return (
         <div className="px-4 py-4 sm:px-6 lg:px-8">
             {/* Header stats */}
-            <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-white/10 shadow-sm relative overflow-hidden group">
-                    <div className="absolute right-0 top-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <FolderIcon className="w-16 h-16 text-blue-600 dark:text-blue-400" />
+            <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <div className="liquid-glass-card rounded-[2rem] p-6 border transition-all duration-300 hover:shadow-2xl relative overflow-hidden group">
+                    <div className="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                        <FolderIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Total Categories</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{categories.length}</p>
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Categories</p>
+                    <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 font-google tracking-tight">{categories.length}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-white/10 shadow-sm">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">Top-Level</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                <div className="liquid-glass-card rounded-[2rem] p-6 border transition-all duration-300 hover:shadow-2xl group">
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Top-Level</p>
+                    <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 font-google tracking-tight">
                         {categories.filter(c => !c.parentId).length}
                     </p>
                 </div>
-                <div className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-gray-200 dark:border-white/10 shadow-sm">
-                    <p className="text-sm font-medium text-gray-500 dark:text-gray-400">With Attributes</p>
-                    <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+                <div className="liquid-glass-card rounded-[2rem] p-6 border transition-all duration-300 hover:shadow-2xl group">
+                    <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">With Attributes</p>
+                    <p className="text-4xl font-black text-slate-900 dark:text-white mt-2 font-google tracking-tight">
                         {categories.filter(c => c.attributes.length > 0).length}
                     </p>
                 </div>
             </div>
 
             {/* Category list container */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-white/10 overflow-hidden">
+            <div className="liquid-glass rounded-[2rem] shadow-xl overflow-hidden border-none stagger-2">
                 {/* Desktop header */}
-                <div className="hidden sm:grid grid-cols-12 gap-4 bg-gray-50/80 dark:bg-slate-900/50 px-6 py-3 border-b border-gray-200 dark:border-white/10 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider backdrop-blur-sm">
+                <div className="hidden sm:grid grid-cols-12 gap-4 bg-slate-50/50 dark:bg-slate-900/50 px-8 py-4 border-b border-gray-200 dark:border-white/10 text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest backdrop-blur-xl">
                     <div className="col-span-6">Category Name</div>
                     <div className="col-span-3">Attributes</div>
                     <div className="col-span-2">Sub-categories</div>

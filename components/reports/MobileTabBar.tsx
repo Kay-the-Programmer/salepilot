@@ -8,7 +8,7 @@ interface MobileTabBarProps {
 
 // Native-like tab bar for mobile
 export const MobileTabBar: React.FC<MobileTabBarProps> = ({ tabs, activeTab, onChange }) => (
-    <div className="sticky top-0 bg-white border-b border-gray-200 z-10 px-1 py-2">
+    <div className="liquid-glass-header sticky top-0 border-b border-gray-200 z-10 px-1 py-2">
         <div className="flex overflow-x-auto scrollbar-hide -mx-1 px-1">
             {tabs.map((tab) => (
                 <button

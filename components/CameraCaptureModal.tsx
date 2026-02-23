@@ -70,7 +70,7 @@ const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({ isOpen, onClose
 
     return (
         <div className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div className="bg-white w-full rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
+            <div className="liquid-glass-card rounded-[2rem] w-full rounded-t-3xl sm: overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
                 <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-center border-b">
                     <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
                         Capture Image
@@ -92,7 +92,7 @@ const CameraCaptureModal: React.FC<CameraCaptureModalProps> = ({ isOpen, onClose
                         type="button"
                         onClick={handleCapture}
                         disabled={!!error}
-                        className="p-4 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
+                        className="p-4 rounded-full bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400 active:scale-95 transition-all duration-300"
                         aria-label="Capture photo"
                     >
                         <CameraIcon className="w-8 h-8" />

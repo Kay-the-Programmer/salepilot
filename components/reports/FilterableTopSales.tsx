@@ -159,8 +159,8 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
                 ) : items.length > 0 ? (
                     <div className="space-y-4">
                         {items.map((item, i) => (
-                            <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all group">
-                                <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors">
+                            <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all group active:scale-95 transition-all duration-300">
+                                <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors active:scale-95 transition-all duration-300">
                                     {typeFilter === 'categories' ? (
                                         <div className="text-xl">🏷️</div>
                                     ) : (

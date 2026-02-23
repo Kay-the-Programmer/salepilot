@@ -98,7 +98,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                             isSelected={isSelected}
                             onClick={() => onSelectSale(sale)}
                             image={
-                                <div className="w-full h-full bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 dark:group-hover:bg-blue-500/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                <div className="w-full h-full bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 dark:group-hover:bg-blue-500/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors active:scale-95 transition-all duration-300">
                                     #{sale.transactionId.slice(-4)}
                                 </div>
                             }
@@ -124,7 +124,7 @@ const SalesList: React.FC<SalesListProps> = ({ sales, onSelectSale, storeSetting
                             isSelected={isSelected}
                             onClick={() => onSelectSale(sale)}
                             leading={
-                                <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 dark:group-hover:bg-blue-500/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0">
+                                <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-gray-500 flex items-center justify-center font-bold text-xs group-hover:bg-blue-50 dark:group-hover:bg-blue-500/20 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors shrink-0 active:scale-95 transition-all duration-300">
                                     #{sale.transactionId.slice(-4)}
                                 </div>
                             }

@@ -58,7 +58,7 @@ export default function WhatsAppSettingsPage({ storeSettings, showSnackbar }: Wh
         <div className="p-6 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-800 mb-6">WhatsApp Integration Settings</h1>
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+            <div className="liquid-glass-card rounded-[2rem] border border-gray-200 p-6 space-y-6">
 
                 {/* Connection Status */}
                 <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
@@ -178,7 +178,7 @@ export default function WhatsAppSettingsPage({ storeSettings, showSnackbar }: Wh
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 active:scale-95 transition-all duration-300"
                     >
                         {isSaving ? 'Saving...' : 'Save Configuration'}
                     </button>

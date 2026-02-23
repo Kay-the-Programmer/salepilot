@@ -30,7 +30,7 @@ export default function SupplierOrdersPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-6">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Incoming Orders</h1>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="liquid-glass-card rounded-[2rem] border border-gray-200 overflow-hidden">
                 <table className="w-full text-left">
                     <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
@@ -45,7 +45,7 @@ export default function SupplierOrdersPage() {
                     </thead>
                     <tbody className="divide-y divide-gray-200">
                         {orders.map(order => (
-                            <tr key={order.transactionId} className="hover:bg-gray-50">
+                            <tr key={order.transactionId} className="hover:bg-gray-50 active:scale-95 transition-all duration-300">
                                 <td className="px-6 py-4 text-gray-900 font-medium">#{order.transactionId.slice(-6)}</td>
                                 <td className="px-6 py-4 text-gray-500">{new Date(order.timestamp).toLocaleDateString()}</td>
                                 <td className="px-6 py-4 text-gray-900">{order.customerDetails?.name || 'Guest'}</td>

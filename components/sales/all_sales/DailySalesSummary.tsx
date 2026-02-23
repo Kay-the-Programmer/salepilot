@@ -30,7 +30,7 @@ export default function DailySalesSummary({ dailySales, mobileView, storeSetting
 
             <div className="divide-y divide-slate-50 dark:divide-white/5">
                 {dailySales.map(day => (
-                    <div key={day.date} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors">
+                    <div key={day.date} className="hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors active:scale-95 transition-all duration-300">
                         <div className="p-5">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="font-bold text-slate-900 dark:text-white">
@@ -81,7 +81,7 @@ export default function DailySalesSummary({ dailySales, mobileView, storeSetting
                                 })}
                                 {day.items.length > 3 && (
                                     <div className="pt-2">
-                                        <button className="w-full py-2 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-600 dark:text-gray-400 transition-all border border-transparent hover:border-slate-200 dark:hover:border-white/10">
+                                        <button className="w-full py-2 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-600 dark:text-gray-400 transition-all border border-transparent hover:border-slate-200 dark:hover:border-white/10 active:scale-95 transition-all duration-300">
                                             + {day.items.length - 3} more products
                                         </button>
                                     </div>

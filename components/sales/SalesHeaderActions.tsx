@@ -83,7 +83,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                 ) : (
                     <button
                         onClick={() => setIsSearchExpanded(true)}
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
                         aria-label="Search products"
                     >
                         <MagnifyingGlassIcon className="w-[18px] h-[18px]" />
@@ -101,7 +101,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
             <button
                 id="pos-held-btn"
                 onClick={onOpenHeldSales}
-                className="relative flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="relative flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
                 aria-label={`View held sales${heldSalesCount > 0 ? ` (${heldSalesCount})` : ''}`}
             >
                 <ClockIcon className="w-[18px] h-[18px]" />
@@ -116,7 +116,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
             {/* Help */}
             <button
                 onClick={onTourStart}
-                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
                 aria-label="Launch help guide"
             >
                 <QuestionMarkCircleIcon className="w-[18px] h-[18px]" />

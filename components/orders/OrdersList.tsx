@@ -56,7 +56,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     isSelected={isSelected}
                     onClick={() => onOrderClick(order)}
                     image={
-                        <div className="w-full h-full bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                        <div className="w-full h-full bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors active:scale-95 transition-all duration-300">
                             #{order.transactionId.slice(-4)}
                         </div>
                     }
@@ -80,7 +80,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                     isSelected={isSelected}
                     onClick={() => onOrderClick(order)}
                     leading={
-                        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors shrink-0">
+                        <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 flex items-center justify-center font-bold text-xs group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors shrink-0 active:scale-95 transition-all duration-300">
                             #{order.transactionId.slice(-4)}
                         </div>
                     }

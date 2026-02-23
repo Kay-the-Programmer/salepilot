@@ -139,7 +139,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
     );
 
     const renderMobileSectionTabs = () => (
-        <div className="flex border-b border-gray-100 overflow-x-auto hide-scrollbar sticky top-0 bg-white z-20">
+        <div className="liquid-glass-header flex border-b border-gray-100 overflow-x-auto hide-scrollbar sticky top-0 z-20">
             {mobileSections.map(s => (
                 <button
                     key={s.id}
@@ -282,7 +282,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     type="button"
                                     onClick={handleGenerateDescription}
                                     disabled={isGenerating || !product.name || !product.categoryId}
-                                    className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                                    className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium active:scale-95 transition-all duration-300"
                                 >
                                     <SparklesIcon className="w-4 h-4" />
                                     {isGenerating ? 'Generating...' : 'Generate AI'}
@@ -393,7 +393,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <button
                                             type="button"
                                             onClick={handleGenerateBarcode}
-                                            className="flex-1 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 text-sm font-medium"
+                                            className="flex-1 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 text-sm font-medium active:scale-95 transition-all duration-300"
                                         >
                                             Generate from SKU
                                         </button>
@@ -401,7 +401,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             type="button"
                                             onClick={() => handleLookup()}
                                             disabled={isGenerating}
-                                            className="flex-1 py-2.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 text-sm font-medium disabled:opacity-50"
+                                            className="flex-1 py-2.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 text-sm font-medium disabled:opacity-50 active:scale-95 transition-all duration-300"
                                         >
                                             {isGenerating ? 'Searching...' : 'Lookup Info'}
                                         </button>
@@ -589,7 +589,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         unitOfMeasure: product.unitOfMeasure
                                     }]
                                 }))}
-                                className="w-full py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors"
+                                className="w-full py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 + Add Variant
                             </button>
@@ -625,7 +625,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors active:scale-95 transition-all duration-300"
                                         >
                                             <ArrowUpTrayIcon className="w-8 h-8 text-gray-400" />
                                             <span className="text-sm font-medium text-gray-600">Upload</span>
@@ -633,7 +633,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <button
                                             type="button"
                                             onClick={() => setIsCameraModalOpen(true)}
-                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors"
+                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors active:scale-95 transition-all duration-300"
                                         >
                                             <CameraIcon className="w-8 h-8 text-gray-400" />
                                             <span className="text-sm font-medium text-gray-600">Camera</span>
@@ -678,13 +678,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
     return (
         <>
-            <div className="fixed inset-0 z-[100] bg-black/50 dark:bg-black/70 flex items-end sm:items-center justify-center animate-fade-in">
-                <div glass-effect="" className="w-full rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-2xl">
+            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
+                <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md animate-fade-in" onClick={onClose} />
+                <div className="w-full liquid-glass rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl max-h-[95vh] overflow-hidden flex flex-col animate-glass-appear sm:max-w-4xl relative z-10 border-none">
                     {/* Header */}
-                    <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm z-20 border-b border-gray-200 dark:border-gray-700">
-                        <div className="px-4 py-3 sm:px-6 flex items-center justify-between">
+                    <div className="sticky top-0 liquid-glass-header z-20 shadow-none">
+                        <div className="px-6 py-4 sm:px-10 flex items-center justify-between">
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-google">
                                     {productToEdit ? 'Edit Product' : 'Add Product'}
                                 </h3>
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1 sm:hidden">
@@ -694,23 +695,23 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                                className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all duration-200 active:scale-90 active:scale-95 transition-all duration-300"
                             >
-                                <XMarkIcon className="w-6 h-6 text-gray-500 dark:text-gray-400" />
+                                <XMarkIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
 
                         {/* Mobile Tabs */}
-                        <div className="sm:hidden overflow-x-auto hide-scrollbar border-t border-gray-200 dark:border-gray-700">
-                            <div className="flex">
+                        <div className="sm:hidden overflow-x-auto scrollbar-hide p-2 bg-slate-50/50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-white/10">
+                            <div className="flex gap-2">
                                 {mobileSections.map((section) => (
                                     <button
                                         key={section.id}
                                         type="button"
                                         onClick={() => setActiveSection(section.id)}
-                                        className={`flex-shrink-0 px-4 py-3 font-medium text-sm border-b-2 transition-colors ${activeSection === section.id
-                                            ? 'border-blue-600 text-blue-600 dark:border-blue-400 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                                            : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                                        className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === section.id
+                                            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                                             }`}
                                     >
                                         {section.label}
@@ -775,7 +776,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             <button
                                                 type="button"
                                                 onClick={onAddCategory}
-                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
+                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                                 title="Add New Category"
                                             >
                                                 <span className="text-lg font-bold text-blue-600">+</span>
@@ -809,7 +810,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             <button
                                                 type="button"
                                                 onClick={() => setIsSupplierModalOpen(true)}
-                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
+                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                                 title="Add New Supplier"
                                             >
                                                 <span className="text-lg font-bold text-blue-600">+</span>
@@ -851,7 +852,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             type="button"
                                             onClick={handleGenerateDescription}
                                             disabled={isGenerating || !product.name || !product.categoryId}
-                                            className="absolute top-2 right-2 inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
+                                            className="absolute top-2 right-2 inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium active:scale-95 transition-all duration-300"
                                         >
                                             <SparklesIcon className="w-3 h-3" />
                                             {isGenerating ? 'Generating...' : 'Generate AI'}
@@ -947,7 +948,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsBarcodeScannerOpen(true)}
-                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50"
+                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                                     title="Scan Barcode"
                                                 >
                                                     📷
@@ -956,14 +957,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                     type="button"
                                                     onClick={() => handleLookup()}
                                                     disabled={isGenerating}
-                                                    className="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-sm font-medium"
+                                                    className="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-sm font-medium active:scale-95 transition-all duration-300"
                                                 >
                                                     {isGenerating ? '...' : 'Lookup'}
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={handleGenerateBarcode}
-                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm"
+                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm active:scale-95 transition-all duration-300"
                                                 >
                                                     Generate
                                                 </button>
@@ -1108,7 +1109,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                             ...prev,
                                                             variants: (prev.variants || []).filter((_, i) => i !== idx)
                                                         }))}
-                                                        className="px-2 py-1.5 text-sm rounded border border-red-300 text-red-700 hover:bg-red-50"
+                                                        className="px-2 py-1.5 text-sm rounded border border-red-300 text-red-700 hover:bg-red-50 active:scale-95 transition-all duration-300"
                                                     >
                                                         Remove
                                                     </button>
@@ -1158,7 +1159,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 unitOfMeasure: product.unitOfMeasure
                                             }]
                                         }))}
-                                        className="w-full py-2 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm"
+                                        className="w-full py-2 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm active:scale-95 transition-all duration-300"
                                     >
                                         + Add Variant
                                     </button>
@@ -1191,9 +1192,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 <button
                                                     type="button"
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group"
+                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group active:scale-95 transition-all duration-300"
                                                 >
-                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600">
+                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600 active:scale-95 transition-all duration-300">
                                                         <ArrowUpTrayIcon className="w-6 h-6" />
                                                     </div>
                                                     <span className="text-xs font-semibold">Upload</span>
@@ -1201,9 +1202,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsCameraModalOpen(true)}
-                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group"
+                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group active:scale-95 transition-all duration-300"
                                                 >
-                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600">
+                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600 active:scale-95 transition-all duration-300">
                                                         <CameraIcon className="w-6 h-6" />
                                                     </div>
                                                     <span className="text-xs font-semibold">Camera</span>

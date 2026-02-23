@@ -31,8 +31,8 @@ export default function VerifyEmailPage() {
     }, [token, navigate]);
 
     return (
-        <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans">
-            <div className="w-full max-w-sm bg-white rounded-3xl shadow-xl p-8 text-center space-y-6">
+        <div className="min-h-screen bg-mesh-light flex flex-col items-center justify-center p-4 font-sans font-google">
+            <div className="liquid-glass-card rounded-[2rem] w-full max-w-sm p-8 text-center space-y-6">
                 <div className="flex justify-center">
                     <img src={Logo} alt="SalePilot" className="h-10 object-contain" />
                 </div>
@@ -62,7 +62,7 @@ export default function VerifyEmailPage() {
                         <HiXCircle className="w-16 h-16 text-rose-500 mx-auto mb-4" />
                         <h2 className="text-xl font-bold text-slate-900">Verification Failed</h2>
                         <p className="text-rose-600 text-sm mt-2 bg-rose-50 p-3 rounded-lg">{errorMsg}</p>
-                        <button onClick={() => navigate('/login')} className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors">
+                        <button onClick={() => navigate('/login')} className="mt-8 w-full py-3 bg-slate-900 text-white rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300">
                             Back to Login
                         </button>
                     </div>

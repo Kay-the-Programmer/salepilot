@@ -47,7 +47,7 @@ export default function SalesHeader({
                     {/* Right side actions: Status Pills + Filter Toggle */}
                     <div className="flex items-center gap-4">
                         {/* Status Pills */}
-                        <div className="flex bg-gray-100/80 dark:bg-white/5 p-1 rounded-3xl shadow-sm border border-gray-100 dark:border-white/10 shrink-0">
+                        <div className="liquid-glass-card rounded-[2rem] flex bg-gray-100/80 dark:/5 p-1 border border-gray-100 dark:border-white/10 shrink-0">
                             {['', 'paid', 'unpaid', 'partially_paid'].map((status) => {
                                 const isActive = selectedStatus === status;
                                 const label = status === '' ? 'All' : status.replace('_', ' ').replace(/\b\w/g, c => c.toUpperCase());
@@ -88,7 +88,7 @@ export default function SalesHeader({
             </div>
 
             {/* Mobile Header */}
-            <div className="sticky top-0 z-30 bg-white dark:bg-slate-900 px-4 py-3 md:hidden">
+            <div className="liquid-glass-header sticky top-0 z-30 dark:bg-slate-900 px-4 py-3 md:hidden">
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">

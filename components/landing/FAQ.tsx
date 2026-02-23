@@ -66,9 +66,9 @@ const FAQ: React.FC = () => {
             >
               <button 
                 onClick={() => toggle(i)}
-                className="w-full flex justify-between items-center p-6 text-left group-hover:bg-white/5 transition-colors"
+                className="w-full flex justify-between items-center p-6 text-left group-hover:bg-white/5 transition-colors active:scale-95 transition-all duration-300"
               >
-                <span className="text-lg font-medium group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-cyan-400 group-hover:bg-clip-text">
+                <span className="text-lg font-medium group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-cyan-400 group-hover:bg-clip-text active:scale-95 transition-all duration-300">
                   {faq.question}
                 </span>
                 <span className={`transform transition-transform duration-300 ${openIndex === i ? 'rotate-45 text-cyan-400' : 'text-gray-400'}`}>

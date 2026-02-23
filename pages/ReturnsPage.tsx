@@ -279,7 +279,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => setIsScannerOpen(true)}
-                                        className="flex-1 sm:flex-none inline-flex items-center justify-center p-4 border border-gray-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all mobile-tap-target shadow-sm"
+                                        className="flex-1 sm:flex-none inline-flex items-center justify-center p-4 border border-gray-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all mobile-tap-target shadow-sm active:scale-95 transition-all duration-300"
                                         title="Scan Receipt"
                                     >
                                         <QrCodeIcon className="w-6 h-6 mr-2 sm:mr-0" />
@@ -287,7 +287,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                     </button>
                                     <button
                                         onClick={handleLookup}
-                                        className="flex-[2] sm:flex-none inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all mobile-tap-target uppercase tracking-widest text-[10px]"
+                                        className="flex-[2] sm:flex-none inline-flex items-center justify-center px-8 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 active:scale-[0.98] transition-all mobile-tap-target uppercase tracking-widest text-[10px] active:scale-95 transition-all duration-300"
                                     >
                                         Find Sale
                                     </button>
@@ -407,7 +407,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                 <div className="p-6 border-b border-gray-100 dark:border-slate-800 flex items-center justify-between bg-gray-50/50 dark:bg-slate-800/50">
                                     <div className="flex items-center gap-3">
                                         {isMobile && (
-                                            <button onClick={handleCloseDetailPane} className="p-2 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-xl transition-all">
+                                            <button onClick={handleCloseDetailPane} className="p-2 hover:bg-gray-200 dark:hover:bg-slate-700 rounded-xl transition-all active:scale-95 transition-all duration-300">
                                                 <ArrowLeftIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
                                             </button>
                                         )}
@@ -417,7 +417,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                         </div>
                                     </div>
                                     {!isMobile && (
-                                        <button onClick={handleCloseDetailPane} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500">
+                                        <button onClick={handleCloseDetailPane} className="p-2 hover:bg-gray-100 dark:hover:bg-slate-800 rounded-xl transition-all text-gray-400 dark:text-slate-500 active:scale-95 transition-all duration-300">
                                             <XMarkIcon className="w-5 h-5" />
                                         </button>
                                     )}
@@ -460,7 +460,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                         </div>
                                         <div className="space-y-4">
                                             {selectedReturnForDetails.returnedItems.map((item, index) => (
-                                                <div key={index} className="p-5 bg-white dark:bg-slate-800 rounded-2xl border border-gray-100 dark:border-slate-700 shadow-sm flex justify-between items-start gap-4">
+                                                <div key={index} className="liquid-glass-card rounded-[2rem] p-5 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 flex justify-between items-start gap-4">
                                                     <div className="flex-1">
                                                         <p className="font-black text-gray-900 dark:text-white uppercase tracking-tight text-sm leading-tight">{item.productName}</p>
                                                         <div className="flex flex-wrap gap-2 mt-3">
@@ -538,14 +538,14 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
 
                         {/* Left side: Item selection (8 cols on desktop) */}
                         <div className={`${isDesktop ? 'lg:col-span-8' : ''} space-y-6`}>
-                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white dark:bg-slate-900 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800">
+                            <div className="liquid-glass-card rounded-[2rem] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 dark:bg-slate-900 p-6 border border-gray-100 dark:border-slate-800">
                                 <div>
                                     <h3 className="text-xl font-bold text-gray-900 dark:text-white">Select Items to Return</h3>
                                     <p className="text-sm text-gray-500 dark:text-slate-400 mt-1">Adjust quantities for the items you want to refund.</p>
                                 </div>
                                 <button
                                     onClick={() => setIsReceiptModalOpen(true)}
-                                    className="inline-flex items-center gap-2 rounded-xl bg-gray-50 dark:bg-slate-800 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all border border-gray-200 dark:border-slate-700 mobile-tap-target"
+                                    className="inline-flex items-center gap-2 rounded-xl bg-gray-50 dark:bg-slate-800 px-4 py-2.5 text-sm font-bold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-700 transition-all border border-gray-200 dark:border-slate-700 mobile-tap-target active:scale-95 transition-all duration-300"
                                 >
                                     <PrinterIcon className="h-5 w-5 text-gray-500 dark:text-slate-400" />
                                     Print Receipt
@@ -615,7 +615,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                                         </select>
                                                     </div>
                                                     <div className="flex items-end">
-                                                        <label className="relative flex items-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-800 cursor-pointer w-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors">
+                                                        <label className="relative flex items-center p-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-slate-800 cursor-pointer w-full hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors active:scale-95 transition-all duration-300">
                                                             <input
                                                                 id={`stock-${item.productId}`}
                                                                 type="checkbox"
@@ -638,7 +638,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                         <div className={`${isDesktop ? 'lg:col-span-4' : ''}`}>
                             <div className={`${isDesktop ? 'sticky top-24' : ''} space-y-6`}>
                                 {/* Detailed Refund Calculations */}
-                                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 overflow-hidden">
+                                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-gray-100 dark:border-slate-800 overflow-hidden">
                                     <div className="p-6 bg-gray-50 dark:bg-slate-800/50 border-b border-gray-100 dark:border-slate-800">
                                         <h3 className="text-lg font-bold text-gray-900 dark:text-white">Refund Summary</h3>
                                     </div>
@@ -663,7 +663,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                 </div>
 
                                 {/* Refund Method Selection */}
-                                <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-gray-100 dark:border-slate-800 p-6">
+                                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-gray-100 dark:border-slate-800 p-6">
                                     <h4 className="text-sm font-black text-gray-400 dark:text-slate-500 uppercase tracking-widest mb-4">Refund Method</h4>
                                     <div className="space-y-3">
                                         <label className={`flex items-center p-3 rounded-xl border transition-all cursor-pointer ${refundMethod === 'original_method' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-800 hover:bg-gray-50 dark:hover:bg-slate-700'}`}>
@@ -710,7 +710,7 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                                     <button
                                         onClick={processReturn}
                                         disabled={refundTotal <= 0}
-                                        className="w-full mt-8 bg-blue-600 text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 active:scale-[0.98] transition-all uppercase tracking-widest text-sm"
+                                        className="w-full mt-8 bg-blue-600 text-white font-black py-4 px-6 rounded-2xl shadow-lg hover:bg-blue-700 disabled:bg-gray-200 disabled:text-gray-400 active:scale-[0.98] transition-all uppercase tracking-widest text-sm active:scale-95 transition-all duration-300"
                                     >
                                         Complete Refund
                                     </button>

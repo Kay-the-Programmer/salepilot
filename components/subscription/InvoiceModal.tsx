@@ -18,7 +18,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, invoice })
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-fade-in print:p-0 print:bg-white print:static">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 print:shadow-none print:border-none print:w-full print:max-w-none print:rounded-none">
+            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 w-full max-w-2xl rounded-[32px] overflow-hidden animate-slide-up border border-slate-100 dark:border-slate-800 print:-none print:border-none print:w-full print:max-w-none print:rounded-none">
                 {/* Header */}
                 <div className="relative p-8 border-b border-slate-100 dark:border-slate-800 print:border-b-2 print:border-slate-900">
                     <div className="flex justify-between items-start">
@@ -94,7 +94,7 @@ const InvoiceModal: React.FC<InvoiceModalProps> = ({ isOpen, onClose, invoice })
                     <div className="flex justify-between items-center print:hidden">
                         <Button
                             onClick={handlePrint}
-                            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors"
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-bold text-xs uppercase tracking-widest hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-95 transition-all duration-300"
                         >
                             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />

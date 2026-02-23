@@ -45,7 +45,7 @@ const FinalCTA: React.FC<FinalCTAProps> = ({ onStartTrial }) => {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="bg-white p-4 rounded-lg border border-gray-200 hover:border-[#008060] hover:shadow-md transition-all"
+                className="liquid-glass-card rounded-[2rem] p-4 border border-gray-200 hover:border-[#008060] hover: transition-all"
               >
                 <div className="text-2xl mb-2">
                   {getFeatureIcon(index)}

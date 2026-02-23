@@ -234,11 +234,11 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                     {/* Desktop Sideview */}
                     {selectedOrder && (
                         <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-slide-in-right">
-                            <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between bg-white dark:bg-slate-900 sticky top-0 z-20">
+                            <div className="liquid-glass-header px-6 py-2 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between dark:bg-slate-900 sticky top-0 z-20">
                                 <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Order Details</h2>
                                 <button
                                     onClick={() => setSelectedOrder(null)}
-                                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
+                                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95 transition-all duration-300"
                                 >
                                     <HiOutlineXMark className="w-5 h-5" />
                                 </button>
@@ -254,7 +254,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.paymentStatus !== 'paid' && (
                                         <button
                                             onClick={() => handleMarkAsPaid(selectedOrder)}
-                                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold  transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                         >
                                             <HiOutlineBanknotes className="w-5 h-5" />
                                             Record Payment
@@ -264,7 +264,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.fulfillmentStatus === 'pending' && (
                                         <button
                                             onClick={() => updateStatus(selectedOrder.transactionId, 'fulfilled')}
-                                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                         >
                                             <HiOutlineCheckCircle className="w-5 h-5" />
                                             Fulfill Order
@@ -274,7 +274,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.fulfillmentStatus === 'fulfilled' && (
                                         <button
                                             onClick={() => updateStatus(selectedOrder.transactionId, 'shipped')}
-                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-blue-600 dark:hover:bg-blue-700 transition-all flex items-center justify-center gap-2"
+                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-blue-600 dark:hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                                         >
                                             <HiOutlineTruck className="w-5 h-5" />
                                             Mark Shipped

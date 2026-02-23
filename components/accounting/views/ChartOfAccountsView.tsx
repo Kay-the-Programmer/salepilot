@@ -91,7 +91,7 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
             <div className="mb-4">
                 <button
                     onClick={() => toggleSection(type)}
-                    className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+                    className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300"
                 >
                     <div className="flex items-center gap-3">
                         <div className={`w-1.5 h-1.5 rounded-full ${type === 'asset' ? 'bg-blue-500' : type === 'liability' ? 'bg-red-500' : type === 'equity' ? 'bg-purple-500' : type === 'revenue' ? 'bg-emerald-500' : 'bg-amber-500'}`}></div>
@@ -147,16 +147,16 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                                         <div className="hidden md:flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                             <button
                                                 onClick={() => onAdjustAccount(account)}
-                                                className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors"
+                                                className="p-1.5 text-slate-400 hover:text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors active:scale-95 transition-all duration-300"
                                                 title="Adjust Balance"
                                             >
                                                 <ScaleIcon className="w-4 h-4" />
                                             </button>
-                                            <button onClick={() => handleEdit(account)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors">
+                                            <button onClick={() => handleEdit(account)} className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors active:scale-95 transition-all duration-300">
                                                 <PencilIcon className="w-4 h-4" />
                                             </button>
                                             {!account.subType && (
-                                                <button onClick={() => onDeleteAccount(account.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">
+                                                <button onClick={() => onDeleteAccount(account.id)} className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors active:scale-95 transition-all duration-300">
                                                     <TrashIcon className="w-4 h-4" />
                                                 </button>
                                             )}
@@ -166,7 +166,7 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                                         <div className="md:hidden relative">
                                             <button
                                                 onClick={() => setActiveActionMenu(activeActionMenu === account.id ? null : account.id)}
-                                                className="p-1.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded transition-colors"
+                                                className="p-1.5 text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded transition-colors active:scale-95 transition-all duration-300"
                                             >
                                                 <EllipsisVerticalIcon className="w-5 h-5" />
                                             </button>
@@ -174,17 +174,17 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                                             {activeActionMenu === account.id && (
                                                 <>
                                                     <div className="fixed inset-0 z-30" onClick={() => setActiveActionMenu(null)}></div>
-                                                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-xl z-40 py-1">
+                                                    <div className="liquid-glass-card rounded-[2rem] absolute right-0 mt-2 w-48 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-40 py-1">
                                                         <button
                                                             onClick={() => { onAdjustAccount(account); setActiveActionMenu(null); }}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all duration-300"
                                                         >
                                                             <ScaleIcon className="w-4 h-4" />
                                                             Adjust Balance
                                                         </button>
                                                         <button
                                                             onClick={() => handleEdit(account)}
-                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                                            className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all duration-300"
                                                         >
                                                             <PencilIcon className="w-4 h-4" />
                                                             Edit Account
@@ -192,7 +192,7 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                                                         {!account.subType && (
                                                             <button
                                                                 onClick={() => { onDeleteAccount(account.id); setActiveActionMenu(null); }}
-                                                                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                                                className="w-full flex items-center gap-2 px-4 py-2 text-xs font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 active:scale-95 transition-all duration-300"
                                                             >
                                                                 <TrashIcon className="w-4 h-4" />
                                                                 Delete Account
@@ -221,7 +221,7 @@ const ChartOfAccountsView: React.FC<ChartOfAccountsViewProps> = ({
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-colors active:scale-95 transition-all duration-300"
                 >
                     <PlusIcon className="w-4 h-4" />
                     New Account

@@ -124,7 +124,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
         <div className="px-4 py-4 sm:px-6 lg:px-8">
             {/* Role Summary Cards */}
             <div className="mb-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 border border-gray-200">
                     <div className="flex items-center">
                         <div className="p-2 bg-red-100 rounded-lg mr-3">
                             <ShieldCheckIcon className="w-5 h-5 text-red-600" />
@@ -135,7 +135,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 border border-gray-200">
                     <div className="flex items-center">
                         <div className="p-2 bg-blue-100 rounded-lg mr-3">
                             <UserGroupIcon className="w-5 h-5 text-blue-600" />
@@ -146,7 +146,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
                         </div>
                     </div>
                 </div>
-                <div className="bg-white rounded-2xl p-4 border border-gray-200 shadow-sm">
+                <div className="liquid-glass-card rounded-[2rem] p-4 border border-gray-200">
                     <div className="flex items-center">
                         <div className="p-2 bg-yellow-100 rounded-lg mr-3">
                             <BuildingOfficeIcon className="w-5 h-5 text-yellow-600" />
@@ -176,7 +176,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
             </div>
 
             {/* Users List */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="liquid-glass-card rounded-[2rem] border border-gray-200 overflow-hidden">
                 {users.map((user) => (
                     <div 
                         key={user.id} 
@@ -213,7 +213,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
                                 <div className="flex items-center gap-2">
                                     <button
                                         onClick={(e) => handleActionMenu(e, user.id)}
-                                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                                        className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg active:scale-95 transition-all duration-300"
                                         aria-label="More actions"
                                     >
                                         <EllipsisVerticalIcon className="w-5 h-5" />
@@ -232,7 +232,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
                                                 onEdit(user);
                                                 setShowActionsForUser(null);
                                             }}
-                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors"
+                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-xl hover:bg-blue-100 transition-colors active:scale-95 transition-all duration-300"
                                         >
                                             <PencilIcon className="w-4 h-4" />
                                             <span className="text-sm font-medium">Edit</span>
@@ -243,7 +243,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
                                                 onDelete(user.id);
                                                 setShowActionsForUser(null);
                                             }}
-                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors"
+                                            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-red-50 text-red-700 rounded-xl hover:bg-red-100 transition-colors active:scale-95 transition-all duration-300"
                                         >
                                             <TrashIcon className="w-4 h-4" />
                                             <span className="text-sm font-medium">Delete</span>
@@ -285,7 +285,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
                                             e.stopPropagation();
                                             onEdit(user);
                                         }}
-                                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                                        className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                         aria-label="Edit user"
                                     >
                                         <PencilIcon className="w-5 h-5" />
@@ -295,7 +295,7 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
                                             e.stopPropagation();
                                             onDelete(user.id);
                                         }}
-                                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors active:scale-95 transition-all duration-300"
                                         aria-label="Delete user"
                                     >
                                         <TrashIcon className="w-5 h-5" />

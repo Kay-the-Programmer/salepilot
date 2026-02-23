@@ -48,7 +48,7 @@ const DashboardQuickActions: React.FC = () => {
                 <button
                     key={action.id}
                     onClick={action.action}
-                    className="relative group w-full bg-slate-900/40 hover:bg-slate-800/60 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-left transition-all duration-300 backdrop-blur-md overflow-hidden"
+                    className="relative group w-full bg-slate-900/40 hover:bg-slate-800/60 border border-slate-800 hover:border-slate-600 rounded-2xl p-5 text-left transition-all duration-300 backdrop-blur-md overflow-hidden active:scale-95 transition-all duration-300"
                 >
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000"></div>
 

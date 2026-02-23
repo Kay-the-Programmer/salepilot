@@ -47,7 +47,7 @@ const ProductPreview: React.FC = () => {
               {features.map((feature, index) => (
                 <div 
                   key={index}
-                  className="flex items-start space-x-4 p-4 bg-white rounded-xl border border-gray-200 hover:shadow-md transition-all duration-300"
+                  className="liquid-glass-card rounded-[2rem] flex items-start space-x-4 p-4 border border-gray-200 hover: transition-all duration-300"
                 >
                   <div className="text-2xl">{feature.icon}</div>
                   <div>
@@ -124,7 +124,7 @@ const ProductPreview: React.FC = () => {
               </div>
 
               {/* Floating Elements */}
-              <div className="absolute -bottom-6 -right-6 bg-white p-4 rounded-xl shadow-xl border animate-bounce-slow">
+              <div className="liquid-glass-card rounded-[2rem] absolute -bottom-6 -right-6 p-4 border animate-bounce-slow">
                 <div className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center">
                     <span className="text-white text-xl">✓</span>

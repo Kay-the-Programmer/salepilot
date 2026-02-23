@@ -75,7 +75,7 @@ const ProductItem: React.FC<{ product: Product; storeSettings: StoreSettings }> 
     const isLowStock = numericStock <= (product.reorderPoint || 10);
 
     return (
-        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 last:border-b-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group">
+        <div className="px-6 py-4 border-b border-slate-100 dark:border-slate-800/50 last:border-b-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300">
             <div className="flex items-start gap-4">
                 {/* Product Image */}
                 <div className="flex-shrink-0">

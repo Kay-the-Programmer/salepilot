@@ -92,7 +92,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
             />
 
             {/* Modal Container */}
-            <div className="relative bg-white dark:bg-slate-900 w-full sm:max-w-6xl max-h-[96vh] sm:h-[90vh] sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden flex flex-col animate-slide-up border border-slate-100 dark:border-slate-800">
+            <div className="liquid-glass-card rounded-[2rem] relative dark:bg-slate-900 w-full sm:max-w-6xl max-h-[96vh] sm:h-[90vh] sm: rounded-t-3xl overflow-hidden flex flex-col animate-slide-up border border-slate-100 dark:border-slate-800">
 
                 {/* Header */}
                 <div className="px-6 py-5 sm:px-8 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-gradient-to-r from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-900/50 sticky top-0 z-20">
@@ -110,15 +110,15 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         </div>
                     </div>
                     <div className="flex items-center gap-1">
-                        <button className="hidden sm:flex items-center justify-center p-2.5 text-slate-500 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-200 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800/30" title="Print Order">
+                        <button className="hidden sm:flex items-center justify-center p-2.5 text-slate-500 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-xl hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all duration-200 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800/30 active:scale-95 transition-all duration-300" title="Print Order">
                             <HiOutlinePrinter className="w-5 h-5" />
                         </button>
-                        <button className="hidden sm:flex items-center justify-center p-2.5 text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 border border-transparent hover:border-slate-200 dark:hover:border-slate-700">
+                        <button className="hidden sm:flex items-center justify-center p-2.5 text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95 transition-all duration-300">
                             <HiOutlineEllipsisVertical className="w-5 h-5" />
                         </button>
                         <button
                             onClick={onClose}
-                            className="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm ml-2"
+                            className="p-2.5 rounded-xl bg-white dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm ml-2 active:scale-95 transition-all duration-300"
                         >
                             <HiOutlineXMark className="w-5 h-5" />
                         </button>

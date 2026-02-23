@@ -200,7 +200,7 @@ const LocationPicker = ({ initialLat, initialLng, onLocationSelect }: LocationPi
                 </form>
                 <button
                     onClick={handleLocateMe}
-                    className="h-12 w-12 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center shadow-lg text-slate-600 hover:text-indigo-600 hover:bg-white transition-all ring-1 ring-slate-200 pointer-events-auto"
+                    className="h-12 w-12 bg-white/95 backdrop-blur rounded-xl flex items-center justify-center shadow-lg text-slate-600 hover:text-indigo-600 hover:bg-white transition-all ring-1 ring-slate-200 pointer-events-auto active:scale-95 transition-all duration-300"
                     title="Locate Me"
                 >
                     {
@@ -224,7 +224,7 @@ const LocationPicker = ({ initialLat, initialLng, onLocationSelect }: LocationPi
 
             {/* Bottom Address Card */}
             <div className="absolute bottom-6 left-6 right-6 z-[400] pointer-events-none">
-                <div className="bg-white/95 backdrop-blur rounded-xl p-4 shadow-xl border border-slate-100 pointer-events-auto transition-all animate-in slide-in-from-bottom-5 fade-in duration-300">
+                <div className="liquid-glass-card rounded-[2rem] /95 backdrop-blur p-4 border border-slate-100 pointer-events-auto transition-all animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div className="flex items-start gap-4">
                         <div className="flex-shrink-0 w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
                             <HiMapPin className="w-5 h-5 text-indigo-600" />

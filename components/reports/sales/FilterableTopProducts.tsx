@@ -67,7 +67,7 @@ export const FilterableTopProducts: React.FC<FilterableTopProductsProps> = ({ st
                 ) : products.length > 0 ? (
                     <div className="space-y-3">
                         {products.slice(0, 10).map((p: any, i: number) => (
-                            <div key={i} className="flex items-center justify-between p-1  dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors group">
+                            <div key={i} className="flex items-center justify-between p-1 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5 rounded-xl transition-colors group active:scale-95 transition-all duration-300">
                                 <div className="flex items-center gap-3 overflow-hidden">
                                     <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center flex-shrink-0 text-xs font-black text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 group-hover:border-blue-500/30 transition-colors">
                                         #{i + 1}

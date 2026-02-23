@@ -119,7 +119,7 @@ export default function Header({
                                     ) : (
                                         <button
                                             onClick={() => setIsSearchActive(true)}
-                                            className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100/80 dark:hover:bg-slate-800 transition-colors"
+                                            className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100/80 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
                                             aria-label="Search"
                                         >
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

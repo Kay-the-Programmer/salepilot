@@ -66,7 +66,7 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
 
     return createPortal(
         <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in p-4">
-            <div className="glass-effect !bg-white/95 dark:!bg-slate-900/95 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-up">
+            <div className="liquid-glass-card rounded-[2rem] glass-effect !/95 dark:!bg-slate-900/95 w-full max-w-4xl overflow-hidden flex flex-col animate-scale-up">
                 <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -75,7 +75,7 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
                             </div>
                             <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Customer Statement</h3>
                         </div>
-                        <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500 dark:text-slate-400">
+                        <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500 dark:text-slate-400 active:scale-95 transition-all duration-300">
                             <XMarkIcon className="w-5 h-5" />
                         </button>
                     </div>
@@ -115,7 +115,7 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
                             </thead>
                             <tbody className="bg-white dark:bg-slate-900/50 divide-y divide-slate-200 dark:divide-slate-800">
                                 {finalLines.map((line, index) => (
-                                    <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                                    <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:scale-95 transition-all duration-300">
                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400 font-medium">
                                             {new Date(line.date).toLocaleDateString()}
                                         </td>
@@ -145,14 +145,14 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
                 <div className="px-6 py-5 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex justify-end gap-3">
                     <button
                         onClick={handlePrint}
-                        className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 shadow-sm"
+                        className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 shadow-sm active:scale-95 transition-all duration-300"
                     >
                         <PrinterIcon className="w-5 h-5" />
                         Print Statement
                     </button>
                     <button
                         onClick={onClose}
-                        className="px-8 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-[0.98]"
+                        className="px-8 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-[0.98] active:scale-95 transition-all duration-300"
                     >
                         Close Portal
                     </button>

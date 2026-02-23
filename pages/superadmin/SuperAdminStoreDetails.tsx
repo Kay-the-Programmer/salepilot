@@ -91,13 +91,13 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
     if (!store) return <div className="p-8 text-center text-gray-500">Store not found</div>;
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8 transition-colors duration-300">
+        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 p-4 sm:p-6 lg:p-8 transition-colors duration-300 font-google">
             <div className="max-w-4xl mx-auto space-y-6">
                 {/* Header */}
                 <div className="flex items-center gap-4">
                     <button
                         onClick={() => navigate('/superadmin/stores')}
-                        className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-gray-500 dark:text-slate-400 border border-transparent hover:border-gray-200 dark:hover:border-slate-700"
+                        className="p-2 hover:bg-white dark:hover:bg-slate-800 rounded-lg transition-colors text-gray-500 dark:text-slate-400 border border-transparent hover:border-gray-200 dark:hover:border-slate-700 active:scale-95 transition-all duration-300"
                     >
                         <ArrowLeftIcon className="w-5 h-5" />
                     </button>
@@ -113,7 +113,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Main Info */}
                     <div className="md:col-span-2 space-y-6">
-                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
                             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <BuildingStorefrontIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                                 Store Information
@@ -142,7 +142,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
                             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                                 <EnvelopeIcon className="w-5 h-5 text-gray-400 dark:text-slate-500" />
                                 Send Notification
@@ -173,7 +173,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                                     <button
                                         type="submit"
                                         disabled={sending}
-                                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-70 flex items-center gap-2"
+                                        className="bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700 transition-colors disabled:opacity-70 flex items-center gap-2 active:scale-95 transition-all duration-300"
                                     >
                                         <EnvelopeIcon className="w-4 h-4" />
                                         {sending ? 'Sending...' : 'Send Notification'}
@@ -185,7 +185,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
 
                     {/* Sidebar Stats */}
                     <div className="space-y-6">
-                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
                             <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Subscription</h2>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">
@@ -207,7 +207,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                             </div>
                         </div>
 
-                        <div className="bg-white dark:bg-slate-900/50 rounded-xl shadow-sm border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
+                        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 p-6 backdrop-blur-sm">
                             <h2 className="text-sm font-bold text-gray-900 dark:text-white mb-4 uppercase tracking-wider">Usage Stats</h2>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between">

@@ -16,7 +16,7 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({
     storeSettings,
 }) => {
     return (
-        <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-white/10">
+        <div className="liquid-glass-card rounded-[2rem] lg:col-span-2 dark:bg-slate-800 p-5 border border-slate-100 dark:border-white/10">
             <div className="flex items-center justify-between mb-4">
                 <h3 className="font-bold text-slate-900 dark:text-white text-lg">Recent Orders</h3>
                 <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg">
@@ -49,7 +49,7 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({
                             ?.filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab)
                             .slice(0, 5)
                             .map((order: any, i: number) => (
-                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                                <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors active:scale-95 transition-all duration-300">
                                     <td className="py-3 text-sm text-slate-600 dark:text-gray-400 font-medium truncate max-w-[100px]" title={order.transactionId}>
                                         #{order.transactionId.substring(0, 8)}...
                                     </td>

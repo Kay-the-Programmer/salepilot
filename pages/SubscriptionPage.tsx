@@ -278,7 +278,7 @@ const SubscriptionPage: React.FC = () => {
                                 onClick={() => navigate(-1)}
                                 className="mb-6 md:mb-8 inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors group"
                             >
-                                <div className="p-2 rounded-full bg-white dark:bg-slate-800 shadow-sm mr-3 group-hover:scale-110 transition-transform">
+                                <div className="liquid-glass-card rounded-[2rem] p-2 dark:bg-slate-800 mr-3 group-hover:scale-110 transition-transform">
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                     </svg>
