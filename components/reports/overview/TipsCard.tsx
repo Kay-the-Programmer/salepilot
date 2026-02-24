@@ -176,24 +176,14 @@ export const TipsCard: React.FC<TipsCardProps> = ({
                 </button>
             </div>
 
-            {/* Pagination Dots */}
-            <div className="absolute bottom-7 right-7 flex gap-1.5 z-10">
-                {tips.map((_, idx) => (
-                    <div
-                        key={idx}
-                        className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentTipIndex ? 'w-6 bg-blue-600 dark:bg-blue-400' : 'w-1.5 bg-slate-200 dark:bg-slate-700'}`}
-                    />
-                ))}
-            </div>
-
             {/* Background decorative elements */}
             <div className={`absolute -bottom-24 -right-24 w-64 h-64 blur-[100px] rounded-full opacity-20 transition-all duration-1000 ${currentTip.color === 'blue' ? 'bg-blue-500' :
-                    currentTip.color === 'indigo' ? 'bg-indigo-500' :
-                        currentTip.color === 'emerald' ? 'bg-emerald-500' :
-                            currentTip.color === 'rose' ? 'bg-rose-500' :
-                                currentTip.color === 'amber' ? 'bg-amber-500' :
-                                    currentTip.color === 'violet' ? 'bg-violet-500' :
-                                        'bg-fuchsia-500'
+                currentTip.color === 'indigo' ? 'bg-indigo-500' :
+                    currentTip.color === 'emerald' ? 'bg-emerald-500' :
+                        currentTip.color === 'rose' ? 'bg-rose-500' :
+                            currentTip.color === 'amber' ? 'bg-amber-500' :
+                                currentTip.color === 'violet' ? 'bg-violet-500' :
+                                    'bg-fuchsia-500'
                 }`}></div>
 
             <style>{`
