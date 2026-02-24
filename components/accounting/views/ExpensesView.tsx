@@ -118,9 +118,9 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({
                             </div>
                             <button
                                 onClick={onOpenForm}
-                                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition-colors active:scale-95 transition-all duration-300"
+                                className="flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-black text-sm rounded-[1.5rem] shadow-lg shadow-red-500/20 active:scale-95 transition-all duration-300"
                             >
-                                <PlusIcon className="w-4 h-4" />
+                                <PlusIcon className="w-5 h-5" />
                                 Record Expense
                             </button>
                         </div>

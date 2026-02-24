@@ -45,9 +45,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                 {/* Bento Row 1: Finance Stats & Tips */}
                 <div className="lg:col-span-1 h-full">
-                    <InteractiveOperatingExpensesCard storeSettings={storeSettings} />
-                </div>
-                <div className="lg:col-span-1 h-full">
                     <TipsCard
                         hasProducts={reportData.inventory.totalProducts > 0}
                         hasExpenses={reportData.sales.totalOperatingExpenses > 0}
@@ -55,6 +52,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         hasCustomers={reportData.customers.totalCustomers > 0}
                         hasSales={reportData.sales.totalRevenue > 0}
                     />
+                </div>
+                <div className="lg:col-span-1 h-full">
+                    <InteractiveOperatingExpensesCard storeSettings={storeSettings} />
                 </div>
                 <div className="lg:col-span-1 h-full">
                     <InteractiveNetProfitCard storeSettings={storeSettings} />
