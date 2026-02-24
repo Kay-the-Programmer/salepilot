@@ -10,7 +10,7 @@ interface StatSparklineProps {
 export const StatSparkline: React.FC<StatSparklineProps> = ({ data, color = '#10b981', height = 60 }) => {
     return (
         <div style={{ width: '100%', height: height }}>
-            <ResponsiveContainer>
+            <ResponsiveContainer minWidth={0} minHeight={0}>
                 <AreaChart data={data}>
                     <defs>
                         <linearGradient id={`gradient-${color}`} x1="0" y1="0" x2="0" y2="1">

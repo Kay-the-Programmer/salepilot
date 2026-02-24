@@ -16,7 +16,7 @@ export const SalesChannelChart: React.FC<SalesChannelChartProps> = ({ online, in
 
     return (
         <div className="relative w-full h-[250px] flex items-center justify-center">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <PieChart>
                     <Pie
                         data={data}

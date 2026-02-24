@@ -39,7 +39,7 @@ export const InventoryValueComparison: React.FC<InventoryValueComparisonProps> =
 
             {/* Chart Area */}
             <div className="flex-1 w-full min-h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                     <BarChart data={data} margin={{ top: 20, right: 30, left: 30, bottom: 5 }}>
                         <XAxis
                             dataKey="name"

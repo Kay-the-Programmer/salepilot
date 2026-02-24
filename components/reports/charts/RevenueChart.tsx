@@ -25,7 +25,7 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
 }) => {
     return (
         <div className="w-full" style={{ height }}>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                 <ComposedChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />
                     <XAxis
