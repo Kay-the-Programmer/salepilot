@@ -3,6 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import SparklesIcon from '../../icons/SparklesIcon';
 import ArchiveBoxIcon from '../../icons/ArchiveBoxIcon';
 import BanknotesIcon from '../../icons/BanknotesIcon';
+import TruckIcon from '../../icons/TruckIcon';
+import UsersIcon from '../../icons/UsersIcon';
+import ShoppingCartIcon from '../../icons/ShoppingCartIcon';
+import CpuChipIcon from '../../icons/CpuChipIcon';
+import BuildingStorefrontIcon from '../../icons/BuildingStorefrontIcon';
 import ArrowRightIcon from '../../icons/ArrowRightIcon';
 
 interface Tip {
@@ -15,7 +20,21 @@ interface Tip {
     color: string;
 }
 
-export const TipsCard: React.FC = () => {
+interface TipsCardProps {
+    hasProducts?: boolean;
+    hasExpenses?: boolean;
+    hasSuppliers?: boolean;
+    hasCustomers?: boolean;
+    hasSales?: boolean;
+}
+
+export const TipsCard: React.FC<TipsCardProps> = ({
+    hasProducts,
+    hasExpenses,
+    hasSuppliers,
+    hasCustomers,
+    hasSales
+}) => {
     const navigate = useNavigate();
     const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
@@ -27,7 +46,8 @@ export const TipsCard: React.FC = () => {
             icon: <SparklesIcon className="w-5 h-5" />,
             actionLabel: "View Guide",
             path: "/user-guide",
-            color: "blue"
+            color: "blue",
+            show: true
         },
         {
             id: 2,
@@ -36,18 +56,70 @@ export const TipsCard: React.FC = () => {
             icon: <ArchiveBoxIcon className="w-5 h-5" />,
             actionLabel: "Add Product",
             path: "/inventory",
-            color: "indigo"
+            color: "indigo",
+            show: !hasProducts
         },
         {
             id: 3,
+            title: "Add Your First Supplier",
+            description: "Keep track of where you source your items.",
+            icon: <TruckIcon className="w-5 h-5" />,
+            actionLabel: "Add Supplier",
+            path: "/suppliers",
+            color: "emerald",
+            show: !hasSuppliers
+        },
+        {
+            id: 4,
             title: "Track Your Expenses",
             description: "Keep your finances in check by recording your operating costs.",
             icon: <BanknotesIcon className="w-5 h-5" />,
             actionLabel: "Add Expense",
             path: "/accounting#expenses",
-            color: "emerald"
+            color: "rose",
+            show: !hasExpenses
+        },
+        {
+            id: 5,
+            title: "Register Your Customers",
+            description: "Build client relationships and track loyalty.",
+            icon: <UsersIcon className="w-5 h-5" />,
+            actionLabel: "Add Customer",
+            path: "/customers",
+            color: "amber",
+            show: !hasCustomers
+        },
+        {
+            id: 6,
+            title: "Try POS Terminal",
+            description: "Ready to make a sale? Use our intuitive POS interface.",
+            icon: <ShoppingCartIcon className="w-5 h-5" />,
+            actionLabel: "Go to POS",
+            path: "/sales",
+            color: "violet",
+            show: !hasSales
+        },
+        {
+            id: 7,
+            title: "AI Business Assistant",
+            description: "Get smart insights and help from your AI assistant.",
+            icon: <CpuChipIcon className="w-5 h-5" />,
+            actionLabel: "Chat Now",
+            path: "/quick-view",
+            color: "indigo",
+            show: true
+        },
+        {
+            id: 8,
+            title: "Explore Marketplace",
+            description: "Discover other stores and connect with suppliers.",
+            icon: <BuildingStorefrontIcon className="w-5 h-5" />,
+            actionLabel: "Visit Marketplace",
+            path: "/directory",
+            color: "fuchsia",
+            show: true
         }
-    ];
+    ].filter(tip => (tip as any).show) as Tip[];
 
     useEffect(() => {
         const interval = setInterval(() => {
@@ -63,6 +135,10 @@ export const TipsCard: React.FC = () => {
             case 'blue': return 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-500/20';
             case 'indigo': return 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20';
             case 'emerald': return 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20';
+            case 'rose': return 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-500/20';
+            case 'amber': return 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-500/20';
+            case 'violet': return 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-100 dark:border-violet-500/20';
+            case 'fuchsia': return 'bg-fuchsia-50 dark:bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-100 dark:border-fuchsia-500/20';
             default: return 'bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border-slate-100 dark:border-white/5';
         }
     };
@@ -111,7 +187,14 @@ export const TipsCard: React.FC = () => {
             </div>
 
             {/* Background decorative elements */}
-            <div className={`absolute -bottom-24 -right-24 w-64 h-64 blur-[100px] rounded-full opacity-20 transition-all duration-1000 ${currentTip.color === 'blue' ? 'bg-blue-500' : currentTip.color === 'indigo' ? 'bg-indigo-500' : 'bg-emerald-500'}`}></div>
+            <div className={`absolute -bottom-24 -right-24 w-64 h-64 blur-[100px] rounded-full opacity-20 transition-all duration-1000 ${currentTip.color === 'blue' ? 'bg-blue-500' :
+                    currentTip.color === 'indigo' ? 'bg-indigo-500' :
+                        currentTip.color === 'emerald' ? 'bg-emerald-500' :
+                            currentTip.color === 'rose' ? 'bg-rose-500' :
+                                currentTip.color === 'amber' ? 'bg-amber-500' :
+                                    currentTip.color === 'violet' ? 'bg-violet-500' :
+                                        'bg-fuchsia-500'
+                }`}></div>
 
             <style>{`
                 @keyframes fade-in-right {

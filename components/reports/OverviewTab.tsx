@@ -48,7 +48,13 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                     <InteractiveOperatingExpensesCard storeSettings={storeSettings} />
                 </div>
                 <div className="lg:col-span-1 h-full">
-                    <TipsCard />
+                    <TipsCard
+                        hasProducts={reportData.inventory.totalProducts > 0}
+                        hasExpenses={reportData.sales.totalOperatingExpenses > 0}
+                        hasSuppliers={reportData.customers.totalSuppliers > 0}
+                        hasCustomers={reportData.customers.totalCustomers > 0}
+                        hasSales={reportData.sales.totalRevenue > 0}
+                    />
                 </div>
                 <div className="lg:col-span-1 h-full">
                     <InteractiveNetProfitCard storeSettings={storeSettings} />

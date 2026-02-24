@@ -63,14 +63,8 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
                 setOperatingExpenses(response.sales?.totalOperatingExpenses || 0);
                 setTrend(trendPoints);
 
-                // Set expenses breakdown, mock if empty since backend might not send it here yet
-                const breakdown = response.expenses?.breakdown || [
-                    { title: "Rental", amount: 350 },
-                    { title: "Utilities", amount: 120 },
-                    { title: "Internet", amount: 80 },
-                    { title: "Marketing", amount: 200 },
-                    { title: "Salaries", amount: 1500 }
-                ];
+                // Set real expenses breakdown from API
+                const breakdown = response.sales?.expensesBreakdown || [];
                 setExpensesBreakdown(breakdown);
 
             } catch (err) {
