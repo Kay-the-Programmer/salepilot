@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import { getCurrentUser, logout, verifySession } from '../services/authService'; // Adjust paths as needed
 import { api, getOnlineStatus, syncOfflineMutations } from '../services/api'; // Adjust paths
@@ -13,7 +13,7 @@ import SystemNotificationModal from './SystemNotificationModal';
 import TourGuide from './TourGuide';
 import { OnboardingProvider } from '../contexts/OnboardingContext';
 import { NotificationProvider } from '../contexts/NotificationContext';
-import { Bars3Icon, BellAlertIcon, HomeIcon, BuildingStorefrontIcon, EnvelopeIcon, SparklesIcon } from './icons'; // Adjust paths
+import { BellAlertIcon, HomeIcon, BuildingStorefrontIcon, EnvelopeIcon, SparklesIcon, GridIcon } from './icons'; // Adjust paths
 import Logo from '../assets/logo.png'; // Adjust paths
 import SocketService from '../services/socketService';
 
@@ -332,24 +332,47 @@ export default function DashboardLayout() {
                     <div id="main-content" className="flex-1 flex flex-col overflow-y-auto">
                         {/* Mobile Header - Optional, only if needed or specific pages don't have it */}
                         {!location.pathname.startsWith('/sales') && !location.pathname.startsWith('/reports') && (
-                            <div className="md:hidden h-14 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between transition-all duration-200" glass-effect="">
-                                <button onClick={() => setIsSidebarOpen(true)} className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300">
-                                    <Bars3Icon className="w-6 h-6" />
-                                </button>
-                                <div className="flex items-center justify-center flex-1">
-                                    <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
+                            <div className="md:hidden h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-gray-200/50 dark:border-white/10 flex items-center px-4 justify-between transition-all duration-300 sticky top-0 z-[50]" glass-effect="">
+                                <div className="flex items-center gap-3">
+                                    <button
+                                        onClick={() => setIsSidebarOpen(true)}
+                                        className="boxed-button w-11 h-11 flex items-center justify-center"
+                                        aria-label="Toggle Menu"
+                                    >
+                                        <GridIcon className="w-6 h-6 text-slate-700 dark:text-slate-300" />
+                                    </button>
                                 </div>
-                                <button onClick={() => navigate('/notifications')} className="p-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700 relative active:scale-95 transition-all duration-300">
-                                    <BellAlertIcon className="w-6 h-6" />
-                                    {(announcements || []).some(a => !a.isRead) && (
-                                        <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
-                                    )}
-                                </button>
-                                <button onClick={() => navigate('/profile')} className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300">
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                    </svg>
-                                </button>
+
+                                <Link
+                                    to="/"
+                                    className="flex items-center justify-center flex-1 active:scale-95 transition-transform"
+                                    aria-label="Go to Dashboard"
+                                >
+                                    <img src={Logo} alt="SalePilot" className="h-10 w-auto object-contain" />
+                                </Link>
+
+                                <div className="flex items-center gap-2.5">
+                                    <button
+                                        onClick={() => navigate('/notifications')}
+                                        className="boxed-button w-11 h-11 relative flex items-center justify-center"
+                                        aria-label="Notifications"
+                                    >
+                                        <BellAlertIcon className={`w-6 h-6 text-slate-700 dark:text-slate-300 ${(announcements || []).some(a => !a.isRead) ? 'animate-bell-ring' : ''}`} />
+                                        {(announcements || []).some(a => !a.isRead) && (
+                                            <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-orange-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+                                        )}
+                                    </button>
+
+                                    <button
+                                        onClick={() => navigate('/profile')}
+                                        className="boxed-button w-11 h-11 flex items-center justify-center"
+                                        aria-label="Profile"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-slate-700 dark:text-slate-300">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </div>
                         )}
 
