@@ -5,8 +5,11 @@ import { FilterableSalesTrend } from './sales/FilterableSalesTrend';
 import { FilterableSalesChannelChart } from './FilterableSalesChannelChart';
 import { FilterableTopSales } from './FilterableTopSales';
 import { StoreSettings } from '../../types';
-import { OverviewStatsRow } from './overview/OverviewStatsRow';
 import { RecentOrdersTable } from './overview/RecentOrdersTable';
+import { InteractiveOperatingExpensesCard } from './overview/InteractiveOperatingExpensesCard';
+import { InteractiveNetProfitCard } from './overview/InteractiveNetProfitCard';
+import { FilterableCashflowTrend } from './cashflow/FilterableCashflowTrend';
+import { TipsCard } from './overview/TipsCard';
 
 interface OverviewTabProps {
     reportData: any;
@@ -39,38 +42,42 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {/* AI Summary Card */}
             <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={userName} />
 
-            <>
-                {/* Row 1: Stats Cards */}
-                <OverviewStatsRow storeSettings={storeSettings} />
-
-                {/* Row 2: Charts */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div className="lg:col-span-2">
-                        <FilterableSalesTrend storeSettings={storeSettings} />
-                    </div>
-                    <div>
-                        <FilterableSalesChannelChart totalRevenue={sales.totalRevenue} />
-                    </div>
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                {/* Bento Row 1: Finance Stats & Tips */}
+                <div className="lg:col-span-1 h-full">
+                    <InteractiveOperatingExpensesCard storeSettings={storeSettings} />
+                </div>
+                <div className="lg:col-span-1 h-full">
+                    <TipsCard />
+                </div>
+                <div className="lg:col-span-1 h-full">
+                    <InteractiveNetProfitCard storeSettings={storeSettings} />
+                </div>
+                <div className="lg:col-span-1 h-full">
+                    <FilterableCashflowTrend storeSettings={storeSettings} />
                 </div>
 
-                {/* Row 3: Recent Orders & Top Sales */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    {/* Recent Orders - 2 Cols */}
-                    <div className="lg:col-span-2">
-                        <RecentOrdersTable
-                            recentOrders={reportData.sales.recentOrders}
-                            recentOrdersTab={recentOrdersTab}
-                            setRecentOrdersTab={setRecentOrdersTab}
-                            storeSettings={storeSettings}
-                        />
-                    </div>
-
-                    {/* Top Sale - 1 Col */}
-                    <div>
-                        <FilterableTopSales storeSettings={storeSettings} />
-                    </div>
+                {/* Bento Row 2: Sales Trends & Channels */}
+                <div className="lg:col-span-3 h-full">
+                    <FilterableSalesTrend storeSettings={storeSettings} />
                 </div>
-            </>
+                <div className="lg:col-span-1 h-full">
+                    <FilterableSalesChannelChart totalRevenue={sales.totalRevenue} />
+                </div>
+
+                {/* Bento Row 3: Recent Orders & Top Sales */}
+                <div className="lg:col-span-3 h-full">
+                    <RecentOrdersTable
+                        recentOrders={reportData.sales.recentOrders}
+                        recentOrdersTab={recentOrdersTab}
+                        setRecentOrdersTab={setRecentOrdersTab}
+                        storeSettings={storeSettings}
+                    />
+                </div>
+                <div className="lg:col-span-1 h-full">
+                    <FilterableTopSales storeSettings={storeSettings} />
+                </div>
+            </div>
         </div>
     );
 };

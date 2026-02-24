@@ -130,10 +130,11 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
     }, [timeFilter, typeFilter, storeSettings]);
 
     return (
-        <div className={`bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700 flex flex-col min-h-[400px] transition-all ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
+        <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] border border-slate-100 dark:border-white/10 flex flex-col min-h-[400px] transition-all duration-300 ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-6">
                 <h3 className="font-bold text-slate-900 dark:text-white text-lg">Top Sales</h3>
                 <div className="flex items-center gap-2">
+                    <TimeRangeFilter value={timeFilter} onChange={setTimeFilter} onOpenChange={setIsFilterOpen} />
                     <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
                         {(['products', 'units', 'categories'] as TopSalesType[]).map((t) => (
                             <button

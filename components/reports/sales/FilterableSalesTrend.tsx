@@ -65,7 +65,7 @@ export const FilterableSalesTrend: React.FC<FilterableRevenueChartProps> = ({ st
     }, [filter]);
 
     return (
-        <div className={`lg:col-span-2 glass-effect dark:bg-slate-800 rounded-2xl p-6 shadow-sm border border-slate-100 dark:border-white/10 min-h-[400px] transition-all ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+        <div className={`glass-effect dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] border border-slate-100 dark:border-white/10 min-h-[400px] transition-all duration-300 ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-4">
                     <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg">

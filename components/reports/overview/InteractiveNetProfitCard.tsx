@@ -72,7 +72,7 @@ export const InteractiveNetProfitCard: React.FC<InteractiveNetProfitCardProps> =
     }, [filter]);
 
     return (
-        <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-7 flex flex-col justify-between relative group transition-all duration-300 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] ${isFilterOpen ? 'z-50' : 'z-auto'} overflow-hidden`}>
+        <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-7 flex flex-col justify-between relative group transition-all duration-300 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] ${isFilterOpen ? 'z-50' : 'z-auto'} overflow-hidden h-[360px]`}>
             {/* Background Sparkline */}
             <div className="absolute top-0 left-0 right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-all duration-500 rounded-b-[2rem] pointer-events-none z-0">
                 {!loading && <StatSparkline data={trend} color="#3b82f6" height={160} />}

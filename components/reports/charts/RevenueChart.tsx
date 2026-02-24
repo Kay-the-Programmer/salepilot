@@ -11,6 +11,7 @@ interface RevenueChartProps {
     lineKey?: string;
     barColor?: string;
     lineColor?: string;
+    height?: string | number;
 }
 
 export const RevenueChart: React.FC<RevenueChartProps> = ({
@@ -19,10 +20,11 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
     barKey = 'revenue',
     lineKey = 'profit',
     barColor = '#fb923c',
-    lineColor = '#8b5cf6'
+    lineColor = '#8b5cf6',
+    height = 300
 }) => {
     return (
-        <div className="w-full h-[300px]">
+        <div className="w-full" style={{ height }}>
             <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={data} margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" opacity={0.1} />

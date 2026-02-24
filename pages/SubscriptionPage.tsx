@@ -268,7 +268,7 @@ const SubscriptionPage: React.FC = () => {
                     isOnline={navigator.onLine}
                 />
                 <div className="flex-1 flex flex-col relative">
-                    <Header title="Subscription" />
+                    <Header title="Subscription" showSearch={false} />
 
                     <main className="flex-1 overflow-y-auto relative scroll-smooth">
 
