@@ -1,5 +1,5 @@
 export type SnackbarType = 'success' | 'error' | 'info' | 'warning' | 'sync';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { ToastProvider } from './contexts/ToastContext';
 import { Routes, Route } from 'react-router-dom';
 import TitleBar from './components/TitleBar';
@@ -18,10 +18,13 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import usePageTracking from "./src/hooks/usePageTracking";
 import { initGA } from "./src/utils/analytics";
 
-// Initialize GA
-initGA();
 
 export default function App() {
+    useEffect(() => {
+        // Initialize GA
+        initGA();
+    }, []);
+
     usePageTracking();
     return (
         <ThemeProvider>

@@ -13,7 +13,7 @@ interface InventoryStatsRowProps {
 
 export const InventoryStatsRow: React.FC<InventoryStatsRowProps> = ({ storeSettings }) => {
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-4">
             <FilterableStatCard
                 title="Retail Value"
                 type="inventory_retail"

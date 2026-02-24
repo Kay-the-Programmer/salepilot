@@ -32,9 +32,9 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             {/* AI Summary Card */}
             <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={userName} />
 
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Bento Row 1: Finance Stats & Tips */}
-                <div className="lg:col-span-1 h-full">
+                <div className="min-w-0 h-full">
                     <TipsCard
                         hasProducts={reportData.inventory.totalProducts > 0}
                         hasExpenses={reportData.sales.totalOperatingExpenses > 0}
@@ -43,26 +43,26 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         hasSales={reportData.sales.totalRevenue > 0}
                     />
                 </div>
-                <div className="lg:col-span-1 h-full">
+                <div className="min-w-0 h-full">
                     <InteractiveOperatingExpensesCard storeSettings={storeSettings} />
                 </div>
-                <div className="lg:col-span-1 h-full">
+                <div className="min-w-0 h-full">
                     <InteractiveNetProfitCard storeSettings={storeSettings} />
                 </div>
-                <div className="lg:col-span-1 h-full">
+                <div className="min-w-0 h-full">
                     <FilterableCashflowTrend storeSettings={storeSettings} />
                 </div>
 
                 {/* Bento Row 2: Sales Trends & Channels */}
-                <div className="lg:col-span-3 h-full">
+                <div className="md:col-span-2 lg:col-span-3 min-w-0 h-full">
                     <FilterableSalesTrend storeSettings={storeSettings} />
                 </div>
-                <div className="lg:col-span-1 h-full">
+                <div className="md:col-span-1 min-w-0 h-full">
                     <FilterableSalesChannelChart totalRevenue={sales.totalRevenue} />
                 </div>
 
                 {/* Bento Row 3: Recent Orders & Top Sales */}
-                <div className="lg:col-span-3 h-full">
+                <div className="md:col-span-2 lg:col-span-3 min-w-0 h-full">
                     <RecentOrdersTable
                         recentOrders={reportData.sales.recentOrders}
                         recentOrdersTab={recentOrdersTab}
@@ -70,7 +70,7 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                         storeSettings={storeSettings}
                     />
                 </div>
-                <div className="lg:col-span-1 h-full">
+                <div className="md:col-span-1 min-w-0 h-full">
                     <FilterableTopSales storeSettings={storeSettings} />
                 </div>
             </div>

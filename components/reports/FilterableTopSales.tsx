@@ -131,16 +131,16 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
 
     return (
         <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] border border-slate-100 dark:border-white/10 flex flex-col min-h-[400px] transition-all duration-300 ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
-            <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Top Sales</h3>
-                <div className="flex items-center gap-2">
+            <div className="flex flex-col xs:flex-row xs:justify-between xs:items-baseline sm:items-center gap-4 mb-6">
+                <h3 className="font-bold text-slate-900 dark:text-white text-lg whitespace-nowrap">Top Sales</h3>
+                <div className="flex flex-wrap items-center gap-2 xs:justify-end">
                     <TimeRangeFilter value={timeFilter} onChange={setTimeFilter} onOpenChange={setIsFilterOpen} />
-                    <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl">
+                    <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl shadow-inner">
                         {(['products', 'units', 'categories'] as TopSalesType[]).map((t) => (
                             <button
                                 key={t}
                                 onClick={() => setTypeFilter(t)}
-                                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${typeFilter === t
+                                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${typeFilter === t
                                     ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white'
                                     }`}

@@ -33,7 +33,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
     return (
         <div className="space-y-6 animate-fade-in pb-10">
             {/* Row 1: Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(280px,1fr))] gap-6">
                 <FilterableStatCard
                     title="Revenue"
                     type="revenue"
@@ -69,11 +69,11 @@ export const SalesTab: React.FC<SalesTabProps> = ({
             </div>
 
             {/* Row 2: Charts & Lists */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="md:col-span-2">
                     <FilterableSalesTrend storeSettings={storeSettings} />
                 </div>
-                <div>
+                <div className="md:col-span-1">
                     <FilterableTopProducts storeSettings={storeSettings} />
                 </div>
             </div>
