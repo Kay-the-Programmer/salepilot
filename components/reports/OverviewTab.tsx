@@ -1,5 +1,4 @@
 import React from 'react';
-import { OnboardingTaskList } from './OnboardingTaskList';
 import { AiSummaryCard } from './AiSummaryCard';
 import { FilterableSalesTrend } from './sales/FilterableSalesTrend';
 import { FilterableSalesChannelChart } from './FilterableSalesChannelChart';
@@ -30,15 +29,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
     return (
         <div className="space-y-6 animate-fade-in pb-10">
-            {/* Onboarding Task List for new users */}
-            <OnboardingTaskList
-                stats={{
-                    totalUnits: reportData.inventory.totalUnits,
-                    totalSuppliers: reportData.customers.totalSuppliers,
-                    totalCustomers: reportData.customers.totalCustomers,
-                }}
-            />
-
             {/* AI Summary Card */}
             <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={userName} />
 
