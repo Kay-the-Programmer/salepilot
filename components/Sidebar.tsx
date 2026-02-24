@@ -455,35 +455,31 @@ export default function Sidebar({
                     ref={sidebarRef}
                     className="md:hidden fixed inset-0 w-full h-full bg-white/70 dark:bg-black/70 backdrop-blur-2xl z-[70] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
                 >
-                    {/* Header with Close Button & Mode Toggle */}
+                    {/* Header with Close Button & View Toggle */}
                     <div className="px-6 pt-12 pb-4 select-none">
                         <div className="flex items-center justify-between mb-6">
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Menu</h2>
-                            <button
-                                onClick={onMobileClose}
-                                className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
-                                aria-label="Close menu"
-                            >
-                                <XMarkIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                            </button>
-                        </div>
-
-                        {/* Segmented Control Toggle */}
-                        <div className="flex p-0.5 bg-gray-100 dark:bg-white/5 rounded-xl w-full max-w-xs mx-auto border border-gray-200/50 dark:border-white/5 shadow-inner">
-                            <button
-                                onClick={() => setViewMode('grid')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${viewMode === 'grid' ? 'bg-white dark:bg-white/10 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-                            >
-                                <GridIcon className="w-3.5 h-3.5" />
-                                <span>Grid View</span>
-                            </button>
-                            <button
-                                onClick={() => setViewMode('list')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${viewMode === 'list' ? 'bg-white dark:bg-white/10 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-                            >
-                                <ListIcon className="w-3.5 h-3.5" />
-                                <span>List View</span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {/* Single toggle button: switches between grid and list */}
+                                <button
+                                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                                    className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
+                                    aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
+                                    title={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
+                                >
+                                    {viewMode === 'grid'
+                                        ? <ListIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                                        : <GridIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                                    }
+                                </button>
+                                <button
+                                    onClick={onMobileClose}
+                                    className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
+                                    aria-label="Close menu"
+                                >
+                                    <XMarkIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                                </button>
+                            </div>
                         </div>
                     </div>
 

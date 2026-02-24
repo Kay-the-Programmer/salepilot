@@ -77,16 +77,18 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
         fetchData();
     }, [filter]);
 
+    const memoizedBreakdown = React.useMemo(() => expensesBreakdown, [expensesBreakdown]);
+
     // Flashing effect loop
     useEffect(() => {
-        if (expensesBreakdown.length === 0) return;
+        if (memoizedBreakdown.length <= 1) return;
 
         const interval = setInterval(() => {
-            setCurrentExpenseIndex((prev) => (prev + 1) % expensesBreakdown.length);
+            setCurrentExpenseIndex((prev) => (prev + 1) % memoizedBreakdown.length);
         }, 2500); // Change expense every 2.5 seconds
 
         return () => clearInterval(interval);
-    }, [expensesBreakdown]);
+    }, [memoizedBreakdown.length]);
 
     const isNewUser = !loading && operatingExpenses === 0 && expensesBreakdown.length === 0;
 

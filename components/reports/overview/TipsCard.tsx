@@ -38,7 +38,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
     const navigate = useNavigate();
     const [currentTipIndex, setCurrentTipIndex] = useState(0);
 
-    const tips: Tip[] = [
+    const tips: Tip[] = React.useMemo(() => [
         {
             id: 1,
             title: "Welcome to SalePilot!",
@@ -119,16 +119,18 @@ export const TipsCard: React.FC<TipsCardProps> = ({
             color: "fuchsia",
             show: true
         }
-    ].filter(tip => (tip as any).show) as Tip[];
+    ].filter(tip => (tip as any).show) as Tip[], [hasProducts, hasExpenses, hasSuppliers, hasCustomers, hasSales]);
 
     useEffect(() => {
+        if (tips.length <= 1) return;
+
         const interval = setInterval(() => {
             setCurrentTipIndex((prev) => (prev + 1) % tips.length);
         }, 5000);
         return () => clearInterval(interval);
     }, [tips.length]);
 
-    const currentTip = tips[currentTipIndex];
+    const currentTip = tips[currentTipIndex] || tips[0];
 
     const getColorClasses = (color: string) => {
         switch (color) {
