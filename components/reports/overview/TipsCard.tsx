@@ -188,15 +188,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
                                     'bg-fuchsia-500'
                 }`}></div>
 
-            <style>{`
-                @keyframes fade-in-right {
-                    0% { opacity: 0; transform: translateX(10px); }
-                    100% { opacity: 1; transform: translateX(0); }
-                }
-                .animate-fade-in-right {
-                    animation: fade-in-right 0.5s ease-out forwards;
-                }
-            `}</style>
+
         </div>
     );
 };

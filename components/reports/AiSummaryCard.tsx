@@ -544,35 +544,6 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
                 </div>
             </div>
 
-            <style>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 3px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(0, 0, 0, 0.1);
-                    border-radius: 10px;
-                }
-                :global(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: rgba(255, 255, 255, 0.06);
-                }
-                @keyframes slide-up-fade {
-                    from { transform: translateY(12px); opacity: 0; }
-                    to { transform: translateY(0); opacity: 1; }
-                }
-                .animate-slide-up-fade {
-                    animation: slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-                }
-                @keyframes fade-in {
-                    from { opacity: 0; transform: translateY(4px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fade-in {
-                    animation: fade-in 0.25s ease-out;
-                }
-            `}</style>
         </div>
     );
 };

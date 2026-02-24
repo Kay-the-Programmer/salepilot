@@ -151,7 +151,7 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
                         {expensesBreakdown.length > 0 && !loading && (
                             <div
                                 key={currentExpenseIndex}
-                                className="animate-fade-in-up w-full flex justify-between items-center bg-red-50/50 dark:bg-red-900/10 px-4 py-3 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm"
+                                className="animate-expense-flash w-full flex justify-between items-center bg-red-50/50 dark:bg-red-900/10 px-4 py-3 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm"
                             >
                                 <div className="flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
@@ -180,18 +180,6 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
 
             {/* Subtle glow effect on hover */}
             <div className="absolute inset-0 bg-gradient-to-tr from-red-500/0 via-red-500/0 to-red-500/5 dark:to-red-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem] z-0"></div>
-
-            <style>{`
-                @keyframes fade-in-up {
-                    0% { opacity: 0; transform: translateY(8px); }
-                    15% { opacity: 1; transform: translateY(0); }
-                    85% { opacity: 1; transform: translateY(0); }
-                    100% { opacity: 0; transform: translateY(-8px); }
-                }
-                .animate-fade-in-up {
-                    animation: fade-in-up 2.5s ease-in-out infinite both;
-                }
-            `}</style>
         </div>
     );
 };
