@@ -179,15 +179,24 @@ self.addEventListener('push', (event) => {
   if (!event.data) return;
 
   try {
-    const data = event.data.json();
-    const title = data.title || 'SalePilot Notification';
+    const rawData = event.data.json();
+    console.log('[sw.js] Received push event:', rawData);
+
+    // Handle FCM format (nested notification object) or direct format
+    const notification = rawData.notification || rawData;
+    const data = rawData.data || rawData;
+
+    const title = notification.title || 'SalePilot Notification';
     const options = {
-      body: data.body || 'New update available',
-      icon: data.icon || '/images/salepilot.png',
+      body: notification.body || notification.message || 'New update available',
+      icon: notification.icon || notification.imageUrl || '/images/salepilot.png',
       badge: '/vite.svg',
-      data: data.data || { url: '/' },
+      data: {
+        ...data,
+        url: data.url || notification.url || '/'
+      },
       vibrate: [100, 50, 100],
-      actions: data.actions || []
+      actions: notification.actions || []
     };
 
     event.waitUntil(

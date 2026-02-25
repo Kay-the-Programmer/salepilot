@@ -148,12 +148,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
     return (
         <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-7 flex flex-col justify-between relative group transition-all duration-300 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] overflow-hidden h-[360px]">
             <div className="relative z-10 h-full flex flex-col">
-                <div className="flex items-center gap-2.5 mb-6">
-                    <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center bg-opacity-20 dark:bg-opacity-30 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                        <SparklesIcon className="w-5 h-5 text-amber-600" />
-                    </div>
-                    <span className="text-slate-500 dark:text-slate-400 font-semibold text-xs tracking-wide uppercase">Tips & Guidance</span>
-                </div>
+
 
                 <div className="flex-1 flex flex-col justify-center">
                     <div key={currentTipIndex} className="animate-fade-in-right">

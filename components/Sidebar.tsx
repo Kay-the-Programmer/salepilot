@@ -33,6 +33,7 @@ import {
     ChevronRightIcon
 } from './icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { useNotifications } from '../contexts/NotificationContext';
 import logo from '../assets/logo.png';
 
 interface SidebarProps {
@@ -49,7 +50,6 @@ interface SidebarProps {
     onMobileClose?: () => void;
     lastSync?: number | null;
     isSyncing?: boolean;
-    unreadNotificationsCount?: number;
     pendingMatchesCount?: number;
     installPrompt?: any | null;
     onInstall?: () => void;
@@ -268,11 +268,11 @@ export default function Sidebar({
     onMobileClose,
     lastSync,
     isSyncing,
-    unreadNotificationsCount,
     pendingMatchesCount,
     installPrompt,
     onInstall
 }: SidebarProps) {
+    const { unreadCount } = useNotifications();
     const [isExpanded, setIsExpanded] = useState(true);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const { theme, toggleTheme } = useTheme();
@@ -281,8 +281,8 @@ export default function Sidebar({
 
     // Filter navigation items based on user role and allowed pages
     const navItemsWithBadges = NAV_ITEMS.map(item => {
-        if (item.page === 'notifications' && (unreadNotificationsCount || 0) > 0) {
-            return { ...item, badge: unreadNotificationsCount?.toString() || null };
+        if (item.page === 'notifications' && (unreadCount || 0) > 0) {
+            return { ...item, badge: unreadCount?.toString() || null };
         }
         if (item.page === 'directory' && (pendingMatchesCount || 0) > 0) {
             return { ...item, badge: pendingMatchesCount?.toString() || null };

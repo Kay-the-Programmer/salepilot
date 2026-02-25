@@ -10,6 +10,7 @@ import FinancialSettingsSection from '../components/settings/sections/FinancialS
 import POSSettingsSection from '../components/settings/sections/POSSettingsSection';
 import InventorySettingsSection from '../components/settings/sections/InventorySettingsSection';
 import BusinessVerificationSection from '../components/settings/BusinessVerificationSection';
+import NotificationSettingsSection from '../components/settings/sections/NotificationSettingsSection';
 import SettingsCard from '../components/settings/SettingsCard';
 import SettingsSidebar, { SettingsCategory } from '../components/settings/SettingsSidebar';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
@@ -110,7 +111,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
             'pos': 'POS Settings',
             'inventory': 'Inventory',
             'verification': 'Verification',
-            'billing': 'Plans & Billing'
+            'billing': 'Plans & Billing',
+            'notifications': 'Notifications'
         };
         return titles[activeCategory] || 'Settings';
     };
@@ -298,6 +300,17 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                             ))}
                                         </div>
                                     </div>
+                                </div>
+                            )}
+
+                            {activeCategory === 'notifications' && (
+                                <div className="animate-fade-in">
+                                    <NotificationSettingsSection
+                                        isEditing={editingSection === 'notifications'}
+                                        onEdit={() => setEditingSection('notifications')}
+                                        onSave={() => setEditingSection(null)}
+                                        onCancel={() => setEditingSection(null)}
+                                    />
                                 </div>
                             )}
                         </div>

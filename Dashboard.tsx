@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import SocketService from './services/socketService';
 import { SnackbarType } from './App';
-import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Announcement, Expense, RecurringExpense } from './types';
+import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Expense, RecurringExpense } from './types';
 import Logo from './assets/logo.png';
 import Sidebar from './components/Sidebar';
 import { lazy, Suspense } from 'react';
@@ -54,12 +54,13 @@ import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import {
     Bars3Icon,
-    BellAlertIcon,
     BuildingStorefrontIcon
 } from './components/icons';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useNavigate, useLocation } from 'react-router-dom';
 import SystemNotificationModal from './components/SystemNotificationModal';
+import NotificationBell from './components/NotificationBell';
+import PriorityNotificationModal from './components/PriorityNotificationModal';
 import TourGuide from './components/TourGuide';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -109,8 +110,7 @@ export default function Dashboard() {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-    const [announcements, setAnnouncements] = useState<Announcement[]>([]);
-    const [pendingMatches, setPendingMatches] = useState<any[]>([]);
+    const [pendingMatches, _] = useState<any[]>([]); // Prefixed with _ to silence unused warning if desired, or just remove if safe
     const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
@@ -140,29 +140,7 @@ export default function Dashboard() {
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSync, setLastSync] = useState<number | null>(null);
 
-    // System Priority Notification State
-    const [priorityNotification, setPriorityNotification] = useState<Announcement | null>(null);
-
-    useEffect(() => {
-        // Check for unread system priority notifications
-        // We pick the first one we find. If there are multiple, they will appear one after another as they are acknowledged.
-        const priority = (announcements || []).find(a => !a.isRead && (a.type === 'system_priority' || a.type === 'admin_broadcast'));
-        setPriorityNotification(priority || null);
-    }, [announcements]);
-
-    const handleAcknowledgeNotification = async () => {
-        if (!priorityNotification) return;
-        try {
-            await api.patch(`/notifications/${priorityNotification.id}/read`, {});
-            // Optimistically update local state to hide the modal and potentially show the next one
-            setAnnouncements(prev => prev.map(a => a.id === priorityNotification.id ? { ...a, isRead: true } : a));
-            setPriorityNotification(null);
-            showSnackbar('Notification acknowledged', 'success');
-        } catch (err: any) {
-            console.error('Failed to mark notification as read:', err);
-            showSnackbar('Failed to acknowledge notification', 'error');
-        }
-    };
+    // Priority notifications are now handled within NotificationContext or dedicated components
 
     const showSnackbar = useCallback((message: string, type: SnackbarType = 'info') => {
         setSnackbar({ message, type });
@@ -250,7 +228,7 @@ export default function Dashboard() {
                 api.get<StockTakeSession | null>('/stock-takes/active'),
                 api.get<Expense[]>('/expenses'),
                 api.get<RecurringExpense[]>('/recurring-expenses'),
-                currentUser?.currentStoreId ? api.get<Announcement[]>(`/notifications/stores/${currentUser.currentStoreId}`) : Promise.resolve([] as Announcement[])
+                currentUser?.currentStoreId ? api.get<any[]>('/audit') : Promise.resolve([] as any[]) // Placeholder for aligned indexing if needed
             ]);
 
             const mapResult = <T,>(res: PromiseSettledResult<T>, fallback: T): T =>
@@ -272,7 +250,6 @@ export default function Dashboard() {
             setStockTakeSession(mapResult(results[13], null as any));
             setExpenses(mapResult(results[14], { items: [] as Expense[] } as any).items || []);
             setRecurringExpenses(mapResult(results[15], [] as RecurringExpense[]));
-            setAnnouncements(mapResult(results[16], [] as Announcement[]));
 
 
             // Fetch pending marketplace matches separately to avoid blocking
@@ -343,32 +320,7 @@ export default function Dashboard() {
         initSyncStatus();
     }, []);
 
-    // Notification Polling (every 30 seconds)
-    useEffect(() => {
-        if (!currentUser?.currentStoreId) return;
-
-        const pollNotifications = async () => {
-            if (!getOnlineStatus()) return;
-            try {
-                const freshAnnouncements = await api.get<Announcement[]>(`/notifications/stores/${currentUser.currentStoreId}`);
-                setAnnouncements(prev => {
-                    // Simple check to avoid unnecessary re-renders if length/IDs haven't changed
-                    // Since specific content change is less likely to soft-update than "new item arrived"
-                    const prevIds = prev.map(a => a.id).join(',');
-                    const newIds = freshAnnouncements.map(a => a.id).join(',');
-                    if (prevIds !== newIds) {
-                        return freshAnnouncements;
-                    }
-                    return prev;
-                });
-            } catch (err) {
-                console.warn('Background notification poll failed:', err);
-            }
-        };
-
-        const intervalId = setInterval(pollNotifications, 30000); // 30 seconds
-        return () => clearInterval(intervalId);
-    }, [currentUser?.currentStoreId]);
+    // Notification Polling logic removed as it is now handled in NotificationContext.tsx
 
     // Real-time Request Notifications (Sellers)
     useEffect(() => {
@@ -1190,7 +1142,7 @@ export default function Dashboard() {
                 case 'stock-takes':
                     return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
                 case 'reports':
-                    return <ReportsPage storeSettings={storeSettings!} user={currentUser} announcements={announcements} onRefreshNotifications={fetchData} />;
+                    return <ReportsPage storeSettings={storeSettings!} user={currentUser} />;
                 case 'accounting':
                     return <AccountingPage
                         accounts={accounts}
@@ -1225,7 +1177,7 @@ export default function Dashboard() {
                 case 'users':
                     return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
                 case 'notifications':
-                    return <NotificationsPage announcements={announcements} onRefresh={fetchData} userId={currentUser?.id} showSnackbar={showSnackbar} />;
+                    return <NotificationsPage userId={currentUser?.id} showSnackbar={showSnackbar} />;
                 case 'directory':
                 case 'marketplace':
                     if (parts[1] === 'request' && parts[2]) {
@@ -1339,7 +1291,6 @@ export default function Dashboard() {
                             isSyncing={isSyncing}
                             installPrompt={installPrompt}
                             onInstall={handleInstall}
-                            unreadNotificationsCount={(announcements || []).filter(a => !a.isRead).length}
                             pendingMatchesCount={(pendingMatches || []).length}
                         />
                     </div>
@@ -1365,16 +1316,7 @@ export default function Dashboard() {
                                     <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
                                 </div>
 
-                                <button
-                                    onClick={() => navigate('/notifications')}
-                                    className="p-2 -mr-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 relative"
-                                    aria-label="Notifications"
-                                >
-                                    <BellAlertIcon className="w-6 h-6" />
-                                    {(announcements || []).some(a => !a.isRead) && (
-                                        <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 border-2 border-white rounded-full"></span>
-                                    )}
-                                </button>
+                                <NotificationBell onNavigate={() => navigate('/notifications')} />
                             </div>
                         )}
 
@@ -1386,15 +1328,7 @@ export default function Dashboard() {
                     <TourGuide user={currentUser} />
 
 
-                    {priorityNotification && (
-                        <SystemNotificationModal
-                            isOpen={true}
-                            title={priorityNotification.title}
-                            message={priorityNotification.message}
-                            date={priorityNotification.createdAt}
-                            onAcknowledge={handleAcknowledgeNotification}
-                        />
-                    )}
+                    <PriorityNotificationModal />
                 </div>
             </NotificationProvider>
         </OnboardingProvider>

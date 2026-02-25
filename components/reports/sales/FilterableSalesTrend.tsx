@@ -15,8 +15,6 @@ const toDateInputString = (date: Date): string => {
     return `${year}-${month}-${day}`;
 };
 
-import ChartBarIcon from '../../icons/ChartBarIcon';
-
 export const FilterableSalesTrend: React.FC<FilterableRevenueChartProps> = ({ storeSettings }) => {
     const [filter, setFilter] = useState<TimeFilter>('monthly');
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -68,9 +66,6 @@ export const FilterableSalesTrend: React.FC<FilterableRevenueChartProps> = ({ st
         <div className={`glass-effect dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] border border-slate-100 dark:border-white/10 min-h-[400px] transition-all duration-300 ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="p-2 bg-blue-50 dark:bg-blue-500/10 rounded-lg">
-                        <ChartBarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                    </div>
                     <div>
                         <h3 className="font-bold text-slate-900 dark:text-white/90 text-lg tracking-tight">Sales Trend</h3>
                         <div className="flex items-center gap-3 mt-1">

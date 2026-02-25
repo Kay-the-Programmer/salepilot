@@ -1,18 +1,15 @@
 import React from 'react';
-import { api } from '../services/api';
-
+import { useNotifications } from '../contexts/NotificationContext';
 
 const NotificationsPage: React.FC<{
-    announcements: import('../types').Announcement[];
-    onRefresh: () => Promise<void>;
     userId?: string;
     showSnackbar: (msg: string, type?: any) => void;
-}> = ({ announcements = [], onRefresh, userId, showSnackbar }) => {
+}> = ({ userId, showSnackbar }) => {
+    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const [isPushEnabled, setIsPushEnabled] = React.useState(false);
     const [isSupported, setIsSupported] = React.useState(true);
     const [isPending, setIsPending] = React.useState(false);
 
-    const unreadCount = announcements.filter(n => !n.isRead).length;
     const [selectedNotification, setSelectedNotification] = React.useState<import('../types').Announcement | null>(null);
 
     React.useEffect(() => {
@@ -59,28 +56,17 @@ const NotificationsPage: React.FC<{
     };
 
     // Sort by date descending (newest first)
-    const sortedAnnouncements = [...announcements].sort((a, b) =>
+    const sortedNotifications = [...notifications].sort((a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
-    const handleMarkAsRead = async (id: string, e?: React.MouseEvent) => {
+    const handleMarkAsReadLocal = async (id: string, e?: React.MouseEvent) => {
         if (e) e.stopPropagation();
-        try {
-            await api.patch(`/notifications/${id}/read`, {});
-            onRefresh();
-        } catch (error) {
-            console.error('Failed to mark notification as read:', error);
-        }
+        await markAsRead(id);
     };
 
-    const handleMarkAllAsRead = async () => {
-        try {
-            const unread = announcements.filter(n => !n.isRead);
-            await Promise.all(unread.map(n => api.patch(`/notifications/${n.id}/read`, {})));
-            onRefresh();
-        } catch (error) {
-            console.error('Failed to mark all as read:', error);
-        }
+    const handleMarkAllAsReadLocal = async () => {
+        await markAllAsRead();
     };
 
     return (
@@ -92,7 +78,7 @@ const NotificationsPage: React.FC<{
                     <div className="flex gap-2">
                         {unreadCount > 0 && (
                             <button
-                                onClick={handleMarkAllAsRead}
+                                onClick={handleMarkAllAsReadLocal}
                                 className="text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 transition-colors"
                             >
                                 Mark all as read
@@ -133,7 +119,7 @@ const NotificationsPage: React.FC<{
             </div>
 
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-2 space-y-4">
-                {sortedAnnouncements.length === 0 ? (
+                {sortedNotifications.length === 0 ? (
                     <div className="liquid-glass-card rounded-[2rem] flex flex-col items-center justify-center py-20 dark:bg-slate-800 border border-gray-100 dark:border-slate-700 transition-colors duration-200">
                         <div className="p-4 bg-gray-50 dark:bg-slate-700 rounded-full mb-4">
                             <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,11 +130,11 @@ const NotificationsPage: React.FC<{
                         <p className="text-gray-500 dark:text-slate-400 mt-1">You're all caught up!</p>
                     </div>
                 ) : (
-                    sortedAnnouncements.map((announcement) => (
+                    sortedNotifications.map((announcement) => (
                         <div
                             key={announcement.id}
                             onClick={() => {
-                                handleMarkAsRead(announcement.id);
+                                handleMarkAsReadLocal(announcement.id);
                                 setSelectedNotification(announcement);
                             }}
                             className={`
@@ -208,7 +194,7 @@ const NotificationsPage: React.FC<{
                         isOpen={!!selectedNotification}
                         onClose={() => setSelectedNotification(null)}
                         notification={selectedNotification}
-                        onMarkAsRead={handleMarkAsRead}
+                        onMarkAsRead={handleMarkAsReadLocal}
                     />
                 )}
             </React.Suspense>

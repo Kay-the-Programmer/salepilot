@@ -3,12 +3,16 @@ import { api, getOnlineStatus } from '../services/api';
 import SocketService from '../services/socketService';
 import { Announcement, User } from '../types';
 import { useToast } from './ToastContext';
-import Logo from '../assets/logo.png'; // Make sure this path is correct relative to this file
+import { notificationService } from '../services/notificationService';
+import { messagingPromise } from '../firebase/firebase';
+import { onMessage } from 'firebase/messaging';
+import Logo from '../assets/logo.png';
 
 interface NotificationContextType {
     notifications: Announcement[];
     unreadCount: number;
     markAsRead: (id: string) => Promise<void>;
+    markAllAsRead: () => Promise<void>;
     refreshNotifications: () => Promise<void>;
 }
 
@@ -47,6 +51,17 @@ export const NotificationProvider: React.FC<{ children: ReactNode; user: User | 
             console.warn('Failed to fetch notifications:', error);
         }
     }, [user?.currentStoreId, showToast]);
+
+    const markAllAsRead = useCallback(async () => {
+        try {
+            const unread = notifications.filter(n => !n.isRead);
+            if (unread.length === 0) return;
+            await Promise.all(unread.map(n => api.patch(`/notifications/${n.id}/read`, {})));
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        } catch (error) {
+            console.error('Failed to mark all as read:', error);
+        }
+    }, [notifications]);
 
     const markAsRead = useCallback(async (id: string) => {
         try {
@@ -96,10 +111,44 @@ export const NotificationProvider: React.FC<{ children: ReactNode; user: User | 
         };
     }, [user, showToast, fetchNotifications]);
 
+    // FCM Foreground Message Listener
+    useEffect(() => {
+        let unsubscribe: (() => void) | undefined;
+
+        const setupFCMForeground = async () => {
+            if (!messagingPromise) return;
+            const messaging = await messagingPromise;
+            if (!messaging) return;
+
+            unsubscribe = onMessage(messaging, (payload) => {
+                console.log('[NotificationContext] Foreground message received:', payload);
+                const title = payload.notification?.title || 'New Notification';
+                const body = payload.notification?.body || '';
+
+                showToast(`${title}: ${body}`, 'info');
+                fetchNotifications(); // Refresh hub
+            });
+        };
+
+        setupFCMForeground();
+        return () => {
+            if (unsubscribe) unsubscribe();
+        };
+    }, [showToast, fetchNotifications]);
+
+    // FCM Subscription on Login
+    useEffect(() => {
+        if (user?.id) {
+            notificationService.subscribeUser(user.id).catch(err => {
+                console.error('[NotificationContext] FCM Auto-subscription failed:', err);
+            });
+        }
+    }, [user?.id]);
+
     const unreadCount = notifications.filter(n => !n.isRead).length;
 
     return (
-        <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, refreshNotifications: fetchNotifications }}>
+        <NotificationContext.Provider value={{ notifications, unreadCount, markAsRead, markAllAsRead, refreshNotifications: fetchNotifications }}>
             {children}
         </NotificationContext.Provider>
     );

@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { StoreSettings, User, Announcement } from '../types';
+import { StoreSettings, User } from '../types';
+import { useNotifications } from '../contexts/NotificationContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { api } from '../services/api';
@@ -32,8 +33,6 @@ interface ReportsPageProps {
     storeSettings: StoreSettings;
     onClose?: () => void;
     user?: User | null;
-    announcements?: Announcement[];
-    onRefreshNotifications?: () => Promise<void>;
 }
 
 const toDateInputString = (date: Date): string => {
@@ -60,7 +59,8 @@ const TABS = [
     { id: 'personal-use', label: 'Personal', Icon: ReceiptTaxIcon },
 ];
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user, announcements = [], onRefreshNotifications }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user }) => {
+    const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const navigate = useNavigate();
     const [startDate, setStartDate] = useState(() => {
         const d = new Date();
@@ -112,30 +112,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
         }
     }, [activeTab]);
 
-    // Announcements logic
-    const unreadCount = announcements.filter(n => !n.isRead).length;
-    const sortedAnnouncements = [...announcements].sort((a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
-
-    const handleMarkAsRead = async (id: string) => {
-        try {
-            await api.post(`/notifications/${id}/read`, {});
-            if (onRefreshNotifications) await onRefreshNotifications();
-        } catch (error) {
-            console.error('Failed to mark notification as read:', error);
-        }
-    };
-
-    const handleMarkAllAsRead = async () => {
-        try {
-            await api.post('/notifications/read-all', {});
-            if (onRefreshNotifications) await onRefreshNotifications();
-            setIsNotificationsOpen(false);
-        } catch (error) {
-            console.error('Failed to mark all as read:', error);
-        }
-    };
+    const sortedAnnouncements = notifications; // Already sorted by context/backend
 
     // Auto-scroll tab into view
     useEffect(() => {
@@ -152,10 +129,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
     const [reportData, setReportData] = useState<any | null>(null);
     const [dailySales, setDailySales] = useState<any[] | null>(null);
     const [personalUse, setPersonalUse] = useState<any[] | null>(null);
-    const [isRefreshing, setIsRefreshing] = useState(false);
 
     const fetchData = useCallback(async () => {
-        setIsRefreshing(true);
         try {
             const [statsRes, salesRes, personalRes] = await Promise.all([
                 api.get(`/reports/dashboard?startDate=${startDate}&endDate=${endDate}`),
@@ -168,7 +143,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
         } catch (err) {
             console.error("Failed to fetch report data", err);
         } finally {
-            setIsRefreshing(false);
         }
     }, [startDate, endDate]);
 
@@ -510,7 +484,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                             <h2 className="text-xl font-bold dark:text-white">Notifications</h2>
                             <div className="flex items-center gap-2">
                                 {unreadCount > 0 && (
-                                    <button onClick={handleMarkAllAsRead} className="text-xs font-bold text-blue-600 hover:underline">Mark all as read</button>
+                                    <button onClick={markAllAsRead} className="text-xs font-bold text-blue-600 hover:underline">Mark all as read</button>
                                 )}
                                 <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95 transition-all duration-300">
                                     <XMarkIcon className="w-5 h-5 dark:text-white" />
@@ -522,7 +496,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user,
                                 sortedAnnouncements.map((n) => (
                                     <div
                                         key={n.id}
-                                        onClick={() => !n.isRead && handleMarkAsRead(n.id)}
+                                        onClick={() => !n.isRead && markAsRead(n.id)}
                                         className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${n.isRead
                                             ? 'bg-slate-50 dark:bg-white/5 border-transparent'
                                             : 'bg-white dark:bg-slate-800 border-blue-100 dark:border-blue-900 shadow-sm'

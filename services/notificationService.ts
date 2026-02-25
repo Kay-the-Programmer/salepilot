@@ -1,67 +1,71 @@
 import { api } from './api';
+import { messagingPromise } from '../firebase/firebase';
+import { getToken, deleteToken } from 'firebase/messaging';
 
 class NotificationService {
-    async getVapidPublicKey() {
-        try {
-            const data = await api.get<{ publicKey: string }>('/push/vapid-public-key');
-            return data.publicKey;
-        } catch (error) {
-            console.error('Failed to get VAPID public key:', error);
-            throw error;
-        }
-    }
-
     async subscribeUser(userId?: string) {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
             console.warn('Push notifications are not supported in this browser');
             return null;
         }
 
+        if (!messagingPromise) {
+            console.warn('Firebase Messaging is not supported or initialized');
+            return null;
+        }
+
         try {
+            const messaging = await messagingPromise;
+            if (!messaging) return null;
+
             console.log('Push subscription: checking service worker...');
             const registration = await navigator.serviceWorker.ready;
             console.log('Push subscription: service worker ready');
 
-            // Get public key from server
-            const vapidPublicKey = await this.getVapidPublicKey();
-            const convertedVapidKey = this.urlBase64ToUint8Array(vapidPublicKey);
+            console.log('Push subscription: requesting FCM token...');
+            const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
 
-            console.log('Push subscription: requesting browser permission...');
-            const subscription = await registration.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: convertedVapidKey
+            if (!vapidKey) {
+                console.warn('VITE_FIREBASE_VAPID_KEY is not defined in .env');
+            }
+
+            const currentToken = await getToken(messaging, {
+                vapidKey: vapidKey,
+                serviceWorkerRegistration: registration
             });
-            console.log('Push subscription: browser subscription obtained');
 
-            // Send subscription to server
-            await api.post('/push/subscribe', {
-                subscription,
-                userId
-            }, { skipQueue: true });
+            if (currentToken) {
+                console.log('Push subscription: browser subscription obtained');
 
-            console.log('Push subscription: user subscribed successfully');
-            return subscription;
+                // Send subscription to server
+                await api.post('/push/subscribe', {
+                    subscription: currentToken,
+                    userId
+                }, { skipQueue: true });
+
+                console.log('Push subscription: user subscribed successfully');
+                return currentToken;
+            } else {
+                console.log('No registration token available. Request permission to generate one.');
+                return null;
+            }
         } catch (error) {
             console.error('Failed to subscribe user:', error);
-            // Re-throw so UI can handle it
             throw error;
         }
     }
 
     async unsubscribeUser() {
+        if (!messagingPromise) return;
+
         try {
-            const registration = await navigator.serviceWorker.ready;
-            const subscription = await registration.pushManager.getSubscription();
+            const messaging = await messagingPromise;
+            if (!messaging) return;
 
-            if (subscription) {
-                await subscription.unsubscribe();
+            const hasDeleted = await deleteToken(messaging);
 
-                // Notify server
-                await api.post('/push/unsubscribe', {
-                    endpoint: subscription.endpoint
-                }, { skipQueue: true });
-
-                console.log('User unsubscribed from push notifications');
+            if (hasDeleted) {
+                console.log('User unsubscribed from push notifications (FCM token deleted)');
             }
         } catch (error) {
             console.error('Failed to unsubscribe user:', error);
@@ -70,40 +74,19 @@ class NotificationService {
     }
 
     async getSubscriptionStatus() {
-        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window) || !messagingPromise) {
             return false;
         }
 
         try {
-            // Use a timeout for .ready to avoid hanging if SW is broken
-            const registration = await Promise.race([
-                navigator.serviceWorker.ready,
-                new Promise<null>((_, reject) => setTimeout(() => reject(new Error('SW ready timeout')), 3000))
-            ]);
-
-            if (!registration) return false;
-
-            const subscription = await registration.pushManager.getSubscription();
-            return !!subscription;
+            if (Notification.permission === 'granted') {
+                return true;
+            }
+            return false;
         } catch (error) {
             console.warn('Failed to get subscription status:', error);
             return false;
         }
-    }
-
-    private urlBase64ToUint8Array(base64String: string) {
-        const padding = '='.repeat((4 - base64String.length % 4) % 4);
-        const base64 = (base64String + padding)
-            .replace(/\-/g, '+')
-            .replace(/_/g, '/');
-
-        const rawData = window.atob(base64);
-        const outputArray = new Uint8Array(rawData.length);
-
-        for (let i = 0; i < rawData.length; ++i) {
-            outputArray[i] = rawData.charCodeAt(i);
-        }
-        return outputArray;
     }
 }
 

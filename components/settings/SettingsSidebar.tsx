@@ -15,7 +15,8 @@ export type SettingsCategory =
     | 'pos'
     | 'inventory'
     | 'verification'
-    | 'billing';
+    | 'billing'
+    | 'notifications';
 
 interface SettingsSidebarProps {
     activeCategory: SettingsCategory;
@@ -29,6 +30,7 @@ const categories = [
     { id: 'inventory' as const, label: 'Inventory', icon: PackageIcon, description: 'Stock rules', color: 'bg-amber-500' },
     { id: 'verification' as const, label: 'Verification', icon: ShieldCheckIcon, description: 'Business status', color: 'bg-slate-500' },
     { id: 'billing' as const, label: 'Plans & Billing', icon: CreditCardIcon, description: 'Subscription info', color: 'bg-rose-500' },
+    { id: 'notifications' as const, label: 'Notifications', icon: BuildingStorefrontIcon, description: 'Push & alert settings', color: 'bg-purple-500' },
 ];
 
 const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeCategory, onCategoryChange }) => {

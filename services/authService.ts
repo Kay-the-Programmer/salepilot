@@ -1,10 +1,25 @@
+/**
+ * services/authService.ts
+ *
+ * Handles all user-facing authentication flows for SalePilot.
+ * Works in conjunction with Firebase Auth for Google Sign-In and token management.
+ *
+ * Flow for Google login:
+ *   1. signInWithGoogle() → Firebase popup → FirebaseUser
+ *   2. firebaseUser.getIdToken() → ID token string
+ *   3. loginWithGoogle(idToken) → backend /auth/google → our app User + JWT
+ *
+ * The app JWT (stored in localStorage) is used for every API call.
+ * Firebase Auth is used for Google sign-in and password-reset emails only.
+ */
 import { User } from '../types';
 import { api } from './api';
-import { sendResetEmail } from './firebase/auth';
+import { sendResetEmail, firebaseSignOut } from './firebase/auth';
 
 const CURRENT_USER_KEY = 'salePilotUser';
 
-// --- Private Helper ---
+// ─── Private helpers ──────────────────────────────────────────────────────────
+
 const normalizeRole = (role: any): User['role'] => {
     const r = String(role || '').toLowerCase().trim();
     if (['superadmin', 'super-user', 'super_user', 'superuser', 'owner', 'root'].includes(r)) return 'superadmin';
@@ -24,10 +39,12 @@ const normalizeUser = (u: any): User => ({
     role: normalizeRole(u.role),
     token: u.token,
     currentStoreId: u.currentStoreId || u.current_store_id,
+    profilePicture: u.profilePicture || u.profile_picture,
     isVerified: u.isVerified || u.is_verified,
     subscriptionStatus: u.subscriptionStatus || u.subscription_status,
     subscriptionEndsAt: u.subscriptionEndsAt || u.subscription_ends_at,
     subscriptionPlan: u.subscriptionPlan || u.subscription_plan,
+    onboardingState: u.onboardingState || u.onboarding_state,
 });
 
 const updateStoredUser = (updatedFields: Partial<User>): User | null => {
@@ -40,61 +57,82 @@ const updateStoredUser = (updatedFields: Partial<User>): User | null => {
     return null;
 };
 
+// ─── Public API ───────────────────────────────────────────────────────────────
 
-// --- Public API ---
-
+/** Email / password login → backend JWT */
 export const login = async (email: string, password?: string): Promise<User> => {
     const user = await api.post<User>('/auth/login', { email, password });
     const normalized = normalizeUser(user);
-    if (normalized && normalized.token) {
+    if (normalized?.token) {
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
         return normalized;
     }
     throw new Error('Login failed: No user data or token returned.');
 };
 
+/** New business account registration */
 export const register = async (name: string, email: string, password?: string): Promise<User> => {
     const u = await api.post<User>('/auth/register', { name, email, password });
     return normalizeUser(u);
 };
 
+/** Customer self-registration */
 export const registerCustomer = async (name: string, email: string, password?: string): Promise<User> => {
     const u = await api.post<User>('/auth/register-customer', { name, email, password });
     const normalized = normalizeUser(u);
-    if (normalized && normalized.token) {
+    if (normalized?.token) {
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
-        return normalized;
     }
     return normalized;
 };
 
-export const loginWithGoogle = async (idToken: string, role?: 'business' | 'customer'): Promise<User> => {
-    const user = await api.post<User>('/auth/google', { idToken: idToken, role: role });
+/**
+ * Exchanges a Firebase ID token for an app-level session.
+ * Called after signInWithGoogle() on the frontend.
+ *
+ * @param idToken  - Firebase ID token from firebaseUser.getIdToken()
+ * @param role     - Hint for first-time users ('business' | 'customer')
+ */
+export const loginWithGoogle = async (
+    idToken: string,
+    role?: 'business' | 'customer'
+): Promise<User> => {
+    const user = await api.post<User>('/auth/google', { idToken, role });
     const normalized = normalizeUser(user);
-    if (normalized && normalized.token) {
+    if (normalized?.token) {
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
         return normalized;
     }
     throw new Error('Google Login failed: No user data returned.');
 };
 
+/**
+ * Clears the local session.
+ * Also signs out of Firebase Auth so the Google popup resets properly.
+ */
 export const logout = (): void => {
     localStorage.removeItem(CURRENT_USER_KEY);
+    // Fire-and-forget: sign out of Firebase too so the Google session is cleared
+    firebaseSignOut().catch(() => { });
 };
 
+/** Returns the currently stored user from localStorage (synchronous). */
 export const getCurrentUser = (): User | null => {
     const userJson = localStorage.getItem(CURRENT_USER_KEY);
     if (!userJson) return null;
-
     try {
         const raw = JSON.parse(userJson);
         return normalizeUser(raw);
-    } catch (error) {
-        console.error("Failed to parse user from localStorage", error);
+    } catch {
+        console.error('[authService] Failed to parse user from localStorage');
         return null;
     }
 };
 
+/**
+ * Sends a Firebase-powered password-reset email.
+ * Uses Firebase directly — no backend call needed.
+ */
 export const forgotPassword = async (email: string): Promise<void> => {
     await sendResetEmail(email);
 };
@@ -106,9 +144,8 @@ export const getUsers = async (): Promise<User[]> => {
 
 export const saveUser = (user: Omit<User, 'id'>, id?: string): Promise<User> => {
     if (id) {
-        // If we are updating the current user, update localStorage too
         const currentUser = getCurrentUser();
-        if (currentUser && currentUser.id === id) {
+        if (currentUser?.id === id) {
             updateStoredUser(user);
         }
         return api.put<User>(`/users/${id}`, user) as Promise<any>;
@@ -120,12 +157,16 @@ export const deleteUser = (userId: string): Promise<void> => {
     return api.delete<void>(`/users/${userId}`);
 };
 
+/** Verifies the current session against the backend (refreshes user data). */
 export const verifySession = async (): Promise<User> => {
     const u = await api.get<User>('/auth/me');
     return normalizeUser(u);
 };
 
-export const changePassword = (passwordData: { currentPassword: string, newPassword: string }): Promise<void> => {
+export const changePassword = (passwordData: {
+    currentPassword: string;
+    newPassword: string;
+}): Promise<void> => {
     return api.post('/auth/change-password', passwordData);
 };
 
@@ -137,6 +178,9 @@ export const resendVerificationEmail = async (email?: string): Promise<void> => 
     await api.post('/auth/resend-verification', { email });
 };
 
-export const resetPassword = async (token: string, newPassword: string): Promise<void> => {
+export const resetPassword = async (
+    token: string,
+    newPassword: string
+): Promise<void> => {
     await api.post('/auth/reset-password', { token, newPassword });
 };

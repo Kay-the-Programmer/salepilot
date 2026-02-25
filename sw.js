@@ -176,27 +176,50 @@ self.addEventListener('fetch', (event) => {
 // --- Push Notifications ---
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'New Notification', body: 'You have a new message from SalePilot.' };
+  let payload = {
+    title: 'SalePilot Notification',
+    body: 'You have a new message.',
+    icon: '/images/salepilot.png',
+    data: { url: '/' }
+  };
 
   if (event.data) {
     try {
-      data = event.data.json();
+      const rawData = event.data.json();
+      console.log('Push received with data:', rawData);
+
+      // Handle FCM format (nested notification object) or direct format
+      const notification = rawData.notification || rawData;
+      const data = rawData.data || rawData;
+
+      payload.title = notification.title || payload.title;
+      payload.body = notification.body || notification.message || payload.body;
+      payload.icon = notification.icon || notification.imageUrl || payload.icon;
+      payload.data = {
+        ...payload.data,
+        ...data
+      };
+
+      if (notification.actions) {
+        payload.actions = notification.actions;
+      }
     } catch (e) {
-      data = { title: 'New Notification', body: event.data.text() };
+      console.warn('Push received with non-JSON data:', event.data.text());
+      payload.body = event.data.text() || payload.body;
     }
   }
 
   const options = {
-    body: data.body,
-    icon: data.icon || '/images/salepilot.png',
+    body: payload.body,
+    icon: payload.icon,
     badge: '/images/salepilot.png',
-    data: data.data || { url: '/' },
+    data: payload.data,
     vibrate: [100, 50, 100],
-    actions: data.actions || []
+    actions: payload.actions || []
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
+    self.registration.showNotification(payload.title, options)
   );
 });
 

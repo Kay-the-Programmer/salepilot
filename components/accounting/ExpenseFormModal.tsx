@@ -150,7 +150,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
                 className="bg-white dark:bg-slate-950 w-full max-w-lg rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh] relative"
                 onClick={(e) => e.stopPropagation()}
             >
-                <form onSubmit={handleSubmit} className="flex flex-col h-full">
+                <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
                     {/* Header */}
                     <div className="px-8 pt-8 pb-4 flex items-center justify-between">
                         <div className="flex items-center gap-3">
