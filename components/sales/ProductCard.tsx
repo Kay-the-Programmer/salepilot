@@ -47,14 +47,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div
                 onClick={() => !isSoldOut && addToCart(product)}
                 className={`
-                    group relative bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10
-                    transition-all duration-300 hover:shadow-lg hover:-translate-y-1 overflow-hidden cursor-pointer
+                    group relative bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/50 dark:border-white/10
+                    transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgb(255,255,255,0.03)] hover:scale-[1.02] overflow-hidden cursor-pointer
                     ${isSoldOut ? 'opacity-60 grayscale' : ''}
-                    ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
+                    ${cartItem ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-slate-900 border-transparent' : ''}
                 `}
             >
                 {/* Image Container */}
-                <div className="aspect-square bg-white dark:bg-slate-800 relative overflow-hidden">
+                <div className="aspect-square bg-slate-50 dark:bg-slate-900/50 relative overflow-hidden">
                     {product.imageUrls?.[0] ? (
                         <img
                             src={buildAssetUrl(product.imageUrls[0])}
@@ -101,12 +101,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     </div>
 
                     {/* Quick Add Overlay */}
-                    <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity duration-200 ${cartItem ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
-                        <div className="liquid-glass-card rounded-[2rem] w-12 h-12 dark:bg-slate-800 flex items-center justify-center transform transition-transform duration-200 hover:scale-110">
+                    <div className={`absolute inset-0 bg-white/20 dark:bg-black/40 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${cartItem ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                        <div className="w-14 h-14 bg-white/90 dark:bg-slate-800/90 rounded-full shadow-[0_4px_20px_rgb(0,0,0,0.15)] backdrop-blur-xl border border-white/50 dark:border-white/10 flex items-center justify-center hover:scale-110 active:scale-90 transition-all duration-300">
                             {cartItem ? (
-                                <span className="font-bold text-blue-600 dark:text-blue-400 text-lg">{cartItem.quantity}</span>
+                                <span className="font-extrabold text-blue-600 dark:text-blue-400 text-xl">{cartItem.quantity}</span>
                             ) : (
-                                <PlusIcon className="w-6 h-6 text-slate-900 dark:text-white" />
+                                <PlusIcon className="w-6 h-6 text-slate-800 dark:text-white" />
                             )}
                         </div>
                     </div>
@@ -129,13 +129,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                             <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                                 <button
                                     onClick={() => handleUpdateQuantity(-getStepFor(product.unitOfMeasure))}
-                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
+                                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold transition-all active:scale-90 duration-300 shadow-sm"
                                 >
                                     -
                                 </button>
                                 <button
                                     onClick={() => handleUpdateQuantity(getStepFor(product.unitOfMeasure))}
-                                    className="w-7 h-7 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
+                                    className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold transition-all active:scale-90 duration-300 shadow-sm"
                                 >
                                     +
                                 </button>
@@ -152,14 +152,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <div
                 onClick={() => !isSoldOut && addToCart(product)}
                 className={`
-                    group bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 p-3
-                    transition-all duration-200 hover:shadow-md cursor-pointer flex items-center gap-4
+                    group relative bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/50 dark:border-white/10 p-3
+                    transition-all duration-300 hover:shadow-[0_4px_20px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_4px_20px_rgb(255,255,255,0.03)] hover:scale-[1.01] cursor-pointer flex items-center gap-4 overflow-hidden
                     ${isSoldOut ? 'opacity-60 grayscale' : ''}
-                    ${cartItem ? 'ring-2 ring-blue-500 border-transparent' : ''}
+                    ${cartItem ? 'ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-slate-900 border-transparent' : ''}
                 `}
             >
                 {/* Image */}
-                <div className="w-20 h-20 flex-shrink-0 bg-slate-100 dark:bg-white/5 rounded-lg overflow-hidden relative">
+                <div className="w-20 h-20 flex-shrink-0 bg-slate-50 dark:bg-white/5 rounded-xl overflow-hidden relative">
                     {product.imageUrls?.[0] ? (
                         <img
                             src={buildAssetUrl(product.imageUrls[0])}
@@ -180,9 +180,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                     )}
 
                     {cartItem && (
-                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <div className="w-8 h-8 bg-white dark:bg-slate-800 rounded-full flex items-center justify-center">
-                                <span className="font-bold text-blue-600 dark:text-blue-400 text-sm">{cartItem.quantity}</span>
+                        <div className="absolute inset-0 bg-white/20 dark:bg-black/40 backdrop-blur-sm flex items-center justify-center">
+                            <div className="w-10 h-10 bg-white/90 dark:bg-slate-800/90 rounded-full shadow-md flex items-center justify-center">
+                                <span className="font-extrabold text-blue-600 dark:text-blue-400 text-base">{cartItem.quantity}</span>
                             </div>
                         </div>
                     )}
@@ -231,16 +231,16 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                         </div>
                     </div>
                     {cartItem && (
-                        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
                             <button
                                 onClick={() => handleUpdateQuantity(-getStepFor(product.unitOfMeasure))}
-                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
+                                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold transition-all active:scale-90 duration-300 shadow-sm"
                             >
                                 -
                             </button>
                             <button
                                 onClick={() => handleUpdateQuantity(getStepFor(product.unitOfMeasure))}
-                                className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-600 dark:text-gray-400 transition-colors active:scale-95 transition-all duration-300"
+                                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-800 dark:text-white font-bold transition-all active:scale-90 duration-300 shadow-sm"
                             >
                                 +
                             </button>
@@ -265,13 +265,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <button
                 onClick={handleAddToCart}
                 className={`
-                    bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-white/10 p-1 text-left relative
-                    transition-all duration-200 active:scale-95 h-full flex flex-col
-                    ${isTapping ? 'animate-card-tap ring-2 ring-blue-500 border-transparent shadow-lg shadow-blue-500/20' : ''}
-                    ${cartItem ? 'ring-1 ring-blue-200 dark:ring-blue-500/30' : ''}
+                    bg-white dark:bg-slate-800 rounded-2xl border border-slate-200/50 dark:border-white/10 p-1.5 text-left relative
+                    transition-all duration-300 hover:shadow-md active:scale-90 h-full flex flex-col
+                    ${isTapping ? 'animate-card-tap ring-2 ring-blue-500 border-transparent shadow-[0_4px_20px_rgb(59,130,246,0.3)]' : ''}
+                    ${cartItem ? 'ring-2 ring-blue-500 ring-offset-1 dark:ring-offset-slate-800 border-transparent' : ''}
                 `}
             >
-                <div className="aspect-square bg-slate-100 dark:bg-white/5 rounded-lg mb-2 overflow-hidden relative">
+                <div className="aspect-square bg-slate-50 dark:bg-white/5 rounded-xl mb-2 overflow-hidden relative">
                     {product.imageUrls?.[0] ? (
                         <img
                             src={buildAssetUrl(product.imageUrls[0])}

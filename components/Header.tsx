@@ -56,7 +56,7 @@ export default function Header({
     };
 
     return (
-        <header className={`glass-effect sticky top-0 z-30 transition-all duration-300 ${className}`}>
+        <header className={`bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-white/20 dark:border-white/5 sticky top-0 z-30 transition-all duration-300 ${className}`}>
             <div className="px-4 h-16 flex items-center justify-between">
                 {title && (
                     <div className="flex items-center flex-1 min-w-0 mr-4">
@@ -69,7 +69,7 @@ export default function Header({
                                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                             </button>
                         )}
-                        <h1 className="text-xl font-bold text-slate-700 uppercase dark:text-white truncate">{title}</h1>
+                        <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase dark:text-white truncate">{title}</h1>
                     </div>
                 )}
 
@@ -90,14 +90,14 @@ export default function Header({
                     )}
 
                     {(searchLeftContent || rightContent || showSearch || (buttonText && onButtonClick)) && (
-                        <div className="flex items-center gap-3 p-1 rounded-2xl bg-slate-200 dark:bg-slate-800/50 border border-gray-100/50 dark:border-white/10 backdrop-blur-sm shadow-sm" >
+                        <div className="flex items-center gap-3 p-1.5 rounded-full bg-slate-100/80 dark:bg-slate-800/60 border border-white/50 dark:border-white/10 backdrop-blur-md shadow-[0_2px_10px_rgb(0,0,0,0.05)] dark:shadow-none" >
                             {searchLeftContent}
                             {rightContent}
 
                             {showSearch && (
                                 <div className={`flex items-center transition-all duration-300 ${isSearchActive ? 'w-48 lg:w-64' : 'w-10'}`}>
                                     {isSearchActive ? (
-                                        <div className="flex items-center w-full bg-gray-100/80 dark:bg-slate-900/40 rounded-xl px-2.5 h-9 border border-gray-200/50 dark:border-white/5 animate-fadeIn">
+                                        <div className="flex items-center w-full bg-white dark:bg-slate-900/60 rounded-full px-3 h-10 border border-slate-200/60 dark:border-white/10 shadow-inner animate-fadeIn">
                                             <svg className="w-4 h-4 text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                             </svg>
@@ -119,7 +119,7 @@ export default function Header({
                                     ) : (
                                         <button
                                             onClick={() => setIsSearchActive(true)}
-                                            className="p-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-xl hover:bg-gray-100/80 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
+                                            className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-full hover:bg-white dark:hover:bg-slate-700 shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all active:scale-90 duration-300"
                                             aria-label="Search"
                                         >
                                             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -134,7 +134,7 @@ export default function Header({
                                 <button
                                     id="header-action-button"
                                     onClick={onButtonClick}
-                                    className="ml-1 flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all hover:shadow-md active:scale-95 whitespace-nowrap"
+                                    className="ml-1 flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-bold shadow-md shadow-blue-500/20 transition-all hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 whitespace-nowrap"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     <span className="hidden sm:inline">{buttonText}</span>

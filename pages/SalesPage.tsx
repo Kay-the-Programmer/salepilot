@@ -689,13 +689,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
             </div>
 
             {/* Right Column - Cart & Checkout */}
-            <aside className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-white/10 z-20" aria-label="Shopping cart">
+            <aside className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-l border-slate-200/50 dark:border-white/5 shadow-[-10px_0_30px_rgba(0,0,0,0.03)] dark:shadow-[-10px_0_30px_rgba(255,255,255,0.01)] z-20" aria-label="Shopping cart">
                 {/* Cart Header */}
-                <div className="flex-none px-4 py-3 border-b border-slate-100 dark:border-white/5">
+                <div className="flex-none px-5 py-4 border-b border-slate-200/50 dark:border-white/5 backdrop-blur-md">
                     <div className="flex items-center justify-between">
                         <div className="hidden md:block">
-                            <h2 className="text-base font-semibold text-slate-800 dark:text-white">Cart</h2>
-                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 tabular-nums">
+                            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Cart</h2>
+                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">
                                 {cart.length} {cart.length === 1 ? 'item' : 'items'}
                                 {cart.length > 0 && (
                                     <span className="ml-1.5">· {formatCurrency(subtotal, storeSettings)}</span>
@@ -705,7 +705,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         {cart.length > 0 && (
                             <button
                                 onClick={clearCart}
-                                className="text-xs font-medium text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded px-1 py-0.5"
+                                className="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all rounded-full px-3 py-1.5 active:scale-95 shadow-sm"
                                 aria-label="Clear all items from cart"
                             >
                                 Clear

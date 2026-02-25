@@ -159,7 +159,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                     <div
                                         key={item.productId}
                                         className={`
-                                            bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-100 dark:border-white/5 shadow-sm hover:shadow-md transition-shadow 
+                                            bg-white dark:bg-slate-800/80 p-4 rounded-[1.5rem] border border-slate-100 dark:border-white/5 shadow-sm 
                                             animate-cart-item
                                             ${removingItems.includes(item.productId) ? 'animate-cart-item-exit' : ''}
                                         `}
@@ -173,31 +173,31 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                 <p className="font-extrabold text-slate-900 dark:text-white text-lg">{formatCurrency(item.price * item.quantity, storeSettings)}</p>
                                             </div>
                                         </div>
-                                        <div className="flex items-center justify-between bg-slate-50 dark:bg-white/5 p-2 rounded-xl">
-                                            <div className="flex items-center gap-4">
+                                        <div className="flex items-center justify-between mt-4">
+                                            <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 p-1.5 rounded-full border border-slate-100 dark:border-white/5 shadow-inner">
                                                 <button
                                                     onClick={() => updateQuantity(item.productId, item.quantity - getStepFor(item.unitOfMeasure))}
-                                                    className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 hover:border-slate-300 shadow-sm transition-all active:scale-95"
+                                                    className="w-9 h-9 rounded-full bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-800 dark:text-white flex items-center justify-center shadow-sm border border-slate-200/50 dark:border-transparent transition-all active:scale-90 duration-300"
                                                 >
-                                                    <span className="text-slate-600 dark:text-white font-bold text-lg">-</span>
+                                                    <span className="font-bold text-xl leading-none">−</span>
                                                 </button>
-                                                <span className="font-bold text-xl text-slate-900 dark:text-white w-12 text-center">
+                                                <span className="font-bold text-lg text-slate-900 dark:text-white w-14 text-center">
                                                     {item.quantity}
                                                     {item.unitOfMeasure === 'kg' && <span className="text-xs text-slate-500 dark:text-gray-500 ml-0.5">kg</span>}
                                                 </span>
                                                 <button
                                                     onClick={() => updateQuantity(item.productId, item.quantity + getStepFor(item.unitOfMeasure))}
-                                                    className="w-10 h-10 rounded-xl bg-white dark:bg-slate-700 border border-slate-200 dark:border-white/10 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-600 hover:border-slate-300 shadow-sm transition-all active:scale-95"
+                                                    className="w-9 h-9 rounded-full bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-800 dark:text-white flex items-center justify-center shadow-sm border border-slate-200/50 dark:border-transparent transition-all active:scale-90 duration-300"
                                                 >
-                                                    <span className="text-slate-600 dark:text-white font-bold text-lg">+</span>
+                                                    <span className="font-bold text-xl leading-none">+</span>
                                                 </button>
                                             </div>
                                             <button
                                                 onClick={() => handleRemoveWithAnimation(item.productId)}
-                                                className="text-slate-400 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 p-2 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors active:scale-95 transition-all duration-300"
+                                                className="p-2.5 hover:bg-red-50 dark:hover:bg-red-500/10 active:bg-red-100 dark:active:bg-red-500/20 rounded-full transition-all duration-300 active:scale-90"
                                                 title="Remove item"
                                             >
-                                                <XMarkIcon className="w-6 h-6" />
+                                                <XMarkIcon className="w-6 h-6 text-slate-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400" />
                                             </button>
                                         </div>
                                     </div>
@@ -208,7 +208,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                             {!isScannerOpen && (
                                 <div className="px-4 pb-4 space-y-6">
                                     {/* Customer Select */}
-                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-white/10">
+                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-[1.5rem] border border-slate-200/50 dark:border-white/10">
                                         <label className="block text-sm font-medium text-slate-900 dark:text-white mb-2">Customer</label>
                                         <CustomerSelect
                                             customers={customers}
@@ -221,7 +221,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                     </div>
 
                                     {/* Summary & Payment */}
-                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-white/10 space-y-4">
+                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-[1.5rem] border border-slate-200/50 dark:border-white/10 space-y-4">
                                         <div className="space-y-2 text-sm">
                                             <div className="flex justify-between">
                                                 <span className="text-slate-600 dark:text-gray-400">Subtotal</span>
@@ -255,7 +255,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                 <select
                                                     value={selectedPaymentMethod}
                                                     onChange={(e) => setSelectedPaymentMethod(e.target.value)}
-                                                    className="w-full pl-3 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-white/10 rounded-lg text-slate-900 dark:text-white font-medium focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none transition-all cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-95 transition-all duration-300"
+                                                    className="w-full pl-4 pr-10 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-200/50 dark:border-white/10 rounded-[1.25rem] text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600 active:scale-95 transition-all duration-300 shadow-inner"
                                                 >
                                                     {(storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
                                                         ? storeSettings.paymentMethods.map(method => (
@@ -284,7 +284,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                     type="text"
                                                     value={mobileMoneyNumber}
                                                     onChange={(e) => setMobileMoneyNumber(e.target.value)}
-                                                    className="w-full p-2 border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-bold text-lg"
+                                                    className="w-full p-4 border border-slate-200/50 dark:border-white/10 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-[1.25rem] font-bold text-lg shadow-inner focus:ring-2 focus:ring-blue-500 outline-none"
                                                     placeholder="e.g. 0961111111"
                                                 />
                                             </div>
@@ -298,7 +298,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                     type="number"
                                                     value={cashReceived}
                                                     onChange={(e) => setCashReceived(e.target.value)}
-                                                    className="w-full p-2 border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg font-bold text-lg"
+                                                    className="w-full p-4 border border-slate-200/50 dark:border-white/10 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white rounded-[1.25rem] font-bold text-lg shadow-inner focus:ring-2 focus:ring-blue-500 outline-none"
                                                     placeholder="0.00"
                                                 />
                                                 {changeDue > 0 && (
@@ -313,9 +313,9 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                             <button
                                                 id="pos-mobile-hold-btn"
                                                 onClick={onHoldSale}
-                                                className="py-3 bg-orange-100 text-orange-700 rounded-lg font-medium flex items-center justify-center gap-2"
+                                                className="col-span-1 py-3.5 bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 rounded-full font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
                                             >
-                                                <ClockIcon className="w-5 h-5" />
+                                                <ClockIcon className="w-[18px] h-[18px]" />
                                                 Hold
                                             </button>
 
@@ -323,7 +323,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                 id="pos-mobile-pay-btn"
                                                 onClick={() => processTransaction('paid')}
                                                 disabled={total < 0 || (isCashMethod && parseFloat(cashReceived || '0') < total) || isProcessing}
-                                                className="py-3 bg-blue-600 text-white rounded-lg font-bold disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
+                                                className="col-span-2 py-3.5 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-full font-extrabold disabled:opacity-50 flex items-center justify-center gap-2 text-base active:scale-95 transition-all shadow-md hover:shadow-lg"
                                             >
                                                 {isProcessing ? (
                                                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -336,7 +336,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                         <button
                                             onClick={() => processTransaction('invoice')}
                                             disabled={cart.length === 0 || total < 0 || !selectedCustomer || isProcessing}
-                                            className="w-full py-3 px-4 bg-slate-100 dark:bg-slate-700 text-slate-900 dark:text-white font-semibold rounded-lg border border-slate-300 dark:border-white/10 disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+                                            className="w-full py-3.5 px-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold rounded-full border border-slate-200/50 dark:border-white/10 disabled:opacity-50 flex items-center justify-center gap-2 mt-2 active:scale-95 transition-all shadow-sm"
                                         >
                                             {isProcessing ? (
                                                 <div className="w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
@@ -396,7 +396,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                         ) : (
                             <button
                                 onClick={() => setIsScannerOpen(true)}
-                                className="w-full py-3.5 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg shadow-blue-500/30 transition-all flex items-center justify-center gap-3 group active:scale-95"
+                                className="w-full py-4 bg-blue-600 text-white rounded-[1.25rem] font-bold hover:bg-blue-700 shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center gap-3"
                             >
                                 <QrCodeIcon className="w-5 h-5 text-white/90" />
                                 <span>Scan Product</span>

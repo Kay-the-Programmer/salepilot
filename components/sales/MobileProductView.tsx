@@ -43,7 +43,7 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                             {onOpenSidebar && (
                                 <button
                                     onClick={onOpenSidebar}
-                                    className="p-2 -ml-2 rounded-md text-slate-700 hover:bg-slate-50 focus:outline-none active:scale-95 transition-all duration-300"
+                                    className="p-2 -ml-2 rounded-full text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/50 focus:outline-none active:scale-90 transition-all duration-300"
                                 >
                                     <GridIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
                                 </button>
@@ -70,23 +70,23 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                 </div>
 
                 {/* Search Bar (Sticky) */}
-                <div id="pos-mobile-search-container" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-white/5 px-4 pb-4 pt-2">
+                <div id="pos-mobile-search-container" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-white/20 dark:border-white/5 px-4 pb-4 pt-2">
                     <div className="relative">
-                        <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                        <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                         <input
                             id="pos-mobile-search"
                             type="text"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                             placeholder="Search products..."
-                            className="w-full pl-10 pr-4 py-3 border border-slate-300 dark:border-white/10 rounded-3xl bg-slate-50/80 dark:bg-slate-800/80 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                            className="w-full pl-11 pr-4 py-3 border border-slate-200/60 dark:border-white/10 rounded-full bg-white dark:bg-slate-900/60 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-inner transition-all"
                         />
                     </div>
                 </div>
             </div>
             {/* Mobile Products Grid */}
             <div id="pos-mobile-product-list" className="p-4 pb-24">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 gap-4">
                     {products.slice(0, 30).map((product, index) => (
                         <div
                             key={product.id}

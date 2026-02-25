@@ -65,7 +65,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                                 if (!searchTerm) setIsSearchExpanded(false);
                             }}
                             placeholder="Search products…"
-                            className="w-full pl-9 pr-9 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            className="w-full pl-9 pr-9 py-2 bg-white dark:bg-slate-900/60 border border-slate-200/60 dark:border-white/10 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 shadow-inner transition-all"
                         />
                         {searchTerm && (
                             <button
@@ -83,7 +83,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                 ) : (
                     <button
                         onClick={() => setIsSearchExpanded(true)}
-                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
+                        className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-full hover:bg-white dark:hover:bg-slate-700 shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90 transition-all duration-300"
                         aria-label="Search products"
                     >
                         <MagnifyingGlassIcon className="w-[18px] h-[18px]" />
@@ -101,7 +101,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
             <button
                 id="pos-held-btn"
                 onClick={onOpenHeldSales}
-                className="relative flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
+                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90 transition-all duration-300"
                 aria-label={`View held sales${heldSalesCount > 0 ? ` (${heldSalesCount})` : ''}`}
             >
                 <ClockIcon className="w-[18px] h-[18px]" />
@@ -116,7 +116,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
             {/* Help */}
             <button
                 onClick={onTourStart}
-                className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
+                className="p-2 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-full hover:bg-white dark:hover:bg-slate-700 shadow-sm border border-transparent hover:border-slate-200 dark:hover:border-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-90 transition-all duration-300"
                 aria-label="Launch help guide"
             >
                 <QuestionMarkCircleIcon className="w-[18px] h-[18px]" />

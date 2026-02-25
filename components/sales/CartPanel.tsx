@@ -33,18 +33,19 @@ export const CartPanel: React.FC<CartPanelProps> = ({
             {
                 cart.length === 0 ? (
                     <div className="p-8 text-center h-full flex flex-col items-center justify-center">
-                        <div className="w-16 h-16 bg-gradient-to-br from-slate-100 dark:from-white/5 to-slate-200 dark:to-white/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <div className="w-16 h-16 bg-gradient-to-br from-slate-100 dark:from-white/5 to-slate-200 dark:to-white/10 rounded-[2rem] shadow-sm flex items-center justify-center mx-auto mb-4">
                             <ShoppingCartIcon className="w-8 h-8 text-slate-400 dark:text-slate-600" />
                         </div>
                         <p className="text-slate-700 dark:text-white font-medium mb-2">Your cart is empty</p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-slate-100 dark:divide-white/5 w-full">
+                    <div className="w-full pb-4 pt-2 px-3 space-y-3">
                         {cart.map(item => (
                             <div
                                 key={item.productId}
                                 className={`
-                                    px-4 py-4 sm:py-5 hover:bg-slate-50/50 dark:hover:bg-white/5 transition-colors duration-200 border-b border-slate-100 dark:border-white/5 last:border-b-0 group 
+                                    bg-white dark:bg-slate-800/80 rounded-[1.5rem] border border-slate-100 dark:border-white/5 shadow-sm p-4 sm:p-5 group
+                                    transition-all duration-300 hover:shadow-md hover:scale-[1.01]
                                     animate-cart-item
                                     ${removingItems.includes(item.productId) ? 'animate-cart-item-exit' : ''}
                                 `}
@@ -78,20 +79,20 @@ export const CartPanel: React.FC<CartPanelProps> = ({
                                     {/* Controls Section */}
                                     <div className="flex items-center justify-between sm:flex-col sm:items-end sm:justify-start sm:gap-4">
                                         {/* Quantity Controls */}
-                                        <div className="flex items-center gap-2 sm:gap-3">
+                                        <div className="flex items-center bg-slate-50 dark:bg-slate-900/50 p-1.5 rounded-full border border-slate-100 dark:border-white/5 shadow-inner">
                                             <button
                                                 onClick={() => updateQuantity(item.productId, item.quantity - getStepFor(item.unitOfMeasure))}
-                                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 flex items-center justify-center transition-all duration-150 active:scale-95"
+                                                className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-800 dark:text-white flex items-center justify-center shadow-sm border border-slate-200/50 dark:border-transparent transition-all active:scale-90 duration-300"
                                                 aria-label="Decrease quantity"
                                             >
-                                                <span className="font-bold text-slate-700 dark:text-white text-lg">−</span>
+                                                <span className="font-bold text-lg leading-none">−</span>
                                             </button>
 
                                             <input
                                                 type="number"
                                                 value={item.quantity}
                                                 onChange={(e) => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
-                                                className="w-16 sm:w-14 px-2 py-2 sm:py-1.5 border border-slate-300 dark:border-white/10 rounded-lg text-center text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                                                className="w-14 text-center text-sm font-bold bg-transparent border-none focus:outline-none focus:ring-0 text-slate-900 dark:text-white"
                                                 min="0"
                                                 step={item.unitOfMeasure === 'kg' ? '0.1' : '1'}
                                                 aria-label={`Quantity of ${item.name}`}
@@ -99,17 +100,17 @@ export const CartPanel: React.FC<CartPanelProps> = ({
 
                                             <button
                                                 onClick={() => updateQuantity(item.productId, item.quantity + getStepFor(item.unitOfMeasure))}
-                                                className="w-9 h-9 sm:w-8 sm:h-8 rounded-lg border border-slate-300 dark:border-white/10 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-white/5 active:bg-slate-100 dark:active:bg-white/10 flex items-center justify-center transition-all duration-150 active:scale-95"
+                                                className="w-8 h-8 rounded-full bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 text-slate-800 dark:text-white flex items-center justify-center shadow-sm border border-slate-200/50 dark:border-transparent transition-all active:scale-90 duration-300"
                                                 aria-label="Increase quantity"
                                             >
-                                                <span className="font-bold text-slate-700 dark:text-white text-lg">+</span>
+                                                <span className="font-bold text-lg leading-none">+</span>
                                             </button>
                                         </div>
 
                                         {/* Remove Button */}
                                         <button
                                             onClick={() => handleRemoveWithAnimation(item.productId)}
-                                            className="p-2.5 sm:p-1.5 hover:bg-red-50 dark:hover:bg-red-500/10 active:bg-red-100 dark:active:bg-red-500/20 rounded-lg transition-all duration-150 group-hover:opacity-100 opacity-0 sm:opacity-100 sm:group-hover:opacity-100"
+                                            className="p-2.5 sm:p-2 hover:bg-red-50 dark:hover:bg-red-500/10 active:bg-red-100 dark:active:bg-red-500/20 rounded-full transition-all duration-300 group-hover:opacity-100 opacity-0 sm:opacity-100 sm:group-hover:opacity-100 active:scale-90"
                                             aria-label={`Remove ${item.name} from cart`}
                                         >
                                             <XMarkIcon className="w-5 h-5 sm:w-4 sm:h-4 text-slate-400 dark:text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors" />
