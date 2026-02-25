@@ -48,29 +48,29 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
     }, []);
 
     return (
-        <header className="px-5 sm:px-8 py-4 bg-slate-50/80 dark:bg-slate-900/90 backdrop-blur-3xl border-b border-slate-200/50 dark:border-white/5 flex items-center justify-between sticky top-0 z-10 w-full animate-glass-appear shadow-sm">
-            <div className="flex items-center gap-3">
+        <header className="px-5 sm:px-6 py-4 bg-white/80 dark:bg-slate-900/90 backdrop-blur-2xl border-b border-slate-200/40 dark:border-white/5 flex items-center justify-between sticky top-0 z-10 w-full animate-glass-appear">
+            <div className="flex items-center gap-3 min-w-0">
                 {onBack && (
                     <button
                         onClick={onBack}
-                        className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors md:hidden active:scale-95 transition-all duration-300"
+                        className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all duration-200 md:hidden active:scale-90 shrink-0"
                         aria-label="Go back"
                     >
-                        <ArrowLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                        <ArrowLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
                     </button>
                 )}
-                <div>
-                    <h1 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100 truncate max-w-[200px] sm:max-w-md md:max-w-lg">
+                <div className="min-w-0">
+                    <h1 className="text-[18px] sm:text-[20px] font-extrabold text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-md tracking-tight">
                         {product.name}
                     </h1>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">SKU: {product.sku || 'N/A'}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block font-medium tracking-wide mt-0.5">SKU: {product.sku || 'N/A'}</p>
                 </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
                 {canManage && (
                     <button
                         onClick={() => onEdit(product)}
-                        className="px-5 py-2.5 bg-white dark:bg-slate-800/80 rounded-[16px] shadow-sm border border-slate-200/50 dark:border-white/5 text-[13px] font-bold tracking-wide flex items-center gap-2 text-slate-700 dark:text-slate-300 transition-all duration-300 hover:shadow-md active:scale-95"
+                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800/80 rounded-full shadow-sm border border-slate-200/40 dark:border-white/5 text-[13px] font-bold flex items-center gap-2 text-slate-700 dark:text-slate-300 transition-all duration-200 hover:shadow-md hover:bg-white dark:hover:bg-slate-700 active:scale-90"
                     >
                         <PencilIcon className="w-4 h-4" />
                         <span className="hidden sm:inline">Edit</span>
@@ -80,43 +80,43 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="p-2.5 bg-white dark:bg-slate-800/80 rounded-[16px] shadow-sm border border-slate-200/50 dark:border-white/5 transition-all duration-300 hover:shadow-md active:scale-95"
+                        className="p-2.5 bg-slate-100 dark:bg-slate-800/80 rounded-full shadow-sm border border-slate-200/40 dark:border-white/5 transition-all duration-200 hover:shadow-md hover:bg-white dark:hover:bg-slate-700 active:scale-90"
                         aria-label="More options"
                     >
                         <EllipsisVerticalIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                     </button>
                     {isMenuOpen && (
-                        <div className="absolute right-0 top-full mt-3 w-56 bg-white/90 dark:bg-slate-800/90 backdrop-blur-3xl rounded-[24px] shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-slate-200/50 dark:border-white/5 z-50 p-2 animate-glass-appear">
-                            <div className="p-2 space-y-1">
+                        <div className="absolute right-0 top-full mt-3 w-56 bg-white/95 dark:bg-slate-800/95 backdrop-blur-2xl rounded-[1.5rem] shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] border border-slate-200/50 dark:border-white/8 z-50 p-2 animate-glass-appear">
+                            <div className="p-1 space-y-0.5">
                                 {canManage && (
                                     <>
                                         <button
                                             onClick={() => { setIsMenuOpen(false); onAdjustStock(product); }}
-                                            className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors active:scale-95 transition-all duration-300"
+                                            className="w-full text-left px-3.5 py-2.5 text-sm text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-all duration-200 active:scale-95 font-medium"
                                         >
-                                            <AdjustmentsHorizontalIcon className="w-4 h-4" />
+                                            <AdjustmentsHorizontalIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                             Adjust Stock
                                         </button>
                                         {onPersonalUse && (
                                             <button
                                                 onClick={() => { setIsMenuOpen(false); onPersonalUse(product); }}
-                                                className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors active:scale-95 transition-all duration-300"
+                                                className="w-full text-left px-3.5 py-2.5 text-sm text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-all duration-200 active:scale-95 font-medium"
                                             >
-                                                <ShoppingCartIcon className="w-4 h-4" />
+                                                <ShoppingCartIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                                 Personal Use
                                             </button>
                                         )}
                                         <button
                                             onClick={() => { setIsMenuOpen(false); onPrintLabel(product); }}
-                                            className="w-full text-left px-3 py-2 text-sm text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-3 transition-colors active:scale-95 transition-all duration-300"
+                                            className="w-full text-left px-3.5 py-2.5 text-sm text-slate-700 dark:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center gap-3 transition-all duration-200 active:scale-95 font-medium"
                                         >
-                                            <PrinterIcon className="w-4 h-4" />
+                                            <PrinterIcon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                             Print Label
                                         </button>
                                         {product.status === 'active' ? (
                                             <button
                                                 onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
-                                                className="w-full text-left px-3 py-2 text-sm text-amber-700 dark:text-amber-400 rounded-lg hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center gap-3 transition-colors active:scale-95 transition-all duration-300"
+                                                className="w-full text-left px-3.5 py-2.5 text-sm text-amber-700 dark:text-amber-400 rounded-xl hover:bg-amber-50 dark:hover:bg-amber-900/20 flex items-center gap-3 transition-all duration-200 active:scale-95 font-medium"
                                             >
                                                 <ArchiveBoxIcon className="w-4 h-4" />
                                                 Archive
@@ -124,18 +124,18 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                                         ) : (
                                             <button
                                                 onClick={() => { setIsMenuOpen(false); onArchive(product.id); }}
-                                                className="w-full text-left px-3 py-2 text-sm text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-3 transition-colors active:scale-95 transition-all duration-300"
+                                                className="w-full text-left px-3.5 py-2.5 text-sm text-emerald-700 dark:text-emerald-400 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 flex items-center gap-3 transition-all duration-200 active:scale-95 font-medium"
                                             >
                                                 <RestoreIcon className="w-4 h-4" />
                                                 Restore
                                             </button>
                                         )}
-                                        <div className="border-t border-slate-100 dark:border-slate-700 my-1"></div>
+                                        <div className="border-t border-slate-100 dark:border-slate-700/50 my-1 mx-1" />
                                         <button
                                             onClick={() => { setIsMenuOpen(false); onDelete(product); }}
-                                            className="w-full text-left px-4 py-2.5 text-sm text-red-600 dark:text-red-400 font-bold rounded-xl hover:bg-red-500/10 flex items-center gap-3 transition-all active:scale-95"
+                                            className="w-full text-left px-3.5 py-2.5 text-sm text-red-600 dark:text-red-400 font-bold rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 flex items-center gap-3 transition-all duration-200 active:scale-95"
                                         >
-                                            <TrashIcon className="w-5 h-5" />
+                                            <TrashIcon className="w-4 h-4" />
                                             Delete
                                         </button>
                                     </>

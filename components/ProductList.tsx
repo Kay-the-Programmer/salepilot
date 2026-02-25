@@ -38,16 +38,14 @@ const ProductCard: React.FC<{
   const imageUrl = React.useMemo(() => {
     if (!product.imageUrls || product.imageUrls.length === 0) return null;
     let url = product.imageUrls[0];
-    // Clean braces if present (backend artifact)
     url = url.replace(/[{}]/g, '');
-
     if (!url) return null;
     if (url.startsWith('data:') || /^https?:\/\//i.test(url)) return url;
-
     return buildAssetUrl(url);
   }, [product.imageUrls]);
 
   const showImage = imageUrl && !imgError;
+  const isLowStock = asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold);
 
   return (
     <div
@@ -56,31 +54,33 @@ const ProductCard: React.FC<{
           onSelect();
         }
       }}
-      className={`group bg-white dark:bg-slate-900 shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] rounded-[1.5rem] transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full active:scale-[0.98] ${isSelected ? 'ring-2 ring-blue-500 shadow-lg scale-100 border-transparent dark:border-transparent' : 'border border-gray-100/50 dark:border-white/5 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]'
+      className={`group bg-white dark:bg-slate-900 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.25)] rounded-[1.75rem] transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full active:scale-[0.97] hover:shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_10px_40px_rgba(0,0,0,0.35)] ${isSelected
+        ? 'ring-2 ring-blue-500 shadow-[0_8px_30px_rgba(59,130,246,0.15)] scale-[1.01] border-transparent'
+        : 'border border-gray-100/50 dark:border-white/5 hover:scale-[1.02]'
         }`}
     >
       {/* Card Header / Image Area */}
-      <div className="relative aspect-[4/3] bg-gray-50/50 dark:bg-slate-800/50 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/80 flex items-center justify-center overflow-hidden">
         {showImage ? (
           <img
             src={imageUrl!}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="text-gray-300">
-            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div className="text-slate-200 dark:text-slate-700">
+            <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
           </div>
         )}
 
-        {/* Status Badge */}
+        {/* Stock Badge */}
         <div className="absolute top-2.5 right-2.5">
-          <span className={`px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide rounded-full backdrop-blur-xl border shadow-sm ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold)
+          <span className={`px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider rounded-full backdrop-blur-xl border shadow-sm ${isLowStock
             ? 'bg-rose-500/90 text-white border-rose-500/20'
-            : 'bg-white/80 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 border-white/40 dark:border-white/10'
+            : 'bg-black/30 text-white border-white/10'
             }`}>
             {asNumber(product.stock)} in stock
           </span>
@@ -91,14 +91,14 @@ const ProductCard: React.FC<{
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
           <div className="flex justify-between items-start mb-1">
-            <div className={`text-[11px] font-medium tracking-wide ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'}`}>{categoryName}</div>
-            <div className="text-[10px] text-gray-400 dark:text-gray-500 font-mono tracking-wider">{product.sku}</div>
+            <div className={`text-[11px] font-bold tracking-wide uppercase ${isSelected ? 'text-blue-500 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>{categoryName}</div>
+            <div className="text-[10px] text-slate-400 dark:text-slate-600 font-mono tracking-wider">{product.sku}</div>
           </div>
-          <h3 className={`font-semibold text-[15px] sm:text-[16px] leading-[1.3] mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
+          <h3 className={`font-bold text-[14px] sm:text-[15px] leading-[1.3] mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
             {product.name}
           </h3>
         </div>
-        <div className="text-[17px] sm:text-[19px] font-semibold tracking-tight text-gray-900 dark:text-white mt-3">
+        <div className="text-[16px] sm:text-[18px] font-extrabold tracking-tight text-gray-900 dark:text-white mt-3">
           {formatPrice(product.price)}
           {product.unitOfMeasure === 'kg' && <span className="text-sm font-medium text-gray-400 dark:text-gray-500"> / kg</span>}
         </div>
@@ -121,46 +121,53 @@ const ProductListRow: React.FC<{
     const n = typeof val === 'number' ? val : parseFloat(val);
     return Number.isFinite(n) ? n : 0;
   };
+  const isLowStock = asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold);
 
   return (
     <div
-      className={`bg-white dark:bg-slate-900 rounded-[1.25rem] shadow-[0_2px_10px_rgba(0,0,0,0.04)] dark:shadow-[0_2px_10px_rgba(0,0,0,0.2)] border border-gray-100/50 dark:border-white/5 p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between transition-all duration-300 ease-out cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] active:scale-[0.98] ${isSelected ? 'ring-2 ring-blue-500 shadow-lg scale-100 border-transparent dark:border-transparent' : ''
+      className={`group bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.25)] border border-gray-100/50 dark:border-white/5 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-300 cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:scale-[1.005] active:scale-[0.98] ${isSelected
+        ? 'ring-2 ring-blue-500 shadow-[0_4px_20px_rgba(59,130,246,0.15)] border-transparent'
+        : ''
         }`}
       onClick={onSelect}
     >
-      <div className="flex-1 min-w-0 mb-3 sm:mb-0 sm:mr-4 w-full">
-        <div className="flex flex-col mb-1 items-start gap-1 sm:gap-2">
-          <h3 className={`font-semibold text-[16px] cursor-pointer truncate mr-2 ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-white'}`}>
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-wrap items-center gap-2 mb-1">
+          <h3 className={`font-bold text-[15px] truncate ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>
             {product.name}
           </h3>
-          <span className={`text-[10px] px-2 py-0.5 font-bold tracking-wide uppercase rounded-full mt-1 ${asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold) ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rose-300' : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-300'}`}>
+          <span className={`text-[10px] px-2.5 py-1 font-extrabold tracking-wider uppercase rounded-full ${isLowStock
+            ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rosese-300'
+            : 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+            }`}>
             {asNumber(product.stock)} in stock
           </span>
         </div>
-        <div className="text-[13px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-4 mt-2">
-          <span className="font-mono text-[12px] text-gray-400 dark:text-gray-500">SKU: {product.sku}</span>
-          <span><span className="text-gray-400 dark:text-gray-500">Category:</span> <span className="font-medium text-slate-700 dark:text-slate-300">{categoryName}</span></span>
-          <span className="font-medium text-slate-900 dark:text-white text-[14px]">{formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? <span className="text-xs text-gray-500 font-normal"> / kg</span> : ''}</span>
+        <div className="text-[12px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-4">
+          <span className="font-mono text-slate-400 dark:text-slate-600">SKU: {product.sku}</span>
+          <span><span className="text-slate-400">Category:</span> <span className="font-semibold text-slate-700 dark:text-slate-300">{categoryName}</span></span>
+          <span className="font-bold text-slate-800 dark:text-white text-[13px]">
+            {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? <span className="text-xs text-slate-400 font-normal"> / kg</span> : ''}
+          </span>
         </div>
       </div>
-      <div className="flex gap-2 shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
+
+      {/* Actions */}
+      <div className="flex gap-2 shrink-0">
         <button
-          className={`flex-1 sm:flex-none px-4 py-2 text-[13px] font-semibold tracking-wide rounded-full transition-all duration-300 active:scale-95 ${isSelected ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+          className={`px-4 py-2 text-[13px] font-bold tracking-wide rounded-full transition-all duration-200 active:scale-90 ${isSelected
+            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect();
-          }}
+          onClick={(e) => { e.stopPropagation(); onSelect(); }}
         >
-          {isSelected ? 'Viewing' : 'View Details'}
+          {isSelected ? 'Viewing' : 'Details'}
         </button>
         {canManage && (
           <button
-            className="flex-1 sm:flex-none px-4 py-2 text-[13px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold tracking-wide rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all duration-300 active:scale-95"
-            onClick={(e) => {
-              e.stopPropagation();
-              onAdjustStock();
-            }}
+            className="px-4 py-2 text-[13px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold tracking-wide rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all duration-200 active:scale-90"
+            onClick={(e) => { e.stopPropagation(); onAdjustStock(); }}
           >
             Adjust
           </button>

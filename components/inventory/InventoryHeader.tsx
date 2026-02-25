@@ -1,6 +1,6 @@
 import React from 'react';
 import { FiFilter } from 'react-icons/fi';
-import { GridIcon, ListIcon } from '../icons';
+import { GridIcon, ListIcon, MagnifyingGlassIcon } from '../icons';
 
 interface InventoryHeaderProps {
     searchTerm: string;
@@ -36,73 +36,72 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     onOpenAddCategory
 }) => {
     return (
-        <div className="hidden dark:bg-slate-950/90 bg-slate-50/90 backdrop-blur-2xl md:flex items-center justify-between px-8 py-4 sticky top-0 z-30 border-b border-transparent transition-all duration-300">
-            <div className="flex justify-between items-center w-full max-w-[1400px] mx-auto">
-                <div>
-                    <h1 className="text-[34px] font-semibold text-slate-900 dark:text-white leading-tight tracking-tight">
+        <div className="hidden bg-white/80 dark:bg-slate-950/80 backdrop-blur-2xl md:flex items-center justify-between px-8 py-3.5 sticky top-0 z-30 border-b border-slate-200/40 dark:border-white/5 transition-all duration-300">
+            <div className="flex justify-between items-center w-full max-w-[1400px] mx-auto gap-4">
+                {/* Title */}
+                <div className="shrink-0">
+                    <h1 className="text-[28px] font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">
                         {activeTab === 'products' ? 'Products' : 'Categories'}
                     </h1>
-                    <p className="text-[13px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wide">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-0.5">
                         Inventory Management
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4 flex-shrink-0">
+                <div className="flex items-center gap-3 flex-shrink-0">
 
-                    {/* Search Bar */}
+                    {/* Search Bar - Pill */}
                     <div className="relative">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-slate-400">🔍</span>
-                        </div>
+                        <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                         <input
                             type="text"
                             placeholder="Search..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-64 pl-9 pr-4 py-2 bg-white dark:bg-slate-800/80 border border-slate-200/50 dark:border-white/10 rounded-[16px] text-[14px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-sm transition-all"
+                            className="w-56 pl-10 pr-4 py-2.5 bg-slate-100/70 dark:bg-slate-800/80 border border-slate-200/40 dark:border-white/5 rounded-full text-[14px] text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:bg-white dark:focus:bg-slate-800 shadow-inner transition-all"
                         />
                         {searchTerm && (
                             <button
                                 onClick={() => setSearchTerm('')}
-                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
                             >
-                                ✕
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         )}
                     </div>
 
-                    {/* Segmented Control */}
-                    <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-1.5 rounded-[16px] shadow-inner items-center">
+                    {/* Segmented Control - Products / Categories */}
+                    <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-full shadow-inner items-center gap-0.5">
                         <button
                             onClick={() => { setActiveTab('products'); setSearchTerm(''); }}
-                            className={`px-4 py-2 rounded-[12px] text-[13px] font-bold tracking-wide transition-all duration-300 ${activeTab === 'products'
-                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+                            className={`px-4 py-2 rounded-full text-[13px] font-bold tracking-wide transition-all duration-200 ${activeTab === 'products'
+                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
                                 }`}
                         >
                             Products
                         </button>
                         <button
                             onClick={() => { setActiveTab('categories'); setSearchTerm(''); }}
-                            className={`px-4 py-2 rounded-[12px] text-[13px] font-bold tracking-wide transition-all duration-300 ${activeTab === 'categories'
-                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
-                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+                            className={`px-4 py-2 rounded-full text-[13px] font-bold tracking-wide transition-all duration-200 ${activeTab === 'categories'
+                                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
                                 }`}
                         >
                             Categories
                         </button>
                     </div>
 
-                    {/* Right side actions */}
+                    {/* Right side icon actions */}
                     {activeTab === 'products' && (
-                        <div className="flex items-center gap-1.5 bg-slate-200/50 dark:bg-slate-800/80 p-1.5 rounded-[16px] shadow-inner">
+                        <div className="flex items-center gap-1 bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-full shadow-inner">
                             {/* Barcode Lookup */}
                             <button
                                 onClick={() => setIsManualLookupOpen(true)}
-                                className="p-2 rounded-[12px] text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all duration-300 hover:bg-white dark:hover:bg-slate-700 active:scale-95"
+                                className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-all duration-200 hover:bg-white dark:hover:bg-slate-700 active:scale-90"
                                 title="Lookup Barcode"
                             >
-                                ⌨️
+                                <span className="text-[15px]">⌨️</span>
                             </button>
 
                             <div className="h-4 w-px bg-slate-300/50 dark:bg-slate-700 mx-0.5" />
@@ -110,25 +109,25 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                             {/* Filters Toggle */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className={`p-2 rounded-[12px] transition-all duration-300 active:scale-95 ${showFilters
-                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${showFilters
+                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
                                     : 'text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700'
                                     }`}
                                 title={showFilters ? "Hide Filters" : "Show Filters"}
                             >
-                                <FiFilter className="w-4.5 h-4.5" />
+                                <FiFilter className="w-4 h-4" />
                             </button>
 
                             {/* Archived Toggle */}
                             <button
                                 onClick={() => setShowArchived(!showArchived)}
-                                className={`p-2 rounded-[12px] transition-all duration-300 active:scale-95 ${showArchived
-                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-[0_2px_8px_rgba(0,0,0,0.08)]'
+                                className={`w-9 h-9 rounded-full flex items-center justify-center transition-all duration-200 active:scale-90 ${showArchived
+                                    ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm'
                                     : 'text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700'
                                     }`}
                                 title={showArchived ? "Hide Archived" : "Show Archived"}
                             >
-                                <span className="w-5 h-5 flex items-center justify-center text-[15px] leading-none">📦</span>
+                                <span className="text-[15px] leading-none">📦</span>
                             </button>
 
                             <div className="h-4 w-px bg-slate-300/50 dark:bg-slate-700 mx-0.5" />
@@ -136,9 +135,10 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                             {/* View Mode Toggle */}
                             <button
                                 onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                                className="p-2 rounded-[12px] text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700 transition-all duration-300 active:scale-95"
+                                className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 hover:bg-white dark:text-slate-400 dark:hover:bg-slate-700 transition-all duration-200 active:scale-90"
+                                title={viewMode === 'grid' ? 'Switch to List View' : 'Switch to Grid View'}
                             >
-                                {viewMode === 'grid' ? <ListIcon className="w-4.5 h-4.5" /> : <GridIcon className="w-4.5 h-4.5" />}
+                                {viewMode === 'grid' ? <ListIcon className="w-4 h-4" /> : <GridIcon className="w-4 h-4" />}
                             </button>
                         </div>
                     )}
@@ -147,9 +147,9 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                     {canManageProducts && (
                         <button
                             onClick={activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory}
-                            className="flex items-center gap-2 px-5 py-2 hover:bg-white dark:hover:bg-slate-800 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/50 dark:border-white/10 text-slate-900 dark:text-white rounded-full text-[14px] font-bold tracking-wide shadow-sm hover:shadow-md transition-all active:scale-95"
+                            className="flex items-center gap-2 px-5 py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full text-[13px] font-extrabold tracking-wide shadow-sm hover:shadow-md transition-all active:scale-95 duration-200"
                         >
-                            <span className="text-lg leading-none">+</span>
+                            <span className="text-base leading-none">+</span>
                             {activeTab === 'products' ? 'Add Product' : 'Add Category'}
                         </button>
                     )}
