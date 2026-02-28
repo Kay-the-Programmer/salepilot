@@ -1,8 +1,8 @@
 
 
 const DB_NAME = 'SalePilotDB';
-const DB_VERSION = 10;
-const STORES = ['products', 'categories', 'customers', 'suppliers', 'sales', 'returns', 'purchaseOrders', 'supplierInvoices', 'users', 'accounts', 'journalEntries', 'auditLogs', 'settings', 'syncQueue', 'accounting', 'reports', 'announcements', 'marketStores', 'marketProducts', 'marketRequests', 'couriers', 'buses', 'shipments'];
+const DB_VERSION = 11;
+const STORES = ['products', 'categories', 'customers', 'suppliers', 'sales', 'returns', 'purchaseOrders', 'supplierInvoices', 'users', 'accounts', 'journalEntries', 'auditLogs', 'settings', 'syncQueue', 'accounting', 'reports', 'announcements', 'marketStores', 'marketProducts', 'marketRequests', 'couriers', 'buses', 'shipments', 'aiHistory'];
 
 const STORE_KEY_PATHS: { [key: string]: string } = {
     sales: 'transactionId',

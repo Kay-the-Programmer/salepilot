@@ -1,5 +1,4 @@
 import React from 'react';
-import { AiSummaryCard } from './AiSummaryCard';
 import { FilterableSalesTrend } from './sales/FilterableSalesTrend';
 import { FilterableSalesChannelChart } from './FilterableSalesChannelChart';
 import { FilterableTopSales } from './FilterableTopSales';
@@ -61,9 +60,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
     return (
         <div className="space-y-6 animate-fade-in pb-10">
-            {/* AI Summary Card */}
-            <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={userName} />
-
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {/* Bento Row 1: Finance Stats & Tips */}
                 <div className="min-w-0 h-full">

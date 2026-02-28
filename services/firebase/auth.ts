@@ -14,6 +14,9 @@ import {
     getIdToken,
     getIdTokenResult,
     IdTokenResult,
+    signInWithPhoneNumber,
+    RecaptchaVerifier,
+    ConfirmationResult
 } from 'firebase/auth';
 import { auth, googleProvider } from '../../firebase/firebase';
 
@@ -125,3 +128,43 @@ export const sendResetEmail = async (email: string): Promise<void> => {
 
 /** Returns the currently signed-in Firebase user (or null if not signed in). */
 export const getFirebaseUser = (): FirebaseUser | null => auth?.currentUser ?? null;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phone Auth Helpers
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Initializes a RecaptchaVerifier on the given DOM element ID.
+ * Make sure the element exists in the DOM before calling this.
+ */
+export const setupRecaptcha = (containerId: string): RecaptchaVerifier | null => {
+    if (!auth) return null;
+    try {
+        // Clear old verifier if it exists (useful for React re-renders)
+        if ((window as any).recaptchaVerifier) {
+            (window as any).recaptchaVerifier.clear();
+        }
+
+        const verifier = new RecaptchaVerifier(auth, containerId, {
+            size: 'invisible',
+            callback: (response: any) => {
+                // reCAPTCHA solved
+                console.log('reCAPTCHA solved', response);
+            }
+        });
+        (window as any).recaptchaVerifier = verifier;
+        return verifier;
+    } catch (e) {
+        console.error('Failed to setup RecaptchaVerifier:', e);
+        return null;
+    }
+};
+
+/**
+ * Sends an SMS OTP to the provided phone number.
+ * Returns a ConfirmationResult object if successful, which has a .confirm(code) method.
+ */
+export const sendPhoneOtp = async (phoneNumber: string, appVerifier: RecaptchaVerifier): Promise<ConfirmationResult> => {
+    if (!auth) throw new Error('Firebase Auth is not configured.');
+    return await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+};

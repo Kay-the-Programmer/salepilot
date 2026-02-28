@@ -28,7 +28,7 @@ import { InventoryTab } from '../components/reports/InventoryTab';
 import { CustomersTab } from '../components/reports/CustomersTab';
 import { CashflowTab } from '../components/reports/CashflowTab';
 import { PersonalUseTab } from '../components/reports/PersonalUseTab';
-
+import { AiSummaryCard } from '../components/reports/AiSummaryCard';
 interface ReportsPageProps {
     storeSettings: StoreSettings;
     onClose?: () => void;
@@ -521,6 +521,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                         </div>
                     </div>
                 </div>
+            )}
+
+            {/* AI Assistant Floating Button */}
+            {reportData && (
+                <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={user?.name} />
             )}
         </div>
     );

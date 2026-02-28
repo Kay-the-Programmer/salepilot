@@ -62,10 +62,10 @@ googleProvider.addScope('email');
 // Register that debug token at Firebase Console → App Check → Manage debug tokens.
 let appCheck: AppCheck | undefined;
 try {
-    const isDev = import.meta.env.DEV || import.meta.env.VITE_APPCHECK_DEBUG === 'true';
+    const forceDebug = import.meta.env.VITE_APPCHECK_DEBUG === 'true';
     const reCaptchaSiteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 
-    if (isDev) {
+    if (forceDebug) {
         // Debug mode: Firebase generates a token you register in the Console
         (self as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
         // Use the test key (always passes) in debug mode when no real key is available
@@ -86,10 +86,7 @@ try {
             isTokenAutoRefreshEnabled: true,
         });
     } else {
-        console.warn(
-            '[Firebase] App Check is DISABLED in production. ' +
-            'Add VITE_RECAPTCHA_SITE_KEY to your .env to enable it.'
-        );
+        console.info('[Firebase] App Check is DISABLED (no VITE_RECAPTCHA_SITE_KEY found).');
     }
 } catch (e) {
     console.warn('[Firebase] App Check initialization failed (non-fatal):', e);

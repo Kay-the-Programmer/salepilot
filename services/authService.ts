@@ -137,6 +137,10 @@ export const forgotPassword = async (email: string): Promise<void> => {
     await sendResetEmail(email);
 };
 
+export const verifyRegistration = async (email: string, emailOtp: string): Promise<void> => {
+    await api.post('/auth/verify-registration', { email, emailOtp });
+};
+
 export const getUsers = async (): Promise<User[]> => {
     const list = await api.get<any[]>('/users');
     return (list || []).map(normalizeUser);

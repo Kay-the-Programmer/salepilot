@@ -10,6 +10,7 @@ import FinancialSettingsSection from '../components/settings/sections/FinancialS
 import POSSettingsSection from '../components/settings/sections/POSSettingsSection';
 import InventorySettingsSection from '../components/settings/sections/InventorySettingsSection';
 import BusinessVerificationSection from '../components/settings/BusinessVerificationSection';
+import AccountVerificationSection from '../components/settings/AccountVerificationSection';
 import NotificationSettingsSection from '../components/settings/sections/NotificationSettingsSection';
 import SettingsCard from '../components/settings/SettingsCard';
 import SettingsSidebar, { SettingsCategory } from '../components/settings/SettingsSidebar';
@@ -27,7 +28,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
     const [showMobileDetail, setShowMobileDetail] = useState(false);
 
     // Verification State
-    const [verificationStatus, setVerificationStatus] = useState<{ isVerified: boolean; verificationDocuments: VerificationDocument[] } | null>(null);
+    const [verificationStatus, setVerificationStatus] = useState<{ isVerified: boolean; verificationDocuments: VerificationDocument[]; isEmailVerified?: boolean; isPhoneVerified?: boolean; phoneNumber?: string } | null>(null);
 
     const fetchVerificationStatus = async () => {
         try {
@@ -242,25 +243,44 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                 </div>
                             )}
 
+
                             {activeCategory === 'verification' && (
-                                <div className="animate-fade-in px-4 md:px-0 pb-8">
-                                    <SettingsCard
-                                        title="Business Verification"
-                                        description="Upload business documents to get your store verified."
-                                        isEditing={editingSection === 'verification'}
-                                        onEdit={() => setEditingSection('verification')}
-                                        onSave={() => setEditingSection(null)}
-                                        onCancel={() => setEditingSection(null)}
-                                        badge={verificationStatus?.isVerified ? "Verified" : "Unverified"}
-                                    >
-                                        <BusinessVerificationSection
-                                            isEditing={editingSection === 'verification'}
-                                            verificationStatus={verificationStatus}
-                                            onUploadSuccess={fetchVerificationStatus}
+                                <div className="animate-fade-in px-4 md:px-0 pb-8 space-y-6">
+                                    {/* Account-level: Email + Phone badges */}
+                                    <div>
+                                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 ml-1">Account Verification</h4>
+                                        <AccountVerificationSection
+                                            status={verificationStatus ? {
+                                                isEmailVerified: verificationStatus.isEmailVerified ?? false,
+                                                isPhoneVerified: verificationStatus.isPhoneVerified ?? false,
+                                                phoneNumber: verificationStatus.phoneNumber,
+                                            } : null}
+                                            onRefresh={fetchVerificationStatus}
                                         />
-                                    </SettingsCard>
+                                    </div>
+
+                                    {/* Business docs */}
+                                    <div>
+                                        <h4 className="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3 ml-1">Business Verification</h4>
+                                        <SettingsCard
+                                            title="Business Documents"
+                                            description="Upload business documents to get your store verified."
+                                            isEditing={editingSection === 'verification'}
+                                            onEdit={() => setEditingSection('verification')}
+                                            onSave={() => setEditingSection(null)}
+                                            onCancel={() => setEditingSection(null)}
+                                            badge={verificationStatus?.isVerified ? "Verified" : "Unverified"}
+                                        >
+                                            <BusinessVerificationSection
+                                                isEditing={editingSection === 'verification'}
+                                                verificationStatus={verificationStatus}
+                                                onUploadSuccess={fetchVerificationStatus}
+                                            />
+                                        </SettingsCard>
+                                    </div>
                                 </div>
                             )}
+
 
                             {activeCategory === 'billing' && (
                                 <div className="animate-fade-in px-4 md:px-0 pb-8 space-y-6">
