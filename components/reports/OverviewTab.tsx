@@ -159,11 +159,6 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
             >
                 {/* Active Grid Area */}
                 <div className="space-y-4">
-                    <div className="flex items-center justify-between px-2">
-                        <div className="flex items-center gap-4">
-                            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] opacity-50">Active Highlights</h3>
-                        </div>
-                    </div>
                     <SortableContext
                         items={visibleCards.map(c => c.id)}
                         strategy={rectSortingStrategy}
