@@ -312,8 +312,10 @@ export const api = {
       headers: body instanceof FormData ? getAuthHeaders() : undefined,
     };
 
+    const isAuth = endpoint.includes('/auth/');
+
     if (!getOnlineStatus()) {
-      if (options.skipQueue) {
+      if (options.skipQueue || isAuth) {
         throw new Error('No internet connection');
       }
       const tempId = await applyOptimisticUpdate(endpoint, 'POST', body);
@@ -326,7 +328,7 @@ export const api = {
     } catch (err: any) {
       // Network errors -> queue; server errors should bubble up
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
-        if (options.skipQueue) throw err;
+        if (options.skipQueue || isAuth) throw err;
         return queueAndReturn<T>(endpoint, reqOptions, body);
       }
       throw err;
