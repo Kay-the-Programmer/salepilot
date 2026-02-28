@@ -134,8 +134,8 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
             ) : (
                 <div className="flex flex-col h-full">
                     {/* Tab Bar */}
-                    <div className="flex-none px-3 pt-3">
-                        <div className="flex bg-slate-100 dark:bg-slate-800 rounded-2xl p-1 gap-1" role="tablist">
+                    <div className="flex-none px-4 pt-4">
+                        <div className="flex bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-[18px] p-1 gap-1 relative z-10 shadow-inner" role="tablist">
                             {tabItems.map(tab => (
                                 <button
                                     key={tab.id}
@@ -144,10 +144,10 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                     aria-selected={cartActionTab === tab.id}
                                     onClick={() => setCartActionTab(tab.id)}
                                     className={`
-                                        flex-1 flex items-center justify-center gap-1.5 py-2 px-3 text-xs font-semibold rounded-xl
-                                        transition-all duration-200 focus:outline-none active:scale-95
+                                        flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-bold rounded-[14px]
+                                        transition-all duration-300 focus:outline-none active:scale-95
                                         ${cartActionTab === tab.id
-                                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgb(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgb(0,0,0,0.3)]'
                                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}
                                     `}
                                 >
@@ -263,11 +263,11 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                                             key={method.id}
                                                             onClick={() => setSelectedPaymentMethod(method.name)}
                                                             className={`
-                                                                flex flex-col items-center justify-center gap-1 py-3 px-2 rounded-2xl text-xs font-semibold
-                                                                border-2 transition-all duration-150 active:scale-95
+                                                                flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-[20px] text-xs font-bold
+                                                                border transition-all duration-300 active:scale-[0.96]
                                                                 ${isSelected
-                                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 shadow-[0_0_0_1px_rgba(99,102,241,0.3)]'
-                                                                    : 'border-slate-200 dark:border-white/10 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-white/20'}
+                                                                    ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 shadow-[0_0_0_2px_rgba(99,102,241,0.2)]'
+                                                                    : 'border-slate-200 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md text-slate-600 dark:text-slate-400 hover:shadow-md hover:border-slate-300 dark:hover:border-white/20 hover:-translate-y-0.5'}
                                                             `}
                                                         >
                                                             <span className="text-base leading-none">{getPaymentIcon(method.name)}</span>
@@ -376,8 +376,9 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                 onClick={() => processTransaction('paid')}
                                 disabled={isPayDisabled}
                                 aria-label={`Charge ${formatCurrency(total, storeSettings)}`}
-                                className="col-span-3 py-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white font-extrabold text-base flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all duration-200 shadow-lg shadow-indigo-500/30"
+                                className="col-span-3 py-4 rounded-[20px] bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white font-extrabold text-base flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-300 shadow-[0_8px_20px_rgb(99,102,241,0.3)] hover:shadow-[0_12px_24px_rgb(99,102,241,0.4)] relative overflow-hidden group"
                             >
+                                <div className="absolute inset-0 bg-white/20 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] skew-x-12" />
                                 {isProcessing ? (
                                     <>
                                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />

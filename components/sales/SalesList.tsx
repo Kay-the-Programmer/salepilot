@@ -15,35 +15,35 @@ interface SalesListProps {
 const PaymentStatusBadge: React.FC<{ status: Sale['paymentStatus'] | Sale['refundStatus'] }> = ({ status }) => {
     const statusConfig = {
         paid: {
-            color: 'border-emerald-200 text-emerald-700 bg-emerald-50',
+            color: 'border-emerald-100 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/10',
             label: 'Paid'
         },
         unpaid: {
-            color: 'border-red-200 text-red-700 bg-red-50',
+            color: 'border-rose-100 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-500/10',
             label: 'Unpaid'
         },
         partially_paid: {
-            color: 'border-amber-200 text-amber-700 bg-amber-50',
+            color: 'border-blue-100 dark:border-blue-500/20 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10',
             label: 'Partial'
         },
         returned: {
-            color: 'border-slate-200 text-slate-700 bg-slate-50',
+            color: 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-white/5',
             label: 'Returned'
         },
         partially_returned: {
-            color: 'border-orange-200 text-orange-700 bg-orange-50',
+            color: 'border-amber-100 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10',
             label: 'Returned (Partial)'
         },
         fully_refunded: {
-            color: 'border-slate-200 text-slate-700 bg-slate-50',
+            color: 'border-slate-200 dark:border-white/10 text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-white/5',
             label: 'Refunded'
         },
         partially_refunded: {
-            color: 'border-orange-200 text-orange-700 bg-orange-50',
+            color: 'border-amber-100 dark:border-amber-500/20 text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10',
             label: 'Refunded (Partial)'
         },
         none: {
-            color: 'border-slate-200 text-slate-600 bg-slate-50',
+            color: 'border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-white/5',
             label: 'Draft'
         }
     };
@@ -52,7 +52,7 @@ const PaymentStatusBadge: React.FC<{ status: Sale['paymentStatus'] | Sale['refun
     const config = statusConfig[status] || statusConfig.unpaid;
 
     return (
-        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${config.color}`}>
+        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-widest border ${config.color}`}>
             {config.label}
         </span>
     );

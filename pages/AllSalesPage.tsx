@@ -261,7 +261,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
     };
 
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-slate-50 dark:bg-slate-950 relative selection:bg-blue-500/30">
+        <div className="flex flex-col min-h-[100dvh] bg-slate-50/50 dark:bg-slate-950/50 relative selection:bg-blue-500/30">
             <SalesHeader
                 selectedStatus={selectedStatus}
                 setSelectedStatus={setSelectedStatus}
@@ -301,29 +301,31 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="bg-white dark:bg-slate-900/60 rounded-[24px] p-8 border border-slate-200/50 dark:border-white/5 mt-4 shadow-sm mx-4 md:mx-6">
-                            <div className="flex flex-col items-center justify-center space-y-4">
-                                <div className="w-12 h-12 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin"></div>
-                                <div className="text-[15px] font-bold text-slate-600 dark:text-slate-400 tracking-wide">Loading sales data...</div>
+                        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[32px] p-12 border border-slate-200/50 dark:border-white/5 mt-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] mx-4 md:mx-6 flex flex-col items-center justify-center space-y-6 animate-pulse">
+                            <div className="relative flex items-center justify-center">
+                                <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-xl"></div>
+                                <div className="w-14 h-14 border-4 border-slate-100 dark:border-slate-800 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin relative z-10 shadow-sm"></div>
                             </div>
+                            <div className="text-[15px] font-bold text-slate-600 dark:text-slate-400 tracking-wide">Fetching recent transactions...</div>
                         </div>
                     )}
 
                     {/* Error State */}
                     {error && (
-                        <div className="bg-rose-50/80 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 rounded-[24px] p-6 mt-4 mx-4 md:mx-6 shadow-sm">
-                            <div className="flex items-start gap-4">
-                                <div className="p-2.5 bg-rose-100 dark:bg-rose-500/20 rounded-[14px]">
-                                    <XMarkIcon className="w-5 h-5 text-rose-600 dark:text-rose-400" />
+                        <div className="bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border border-rose-200/50 dark:border-rose-500/20 rounded-[32px] p-8 mt-6 mx-4 md:mx-6 shadow-[0_8px_30px_rgb(225,29,72,0.06)] dark:shadow-[0_8px_30px_rgb(225,29,72,0.1)] relative overflow-hidden">
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                            <div className="flex items-start gap-5 relative z-10">
+                                <div className="p-3.5 bg-rose-50 dark:bg-rose-500/10 rounded-[20px] shadow-inner text-rose-600 dark:text-rose-400">
+                                    <XMarkIcon className="w-6 h-6" />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-[15px] font-bold text-rose-900 dark:text-rose-200 mb-1">Unable to Load Data</h3>
-                                    <p className="text-[13px] font-medium text-rose-700 dark:text-rose-300">{error}</p>
+                                    <h3 className="text-[17px] font-bold text-slate-900 dark:text-white mb-1.5 tracking-tight">Unable to Load Sales Data</h3>
+                                    <p className="text-[14px] font-medium text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">{error}</p>
                                     <button
                                         onClick={() => window.location.reload()}
-                                        className="mt-4 px-5 py-2.5 bg-rose-600 text-white rounded-[14px] text-[13px] font-bold tracking-wide shadow-sm hover:bg-rose-700 transition-colors active:scale-95 transition-all duration-300"
+                                        className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[16px] text-[14px] font-bold tracking-wide shadow-md hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 transition-all duration-300"
                                     >
-                                        Retry
+                                        Try Again
                                     </button>
                                 </div>
                             </div>
@@ -348,27 +350,31 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                                     <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 px-4 md:px-6 pb-6">
                                         {salesData.length === 0 ? (
-                                            <div className="flex flex-col items-center justify-center h-full p-8 text-center bg-white dark:bg-slate-900/60 rounded-[24px] border border-slate-200/50 dark:border-white/5 shadow-sm">
-                                                <div className="w-16 h-16 bg-slate-50 dark:bg-slate-800 rounded-[20px] flex items-center justify-center mb-5 rotate-3 transition-transform hover:rotate-6">
-                                                    <ChartBarIcon className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                                            <div className="flex flex-col items-center justify-center h-full p-12 text-center bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[32px] border border-slate-200/50 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] relative overflow-hidden">
+                                                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 dark:to-slate-900/50 pointer-events-none"></div>
+                                                <div className="relative w-20 h-20 mb-6 group">
+                                                    <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500"></div>
+                                                    <div className="relative w-full h-full bg-white dark:bg-slate-800 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center justify-center rotate-3 group-hover:rotate-6 transition-all duration-300 border border-slate-100 dark:border-white/5">
+                                                        <ChartBarIcon className="w-10 h-10 text-slate-400 dark:text-slate-500" />
+                                                    </div>
                                                 </div>
-                                                <h3 className="text-[18px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight">No sales found</h3>
-                                                <p className="text-[14px] font-medium text-slate-500 dark:text-slate-400 mb-6 max-w-sm">
+                                                <h3 className="text-[20px] font-bold text-slate-900 dark:text-white mb-2 tracking-tight relative z-10">No transactions found</h3>
+                                                <p className="text-[15px] font-medium text-slate-500 dark:text-slate-400 mb-8 max-w-sm leading-relaxed relative z-10">
                                                     {hasActiveFilters
-                                                        ? 'Try adjusting your filters to see more results.'
-                                                        : 'Sales will appear here once transactions are processed.'}
+                                                        ? 'Try modifying your search or clearing active filters to find what you are looking for.'
+                                                        : 'Your sales history will elegantly appear here once you start processing transactions.'}
                                                 </p>
                                                 {hasActiveFilters && (
                                                     <button
                                                         onClick={resetFilters}
-                                                        className="px-6 py-3 bg-blue-600 text-white text-[14px] font-bold tracking-wide rounded-[16px] hover:bg-blue-700 transition-colors active:scale-95 shadow-md"
+                                                        className="relative z-10 px-8 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[14px] font-bold tracking-wide rounded-[18px] hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 shadow-[0_8px_20px_rgb(0,0,0,0.12)] transition-all duration-300"
                                                     >
-                                                        Clear All Filters
+                                                        Clear Filters
                                                     </button>
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="bg-white dark:bg-slate-900/60 rounded-[24px] border border-slate-200/50 dark:border-white/5 shadow-sm overflow-hidden">
+                                            <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[32px] border border-slate-200/50 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden">
                                                 <SalesList
                                                     sales={enrichedSales}
                                                     onSelectSale={setSelectedSale}
@@ -395,29 +401,30 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                                 {/* Right Column: Sale Details (Desktop) */}
                                 {selectedSale && (
-                                    <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-900/90 backdrop-blur-3xl border-l border-slate-200/50 dark:border-white/5 shadow-2xl overflow-hidden animate-fade-in-right z-20">
-                                        <div className="p-5 px-6 flex justify-between items-center flex-none border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/20">
-                                            <h3 className="text-[17px] font-bold text-slate-900 dark:text-white tracking-tight">Sale Details</h3>
+                                    <div className="hidden xl:flex w-[450px] flex-col bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border-l border-slate-200/50 dark:border-white/5 shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-[-20px_0_40px_rgb(0,0,0,0.2)] overflow-hidden animate-fade-in-right z-20">
+                                        <div className="relative p-6 flex items-center justify-center flex-none border-b border-slate-100/80 dark:border-white/5 bg-transparent">
+                                            <div className="text-center">
+                                                <h3 className="text-[17px] font-semibold text-slate-900 dark:text-white tracking-tight">Sale Details</h3>
+                                                <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 tracking-wider uppercase font-mono">{selectedSale.transactionId}</p>
+                                            </div>
                                             <button
                                                 onClick={() => setSelectedSale(null)}
-                                                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all duration-300 active:scale-95 touch-manipulation"
+                                                className="absolute right-6 w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-full transition-all duration-300 active:scale-95"
                                             >
-                                                <XMarkIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
+                                                <XMarkIcon className="w-4 h-4" />
                                             </button>
                                         </div>
-                                        <div className="flex-1 overflow-y-auto p-6 scrollbar-thin">
+                                        <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
                                             <SaleDetailContent sale={selectedSale} storeSettings={storeSettings} />
                                         </div>
-                                        <div className="p-5 px-6 border-t border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/20 flex-none">
-                                            <div className="flex gap-3">
-                                                <button
-                                                    className="flex-1 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-[16px] text-[14px] font-bold tracking-wide text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
-                                                    onClick={() => setIsReceiptOpen(true)}
-                                                >
-                                                    <PrinterIcon className="w-4.5 h-4.5" />
-                                                    Print Receipt
-                                                </button>
-                                            </div>
+                                        <div className="p-5 px-6 border-t border-slate-100/80 dark:border-white/5 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl flex-none">
+                                            <button
+                                                className="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[18px] text-[15px] font-bold tracking-wide shadow-[0_8px_20px_rgb(0,0,0,0.12)] hover:bg-slate-800 dark:hover:bg-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                                                onClick={() => setIsReceiptOpen(true)}
+                                            >
+                                                <PrinterIcon className="w-5 h-5" />
+                                                View Receipt
+                                            </button>
                                         </div>
                                     </div>
                                 )}

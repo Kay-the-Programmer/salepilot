@@ -62,14 +62,14 @@ const GridCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
         <div
             onClick={() => !isSoldOut && addToCart(product)}
             className={`
-                group relative bg-white dark:bg-slate-800/80 rounded-[20px] overflow-hidden
-                border transition-all duration-200 cursor-pointer select-none
-                hover:shadow-[0_4px_24px_rgba(0,0,0,0.10)] dark:hover:shadow-[0_4px_24px_rgba(0,0,0,0.35)]
-                active:scale-[0.97]
+                group relative bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl rounded-[24px] overflow-hidden
+                border transition-all duration-300 cursor-pointer select-none
+                hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.2)]
+                hover:-translate-y-1 active:scale-[0.97]
                 ${isSoldOut ? 'opacity-50 grayscale pointer-events-none' : ''}
                 ${cartItem
-                    ? 'border-indigo-400 dark:border-indigo-500 shadow-[0_0_0_1px_rgba(99,102,241,0.25)] dark:shadow-[0_0_0_1px_rgba(99,102,241,0.2)]'
-                    : 'border-slate-200/60 dark:border-white/8'}
+                    ? 'border-indigo-500 dark:border-indigo-400 shadow-[0_0_0_2px_rgba(99,102,241,0.3)] dark:shadow-[0_0_0_2px_rgba(129,140,248,0.3)]'
+                    : 'border-slate-200/50 dark:border-white/5'}
             `}
         >
             {/* Image */}
@@ -150,13 +150,13 @@ const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
         <div
             onClick={() => !isSoldOut && addToCart(product)}
             className={`
-                group relative flex items-center gap-3 px-3 py-2.5 rounded-2xl 
-                border transition-all duration-150 cursor-pointer select-none
-                hover:shadow-sm active:scale-[0.99]
+                group relative flex items-center gap-3 px-4 py-3 rounded-[20px] 
+                border transition-all duration-300 cursor-pointer select-none
+                hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.15)] active:scale-[0.98] hover:-translate-y-0.5
                 ${isSoldOut ? 'opacity-50 grayscale pointer-events-none' : ''}
                 ${cartItem
-                    ? 'bg-indigo-50 dark:bg-indigo-500/10 border-indigo-300 dark:border-indigo-500/40'
-                    : 'bg-white dark:bg-slate-800/80 border-slate-200/60 dark:border-white/8 hover:border-slate-300 dark:hover:border-white/15'}
+                    ? 'bg-indigo-50/80 dark:bg-indigo-500/10 border-indigo-400 dark:border-indigo-500/50 shadow-[0_0_0_1px_rgba(99,102,241,0.2)]'
+                    : 'bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-slate-200/50 dark:border-white/5 hover:border-slate-300/80 dark:hover:border-white/10'}
             `}
         >
             {/* Thumbnail */}
@@ -244,10 +244,10 @@ const MobileCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettin
             onClick={handleTap}
             disabled={isSoldOut}
             className={`
-                relative flex flex-col bg-white dark:bg-slate-800 rounded-2xl border overflow-hidden text-left w-full h-full
-                transition-all duration-150 active:scale-[0.94]
+                relative flex flex-col bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl rounded-[20px] border overflow-hidden text-left w-full h-full
+                transition-transform duration-200 active:scale-[0.94]
                 ${isSoldOut ? 'opacity-50 grayscale' : ''}
-                ${isTapping ? 'scale-[0.94] border-indigo-400' : cartItem ? 'border-indigo-400 dark:border-indigo-500' : 'border-slate-200/60 dark:border-white/8'}
+                ${isTapping ? 'scale-[0.94] border-indigo-500 shadow-lg' : cartItem ? 'border-indigo-500 dark:border-indigo-400 shadow-md ring-1 ring-indigo-500/20' : 'border-slate-200/50 dark:border-white/5 shadow-sm'}
             `}
         >
             <div className="aspect-square bg-slate-100 dark:bg-slate-900/60 relative overflow-hidden">

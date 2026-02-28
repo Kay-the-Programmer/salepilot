@@ -20,57 +20,57 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
     return (
         <>
             <div
-                className="fixed inset-0 z-[100] bg-black/40 dark:bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center"
+                className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center transition-all duration-300"
                 aria-labelledby="sale-detail-title"
                 role="dialog"
                 aria-modal="true"
                 onClick={onClose}
             >
                 <div
-                    className="liquid-glass-card rounded-[2rem] w-full sm:max-w-xl dark:bg-slate-900 rounded-t-2xl sm: max-h-[92vh] sm:max-h-[85vh] overflow-hidden flex flex-col sm:mx-4"
+                    className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl rounded-t-[32px] sm:rounded-[32px] w-full sm:max-w-xl max-h-[92vh] sm:max-h-[85vh] overflow-hidden flex flex-col sm:mx-4 shadow-[0_20px_60px_rgb(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgb(0,0,0,0.4)] ring-1 ring-slate-900/5 dark:ring-white/10 animate-NotificationSlideDown sm:animate-fade-in-up"
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Mobile drag handle */}
-                    <div className="sm:hidden pt-2.5 pb-1 flex justify-center">
-                        <div className="w-9 h-1 bg-slate-300 dark:bg-slate-600 rounded-full" />
+                    <div className="sm:hidden pt-3 pb-2 flex justify-center bg-transparent">
+                        <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700/60 rounded-full" />
                     </div>
 
                     {/* Header */}
-                    <div className="flex items-center justify-between px-5 py-3 border-b border-slate-100 dark:border-white/5">
-                        <div>
-                            <h3 id="sale-detail-title" className="text-base font-semibold text-slate-900 dark:text-white">Sale Details</h3>
-                            <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5 font-mono">{sale.transactionId}</p>
+                    <div className="relative flex items-center justify-center px-4 py-4 border-b border-slate-100/80 dark:border-white/5 bg-transparent">
+                        <div className="text-center">
+                            <h3 id="sale-detail-title" className="text-[17px] font-semibold text-slate-900 dark:text-white tracking-tight">Sale Details</h3>
+                            <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 tracking-wider uppercase font-mono">{sale.transactionId}</p>
                         </div>
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-1.5 -mr-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
+                            className="absolute right-4 w-8 h-8 flex items-center justify-center bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-full transition-all duration-300 active:scale-95"
                             aria-label="Close sale details"
                         >
-                            <XMarkIcon className="h-5 w-5" />
+                            <XMarkIcon className="h-4 w-4" />
                         </button>
                     </div>
 
                     {/* Scrollable content */}
-                    <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-4">
+                    <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar">
                         <SaleDetailContent sale={sale} storeSettings={storeSettings} />
                     </div>
 
                     {/* Bottom action bar */}
-                    <div className="flex-none px-5 py-3 border-t border-slate-100 dark:border-white/5 bg-white dark:bg-slate-900 safe-area-bottom">
-                        <div className="flex gap-2">
+                    <div className="flex-none p-5 px-6 border-t border-slate-100/80 dark:border-white/5 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-xl safe-area-bottom">
+                        <div className="flex gap-3">
                             <button
                                 type="button"
                                 onClick={() => setIsReceiptOpen(true)}
-                                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
+                                className="flex-1 py-3.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-[16px] text-[15px] font-bold tracking-wide text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                             >
-                                <PrinterIcon className="w-4 h-4" />
+                                <PrinterIcon className="w-5 h-5" />
                                 Receipt
                             </button>
                             <button
                                 type="button"
                                 onClick={onClose}
-                                className="flex-1 py-2.5 text-sm font-medium text-white bg-slate-900 dark:bg-white dark:text-slate-900 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-colors active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 transition-all duration-300"
+                                className="flex-1 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[16px] text-[15px] font-bold tracking-wide shadow-[0_8px_20px_rgb(0,0,0,0.12)] hover:bg-slate-800 dark:hover:bg-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                             >
                                 Done
                             </button>

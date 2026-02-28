@@ -156,11 +156,17 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
         if (activeTab && tabBarRef.current) {
             const activeElement = document.getElementById(`tab-${activeTab}`);
             if (activeElement) {
-                activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                // Determine if we are on mobile (where tabs are hidden)
+                const isMobile = window.innerWidth < 768;
+                if (!isMobile) {
+                    activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
             }
         }
         localStorage.setItem('reports.activeTab', activeTab);
     }, [activeTab]);
+
+    const activeTabIndex = TABS.findIndex(t => t.id === activeTab);
 
     // Data fetching logic
     const [reportData, setReportData] = useState<any | null>(null);
@@ -469,17 +475,27 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                 </div>
             </header>
 
-            {/* Apple-style Segmented Control Tab Bar */}
+            {/* Desktop Apple-style Segmented Control Tab Bar */}
             <nav
                 ref={tabBarRef}
-                className="flex-none sticky top-[80px] md:top-[90px] z-30 transition-all duration-300 bg-slate-50 dark:bg-slate-950 pb-2 border-b border-slate-200/50 dark:border-white/5"
+                className="hidden md:flex flex-none sticky top-[90px] z-30 transition-all duration-300 bg-slate-50 dark:bg-slate-950 pb-2 border-b border-transparent"
                 role="tablist"
                 aria-label="Report sections"
                 onKeyDown={handleTabKeyDown}
             >
-                <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between">
-                    <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-1 rounded-[16px] md:rounded-[20px] overflow-x-auto scrollbar-hide gap-1 w-full max-w-full relative shadow-inner">
-                        <div className="flex gap-1 flex-1">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between w-full">
+                    <div className="flex bg-slate-200/60 dark:bg-slate-800/80 p-1.5 rounded-[20px] overflow-hidden gap-1.5 w-full relative shadow-inner ring-1 ring-slate-900/5 dark:ring-white/10">
+                        <div className="grid grid-cols-6 gap-1.5 flex-1 relative isolate">
+                            {/* Sliding Indicator (Magic Pill) */}
+                            <div
+                                className="absolute top-0 bottom-0 left-0 bg-white dark:bg-slate-700/80 rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-slate-200/50 dark:border-white/5 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] -z-10"
+                                style={{
+                                    width: `calc((100% - 30px) / 6)`, // 5 gaps of 6px (gap-1.5) = 30px
+                                    transform: `translateX(calc(${activeTabIndex} * 100% + ${activeTabIndex * 6}px))`
+                                }}
+                                aria-hidden="true"
+                            />
+
                             {TABS.map((tab) => {
                                 const isActive = activeTab === tab.id;
                                 const Icon = tab.Icon;
@@ -492,9 +508,9 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                                         aria-controls={`tabpanel-${tab.id}`}
                                         tabIndex={isActive ? 0 : -1}
                                         onClick={() => setActiveTab(tab.id)}
-                                        className={`flex-shrink-0 flex-1 flex items-center justify-center gap-2 px-4 py-2 md:py-2.5 rounded-xl md:rounded-[16px] text-[13px] md:text-sm font-medium tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-300 ${isActive ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                        className={`flex items-center justify-center gap-2 px-2 py-2.5 rounded-[16px] text-[14px] font-semibold tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-colors duration-300 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
                                     >
-                                        <Icon className={isActive ? 'w-4.5 h-4.5 text-blue-600 dark:text-blue-400' : 'w-4 h-4'} />
+                                        <Icon className={`w-4.5 h-4.5 transition-colors duration-300 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
                                         <span>{tab.label}</span>
                                     </button>
                                 );
@@ -515,8 +531,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                                 <button
                                     onClick={() => setIsEditMode(!isEditMode)}
                                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all active:scale-95 group/settings ${isEditMode
-                                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-lg'
-                                            : 'bg-white/50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-white/10'
+                                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-lg'
+                                        : 'bg-white/50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-white/10'
                                         }`}
                                 >
                                     <Settings className={`w-4 h-4 md:w-3.5 md:h-3.5 ${isEditMode ? 'animate-spin-slow' : 'group-hover/settings:rotate-90 transition-transform duration-500'}`} />
@@ -536,13 +552,41 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                 className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8 scroll-smooth"
                 tabIndex={-1}
             >
-                <div className="max-w-[1400px] mx-auto w-full">
+                <div className="max-w-[1400px] mx-auto w-full pb-20 md:pb-0">
                     {renderContent()}
                 </div>
             </main>
 
-            {/* Mobile Footer Spacing */}
-            <div className="h-20 md:hidden flex-none"></div>
+            {/* Mobile Footer Spacing for Bottom Nav */}
+            <div className="h-28 md:hidden flex-none"></div>
+
+            {/* Premium Mobile Bottom Navigation Bar */}
+            <nav aria-label="Mobile Bottom Navigation" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]">
+                <div className="flex items-center justify-around px-2 py-2">
+                    {TABS.map((tab) => {
+                        const isActive = activeTab === tab.id;
+                        const Icon = tab.Icon;
+                        return (
+                            <button
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)}
+                                className={`group relative flex flex-1 flex-col items-center justify-center gap-1.5 py-1 transition-all duration-300 active:scale-95 outline-none ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                                aria-selected={isActive}
+                            >
+                                <div className="relative">
+                                    <div className={`p-1.5 rounded-2xl transition-all duration-300 ${isActive ? 'bg-blue-50 dark:bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
+                                        <Icon className="w-[22px] h-[22px]" />
+                                    </div>
+                                    {isActive && (
+                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
+                                    )}
+                                </div>
+                                <span className={`text-[9px] font-bold tracking-wide transition-all duration-300 uppercase ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>{tab.label}</span>
+                            </button>
+                        );
+                    })}
+                </div>
+            </nav>
 
             {/* Notification Drawer - simplified for this component */}
             {isNotificationsOpen && (

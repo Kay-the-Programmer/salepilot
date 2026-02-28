@@ -150,9 +150,9 @@ export default function SaleDetailContent({ sale, storeSettings }: SaleDetailCon
                         </>
                     )}
 
-                    <div className="flex justify-between items-center pt-3 mt-1 border-t border-slate-200 dark:border-white/10">
-                        <span className="text-sm font-semibold text-slate-900 dark:text-white">Net Total</span>
-                        <span className="text-lg font-bold text-slate-900 dark:text-white tabular-nums">{formatCurrency(sale.total, storeSettings)}</span>
+                    <div className="flex justify-between items-center pt-4 mt-2 border-t border-slate-200 dark:border-white/10">
+                        <span className="text-[15px] font-bold text-slate-900 dark:text-white tracking-wide">Net Total</span>
+                        <span className="text-[22px] font-black text-slate-900 dark:text-white tracking-tight tabular-nums">{formatCurrency(sale.total, storeSettings)}</span>
                     </div>
 
                     <div className="flex justify-between py-2">

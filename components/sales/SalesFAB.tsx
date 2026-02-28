@@ -70,8 +70,9 @@ export const SalesFAB: React.FC<SalesFABProps> = ({
             `}
         >
             {/* Frosted glass bottom bar */}
-            <div className="bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/10 safe-area-bottom">
-                <div className="flex items-stretch">
+            <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border-t border-slate-200/50 dark:border-white/5 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.2)] safe-area-bottom relative">
+                <div className="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent dark:from-slate-900/40 pointer-events-none" />
+                <div className="flex items-stretch relative z-10">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}

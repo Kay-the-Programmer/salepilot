@@ -53,23 +53,26 @@ export default function SalesFilterSheet({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-end justify-center pointer-events-none sm:items-center sm:p-4" onClick={onClose}>
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-fade-in pointer-events-auto" />
+        <div className="fixed inset-0 z-[100] flex items-end justify-center pointer-events-none sm:items-center sm:p-4 transition-all duration-300" onClick={onClose}>
+            <div className="absolute inset-0 bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md animate-fade-in pointer-events-auto" />
             <div
-                className="bg-white dark:bg-slate-900/95 backdrop-blur-2xl rounded-t-[32px] sm:rounded-[32px] w-full max-w-md animate-notification-slide-down sm:animate-fade-in-up border border-slate-200/50 dark:border-white/10 flex flex-col max-h-[90vh] pointer-events-auto shadow-2xl relative"
+                className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl rounded-t-[32px] sm:rounded-[32px] w-full max-w-md animate-notification-slide-down sm:animate-fade-in-up ring-1 ring-slate-900/5 dark:ring-white/10 flex flex-col max-h-[90vh] pointer-events-auto shadow-[0_20px_60px_rgb(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgb(0,0,0,0.4)] relative"
                 onClick={e => e.stopPropagation()}
             >
+                <div className="sm:hidden pt-3 pb-2 flex justify-center bg-transparent">
+                    <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700/60 rounded-full" />
+                </div>
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-white/5 bg-slate-50/50 dark:bg-slate-800/50">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100/80 dark:border-white/5 bg-transparent">
                     <div>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Filter Sales</h3>
-                        <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 mt-0.5">Refine your sales data view</p>
+                        <h3 className="text-[20px] font-extrabold text-slate-900 dark:text-white tracking-tight">Filter Sales</h3>
+                        <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 mt-0.5 tracking-wide">Refine your sales data view</p>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-full transition-all duration-300 active:scale-95"
+                        className="w-9 h-9 flex items-center justify-center bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white rounded-full transition-all duration-300 active:scale-95"
                     >
-                        <XMarkIcon className="w-5 h-5" />
+                        <XMarkIcon className="w-4.5 h-4.5" />
                     </button>
                 </div>
 

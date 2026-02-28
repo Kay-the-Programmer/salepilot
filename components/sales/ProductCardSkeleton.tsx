@@ -2,7 +2,7 @@ import React from 'react';
 
 export const ProductCardSkeleton: React.FC = () => {
     return (
-        <div className="bg-white dark:bg-slate-800/80 rounded-[20px] border border-slate-200/60 dark:border-white/8 overflow-hidden animate-pulse">
+        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[24px] border border-slate-200/50 dark:border-white/5 overflow-hidden animate-pulse shadow-sm">
             {/* Image placeholder — matches new 4:3 ratio */}
             <div className="aspect-[4/3] bg-slate-100 dark:bg-slate-700/60" />
             <div className="p-3 space-y-2.5">

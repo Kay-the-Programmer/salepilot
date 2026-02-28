@@ -147,7 +147,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 transition-all duration-300 animate-fade-in"
+            className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 transition-all duration-300 animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
@@ -155,24 +155,24 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         >
             {/* The Modal Container */}
             <div
-                className="relative w-full sm:max-w-[420px] max-h-[90vh] sm:max-h-[85vh] flex flex-col bg-slate-100 dark:bg-slate-900 sm:rounded-[2.5rem] rounded-t-[2rem] shadow-2xl overflow-hidden animate-slide-up transform transition-all"
+                className="relative w-full sm:max-w-[420px] max-h-[90vh] sm:max-h-[85vh] flex flex-col bg-slate-100 dark:bg-slate-900 sm:rounded-[32px] rounded-t-[32px] shadow-[0_20px_60px_rgb(0,0,0,0.1)] dark:shadow-[0_20px_60px_rgb(0,0,0,0.4)] ring-1 ring-slate-900/5 dark:ring-white/10 overflow-hidden animate-slide-up transform transition-all"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Drag handle area (Mobile only) */}
-                <div className="absolute top-0 inset-x-0 h-8 flex justify-center items-center sm:hidden z-20">
+                <div className="absolute top-0 inset-x-0 h-10 flex justify-center items-center sm:hidden z-20">
                     <div className="w-12 h-1.5 bg-slate-300 dark:bg-slate-700/60 rounded-full" />
                 </div>
 
                 {/* Close Button (Floating Top Right) */}
                 <button
                     onClick={onClose}
-                    className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 dark:bg-slate-800/50 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors backdrop-blur-md"
+                    className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-slate-200/50 dark:bg-slate-800/80 border border-slate-300/50 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-colors backdrop-blur-md active:scale-95"
                 >
-                    <XMarkIcon className="w-5 h-5" />
+                    <XMarkIcon className="w-4.5 h-4.5" />
                 </button>
 
                 {/* Scrollable Receipt Area */}
-                <div className="flex-1 overflow-y-auto no-scrollbar pt-12 sm:pt-6 pb-24 px-4 sm:px-6">
+                <div className="flex-1 overflow-y-auto no-scrollbar pt-12 sm:pt-6 pb-28 px-4 sm:px-6">
 
                     {/* --- THE RECEIPT "PAPER" --- */}
                     <div
@@ -298,14 +298,12 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 </div>
 
                 {/* Fixed Bottom Action Bar */}
-                <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 bg-gradient-to-t from-slate-100 via-slate-100 to-transparent dark:from-slate-900 dark:via-slate-900 z-10 pointer-events-none" />
-
-                <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6 z-20">
+                <div className="absolute bottom-0 inset-x-0 p-5 px-6 border-t border-slate-200/50 dark:border-white/5 bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-xl z-20">
                     <button
                         onClick={handlePrint}
-                        className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg transition-all active:scale-[0.98] shadow-lg shadow-indigo-600/30"
+                        className="w-full py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[16px] text-[15px] font-bold tracking-wide shadow-[0_8px_20px_rgb(0,0,0,0.12)] hover:bg-slate-800 dark:hover:bg-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                     >
-                        <PrinterIcon className="w-6 h-6" />
+                        <PrinterIcon className="w-5 h-5" />
                         Print Receipt
                     </button>
                 </div>

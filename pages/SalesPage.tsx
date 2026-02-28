@@ -582,8 +582,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
     };
 
     return (
-        <div className="h-screen w-full bg-slate-100 dark:bg-slate-900 flex flex-col md:flex-row overflow-hidden">
-            <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
+        <div className="h-[100dvh] w-full bg-slate-50/50 dark:bg-slate-950/50 relative selection:bg-blue-500/30 flex flex-col md:flex-row overflow-hidden">
+            {/* Background elements */}
+            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
+            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-purple-500/5 dark:bg-purple-500/10 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
+
+            <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 relative z-10">
                 <Header
                     title="Point of Sale"
                     onMenuClick={onOpenSidebar}
@@ -698,17 +702,22 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
             {/* Right Column - Cart & Checkout */}
             <aside
-                className="w-full md:w-[380px] xl:w-[420px] flex-none hidden md:flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200/60 dark:border-white/8 shadow-[-16px_0_40px_rgba(0,0,0,0.04)] dark:shadow-[-16px_0_40px_rgba(0,0,0,0.3)] z-20"
+                className="w-full md:w-[380px] xl:w-[420px] flex-none hidden md:flex flex-col h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-l border-slate-200/50 dark:border-white/5 shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-[-20px_0_40px_rgb(0,0,0,0.2)] z-20"
                 aria-label="Shopping cart"
             >
                 {/* Cart Header */}
-                <div className="flex-none px-4 py-3.5 border-b border-slate-100 dark:border-white/8">
-                    <div className="flex items-center justify-between">
+                <div className="flex-none px-6 py-5 border-b border-slate-200/50 dark:border-white/5 bg-transparent relative">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 dark:bg-blue-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                    <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">Order</h2>
-                            <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 tabular-nums">
+                            <h2 className="text-[17px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">Order</h2>
+                            <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 mt-1.5 tabular-nums">
                                 {cart.length > 0
-                                    ? `${cart.length} ${cart.length === 1 ? 'item' : 'items'} · ${formatCurrency(subtotal, storeSettings)}`
+                                    ? <span className="flex items-center gap-2">
+                                        <span className="bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full text-[11px] font-bold">{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
+                                        <span className="text-slate-300 dark:text-slate-600">•</span>
+                                        <span>{formatCurrency(subtotal, storeSettings)}</span>
+                                    </span>
                                     : 'Nothing added yet'}
                             </p>
                         </div>

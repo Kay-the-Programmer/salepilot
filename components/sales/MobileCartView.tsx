@@ -138,8 +138,9 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
         <div className={`md:hidden fixed inset-0 bg-slate-100 dark:bg-slate-900 z-50 flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
             {/* ── Header ── */}
-            <div className="flex-none bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-white/8 px-4 py-3 z-10">
-                <div className="flex items-center gap-3">
+            <div className="flex-none bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/5 px-4 py-3 z-10 shadow-sm relative overflow-hidden">
+                <div className="absolute top-0 right-10 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl -translate-y-1/2 pointer-events-none"></div>
+                <div className="flex items-center gap-3 relative z-10">
                     <button
                         onClick={onClose}
                         className="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-90 transition-all"
@@ -174,11 +175,11 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                 key={tab.id}
                                 onClick={() => setActiveSection(tab.id)}
                                 className={`
-                                    flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold rounded-xl
-                                    transition-all duration-200 active:scale-95
+                                    flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-[14px]
+                                    transition-all duration-300 active:scale-[0.96]
                                     ${activeSection === tab.id
-                                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                                        : 'text-slate-500 dark:text-slate-400'}
+                                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgb(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgb(0,0,0,0.3)]'
+                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}
                                 `}
                             >
                                 {tab.icon}
@@ -477,55 +478,58 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
             {cart.length > 0 && !isScannerOpen && (
                 <div className="flex-none absolute bottom-0 left-0 right-0 z-30">
                     {/* Frosted glass background */}
-                    <div className="bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/8 px-3 pt-3 pb-[max(12px,env(safe-area-inset-bottom))]">
-                        {/* Scan button (compact, above) */}
-                        <div className="grid grid-cols-4 gap-2 mb-2.5">
-                            <button
-                                onClick={onHoldSale}
-                                className="col-span-1 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold flex flex-col items-center justify-center gap-1 active:scale-95 transition-all"
-                            >
-                                <ClockIcon className="w-4 h-4" />
-                                <span className="text-[10px]">Hold</span>
-                            </button>
+                    <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 px-4 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.2)] relative">
+                        <div className="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent dark:from-slate-900/40 pointer-events-none" />
+                        <div className="relative z-10 group">
+                            {/* Scan button (compact, above) */}
+                            <div className="grid grid-cols-4 gap-2 mb-2.5">
+                                <button
+                                    onClick={onHoldSale}
+                                    className="col-span-1 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold flex flex-col items-center justify-center gap-1 active:scale-95 transition-all"
+                                >
+                                    <ClockIcon className="w-4 h-4" />
+                                    <span className="text-[10px]">Hold</span>
+                                </button>
 
-                            {/* Main Charge Button */}
-                            <button
-                                id="pos-mobile-pay-btn"
-                                onClick={() => processTransaction('paid')}
-                                disabled={isPayDisabled}
-                                className="col-span-3 py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-extrabold text-base flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98] transition-all shadow-lg shadow-indigo-500/35"
-                            >
-                                {isProcessing ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
-                                        <span>Processing…</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <CreditCardIcon className="w-5 h-5 flex-shrink-0" />
-                                        <span>Charge {formatCurrency(total, storeSettings)}</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
+                                {/* Main Charge Button */}
+                                <button
+                                    id="pos-mobile-pay-btn"
+                                    onClick={() => processTransaction('paid')}
+                                    disabled={isPayDisabled}
+                                    className="col-span-3 py-4 rounded-[20px] bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-extrabold text-base flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.96] transition-all duration-300 shadow-[0_8px_20px_rgb(99,102,241,0.3)] overflow-hidden relative"
+                                >
+                                    {isProcessing ? (
+                                        <>
+                                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
+                                            <span>Processing…</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <CreditCardIcon className="w-5 h-5 flex-shrink-0" />
+                                            <span>Charge {formatCurrency(total, storeSettings)}</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
 
-                        {/* Secondary: Invoice + Scan */}
-                        <div className="grid grid-cols-2 gap-2">
-                            <button
-                                onClick={() => setIsScannerOpen(true)}
-                                className="py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                            >
-                                <QrCodeIcon className="w-4 h-4" />
-                                Scan More
-                            </button>
-                            <button
-                                onClick={() => processTransaction('invoice')}
-                                disabled={!selectedCustomer || isProcessing}
-                                className="py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-95 transition-all"
-                            >
-                                <DocumentPlusIcon className="w-4 h-4" />
-                                {!selectedCustomer ? 'Invoice (select customer)' : 'Invoice'}
-                            </button>
+                            {/* Secondary: Invoice + Scan */}
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    onClick={() => setIsScannerOpen(true)}
+                                    className="py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                                >
+                                    <QrCodeIcon className="w-4 h-4" />
+                                    Scan More
+                                </button>
+                                <button
+                                    onClick={() => processTransaction('invoice')}
+                                    disabled={!selectedCustomer || isProcessing}
+                                    className="py-2.5 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 flex items-center justify-center gap-1.5 disabled:opacity-40 active:scale-95 transition-all"
+                                >
+                                    <DocumentPlusIcon className="w-4 h-4" />
+                                    {!selectedCustomer ? 'Invoice (select customer)' : 'Invoice'}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

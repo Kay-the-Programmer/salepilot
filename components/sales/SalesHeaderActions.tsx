@@ -57,7 +57,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     placeholder="Search products, SKU, barcode…"
-                    className="w-full pl-10 pr-9 py-2.5 bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-indigo-400 dark:focus:border-indigo-500 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 dark:focus:ring-indigo-500/30 transition-all"
+                    className="w-full pl-10 pr-9 py-2.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/50 dark:border-white/5 focus:border-indigo-500 dark:focus:border-indigo-400 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 dark:focus:ring-indigo-500/10 shadow-sm transition-all"
                 />
                 {searchTerm ? (
                     <button
@@ -84,7 +84,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
             <button
                 id="pos-held-btn"
                 onClick={onOpenHeldSales}
-                className="relative flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 active:scale-90 transition-all duration-200 flex-shrink-0"
+                className="relative flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/50 dark:border-white/5 hover:bg-white dark:hover:bg-slate-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:scale-95 transition-all duration-300 flex-shrink-0 shadow-sm"
                 aria-label={`Held sales${heldSalesCount > 0 ? ` (${heldSalesCount})` : ''}`}
             >
                 <ClockIcon className="w-4 h-4" />
@@ -99,7 +99,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
             {/* Help */}
             <button
                 onClick={onTourStart}
-                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 active:scale-90 transition-all duration-200 flex-shrink-0"
+                className="p-2.5 rounded-full text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/50 dark:border-white/5 hover:bg-white dark:hover:bg-slate-700 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 active:scale-95 transition-all duration-300 flex-shrink-0 shadow-sm"
                 aria-label="Launch help guide"
             >
                 <QuestionMarkCircleIcon className="w-4 h-4" />

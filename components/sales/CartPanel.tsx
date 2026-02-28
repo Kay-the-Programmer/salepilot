@@ -31,13 +31,16 @@ export const CartPanel: React.FC<CartPanelProps> = ({
 
     if (cart.length === 0) {
         return (
-            <div id="pos-cart-items" className="hidden md:flex flex-1 items-center justify-center">
-                <div className="text-center px-6">
-                    <div className="w-16 h-16 rounded-3xl bg-slate-100 dark:bg-white/5 flex items-center justify-center mx-auto mb-4">
-                        <ShoppingCartIcon className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+            <div id="pos-cart-items" className="hidden md:flex flex-1 items-center justify-center bg-slate-50/50 dark:bg-slate-950/50 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                <div className="text-center px-8 py-10 relative z-10 w-full max-w-[280px]">
+                    <div className="w-20 h-20 rounded-[24px] bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-white/5 flex items-center justify-center mx-auto mb-6 shadow-sm rotate-3">
+                        <ShoppingCartIcon className="w-10 h-10 text-slate-300 dark:text-slate-600" />
                     </div>
-                    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400">Cart is empty</p>
-                    <p className="text-xs text-slate-400 dark:text-slate-600 mt-1">Tap a product or scan a barcode to begin</p>
+                    <p className="text-[15px] font-bold text-slate-700 dark:text-slate-300">Cart is empty</p>
+                    <p className="text-[13px] font-medium text-slate-400 dark:text-slate-600 mt-2 leading-relaxed">
+                        Tap a product or scan a barcode to begin building an order
+                    </p>
                 </div>
             </div>
         );
@@ -54,9 +57,9 @@ export const CartPanel: React.FC<CartPanelProps> = ({
                         <div
                             key={item.productId}
                             className={`
-                                group flex items-center gap-3 px-3 py-2.5 rounded-2xl
-                                bg-white dark:bg-slate-800/60 border border-slate-100 dark:border-white/5
-                                hover:border-slate-200 dark:hover:border-white/10
+                                group flex items-center gap-4 px-4 py-3 rounded-[20px]
+                                bg-white/80 dark:bg-slate-800/80 backdrop-blur-md border border-slate-200/50 dark:border-white/5
+                                hover:shadow-sm hover:border-slate-300 dark:hover:border-white/10
                                 transition-all duration-300
                                 ${isRemoving ? 'opacity-0 scale-95 -translate-x-2' : 'opacity-100 scale-100'}
                             `}
@@ -75,29 +78,29 @@ export const CartPanel: React.FC<CartPanelProps> = ({
                             </div>
 
                             {/* Quantity Stepper */}
-                            <div className="flex items-center bg-slate-100 dark:bg-white/8 rounded-full p-0.5 gap-0.5 flex-shrink-0">
+                            <div className="flex items-center bg-slate-100/80 dark:bg-white/10 rounded-full p-1 gap-1 flex-shrink-0">
                                 <button
                                     onClick={() => updateQuantity(item.productId, item.quantity - step)}
-                                    className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center active:scale-90 transition-all shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600"
+                                    className="w-7 h-7 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center active:scale-95 transition-all shadow-sm hover:shadow-md border border-slate-200/50 dark:border-white/5"
                                     aria-label="Decrease"
                                 >
-                                    <MinusIcon className="w-2.5 h-2.5" />
+                                    <MinusIcon className="w-3 h-3" />
                                 </button>
                                 <input
                                     type="number"
                                     value={item.quantity}
                                     onChange={e => updateQuantity(item.productId, parseFloat(e.target.value) || 0)}
-                                    className="w-10 text-center text-xs font-bold bg-transparent border-none focus:outline-none focus:ring-0 text-slate-900 dark:text-white tabular-nums"
+                                    className="w-10 text-center text-[13px] font-bold bg-transparent border-none focus:outline-none focus:ring-0 text-slate-900 dark:text-white tabular-nums"
                                     min="0"
                                     step={step}
                                     aria-label={`Qty ${item.name}`}
                                 />
                                 <button
                                     onClick={() => updateQuantity(item.productId, item.quantity + step)}
-                                    className="w-6 h-6 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center active:scale-90 transition-all shadow-sm hover:bg-slate-50 dark:hover:bg-slate-600"
+                                    className="w-7 h-7 rounded-full bg-white dark:bg-slate-700 text-slate-700 dark:text-white flex items-center justify-center active:scale-95 transition-all shadow-sm hover:shadow-md border border-slate-200/50 dark:border-white/5"
                                     aria-label="Increase"
                                 >
-                                    <PlusIcon className="w-2.5 h-2.5" />
+                                    <PlusIcon className="w-3 h-3" />
                                 </button>
                             </div>
 

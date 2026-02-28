@@ -38,10 +38,10 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
     const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
 
     return (
-        <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 ease-in-out flex flex-col bg-slate-100 dark:bg-slate-900 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 ease-in-out flex flex-col bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-3xl ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
             {/* ── Sticky Header ── */}
-            <div className="flex-none sticky top-0 z-10 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-white/8">
+            <div className="flex-none sticky top-0 z-10 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/5 shadow-sm">
                 <div className="flex items-center gap-2 px-3 py-3">
                     {/* Menu */}
                     {onOpenSidebar && (
@@ -63,7 +63,7 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                             placeholder="Search products…"
-                            className="w-full pl-9 pr-9 py-2.5 bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-indigo-400 dark:focus:border-indigo-500 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 transition-all"
+                            className="w-full pl-10 pr-9 py-2.5 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md border border-slate-200/50 dark:border-white/5 focus:border-indigo-500 dark:focus:border-indigo-400 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 shadow-sm transition-all"
                         />
                         {searchTerm && (
                             <button
