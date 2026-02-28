@@ -26,7 +26,9 @@ import { CheckoutActions } from '../components/sales/CheckoutActions';
 import { MobileCartView } from '../components/sales/MobileCartView';
 import { MobileProductView } from '../components/sales/MobileProductView';
 import { SalesHeaderActions } from '../components/sales/SalesHeaderActions';
-import { SalesFAB } from '../components/sales/SalesFAB';
+
+// Icons for Bottom Navigation
+import { ShoppingCartIcon, ArchiveBoxIcon } from '../components/icons';
 
 interface SalesPageProps {
     user: User;
@@ -67,11 +69,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
     const [cashReceived, setCashReceived] = useState<string>('');
     const [isProcessing, setIsProcessing] = useState(false);
-    const cashInputRef = useRef<HTMLInputElement | null>(null);
+    const cashInputRef = useRef<HTMLInputElement>(null);
 
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
     const [shouldFocusCashInput, setShouldFocusCashInput] = useState(false);
-    const mobileCashInputRef = useRef<HTMLInputElement | null>(null);
+    const mobileCashInputRef = useRef<HTMLInputElement>(null);
     const [mobileMoneyNumber, setMobileMoneyNumber] = useState('');
 
     // External Product Lookup State
@@ -98,8 +100,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [lowStockProduct, setLowStockProduct] = useState<Product | null>(null);
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
-    const [isFabVisible, setIsFabVisible] = useState(true);
-    const lastScrollY = useRef(0);
 
     // View Mode State (grid or list)
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
@@ -120,35 +120,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         localStorage.setItem('pos-view-mode', viewMode);
     }, [viewMode]);
 
-    // Scroll behavior for FAB
-    useEffect(() => {
-        const handleScroll = (e: Event) => {
-            const target = e.target;
-            if (!target) return;
-            // Handle both window scroll and element scroll
-            const currentScrollY = (target instanceof Document) ? window.scrollY : (target as HTMLElement).scrollTop;
 
-            if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
-                setIsFabVisible(false);
-            } else {
-                setIsFabVisible(true);
-            }
-            lastScrollY.current = currentScrollY;
-        };
-
-        const mainContent = document.getElementById('main-content');
-        if (mainContent) {
-            mainContent.addEventListener('scroll', handleScroll, { passive: true });
-        }
-        window.addEventListener('scroll', handleScroll, { passive: true });
-
-        return () => {
-            if (mainContent) {
-                mainContent.removeEventListener('scroll', handleScroll);
-            }
-            window.removeEventListener('scroll', handleScroll);
-        };
-    }, []);
 
     // Auto-select first payment method
     useEffect(() => {
@@ -593,8 +565,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     onMenuClick={onOpenSidebar}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    hideSearchOnMobile={true}
-                    showSearch={false}
+                    hideSearchOnMobile={false}
+                    showSearch={true}
+                    className="z-[60]"
                     rightContent={
                         <SalesHeaderActions
                             searchTerm={searchTerm}
@@ -775,20 +748,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     cashInputRef={cashInputRef as React.RefObject<HTMLInputElement>}
                 />
 
-                {/* Mobile Product View */}
-                <MobileProductView
-                    isOpen={activeTab === 'products'}
-                    products={filteredProducts}
-                    cart={cart}
-                    storeSettings={storeSettings}
-                    addToCart={addToCart}
-                    updateQuantity={updateQuantity}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    onOpenSidebar={onOpenSidebar}
-                    onTourStart={() => setRunTour(true)}
-                />
             </aside>
+
+            {/* Mobile View Components */}
+            <MobileProductView
+                isOpen={activeTab === 'products'}
+                products={filteredProducts}
+                cart={cart}
+                storeSettings={storeSettings}
+                addToCart={addToCart}
+                updateQuantity={updateQuantity}
+                searchTerm={searchTerm}
+            />
 
             {/* Mobile Cart View */}
             <MobileCartView
@@ -817,7 +788,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 onHoldSale={handleHoldSale}
                 processTransaction={processTransaction}
                 isProcessing={isProcessing}
-                mobileCashInputRef={mobileCashInputRef as React.RefObject<HTMLInputElement>}
+                mobileCashInputRef={mobileCashInputRef}
                 isScannerOpen={isScannerOpen}
                 setIsScannerOpen={setIsScannerOpen}
                 onContinuousScan={handleContinuousScan}
@@ -825,21 +796,52 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 setAppliedStoreCredit={setAppliedStoreCredit}
             />
 
-            {/* Modals */}
-            {
-                activeTab !== 'cart' && (
-                    <SalesFAB
-                        isFabVisible={isFabVisible}
-                        setIsScannerOpen={setIsScannerOpen}
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        cartCount={cart.length}
-                        setShowHeldPanel={setShowHeldPanel}
-                        heldSalesCount={heldSales.length}
-                    />
-                )
-            }
+            {/* Mobile Footer Spacing for Bottom Nav */}
+            <div className="h-24 md:hidden flex-none"></div>
 
+            {/* Premium Mobile Bottom Navigation Bar */}
+            <nav aria-label="Mobile Bottom Navigation" className="md:hidden fixed bottom-0 left-0 right-0 z-[70] bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]">
+                <div className="flex items-center justify-around px-2 py-2">
+                    <button
+                        onClick={() => setActiveTab('products')}
+                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1.5 py-1 transition-all duration-300 active:scale-95 outline-none ${activeTab === 'products' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                        aria-selected={activeTab === 'products'}
+                    >
+                        <div className="relative">
+                            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${activeTab === 'products' ? 'bg-blue-50 dark:bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
+                                <ArchiveBoxIcon className="w-[22px] h-[22px]" />
+                            </div>
+                            {activeTab === 'products' && (
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
+                            )}
+                        </div>
+                        <span className={`text-[9px] font-bold tracking-wide transition-all duration-300 uppercase ${activeTab === 'products' ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>Products</span>
+                    </button>
+
+                    <button
+                        onClick={() => setActiveTab('cart')}
+                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1.5 py-1 transition-all duration-300 active:scale-95 outline-none ${activeTab === 'cart' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                        aria-selected={activeTab === 'cart'}
+                    >
+                        <div className="relative">
+                            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${activeTab === 'cart' ? 'bg-blue-50 dark:bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
+                                <ShoppingCartIcon className="w-[22px] h-[22px]" />
+                            </div>
+                            {cart.length > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-rose-500 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border-2 border-white dark:border-slate-900 px-1 transition-transform">
+                                    {cart.length}
+                                </div>
+                            )}
+                            {activeTab === 'cart' && (
+                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
+                            )}
+                        </div>
+                        <span className={`text-[9px] font-bold tracking-wide transition-all duration-300 uppercase ${activeTab === 'cart' ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>Cart</span>
+                    </button>
+                </div>
+            </nav>
+
+            {/* Modals */}
             <HeldSalesModal
                 isOpen={showHeldPanel}
                 onClose={() => setShowHeldPanel(false)}

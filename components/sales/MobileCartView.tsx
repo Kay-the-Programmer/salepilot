@@ -9,9 +9,7 @@ import {
     ClockIcon,
     DocumentPlusIcon,
     ArrowLeftIcon,
-    ChevronDownIcon,
     UserIcon,
-    ChartBarIcon,
 } from '../icons';
 import MinusIcon from '../icons/MinusIcon';
 import PlusIcon from '../icons/PlusIcon';
@@ -44,7 +42,7 @@ interface MobileCartViewProps {
     onHoldSale: () => void;
     processTransaction: (type: 'paid' | 'invoice') => void;
     isProcessing: boolean;
-    mobileCashInputRef: React.RefObject<HTMLInputElement>;
+    mobileCashInputRef: React.RefObject<HTMLInputElement | null>;
     isScannerOpen: boolean;
     setIsScannerOpen: (isOpen: boolean) => void;
     onContinuousScan: (decodedText: string) => void;
@@ -135,7 +133,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
     ];
 
     return (
-        <div className={`md:hidden fixed inset-0 bg-slate-100 dark:bg-slate-900 z-50 flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className={`md:hidden fixed inset-x-0 bottom-0 top-16 bg-slate-100 dark:bg-slate-900 z-50 flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
             {/* ── Header ── */}
             <div className="flex-none bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/5 px-4 py-3 z-10 shadow-sm relative overflow-hidden">
@@ -221,10 +219,11 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                     </div>
                 )}
 
-                {/* Scanner View */}
+                {/* Scanner + Items Split View */}
                 {isScannerOpen && (
                     <div className="flex flex-col h-full">
-                        <div className="flex-1 bg-black relative">
+                        {/* Top Half: Scanner */}
+                        <div className="h-[45vh] bg-black relative flex-shrink-0">
                             <UnifiedScannerModal
                                 isOpen={true}
                                 variant="embedded"
@@ -236,26 +235,60 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                 paused={false}
                             />
                             <div className="absolute inset-x-0 bottom-6 flex justify-center pointer-events-none">
-                                <p className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-md text-white text-sm font-medium border border-white/10">
+                                <p className="px-4 py-2 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-medium border border-white/10">
                                     Align barcode within frame
                                 </p>
                             </div>
-                        </div>
-                        <div className="flex-none p-4 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-white/8">
                             <button
                                 onClick={() => setIsScannerOpen(false)}
-                                className="w-full py-3.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl font-bold border border-red-200 dark:border-red-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                                className="absolute top-4 right-4 w-10 h-10 bg-black/50 backdrop-blur-md text-white rounded-full flex items-center justify-center active:scale-95 transition-all z-10"
                             >
                                 <XMarkIcon className="w-5 h-5" />
-                                Stop Scanning
                             </button>
+                        </div>
+
+                        {/* Bottom Half: Cart Items */}
+                        <div className="flex-1 bg-slate-50 dark:bg-slate-900 overflow-y-auto px-3 py-2 pb-24 space-y-2 relative border-t border-slate-200/50 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)] z-10">
+                            {cart.length === 0 ? (
+                                <div className="h-full flex flex-col items-center justify-center text-center opacity-70">
+                                    <ShoppingCartIcon className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
+                                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Scan to add items</p>
+                                </div>
+                            ) : (
+                                cart.map(item => {
+                                    const isRemoving = removingItems.includes(item.productId);
+                                    return (
+                                        <div
+                                            key={item.productId}
+                                            className={`bg-white dark:bg-slate-800/80 rounded-xl border border-slate-100 dark:border-white/5 p-2.5 transition-all duration-300 ${isRemoving ? 'opacity-0 scale-95' : 'opacity-100'}`}
+                                        >
+                                            <div className="flex items-start gap-2.5">
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-semibold text-sm text-slate-900 dark:text-white leading-tight line-clamp-1">
+                                                        {item.name}
+                                                    </p>
+                                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">
+                                                        {formatCurrency(item.price, storeSettings)} × {item.quantity}{item.unitOfMeasure === 'kg' ? 'kg' : ''} = <span className="font-semibold text-slate-700 dark:text-slate-300">{formatCurrency(item.price * item.quantity, storeSettings)}</span>
+                                                    </p>
+                                                </div>
+                                                <button
+                                                    onClick={() => handleRemove(item.productId)}
+                                                    className="w-7 h-7 rounded-full flex items-center justify-center text-slate-300 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-all active:scale-90 flex-shrink-0"
+                                                >
+                                                    <XMarkIcon className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            )}
                         </div>
                     </div>
                 )}
 
                 {/* Items Section */}
                 {cart.length > 0 && !isScannerOpen && activeSection === 'items' && (
-                    <div className="px-3 py-2 pb-40 space-y-2">
+                    <div className="px-3 py-2 pb-56 space-y-2">
                         {cart.map(item => {
                             const step = getStepFor(item.unitOfMeasure);
                             const isRemoving = removingItems.includes(item.productId);
@@ -315,7 +348,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
 
                 {/* Details Section (customer + summary) */}
                 {cart.length > 0 && !isScannerOpen && activeSection === 'details' && (
-                    <div className="px-3 py-2 pb-40 space-y-3">
+                    <div className="px-3 py-2 pb-56 space-y-3">
                         {/* Customer */}
                         <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-white/5 p-4">
                             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Customer</p>
@@ -371,7 +404,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
 
                 {/* Payment Section */}
                 {cart.length > 0 && !isScannerOpen && activeSection === 'payment' && (
-                    <div className="px-3 py-2 pb-40 space-y-3">
+                    <div className="px-3 py-2 pb-56 space-y-3">
                         {/* Big Total */}
                         <div className="bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-100 dark:border-white/5 p-5 text-center">
                             <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Total Due</p>
@@ -474,11 +507,10 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                 )}
             </div>
 
-            {/* ── Floating Action Bar (always visible when cart has items) ── */}
             {cart.length > 0 && !isScannerOpen && (
-                <div className="flex-none absolute bottom-0 left-0 right-0 z-30">
+                <div className="flex-none absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-0 right-0 z-30 animate-in fade-in slide-in-from-bottom-4 duration-300">
                     {/* Frosted glass background */}
-                    <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 px-4 pt-4 pb-[max(16px,env(safe-area-inset-bottom))] shadow-[0_-8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.2)] relative">
+                    <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 px-4 pt-4 pb-4 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.2)] relative rounded-t-3xl mx-2 mb-2">
                         <div className="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent dark:from-slate-900/40 pointer-events-none" />
                         <div className="relative z-10 group">
                             {/* Scan button (compact, above) */}
