@@ -1,12 +1,12 @@
 import React from 'react';
 import { Product, StoreSettings, CartItem } from '../../types';
 import {
-    GridIcon,
     MagnifyingGlassIcon,
     QuestionMarkCircleIcon,
-    BellAlertIcon
+    Bars3Icon,
 } from '../icons';
-import logo from '../../assets/logo.png';
+import XMarkIcon from '../icons/XMarkIcon';
+import ListGridToggle from '../ui/ListGridToggle';
 import { ProductCard } from './ProductCard';
 
 interface MobileProductViewProps {
@@ -15,6 +15,7 @@ interface MobileProductViewProps {
     cart: CartItem[];
     storeSettings: StoreSettings;
     addToCart: (product: Product) => void;
+    updateQuantity?: (productId: string, quantity: number) => void;
     searchTerm: string;
     setSearchTerm: (term: string) => void;
     onOpenSidebar?: () => void;
@@ -27,87 +28,124 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
     cart,
     storeSettings,
     addToCart,
+    updateQuantity,
     searchTerm,
     setSearchTerm,
     onOpenSidebar,
-    onTourStart
+    onTourStart,
 }) => {
-    return (
-        <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 overflow-y-auto bg-slate-50 dark:bg-slate-900 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-            {/* Mobile Products Header */}
-            <div className="sticky top-0 z-10">
-                {/* Top Bar (Menu, Logo, Notification) */}
-                <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-white/5 p-4 pb-2">
-                    <div className="flex items-center justify-between">
-                        <div id="pos-mobile-header" className="flex items-center gap-2">
-                            {onOpenSidebar && (
-                                <button
-                                    onClick={onOpenSidebar}
-                                    className="p-2 -ml-2 rounded-full text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/50 focus:outline-none active:scale-90 transition-all duration-300"
-                                >
-                                    <GridIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
-                                </button>
-                            )}
-                        </div>
-                        <div className="absolute left-1/2 transform -translate-x-1/2">
-                            <img src={logo} alt="SalePilot" className="h-8" />
-                        </div>
-                        <div className="flex items-center gap-1">
-                            <button
-                                id="pos-mobile-help-btn"
-                                onClick={onTourStart}
-                                className="p-2 rounded-full hover:bg-slate-100 active:scale-95 transition-all duration-300"
-                                title="Help Guide"
-                            >
-                                <QuestionMarkCircleIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
-                            </button>
-                            <button className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-white/5 relative active:scale-95 transition-all duration-300">
-                                <BellAlertIcon className="w-6 h-6 text-slate-700 dark:text-gray-300" />
-                                {/* Optional: Add notification badge here if needed */}
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    const searchInputRef = React.useRef<HTMLInputElement>(null);
+    const [viewMode, setViewMode] = React.useState<'grid' | 'list'>('grid');
 
-                {/* Search Bar (Sticky) */}
-                <div id="pos-mobile-search-container" className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-white/20 dark:border-white/5 px-4 pb-4 pt-2">
-                    <div className="relative">
-                        <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+    return (
+        <div className={`md:hidden fixed inset-0 z-50 transition-transform duration-300 ease-in-out flex flex-col bg-slate-100 dark:bg-slate-900 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+
+            {/* ── Sticky Header ── */}
+            <div className="flex-none sticky top-0 z-10 bg-white dark:bg-slate-900 border-b border-slate-200/60 dark:border-white/8">
+                <div className="flex items-center gap-2 px-3 py-3">
+                    {/* Menu */}
+                    {onOpenSidebar && (
+                        <button
+                            onClick={onOpenSidebar}
+                            className="w-9 h-9 rounded-full flex items-center justify-center text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-90 transition-all flex-shrink-0"
+                        >
+                            <Bars3Icon className="w-5 h-5" />
+                        </button>
+                    )}
+
+                    {/* Search Bar — takes remaining space */}
+                    <div className="relative flex-1">
+                        <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                         <input
+                            ref={searchInputRef}
                             id="pos-mobile-search"
                             type="text"
                             value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder="Search products..."
-                            className="w-full pl-11 pr-4 py-3 border border-slate-200/60 dark:border-white/10 rounded-full bg-white dark:bg-slate-900/60 text-slate-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-inner transition-all"
+                            onChange={e => setSearchTerm(e.target.value)}
+                            placeholder="Search products…"
+                            className="w-full pl-9 pr-9 py-2.5 bg-slate-100 dark:bg-slate-800 border border-transparent focus:border-indigo-400 dark:focus:border-indigo-500 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-400/30 transition-all"
                         />
+                        {searchTerm && (
+                            <button
+                                onClick={() => { setSearchTerm(''); searchInputRef.current?.focus(); }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-slate-300 dark:bg-slate-600 flex items-center justify-center active:scale-90 transition-all"
+                            >
+                                <XMarkIcon className="w-3 h-3 text-slate-700 dark:text-white" />
+                            </button>
+                        )}
                     </div>
+
+                    {/* Grid/List Toggle */}
+                    <ListGridToggle
+                        viewMode={viewMode}
+                        onViewModeChange={setViewMode}
+                        size="sm"
+                    />
+
+                    {/* Help */}
+                    <button
+                        id="pos-mobile-help-btn"
+                        onClick={onTourStart}
+                        className="w-9 h-9 rounded-full flex items-center justify-center text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 active:scale-90 transition-all flex-shrink-0"
+                    >
+                        <QuestionMarkCircleIcon className="w-5 h-5" />
+                    </button>
                 </div>
             </div>
-            {/* Mobile Products Grid */}
-            <div id="pos-mobile-product-list" className="p-4 pb-24">
-                <div className="grid grid-cols-2 gap-4">
-                    {products.slice(0, 30).map((product, index) => (
-                        <div
-                            key={product.id}
-                            className="animate-staggered-fade-in flex flex-col"
-                            style={{ animationDelay: `${index * 0.05}s` }}
-                        >
-                            <ProductCard
-                                product={product}
-                                cartItem={cart.find(item => item.productId === product.id)}
-                                storeSettings={storeSettings}
-                                addToCart={addToCart}
-                                variant="mobile"
-                                onLowStockAlert={() => { }} // Not used in mobile view currently
-                            />
+
+            {/* ── Product List/Grid ── */}
+            <div id="pos-mobile-product-list" className="flex-1 overflow-y-auto p-3 pb-28">
+                {products.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-center">
+                        <div className="w-16 h-16 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4 shadow-sm">
+                            <MagnifyingGlassIcon className="w-7 h-7 text-slate-300 dark:text-slate-600" />
                         </div>
-                    ))}
-                </div>
-                {products.length === 0 && (
-                    <div className="text-center py-12">
-                        <MagnifyingGlassIcon className="w-12 h-12 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                        <p className="text-slate-600 dark:text-gray-400">No products found</p>
+                        <p className="text-slate-700 dark:text-slate-300 font-semibold">No products found</p>
+                        {searchTerm && (
+                            <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">
+                                No results for "{searchTerm}"
+                            </p>
+                        )}
+                    </div>
+                ) : viewMode === 'grid' ? (
+                    <div className="grid grid-cols-2 gap-2.5">
+                        {products.slice(0, 60).map((product, index) => (
+                            <div
+                                key={product.id}
+                                className="animate-staggered-fade-in flex flex-col"
+                                style={{ animationDelay: `${Math.min(index, 20) * 0.04}s` }}
+                            >
+                                <ProductCard
+                                    product={product}
+                                    cartItem={cart.find(item => item.productId === product.id)}
+                                    storeSettings={storeSettings}
+                                    addToCart={addToCart}
+                                    updateQuantity={updateQuantity}
+                                    variant="mobile"
+                                    onLowStockAlert={() => { }}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="space-y-1.5">
+                        {products.slice(0, 60).map((product, index) => (
+                            <div
+                                key={product.id}
+                                className="animate-staggered-fade-in"
+                                style={{ animationDelay: `${Math.min(index, 20) * 0.03}s` }}
+                            >
+                                <ProductCard
+                                    product={product}
+                                    cartItem={cart.find(item => item.productId === product.id)}
+                                    storeSettings={storeSettings}
+                                    addToCart={addToCart}
+                                    updateQuantity={updateQuantity}
+                                    variant="list"
+                                    onLowStockAlert={() => { }}
+                                />
+                            </div>
+                        ))}
                     </div>
                 )}
             </div>

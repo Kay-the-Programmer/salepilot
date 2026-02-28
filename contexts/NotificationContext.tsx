@@ -26,7 +26,7 @@ export const NotificationProvider: React.FC<{ children: ReactNode; user: User | 
     const isInitialLoad = React.useRef(true);
 
     const fetchNotifications = useCallback(async () => {
-        if (!user?.currentStoreId || !getOnlineStatus()) return;
+        if (!user?.currentStoreId || !user?.token || !getOnlineStatus()) return;
         try {
             const data = await api.get<Announcement[]>(`/notifications/stores/${user.currentStoreId}`);
             const fetchedNotifications = data || [];
@@ -72,12 +72,14 @@ export const NotificationProvider: React.FC<{ children: ReactNode; user: User | 
         }
     }, []);
 
-    // Initial Fetch & Polling
+    // Initial Fetch & Polling — delay first call slightly to avoid racing
+    // auth token writes to localStorage on login.
     useEffect(() => {
-        fetchNotifications();
+        if (!user?.token) return; // don't even schedule if not authenticated
+        const timer = setTimeout(() => fetchNotifications(), 500);
         const interval = setInterval(fetchNotifications, 30000); // 30s poll
-        return () => clearInterval(interval);
-    }, [fetchNotifications]);
+        return () => { clearTimeout(timer); clearInterval(interval); };
+    }, [fetchNotifications, user?.token]);
 
     // Socket Listener
     useEffect(() => {

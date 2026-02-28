@@ -2,8 +2,11 @@ import React from 'react';
 import {
     QrCodeIcon,
     ShoppingCartIcon,
-    ClockIcon
+    ClockIcon,
+    GridIcon,
 } from '../icons';
+
+
 
 interface SalesFABProps {
     isFabVisible: boolean;
@@ -24,43 +27,96 @@ export const SalesFAB: React.FC<SalesFABProps> = ({
     setShowHeldPanel,
     heldSalesCount
 }) => {
-    return (
-        <div className={`md:hidden fixed z-50 bottom-6 left-1/2 -translate-x-1/2 flex items-center gap-3 p-3 bg-white/20 dark:bg-slate-900/40 backdrop-blur-md border border-white/20 dark:border-white/10 rounded-3xl shadow-2xl transition-all duration-300 ${isFabVisible ? 'translate-y-0 opacity-100' : 'translate-y-32 opacity-0'}`}>
-            <button
-                id="pos-mobile-scanner-fab"
-                onClick={() => {
-                    setIsScannerOpen(true);
-                    setActiveTab('cart');
-                }}
-                className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 flex items-center justify-center active:scale-95 transition-all"
-            >
-                <QrCodeIcon className="w-6 h-6" />
-            </button>
-            <button
-                id="pos-mobile-cart-fab"
-                onClick={() => setActiveTab(activeTab === 'products' ? 'cart' : 'products')}
-                className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-lg flex items-center justify-center active:scale-95 transition-all"
-            >
-                <ShoppingCartIcon className="w-6 h-6" />
-                {cartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-gradient-to-br from-red-500 to-red-600 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">
-                        {cartCount}
-                    </span>
-                )}
-            </button>
+    const tabs = [
+        {
+            id: 'products' as const,
+            label: 'Products',
+            icon: <GridIcon className="w-5 h-5" />,
+            onClick: () => setActiveTab('products'),
+            active: activeTab === 'products',
+        },
+        {
+            id: 'scanner' as const,
+            label: 'Scan',
+            icon: <QrCodeIcon className="w-5 h-5" />,
+            onClick: () => { setIsScannerOpen(true); setActiveTab('cart'); },
+            active: false,
+            accent: true,
+        },
+        {
+            id: 'cart' as const,
+            label: 'Cart',
+            icon: <ShoppingCartIcon className="w-5 h-5" />,
+            onClick: () => setActiveTab('cart'),
+            active: activeTab === 'cart',
+            badge: cartCount > 0 ? cartCount : undefined,
+        },
+        {
+            id: 'held' as const,
+            label: 'Held',
+            icon: <ClockIcon className="w-5 h-5" />,
+            onClick: () => setShowHeldPanel(true),
+            active: false,
+            badge: heldSalesCount > 0 ? heldSalesCount : undefined,
+        },
+    ];
 
-            <button
-                id="pos-mobile-held-fab"
-                onClick={() => setShowHeldPanel(true)}
-                className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/30 flex items-center justify-center active:scale-95 transition-all"
-            >
-                <ClockIcon className="w-6 h-6" />
-                {heldSalesCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center border-2 border-white">
-                        {heldSalesCount}
-                    </span>
-                )}
-            </button>
+    return (
+        <div
+            className={`
+                md:hidden fixed bottom-0 left-0 right-0 z-50
+                transition-transform duration-300 ease-in-out
+                ${isFabVisible ? 'translate-y-0' : 'translate-y-full'}
+            `}
+        >
+            {/* Frosted glass bottom bar */}
+            <div className="bg-white/80 dark:bg-slate-900/90 backdrop-blur-xl border-t border-slate-200/60 dark:border-white/10 safe-area-bottom">
+                <div className="flex items-stretch">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            id={`pos-mobile-${tab.id}-fab`}
+                            onClick={tab.onClick}
+                            className={`
+                                flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 relative
+                                transition-all duration-150 active:scale-90
+                                ${tab.accent
+                                    ? 'text-indigo-600 dark:text-indigo-400'
+                                    : tab.active
+                                        ? 'text-indigo-600 dark:text-indigo-400'
+                                        : 'text-slate-500 dark:text-slate-400'}
+                            `}
+                            aria-label={tab.label}
+                        >
+                            {/* Active indicator bar */}
+                            {tab.active && (
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                            )}
+
+                            {/* Scanner gets a special accent pill */}
+                            {tab.accent ? (
+                                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white">
+                                    {tab.icon}
+                                </div>
+                            ) : (
+                                <div className="relative">
+                                    {tab.icon}
+                                    {tab.badge !== undefined && (
+                                        <span className="absolute -top-2 -right-2.5 min-w-[16px] h-4 px-1 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+                                            {tab.badge > 99 ? '99+' : tab.badge}
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                            <span className={`text-[10px] font-semibold leading-none ${tab.accent ? 'text-indigo-600 dark:text-indigo-400' : ''}`}>
+                                {tab.label}
+                            </span>
+                        </button>
+                    ))}
+                </div>
+                {/* iOS-style safe area spacer */}
+                <div className="h-safe-area-inset-bottom bg-transparent" />
+            </div>
         </div>
     );
 };

@@ -582,7 +582,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     };
 
     return (
-        <div className="h-screen w-full bg-slate-50 dark:bg-slate-900 flex flex-col md:flex-row overflow-hidden">
+        <div className="h-screen w-full bg-slate-100 dark:bg-slate-900 flex flex-col md:flex-row overflow-hidden">
             <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0">
                 <Header
                     title="Point of Sale"
@@ -604,16 +604,20 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     }
                 />
 
-                <div className="flex-1 overflow-hidden bg-slate-50 dark:bg-slate-900">
+                <div className="flex-1 overflow-hidden">
                     <div className="h-full flex flex-col">
-                        {/* Left Column - Products */}
                         <div className="flex-1 flex flex-col h-full min-w-0">
                             {/* Products Grid/List */}
-                            <div id="pos-product-list" className="flex-1 overflow-y-auto p-4 scroll-smooth" role="region" aria-label="Product catalog">
+                            <div
+                                id="pos-product-list"
+                                className="flex-1 overflow-y-auto p-3 md:p-4 scroll-smooth pb-24 md:pb-4"
+                                role="region"
+                                aria-label="Product catalog"
+                            >
                                 {isLoading ? (
                                     <div className="max-w-7xl mx-auto w-full">
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-                                            {Array.from({ length: 10 }).map((_, i) => (
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+                                            {Array.from({ length: 12 }).map((_, i) => (
                                                 <ProductCardSkeleton key={i} />
                                             ))}
                                         </div>
@@ -621,7 +625,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 ) : (
                                     <div className="max-w-7xl mx-auto w-full">
                                         {viewMode === 'grid' ? (
-                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
                                                 {paginatedProducts.map(product => {
                                                     const cartItem = cart.find(item => item.productId === product.id);
                                                     return (
@@ -642,7 +646,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 })}
                                             </div>
                                         ) : (
-                                            <div className="space-y-2">
+                                            <div className="space-y-1.5">
                                                 {paginatedProducts.map(product => {
                                                     const cartItem = cart.find(item => item.productId === product.id);
                                                     return (
@@ -665,10 +669,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         )}
 
                                         {filteredProducts.length === 0 && (
-                                            <div className="text-center py-12" role="status">
-                                                <MagnifyingGlassIcon className="w-10 h-10 text-slate-300 dark:text-slate-700 mx-auto mb-3" />
-                                                <p className="text-slate-500 dark:text-slate-400 font-medium">No products found</p>
-                                                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Try a different search term</p>
+                                            <div className="flex flex-col items-center justify-center py-16 text-center" role="status">
+                                                <div className="w-16 h-16 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4 shadow-sm">
+                                                    <MagnifyingGlassIcon className="w-7 h-7 text-slate-300 dark:text-slate-600" />
+                                                </div>
+                                                <p className="text-slate-700 dark:text-slate-300 font-semibold">No products found</p>
+                                                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1 max-w-xs">
+                                                    {searchTerm ? `No results for "${searchTerm}" — try a different search` : 'No active products yet'}
+                                                </p>
                                             </div>
                                         )}
                                     </div>
@@ -689,26 +697,28 @@ const SalesPage: React.FC<SalesPageProps> = ({
             </div>
 
             {/* Right Column - Cart & Checkout */}
-            <aside className="w-full md:w-[400px] xl:w-[450px] flex-none flex flex-col h-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border-l border-slate-200/50 dark:border-white/5 shadow-[-10px_0_30px_rgba(0,0,0,0.03)] dark:shadow-[-10px_0_30px_rgba(255,255,255,0.01)] z-20" aria-label="Shopping cart">
+            <aside
+                className="w-full md:w-[380px] xl:w-[420px] flex-none hidden md:flex flex-col h-full bg-white dark:bg-slate-900 border-l border-slate-200/60 dark:border-white/8 shadow-[-16px_0_40px_rgba(0,0,0,0.04)] dark:shadow-[-16px_0_40px_rgba(0,0,0,0.3)] z-20"
+                aria-label="Shopping cart"
+            >
                 {/* Cart Header */}
-                <div className="flex-none px-5 py-4 border-b border-slate-200/50 dark:border-white/5 backdrop-blur-md">
+                <div className="flex-none px-4 py-3.5 border-b border-slate-100 dark:border-white/8">
                     <div className="flex items-center justify-between">
-                        <div className="hidden md:block">
-                            <h2 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">Cart</h2>
-                            <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-0.5 tabular-nums">
-                                {cart.length} {cart.length === 1 ? 'item' : 'items'}
-                                {cart.length > 0 && (
-                                    <span className="ml-1.5">· {formatCurrency(subtotal, storeSettings)}</span>
-                                )}
+                        <div>
+                            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">Order</h2>
+                            <p className="text-xs font-medium text-slate-400 dark:text-slate-500 mt-1 tabular-nums">
+                                {cart.length > 0
+                                    ? `${cart.length} ${cart.length === 1 ? 'item' : 'items'} · ${formatCurrency(subtotal, storeSettings)}`
+                                    : 'Nothing added yet'}
                             </p>
                         </div>
                         {cart.length > 0 && (
                             <button
                                 onClick={clearCart}
-                                className="text-xs font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all rounded-full px-3 py-1.5 active:scale-95 shadow-sm"
+                                className="text-xs font-semibold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors active:scale-95"
                                 aria-label="Clear all items from cart"
                             >
-                                Clear
+                                Clear all
                             </button>
                         )}
                     </div>
@@ -763,6 +773,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     cart={cart}
                     storeSettings={storeSettings}
                     addToCart={addToCart}
+                    updateQuantity={updateQuantity}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
                     onOpenSidebar={onOpenSidebar}
