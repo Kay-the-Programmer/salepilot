@@ -1,0 +1,50 @@
+﻿+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    ([31mΓ£ù[39m Build failed in 3.98s:S  
+  tring) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+[31merror during build:
+[31m[vite:css] [postcss] C:/Users/kpyth/Pro
+jects/salepilot/salepilot/index.css:833:3: 
+The `shadow-[0_2px_8px_rgba(0,` class does 
+not exist. If `shadow-[0_2px_8px_rgba(0,` 
+is a custom class, make sure it is defined 
+within a `@layer` directive.[31m
+file: [36mC:/Users/kpyth/Projects/salepilot
+/salepilot/index.css:833:2[31m
+    at Input.error (C:\Users\kpyth\Projects\
+salepilot\salepilot\node_modules\postcss\lib
+\input.js:135:16)
+    at AtRule.error (C:\Users\kpyth\Projects
+\salepilot\salepilot\node_modules\postcss\li
+b\node.js:146:32)
+    at processApply (C:\Users\kpyth\Projects
+\salepilot\salepilot\node_modules\tailwindcs
+s\lib\lib\expandApplyAtRules.js:380:29)
+    at C:\Users\kpyth\Projects\salepilot\sal
+epilot\node_modules\tailwindcss\lib\lib\expa
+ndApplyAtRules.js:551:9
+    at C:\Users\kpyth\Projects\salepilot\sal
+epilot\node_modules\tailwindcss\lib\processT
+ailwindFeatures.js:55:50
+    at async plugins (C:\Users\kpyth\Project
+s\salepilot\salepilot\node_modules\tailwindc
+ss\lib\plugin.js:38:17)
+    at async LazyResult.runAsync (C:\Users\k
+pyth\Projects\salepilot\salepilot\node_modul
+es\postcss\lib\lazy-result.js:293:11)
+    at async runPostCSS (file:///C:/Users/kp
+yth/Projects/salepilot/salepilot/node_module
+s/vite/dist/node/chunks/dep-D4NMHUTW.js:4385
+3:21)
+    at async compilePostCSS (file:///C:/User
+s/kpyth/Projects/salepilot/salepilot/node_mo
+dules/vite/dist/node/chunks/dep-D4NMHUTW.js:
+43823:18)
+    at async compileCSS (file:///C:/Users/kp
+yth/Projects/salepilot/salepilot/node_module
+s/vite/dist/node/chunks/dep-D4NMHUTW.js:4367
+8:27)[39m

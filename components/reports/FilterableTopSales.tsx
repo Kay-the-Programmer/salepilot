@@ -130,7 +130,7 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
     }, [timeFilter, typeFilter, storeSettings]);
 
     return (
-        <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] border border-slate-100 dark:border-white/10 flex flex-col min-h-[400px] transition-all duration-300 ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
+        <div className={`dashboard-card h-[400px] flex flex-col transition-all duration-300 ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
             <div className="flex flex-col xs:flex-row xs:justify-between xs:items-baseline sm:items-center gap-4 mb-6">
                 <h3 className="font-bold text-slate-900 dark:text-white text-lg whitespace-nowrap">Top Sales</h3>
                 <div className="flex flex-wrap items-center gap-2 xs:justify-end">

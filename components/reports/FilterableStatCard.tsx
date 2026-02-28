@@ -178,7 +178,7 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
     };
 
     return (
-        <div className={`bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-7 flex flex-col justify-between h-44 relative group transition-all duration-300 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] active:scale-[0.98] ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+        <div className={`dashboard-card flex flex-col justify-between h-full relative group transition-all duration-300 active:scale-[0.98] ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-start z-10">
                 <div className="flex-1">
                     <div className="flex items-center gap-2.5 mb-3">

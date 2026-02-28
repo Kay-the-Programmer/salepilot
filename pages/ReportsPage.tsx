@@ -29,6 +29,19 @@ import { CustomersTab } from '../components/reports/CustomersTab';
 import { CashflowTab } from '../components/reports/CashflowTab';
 import { PersonalUseTab } from '../components/reports/PersonalUseTab';
 import { AiSummaryCard } from '../components/reports/AiSummaryCard';
+import { Settings, X, LayoutGrid } from 'lucide-react';
+import { DashboardCardConfig } from '../types';
+
+const DEFAULT_CARDS: DashboardCardConfig[] = [
+    { id: 'tips', label: 'Tips & Guidance', visible: true, order: 0 },
+    { id: 'expenses', label: 'Operating Expenses', visible: true, order: 1 },
+    { id: 'profit', label: 'Net Profit', visible: true, order: 2 },
+    { id: 'cashflow', label: 'Cashflow Trend', visible: true, order: 3 },
+    { id: 'sales-trend', label: 'Sales Trends', visible: true, order: 4 },
+    { id: 'channels', label: 'Sales Channels', visible: true, order: 5 },
+    { id: 'recent-orders', label: 'Recent Orders', visible: true, order: 6 },
+    { id: 'top-sales', label: 'Top Selling Products', visible: true, order: 7 },
+];
 interface ReportsPageProps {
     storeSettings: StoreSettings;
     onClose?: () => void;
@@ -79,6 +92,30 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
     const notificationsRef = useRef<HTMLDivElement>(null);
     const tabBarRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
+
+    const [isEditMode, setIsEditMode] = useState(false);
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [cardConfig, setCardConfig] = useState<DashboardCardConfig[]>(() => {
+        const saved = localStorage.getItem('salepilot_dashboard_config');
+        if (saved) {
+            try {
+                return JSON.parse(saved);
+            } catch (e) {
+                console.error("Failed to parse dashboard config", e);
+            }
+        }
+        return DEFAULT_CARDS;
+    });
+
+    useEffect(() => {
+        localStorage.setItem('salepilot_dashboard_config', JSON.stringify(cardConfig));
+    }, [cardConfig]);
+
+    const toggleCardVisibility = (id: string) => {
+        setCardConfig(prev => prev.map(card =>
+            card.id === id ? { ...card, visible: !card.visible } : card
+        ));
+    };
 
     // Sales Pagination State
     const [dailyPage, setDailyPage] = useState(1);
@@ -250,6 +287,10 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                         userName={user?.name}
                         recentOrdersTab={recentOrdersTab}
                         setRecentOrdersTab={setRecentOrdersTab}
+                        isEditMode={isEditMode}
+                        cardConfig={cardConfig}
+                        setCardConfig={setCardConfig}
+                        toggleCardVisibility={toggleCardVisibility}
                     />
                 );
             case 'sales':
@@ -312,7 +353,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
 
             {/* Header — compact on mobile */}
             <header className="flex-none sticky top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300" role="banner">
-                <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 md:py-6 flex items-center justify-between">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-6 flex items-center justify-between">
                     <div className="flex items-center gap-4 min-w-0">
                         <div className="min-w-0">
                             <p className="text-[13px] md:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 tracking-wide uppercase">
@@ -438,25 +479,53 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
             >
                 <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between">
                     <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-1 rounded-[16px] md:rounded-[20px] overflow-x-auto scrollbar-hide gap-1 w-full max-w-full relative shadow-inner">
-                        {TABS.map((tab) => {
-                            const isActive = activeTab === tab.id;
-                            const Icon = tab.Icon;
-                            return (
+                        <div className="flex gap-1 flex-1">
+                            {TABS.map((tab) => {
+                                const isActive = activeTab === tab.id;
+                                const Icon = tab.Icon;
+                                return (
+                                    <button
+                                        key={tab.id}
+                                        role="tab"
+                                        id={`tab-${tab.id}`}
+                                        aria-selected={isActive}
+                                        aria-controls={`tabpanel-${tab.id}`}
+                                        tabIndex={isActive ? 0 : -1}
+                                        onClick={() => setActiveTab(tab.id)}
+                                        className={`flex-shrink-0 flex-1 flex items-center justify-center gap-2 px-4 py-2 md:py-2.5 rounded-xl md:rounded-[16px] text-[13px] md:text-sm font-medium tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-300 ${isActive ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                    >
+                                        <Icon className={isActive ? 'w-4.5 h-4.5 text-blue-600 dark:text-blue-400' : 'w-4 h-4'} />
+                                        <span>{tab.label}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {activeTab === 'overview' && (
+                            <div className="flex items-center gap-1 ml-2 border-l border-slate-300 dark:border-white/10 pl-2">
+                                {isEditMode && (
+                                    <button
+                                        onClick={() => setIsSettingsOpen(true)}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-xl transition-all active:scale-95 shadow-md shadow-blue-500/20"
+                                    >
+                                        <LayoutGrid className="w-4 h-4 md:w-3.5 md:h-3.5" />
+                                        <span className="text-[10px] font-bold uppercase tracking-wider hidden lg:block">Library</span>
+                                    </button>
+                                )}
                                 <button
-                                    key={tab.id}
-                                    role="tab"
-                                    id={`tab-${tab.id}`}
-                                    aria-selected={isActive}
-                                    aria-controls={`tabpanel-${tab.id}`}
-                                    tabIndex={isActive ? 0 : -1}
-                                    onClick={() => setActiveTab(tab.id)}
-                                    className={`flex-shrink-0 flex-1 flex items-center justify-center gap-2 px-4 py-2 md:py-2.5 rounded-xl md:rounded-[16px] text-[13px] md:text-sm font-medium tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500 transition-all duration-300 ${isActive ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgba(0,0,0,0.08)]' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+                                    onClick={() => setIsEditMode(!isEditMode)}
+                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all active:scale-95 group/settings ${isEditMode
+                                            ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-lg'
+                                            : 'bg-white/50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-white/10'
+                                        }`}
                                 >
-                                    <Icon className={isActive ? 'w-4.5 h-4.5 text-blue-600 dark:text-blue-400' : 'w-4 h-4'} />
-                                    <span>{tab.label}</span>
+                                    <Settings className={`w-4 h-4 md:w-3.5 md:h-3.5 ${isEditMode ? 'animate-spin-slow' : 'group-hover/settings:rotate-90 transition-transform duration-500'}`} />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:block">
+                                        {isEditMode ? 'Done' : 'Customize'}
+                                    </span>
                                 </button>
-                            );
-                        })}
+                            </div>
+                        )}
                     </div>
                 </div>
             </nav>
@@ -518,6 +587,83 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                                     <p className="text-sm font-medium">No notifications yet</p>
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Premium Apple-Style Dashboard Settings Drawer */}
+            {isSettingsOpen && (
+                <div className="fixed inset-0 z-[150] flex justify-end">
+                    <div
+                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-500"
+                        onClick={() => setIsSettingsOpen(false)}
+                    ></div>
+                    <div className="relative w-full max-w-sm h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl shadow-[0_0_40px_rgba(0,0,0,0.1)] animate-notification-slide-left flex flex-col border-l border-white/20 dark:border-white/5">
+                        <div className="px-8 pt-12 pb-6 flex items-center justify-between">
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                                    Customize
+                                </h2>
+                                <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium leading-relaxed">
+                                    Tailor your dashboard layout to focus on what matters most.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setIsSettingsOpen(false)}
+                                className="w-10 h-10 flex items-center justify-center bg-slate-200/50 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-full transition-all active:scale-90"
+                            >
+                                <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
+                            <div className="bg-white/40 dark:bg-white/5 rounded-[28px] overflow-hidden border border-white/20 dark:border-white/5 shadow-sm">
+                                {cardConfig.sort((a, b) => a.order - b.order).map((card, index) => (
+                                    <div
+                                        key={card.id}
+                                        className={`flex items-center justify-between p-4 group transition-colors ${index !== cardConfig.length - 1 ? 'border-b border-slate-100/50 dark:border-white/5' : ''
+                                            }`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 ${card.visible
+                                                ? 'bg-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.3)]'
+                                                : 'bg-slate-200 dark:bg-slate-800'
+                                                }`}>
+                                                <LayoutGrid className={`w-5 h-5 ${card.visible ? 'text-white' : 'text-slate-400'}`} />
+                                            </div>
+                                            <span className={`text-[15px] font-semibold tracking-tight transition-colors ${card.visible ? 'text-slate-900 dark:text-white' : 'text-slate-400'
+                                                }`}>{card.label}</span>
+                                        </div>
+
+                                        {/* iOS-Style Toggle Switch */}
+                                        <button
+                                            onClick={() => toggleCardVisibility(card.id)}
+                                            className={`w-[52px] h-[32px] rounded-full p-1 transition-all duration-300 relative outline-none focus:ring-2 focus:ring-blue-500/20 ${card.visible
+                                                ? 'bg-[#34C759]'
+                                                : 'bg-slate-200 dark:bg-slate-700'
+                                                }`}
+                                        >
+                                            <div className={`w-[24px] h-[24px] bg-white rounded-full shadow-[0_2px_4_rgba(0,0,0,0.15)] transition-all duration-300 transform ${card.visible ? 'translate-x-[20px]' : 'translate-x-0'
+                                                }`} />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-6 px-4">
+                                <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">
+                                    Changes are saved automatically
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="p-8 mt-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/10">
+                            <button
+                                onClick={() => setIsSettingsOpen(false)}
+                                className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[22px] font-bold text-[15px] shadow-[0_8px_24_rgba(0,0,0,0.15)] hover:scale-[1.02] active:scale-98 transition-all duration-300"
+                            >
+                                Done
+                            </button>
                         </div>
                     </div>
                 </div>

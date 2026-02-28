@@ -558,3 +558,16 @@ export interface QuickAction {
     action: () => void;
     color: string;
 }
+
+// --- Dashboard Customization Types ---
+
+export interface DashboardCardConfig {
+    id: string;
+    visible: boolean;
+    order: number;
+    label: string;
+}
+
+export interface DashboardConfig {
+    cards: DashboardCardConfig[];
+}

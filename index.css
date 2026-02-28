@@ -802,6 +802,58 @@ textarea {
   }
 }
 
+@keyframes wiggle {
+  0% {
+    transform: rotate(-0.5deg);
+  }
+
+  25% {
+    transform: rotate(0.5deg);
+  }
+
+  50% {
+    transform: rotate(-0.5deg);
+  }
+
+  75% {
+    transform: rotate(0.5deg);
+  }
+
+  100% {
+    transform: rotate(-0.5deg);
+  }
+}
+
+.animate-wiggle {
+  animation: wiggle 0.3s ease-in-out infinite;
+}
+
+/* Dashboard Premium Styling */
+:root {
+  --dashboard-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --dashboard-card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-card {
+  @apply bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] md:rounded-[32px] p-5 md:p-7 border border-slate-100 dark:border-white/10 dark:shadow-none transition-all duration-300 hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between;
+  box-shadow: var(--dashboard-card-shadow);
+  min-height: 380px;
+}
+
+@media (min-width: 768px) {
+  .dashboard-card {
+    min-height: 480px;
+  }
+}
+
+.dashboard-card:hover {
+  box-shadow: var(--dashboard-card-hover-shadow);
+}
+
+.dashboard-card-glow {
+  @apply absolute inset-0 bg-gradient-to-tr from-blue-500/0 via-blue-500/0 to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[32px] z-0;
+}
+
 @keyframes snackbarBounceLeft {
   0% {
     opacity: 0;

@@ -63,34 +63,37 @@ export const FilterableSalesTrend: React.FC<FilterableRevenueChartProps> = ({ st
     }, [filter]);
 
     return (
-        <div className={`glass-effect dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_2px_8px_rgb(0,0,0,0.04)] dark:shadow-none hover:shadow-[0_8px_24px_rgb(0,0,0,0.08)] border border-slate-100 dark:border-white/10 min-h-[400px] transition-all duration-300 ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
-            <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-4">
-                    <div>
-                        <h3 className="font-bold text-slate-900 dark:text-white/90 text-lg tracking-tight">Sales Trend</h3>
-                        <div className="flex items-center gap-3 mt-1">
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                <span className="w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_5px_rgba(251,146,60,0.5)]"></span> Revenue
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_5px_rgba(139,92,246,0.5)]"></span> Profit
+        <div className={`dashboard-card h-full ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+            <div className="dashboard-card-glow transition-opacity !opacity-5 group-hover:!opacity-10"></div>
+            <div className="relative z-10 flex flex-col h-full">
+                <div className="flex justify-between items-center mb-8">
+                    <div className="flex items-center gap-4">
+                        <div>
+                            <h3 className="font-bold text-slate-900 dark:text-white/90 text-lg tracking-tight">Sales Trend</h3>
+                            <div className="flex items-center gap-3 mt-1">
+                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                    <span className="w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_5px_rgba(251,146,60,0.5)]"></span> Revenue
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                    <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_5px_rgba(139,92,246,0.5)]"></span> Profit
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
                 </div>
-                <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
-            </div>
 
-            {loading ? (
-                <div className="w-full h-[300px] flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full border-4 border-slate-100 border-t-blue-600 animate-spin dark:border-slate-700 dark:border-t-blue-400"></div>
-                </div>
-            ) : (
-                <RevenueChart
-                    data={chartData}
-                    storeSettings={storeSettings}
-                />
-            )}
+                {loading ? (
+                    <div className="w-full h-[300px] flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-full border-4 border-slate-100 border-t-blue-600 animate-spin dark:border-slate-700 dark:border-t-blue-400"></div>
+                    </div>
+                ) : (
+                    <RevenueChart
+                        data={chartData}
+                        storeSettings={storeSettings}
+                    />
+                )}
+            </div>
         </div>
     );
 };
