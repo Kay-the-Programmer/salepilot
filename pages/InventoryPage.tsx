@@ -16,6 +16,7 @@ import InventoryHeader from '../components/inventory/InventoryHeader';
 import InventoryMobileHeader from '../components/inventory/InventoryMobileHeader';
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
+import Header from "@/components/Header.tsx";
 
 
 
@@ -44,6 +45,7 @@ interface InventoryPageProps {
     onDeleteCategory?: (categoryId: string) => void;
     isLoading: boolean;
     error: string | null;
+    onOpenSidebar?: () => void;
     storeSettings: StoreSettings;
     currentUser: User;
 }
@@ -65,6 +67,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     onDeleteCategory,
     isLoading,
     error,
+    onOpenSidebar,
     storeSettings,
     currentUser
 }) => {
@@ -551,26 +554,33 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             >
                 Skip to inventory content
             </a>
-            {/* Desktop Header */}
-            {/* Desktop Header */}
-            <InventoryHeader
+            {/* Desktop & Mobile Unified Header */}
+            <Header
+                title={activeTab === 'products' ? 'Products' : 'Categories'}
+                onMenuClick={onOpenSidebar}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
-                showFilters={showFilters}
-                setShowFilters={setShowFilters}
-                showArchived={showArchived}
-                setShowArchived={setShowArchived}
-                setIsManualLookupOpen={setIsManualLookupOpen}
-                canManageProducts={canManageProducts}
-                onOpenAddProduct={handleOpenAddModal}
-                onOpenAddCategory={handleOpenAddCategoryModal}
+                hideSearchOnMobile={false}
+                showSearch={true}
+                className="z-50"
+                rightContent={
+                    <InventoryHeader
+                        activeTab={activeTab}
+                        setActiveTab={setActiveTab}
+                        viewMode={viewMode}
+                        setViewMode={setViewMode}
+                        showFilters={showFilters}
+                        setShowFilters={setShowFilters}
+                        showArchived={showArchived}
+                        setShowArchived={setShowArchived}
+                        setIsManualLookupOpen={setIsManualLookupOpen}
+                        canManageProducts={canManageProducts}
+                        onOpenAddProduct={handleOpenAddModal}
+                        onOpenAddCategory={handleOpenAddCategoryModal}
+                    />
+                }
             />
 
-            {/* Onboarding Helpers */}
             {/* Onboarding Helpers */}
             <InventoryOnboardingHelpers
                 products={products}
@@ -581,14 +591,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 onOpenAddCategoryModal={handleOpenAddCategoryModal}
             />
 
-            {/* Mobile Header */}
-            {/* Mobile Header */}
+            {/* Mobile Category/Product Switcher & Action Bar */}
             <InventoryMobileHeader
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 selectedItem={!!selectedItem}
-                viewMode={viewMode}
-                setViewMode={setViewMode}
                 canManageProducts={canManageProducts}
                 onOpenScanModal={() => setIsScanModalOpen(true)}
                 onOpenAddProduct={handleOpenAddModal}
@@ -598,8 +605,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             <div className="flex-1 flex overflow-hidden max-w-[1400px] mx-auto w-full px-4 md:px-8 pb-6 md:pb-8 gap-6 stagger-1 animate-glass-appear" id="inventory-content">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex flex-col h-full bg-white dark:bg-slate-900/60 backdrop-blur-3xl shadow-sm border border-slate-200/50 dark:border-white/5 rounded-[24px] overflow-hidden transition-all duration-300 ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
-                    style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '400px' : 'none' }}
+                    className={`flex flex-col h-full bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-none border border-white/20 dark:border-white/5 rounded-[2.5rem] overflow-hidden transition-all duration-500 ease-out ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '420px' : 'none' }}
                 >
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
@@ -660,7 +667,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
                 {/* Right Panel: Detail View */}
                 <div
-                    className={`flex-1 flex flex-col bg-white dark:bg-slate-900/90 backdrop-blur-3xl shadow-sm border border-slate-200/50 dark:border-white/5 rounded-[24px] h-full relative overflow-hidden transition-all duration-300 ${!selectedItem ? 'hidden md:flex md:bg-slate-50/50 dark:md:bg-slate-950/50' : 'flex w-full'}`}
+                    className={`flex-1 flex flex-col bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-none border border-white/20 dark:border-white/5 rounded-[2.5rem] h-full relative overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-white/30 dark:md:bg-white/5' : 'flex w-full'}`}
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
                 >
                     {selectedItem ? (

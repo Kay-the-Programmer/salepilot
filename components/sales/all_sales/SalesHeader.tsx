@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import FilterIcon from '../../icons/FilterIcon';
+import XMarkIcon from '../../icons/XMarkIcon';
 import CalendarIcon from '../../icons/CalendarIcon';
 import UserIcon from '../../icons/UserIcon';
 import ChevronDownIcon from '../../icons/ChevronDownIcon';
@@ -6,13 +8,13 @@ import { Customer } from '../../../types';
 import ChartBarIcon from '../../icons/ChartBarIcon';
 import FunnelIcon from '@/components/icons/FunnelIcon';
 import { ClockIcon } from 'lucide-react';
+import SalesFilterSheet from './SalesFilterSheet';
 
 interface SalesHeaderProps {
     selectedStatus: string;
     setSelectedStatus: (status: string) => void;
     mobileView: 'summary' | 'history';
     setMobileView: (view: 'summary' | 'history') => void;
-    setIsFilterSheetOpen: (isOpen: boolean) => void;
     hasActiveFilters: boolean;
     startDate: string;
     endDate: string;
@@ -20,12 +22,25 @@ interface SalesHeaderProps {
     resetFilters: () => void;
     customers: Customer[];
     total: number;
+    // Filter dropdown props
+    isFilterOpen: boolean;
+    setIsFilterOpen: (isOpen: boolean) => void;
+    onApplyFilters: (filters: { start: string; end: string; customer: string; status: string }) => void;
+    initialFilters: { start: string; end: string; customer: string; status: string };
+    sortBy: string;
+    setSortBy: (val: string) => void;
+    sortOrder: 'asc' | 'desc';
+    setSortOrder: (val: 'asc' | 'desc') => void;
+    onExportCSV?: () => void;
+    onExportPDF?: () => void;
 }
 
 export default function SalesHeader({
     selectedStatus, setSelectedStatus, mobileView, setMobileView,
-    setIsFilterSheetOpen, hasActiveFilters, startDate, endDate, selectedCustomerId,
-    resetFilters, customers, total
+    hasActiveFilters, startDate, endDate, selectedCustomerId,
+    resetFilters, customers, total,
+    isFilterOpen, setIsFilterOpen, onApplyFilters, initialFilters,
+    sortBy, setSortBy, sortOrder, setSortOrder, onExportCSV, onExportPDF
 }: SalesHeaderProps) {
     return (
         <>
@@ -64,23 +79,41 @@ export default function SalesHeader({
                             })}
                         </div>
 
-                        {/* Filter Trigger Button */}
-                        <button
-                            onClick={() => setIsFilterSheetOpen(true)}
-                            className={`flex items-center justify-center gap-2.5 px-6 py-3 rounded-full text-[14px] font-bold tracking-wide transition-all duration-300 active:scale-95 shadow-sm border ${hasActiveFilters
-                                ? 'bg-blue-600 text-white border-blue-500 hover:bg-blue-700 shadow-[0_4px_12px_rgba(37,99,235,0.2)]'
-                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-white/10 hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-white/20'
-                                }`}
-                        >
-                            <FilterIcon className={`w-4.5 h-4.5 ${hasActiveFilters ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
-                            <span>Filters</span>
-                            {hasActiveFilters && (
-                                <span className="flex items-center justify-center w-5 h-5 bg-white text-blue-600 text-[11px] rounded-full font-bold ml-1 animate-in zoom-in-50">
-                                    !
-                                </span>
-                            )}
-                            <ChevronDownIcon className="w-4 h-4" />
-                        </button>
+                        {/* Filter Trigger Button + Dropdown */}
+                        <div className="relative">
+                            <button
+                                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                className={`flex items-center justify-center gap-2.5 px-6 py-3 rounded-full text-[14px] font-bold tracking-wide transition-all duration-300 active:scale-95 shadow-sm border ${hasActiveFilters
+                                    ? 'bg-blue-600 text-white border-blue-500 hover:bg-blue-700 shadow-[0_4px_12px_rgba(37,99,235,0.2)]'
+                                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-white/10 hover:shadow-md hover:bg-slate-50 dark:hover:bg-slate-700/50 hover:border-slate-300 dark:hover:border-white/20'
+                                    }`}
+                            >
+                                <FilterIcon className={`w-4.5 h-4.5 ${hasActiveFilters ? 'text-white' : 'text-slate-500 dark:text-slate-400'}`} />
+                                <span>Filters</span>
+                                {hasActiveFilters && (
+                                    <span className="flex items-center justify-center w-5 h-5 bg-white text-blue-600 text-[11px] rounded-full font-bold ml-1 animate-in zoom-in-50">
+                                        !
+                                    </span>
+                                )}
+                                <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {/* Filter Dropdown */}
+                            <SalesFilterSheet
+                                isOpen={isFilterOpen}
+                                onClose={() => setIsFilterOpen(false)}
+                                onApply={onApplyFilters}
+                                onReset={resetFilters}
+                                initialFilters={initialFilters}
+                                customers={customers}
+                                sortBy={sortBy}
+                                setSortBy={setSortBy}
+                                sortOrder={sortOrder}
+                                setSortOrder={setSortOrder}
+                                onExportCSV={onExportCSV}
+                                onExportPDF={onExportPDF}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
@@ -100,17 +133,35 @@ export default function SalesHeader({
 
                         <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-full gap-1 shadow-inner items-center border border-slate-200/50 dark:border-white/5">
 
-                            {/* Filter Button */}
-                            <button
-                                onClick={() => setIsFilterSheetOpen(true)}
-                                className={`p-2.5 rounded-full transition-all relative ${hasActiveFilters ? 'text-white bg-blue-600 shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700'}`}
-                                aria-label="Filter options"
-                            >
-                                <FunnelIcon className="w-4.5 h-4.5" />
-                                {hasActiveFilters && (
-                                    <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-white rounded-full ring-2 ring-blue-600" />
-                                )}
-                            </button>
+                            {/* Filter Button (Mobile) */}
+                            <div className="relative">
+                                <button
+                                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                    className={`p-2.5 rounded-full transition-all relative ${hasActiveFilters ? 'text-white bg-blue-600 shadow-md' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700'}`}
+                                    aria-label="Filter options"
+                                >
+                                    <FunnelIcon className="w-4.5 h-4.5" />
+                                    {hasActiveFilters && (
+                                        <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-white rounded-full ring-2 ring-blue-600" />
+                                    )}
+                                </button>
+
+                                {/* Filter Dropdown (Mobile) */}
+                                <SalesFilterSheet
+                                    isOpen={isFilterOpen}
+                                    onClose={() => setIsFilterOpen(false)}
+                                    onApply={onApplyFilters}
+                                    onReset={resetFilters}
+                                    initialFilters={initialFilters}
+                                    customers={customers}
+                                    sortBy={sortBy}
+                                    setSortBy={setSortBy}
+                                    sortOrder={sortOrder}
+                                    setSortOrder={setSortOrder}
+                                    onExportCSV={onExportCSV}
+                                    onExportPDF={onExportPDF}
+                                />
+                            </div>
                             <button
                                 onClick={() => setMobileView('summary')}
                                 className={`flex items-center gap-2 p-2.5 rounded-full transition-all duration-300 ${mobileView === 'summary'

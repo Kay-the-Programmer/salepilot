@@ -16,7 +16,6 @@ import ChartBarIcon from '../components/icons/ChartBarIcon';
 // New Modular Components
 import SalesHeader from '../components/sales/all_sales/SalesHeader';
 // Removed unused MobileViewMenu import
-import SalesFilterSheet from '../components/sales/all_sales/SalesFilterSheet';
 
 import DashboardStats from '../components/sales/all_sales/DashboardStats';
 import DailySalesSummary from '../components/sales/all_sales/DailySalesSummary';
@@ -267,9 +266,6 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                 setSelectedStatus={setSelectedStatus}
                 mobileView={mobileView}
                 setMobileView={setMobileView}
-                isMobileMenuOpen={isMobileMenuOpen}
-                setIsMobileMenuOpen={setIsMobileMenuOpen}
-                setIsFilterSheetOpen={setIsFilterSheetOpen}
                 hasActiveFilters={hasActiveFilters}
                 startDate={startDate}
                 endDate={endDate}
@@ -277,6 +273,16 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                 resetFilters={resetFilters}
                 customers={customers}
                 total={total}
+                isFilterOpen={isFilterSheetOpen}
+                setIsFilterOpen={setIsFilterSheetOpen}
+                onApplyFilters={handleApplyFilters}
+                initialFilters={{ start: startDate, end: endDate, customer: selectedCustomerId, status: selectedStatus }}
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
+                onExportCSV={handleExportCSV}
+                onExportPDF={handleExportPDF}
             />
 
 
@@ -442,20 +448,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                 storeSettings={storeSettings}
             />
 
-            <SalesFilterSheet
-                isOpen={isFilterSheetOpen}
-                onClose={() => setIsFilterSheetOpen(false)}
-                onApply={handleApplyFilters}
-                onReset={resetFilters}
-                initialFilters={{ start: startDate, end: endDate, customer: selectedCustomerId, status: selectedStatus }}
-                customers={customers}
-                sortBy={sortBy}
-                setSortBy={setSortBy}
-                sortOrder={sortOrder}
-                setSortOrder={setSortOrder}
-                onExportCSV={handleExportCSV}
-                onExportPDF={handleExportPDF}
-            />
+
 
             {isReceiptOpen && selectedSale && (
                 <ReceiptModal

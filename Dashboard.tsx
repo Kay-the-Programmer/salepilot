@@ -1242,7 +1242,7 @@ export default function Dashboard() {
 
                     {/* Sidebar container: modal on mobile, static on desktop */}
                     <div id="app-sidebar" className={`
-                z-[60] md:static md:block
+                z-[110] md:static md:block
                 ${isSidebarOpen
                             ? 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none'
                             : 'hidden md:block'

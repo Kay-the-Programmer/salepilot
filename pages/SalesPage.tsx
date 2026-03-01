@@ -759,6 +759,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 addToCart={addToCart}
                 updateQuantity={updateQuantity}
                 searchTerm={searchTerm}
+                viewMode={viewMode}
+                setViewMode={setViewMode}
             />
 
             {/* Mobile Cart View */}

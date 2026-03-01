@@ -161,7 +161,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         return (
             <div
                 key={category.id}
-                className={`group border-b border-slate-100 dark:border-white/5 last:border-0 transition-all duration-300 ease-out cursor-pointer active:scale-[0.99] ${isSelected ? 'bg-blue-600/5 dark:bg-blue-500/10' : 'hover:bg-slate-50/50 dark:hover:bg-slate-800/40'
+                className={`group relative border-b border-slate-100/50 dark:border-white/5 last:border-0 transition-all duration-500 ease-out cursor-pointer active:scale-[0.99] ${isSelected
+                    ? 'bg-blue-500/5 dark:bg-blue-400/10'
+                    : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
                     }`}
                 onClick={() => onSelectCategory?.(category.id)}
             >
@@ -200,8 +202,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-start gap-2">
-                            <h3 className={`text-[15px] font-bold tracking-tight truncate ${isSelected ? 'text-blue-900 dark:text-blue-100' : 'text-slate-900 dark:text-white'}`}>
+                        <div className="flex justify-between items-center gap-2">
+                            <h3 className={`text-[15px] font-bold tracking-tight truncate transition-colors ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-500'}`}>
                                 {category.name}
                             </h3>
                             {/* Mobile Actions */}
@@ -273,30 +275,35 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                         </div>
 
                         {/* Name */}
-                        <span className={`text-[15px] font-bold tracking-tight truncate ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>
-                            {category.name}
-                        </span>
+                        <div className="flex-1 min-w-0 flex flex-col">
+                            <span className={`text-[15px] font-bold tracking-tight truncate transition-colors ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-500'}`}>
+                                {category.name}
+                            </span>
+                            {category.level > 0 && (
+                                <span className="text-[10px] font-black tracking-widest text-slate-400 dark:text-slate-600 uppercase mt-0.5">Sub-category</span>
+                            )}
+                        </div>
                     </div>
 
                     {/* Column 2: Attributes (spans 3) */}
                     <div className="col-span-3">
                         {attributeCount > 0 ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-[8px] bg-slate-50 dark:bg-slate-800/80 text-[12px] font-bold tracking-wide text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-white/5 shadow-sm">
-                                {attributeCount} {attributeCount === 1 ? 'attribute' : 'attributes'}
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100/50 dark:bg-white/5 text-[11px] font-black tracking-widest text-slate-500 dark:text-slate-400 border border-slate-200/50 dark:border-white/10 uppercase">
+                                {attributeCount} {attributeCount === 1 ? 'attr' : 'attrs'}
                             </span>
                         ) : (
-                            <span className="text-[13px] font-medium text-slate-400 dark:text-slate-500">-</span>
+                            <span className="text-[12px] font-bold text-slate-300 dark:text-slate-700 ml-4">—</span>
                         )}
                     </div>
 
                     {/* Column 3: Sub-categories (spans 2) */}
                     <div className="col-span-2">
                         {hasChildren ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-[8px] bg-blue-50 dark:bg-blue-900/20 shadow-sm border border-blue-100 dark:border-blue-500/20 text-[12px] font-bold tracking-wide text-blue-700 dark:text-blue-300">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-[11px] font-black tracking-widest text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 uppercase">
                                 {subCatCount} items
                             </span>
                         ) : (
-                            <span className="text-[13px] font-medium text-slate-400 dark:text-slate-500">-</span>
+                            <span className="text-[12px] font-bold text-slate-300 dark:text-slate-700 ml-4">—</span>
                         )}
                     </div>
 
@@ -332,31 +339,40 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         <div className="px-4 py-4 sm:px-6 lg:px-8">
             {/* Header stats */}
             <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-md relative overflow-hidden group">
-                    <div className="absolute -right-4 -top-4 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                        <FolderIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
+                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/20 dark:border-white/5 p-6 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] relative overflow-hidden group">
+                    <div className="absolute -right-6 -top-6 p-4 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
+                        <FolderIcon className="w-28 h-28 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase mb-1">Total Categories</p>
-                    <p className="text-[32px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">{categories.length}</p>
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Total Categories</p>
+                    <div className="flex items-baseline gap-2">
+                        <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">{categories.length}</p>
+                        <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Active</span>
+                    </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-md group">
-                    <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase mb-1">Top-Level</p>
-                    <p className="text-[32px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">
-                        {categories.filter(c => !c.parentId).length}
-                    </p>
+                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/20 dark:border-white/5 p-6 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] group">
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Top-Level</p>
+                    <div className="flex items-baseline gap-2">
+                        <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">
+                            {categories.filter(c => !c.parentId).length}
+                        </p>
+                        <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Roots</span>
+                    </div>
                 </div>
-                <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-300 hover:shadow-md group">
-                    <p className="text-[12px] font-bold text-slate-500 dark:text-slate-400 tracking-widest uppercase mb-1">With Attributes</p>
-                    <p className="text-[32px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">
-                        {categories.filter(c => c.attributes.length > 0).length}
-                    </p>
+                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/20 dark:border-white/5 p-6 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] group">
+                    <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Custom Config</p>
+                    <div className="flex items-baseline gap-2">
+                        <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">
+                            {categories.filter(c => c.attributes.length > 0).length}
+                        </p>
+                        <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Attribute Rich</span>
+                    </div>
                 </div>
             </div>
 
             {/* Category list container */}
-            <div className="bg-white dark:bg-slate-900/60 backdrop-blur-3xl rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5 overflow-hidden animate-glass-appear stagger-2">
+            <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-none border border-white/20 dark:border-white/5 overflow-hidden">
                 {/* Desktop header */}
-                <div className="hidden sm:grid grid-cols-12 gap-4 bg-slate-50/50 dark:bg-slate-800/20 px-8 py-4 border-b border-slate-100 dark:border-white/5 text-[12px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest backdrop-blur-xl">
+                <div className="hidden sm:grid grid-cols-12 gap-4 bg-white/50 dark:bg-white/5 px-8 py-5 border-b border-slate-100/50 dark:border-white/5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] backdrop-blur-xl">
                     <div className="col-span-6">Category Name</div>
                     <div className="col-span-3">Attributes</div>
                     <div className="col-span-2">Sub-categories</div>
@@ -364,12 +380,12 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                 </div>
 
                 {/* List items */}
-                <div className="divide-y divide-slate-100 dark:divide-white/5">
+                <div className="divide-y divide-slate-100/50 dark:divide-white/5">
                     {displayedCategories.map(category => renderCategoryRow(category))}
                 </div>
 
-                {/* Empty State / Footer usage */}
-                <div className="bg-slate-50/50 dark:bg-slate-800/20 px-6 py-4 border-t border-slate-100 dark:border-white/5 text-[13px] font-bold tracking-wide text-slate-500 dark:text-slate-400 flex justify-between">
+                {/* Footer usage */}
+                <div className="bg-white/30 dark:bg-white/5 px-8 py-5 border-t border-slate-100/50 dark:border-white/5 text-[11px] font-black tracking-[0.1em] text-slate-400 dark:text-slate-500 uppercase flex justify-between">
                     <span>{displayedCategories.length} categories shown</span>
                 </div>
             </div>

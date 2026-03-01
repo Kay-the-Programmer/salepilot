@@ -54,53 +54,60 @@ const ProductCard: React.FC<{
           onSelect();
         }
       }}
-      className={`group bg-white dark:bg-slate-900 shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.25)] rounded-[1.75rem] transition-all duration-300 flex flex-col overflow-hidden cursor-pointer h-full active:scale-[0.97] hover:shadow-[0_10px_40px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_10px_40px_rgba(0,0,0,0.35)] ${isSelected
-        ? 'ring-2 ring-blue-500 shadow-[0_8px_30px_rgba(59,130,246,0.15)] scale-[1.01] border-transparent'
-        : 'border border-gray-100/50 dark:border-white/5 hover:scale-[1.02]'
+      className={`group relative bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[2rem] transition-all duration-500 overflow-hidden cursor-pointer h-full active:scale-[0.98] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] ${isSelected
+        ? 'ring-2 ring-blue-500/50 shadow-[0_12px_40px_rgba(59,130,246,0.2)]'
+        : 'shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-none hover:translate-y-[-4px]'
         }`}
     >
       {/* Card Header / Image Area */}
-      <div className="relative aspect-[4/3] bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-800/50 dark:to-slate-800/80 flex items-center justify-center overflow-hidden">
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-50/50 to-slate-200/50 dark:from-slate-800/30 dark:to-slate-900/50 flex items-center justify-center overflow-hidden">
         {showImage ? (
           <img
             src={imageUrl!}
             alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="text-slate-200 dark:text-slate-700">
-            <svg className="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+          <div className="text-slate-300 dark:text-slate-700/50">
+            <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
           </div>
         )}
 
         {/* Stock Badge */}
-        <div className="absolute top-2.5 right-2.5">
-          <span className={`px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider rounded-full backdrop-blur-xl border shadow-sm ${isLowStock
-            ? 'bg-rose-500/90 text-white border-rose-500/20'
-            : 'bg-black/30 text-white border-white/10'
+        <div className="absolute top-3 left-3">
+          <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] rounded-full backdrop-blur-md border shadow-sm ${isLowStock
+            ? 'bg-rose-500 text-white border-white/20'
+            : 'bg-slate-900/80 dark:bg-white/90 text-white dark:text-slate-900 border-white/10 dark:border-slate-200'
             }`}>
-            {asNumber(product.stock)} in stock
+            {asNumber(product.stock)} LEFT
           </span>
         </div>
       </div>
 
       {/* Card Body */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
+      <div className="p-5 flex-1 flex flex-col justify-between gap-3">
         <div>
-          <div className="flex justify-between items-start mb-1">
-            <div className={`text-[11px] font-bold tracking-wide uppercase ${isSelected ? 'text-blue-500 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>{categoryName}</div>
-            <div className="text-[10px] text-slate-400 dark:text-slate-600 font-mono tracking-wider">{product.sku}</div>
+          <div className="flex justify-between items-center mb-2">
+            <span className={`text-[10px] font-black tracking-[0.12em] uppercase px-2 py-0.5 rounded-md ${isSelected ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}`}>{categoryName}</span>
+            <span className="text-[9px] text-slate-400 dark:text-slate-600 font-mono font-bold tracking-tighter opacity-60">#{product.sku?.slice(-6) || 'N/A'}</span>
           </div>
-          <h3 className={`font-bold text-[14px] sm:text-[15px] leading-[1.3] mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
+          <h3 className={`font-bold text-[15px] leading-snug mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
             {product.name}
           </h3>
         </div>
-        <div className="text-[16px] sm:text-[18px] font-extrabold tracking-tight text-gray-900 dark:text-white mt-3">
-          {formatPrice(product.price)}
-          {product.unitOfMeasure === 'kg' && <span className="text-sm font-medium text-gray-400 dark:text-gray-500"> / kg</span>}
+        <div className="flex items-end justify-between">
+          <div className="text-[18px] font-black tracking-tighter text-slate-900 dark:text-white">
+            {formatPrice(product.price)}
+            {product.unitOfMeasure === 'kg' && <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 ml-1">/kg</span>}
+          </div>
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/40' : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-500/10 group-hover:text-blue-500'}`}>
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
         </div>
       </div>
     </div>
@@ -125,30 +132,32 @@ const ProductListRow: React.FC<{
 
   return (
     <div
-      className={`group bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-[0_2px_12px_rgba(0,0,0,0.05)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.25)] border border-gray-100/50 dark:border-white/5 px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-300 cursor-pointer hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] dark:hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)] hover:scale-[1.005] active:scale-[0.98] ${isSelected
-        ? 'ring-2 ring-blue-500 shadow-[0_4px_20px_rgba(59,130,246,0.15)] border-transparent'
-        : ''
+      className={`group relative bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[1.5rem] px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-500 cursor-pointer hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.005] active:scale-[0.985] ${isSelected
+        ? 'ring-2 ring-blue-500/50 shadow-[0_8px_30px_rgba(59,130,246,0.15)]'
+        : 'shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
         }`}
       onClick={onSelect}
     >
       {/* Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex flex-wrap items-center gap-2 mb-1">
-          <h3 className={`font-bold text-[15px] truncate ${isSelected ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-white'}`}>
+        <div className="flex flex-wrap items-center gap-3 mb-1.5">
+          <h3 className={`font-bold text-[16px] tracking-tight truncate ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-800 dark:text-slate-100'}`}>
             {product.name}
           </h3>
-          <span className={`text-[10px] px-2.5 py-1 font-extrabold tracking-wider uppercase rounded-full ${isLowStock
-            ? 'bg-rose-100 dark:bg-rose-500/20 text-rose-700 dark:text-rosese-300'
-            : 'bg-emerald-100 dark:bg-emerald-500/15 text-emerald-700 dark:text-emerald-400'
+          <span className={`text-[9px] px-2.5 py-0.5 font-black tracking-widest uppercase rounded-full border ${isLowStock
+            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200/50 dark:border-rose-500/20'
+            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20'
             }`}>
-            {asNumber(product.stock)} in stock
+            {asNumber(product.stock)} {product.unitOfMeasure === 'kg' ? 'kg' : 'units'}
           </span>
         </div>
-        <div className="text-[12px] text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-4">
-          <span className="font-mono text-slate-400 dark:text-slate-600">SKU: {product.sku}</span>
-          <span><span className="text-slate-400">Category:</span> <span className="font-semibold text-slate-700 dark:text-slate-300">{categoryName}</span></span>
-          <span className="font-bold text-slate-800 dark:text-white text-[13px]">
-            {formatPrice(product.price)}{product.unitOfMeasure === 'kg' ? <span className="text-xs text-slate-400 font-normal"> / kg</span> : ''}
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <span className="text-[11px] font-black tracking-widest text-slate-400 dark:text-slate-500 uppercase">{categoryName}</span>
+          <div className="h-3 w-px bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
+          <span className="text-[11px] font-mono text-slate-400 dark:text-slate-600">SKU: {product.sku}</span>
+          <div className="h-3 w-px bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
+          <span className="text-[15px] font-black tracking-tighter text-slate-900 dark:text-white">
+            {formatPrice(product.price)}
           </span>
         </div>
       </div>

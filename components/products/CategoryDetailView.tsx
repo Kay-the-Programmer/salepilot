@@ -33,9 +33,9 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
     };
 
     return (
-        <div className="flex flex-col h-full bg-gray-50 dark:bg-slate-900 relative overflow-hidden">
+        <div className="flex flex-col h-full bg-transparent relative overflow-hidden">
             {/* Header */}
-            <div className={`flex-none px-4 py-4 md:px-6 md:py-5 transition-all duration-200 sticky top-0 z-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b ${scrolled ? 'border-gray-200 dark:border-white/10 shadow-sm' : 'border-transparent'}`}>
+            <div className={`flex-none px-6 py-5 md:px-8 md:py-6 transition-all duration-300 sticky top-0 z-20 bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl border-b ${scrolled ? 'border-slate-200/50 dark:border-white/10 shadow-lg shadow-black/5' : 'border-white/10 dark:border-white/5'}`}>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3 md:gap-4 overflow-hidden">
                         {onBack && (
@@ -48,35 +48,36 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                                 </svg>
                             </button>
                         )}
-                        <div className="flex-shrink-0 p-2.5 bg-blue-600 dark:bg-blue-500 rounded-xl shadow-lg shadow-blue-600/20 dark:shadow-blue-500/20">
+                        <div className="flex-shrink-0 p-3 bg-blue-600 dark:bg-blue-500 rounded-2xl shadow-xl shadow-blue-600/20 dark:shadow-blue-500/20">
                             <TagIcon className="w-6 h-6 text-white" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white truncate leading-tight">
+                            <h1 className="text-[20px] md:text-[22px] font-black text-slate-900 dark:text-white truncate tracking-tighter leading-none mb-1">
                                 {category.name}
                             </h1>
-                            <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate">
-                                Category Details
-                            </p>
+                            <div className="flex items-center gap-2 uppercase font-black tracking-[0.2em] text-[10px] text-slate-400 dark:text-slate-500">
+                                <span className="text-blue-600 dark:text-blue-400">Class</span>
+                                <span>Management Detail</span>
+                            </div>
                         </div>
                     </div>
 
                     {/* Desktop Actions */}
                     {canManage && (
-                        <div className="hidden md:flex items-center gap-2">
+                        <div className="hidden md:flex items-center gap-3">
                             <button
                                 onClick={() => onEdit(category)}
-                                className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-200 rounded-xl hover:bg-gray-50 dark:hover:bg-slate-700 hover:border-gray-300 dark:hover:border-white/20 transition-all font-medium shadow-sm active:scale-95"
+                                className="px-6 py-2.5 bg-slate-900 dark:bg-white rounded-full shadow-lg shadow-black/5 dark:shadow-white/5 text-[13px] font-black tracking-wide flex items-center gap-2 text-white dark:text-slate-900 transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-95"
                             >
                                 <PencilIcon className="w-4 h-4" />
                                 Edit
                             </button>
                             <button
                                 onClick={() => onDelete(category)}
-                                className="flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/10 text-red-600 dark:text-red-400 border border-transparent hover:border-red-100 dark:hover:border-red-900/30 rounded-xl hover:bg-red-100 dark:hover:bg-red-900/20 transition-all font-medium active:scale-95"
+                                className="p-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-full border border-red-200/50 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300 active:scale-90"
+                                aria-label="Delete"
                             >
-                                <TrashIcon className="w-4 h-4" />
-                                Delete
+                                <TrashIcon className="w-5 h-5" />
                             </button>
                         </div>
                     )}
@@ -91,79 +92,89 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                 <div className="p-4 md:p-6 space-y-6 max-w-4xl mx-auto">
 
                     {/* Stats Cards */}
-                    <div className="grid grid-cols-2 gap-3 md:gap-4">
-                        <div className="p-4 md:p-5 bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-2xl md:rounded-3xl shadow-lg shadow-blue-500/20 text-white relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-3 opacity-10 transform translate-x-1/3 -translate-y-1/3 scale-150 group-hover:scale-125 transition-transform duration-500">
-                                <TagIcon className="w-24 h-24" />
+                    <div className="grid grid-cols-2 gap-5 md:gap-6">
+                        <div className="p-6 md:p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500 relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 p-3 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
+                                <TagIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <p className="text-blue-100 text-xs md:text-sm font-medium mb-1">Attributes</p>
-                            <p className="text-3xl md:text-4xl font-bold tracking-tight">{category.attributes.length}</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Total Attributes</p>
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">{category.attributes.length}</p>
+                                <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Defined</span>
+                            </div>
                         </div>
-                        <div className="liquid-glass-card rounded-[2rem] p-4 md:p-5 dark:bg-slate-800 md: border border-gray-100 dark:border-white/5 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 p-3 opacity-[0.03] dark:opacity-[0.05] transform translate-x-1/3 -translate-y-1/3 scale-150">
-                                <FolderIcon className="w-24 h-24" />
+                        <div className="p-6 md:p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500 relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 p-3 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
+                                <FolderIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <p className="text-gray-500 dark:text-gray-400 text-xs md:text-sm font-medium mb-1">Sub-categories</p>
-                            <p className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">{subcategories.length}</p>
+                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Nested Children</p>
+                            <div className="flex items-baseline gap-2">
+                                <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">{subcategories.length}</p>
+                                <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Sub-categories</span>
+                            </div>
                         </div>
                     </div>
 
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Attributes Section */}
-                        <section className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 md: p-5 border border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-2 mb-4">
-                                <TagIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                        <section className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="p-2.5 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl">
+                                    <TagIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
                                     Custom Attributes
                                 </h3>
                             </div>
 
                             {category.attributes.length > 0 ? (
-                                <div className="flex flex-wrap gap-2">
+                                <div className="flex flex-wrap gap-2.5">
                                     {category.attributes.map(attr => (
                                         <div
                                             key={attr.id}
-                                            className="px-3 py-1.5 bg-gray-50 dark:bg-slate-700/50 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-200"
+                                            className="px-4 py-2 bg-slate-100/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 rounded-full text-[13px] font-bold text-slate-700 dark:text-slate-300 transition-all duration-300 cursor-default"
                                         >
                                             {attr.name}
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-8 bg-gray-50/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-gray-200 dark:border-white/10">
-                                    <p className="text-gray-400 dark:text-gray-500 text-sm">No custom attributes defined</p>
+                                <div className="text-center py-12 bg-slate-50/50 dark:bg-white/5 rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10">
+                                    <p className="text-[13px] font-bold text-slate-400 dark:text-slate-500">No custom attributes defined</p>
                                 </div>
                             )}
                         </section>
 
                         {/* Subcategories Section */}
-                        <section className="liquid-glass-card rounded-[2rem] dark:bg-slate-800 md: p-5 border border-gray-100 dark:border-white/5">
-                            <div className="flex items-center gap-2 mb-4">
-                                <FolderIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
-                                <h3 className="text-sm font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                        <section className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
+                            <div className="flex items-center gap-3 mb-8">
+                                <div className="p-2.5 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl">
+                                    <FolderIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
                                     Sub-categories
                                 </h3>
                             </div>
 
                             {subcategories.length > 0 ? (
-                                <div className="space-y-2">
+                                <div className="space-y-3">
                                     {subcategories.map(sub => (
-                                        <div key={sub.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-slate-700/30 border border-gray-100 dark:border-white/5 rounded-xl">
-                                            <div className="flex items-center gap-3">
-                                                <div className="liquid-glass-card rounded-[2rem] p-2 dark:bg-slate-800">
-                                                    <FolderIcon className="w-4 h-4 text-blue-500 dark:text-blue-400" />
+                                        <div key={sub.id} className="group flex items-center justify-between p-4 bg-slate-100/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 rounded-2xl transition-all duration-300">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-white/5 group-hover:scale-105 transition-transform">
+                                                    <FolderIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                                 </div>
-                                                <span className="font-medium text-gray-700 dark:text-gray-200">{sub.name}</span>
+                                                <span className="text-[15px] font-bold text-slate-900 dark:text-white">{sub.name}</span>
                                             </div>
-                                            <span className="px-2 py-1 bg-white dark:bg-slate-800 rounded text-xs text-gray-500 dark:text-gray-400 font-medium border border-gray-100 dark:border-white/5">
-                                                {sub.attributes.length} attrs
+                                            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-500/10 rounded-full text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest border border-blue-500/20">
+                                                {sub.attributes.length} attributes
                                             </span>
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <div className="text-center py-8 bg-gray-50/50 dark:bg-slate-900/30 rounded-2xl border border-dashed border-gray-200 dark:border-white/10">
-                                    <p className="text-gray-400 dark:text-gray-500 text-sm">No sub-categories</p>
+                                <div className="text-center py-12 bg-slate-50/50 dark:bg-white/5 rounded-[2rem] border border-dashed border-slate-200 dark:border-white/10">
+                                    <p className="text-[13px] font-bold text-slate-400 dark:text-slate-500">No sub-categories</p>
                                 </div>
                             )}
                         </section>
@@ -173,18 +184,18 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
 
             {/* Mobile Sticky Action Bar */}
             {canManage && (
-                <div className="md:hidden absolute bottom-4 left-4 right-4 z-30">
-                    <div className="liquid-glass-card rounded-[2rem] p-2 /90 dark:bg-slate-800/90 backdrop-blur-xl border border-gray-200/50 dark:border-white/10 flex items-center gap-2">
+                <div className="md:hidden absolute bottom-6 left-6 right-6 z-30">
+                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-full p-2.5 border border-white/20 dark:border-white/10 shadow-2xl flex items-center gap-3">
                         <button
                             onClick={() => onEdit(category)}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold active:scale-95 transition-transform"
+                            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-black tracking-widest uppercase text-[13px] active:scale-95 transition-all duration-300"
                         >
                             <PencilIcon className="w-5 h-5" />
-                            Edit
+                            Edit Class
                         </button>
                         <button
                             onClick={() => onDelete(category)}
-                            className="flex-none p-3 bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-xl active:scale-95 transition-transform"
+                            className="flex-none p-4 bg-red-500 text-white rounded-full active:scale-95 transition-all duration-300 shadow-lg shadow-red-500/20"
                             aria-label="Delete Category"
                         >
                             <TrashIcon className="w-6 h-6" />

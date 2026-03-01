@@ -4,6 +4,7 @@ import {
     MagnifyingGlassIcon,
 } from '../icons';
 import { ProductCard } from './ProductCard';
+import ListGridToggle from '../ui/ListGridToggle';
 
 interface MobileProductViewProps {
     isOpen: boolean;
@@ -13,6 +14,8 @@ interface MobileProductViewProps {
     addToCart: (product: Product) => void;
     updateQuantity?: (productId: string, quantity: number) => void;
     searchTerm: string;
+    viewMode: 'grid' | 'list';
+    setViewMode: (mode: 'grid' | 'list') => void;
 }
 
 export const MobileProductView: React.FC<MobileProductViewProps> = ({
@@ -23,15 +26,20 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
     addToCart,
     updateQuantity,
     searchTerm,
+    viewMode,
+    setViewMode,
 }) => {
-    // viewMode is hardcoded to grid for mobile now, but you could pass it as a prop
-    const viewMode = 'grid';
 
     return (
         <div className={`md:hidden fixed inset-x-0 bottom-0 top-16 z-50 transition-transform duration-300 ease-in-out flex flex-col bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-3xl ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
+            {/* ── View Toggle ── */}
+            <div className="flex items-center justify-end px-3 pt-2 pb-0 flex-none">
+                <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
+            </div>
+
             {/* ── Product List/Grid ── */}
-            <div id="pos-mobile-product-list" className="flex-1 overflow-y-auto p-3 pt-4 pb-32">
+            <div id="pos-mobile-product-list" className="flex-1 overflow-y-auto p-3 pt-2 pb-32">
                 {products.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="w-16 h-16 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4 shadow-sm">

@@ -449,11 +449,10 @@ export default function Sidebar({
 
     return (
         <>
-            {/* Mobile Popup Menu (Grid Layout) */}
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden fixed inset-0 w-full h-full bg-white/70 dark:bg-black/70 backdrop-blur-2xl z-[70] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
+                    className="md:hidden fixed inset-0 w-full h-full bg-white/70 dark:bg-black/70 backdrop-blur-2xl z-[100] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
                 >
                     {/* Header with Close Button & View Toggle */}
                     <div className="px-6 pt-12 pb-4 select-none">

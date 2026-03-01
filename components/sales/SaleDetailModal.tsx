@@ -72,7 +72,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
                                 onClick={onClose}
                                 className="flex-1 py-3.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[16px] text-[15px] font-bold tracking-wide shadow-[0_8px_20px_rgb(0,0,0,0.12)] hover:bg-slate-800 dark:hover:bg-slate-100 flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
                             >
-                                Done
+                                Close   
                             </button>
                         </div>
                     </div>
