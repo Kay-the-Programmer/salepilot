@@ -101,10 +101,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
 
-    // View Mode State (grid or list)
     const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
         const saved = localStorage.getItem('pos-view-mode');
-        return (saved === 'list' || saved === 'grid') ? saved : 'grid';
+        if (saved === 'list' || saved === 'grid') return saved;
+        return typeof window !== 'undefined' && window.innerWidth < 768 ? 'list' : 'grid';
     });
 
     // Cart Actions Tab State
@@ -760,7 +760,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 updateQuantity={updateQuantity}
                 searchTerm={searchTerm}
                 viewMode={viewMode}
-                setViewMode={setViewMode}
             />
 
             {/* Mobile Cart View */}

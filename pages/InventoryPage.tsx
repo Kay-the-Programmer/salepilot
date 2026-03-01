@@ -564,20 +564,22 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 showSearch={true}
                 className="z-50"
                 rightContent={
-                    <InventoryHeader
-                        activeTab={activeTab}
-                        setActiveTab={setActiveTab}
-                        viewMode={viewMode}
-                        setViewMode={setViewMode}
-                        showFilters={showFilters}
-                        setShowFilters={setShowFilters}
-                        showArchived={showArchived}
-                        setShowArchived={setShowArchived}
-                        setIsManualLookupOpen={setIsManualLookupOpen}
-                        canManageProducts={canManageProducts}
-                        onOpenAddProduct={handleOpenAddModal}
-                        onOpenAddCategory={handleOpenAddCategoryModal}
-                    />
+                    <div className="hidden md:flex">
+                        <InventoryHeader
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            showFilters={showFilters}
+                            setShowFilters={setShowFilters}
+                            showArchived={showArchived}
+                            setShowArchived={setShowArchived}
+                            setIsManualLookupOpen={setIsManualLookupOpen}
+                            canManageProducts={canManageProducts}
+                            onOpenAddProduct={handleOpenAddModal}
+                            onOpenAddCategory={handleOpenAddCategoryModal}
+                        />
+                    </div>
                 }
             />
 
