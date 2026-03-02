@@ -136,8 +136,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     if (displayedCategories.length === 0) {
         return (
             <div className="px-4 py-12 sm:px-6">
-                <div className="text-center bg-white dark:bg-slate-900/60 p-8 rounded-[24px] shadow-sm border border-slate-200/50 dark:border-white/5">
-                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-[20px] bg-slate-50 dark:bg-slate-800 rotate-3 transition-transform hover:rotate-6">
+                <div className="text-center bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl p-8 rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5">
+                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-slate-50 dark:bg-slate-800 rotate-3 transition-transform hover:rotate-6 shadow-sm border border-slate-100 dark:border-white/5">
                         <FolderIcon className="h-8 w-8 text-slate-400 dark:text-slate-500" />
                     </div>
                     <h3 className="mt-5 text-[18px] font-bold text-slate-900 dark:text-white tracking-tight">No categories found</h3>
@@ -161,9 +161,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         return (
             <div
                 key={category.id}
-                className={`group relative border-b border-slate-100/50 dark:border-white/5 last:border-0 transition-all duration-500 ease-out cursor-pointer active:scale-[0.99] ${isSelected
-                    ? 'bg-blue-500/5 dark:bg-blue-400/10'
-                    : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
+                className={`group relative border-b border-slate-200/40 dark:border-white/5 last:border-0 transition-all duration-400 ease-out cursor-pointer active:scale-[0.99] ${isSelected
+                    ? 'bg-blue-50/50 dark:bg-blue-500/10 backdrop-blur-md'
+                    : 'hover:bg-white/40 dark:hover:bg-white/5'
                     }`}
                 onClick={() => onSelectCategory?.(category.id)}
             >
@@ -339,7 +339,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         <div className="px-4 py-4 sm:px-6 lg:px-8">
             {/* Header stats */}
             <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/20 dark:border-white/5 p-6 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] relative overflow-hidden group">
+                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 relative overflow-hidden group">
                     <div className="absolute -right-6 -top-6 p-4 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
                         <FolderIcon className="w-28 h-28 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -349,7 +349,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                         <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Active</span>
                     </div>
                 </div>
-                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/20 dark:border-white/5 p-6 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] group">
+                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 group">
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Top-Level</p>
                     <div className="flex items-baseline gap-2">
                         <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">
@@ -358,7 +358,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                         <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Roots</span>
                     </div>
                 </div>
-                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2rem] shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-white/20 dark:border-white/5 p-6 transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] group">
+                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 group">
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Custom Config</p>
                     <div className="flex items-baseline gap-2">
                         <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">
@@ -370,7 +370,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
             </div>
 
             {/* Category list container */}
-            <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-none border border-white/20 dark:border-white/5 overflow-hidden">
+            <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm dark:shadow-none border border-slate-200/50 dark:border-white/5 overflow-hidden">
                 {/* Desktop header */}
                 <div className="hidden sm:grid grid-cols-12 gap-4 bg-white/50 dark:bg-white/5 px-8 py-5 border-b border-slate-100/50 dark:border-white/5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] backdrop-blur-xl">
                     <div className="col-span-6">Category Name</div>

@@ -63,7 +63,7 @@ export default function Header({
                         {onMenuClick && (
                             <button
                                 onClick={onMenuClick}
-                                className="mr-3 -ml-1 p-2 rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 md:hidden"
+                                className="mr-3 -ml-1 p-2 rounded-md text-gray-500 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary md:hidden"
                             >
                                 <span className="sr-only">Open menu</span>
                                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
@@ -81,7 +81,7 @@ export default function Header({
                                 type="checkbox"
                                 checked={showArchived}
                                 onChange={(e) => setShowArchived(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                             />
                             <label htmlFor="show-archived" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
                                 Archived
@@ -122,7 +122,7 @@ export default function Header({
                                     ) : (
                                         <button
                                             onClick={() => setIsSearchActive(true)}
-                                            className="p-2.5 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 rounded-full hover:bg-white dark:hover:bg-slate-700/50 shadow-sm border border-transparent hover:border-slate-200/50 dark:hover:border-white/5 transition-all active:scale-90 duration-300 group"
+                                            className="p-2.5 text-slate-500 hover:text-primary dark:text-slate-400 dark:hover:text-primary-dark rounded-full hover:bg-white dark:hover:bg-slate-700/50 shadow-sm border border-transparent hover:border-slate-200/50 dark:hover:border-white/5 transition-all active:scale-90 duration-300 group"
                                             aria-label="Search"
                                         >
                                             <svg className="w-5 h-5 transition-transform group-hover:scale-110" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -137,7 +137,7 @@ export default function Header({
                                 <button
                                     id="header-action-button"
                                     onClick={onButtonClick}
-                                    className="ml-1 flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-full text-sm font-bold shadow-lg shadow-blue-500/20 transition-all hover:shadow-blue-500/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 whitespace-nowrap"
+                                    className="ml-1 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-full text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 whitespace-nowrap"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     <span className="hidden sm:inline">{buttonText}</span>

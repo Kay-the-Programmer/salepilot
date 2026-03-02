@@ -17,6 +17,7 @@ import InventoryMobileHeader from '../components/inventory/InventoryMobileHeader
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
 import Header from "@/components/Header.tsx";
+import { GridIcon, ListIcon } from '../components/icons';
 
 
 
@@ -546,15 +547,19 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const selectedItem = activeTab === 'products' ? (selectedProductId || (isEditingProduct && editingProduct)) : selectedCategoryId;
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-950 overflow-hidden relative selection:bg-blue-500/30">
+        <div className="h-[100dvh] w-full bg-slate-50/50 dark:bg-slate-950/50 flex flex-col overflow-hidden relative selection:bg-primary/30">
+            {/* Background elements */}
+            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
+            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
+
             {/* Skip to content link for accessibility */}
             <a
                 href="#inventory-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none"
+                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none"
             >
                 Skip to inventory content
             </a>
-            {/* Desktop & Mobile Unified Header */}
+            {/* Header — hidden on mobile when in detail view */}
             <Header
                 title={activeTab === 'products' ? 'Products' : 'Categories'}
                 onMenuClick={onOpenSidebar}
@@ -562,23 +567,68 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 setSearchTerm={setSearchTerm}
                 hideSearchOnMobile={false}
                 showSearch={true}
-                className="z-50"
+                className={`z-50 ${!!selectedItem ? 'hidden md:block' : ''}`}
                 rightContent={
-                    <div className="hidden md:flex">
-                        <InventoryHeader
-                            activeTab={activeTab}
-                            setActiveTab={setActiveTab}
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            showFilters={showFilters}
-                            setShowFilters={setShowFilters}
-                            showArchived={showArchived}
-                            setShowArchived={setShowArchived}
-                            setIsManualLookupOpen={setIsManualLookupOpen}
-                            canManageProducts={canManageProducts}
-                            onOpenAddProduct={handleOpenAddModal}
-                            onOpenAddCategory={handleOpenAddCategoryModal}
-                        />
+                    <div className="flex items-center gap-2">
+                        {/* Mobile-only action buttons (visible on mobile, hidden on desktop) */}
+                        <div className="flex md:hidden items-center gap-1">
+                            {/* Grid/List toggle — products tab only */}
+                            {activeTab === 'products' && (
+                                <button
+                                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+                                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
+                                    aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
+                                >
+                                    {viewMode === 'grid'
+                                        ? <ListIcon className="w-5 h-5" />
+                                        : <GridIcon className="w-5 h-5" />
+                                    }
+                                </button>
+                            )}
+                            {/* Scan camera */}
+                            {canManageProducts && activeTab === 'products' && (
+                                <button
+                                    onClick={() => setIsScanModalOpen(true)}
+                                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
+                                    aria-label="Scan Barcode"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </button>
+                            )}
+                            {/* Add button */}
+                            {canManageProducts && (
+                                <button
+                                    onClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
+                                    className="w-9 h-9 flex items-center justify-center bg-slate-900 dark:bg-white rounded-full text-white dark:text-slate-900 shadow-md hover:opacity-90 transition-all active:scale-90"
+                                    aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Desktop-only full InventoryHeader */}
+                        <div className="hidden md:flex">
+                            <InventoryHeader
+                                activeTab={activeTab}
+                                setActiveTab={setActiveTab}
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                                showFilters={showFilters}
+                                setShowFilters={setShowFilters}
+                                showArchived={showArchived}
+                                setShowArchived={setShowArchived}
+                                setIsManualLookupOpen={setIsManualLookupOpen}
+                                canManageProducts={canManageProducts}
+                                onOpenAddProduct={handleOpenAddModal}
+                                onOpenAddCategory={handleOpenAddCategoryModal}
+                            />
+                        </div>
                     </div>
                 }
             />
@@ -593,27 +643,18 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 onOpenAddCategoryModal={handleOpenAddCategoryModal}
             />
 
-            {/* Mobile Category/Product Switcher & Action Bar */}
-            <InventoryMobileHeader
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                selectedItem={!!selectedItem}
-                canManageProducts={canManageProducts}
-                onOpenScanModal={() => setIsScanModalOpen(true)}
-                onOpenAddProduct={handleOpenAddModal}
-                onOpenAddCategory={handleOpenAddCategoryModal}
-            />
+            {/* (bottom nav rendered at bottom of layout) */}
 
-            <div className="flex-1 flex overflow-hidden max-w-[1400px] mx-auto w-full px-4 md:px-8 pb-6 md:pb-8 gap-6 stagger-1 animate-glass-appear" id="inventory-content">
+            <div className="flex-1 flex overflow-hidden w-full relative z-10" id="inventory-content">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex flex-col h-full bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-none border border-white/20 dark:border-white/5 rounded-[2.5rem] overflow-hidden transition-all duration-500 ease-out ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    className={`flex flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
                     style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '420px' : 'none' }}
                 >
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
                             <div className="h-full flex flex-col">
-                                <div className="flex-1 overflow-y-auto scroll-smooth">
+                                <div className="flex-1 overflow-y-auto scroll-smooth p-3 md:p-6 pb-[100px] md:pb-24">
                                     <ProductList
                                         products={paginatedProducts}
                                         categories={categories}
@@ -635,12 +676,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     onPageChange={setPage}
                                     onPageSizeChange={setPageSize}
                                     label="products"
-                                    className="border-t border-gray-100 dark:border-white/5 bg-white dark:bg-slate-900 sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4"
+                                    className="border-t border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4 px-4"
                                     compact={true}
                                 />
                             </div>
                         ) : (
-                            <div className="h-full overflow-y-auto scroll-smooth pb-[100px] md:pb-0">
+                            <div className="h-full overflow-y-auto scroll-smooth pb-[100px] md:pb-24 p-3 md:p-6">
                                 <CategoryList
                                     categories={categories}
                                     searchTerm={searchTerm}
@@ -663,13 +704,13 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             e.preventDefault();
                             setIsResizing(true);
                         }}
-                        className="hidden md:block w-1 hover:w-2 bg-slate-200 dark:bg-slate-700 hover:bg-blue-500 dark:hover:bg-blue-600 cursor-col-resize transition-all duration-200 z-10 active:bg-blue-600 active:scale-95 transition-all duration-300"
+                        className="hidden md:block w-1 hover:w-1.5 bg-transparent hover:bg-primary/50 dark:hover:bg-primary/50 cursor-col-resize transition-all duration-200 z-20"
                     />
                 )}
 
                 {/* Right Panel: Detail View */}
                 <div
-                    className={`flex-1 flex flex-col bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.04)] dark:shadow-none border border-white/20 dark:border-white/5 rounded-[2.5rem] h-full relative overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-white/30 dark:md:bg-white/5' : 'flex w-full'}`}
+                    className={`flex-1 flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl md:border-l md:border-slate-200/50 dark:md:border-white/5 md:shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-none h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-white/30 dark:md:bg-white/5 md:border-transparent md:shadow-none' : 'flex w-full'}`}
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
                 >
                     {selectedItem ? (
@@ -888,8 +929,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 />
             )}
 
-            {/* Mobile Menu Popup */}
-            {/* Mobile Menu Popup */}
+            {/* Mobile Bottom Navigation */}
+            <InventoryMobileHeader
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                selectedItem={!!selectedItem}
+            />
 
         </div>
     );

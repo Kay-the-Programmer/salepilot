@@ -54,9 +54,9 @@ const ProductCard: React.FC<{
           onSelect();
         }
       }}
-      className={`group relative bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[2rem] transition-all duration-500 overflow-hidden cursor-pointer h-full active:scale-[0.98] hover:shadow-[0_20px_50px_rgba(0,0,0,0.12)] dark:hover:shadow-[0_20px_50px_rgba(0,0,0,0.4)] ${isSelected
-        ? 'ring-2 ring-blue-500/50 shadow-[0_12px_40px_rgba(59,130,246,0.2)]'
-        : 'shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-none hover:translate-y-[-4px]'
+      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-3xl transition-all duration-400 overflow-hidden cursor-pointer h-full active:scale-[0.98] ${isSelected
+        ? 'ring-2 ring-blue-500/50 shadow-[0_12px_40px_rgba(59,130,246,0.15)] bg-blue-50/30'
+        : 'shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1'
         }`}
     >
       {/* Card Header / Image Area */}
@@ -132,9 +132,9 @@ const ProductListRow: React.FC<{
 
   return (
     <div
-      className={`group relative bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-white/20 dark:border-white/5 rounded-[1.5rem] px-5 py-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-500 cursor-pointer hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_12px_40px_rgba(0,0,0,0.3)] hover:scale-[1.005] active:scale-[0.985] ${isSelected
-        ? 'ring-2 ring-blue-500/50 shadow-[0_8px_30px_rgba(59,130,246,0.15)]'
-        : 'shadow-[0_2px_10px_rgba(0,0,0,0.02)]'
+      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-400 cursor-pointer active:scale-[0.99] ${isSelected
+        ? 'ring-2 ring-blue-500/50 shadow-[0_8px_30px_rgba(59,130,246,0.12)] bg-blue-50/30'
+        : 'shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)]'
         }`}
       onClick={onSelect}
     >
@@ -164,23 +164,24 @@ const ProductListRow: React.FC<{
 
       {/* Actions */}
       <div className="flex gap-2 shrink-0">
-        <button
-          className={`px-4 py-2 text-[13px] font-bold tracking-wide rounded-full transition-all duration-200 active:scale-90 ${isSelected
-            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
-          onClick={(e) => { e.stopPropagation(); onSelect(); }}
-        >
-          {isSelected ? 'Viewing' : 'Details'}
-        </button>
         {canManage && (
           <button
-            className="px-4 py-2 text-[13px] bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold tracking-wide rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-all duration-200 active:scale-90"
+            className="px-4 py-2 text-[12px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold tracking-wide rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-95"
             onClick={(e) => { e.stopPropagation(); onAdjustStock(); }}
           >
             Adjust
           </button>
         )}
+        <button
+          className={`px-4 py-2 text-[12px] font-bold tracking-wide rounded-full transition-all duration-200 active:scale-95 ${isSelected
+            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+            : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20'
+            }`}
+          onClick={(e) => { e.stopPropagation(); onSelect(); }}
+        >
+          {isSelected ? 'Viewing' : 'Details'}
+        </button>
+
       </div>
     </div>
   );

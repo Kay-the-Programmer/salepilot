@@ -6,80 +6,56 @@ interface InventoryMobileHeaderProps {
     activeTab: 'products' | 'categories';
     setActiveTab: (tab: 'products' | 'categories') => void;
     selectedItem: boolean;
-    canManageProducts?: boolean;
-    onOpenScanModal?: () => void;
-    onOpenAddProduct?: () => void;
-    onOpenAddCategory?: () => void;
 }
 
 const InventoryMobileHeader: React.FC<InventoryMobileHeaderProps> = ({
     activeTab,
     setActiveTab,
     selectedItem,
-    canManageProducts,
-    onOpenScanModal,
-    onOpenAddProduct,
-    onOpenAddCategory
 }) => {
+    // Hide bottom nav when a product/category detail is open (full-screen detail view)
+    if (selectedItem) return null;
+
     return (
-        <div className={`sticky top-[64px] z-30 dark:bg-slate-950/90 bg-slate-50/90 backdrop-blur-2xl px-4 py-3 md:hidden border-b border-slate-200/40 dark:border-white/5 transition-all duration-300 ${selectedItem ? 'hidden' : ''}`}>
-            <div className="flex items-center justify-between gap-4">
-                {/* Segmented Control */}
-                <div className="flex-1 flex bg-slate-200/50 dark:bg-slate-800/80 p-1 rounded-full shadow-inner items-center">
-                    <button
-                        onClick={() => setActiveTab('products')}
-                        className={`flex-1 flex items-center justify-center py-2 px-3 rounded-full text-[13px] font-bold tracking-wide transition-all duration-300 active:scale-95 ${activeTab === 'products'
-                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                    >
-                        <CubeIcon className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                        <span className="truncate">Products</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('categories')}
-                        className={`flex-1 flex items-center justify-center py-2 px-3 rounded-full text-[13px] font-bold tracking-wide transition-all duration-300 active:scale-95 ${activeTab === 'categories'
-                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                            }`}
-                    >
-                        <TagIcon className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                        <span className="truncate">Categories</span>
-                    </button>
-                </div>
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-slate-900/90 backdrop-blur-2xl border-t border-slate-200/60 dark:border-white/8 safe-area-pb">
+            <div className="flex items-stretch h-16">
+                {/* Products Tab */}
+                <button
+                    onClick={() => setActiveTab('products')}
+                    className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${activeTab === 'products'
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                        }`}
+                    aria-label="Products"
+                    aria-selected={activeTab === 'products'}
+                >
+                    {/* Pill indicator */}
+                    <span className={`transition-all duration-300 ${activeTab === 'products' ? 'opacity-100' : 'opacity-0'}`}>
+                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-blue-500 rounded-full" />
+                    </span>
+                    <CubeIcon className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'products' ? 'scale-110' : 'scale-100'}`} />
+                    <span className={`text-[10px] font-semibold tracking-wide transition-all duration-200 ${activeTab === 'products' ? 'font-bold' : ''}`}>
+                        Products
+                    </span>
+                </button>
 
-                {/* Right side icons */}
-                <div className="flex items-center space-x-2 shrink-0">
-                    {canManageProducts && activeTab === 'products' && (
-                        <button
-                            onClick={onOpenScanModal}
-                            className="p-2.5 bg-slate-200/50 dark:bg-slate-800/80 rounded-full text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all duration-300 active:scale-95 shadow-inner"
-                            aria-label="Scan Barcode"
-                        >
-                            <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </button>
-                    )}
-
-                    {canManageProducts && (
-                        <button
-                            onClick={activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory}
-                            className="p-2.5 bg-slate-900 dark:bg-white rounded-full text-white dark:text-slate-900 hover:opacity-90 transition-all duration-300 active:scale-95 shadow-md flex items-center justify-center"
-                            aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
-                        >
-                            <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                            </svg>
-                        </button>
-                    )}
-                </div>
+                {/* Categories Tab */}
+                <button
+                    onClick={() => setActiveTab('categories')}
+                    className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${activeTab === 'categories'
+                            ? 'text-blue-600 dark:text-blue-400'
+                            : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                        }`}
+                    aria-label="Categories"
+                    aria-selected={activeTab === 'categories'}
+                >
+                    <TagIcon className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'categories' ? 'scale-110' : 'scale-100'}`} />
+                    <span className={`text-[10px] font-semibold tracking-wide transition-all duration-200 ${activeTab === 'categories' ? 'font-bold' : ''}`}>
+                        Categories
+                    </span>
+                </button>
             </div>
-
-
-
-        </div>
+        </nav>
     );
 };
 

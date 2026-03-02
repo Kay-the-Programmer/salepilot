@@ -429,7 +429,7 @@ export default function Sidebar({
                 `}
                 title={compact ? item.name : undefined}
             >
-                <div className="flex-shrink-0 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-100 [[.active-link]_&]:text-blue-500 dark:[[.active-link]_&]:text-blue-400 transition-colors">
+                <div className="flex-shrink-0 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-100 [[.active-link]_&]:text-primary dark:[[.active-link]_&]:text-primary-dark transition-colors">
                     <IconComponent className="w-5 h-5" />
                 </div>
                 {!compact && (
@@ -442,7 +442,7 @@ export default function Sidebar({
                         {item.badge}
                     </span>
                 )}
-                {compact && <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-1.5 h-1.5 bg-blue-500 rounded-full opacity-0 [[.active-link]_&]:opacity-100 transition-opacity"></div>}
+                {compact && <div className="absolute right-2 top-1/2 transform -translate-y-1/2 w-1.5 h-1.5 bg-primary rounded-full opacity-0 [[.active-link]_&]:opacity-100 transition-opacity"></div>}
             </NavLink>
         );
     };
@@ -503,7 +503,7 @@ export default function Sidebar({
                                             <div className="relative">
                                                 <div className={`w-[64px] h-[64px] mx-auto rounded-[1.4rem] flex items-center justify-center transition-all duration-300 
                                                     shadow-lg group-hover:scale-[1.03] group-active:scale-[0.93] 
-                                                    group-[.active]:ring-4 ring-offset-2 ring-offset-white dark:ring-offset-black group-[.active]:ring-blue-500/50
+                                                    group-[.active]:ring-4 ring-offset-2 ring-offset-white dark:ring-offset-black group-[.active]:ring-primary/50
                                                     ${iconStyle}
                                                     `}>
                                                     <IconComponent className="w-[30px] h-[30px]" />
@@ -514,7 +514,7 @@ export default function Sidebar({
                                                     </div>
                                                 )}
                                             </div>
-                                            <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-semibold tracking-tight">
+                                            <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-primary dark:group-[.active]:text-primary-dark group-[.active]:font-semibold tracking-tight">
                                                 {item.name}
                                             </span>
                                         </NavLink>
@@ -531,11 +531,11 @@ export default function Sidebar({
                                         <div className="relative">
                                             <div className="w-[64px] h-[64px] mx-auto rounded-[1.4rem] flex items-center justify-center transition-all duration-300 
                                                 shadow-lg group-hover:scale-[1.03] group-active:scale-[0.93] 
-                                                bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-blue-500/30">
+                                                bg-gradient-to-br from-primary to-primary-dark text-white shadow-primary/30">
                                                 <ArrowDownTrayIcon className="w-[30px] h-[30px]" />
                                             </div>
                                         </div>
-                                        <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-blue-600 dark:group-[.active]:text-blue-400 group-[.active]:font-semibold tracking-tight">
+                                        <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-primary dark:group-[.active]:text-primary-dark group-[.active]:font-semibold tracking-tight">
                                             Install App
                                         </span>
                                     </button>
@@ -557,7 +557,7 @@ export default function Sidebar({
                                                         onClick={() => window.innerWidth < 768 && onMobileClose?.()}
                                                         className={({ isActive }) => `
                                                             flex items-center gap-4 px-4 py-3.5 transition-all
-                                                            ${isActive ? 'bg-blue-500/10 dark:bg-blue-500/20' : 'active:bg-gray-100 dark:active:bg-white/10'}
+                                                            ${isActive ? 'bg-primary/10 dark:bg-primary/20' : 'active:bg-gray-100 dark:active:bg-white/10'}
                                                         `}
                                                     >
                                                         <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-sm ${iconStyle}`}>
@@ -581,13 +581,13 @@ export default function Sidebar({
                                 {installPrompt && (
                                     <button
                                         onClick={() => { onInstall?.(); onMobileClose?.(); }}
-                                        className="w-full flex items-center gap-4 px-4 py-4 bg-blue-500/10 dark:bg-blue-500/20 rounded-2xl border border-blue-500/20 dark:border-blue-400/20 active:scale-95 transition-all"
+                                        className="w-full flex items-center gap-4 px-4 py-4 bg-primary/10 dark:bg-primary/20 rounded-2xl border border-primary/20 dark:border-primary-dark/20 active:scale-95 transition-all"
                                     >
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-600 text-white">
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary text-white">
                                             <ArrowDownTrayIcon className="w-5 h-5" />
                                         </div>
-                                        <span className="flex-1 text-left text-sm font-bold text-blue-600 dark:text-blue-400">Install Mobile App</span>
-                                        <ChevronRightIcon className="w-4 h-4 text-blue-500/40" />
+                                        <span className="flex-1 text-left text-sm font-bold text-primary dark:text-primary-dark">Install Mobile App</span>
+                                        <ChevronRightIcon className="w-4 h-4 text-primary/40" />
                                     </button>
                                 )}
                             </div>
@@ -597,7 +597,7 @@ export default function Sidebar({
                     {/* Mobile Footer (User & Logout) */}
                     <div className="p-6 pb-8 mx-auto w-full max-w-sm">
                         <div className="flex items-center gap-4 p-4 rounded-[1.75rem] bg-white/60 dark:bg-white/10 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-inner text-lg" onClick={() => handleNavigation('profile')}>
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold shadow-inner text-lg" onClick={() => handleNavigation('profile')}>
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0" onClick={() => handleNavigation('profile')}>
@@ -663,7 +663,7 @@ export default function Sidebar({
                             flex items-center gap-3 rounded-xl cursor-pointer transition-all duration-200
                             ${isExpanded ? 'p-3' : 'p-2 justify-center'}
                             ${isActive
-                                ? 'bg-blue-50/80 dark:bg-blue-500/10'
+                                ? 'bg-primary/10 dark:bg-primary/10'
                                 : 'hover:bg-gray-100/70 dark:hover:bg-white/[0.05]'
                             }
                         `}
@@ -673,7 +673,7 @@ export default function Sidebar({
                         aria-label="View profile"
                     >
                         <div className="relative flex-shrink-0">
-                            <div className={`rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm ${isExpanded ? 'w-9 h-9' : 'w-10 h-10'}`}>
+                            <div className={`rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center shadow-sm ${isExpanded ? 'w-9 h-9' : 'w-10 h-10'}`}>
                                 <span className={`text-white font-semibold ${isExpanded ? 'text-sm' : 'text-base'}`}>
                                     {(user?.name || 'User').charAt(0).toUpperCase()}
                                 </span>
@@ -713,7 +713,7 @@ export default function Sidebar({
                                     <select
                                         value={selectedStoreId || ''}
                                         onChange={(e) => onSelectStore?.(e.target.value)}
-                                        className="w-full px-3 py-1.5 text-xs border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-slate-800 dark:text-white"
+                                        className="w-full px-3 py-1.5 text-xs border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary bg-white dark:bg-slate-800 dark:text-white"
                                     >
                                         <option value="">Select Store</option>
                                         {storesForSelect.map(store => (
@@ -747,7 +747,7 @@ export default function Sidebar({
                             onClick={onInstall}
                             className={`
                                 flex items-center gap-3 px-4 py-2.5 rounded-xl w-full
-                                text-blue-600 dark:text-blue-400 hover:bg-blue-50/80 dark:hover:bg-blue-500/[0.08] hover:text-blue-700 dark:hover:text-blue-300
+                                text-primary dark:text-primary-dark hover:bg-primary/10 dark:hover:bg-primary/10 hover:text-primary-dark dark:hover:text-primary-dark
                                 transition-colors duration-200
                                 ${!isExpanded && 'justify-center'}
                             `}

@@ -260,7 +260,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
     };
 
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-slate-50/50 dark:bg-slate-950/50 relative selection:bg-blue-500/30">
+        <div className="flex flex-col min-h-[100dvh] bg-slate-50/50 dark:bg-slate-950/50 relative selection:bg-primary/30">
             <SalesHeader
                 selectedStatus={selectedStatus}
                 setSelectedStatus={setSelectedStatus}
@@ -309,8 +309,8 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                     {isLoading && (
                         <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[32px] p-12 border border-slate-200/50 dark:border-white/5 mt-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] mx-4 md:mx-6 flex flex-col items-center justify-center space-y-6 animate-pulse">
                             <div className="relative flex items-center justify-center">
-                                <div className="absolute inset-0 bg-blue-500/20 dark:bg-blue-500/10 rounded-full blur-xl"></div>
-                                <div className="w-14 h-14 border-4 border-slate-100 dark:border-slate-800 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin relative z-10 shadow-sm"></div>
+                                <div className="absolute inset-0 bg-primary/20 dark:bg-primary/10 rounded-full blur-xl"></div>
+                                <div className="w-14 h-14 border-4 border-slate-100 dark:border-slate-800 border-t-primary-dark dark:border-t-primary rounded-full animate-spin relative z-10 shadow-sm"></div>
                             </div>
                             <div className="text-[15px] font-bold text-slate-600 dark:text-slate-400 tracking-wide">Fetching recent transactions...</div>
                         </div>
@@ -359,7 +359,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                             <div className="flex flex-col items-center justify-center h-full p-12 text-center bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[32px] border border-slate-200/50 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] relative overflow-hidden">
                                                 <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 dark:to-slate-900/50 pointer-events-none"></div>
                                                 <div className="relative w-20 h-20 mb-6 group">
-                                                    <div className="absolute inset-0 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500"></div>
+                                                    <div className="absolute inset-0 bg-primary/10 dark:bg-primary/5 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-500"></div>
                                                     <div className="relative w-full h-full bg-white dark:bg-slate-800 rounded-[24px] shadow-[0_8px_30px_rgb(0,0,0,0.08)] flex items-center justify-center rotate-3 group-hover:rotate-6 transition-all duration-300 border border-slate-100 dark:border-white/5">
                                                         <ChartBarIcon className="w-10 h-10 text-slate-400 dark:text-slate-500" />
                                                     </div>
