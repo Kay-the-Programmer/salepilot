@@ -23,8 +23,8 @@ const InventorySettingsSection: React.FC<InventorySettingsSectionProps> = ({
     onCancel,
     handleChange
 }) => {
-    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white dark:bg-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 focus:bg-white dark:focus:bg-slate-800";
-    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 mb-2";
+    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-brand-text shadow-sm ring-1 ring-inset ring-brand-border placeholder:text-brand-text-muted focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-surface hover:bg-surface-variant focus:bg-surface";
+    const labelClasses = "block text-sm font-semibold leading-6 text-brand-text-muted mb-2";
 
     return (
         <SettingsCard
@@ -55,7 +55,7 @@ const InventorySettingsSection: React.FC<InventorySettingsSectionProps> = ({
                                 units
                             </div>
                         </div>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                        <p className="text-xs text-brand-text-muted mt-2">
                             Products with stock at or below this level will be marked as low stock
                         </p>
                     </div>
@@ -71,7 +71,7 @@ const InventorySettingsSection: React.FC<InventorySettingsSectionProps> = ({
                             placeholder="SP-"
                             maxLength={10}
                         />
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
+                        <p className="text-xs text-brand-text-muted mt-2">
                             This prefix will be automatically added to new product SKUs
                         </p>
                     </div>
@@ -81,7 +81,7 @@ const InventorySettingsSection: React.FC<InventorySettingsSectionProps> = ({
                     <DetailItem
                         label="Low Stock Alert"
                         value={
-                            <span className="text-[17px] font-medium text-slate-900 dark:text-white">{settings.lowStockThreshold} Units</span>
+                            <span className="text-[17px] font-medium text-brand-text">{settings.lowStockThreshold} Units</span>
                         }
                         icon={<BellAlertIcon className="w-5 h-5" />}
                     />
@@ -89,9 +89,9 @@ const InventorySettingsSection: React.FC<InventorySettingsSectionProps> = ({
                         label="SKU Prefix"
                         value={
                             settings.skuPrefix ? (
-                                <span className="text-[17px] font-mono font-medium text-slate-900 dark:text-white uppercase tracking-wider">{settings.skuPrefix}</span>
+                                <span className="text-[17px] font-mono font-medium text-brand-text uppercase tracking-wider">{settings.skuPrefix}</span>
                             ) : (
-                                <span className="text-slate-400 dark:text-slate-500 italic">None</span>
+                                <span className="text-brand-text-muted italic">None</span>
                             )
                         }
                         icon={<TagIcon className="w-5 h-5" />}

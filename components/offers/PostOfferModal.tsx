@@ -1,7 +1,7 @@
 import { useState, Fragment } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { X } from 'lucide-react';
-import LocationPicker from './LocationPicker';
+import LocationPicker from '../ui/LocationPicker';
 import { offersService } from '../../services/offersService';
 
 interface PostOfferModalProps {
@@ -111,7 +111,7 @@ export default function PostOfferModal({ isOpen, onClose, onOfferCreated }: Post
                                         <label className="block text-sm font-medium text-gray-700 mb-2">Location (Required)</label>
                                         <p className="text-xs text-gray-500 mb-2">Drag the marker to your location.</p>
                                         <LocationPicker
-                                            onLocationSelect={(lat, lng) => setLocation({ lat, lng })}
+                                            onLocationSelect={(loc) => setLocation({ lat: loc.lat, lng: loc.lng })}
                                         />
                                         {location && (
                                             <p className="text-xs text-green-600 mt-1">

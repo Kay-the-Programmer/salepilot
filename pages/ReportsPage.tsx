@@ -348,7 +348,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
     const datePresetLabel = datePreset === '7d' ? '7D' : datePreset === '30d' ? '30D' : datePreset === 'month' ? 'Mo' : 'Custom';
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-950 font-google overflow-hidden relative">
+        <div className="flex flex-col h-[100dvh] bg-background font-google overflow-hidden relative">
             {/* Skip to content link for accessibility */}
             <a
                 href="#report-content"
@@ -358,14 +358,14 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
             </a>
 
             {/* Header — compact on mobile */}
-            <header className="flex-none sticky top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300" role="banner">
+            <header className="flex-none sticky top-0 z-40 bg-background/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300" role="banner">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-6 flex items-center justify-between">
                     <div className="flex items-center gap-4 min-w-0">
                         <div className="min-w-0">
-                            <p className="text-[13px] md:text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1 tracking-wide uppercase">
+                            <p className="text-[13px] md:text-sm font-semibold text-brand-text-muted mb-1 tracking-wide uppercase">
                                 {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
                             </p>
-                            <h1 className="text-2xl md:text-[34px] font-bold md:font-semibold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                            <h1 className="text-2xl md:text-[34px] font-bold md:font-semibold text-brand-text leading-tight truncate tracking-tight">
                                 {getGreeting()}, {user?.name?.split(' ')[0] || "User"}
                             </h1>
                         </div>
@@ -374,23 +374,23 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                         <div className="flex md:hidden items-center gap-2" ref={filterMenuRef}>
                             <button
                                 onClick={() => navigate('/profile')}
-                                className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 dark:border-white/10 flex-shrink-0 active:scale-95 transition-transform bg-white dark:bg-slate-800 shadow-sm"
+                                className="w-10 h-10 rounded-full overflow-hidden border border-brand-border flex-shrink-0 active:scale-95 transition-transform bg-surface shadow-sm"
                                 aria-label="Go to profile"
                             >
                                 {user?.profilePicture ? (
                                     <img src={user.profilePicture} alt={user?.name || 'Profile'} className="w-full h-full object-cover" />
                                 ) : (
-                                    <UserCircleIcon className="w-full h-full text-slate-400 dark:text-slate-500" />
+                                    <UserCircleIcon className="w-full h-full text-brand-text-muted" />
                                 )}
                             </button>
                             <div className="relative">
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
+                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-variant backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
                                     aria-label={`Date filter: ${datePresetLabel}`}
                                     aria-expanded={showFilters}
                                 >
-                                    <CalendarIcon className="w-5 h-5 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 transition-colors" />
+                                    <CalendarIcon className="w-5 h-5 text-brand-text group-hover:text-primary transition-colors" />
                                 </button>
 
                                 {showFilters && (
@@ -415,14 +415,14 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                         <div className="relative hidden md:block" ref={notificationsRef}>
                             <button
                                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
+                                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-surface-variant backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
                                 aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
                                 aria-expanded={isNotificationsOpen}
                                 aria-haspopup="true"
                             >
-                                <BellAlertIcon className="w-5 h-5 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 transition-colors" />
+                                <BellAlertIcon className="w-5 h-5 text-brand-text group-hover:text-primary transition-colors" />
                                 {unreadCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-red-500 rounded-full shadow-md border-2 border-slate-50 dark:border-slate-900 animate-pulse" aria-hidden="true">
+                                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-danger rounded-full shadow-md border-2 border-surface animate-pulse" aria-hidden="true">
                                         {unreadCount > 99 ? '99+' : unreadCount}
                                     </span>
                                 )}
@@ -478,7 +478,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
             {/* Desktop Apple-style Segmented Control Tab Bar */}
             <nav
                 ref={tabBarRef}
-                className="hidden md:flex flex-none sticky top-[90px] z-30 transition-all duration-300 bg-slate-50 dark:bg-slate-950 pb-2 border-b border-transparent"
+                className="hidden md:flex flex-none sticky top-[90px] z-30 transition-all duration-300 bg-background pb-2 border-b border-transparent"
                 role="tablist"
                 aria-label="Report sections"
                 onKeyDown={handleTabKeyDown}

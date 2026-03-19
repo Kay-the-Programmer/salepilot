@@ -169,7 +169,7 @@ export default function LogisticsPage() {
     };
 
     return (
-        <div className="p-0 h-full flex flex-col bg-gray-50 dark:bg-slate-950">
+        <div className="p-0 h-full flex flex-col bg-gray-50 dark:bg-slate-950 font-google">
             {/* Header */}
             <header className="dark:bg-slate-900 backdrop-blur-md sticky top-0 z-10 p-2">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -178,8 +178,8 @@ export default function LogisticsPage() {
                             <TruckIcon className="w-8 h-8" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white uppercase tracking-tight">Logistics</h1>
-                            <p className="text-[10px] font-bold text-gray-400 dark:text-slate-500 uppercase tracking-widest">Fleet & Shipment Management</p>
+                            <h1 className="text-[17px] md:text-2xl font-semibold text-brand-text tracking-tight">Logistics</h1>
+                            <p className="text-[11px] font-medium text-brand-text-muted tracking-wide mt-0.5">Fleet &amp; Shipment Management</p>
                         </div>
                     </div>
 

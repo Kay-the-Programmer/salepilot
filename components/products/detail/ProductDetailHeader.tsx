@@ -60,12 +60,12 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                     </button>
                 )}
                 <div className="min-w-0">
-                    <h1 className="text-[20px] sm:text-[22px] font-black text-slate-900 dark:text-white truncate max-w-[180px] sm:max-w-md tracking-tight leading-none">
+                    <h1 className="text-[17px] md:text-2xl font-semibold text-brand-text tracking-tight truncate max-w-[180px] sm:max-w-md leading-none">
                         {product.name}
                     </h1>
-                    <div className="flex items-center gap-2 mt-1.5 uppercase font-black tracking-[0.2em] text-[10px]">
-                        <span className="text-blue-600 dark:text-blue-400">SKU</span>
-                        <span className="text-slate-400 dark:text-slate-500">{product.sku || 'N/A'}</span>
+                    <div className="flex items-center gap-2 mt-1.5 font-medium text-[11px] text-brand-text-muted">
+                        <span className="text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider">SKU</span>
+                        <span className="tracking-wide">{product.sku || 'N/A'}</span>
                     </div>
                 </div>
             </div>
@@ -73,7 +73,7 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                 {canManage && (
                     <button
                         onClick={() => onEdit(product)}
-                        className="px-6 py-2.5 bg-slate-900 dark:bg-white rounded-full shadow-lg shadow-black/5 dark:shadow-white/5 text-[13px] font-black tracking-wide flex items-center gap-2 text-white dark:text-slate-900 transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-95"
+                        className="px-6 py-2.5 bg-slate-900 dark:bg-white rounded-xl shadow-lg shadow-black/5 dark:shadow-white/5 text-[13px] font-semibold tracking-wide flex items-center gap-2 text-white dark:text-slate-900 transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-95"
                     >
                         <PencilIcon className="w-4 h-4" />
                         <span className="hidden sm:inline">Edit Product</span>
@@ -83,7 +83,7 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                 <div className="relative" ref={menuRef}>
                     <button
                         onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        className="p-3 bg-white/50 dark:bg-white/5 backdrop-blur-md rounded-full border border-white/20 dark:border-white/5 transition-all duration-300 hover:bg-white dark:hover:bg-white/10 active:scale-90"
+                        className="p-3 bg-white/50 dark:bg-white/5 backdrop-blur-md rounded-xl border border-white/20 dark:border-white/5 transition-all duration-300 hover:bg-white dark:hover:bg-white/10 active:scale-90"
                         aria-label="More options"
                     >
                         <EllipsisVerticalIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />

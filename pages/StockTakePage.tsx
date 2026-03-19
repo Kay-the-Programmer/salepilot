@@ -94,12 +94,12 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
 
     if (!session) {
         return (
-            <div className="flex-1 flex flex-col items-center justify-center bg-gray-100 dark:bg-slate-950 p-8">
+            <div className="flex-1 flex flex-col items-center justify-center bg-gray-100 dark:bg-slate-950 p-8 font-google">
                 <div glass-effect="" className="max-w-md w-full text-center p-12 rounded-[2.5rem] shadow-xl border border-white/50 dark:border-slate-800/50">
                     <div className="mx-auto h-20 w-20 rounded-3xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mb-6">
                         <ClipboardDocumentListIcon className="h-10 w-10 text-blue-500 dark:text-blue-400" />
                     </div>
-                    <h2 className="text-2xl font-semibold text-slate-900 dark:text-white uppercase tracking-tight">Stock Counts</h2>
+                    <h2 className="text-2xl font-semibold text-brand-text tracking-tight">Stock Counts</h2>
                     <p className="mt-3 text-slate-500 dark:text-slate-400 font-medium">Verify your inventory by starting a physical stock count.</p>
                     <div className="mt-10">
                         <button
@@ -132,12 +132,12 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, onStart, onUpdat
     );
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-google">
             <header className="z-10 p-6">
                 <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Stock Take in Progress</h1>
-                        <p className="text-sm font-semibold text-slate-400 dark:text-slate-500 mt-1 uppercase tracking-widest">Started at: {new Date(session.startTime).toLocaleString()}</p>
+                        <h1 className="text-[28px] font-bold text-brand-text tracking-tight">Stock Take in Progress</h1>
+                        <p className="text-sm font-medium text-brand-text-muted mt-1 tracking-wide">Started at: {new Date(session.startTime).toLocaleString()}</p>
                     </div>
                     <div className="flex-shrink-0 flex items-center gap-3">
                         <button onClick={handleCancel} type="button" className="inline-flex items-center gap-x-1.5 rounded-md bg-white dark:bg-red-500 px-5 py-3 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 hover:shadow-lg hover:shadow-slate-500/20 dark:hover:shadow-slate-500/20 dark:hover:bg-slate-800 hover:translate-y-[-2px] transition-all uppercase tracking-widest active:scale-95 transition-all duration-300">

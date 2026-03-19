@@ -273,19 +273,19 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
     ];
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-mesh-light dark:bg-slate-950 transition-colors duration-200 font-google overflow-hidden relative">
+        <div className="flex flex-col h-[100dvh] bg-background transition-colors duration-200 font-google overflow-hidden relative">
             {/* Header — compact on mobile */}
             <header className="flex-none liquid-glass-header sticky top-0 z-40" role="banner">
                 <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-5 flex items-center justify-between">
                     <div className="flex items-center gap-4 min-w-0">
-                        <div className="p-2 md:p-2.5 bg-blue-600 rounded-xl md:rounded-2xl shadow-lg shadow-blue-500/20 flex-shrink-0">
-                            <BookOpenIcon className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                        <div className="p-2 md:p-2.5 bg-primary rounded-xl md:rounded-2xl shadow-lg shadow-primary/20 flex-shrink-0">
+                            <BookOpenIcon className="w-5 h-5 md:w-6 md:h-6 text-surface" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-lg md:text-2xl font-bold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                            <h1 className="text-lg md:text-2xl font-bold text-brand-text leading-tight truncate tracking-tight">
                                 Accounting
                             </h1>
-                            <p className="text-[11px] md:text-xs text-slate-500 dark:text-slate-400 mt-0.5 tracking-wide font-medium truncate uppercase">
+                            <p className="text-[11px] md:text-xs text-brand-text-muted mt-0.5 tracking-wide font-medium truncate uppercase">
                                 Financial Control Center
                             </p>
                         </div>
@@ -310,7 +310,7 @@ const AccountingPage: React.FC<AccountingPageProps> = ({
                                     aria-selected={isActive}
                                     tabIndex={isActive ? 0 : -1}
                                     onClick={() => setActiveTabAndHash(tab.tabName)}
-                                    className={`flex-shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 md:py-3 rounded-full text-[13px] md:text-sm font-bold tracking-wide whitespace-nowrap outline-none flex-shrink-0 focus-visible:ring-2 focus-visible:ring-blue-500 liquid-glass-pill transition-all duration-200 ${isActive ? 'active scale-105 shadow-md shadow-blue-500/20' : 'hover:scale-102'}`}
+                                    className={`flex-shrink-0 snap-start flex items-center gap-2 px-5 py-2.5 md:py-3 rounded-full text-[13px] md:text-sm font-bold tracking-wide whitespace-nowrap outline-none flex-shrink-0 focus-visible:ring-2 focus-visible:ring-primary liquid-glass-pill transition-all duration-200 ${isActive ? 'active scale-105 shadow-md shadow-primary/20' : 'hover:scale-102'}`}
                                 >
                                     <span className={`transition-transform duration-300 ${isActive ? 'scale-110 opacity-100' : 'opacity-70'}`}>
                                         {React.cloneElement(tab.icon as any, { className: "w-4 h-4 md:w-4.5 md:h-4.5" })}

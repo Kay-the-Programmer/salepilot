@@ -34,6 +34,7 @@ import {
 } from './icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNotifications } from '../contexts/NotificationContext';
+import { api } from '../services/api';
 import logo from '../assets/logo.png';
 
 interface SidebarProps {
@@ -131,6 +132,13 @@ const NAV_ITEMS = [
         page: 'suppliers',
         icon: TruckIcon,
         roles: ['admin', 'inventory_manager'],
+        badge: null
+    },
+    {
+        name: 'Logistics',
+        page: 'logistics',
+        icon: TruckIcon,
+        roles: ['superadmin', 'admin', 'staff', 'inventory_manager'],
         badge: null
     },
     {
@@ -278,6 +286,24 @@ export default function Sidebar({
     const { theme, toggleTheme } = useTheme();
     const sidebarRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
+    const [aiUsage, setAiUsage] = useState<{ count: number; limit: number; remaining: number; planName: string } | null>(null);
+
+    useEffect(() => {
+        const fetchAiUsage = async () => {
+            try {
+                const data = await api.get<any>('/ai/usage');
+                setAiUsage(data);
+            } catch (err) {
+                console.error('Failed to fetch AI usage:', err);
+            }
+        };
+        if (user && user.role !== 'customer' && user.role !== 'supplier') {
+            fetchAiUsage();
+            // Refresh every 5 minutes
+            const interval = setInterval(fetchAiUsage, 5 * 60 * 1000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
 
     // Filter navigation items based on user role and allowed pages
     const navItemsWithBadges = NAV_ITEMS.map(item => {
@@ -429,7 +455,7 @@ export default function Sidebar({
                 `}
                 title={compact ? item.name : undefined}
             >
-                <div className="flex-shrink-0 text-gray-500 group-hover:text-gray-700 dark:group-hover:text-gray-100 [[.active-link]_&]:text-primary dark:[[.active-link]_&]:text-primary-dark transition-colors">
+                <div className="flex-shrink-0 text-brand-text-muted group-hover:text-brand-text [[.active-link]_&]:text-primary transition-colors">
                     <IconComponent className="w-5 h-5" />
                 </div>
                 {!compact && (
@@ -438,7 +464,7 @@ export default function Sidebar({
                     </div>
                 )}
                 {item.badge && !compact && (
-                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-300 rounded-full">
+                    <span className="px-2 py-0.5 text-[10px] font-semibold bg-info-muted text-info rounded-full">
                         {item.badge}
                     </span>
                 )}
@@ -566,11 +592,11 @@ export default function Sidebar({
                                                         <span className="flex-1 text-sm font-semibold text-gray-800 dark:text-gray-200 tracking-tight">{item.name}</span>
                                                         <div className="flex items-center gap-2">
                                                             {item.badge && (
-                                                                <span className="px-2 py-0.5 text-[10px] font-bold bg-red-500 text-white rounded-full">
+                                                                <span className="px-2 py-0.5 text-[10px] font-bold bg-danger text-white rounded-full">
                                                                     {item.badge}
                                                                 </span>
                                                             )}
-                                                            <ChevronRightIcon className="w-4 h-4 text-gray-300 dark:text-gray-600" />
+                                                            <ChevronRightIcon className="w-4 h-4 text-brand-text-muted" />
                                                         </div>
                                                     </NavLink>
                                                 );
@@ -613,7 +639,7 @@ export default function Sidebar({
                                 </button>
                                 <button
                                     onClick={onLogout}
-                                    className="p-3 rounded-full bg-red-50/80 dark:bg-red-500/20 text-red-600 dark:text-red-400 hover:scale-105 active:scale-95 transition-all duration-300"
+                                    className="p-3 rounded-full bg-danger-muted text-danger hover:scale-105 active:scale-95 transition-all duration-300"
                                 >
                                     <ArrowLeftOnRectangleIcon className="w-5 h-5" />
                                 </button>
@@ -627,9 +653,9 @@ export default function Sidebar({
             <aside
                 className={`
                     hidden md:flex
-                    bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl
+                    bg-surface/80 backdrop-blur-2xl
                     h-screen flex-col transition-all duration-300 ease-in-out z-50
-                    relative translate-x-0 border-r border-gray-200/50 dark:border-white/10
+                    relative translate-x-0 border-r border-brand-border
                     ${isExpanded ? 'w-64' : 'w-20'}
                 `}
                 style={{
@@ -734,6 +760,36 @@ export default function Sidebar({
                 {/* ─── Navigation ─── */}
                 <nav className="custom-scrollbar flex-1 px-3 py-2 space-y-0.5 overflow-y-auto overflow-x-hidden">
                     {navItems.map(item => renderNavItem(item, !isExpanded))}
+
+                    {/* AI Usage Indicator */}
+                    {aiUsage && isExpanded && (
+                        <div className="mt-6 px-3 py-4 mx-1 rounded-2xl bg-indigo-50/50 dark:bg-indigo-500/5 border border-indigo-100 dark:border-indigo-500/10">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-1.5">
+                                    <CpuChipIcon className="w-3.5 h-3.5 text-indigo-500" />
+                                    <span className="text-[10px] font-black text-indigo-900/40 dark:text-indigo-400/40 uppercase tracking-widest">AI Power</span>
+                                </div>
+                                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-tight">{aiUsage.planName}</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-indigo-100 dark:bg-indigo-900/30 rounded-full overflow-hidden mb-2">
+                                <div
+                                    className={`h-full transition-all duration-1000 rounded-full ${(aiUsage.limit === -1 || (aiUsage.count / aiUsage.limit) < 0.7)
+                                        ? 'bg-indigo-500'
+                                        : (aiUsage.count / aiUsage.limit < 0.9) ? 'bg-amber-500' : 'bg-rose-500'
+                                        }`}
+                                    style={{ width: `${aiUsage.limit === -1 ? 100 : Math.min(100, (aiUsage.count / aiUsage.limit) * 100)}%` }}
+                                />
+                            </div>
+                            <div className="flex justify-between items-end">
+                                <p className="text-[10px] font-bold text-indigo-900/60 dark:text-indigo-400/60">
+                                    {aiUsage.limit === -1 ? 'Unlimited Access' : `${aiUsage.count} / ${aiUsage.limit} requests`}
+                                </p>
+                                {aiUsage.limit !== -1 && aiUsage.limit - aiUsage.count <= 10 && (
+                                    <span className="text-[8px] font-black text-rose-500 uppercase animate-pulse">Low</span>
+                                )}
+                            </div>
+                        </div>
+                    )}
                 </nav>
 
                 {/* ─── Subtle separator ─── */}

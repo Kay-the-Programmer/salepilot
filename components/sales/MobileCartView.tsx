@@ -29,6 +29,8 @@ interface MobileCartViewProps {
     setSelectedCustomer: (c: Customer | null) => void;
     discount: string;
     setDiscount: (val: string) => void;
+    discountType: 'amount' | 'percentage';
+    setDiscountType: (val: 'amount' | 'percentage') => void;
     subtotal: number;
     taxAmount: number;
     total: number;
@@ -75,6 +77,8 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
     setSelectedCustomer,
     discount,
     setDiscount,
+    discountType,
+    setDiscountType,
     subtotal,
     taxAmount,
     total,
@@ -379,7 +383,14 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                             <div className="flex justify-between items-center py-2.5 border-b border-slate-100 dark:border-white/5">
                                 <span className="text-sm text-slate-500 dark:text-slate-400">Discount</span>
                                 <div className="flex items-center gap-1.5">
-                                    <span className="text-xs text-slate-300 dark:text-slate-600">{storeSettings.currency.symbol}</span>
+                                    <select
+                                        value={discountType}
+                                        onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
+                                        className="bg-transparent text-xs font-semibold text-slate-500 dark:text-slate-400 outline-none cursor-pointer appearance-none text-right pr-1"
+                                    >
+                                        <option value="amount">{storeSettings.currency.symbol}</option>
+                                        <option value="percentage">%</option>
+                                    </select>
                                     <input
                                         type="number"
                                         value={discount}

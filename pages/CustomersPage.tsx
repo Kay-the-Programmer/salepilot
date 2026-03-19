@@ -26,13 +26,13 @@ const MobileHeader = ({
     showBack?: boolean;
     rightAction?: React.ReactNode;
 }) => (
-    <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 shadow-sm no-pull-to-refresh">
+    <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-brand-border shadow-sm no-pull-to-refresh">
         <div className="px-4">
             <div className="flex items-center h-16">
                 {showBack && onBack && (
                     <button
                         onClick={onBack}
-                        className="p-2 -ml-2 rounded-xl h-10 w-10 flex items-center justify-center hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 transition-all text-gray-500 dark:text-gray-400 active:scale-95"
+                        className="p-2 -ml-2 rounded-xl h-10 w-10 flex items-center justify-center bg-surface-variant text-brand-text-muted active:scale-95 transition-all"
                         aria-label="Go back"
                     >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,7 @@ const MobileHeader = ({
                     </button>
                 )}
                 <div className="flex-1 ml-2">
-                    <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white truncate">{title}</h1>
+                    <h1 className="text-lg font-bold tracking-tight text-brand-text truncate">{title}</h1>
                 </div>
                 {rightAction}
             </div>
@@ -62,16 +62,16 @@ const EmptyState = ({
     onAction?: () => void;
 }) => (
     <div className="text-center py-12 px-4">
-        <div className="w-16 h-16 text-gray-300 dark:text-slate-700 mx-auto mb-4 flex items-center justify-center rounded-full bg-gray-100 dark:bg-slate-800">
+        <div className="w-16 h-16 text-brand-text-muted mx-auto mb-4 flex items-center justify-center rounded-full bg-surface-variant">
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
         </div>
-        <p className="text-gray-500 dark:text-slate-400 mb-4">{message}</p>
+        <p className="text-brand-text-muted mb-4">{message}</p>
         {actionLabel && onAction && (
             <button
                 onClick={onAction}
-                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 active:scale-95 transition-all duration-300"
+                className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-surface bg-primary hover:opacity-90 active:scale-95 transition-all duration-300"
                 style={{ WebkitTapHighlightColor: 'transparent' }}
             >
                 {actionLabel}
@@ -96,8 +96,8 @@ const LoadingSpinner = ({
 
     return (
         <div className="flex flex-col items-center justify-center py-12">
-            <div className={`animate-spin rounded-full ${sizeClasses[size]} border-blue-500 mb-4`}></div>
-            <p className="text-gray-500 dark:text-slate-400">{message}</p>
+            <div className={`animate-spin rounded-full ${sizeClasses[size]} border-primary mb-4`}></div>
+            <p className="text-brand-text-muted">{message}</p>
         </div>
     );
 };
@@ -110,18 +110,18 @@ const ErrorDisplay = ({
     error: string;
     onRetry?: () => void;
 }) => (
-    <div className="rounded-xl bg-red-50 dark:bg-red-900/10 p-4 my-4 border border-red-100 dark:border-red-900/20">
+    <div className="rounded-xl bg-danger/10 p-4 my-4 border border-danger/20">
         <div className="flex">
-            <svg className="h-5 w-5 text-red-400 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+            <svg className="h-5 w-5 text-danger mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
             </svg>
             <div className="ml-3">
-                <p className="text-sm font-medium text-red-800 dark:text-red-400">Error</p>
-                <p className="mt-1 text-sm text-red-700 dark:text-red-300/80">{error}</p>
+                <p className="text-sm font-medium text-danger">Error</p>
+                <p className="mt-1 text-sm text-brand-text-muted/80">{error}</p>
                 {onRetry && (
                     <button
                         onClick={onRetry}
-                        className="mt-2 text-sm font-medium text-red-800 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                        className="mt-2 text-sm font-medium text-danger hover:opacity-80"
                     >
                         Try again
                     </button>
@@ -288,23 +288,23 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     // Desktop Layout - Split View
     if (isDesktop && selectedCustomerId) {
         return (
-            <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950">
+            <div className="flex flex-col h-screen bg-background text-brand-text">
                 {/* Desktop Header - Minimal */}
-                <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 h-16 flex items-center justify-between px-6">
+                <header className="sticky top-0 z-40 bg-background/70 backdrop-blur-xl border-b border-brand-border h-16 flex items-center justify-between px-6">
                     <div className="flex items-center gap-4">
-                        <h1 className="text-xl font-bold text-gray-900 dark:text-white">Customers</h1>
-                        <span className="text-gray-300 dark:text-slate-700">|</span>
-                        <span className="text-sm text-gray-500 dark:text-slate-400">{filteredCustomers.length} Total</span>
+                        <h1 className="text-xl font-bold text-brand-text">Customers</h1>
+                        <span className="text-brand-border">|</span>
+                        <span className="text-sm text-brand-text-muted">{filteredCustomers.length} Total</span>
                     </div>
 
                     <div className="relative">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
+                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-text-muted" />
                         <input
                             type="text"
                             placeholder="Global Search..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9 pr-4 py-2 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 w-64 text-sm transition-all dark:text-slate-200"
+                            className="pl-9 pr-4 py-2 bg-surface border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary w-64 text-sm transition-all text-brand-text"
                         />
                     </div>
                 </header>
@@ -312,14 +312,14 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                 {/* Split View */}
                 <main className="flex flex-1 overflow-hidden">
                     {/* Left Panel - Customer List */}
-                    <div className={`${isLargeDesktop ? 'w-[360px]' : 'w-[320px]'} flex-shrink-0 border-r border-slate-200/50 dark:border-white/10 bg-white/50 dark:bg-slate-900/50 flex flex-col`}>
-                        <div className="p-4 border-b border-slate-200/50 dark:border-white/10 flex flex-col gap-3">
+                    <div className={`${isLargeDesktop ? 'w-[360px]' : 'w-[320px]'} flex-shrink-0 border-r border-brand-border bg-surface/50 flex flex-col`}>
+                        <div className="p-4 border-b border-brand-border flex flex-col gap-3">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-sm font-semibold text-gray-900 dark:text-white">Directory</h2>
+                                <h2 className="text-sm font-semibold text-brand-text">Directory</h2>
                                 {canManageCustomers && (
                                     <button
                                         onClick={handleOpenAddModal}
-                                        className="p-1.5 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm active:scale-95 transition-all duration-300"
+                                        className="p-1.5 bg-primary text-surface rounded-md hover:opacity-90 transition-colors shadow-sm active:scale-95 transition-all duration-300"
                                         title="Add New Customer"
                                     >
                                         <PlusIcon className="w-4 h-4" />
@@ -332,9 +332,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     placeholder="Filter list..."
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm dark:text-slate-200 shadow-sm"
+                                    className="w-full pl-9 pr-3 py-2 bg-surface border border-brand-border rounded-lg focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-sm text-brand-text shadow-sm"
                                 />
-                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-slate-500" />
+                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-brand-text-muted" />
                             </div>
 
                             <div className="flex justify-between items-center">
@@ -345,7 +345,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                 />
                                 <button
                                     onClick={() => setViewMode(viewMode === 'az' ? 'recent' : 'az')}
-                                    className="text-xs text-gray-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 flex items-center gap-1"
+                                    className="text-xs text-brand-text-muted hover:text-primary flex items-center gap-1"
                                 >
                                     <span>{viewMode === 'az' ? 'Sorted A-Z' : 'Sorted Recently'}</span>
                                     <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -366,7 +366,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                 selectedCustomerId={selectedCustomerId}
                             />
                         </div>
-                        <div className="flex-none p-3 border-t border-gray-100 dark:border-slate-800 bg-white dark:bg-slate-900">
+                        <div className="flex-none p-3 border-t border-brand-border bg-surface">
                             <Pagination
                                 total={filteredCustomers.length}
                                 page={page}
@@ -381,22 +381,22 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                     </div>
 
                     {/* Right Panel - Customer Detail */}
-                    <div className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 custom-scrollbar">
-                        <div className="sticky top-0 z-10 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 px-8 py-5">
+                    <div className="flex-1 overflow-y-auto bg-background custom-scrollbar">
+                        <div className="sticky top-0 z-10 bg-background/70 backdrop-blur-xl border-b border-brand-border px-8 py-5">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-full bg-blue-50 dark:bg-blue-500/10 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-lg border border-blue-100/50 dark:border-blue-500/20 shadow-sm">
+                                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-lg border border-primary/20 shadow-sm">
                                         {detailedCustomer ? detailedCustomer.name.substring(0, 2).toUpperCase() : '??'}
                                     </div>
                                     <div>
-                                        <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                                        <h1 className="text-2xl font-bold text-brand-text tracking-tight">
                                             {detailIsLoading ? 'Loading...' : detailedCustomer?.name}
                                         </h1>
                                         {detailedCustomer && (
                                             <div className="flex items-center gap-2 mt-0.5">
-                                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 border border-slate-200/50 dark:border-white/5 text-slate-600 dark:text-slate-400">Customer</span>
-                                                <span className="text-sm text-gray-400 dark:text-slate-600">•</span>
-                                                <span className="text-sm font-medium text-gray-500 dark:text-slate-400">ID: {detailedCustomer.id.substring(0, 8)}</span>
+                                                <span className="px-2 py-0.5 rounded text-xs font-medium bg-surface-variant border border-brand-border text-brand-text-muted">Customer</span>
+                                                <span className="text-sm text-brand-text-muted">•</span>
+                                                <span className="text-sm font-medium text-brand-text-muted">ID: {detailedCustomer.id.substring(0, 8)}</span>
                                             </div>
                                         )}
                                     </div>
@@ -405,15 +405,15 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     <div className="flex items-center gap-3">
                                         <button
                                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                                            className="inline-flex items-center px-4 py-2 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 text-gray-700 dark:text-slate-200 rounded-lg text-sm font-semibold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-sm active:scale-95 duration-300"
+                                            className="inline-flex items-center px-4 py-2 bg-surface text-brand-text border border-brand-border rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-sm active:scale-95 duration-300"
                                         >
-                                            <PencilIcon className="w-4 h-4 mr-2 text-gray-500 dark:text-slate-400" />
+                                            <PencilIcon className="w-4 h-4 mr-2 text-brand-text-muted" />
                                             Edit
                                         </button>
 
                                         <button
                                             onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
-                                            className="inline-flex items-center px-4 py-2 bg-white/70 dark:bg-slate-800/70 backdrop-blur-md border border-red-200/50 dark:border-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-semibold hover:bg-red-50 dark:hover:bg-red-900/10 transition-all shadow-sm active:scale-95 duration-300"
+                                            className="inline-flex items-center px-4 py-2 bg-surface text-danger border border-danger/20 rounded-lg text-sm font-semibold hover:bg-danger/10 transition-all shadow-sm active:scale-95 duration-300"
                                         >
                                             <TrashIcon className="w-4 h-4 mr-2 pointer-events-none" />
                                             Delete
@@ -464,7 +464,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
     // Mobile/Tablet - Detail View
     if (selectedCustomerId) {
         return (
-            <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950">
+            <div className="flex flex-col h-screen bg-background">
                 <MobileHeader
                     title={detailedCustomer?.name || 'Customer Details'}
                     onBack={handleBackToList}
@@ -483,7 +483,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                 />
 
                 <main
-                    className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 smooth-scroll safe-area-padding safe-area-bottom"
+                    className="flex-1 overflow-y-auto bg-background smooth-scroll safe-area-padding safe-area-bottom"
                 >
                     <div className="p-4">
                         {detailIsLoading ? (
@@ -502,17 +502,17 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
                 {/* Mobile Bottom Action - Primary */}
                 {isMobile && detailedCustomer && canManageCustomers && (
-                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-t border-slate-200/50 dark:border-white/10 p-4 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center gap-2">
+                    <div className="fixed bottom-0 left-0 right-0 z-40 bg-background/70 backdrop-blur-xl border-t border-brand-border p-4 pb-safe shadow-[0_-10px_20px_rgba(0,0,0,0.05)] flex items-center gap-2">
                         <button
                             onClick={() => handleOpenEditModal(detailedCustomer)}
-                            className="flex-1 py-4 px-4 bg-blue-600 text-white font-semibold rounded-2xl shadow-lg shadow-blue-200 dark:shadow-none hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
+                            className="flex-1 py-4 px-4 bg-primary text-surface font-semibold rounded-2xl shadow-lg hover:opacity-90 transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
                         >
                             <PencilIcon className="w-4 h-4" />
                             Edit
                         </button>
                         <button
                             onClick={() => detailedCustomer && setCustomerToDelete(detailedCustomer.id)}
-                            className="p-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl hover:bg-red-100 dark:hover:bg-red-500/20 transition-all active:scale-95 duration-300 border border-red-100/50 dark:border-red-500/20"
+                            className="p-4 bg-danger/10 text-danger rounded-2xl hover:bg-danger/20 transition-all active:scale-95 duration-300 border border-danger/20"
                             aria-label="Delete Customer"
                         >
                             <TrashIcon className="w-5 h-5 pointer-events-none" />
@@ -544,9 +544,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
 
     // Mobile/Tablet - List View
     return (
-        <div className="flex flex-col h-screen bg-gray-50 dark:bg-slate-950">
+        <div className="flex flex-col h-screen bg-background">
             {/* Mobile/Tablet Header */}
-            <header className="sticky top-0 z-40 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-200/50 dark:border-white/10 shadow-sm no-pull-to-refresh">
+            <header className="sticky top-0 z-40 bg-background/70 backdrop-blur-xl border-b border-brand-border shadow-sm no-pull-to-refresh">
                 <div className="px-4">
                     <div className="flex items-center h-14 justify-between">
                         {isMobile && isMobileSearchOpen ? (
@@ -558,7 +558,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                         autoFocus
-                                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-white/10 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-slate-200 transition-all outline-none shadow-sm"
+                                        className="w-full pl-10 pr-4 py-2 bg-surface border border-brand-border rounded-xl focus:ring-2 focus:ring-primary focus:border-primary text-brand-text transition-all outline-none shadow-sm"
                                     />
                                     <svg className="absolute left-3 top-2.5 h-5 w-5 text-gray-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -569,7 +569,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                         setIsMobileSearchOpen(false);
                                         setSearchTerm('');
                                     }}
-                                    className="p-2 text-gray-500 dark:text-slate-400 hover:text-gray-700 dark:hover:text-slate-200 font-medium text-sm whitespace-nowrap"
+                                    className="p-2 text-brand-text-muted hover:text-brand-text font-medium text-sm whitespace-nowrap"
                                 >
                                     Cancel
                                 </button>
@@ -577,9 +577,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                         ) : (
                             <>
                                 <div className="flex items-center">
-                                    <h1 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">Customers</h1>
+                                    <h1 className="text-xl font-bold text-brand-text tracking-tight">Customers</h1>
                                     {!isMobile && (
-                                        <p className="ml-3 text-sm text-gray-500 dark:text-slate-400 border-l border-gray-200 dark:border-slate-800 pl-3">
+                                        <p className="ml-3 text-sm text-brand-text-muted border-l border-brand-border pl-3">
                                             {filteredCustomers.length} customer{filteredCustomers.length !== 1 ? 's' : ''}
                                         </p>
                                     )}
@@ -597,7 +597,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                         <>
                                             <button
                                                 onClick={() => setIsViewMenuOpen(!isViewMenuOpen)}
-                                                className={`p-2.5 rounded-xl transition-colors ${isViewMenuOpen ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 text-gray-600 dark:text-slate-400'}`}
+                                                className={`p-2.5 rounded-xl transition-colors ${isViewMenuOpen ? 'bg-primary/10 text-primary' : 'bg-surface-variant text-brand-text-muted'}`}
                                                 aria-label="View options"
                                             >
                                                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -612,13 +612,13 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                                         className="fixed inset-0 z-40"
                                                         onClick={() => setIsViewMenuOpen(false)}
                                                     />
-                                                    <div className="absolute top-12 right-12 z-50 w-48 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl rounded-2xl border border-slate-200/50 dark:border-white/10 shadow-lg py-2 animate-fade-in-up origin-top-right">
-                                                        <div className="px-4 py-2 border-b border-slate-100 dark:border-white/10">
-                                                            <span className="text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">Sort Customers</span>
+                                                    <div className="absolute top-12 right-12 z-50 w-48 bg-surface/80 backdrop-blur-xl rounded-2xl border border-brand-border shadow-lg py-2 animate-fade-in-up origin-top-right">
+                                                        <div className="px-4 py-2 border-b border-brand-border">
+                                                            <span className="text-xs font-semibold text-brand-text-muted uppercase tracking-wider">Sort Customers</span>
                                                         </div>
                                                         <button
                                                             onClick={() => { setViewMode('all'); setIsViewMenuOpen(false); }}
-                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'all' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'all' ? 'text-primary bg-primary/10' : 'text-brand-text hover:bg-surface-variant'}`}
                                                         >
                                                             <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -627,7 +627,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                                         </button>
                                                         <button
                                                             onClick={() => { setViewMode('az'); setIsViewMenuOpen(false); }}
-                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'az' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'az' ? 'text-primary bg-primary/10' : 'text-brand-text hover:bg-surface-variant'}`}
                                                         >
                                                             <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
@@ -636,7 +636,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                                         </button>
                                                         <button
                                                             onClick={() => { setViewMode('recent'); setIsViewMenuOpen(false); }}
-                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'recent' ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20' : 'text-gray-700 dark:text-slate-300 hover:bg-gray-50 dark:hover:bg-slate-800'}`}
+                                                            className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center gap-2 ${viewMode === 'recent' ? 'text-primary bg-primary/10' : 'text-brand-text hover:bg-surface-variant'}`}
                                                         >
                                                             <svg className="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -651,7 +651,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     {/* Search Icon Button */}
                                     <button
                                         onClick={() => setIsMobileSearchOpen(true)}
-                                        className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 text-gray-600 dark:text-slate-400 transition-colors active:scale-95 transition-all duration-300"
+                                        className="p-2.5 rounded-xl bg-surface-variant text-brand-text-muted transition-colors active:scale-95 transition-all duration-300"
                                         aria-label="Search"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -663,7 +663,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     {canManageCustomers && isMobile && (
                                         <button
                                             onClick={handleOpenAddModal}
-                                            className="p-2.5 rounded-xl hover:bg-gray-100 dark:hover:bg-slate-800 active:bg-gray-200 dark:active:bg-slate-700 text-blue-600 dark:text-blue-400 transition-colors active:scale-95 transition-all duration-300"
+                                            className="p-2.5 rounded-xl bg-surface-variant text-primary transition-colors active:scale-95 transition-all duration-300"
                                             aria-label="Add Customer"
                                         >
                                             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -676,7 +676,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                                     {canManageCustomers && !isMobile && (
                                         <button
                                             onClick={handleOpenAddModal}
-                                            className="ml-2 inline-flex items-center px-3 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 active:scale-95 transition-all duration-300"
+                                            className="ml-2 inline-flex items-center px-3 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-surface bg-primary hover:opacity-90 active:scale-95 transition-all duration-300"
                                         >
                                             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -692,11 +692,11 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
             </header>
 
             <main
-                className="flex-1 overflow-y-auto bg-gray-50 dark:bg-slate-950 smooth-scroll safe-area-padding safe-area-bottom"
+                className="flex-1 overflow-y-auto bg-background smooth-scroll safe-area-padding safe-area-bottom"
             >
                 <div className="p-4">
                     {!isLoading && filteredCustomers.length > 0 && searchTerm && (
-                        <div className="mb-4 text-sm text-gray-500">
+                        <div className="mb-4 text-sm text-brand-text-muted">
                             Found {filteredCustomers.length} customer{filteredCustomers.length !== 1 ? 's' : ''} for "{searchTerm}"
                         </div>
                     )}
@@ -757,7 +757,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                 title="Delete Customer"
                 message="Are you sure you want to delete this customer? This action cannot be undone."
                 confirmText="Delete Customer"
-                confirmButtonClass="bg-red-600 hover:bg-red-700 text-white"
+                confirmButtonClass="bg-danger text-surface hover:opacity-90 transition-all shadow-md shadow-danger/20"
             />
         </div>
     );

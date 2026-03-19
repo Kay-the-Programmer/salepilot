@@ -65,7 +65,7 @@ const NotificationSettingsSection: React.FC<NotificationSettingsSectionProps> = 
                             <button
                                 onClick={handleToggle}
                                 disabled={isLoading}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSubscribed ? 'bg-blue-600' : 'bg-slate-200 dark:bg-slate-700'
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${isSubscribed ? 'bg-primary' : 'bg-surface-variant'
                                     } ${isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'}`}
                                 aria-pressed={isSubscribed}
                             >

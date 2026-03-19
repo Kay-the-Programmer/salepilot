@@ -461,12 +461,20 @@ export const AiChat: React.FC<AiChatProps> = ({ userName, contextData, onClose, 
                 saveConversation(updatedMessages);
                 return updatedMessages;
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
+            let errorMessage = "Sorry, I wasn't able to process that request. Please try again.";
+
+            if (error.status === 403 || (error.message && error.message.toLowerCase().includes('limit reached'))) {
+                errorMessage = "### AI Limit Reached ⚠️\n\nYou've reached your monthly AI request limit for your current plan. Please upgrade your subscription to continue using the Business Assistant.";
+            } else if (error.status === 402) {
+                errorMessage = "### Subscription Required 💳\n\nYour subscription is inactive or expired. Please check your billing details to continue using AI features.";
+            }
+
             const errorMsg: Message = {
                 id: (Date.now() + 1).toString(),
                 type: 'ai',
-                content: "Sorry, I wasn't able to process that request. Please try again.",
+                content: errorMessage,
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, errorMsg]);

@@ -35,7 +35,7 @@ export const InventoryValueComparison: React.FC<InventoryValueComparisonProps> =
 
     return (
         <div className="lg:col-span-2 dark:bg-slate-800 glass-effect rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-white/10 flex flex-col h-full">
-            <h3 className="font-bold text-slate-900 dark:text-white text-lg mb-6 uppercase tracking-wider">Inventory Value Comparison</h3>
+            <h3 className="font-semibold text-brand-text text-lg mb-6">Inventory Value Comparison</h3>
 
             {/* Chart Area */}
             <div className="flex-1 w-full min-h-[200px]">

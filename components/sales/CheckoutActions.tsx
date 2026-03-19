@@ -20,6 +20,8 @@ interface CheckoutActionsProps {
     taxAmount: number;
     discount: string;
     setDiscount: (val: string) => void;
+    discountType: 'amount' | 'percentage';
+    setDiscountType: (val: 'amount' | 'percentage') => void;
     selectedCustomer: Customer | null;
     setSelectedCustomer: (c: Customer | null) => void;
     onApplyStoreCredit: () => void;
@@ -62,6 +64,8 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
     taxAmount,
     discount,
     setDiscount,
+    discountType,
+    setDiscountType,
     selectedCustomer,
     setSelectedCustomer,
     onApplyStoreCredit,
@@ -219,7 +223,14 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                         <div className="flex justify-between items-center py-2.5 border-b border-slate-100 dark:border-white/5">
                                             <span className="text-sm text-slate-500 dark:text-slate-400">Discount</span>
                                             <div className="flex items-center gap-1.5">
-                                                <span className="text-xs text-slate-300 dark:text-slate-600">{storeSettings.currency.symbol}</span>
+                                                <select
+                                                    value={discountType}
+                                                    onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
+                                                    className="bg-transparent text-xs font-semibold text-slate-500 dark:text-slate-400 outline-none cursor-pointer appearance-none text-right pr-1"
+                                                >
+                                                    <option value="amount">{storeSettings.currency.symbol}</option>
+                                                    <option value="percentage">%</option>
+                                                </select>
                                                 <input
                                                     type="number"
                                                     value={discount}

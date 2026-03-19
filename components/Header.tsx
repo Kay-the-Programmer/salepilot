@@ -23,6 +23,7 @@ interface HeaderProps {
     isSearchActive?: boolean;
     setIsSearchActive?: (active: boolean) => void;
     showSearch?: boolean;
+    hideSearchOnDesktop?: boolean;
 }
 
 export default function Header({
@@ -43,6 +44,7 @@ export default function Header({
     isSearchActive: propIsSearchActive,
     setIsSearchActive: propSetIsSearchActive,
     showSearch = true,
+    hideSearchOnDesktop = false,
 }: HeaderProps) {
     const [internalIsSearchActive, setInternalIsSearchActive] = useState(false);
 
@@ -69,7 +71,7 @@ export default function Header({
                                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                             </button>
                         )}
-                        <h1 className="text-xl font-extrabold tracking-tight text-slate-900 uppercase dark:text-white truncate">{title}</h1>
+                        <h1 className="text-[17px] md:text-2xl font-semibold tracking-tight text-brand-text truncate">{title}</h1>
                     </div>
                 )}
 
@@ -95,7 +97,7 @@ export default function Header({
                             {rightContent}
 
                             {showSearch && (
-                                <div className={`flex items-center transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isSearchActive ? 'w-48 lg:w-72' : 'w-10'}`}>
+                                <div className={`flex items-center transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] ${isSearchActive ? 'w-48 lg:w-72' : 'w-10'} ${hideSearchOnDesktop ? 'md:hidden' : ''}`}>
                                     {isSearchActive ? (
                                         <div className="flex items-center w-full bg-white/60 dark:bg-slate-900/60 backdrop-blur-md rounded-full px-3 h-10 border border-slate-200/40 dark:border-white/10 shadow-[inset_0_1px_4px_rgba(0,0,0,0.02)] animate-in fade-in zoom-in-95 duration-300">
                                             <svg className="w-4 h-4 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">

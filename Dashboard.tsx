@@ -39,7 +39,6 @@ const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
 const MarketplaceDashboard = lazy(() => import('@/pages/shop/CustomerDashboard')); // The Marketplace Portal
 const CustomerOrdersPage = lazy(() => import('@/pages/customers/CustomerDashboard')); // The My Orders Page
 const CustomerRequestTrackingPage = lazy(() => import('@/pages/shop/CustomerRequestTrackingPage'));
-const MarketingPage = lazy(() => import('@/pages/MarketingPage'));
 const MarketplaceRequestActionPage = lazy(() => import('@/pages/MarketplaceRequestActionPage'));
 const LogisticsPage = lazy(() => import('@/pages/LogisticsPage'));
 const UserGuidePage = lazy(() => import('@/pages/UserGuidePage'));
@@ -49,6 +48,7 @@ const SupportPage = lazy(() => import('@/pages/SupportPage'));
 
 import Snackbar from './components/Snackbar';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
+import VerifyEmailOtpModal from './components/VerifyEmailOtpModal';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
 import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
@@ -58,7 +58,6 @@ import {
 } from './components/icons';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useNavigate, useLocation } from 'react-router-dom';
-import SystemNotificationModal from './components/SystemNotificationModal';
 import NotificationBell from './components/NotificationBell';
 import PriorityNotificationModal from './components/PriorityNotificationModal';
 import TourGuide from './components/TourGuide';
@@ -80,8 +79,8 @@ type SnackbarState = {
 const PERMISSIONS: Record<User['role'], string[]> = {
     superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings'],
     admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'support'],
-    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'user-guide', 'quick-view'],
-    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'user-guide', 'quick-view'],
+    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view'],
+    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view'],
     customer: ['profile', 'notifications', 'user-guide', 'quick-view'],
     supplier: ['profile', 'notifications', 'user-guide', 'quick-view']
 };
@@ -121,6 +120,7 @@ export default function Dashboard() {
     const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
     const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+    const [showOtpModal, setShowOtpModal] = useState(false);
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Mobile sidebar state
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -804,7 +804,6 @@ export default function Dashboard() {
         try {
             const result = await api.delete(`/purchase-orders/${poId}`);
             if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-            return result;
         } catch (err: any) {
             showSnackbar(err.message, 'error');
             throw err;
@@ -1098,7 +1097,7 @@ export default function Dashboard() {
 
             switch (page) {
                 case 'quick-view':
-                    return <QuickView user={currentUser} sales={sales} products={products} />;
+                    return <QuickView user={currentUser} products={products} />;
                 case 'setup-store':
                     return (
                         <StoreSetupPage
@@ -1143,6 +1142,8 @@ export default function Dashboard() {
                     return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
                 case 'reports':
                     return <ReportsPage storeSettings={storeSettings!} user={currentUser} />;
+                case 'logistics':
+                    return <LogisticsPage />;
                 case 'accounting':
                     return <AccountingPage
                         accounts={accounts}
@@ -1202,8 +1203,6 @@ export default function Dashboard() {
                     return <SuperAdminDashboard currentUser={currentUser} />;
                 }
 
-                case 'logistics':
-                    return <LogisticsPage />;
                 case 'inventory':
                     return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
                 case 'user-guide':
@@ -1212,7 +1211,7 @@ export default function Dashboard() {
                     if (parts[1] === 'settings') {
                         return <WhatsAppSettingsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
                     }
-                    return <WhatsAppConversationsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} currentUser={currentUser} superMode={superMode} />;
+                    return <WhatsAppConversationsPage showSnackbar={showSnackbar} currentUser={currentUser} superMode={superMode} />;
                 case 'support':
                     return <SupportPage />;
                 default:
@@ -1286,7 +1285,6 @@ export default function Dashboard() {
                             }}
                             showOnMobile={isSidebarOpen}
                             onMobileClose={() => setIsSidebarOpen(false)}
-                            storeSettings={storeSettings}
                             lastSync={lastSync}
                             isSyncing={isSyncing}
                             installPrompt={installPrompt}
@@ -1296,15 +1294,15 @@ export default function Dashboard() {
                     </div>
 
                     {/* Main content */}
-                    <div id="main-content" className="flex-1 flex flex-col overflow-y-auto dark:bg-slate-950">
+                    <div id="main-content" className="flex-1 flex flex-col overflow-y-auto bg-background">
                         {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                         {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
                         {location.pathname !== '/sales' && (
-                            <div className="md:hidden h-14 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-white/10 flex items-center px-4 justify-between transition-all duration-200">
+                            <div className="md:hidden h-14 bg-surface border-b border-brand-border flex items-center px-4 justify-between transition-all duration-200">
                                 <button
                                     onClick={() => setIsSidebarOpen(true)}
                                     id="mobile-menu-toggle"
-                                    className="p-2 -ml-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="p-2 -ml-2 rounded-md text-brand-text hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-primary"
                                     aria-label="Open menu"
                                     aria-controls="app-sidebar"
                                     aria-expanded={isSidebarOpen}
@@ -1321,10 +1319,57 @@ export default function Dashboard() {
                         )}
 
                         {renderPage(currentPage)}
+
+                        {/* Email Verification Banner */}
+                        {currentUser && !currentUser.isVerified && currentUser.role !== 'customer' && (
+                            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-2xl">
+                                <div className="bg-amber-50/90 dark:bg-amber-900/40 backdrop-blur-xl border border-amber-200/50 dark:border-amber-700/30 p-4 rounded-2xl shadow-[0_8px_32px_-4px_rgba(251,191,36,0.2)] flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                                    <div className="flex items-center gap-3">
+                                        <div className="p-2 bg-amber-100 dark:bg-amber-800/50 rounded-xl text-amber-600 dark:text-amber-400">
+                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-bold text-amber-900 dark:text-amber-100">Email Not Verified</p>
+                                            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Please verify your email to access all features and ensure account security.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await api.post('/auth/resend-verification', { email: currentUser.email });
+                                                    setShowOtpModal(true);
+                                                } catch (err: any) {
+                                                    showSnackbar(err.message || 'Failed to resend email.', 'error');
+                                                }
+                                            }}
+                                            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-600/20 transition-all active:scale-95 whitespace-nowrap"
+                                        >
+                                            Verify Email
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
                     <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
+                    <VerifyEmailOtpModal
+                        isOpen={showOtpModal}
+                        email={currentUser?.email || ''}
+                        onClose={() => setShowOtpModal(false)}
+                        onVerified={() => {
+                            // Update user state and localStorage so the banner disappears
+                            const updatedUser = { ...currentUser!, isVerified: true };
+                            setCurrentUser(updatedUser);
+                            try { localStorage.setItem('salePilotUser', JSON.stringify(updatedUser)); } catch { }
+                            setShowOtpModal(false);
+                            showSnackbar('Email verified successfully!', 'success');
+                        }}
+                    />
                     <TourGuide user={currentUser} />
 
 

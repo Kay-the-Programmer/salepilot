@@ -119,25 +119,25 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
     };
 
     return (
-        <div className="min-h-[100dvh] bg-slate-50 dark:bg-slate-950 font-google">
+        <div className="min-h-[100dvh] bg-background font-google">
             {/* Header */}
-            <header className={`sticky top-0 z-30 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.05)] dark:shadow-[0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 ${showMobileDetail ? 'block' : 'hidden md:block'}`}>
+            <header className={`sticky top-0 z-30 bg-background/80 backdrop-blur-xl shadow-[0_1px_0_rgba(0,0,0,0.05)] dark:shadow-[0_1px_0_rgba(255,255,255,0.05)] transition-all duration-300 ${showMobileDetail ? 'block' : 'hidden md:block'}`}>
                 <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
                     <div className="flex items-center gap-1 md:gap-4">
                         {/* Mobile Back Button (only shows when in detail view on small screens) */}
                         <button
                             onClick={() => setShowMobileDetail(false)}
-                            className="mr-2 -ml-2 px-1 py-2 text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-500/10 rounded-lg md:hidden flex items-center transition-colors active:scale-95"
+                            className="mr-2 -ml-2 px-1 py-2 text-primary hover:bg-primary/10 rounded-lg md:hidden flex items-center transition-colors active:scale-95"
                             aria-label="Back to Settings"
                         >
                             <ChevronLeftIcon className="w-6 h-6" />
                             <span className="text-[17px] font-medium tracking-tight ml-0.5">Settings</span>
                         </button>
 
-                        <div className="hidden md:flex p-2 bg-slate-200 dark:bg-slate-800 rounded-lg shadow-sm border border-slate-300/50 dark:border-white/10">
-                            <CogIcon className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                        <div className="hidden md:flex p-2 bg-surface rounded-lg shadow-sm border border-brand-border">
+                            <CogIcon className="w-5 h-5 text-brand-text" />
                         </div>
-                        <h1 className="text-[17px] md:text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">
+                        <h1 className="text-[17px] md:text-2xl font-semibold text-brand-text tracking-tight">
                             {/* On mobile detail view, show category title. On desktop, just show 'Settings' */}
                             <span className="md:hidden">{getCategoryTitle()}</span>
                             <span className="hidden md:inline">Settings</span>
@@ -145,9 +145,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                     </div>
                     <div className="flex items-center gap-3">
                         {editingSection && (
-                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-blue-50 dark:bg-blue-500/10 rounded-lg border border-blue-100 dark:border-blue-500/20">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                                <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
+                            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-info-muted rounded-lg border border-info-muted">
+                                <div className="w-2 h-2 bg-info rounded-full animate-pulse"></div>
+                                <span className="text-xs font-medium text-info">
                                     Editing {editingSection.replace(/^\w/, c => c.toUpperCase())}
                                 </span>
                             </div>
@@ -158,7 +158,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
 
             {/* Mobile Header for Master View (Shows Large Title) */}
             <div className={`md:hidden px-4 md:px-0 pt-8 pb-3 ${showMobileDetail ? 'hidden' : 'block'}`}>
-                <h1 className="text-[34px] font-bold text-slate-900 dark:text-white tracking-tight">
+                <h1 className="text-[34px] font-bold text-brand-text tracking-tight">
                     Settings
                 </h1>
             </div>
@@ -180,7 +180,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                         <div className="md:bg-transparent min-h-[600px]">
                             {/* Hide the category title if we are on mobile, because it's in the header */}
                             <div className="hidden md:block mb-8 px-4 md:px-0">
-                                <h2 className="text-[28px] font-bold text-slate-900 dark:text-white tracking-tight">{getCategoryTitle()}</h2>
+                                <h2 className="text-[28px] font-bold text-brand-text tracking-tight">{getCategoryTitle()}</h2>
                             </div>
 
                             {activeCategory === 'store' && (

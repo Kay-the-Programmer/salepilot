@@ -547,10 +547,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const selectedItem = activeTab === 'products' ? (selectedProductId || (isEditingProduct && editingProduct)) : selectedCategoryId;
 
     return (
-        <div className="h-[100dvh] w-full bg-slate-50/50 dark:bg-slate-950/50 flex flex-col overflow-hidden relative selection:bg-primary/30">
+        <div className="h-[100dvh] w-full bg-background flex flex-col overflow-hidden relative selection:bg-primary/30">
             {/* Background elements */}
-            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
+            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
+            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
 
             {/* Skip to content link for accessibility */}
             <a
@@ -576,7 +576,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             {activeTab === 'products' && (
                                 <button
                                     onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
+                                    className="p-2 rounded-full text-brand-text-muted hover:bg-surface-variant transition-all active:scale-90"
                                     aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
                                 >
                                     {viewMode === 'grid'
@@ -589,7 +589,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             {canManageProducts && activeTab === 'products' && (
                                 <button
                                     onClick={() => setIsScanModalOpen(true)}
-                                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all active:scale-90"
+                                    className="p-2 rounded-full text-brand-text-muted hover:bg-surface-variant transition-all active:scale-90"
                                     aria-label="Scan Barcode"
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -602,7 +602,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             {canManageProducts && (
                                 <button
                                     onClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
-                                    className="w-9 h-9 flex items-center justify-center bg-slate-900 dark:bg-white rounded-full text-white dark:text-slate-900 shadow-md hover:opacity-90 transition-all active:scale-90"
+                                    className="w-9 h-9 flex items-center justify-center bg-brand-text rounded-full text-surface shadow-md hover:opacity-90 transition-all active:scale-90"
                                     aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
                                 >
                                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -676,7 +676,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     onPageChange={setPage}
                                     onPageSizeChange={setPageSize}
                                     label="products"
-                                    className="border-t border-slate-200/50 dark:border-white/5 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4 px-4"
+                                    className="border-t border-brand-border bg-surface/50 backdrop-blur-xl sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4 px-4"
                                     compact={true}
                                 />
                             </div>
@@ -710,7 +710,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
                 {/* Right Panel: Detail View */}
                 <div
-                    className={`flex-1 flex flex-col bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl md:border-l md:border-slate-200/50 dark:md:border-white/5 md:shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-none h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-white/30 dark:md:bg-white/5 md:border-transparent md:shadow-none' : 'flex w-full'}`}
+                    className={`flex-1 flex flex-col bg-surface/80 backdrop-blur-3xl md:border-l md:border-brand-border md:shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-none h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-surface/30 md:border-transparent md:shadow-none' : 'flex w-full'}`}
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
                 >
                     {selectedItem ? (

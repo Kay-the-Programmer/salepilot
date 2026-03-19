@@ -60,6 +60,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [discount, setDiscount] = useState<string>('0');
+    const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
     const [heldSales, setHeldSales] = useState<CartItem[][]>([]);
     const [showReceiptModal, setShowReceiptModal] = useState(false);
     const [lastSale, setLastSale] = useState<Sale | null>(null);
@@ -247,6 +248,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         if (cart.length === 0) return;
         setCart([]);
         setDiscount('0');
+        setDiscountType('amount');
         setSelectedCustomer(null);
         setAppliedStoreCredit(0);
         setCashReceived('');
@@ -337,14 +339,17 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit } = useMemo(() => {
         const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        const discountAmount = parseFloat(discount) || 0;
+        const discountValue = parseFloat(discount) || 0;
+        const discountAmount = discountType === 'percentage'
+            ? subtotal * (discountValue / 100)
+            : discountValue;
         const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
         const taxAmount = subtotalAfterDiscount * taxRate;
         const totalBeforeCredit = subtotalAfterDiscount + taxAmount;
         const finalAppliedCredit = Math.min(appliedStoreCredit, totalBeforeCredit);
         const total = totalBeforeCredit - finalAppliedCredit;
         return { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit };
-    }, [cart, discount, appliedStoreCredit, taxRate]);
+    }, [cart, discount, discountType, appliedStoreCredit, taxRate]);
 
     const isCashMethod = useMemo(() =>
         (selectedPaymentMethod || '').toLowerCase().includes('cash'),
@@ -554,10 +559,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
     };
 
     return (
-        <div className="h-[100dvh] w-full bg-slate-50/50 dark:bg-slate-950/50 relative selection:bg-primary/30 flex flex-col md:flex-row overflow-hidden">
+        <div className="h-[100dvh] w-full bg-background relative selection:bg-primary/30 flex flex-col md:flex-row overflow-hidden font-google">
             {/* Background elements */}
-            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 dark:bg-primary/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-secondary/5 dark:bg-secondary/10 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
+            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
+            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
 
             <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 relative z-10">
                 <Header
@@ -567,6 +572,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     setSearchTerm={setSearchTerm}
                     hideSearchOnMobile={false}
                     showSearch={true}
+                    hideSearchOnDesktop={true}
                     className="z-[60]"
                     rightContent={
                         <SalesHeaderActions
@@ -647,11 +653,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
                                         {filteredProducts.length === 0 && (
                                             <div className="flex flex-col items-center justify-center py-16 text-center" role="status">
-                                                <div className="w-16 h-16 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4 shadow-sm">
-                                                    <MagnifyingGlassIcon className="w-7 h-7 text-slate-300 dark:text-slate-600" />
+                                                <div className="w-16 h-16 rounded-3xl bg-surface border border-brand-border flex items-center justify-center mb-4 shadow-sm">
+                                                    <MagnifyingGlassIcon className="w-7 h-7 text-brand-text-muted" />
                                                 </div>
-                                                <p className="text-slate-700 dark:text-slate-300 font-semibold">No products found</p>
-                                                <p className="text-sm text-slate-400 dark:text-slate-500 mt-1 max-w-xs">
+                                                <p className="text-brand-text font-semibold">No products found</p>
+                                                <p className="text-sm text-brand-text-muted mt-1 max-w-xs">
                                                     {searchTerm ? `No results for "${searchTerm}" — try a different search` : 'No active products yet'}
                                                 </p>
                                             </div>
@@ -675,16 +681,16 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
             {/* Right Column - Cart & Checkout */}
             <aside
-                className="w-full md:w-[380px] xl:w-[420px] flex-none hidden md:flex flex-col h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-l border-slate-200/50 dark:border-white/5 shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-[-20px_0_40px_rgb(0,0,0,0.2)] z-20"
+                className="w-full md:w-[380px] xl:w-[420px] flex-none hidden md:flex flex-col h-full bg-surface/80 backdrop-blur-3xl border-l border-brand-border shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-[-20px_0_40px_rgb(0,0,0,0.2)] z-20"
                 aria-label="Shopping cart"
             >
                 {/* Cart Header */}
-                <div className="flex-none px-6 py-5 border-b border-slate-200/50 dark:border-white/5 bg-transparent relative">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+                <div className="flex-none px-6 py-5 border-b border-brand-border bg-transparent relative">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
                     <div className="flex items-center justify-between relative z-10">
                         <div>
-                            <h2 className="text-[17px] font-bold tracking-tight text-slate-900 dark:text-white leading-none">Order</h2>
-                            <p className="text-[13px] font-medium text-slate-500 dark:text-slate-400 mt-1.5 tabular-nums">
+                            <h2 className="text-[17px] font-bold tracking-tight text-brand-text leading-none">Order</h2>
+                            <p className="text-[13px] font-medium text-brand-text-muted mt-1.5 tabular-nums">
                                 {cart.length > 0
                                     ? <span className="flex items-center gap-2">
                                         <span className="bg-primary/10 dark:bg-primary/20 text-primary-dark dark:text-primary px-2 py-0.5 rounded-full text-[11px] font-bold">{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
@@ -697,7 +703,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         {cart.length > 0 && (
                             <button
                                 onClick={clearCart}
-                                className="text-xs font-semibold text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors active:scale-95"
+                                className="text-xs font-semibold text-danger hover:text-danger/80 transition-colors active:scale-95"
                                 aria-label="Clear all items from cart"
                             >
                                 Clear all
@@ -724,6 +730,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     taxAmount={taxAmount}
                     discount={discount}
                     setDiscount={setDiscount}
+                    discountType={discountType}
+                    setDiscountType={setDiscountType}
                     selectedCustomer={selectedCustomer}
                     setSelectedCustomer={setSelectedCustomer}
                     onApplyStoreCredit={handleApplyStoreCredit}
@@ -776,6 +784,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 setSelectedCustomer={setSelectedCustomer}
                 discount={discount}
                 setDiscount={setDiscount}
+                discountType={discountType}
+                setDiscountType={setDiscountType}
                 subtotal={subtotal}
                 taxAmount={taxAmount}
                 total={total}

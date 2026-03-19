@@ -14,7 +14,7 @@
  */
 import { User } from '../types';
 import { api } from './api';
-import { sendResetEmail, firebaseSignOut } from './firebase/auth';
+import { firebaseSignOut } from './firebase/auth';
 
 const CURRENT_USER_KEY = 'salePilotUser';
 
@@ -130,11 +130,12 @@ export const getCurrentUser = (): User | null => {
 };
 
 /**
- * Sends a Firebase-powered password-reset email.
- * Uses Firebase directly — no backend call needed.
+ * Sends a password-reset email via the backend.
+ * This ensures the reset link is sent to users regardless of whether they
+ * were created via Firebase or the custom backend flow.
  */
 export const forgotPassword = async (email: string): Promise<void> => {
-    await sendResetEmail(email);
+    await api.post('/auth/forgot-password', { email });
 };
 
 export const verifyRegistration = async (email: string, emailOtp: string): Promise<void> => {

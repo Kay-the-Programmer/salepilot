@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Product, Category, CustomAttribute, Supplier, StoreSettings } from '../../types';
+import React, { useState, useEffect, useRef } from 'react';
+import { Product, Category, Supplier, StoreSettings } from '../../types';
 import { api, buildAssetUrl } from '../../services/api';
 import SparklesIcon from '../icons/SparklesIcon';
 import XMarkIcon from '../icons/XMarkIcon';
@@ -184,7 +184,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                     <button
                                         type="button"
                                         onClick={onAddCategory}
-                                        className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
+                                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
                                     >
                                         +
                                     </button>
@@ -220,7 +220,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 <button
                                     type="button"
                                     onClick={() => setIsSupplierModalOpen(true)}
-                                    className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
+                                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
                                 >
                                     +
                                 </button>
@@ -542,11 +542,11 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                             <ArrowLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
                         </button>
                         <div>
-                            <h1 className="text-lg sm:text-xl font-semibold text-slate-900 dark:text-slate-100">
+                            <h1 className="text-[17px] md:text-2xl font-semibold text-brand-text tracking-tight">
                                 {productToEdit.id ? 'Edit Product' : 'Add New Product'}
                             </h1>
                             {productToEdit.id && (
-                                <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block truncate max-w-xs">
+                                <p className="text-[11px] font-medium text-brand-text-muted hidden sm:block truncate max-w-xs mt-0.5">
                                     {productToEdit.name}
                                 </p>
                             )}
@@ -556,14 +556,14 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                         <button
                             onClick={onCancel}
                             disabled={isSaving}
-                            className="px-5 py-2 liquid-glass-pill rounded-full border text-sm font-bold tracking-wide text-slate-700 dark:text-slate-300 transition-all duration-200 active:scale-95 hidden sm:block"
+                            className="px-5 py-2 liquid-glass-pill rounded-xl border text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-300 transition-all duration-200 active:scale-95 hidden sm:block"
                         >
                             Cancel
                         </button>
                         <button
                             onClick={handleSubmit}
                             disabled={isSaving}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-full text-sm font-bold tracking-wide hover:bg-blue-700 transition-all duration-300 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
+                            className="px-6 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold tracking-wide hover:bg-blue-700 transition-all duration-300 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
                         >
                             {isSaving ? 'Saving...' : (productToEdit.id ? 'Save Changes' : 'Create Product')}
                         </button>
@@ -578,7 +578,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 key={section.id}
                                 type="button"
                                 onClick={() => setActiveSection(section.id)}
-                                className={`px-6 py-2 text-sm font-bold tracking-wide whitespace-nowrap transition-all duration-300 rounded-full active:scale-95 ${activeSection === section.id
+                                className={`px-6 py-2 text-sm font-semibold tracking-wide whitespace-nowrap transition-all duration-300 rounded-xl active:scale-95 ${activeSection === section.id
                                     ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
                                     : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
                                     }`}

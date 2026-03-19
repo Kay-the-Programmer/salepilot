@@ -7,12 +7,18 @@ import { ChatBubbleLeftRightIcon } from '../../components/icons';
 interface SupportContactConfig {
     phone: string;
     message: string;
+    phone_number_id: string;
+    webhook_verify_token: string;
+    access_token: string;
 }
 
 const SuperAdminSettings: React.FC = () => {
     const [config, setConfig] = useState<SupportContactConfig>({
         phone: '',
-        message: ''
+        message: '',
+        phone_number_id: '',
+        webhook_verify_token: `sb_${Math.random().toString(36).substr(2, 9)}`,
+        access_token: ''
     });
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -27,7 +33,13 @@ const SuperAdminSettings: React.FC = () => {
         try {
             const result = await api.get<SupportContactConfig>('/whatsapp/support-contact');
             if (result) {
-                setConfig(result);
+                setConfig({
+                    phone: result.phone || '',
+                    message: result.message || '',
+                    phone_number_id: result.phone_number_id && result.phone_number_id !== 'system_placeholder' ? result.phone_number_id : '',
+                    webhook_verify_token: result.webhook_verify_token && result.webhook_verify_token !== 'system' ? result.webhook_verify_token : `sb_${Math.random().toString(36).substr(2, 9)}`,
+                    access_token: result.access_token && result.access_token !== 'system' ? result.access_token : ''
+                });
             }
         } catch (error) {
             console.warn('Failed to load support contact config', error);
@@ -116,6 +128,59 @@ const SuperAdminSettings: React.FC = () => {
                             <p className="text-xs text-gray-500 dark:text-slate-500 mt-1">
                                 The pre-filled message that appears when they open WhatsApp.
                             </p>
+                        </div>
+
+                        <div className="pt-4 border-t border-gray-100 dark:border-white/5 space-y-6">
+                            <h3 className="text-md font-medium text-gray-900 dark:text-white">Meta API Credentials</h3>
+
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                        Phone Number ID
+                                    </label>
+                                    <input
+                                        type="text"
+                                        placeholder="From Meta Developer Portal"
+                                        className="w-full rounded-lg border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
+                                        value={config.phone_number_id}
+                                        onChange={(e) => setConfig({ ...config, phone_number_id: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-1">
+                                        Access Token
+                                    </label>
+                                    <input
+                                        type="password"
+                                        placeholder="EAAG..."
+                                        className="w-full rounded-lg border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
+                                        value={config.access_token}
+                                        onChange={(e) => setConfig({ ...config, access_token: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-indigo-50 dark:bg-indigo-500/10 p-4 rounded-lg text-sm text-indigo-800 dark:text-indigo-200">
+                                <p>Configure these settings in your Meta App Dashboard:</p>
+                                <div className="mt-2 grid gap-2">
+                                    <div className="flex justify-between">
+                                        <span className="font-semibold">Callback URL:</span>
+                                        <code className="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-500/30 select-all">https://api.salepilot.com/api/whatsapp/webhook</code>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="font-semibold">Verify Token:</span>
+                                        <div className="flex items-center gap-2">
+                                            <code className="bg-white dark:bg-slate-800 px-2 py-0.5 rounded border border-indigo-200 dark:border-indigo-500/30 select-all">{config.webhook_verify_token}</code>
+                                            <button
+                                                onClick={() => setConfig(prev => ({ ...prev, webhook_verify_token: `sb_${Math.random().toString(36).substr(2, 9)}` }))}
+                                                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                                            >
+                                                Regenerate
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="pt-4 flex justify-end">

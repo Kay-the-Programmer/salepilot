@@ -52,11 +52,11 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                             <TagIcon className="w-6 h-6 text-white" />
                         </div>
                         <div className="min-w-0">
-                            <h1 className="text-[20px] md:text-[22px] font-black text-slate-900 dark:text-white truncate tracking-tighter leading-none mb-1">
+                            <h1 className="text-[17px] md:text-2xl font-semibold text-brand-text tracking-tight truncate leading-none mb-1.5">
                                 {category.name}
                             </h1>
-                            <div className="flex items-center gap-2 uppercase font-black tracking-[0.2em] text-[10px] text-slate-400 dark:text-slate-500">
-                                <span className="text-blue-600 dark:text-blue-400">Class</span>
+                            <div className="flex items-center gap-2 font-medium tracking-wide text-[11px] text-brand-text-muted">
+                                <span className="text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider">Class</span>
                                 <span>Management Detail</span>
                             </div>
                         </div>
@@ -67,14 +67,14 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                         <div className="hidden md:flex items-center gap-3">
                             <button
                                 onClick={() => onEdit(category)}
-                                className="px-6 py-2.5 bg-slate-900 dark:bg-white rounded-full shadow-lg shadow-black/5 dark:shadow-white/5 text-[13px] font-black tracking-wide flex items-center gap-2 text-white dark:text-slate-900 transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-95"
+                                className="px-6 py-2.5 bg-slate-900 dark:bg-white rounded-xl shadow-lg shadow-black/5 dark:shadow-white/5 text-[13px] font-semibold tracking-wide flex items-center gap-2 text-white dark:text-slate-900 transition-all duration-300 hover:opacity-90 hover:scale-[1.02] active:scale-95"
                             >
                                 <PencilIcon className="w-4 h-4" />
                                 Edit
                             </button>
                             <button
                                 onClick={() => onDelete(category)}
-                                className="p-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-full border border-red-200/50 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300 active:scale-90"
+                                className="p-2.5 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-xl border border-red-200/50 dark:border-red-500/20 hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300 active:scale-90"
                                 aria-label="Delete"
                             >
                                 <TrashIcon className="w-5 h-5" />
@@ -97,20 +97,20 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                             <div className="absolute -right-4 -top-4 p-3 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
                                 <TagIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Total Attributes</p>
+                            <p className="text-[10px] font-semibold text-brand-text-muted uppercase tracking-wider mb-4">Total Attributes</p>
                             <div className="flex items-baseline gap-2">
-                                <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">{category.attributes.length}</p>
-                                <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Defined</span>
+                                <p className="text-[36px] font-semibold tracking-tight text-brand-text leading-none">{category.attributes.length}</p>
+                                <span className="text-[12px] font-medium text-brand-text-muted">Defined</span>
                             </div>
                         </div>
                         <div className="p-6 md:p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500 relative overflow-hidden group">
                             <div className="absolute -right-4 -top-4 p-3 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
                                 <FolderIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
                             </div>
-                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-4">Nested Children</p>
+                            <p className="text-[10px] font-semibold text-brand-text-muted uppercase tracking-wider mb-4">Nested Children</p>
                             <div className="flex items-baseline gap-2">
-                                <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">{subcategories.length}</p>
-                                <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Sub-categories</span>
+                                <p className="text-[36px] font-semibold tracking-tight text-brand-text leading-none">{subcategories.length}</p>
+                                <span className="text-[12px] font-medium text-brand-text-muted">Sub-categories</span>
                             </div>
                         </div>
                     </div>
@@ -122,7 +122,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                                 <div className="p-2.5 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl">
                                     <TagIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                                <h3 className="text-sm font-semibold text-brand-text">
                                     Custom Attributes
                                 </h3>
                             </div>
@@ -151,7 +151,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                                 <div className="p-2.5 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl">
                                     <FolderIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                                 </div>
-                                <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                                <h3 className="text-sm font-semibold text-brand-text">
                                     Sub-categories
                                 </h3>
                             </div>
@@ -185,17 +185,17 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
             {/* Mobile Sticky Action Bar */}
             {canManage && (
                 <div className="md:hidden absolute bottom-6 left-6 right-6 z-30">
-                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-full p-2.5 border border-white/20 dark:border-white/10 shadow-2xl flex items-center gap-3">
+                    <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-2xl p-2.5 border border-white/20 dark:border-white/10 shadow-2xl flex items-center gap-3">
                         <button
                             onClick={() => onEdit(category)}
-                            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-full font-black tracking-widest uppercase text-[13px] active:scale-95 transition-all duration-300"
+                            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-semibold tracking-wide text-[13px] active:scale-95 transition-all duration-300"
                         >
                             <PencilIcon className="w-5 h-5" />
                             Edit Class
                         </button>
                         <button
                             onClick={() => onDelete(category)}
-                            className="flex-none p-4 bg-red-500 text-white rounded-full active:scale-95 transition-all duration-300 shadow-lg shadow-red-500/20"
+                            className="flex-none p-4 bg-red-500 text-white rounded-xl active:scale-95 transition-all duration-300 shadow-lg shadow-red-500/20"
                             aria-label="Delete Category"
                         >
                             <TrashIcon className="w-6 h-6" />

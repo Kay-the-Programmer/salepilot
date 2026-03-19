@@ -13,7 +13,7 @@ export const InventoryTab: React.FC<InventoryTabProps> = ({ reportData, storeSet
     const inventory = reportData.inventory;
 
     return (
-        <div className="space-y-6 animate-fade-in pb-10">
+        <div className="space-y-6 animate-fade-in pb-10 font-google">
             <InventoryStatsRow inventory={inventory} storeSettings={storeSettings} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

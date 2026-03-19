@@ -1,6 +1,5 @@
 import React, { useRef, useEffect } from 'react';
 import {
-    MagnifyingGlassIcon,
     ClockIcon,
     QuestionMarkCircleIcon
 } from '../icons';
@@ -49,7 +48,6 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
         <div className="flex items-center gap-1.5 sm:gap-2">
             {/* Persistent Search Bar - Desktop Only */}
             <div className="relative hidden md:block w-48 lg:w-64 xl:w-80 transition-all duration-300">
-                <MagnifyingGlassIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                 <input
                     ref={searchInputRef}
                     id="pos-search"
@@ -57,7 +55,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     placeholder="Search products…"
-                    className="w-full pl-10 pr-9 py-2.5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/40 dark:border-white/10 focus:border-blue-500/50 dark:focus:border-blue-400/50 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-blue-500/5 dark:focus:ring-blue-500/5 transition-all"
+                    className="w-full pl-4 pr-9 py-2.5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/40 dark:border-white/10 focus:border-blue-500/50 dark:focus:border-blue-400/50 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-blue-500/5 dark:focus:ring-blue-500/5 transition-all"
                 />
                 {searchTerm ? (
                     <button

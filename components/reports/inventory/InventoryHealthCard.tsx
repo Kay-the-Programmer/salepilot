@@ -15,7 +15,7 @@ export const InventoryHealthCard: React.FC<InventoryHealthCardProps> = ({
             <div className="p-5 bg-blue-50 dark:bg-blue-500/10 rounded-2xl mb-6">
                 <ArchiveBoxIcon className="w-12 h-12 text-blue-500 dark:text-blue-400" />
             </div>
-            <h3 className="font-extrabold text-slate-900 dark:text-white text-xl mb-3">Inventory Health</h3>
+            <h3 className="font-semibold text-brand-text text-xl mb-3">Inventory Health</h3>
             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                 Your inventory has a potential profit margin of <br />
                 <span className="font-black text-2xl text-green-600 dark:text-green-400 mt-2 block tracking-tight">

@@ -260,7 +260,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
     };
 
     return (
-        <div className="flex flex-col min-h-[100dvh] bg-slate-50/50 dark:bg-slate-950/50 relative selection:bg-primary/30">
+        <div className="flex flex-col min-h-[100dvh] bg-background relative selection:bg-primary/30 font-google">
             <SalesHeader
                 selectedStatus={selectedStatus}
                 setSelectedStatus={setSelectedStatus}
@@ -307,12 +307,12 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
 
                     {/* Loading State */}
                     {isLoading && (
-                        <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[32px] p-12 border border-slate-200/50 dark:border-white/5 mt-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] mx-4 md:mx-6 flex flex-col items-center justify-center space-y-6 animate-pulse">
+                        <div className="bg-surface/60 backdrop-blur-3xl rounded-[32px] p-12 border border-brand-border mt-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] mx-4 md:mx-6 flex flex-col items-center justify-center space-y-6 animate-pulse">
                             <div className="relative flex items-center justify-center">
-                                <div className="absolute inset-0 bg-primary/20 dark:bg-primary/10 rounded-full blur-xl"></div>
-                                <div className="w-14 h-14 border-4 border-slate-100 dark:border-slate-800 border-t-primary-dark dark:border-t-primary rounded-full animate-spin relative z-10 shadow-sm"></div>
+                                <div className="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
+                                <div className="w-14 h-14 border-4 border-surface-variant border-t-primary rounded-full animate-spin relative z-10 shadow-sm"></div>
                             </div>
-                            <div className="text-[15px] font-bold text-slate-600 dark:text-slate-400 tracking-wide">Fetching recent transactions...</div>
+                            <div className="text-[15px] font-bold text-brand-text-muted tracking-wide">Fetching recent transactions...</div>
                         </div>
                     )}
 
@@ -325,11 +325,11 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                     <XMarkIcon className="w-6 h-6" />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-[17px] font-bold text-slate-900 dark:text-white mb-1.5 tracking-tight">Unable to Load Sales Data</h3>
-                                    <p className="text-[14px] font-medium text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">{error}</p>
+                                    <h3 className="text-[17px] font-bold text-brand-text mb-1.5 tracking-tight">Unable to Load Sales Data</h3>
+                                    <p className="text-[14px] font-medium text-brand-text-muted mb-5 leading-relaxed">{error}</p>
                                     <button
                                         onClick={() => window.location.reload()}
-                                        className="px-6 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[16px] text-[14px] font-bold tracking-wide shadow-md hover:bg-slate-800 dark:hover:bg-slate-100 active:scale-95 transition-all duration-300"
+                                        className="px-6 py-3 bg-brand-text text-surface rounded-[16px] text-[14px] font-bold tracking-wide shadow-md hover:opacity-90 active:scale-95 transition-all duration-300"
                                     >
                                         Try Again
                                     </button>
@@ -352,7 +352,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                             {/* Split View Container */}
                             <div className="flex-1 flex min-h-0 m-0">
                                 {/* Left Column: Sales List */}
-                                <div className={`flex-1 flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:flex'}`}>
+                                <div className={`flex-1 flex flex-col bg-background overflow-hidden ${mobileView === 'history' ? 'block' : 'hidden md:flex'}`}>
 
                                     <div className="flex-1 overflow-y-auto custom-scrollbar min-h-0 px-4 md:px-6 pb-6">
                                         {salesData.length === 0 ? (
@@ -393,7 +393,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                     </div>
 
                                     {/* Pagination Controls (Fixed Bottom) */}
-                                    <div className="p-4 md:px-6 flex-none bg-slate-50 dark:bg-slate-950 border-t border-transparent z-10">
+                                    <div className="p-4 md:px-6 flex-none bg-background border-t border-transparent z-10">
                                         <Pagination
                                             total={total}
                                             page={page}

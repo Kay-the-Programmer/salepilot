@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StoreSettings } from '../../../types';
 import { BuildingStorefrontIcon, EnvelopeIcon, GlobeAltIcon, MapPinIcon, PhoneIcon } from '../../icons';
-import LocationPicker from '../../LocationPicker';
+import LocationPickerModal from '../../ui/LocationPickerModal';
 import SettingsCard from '../SettingsCard';
 import DetailItem from '../DetailItem';
 
@@ -28,8 +28,8 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
 }) => {
     const [isMapOpen, setIsMapOpen] = useState(false);
 
-    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-slate-900 dark:text-slate-100 shadow-sm ring-1 ring-inset ring-slate-300 dark:ring-slate-700 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 dark:focus:ring-blue-500 focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-white dark:bg-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 focus:bg-white dark:focus:bg-slate-800";
-    const labelClasses = "block text-sm font-semibold leading-6 text-slate-700 dark:text-slate-300 mb-2";
+    const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-brand-text shadow-sm ring-1 ring-inset ring-brand-border placeholder:text-brand-text-muted focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-surface hover:bg-surface-variant focus:bg-surface";
+    const labelClasses = "block text-sm font-semibold leading-6 text-brand-text-muted mb-2";
 
     const renderInput = (label: string, name: keyof StoreSettings, type = 'text', props: any = {}) => (
         <div className="space-y-2">
@@ -70,7 +70,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                         {renderInput("Contact Email", "email", "email", {
                             placeholder: "contact@example.com",
                             readOnly: true,
-                            className: `${inputFieldClasses} bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-500 cursor-not-allowed`
+                            className: `${inputFieldClasses} bg-surface-variant text-brand-text-muted cursor-not-allowed`
                         })}
                         {renderInput("Website", "website", "url", {
                             placeholder: "https://example.com"
@@ -95,7 +95,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                             <button
                                 type="button"
                                 onClick={() => setIsMapOpen(true)}
-                                className="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium flex items-center gap-1"
+                                className="mt-2 text-sm text-primary hover:opacity-80 font-medium flex items-center gap-1"
                             >
                                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
@@ -105,9 +105,10 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                             </button>
 
                             {isMapOpen && (
-                                <LocationPicker
+                                <LocationPickerModal
+                                    isOpen={isMapOpen}
                                     onClose={() => setIsMapOpen(false)}
-                                    onLocationSelect={(loc) => {
+                                    onSelect={(loc) => {
                                         if (loc.address) {
                                             setCurrentSettings(prev => ({
                                                 ...prev,
@@ -116,6 +117,7 @@ const StoreDetailsSection: React.FC<StoreDetailsSectionProps> = ({
                                         }
                                         setIsMapOpen(false);
                                     }}
+                                    initialAddress={currentSettings.address}
                                 />
                             )}
                         </div>

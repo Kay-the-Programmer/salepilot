@@ -48,8 +48,8 @@ export default function SalesHeader({
             <div className="hidden bg-white/70 dark:bg-slate-950/70 backdrop-blur-3xl md:flex items-center justify-between px-8 py-5 sticky top-0 z-30 border-b border-slate-200/50 dark:border-white/5 transition-all duration-300 shadow-[0_4px_20px_rgb(0,0,0,0.02)]">
                 <div className="flex justify-between items-center w-full max-w-[1400px] mx-auto">
                     <div>
-                        <h1 className="text-[32px] font-extrabold text-slate-900 dark:text-white leading-tight tracking-tight">Recent Sales</h1>
-                        <p className="text-[12px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mt-1">
+                        <h1 className="text-[28px] font-bold text-brand-text leading-tight tracking-tight">Recent Sales</h1>
+                        <p className="text-[12px] text-brand-text-muted font-medium tracking-wide mt-1">
                             {total} sale{total !== 1 ? 's' : ''} found
                         </p>
                     </div>
@@ -122,10 +122,10 @@ export default function SalesHeader({
             <div className="sticky top-0 z-30 bg-white/80 dark:bg-slate-950/80 backdrop-blur-3xl px-5 py-4 md:hidden border-b border-slate-200/50 dark:border-white/5 transition-all duration-300">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-bold tracking-widest uppercase mb-1">
+                        <p className="text-[11px] text-brand-text-muted font-medium tracking-wider mt-1">
                             {total} sale{total !== 1 ? 's' : ''} found
                         </p>
-                        <h1 className="text-[28px] font-extrabold text-slate-900 dark:text-white leading-none tracking-tight">
+                        <h1 className="text-[28px] font-bold text-brand-text leading-none tracking-tight">
                             {mobileView === 'summary' ? 'Summary' : 'Recent Sales'}
                         </h1>
                     </div>

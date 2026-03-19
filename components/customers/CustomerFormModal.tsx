@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Customer } from '../../types';
 import { XMarkIcon, UserIcon, EnvelopeIcon, PhoneIcon, MapPinIcon, ChatBubbleLeftRightIcon, CreditCardIcon } from '../icons';
 import { InputField } from '../ui/InputField';
+import LocationPickerModal from '../ui/LocationPickerModal';
 
 interface CustomerFormModalProps {
     isOpen: boolean;
@@ -28,6 +29,7 @@ const getInitialState = (): Omit<Customer, 'id' | 'createdAt'> => ({
 const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, onSave, customerToEdit }) => {
     const [customer, setCustomer] = useState(getInitialState());
     const [error, setError] = useState('');
+    const [isMapOpen, setIsMapOpen] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -176,7 +178,17 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                         />
                     </div>
 
-                    <SectionHeader icon={MapPinIcon} title="Location Details" />
+                    <div className="flex items-center justify-between mb-2">
+                        <SectionHeader icon={MapPinIcon} title="Location Details" />
+                        <button
+                            type="button"
+                            onClick={() => setIsMapOpen(true)}
+                            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 underline flex items-center gap-1 transition-all active:scale-95"
+                        >
+                            <MapPinIcon className="w-3.5 h-3.5" />
+                            Pick from Map
+                        </button>
+                    </div>
                     <div className="space-y-6">
                         <InputField
                             label="Street Address"
@@ -210,6 +222,26 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                             />
                         </div>
                     </div>
+
+                    {isMapOpen && (
+                        <LocationPickerModal
+                            isOpen={isMapOpen}
+                            onClose={() => setIsMapOpen(false)}
+                            onSelect={(loc) => {
+                                setCustomer(prev => ({
+                                    ...prev,
+                                    address: {
+                                        street: loc.details?.street || loc.address.split(',')[0] || '',
+                                        city: loc.details?.city || '',
+                                        state: loc.details?.state || '',
+                                        zip: loc.details?.zip || '',
+                                    }
+                                }));
+                                setIsMapOpen(false);
+                            }}
+                            title="Set Customer Location"
+                        />
+                    )}
 
                     <SectionHeader icon={ChatBubbleLeftRightIcon} title="Intelligence & Notes" />
                     <InputField

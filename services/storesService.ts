@@ -35,3 +35,13 @@ export async function checkStoreNameAvailability(name: string): Promise<boolean>
   const resp = await api.get<{ exists: boolean }>(`/stores/check-name?name=${encodeURIComponent(name.trim())}`, { skipQueue: true });
   return !(resp as any)?.exists;
 }
+
+/**
+ * Verifies a store with the OTP sent to email.
+ */
+export async function verifyStoreOTP(storeId: string, otp: string): Promise<void> {
+  if (!storeId || !otp || otp.trim().length !== 6) {
+    throw new Error('Please provide a valid 6-digit verification code.');
+  }
+  await api.post('/stores/verify', { storeId, otp: otp.trim() }, { skipQueue: true });
+}

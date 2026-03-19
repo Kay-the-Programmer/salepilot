@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Supplier } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
-import CheckIcon from '../icons/CheckIcon';
 import BuildingOfficeIcon from '../icons/BuildingOfficeIcon';
 import UserCircleIcon from '../icons/UserCircleIcon';
 import EnvelopeIcon from '../icons/EnvelopeIcon';
 import PhoneIcon from '../icons/PhoneIcon';
 import MapPinIcon from '../icons/MapPinIcon';
-import BanknotesIcon from '../icons/BanknotesIcon';
 import BankIcon from '../icons/BankIcon';
 import DocumentTextIcon from '../icons/DocumentTextIcon';
 import { InputField } from '../ui/InputField';
-import { Button } from '../ui/Button';
+import LocationPickerModal from '../ui/LocationPickerModal';
 
 interface SupplierFormModalProps {
     isOpen: boolean;
@@ -67,6 +65,7 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
     const [supplier, setSupplier] = useState(getInitialState());
     const [error, setError] = useState('');
     const [activeSection, setActiveSection] = useState<SupplierFormSection>('basic');
+    const [isMapOpen, setIsMapOpen] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
@@ -183,9 +182,19 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
             case 'details':
                 return (
                     <div className="space-y-4 animate-slide-in">
-                        <div className="flex items-center mb-4">
-                            <MapPinIcon className="w-5 h-5 text-gray-600 dark:text-slate-400 mr-2" />
-                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Address & Terms</h3>
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center">
+                                <MapPinIcon className="w-5 h-5 text-gray-600 dark:text-slate-400 mr-2" />
+                                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Address & Terms</h3>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsMapOpen(true)}
+                                className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 underline flex items-center gap-1 transition-all active:scale-95"
+                            >
+                                <MapPinIcon className="w-3.5 h-3.5" />
+                                Pick from Map
+                            </button>
                         </div>
 
                         <InputField
@@ -205,6 +214,22 @@ export default function SupplierFormModal({ isOpen, onClose, onSave, supplierToE
                             onChange={handleChange}
                             placeholder="e.g., Net 30, COD, 2/10 Net 30"
                         />
+
+                        {isMapOpen && (
+                            <LocationPickerModal
+                                isOpen={isMapOpen}
+                                onClose={() => setIsMapOpen(false)}
+                                onSelect={(loc) => {
+                                    setSupplier(prev => ({
+                                        ...prev,
+                                        address: loc.address
+                                    }));
+                                    setIsMapOpen(false);
+                                }}
+                                title="Set Supplier Location"
+                                initialAddress={supplier.address}
+                            />
+                        )}
                     </div>
                 );
 

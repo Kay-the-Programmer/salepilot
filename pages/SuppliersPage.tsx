@@ -95,17 +95,17 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
 
     if (selectedSupplier) {
         return (
-            <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-950 font-google">
-                <header className="flex-none sticky top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300">
+            <div className="flex flex-col h-full bg-background font-google">
+                <header className="flex-none sticky top-0 z-40 bg-background/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300">
                     <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-4 md:py-6 flex items-center h-16 sm:h-auto">
                         <button
                             onClick={handleBackToList}
-                            className="mr-4 p-2.5 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-800/80 text-slate-600 dark:text-slate-400 transition-colors active:scale-95 duration-300 backdrop-blur-md"
+                            className="mr-4 p-2.5 rounded-full bg-surface-variant text-brand-text-muted transition-colors active:scale-95 duration-300 backdrop-blur-md border border-brand-border"
                             aria-label="Back to supplier list"
                         >
                             <ArrowLeftIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                         </button>
-                        <h1 className="text-[22px] sm:text-[34px] font-bold sm:font-semibold text-slate-900 dark:text-white leading-tight truncate tracking-tight">
+                        <h1 className="text-[22px] sm:text-[34px] font-bold sm:font-semibold text-brand-text leading-tight truncate tracking-tight">
                             {selectedSupplier.name}
                         </h1>
                     </div>
@@ -131,7 +131,7 @@ const SuppliersPage: React.FC<SuppliersPageProps> = ({
     }
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-slate-50 dark:bg-slate-950 font-google overflow-hidden relative">
+        <div className="flex flex-col h-[100dvh] bg-background font-google overflow-hidden relative">
             <Header
                 title="Suppliers"
                 buttonText="Add Supplier"
