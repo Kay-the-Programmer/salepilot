@@ -638,7 +638,10 @@ export default function Sidebar({
                                     {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
                                 </button>
                                 <button
-                                    onClick={onLogout}
+                                    onClick={() => {
+                                        onMobileClose?.();
+                                        onLogout();
+                                    }}
                                     className="p-3 rounded-full bg-danger-muted text-danger hover:scale-105 active:scale-95 transition-all duration-300"
                                 >
                                     <ArrowLeftOnRectangleIcon className="w-5 h-5" />

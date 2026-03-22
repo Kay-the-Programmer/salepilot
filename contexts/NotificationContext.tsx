@@ -47,10 +47,14 @@ export const NotificationProvider: React.FC<{ children: ReactNode; user: User | 
 
             setNotifications(fetchedNotifications);
             isInitialLoad.current = false;
-        } catch (error) {
+        } catch (error: any) {
+            if (error?.message?.includes('authenticated') || error?.status === 401) {
+                // Return silently, likely logged out
+                return;
+            }
             console.warn('Failed to fetch notifications:', error);
         }
-    }, [user?.currentStoreId, showToast]);
+    }, [user?.currentStoreId, user?.token, showToast]);
 
     const markAllAsRead = useCallback(async () => {
         try {

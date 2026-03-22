@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import JsBarcode from 'jsbarcode';
 import { Sale, StoreSettings } from '@/types.ts';
 import { SnackbarType } from '../../App';
@@ -145,7 +146,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         }, 250);
     };
 
-    return (
+    return createPortal(
         <div
             className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 transition-all duration-300 animate-fade-in"
             aria-labelledby="modal-title"
@@ -308,7 +309,8 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

@@ -285,7 +285,10 @@ export default function DashboardLayout() {
                     <div id="app-sidebar" className={`z-[60] md:static md:block ${isSidebarOpen ? 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none' : 'hidden md:block'}`}>
                         <Sidebar
                             user={currentUser}
-                            onLogout={() => setIsLogoutModalOpen(true)}
+                            onLogout={() => {
+                                setIsSidebarOpen(false);
+                                setIsLogoutModalOpen(true);
+                            }}
                             isOnline={isOnline}
                             allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? PERMISSIONS['superadmin'].filter(p => p.startsWith('superadmin')) : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]} // Simplified permission logic for visual
                             superMode={currentUser.role === 'superadmin' ? superMode : undefined}

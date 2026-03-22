@@ -447,7 +447,10 @@ export default function Dashboard() {
         showSnackbar(`Welcome back, ${user.name}!`, 'success');
     };
 
-    const handleLogout = () => setIsLogoutModalOpen(true);
+    const handleLogout = () => {
+        setIsSidebarOpen(false);
+        setIsLogoutModalOpen(true);
+    };
 
     const handleConfirmLogout = () => {
         logout();

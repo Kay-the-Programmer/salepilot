@@ -40,7 +40,7 @@ const normalizeUser = (u: any): User => ({
     token: u.token,
     currentStoreId: u.currentStoreId || u.current_store_id,
     profilePicture: u.profilePicture || u.profile_picture,
-    isVerified: u.isVerified || u.is_verified,
+    isVerified: u.isVerified ?? u.is_verified ?? false,
     subscriptionStatus: u.subscriptionStatus || u.subscription_status,
     subscriptionEndsAt: u.subscriptionEndsAt || u.subscription_ends_at,
     subscriptionPlan: u.subscriptionPlan || u.subscription_plan,

@@ -5,12 +5,17 @@ import { getToken, deleteToken } from 'firebase/messaging';
 class NotificationService {
     async subscribeUser(userId?: string) {
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            console.warn('Push notifications are not supported in this browser');
+            console.log('Push notifications are not supported in this browser');
+            return null;
+        }
+
+        if (Notification.permission === 'denied') {
+            console.log('Push notification permission is denied.');
             return null;
         }
 
         if (!messagingPromise) {
-            console.warn('Firebase Messaging is not supported or initialized');
+            console.log('Firebase Messaging is not supported or initialized');
             return null;
         }
 
@@ -49,7 +54,11 @@ class NotificationService {
                 console.log('No registration token available. Request permission to generate one.');
                 return null;
             }
-        } catch (error) {
+        } catch (error: any) {
+            if (error?.message?.includes('permission was not granted')) {
+                console.log('Push subscription: Permission blocked by user.');
+                return null;
+            }
             console.error('Failed to subscribe user:', error);
             throw error;
         }
