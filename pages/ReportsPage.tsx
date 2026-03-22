@@ -9,8 +9,6 @@ import { useNavigate } from 'react-router-dom';
 
 // Icons
 import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
-import TrendingUpIcon from '../components/icons/TrendingUpIcon';
-import ReceiptTaxIcon from '../components/icons/ReceiptTaxIcon';
 import ArchiveBoxIcon from '../components/icons/ArchiveBoxIcon';
 import UsersIcon from '../components/icons/UsersIcon';
 import HomeIcon from '../components/icons/HomeIcon';
@@ -26,8 +24,6 @@ import { OverviewTab } from '../components/reports/OverviewTab';
 import { SalesTab } from '../components/reports/SalesTab';
 import { InventoryTab } from '../components/reports/InventoryTab';
 import { CustomersTab } from '../components/reports/CustomersTab';
-import { CashflowTab } from '../components/reports/CashflowTab';
-import { PersonalUseTab } from '../components/reports/PersonalUseTab';
 import { AiSummaryCard } from '../components/reports/AiSummaryCard';
 import { Settings, X, LayoutGrid } from 'lucide-react';
 import { DashboardCardConfig } from '../types';
@@ -37,10 +33,15 @@ const DEFAULT_CARDS: DashboardCardConfig[] = [
     { id: 'expenses', label: 'Operating Expenses', visible: true, order: 1 },
     { id: 'profit', label: 'Net Profit', visible: true, order: 2 },
     { id: 'cashflow', label: 'Cashflow Trend', visible: true, order: 3 },
-    { id: 'sales-trend', label: 'Sales Trends', visible: true, order: 4 },
-    { id: 'channels', label: 'Sales Channels', visible: true, order: 5 },
-    { id: 'recent-orders', label: 'Recent Orders', visible: true, order: 6 },
-    { id: 'top-sales', label: 'Top Selling Products', visible: true, order: 7 },
+    { id: 'cashflow-stats', label: 'Cashflow Stats', visible: true, order: 4 },
+    { id: 'outflow-breakdown', label: 'Outflow Breakdown', visible: true, order: 5 },
+    { id: 'financial-position', label: 'Financial Position', visible: true, order: 6 },
+    { id: 'personal-stats', label: 'Personal Use Stats', visible: true, order: 7 },
+    { id: 'personal-list', label: 'Personal Use List', visible: true, order: 8 },
+    { id: 'sales-trend', label: 'Sales Trends', visible: true, order: 9 },
+    { id: 'channels', label: 'Sales Channels', visible: true, order: 10 },
+    { id: 'recent-orders', label: 'Recent Orders', visible: true, order: 11 },
+    { id: 'top-sales', label: 'Top Selling Products', visible: true, order: 12 },
 ];
 interface ReportsPageProps {
     storeSettings: StoreSettings;
@@ -68,11 +69,9 @@ const TABS = [
     { id: 'sales', label: 'Sales', Icon: CurrencyDollarIcon },
     { id: 'inventory', label: 'Inventory', Icon: ArchiveBoxIcon },
     { id: 'customers', label: 'Customers', Icon: UsersIcon },
-    { id: 'cashflow', label: 'Cashflow', Icon: TrendingUpIcon },
-    { id: 'personal-use', label: 'Personal', Icon: ReceiptTaxIcon },
 ];
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user }) => {
+const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const navigate = useNavigate();
     const [startDate, setStartDate] = useState(() => {
@@ -297,6 +296,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                         cardConfig={cardConfig}
                         setCardConfig={setCardConfig}
                         toggleCardVisibility={toggleCardVisibility}
+                        personalUse={personalUse}
                     />
                 );
             case 'sales':
@@ -326,20 +326,10 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                     />
                 );
             case 'cashflow':
-                return (
-                    <CashflowTab
-                        reportData={reportData}
-                        storeSettings={storeSettings}
-                        onClose={onClose}
-                    />
-                );
             case 'personal-use':
-                return (
-                    <PersonalUseTab
-                        personalUse={personalUse}
-                        storeSettings={storeSettings}
-                    />
-                );
+                // These are now merged into 'overview'
+                setActiveTab('overview');
+                return null;
             default:
                 return null;
         }
@@ -478,20 +468,20 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
             {/* Desktop Apple-style Segmented Control Tab Bar */}
             <nav
                 ref={tabBarRef}
-                className="hidden md:flex flex-none sticky top-[90px] z-30 transition-all duration-300 bg-background pb-2 border-b border-transparent"
+                className="flex flex-none sticky top-0 md:top-[90px] z-30 transition-all duration-300 bg-background pb-2 border-b border-transparent overflow-x-auto scrollbar-hide"
                 role="tablist"
                 aria-label="Report sections"
                 onKeyDown={handleTabKeyDown}
             >
-                <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between w-full">
-                    <div className="flex bg-slate-200/60 dark:bg-slate-800/80 p-1.5 rounded-[20px] overflow-hidden gap-1.5 w-full relative shadow-inner ring-1 ring-slate-900/5 dark:ring-white/10">
-                        <div className="grid grid-cols-6 gap-1.5 flex-1 relative isolate">
+                <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between w-full min-w-max md:min-w-0">
+                    <div className="flex bg-slate-200/60 dark:bg-slate-800/80 p-1 rounded-[20px] md:rounded-[20px] overflow-hidden gap-1 w-full relative shadow-inner ring-1 ring-slate-900/5 dark:ring-white/10">
+                        <div className="grid grid-cols-4 gap-1.5 flex-1 relative isolate">
                             {/* Sliding Indicator (Magic Pill) */}
                             <div
                                 className="absolute top-0 bottom-0 left-0 bg-white dark:bg-slate-700/80 rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-slate-200/50 dark:border-white/5 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] -z-10"
                                 style={{
-                                    width: `calc((100% - 30px) / 6)`, // 5 gaps of 6px (gap-1.5) = 30px
-                                    transform: `translateX(calc(${activeTabIndex} * 100% + ${activeTabIndex * 6}px))`
+                                    width: `calc((100% - 15px) / 4)`, // 3 gaps of 5px (gap-1) = 15px
+                                    transform: `translateX(calc(${activeTabIndex} * 100% + ${activeTabIndex * 5}px))`
                                 }}
                                 aria-hidden="true"
                             />
@@ -557,36 +547,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, onClose, user 
                 </div>
             </main>
 
-            {/* Mobile Footer Spacing for Bottom Nav */}
-            <div className="h-28 md:hidden flex-none"></div>
-
-            {/* Premium Mobile Bottom Navigation Bar */}
-            <nav aria-label="Mobile Bottom Navigation" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]">
-                <div className="flex items-center justify-around px-2 py-2">
-                    {TABS.map((tab) => {
-                        const isActive = activeTab === tab.id;
-                        const Icon = tab.Icon;
-                        return (
-                            <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`group relative flex flex-1 flex-col items-center justify-center gap-1.5 py-1 transition-all duration-300 active:scale-95 outline-none ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'}`}
-                                aria-selected={isActive}
-                            >
-                                <div className="relative">
-                                    <div className={`p-1.5 rounded-2xl transition-all duration-300 ${isActive ? 'bg-blue-50 dark:bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
-                                        <Icon className="w-[22px] h-[22px]" />
-                                    </div>
-                                    {isActive && (
-                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
-                                    )}
-                                </div>
-                                <span className={`text-[9px] font-bold tracking-wide transition-all duration-300 uppercase ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>{tab.label}</span>
-                            </button>
-                        );
-                    })}
-                </div>
-            </nav>
+            {/* Mobile Footer Spacing for Bottom Nav — REMOVED to simplify */}
 
             {/* Notification Drawer - simplified for this component */}
             {isNotificationsOpen && (

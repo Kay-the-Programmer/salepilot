@@ -25,6 +25,11 @@ import { RecentOrdersTable } from './overview/RecentOrdersTable';
 import { InteractiveOperatingExpensesCard } from './overview/InteractiveOperatingExpensesCard';
 import { InteractiveNetProfitCard } from './overview/InteractiveNetProfitCard';
 import { FilterableCashflowTrend } from './cashflow/FilterableCashflowTrend';
+import { CashflowStatsRow } from './cashflow/CashflowStatsRow';
+import { OutflowBreakdown } from './cashflow/OutflowBreakdown';
+import { FinancialPositionCard } from './cashflow/FinancialPositionCard';
+import { PersonalUseStatsRow } from './personal/PersonalUseStatsRow';
+import { PersonalUseList } from './personal/PersonalUseList';
 import { TipsCard } from './overview/TipsCard';
 import { DashboardCardWrapper } from './DashboardCardWrapper';
 import { EyeOff, CheckCircle2 } from 'lucide-react';
@@ -39,6 +44,7 @@ interface OverviewTabProps {
     cardConfig: DashboardCardConfig[];
     setCardConfig: React.Dispatch<React.SetStateAction<DashboardCardConfig[]>>;
     toggleCardVisibility: (id: string) => void;
+    personalUse?: any[] | null;
 }
 
 export const OverviewTab: React.FC<OverviewTabProps> = ({
@@ -49,7 +55,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
     isEditMode,
     cardConfig,
     setCardConfig,
-    toggleCardVisibility
+    toggleCardVisibility,
+    personalUse = null,
 }) => {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [showSaveFeedback, setShowSaveFeedback] = useState(false);
@@ -112,6 +119,22 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
                 return <InteractiveNetProfitCard storeSettings={storeSettings} />;
             case 'cashflow':
                 return <FilterableCashflowTrend storeSettings={storeSettings} />;
+            case 'cashflow-stats':
+                return <CashflowStatsRow cashflow={reportData.cashflow} storeSettings={storeSettings} />;
+            case 'outflow-breakdown':
+                return (
+                    <OutflowBreakdown
+                        outflowBreakdown={reportData.cashflow.outflowBreakdown}
+                        totalOutflow={reportData.cashflow.totalOutflow}
+                        storeSettings={storeSettings}
+                    />
+                );
+            case 'financial-position':
+                return <FinancialPositionCard netCashflow={reportData.cashflow.netCashflow} />;
+            case 'personal-stats':
+                return <PersonalUseStatsRow storeSettings={storeSettings} />;
+            case 'personal-list':
+                return <PersonalUseList personalUse={personalUse} />;
             case 'sales-trend':
                 return <FilterableSalesTrend storeSettings={storeSettings} />;
             case 'channels':
@@ -134,8 +157,8 @@ export const OverviewTab: React.FC<OverviewTabProps> = ({
 
     const getCardSpan = (id: string, isHidden: boolean) => {
         if (isHidden) return "col-span-1";
-        if (id === 'sales-trend' || id === 'recent-orders') return "md:col-span-2 lg:col-span-4";
-        if (id === 'cashflow') return "md:col-span-2";
+        if (id === 'sales-trend' || id === 'recent-orders' || id === 'personal-list' || id === 'outflow-breakdown') return "md:col-span-2 lg:col-span-4";
+        if (id === 'cashflow' || id === 'cashflow-stats' || id === 'personal-stats' || id === 'financial-position') return "md:col-span-2";
         return "col-span-1";
     };
 
