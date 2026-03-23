@@ -27,7 +27,7 @@ const firebaseConfig = {
     apiKey: import.meta.env.VITE_FIREBASE_API_KEY ?? 'AIzaSyBqcS-rap5P5jRl7nhfdESKWEJtZb4Zy8c',
     authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ?? 'salepilot-ae09f.firebaseapp.com',
     projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ?? 'salepilot-ae09f',
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ?? 'salepilot-ae09f.firebasestorage.app',
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET ?? 'salepilot-ae09f.appspot.com',
     messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ?? '980903093215',
     appId: import.meta.env.VITE_FIREBASE_APP_ID ?? '1:980903093215:web:2c821c0758a9ec70335a6a',
     measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID ?? 'G-2885SSEE1Y',

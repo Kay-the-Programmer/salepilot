@@ -7,7 +7,7 @@ const firebaseConfig = {
     apiKey: "AIzaSyBqcS-rap5P5jRl7nhfdESKWEJtZb4Zy8c",
     authDomain: "salepilot-ae09f.firebaseapp.com",
     projectId: "salepilot-ae09f",
-    storageBucket: "salepilot-ae09f.firebasestorage.app",
+    storageBucket: "salepilot-ae09f.appspot.com",
     messagingSenderId: "980903093215",
     appId: "1:980903093215:web:2c821c0758a9ec70335a6a",
     measurementId: "G-2885SSEE1Y"

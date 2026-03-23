@@ -15,9 +15,9 @@ import ReceiptModal from '../components/sales/ReceiptModal';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
 import ProductFormModal from '../components/ProductFormModal';
-import ScanActionModal from '../components/sales/ScanActionModal';
 import OutOfStockModal from '../components/sales/OutOfStockModal';
 import LowStockAlertModal from '../components/sales/LowStockAlertModal';
+import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 
 // New Modular Components
 import { ProductCard } from '../components/sales/ProductCard';
@@ -82,9 +82,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [initialProductValues, setInitialProductValues] = useState<Partial<Product> | undefined>(undefined);
 
     // Scan Action State
-    const [showScanActionModal, setShowScanActionModal] = useState(false);
-    const [lastScannedProductName, setLastScannedProductName] = useState('');
-    const [isScannerPaused, setIsScannerPaused] = useState(false);
     const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
     const [verifyingMessage, setVerifyingMessage] = useState('Verifying Payment...');
@@ -99,6 +96,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Low Stock Alert Modal State
     const [showLowStockAlert, setShowLowStockAlert] = useState(false);
     const [lowStockProduct, setLowStockProduct] = useState<Product | null>(null);
+
+    // External barcode scanner hook — paused while any modal overlapping the POS is open
+    const isScannerModalOpen = showOutOfStockModal || showLowStockAlert || isProductFormOpen || showPaymentChoiceModal;
+
+    // Stable ref so the scanner callback never becomes stale
+    const handleContinuousScanRef = useRef<(barcode: string) => void>(() => {});
+
+    const stableScanCallback = useCallback((barcode: string) => {
+        handleContinuousScanRef.current(barcode);
+    }, []);
+
+    const { isActive: isExternalScannerActive } = useBarcodeScanner(stableScanCallback, { paused: isScannerModalOpen });
 
     const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
 
@@ -290,8 +299,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         return filteredProducts.slice(startIndex, startIndex + pageSize);
     }, [filteredProducts, currentPage, pageSize]);
 
-    const handleContinuousScan = async (decodedText: string) => {
-        if (isScannerPaused || showScanActionModal) return;
+    const handleContinuousScan = async (decodedText: string) => {    
 
         const trimmed = decodedText.trim();
         const product = products.find(p =>
@@ -300,9 +308,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         );
         if (product) {
             addToCart(product);
-            setLastScannedProductName(product.name);
-            setIsScannerPaused(true);
-            setShowScanActionModal(true);
+            // Modal popup removed for seamless continuous scanning
         } else {
             // Try external lookup
             try {
@@ -332,6 +338,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
             }
         }
     };
+
+    // Keep ref current so stableScanCallback always delegates to latest handleContinuousScan
+    useEffect(() => {
+        handleContinuousScanRef.current = handleContinuousScan;
+    });
 
     const handleScanError = (error: any) => {
         console.warn(error);
@@ -575,15 +586,30 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     hideSearchOnDesktop={true}
                     className="z-[60]"
                     rightContent={
-                        <SalesHeaderActions
-                            searchTerm={searchTerm}
-                            setSearchTerm={setSearchTerm}
-                            viewMode={viewMode}
-                            setViewMode={setViewMode}
-                            heldSalesCount={heldSales.length}
-                            onOpenHeldSales={() => setShowHeldPanel(true)}
-                            onTourStart={() => setRunTour(true)}
-                        />
+                        <div className="flex items-center gap-2">
+                            {/* External Scanner Status Badge */}
+                            {isExternalScannerActive && (
+                                <div
+                                    className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold select-none"
+                                    title="External barcode scanner is active"
+                                >
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                    </span>
+                                    Scanner Active
+                                </div>
+                            )}
+                            <SalesHeaderActions
+                                searchTerm={searchTerm}
+                                setSearchTerm={setSearchTerm}
+                                viewMode={viewMode}
+                                setViewMode={setViewMode}
+                                heldSalesCount={heldSales.length}
+                                onOpenHeldSales={() => setShowHeldPanel(true)}
+                                onTourStart={() => setRunTour(true)}
+                            />
+                        </div>
                     }
                 />
 
@@ -871,23 +897,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     />
                 )
             }
-
-            <ScanActionModal
-                isOpen={showScanActionModal}
-                productName={lastScannedProductName}
-                onContinue={() => {
-                    setShowScanActionModal(false);
-                    setIsScannerPaused(false);
-                }}
-                onProceed={() => {
-                    setShowScanActionModal(false);
-                    setIsScannerPaused(false);
-                    setIsScannerOpen(false);
-                    setActiveTab('cart');
-                    setCartActionTab('payment');
-                    setShouldFocusCashInput(true);
-                }}
-            />
 
             {/* Modals */}
             <OutOfStockModal

@@ -12,6 +12,7 @@ import InventorySettingsSection from '../components/settings/sections/InventoryS
 import BusinessVerificationSection from '../components/settings/BusinessVerificationSection';
 import AccountVerificationSection from '../components/settings/AccountVerificationSection';
 import NotificationSettingsSection from '../components/settings/sections/NotificationSettingsSection';
+import BarcodeScannerSection from '../components/settings/sections/BarcodeScannerSection';
 import SettingsCard from '../components/settings/SettingsCard';
 import SettingsSidebar, { SettingsCategory } from '../components/settings/SettingsSidebar';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
@@ -111,6 +112,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
             'financial': 'Financials',
             'pos': 'POS Settings',
             'inventory': 'Inventory',
+            'scanner': 'Barcode Scanner',
             'verification': 'Verification',
             'billing': 'Plans & Billing',
             'notifications': 'Notifications'
@@ -240,6 +242,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                         onCancel={handleCancel}
                                         handleChange={handleChange}
                                     />
+                                </div>
+                            )}
+
+                            {activeCategory === 'scanner' && (
+                                <div className="animate-fade-in">
+                                    <BarcodeScannerSection />
                                 </div>
                             )}
 

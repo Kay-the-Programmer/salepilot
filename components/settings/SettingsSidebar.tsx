@@ -9,6 +9,19 @@ import {
 } from '../icons';
 import ChevronRightIcon from '../icons/ChevronRightIcon';
 
+// Inline barcode scanner icon (no external dep needed)
+const ScannerIcon: React.FC<{ className?: string }> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className}>
+        <path d="M3 7V5a2 2 0 0 1 2-2h2" />
+        <path d="M17 3h2a2 2 0 0 1 2 2v2" />
+        <path d="M21 17v2a2 2 0 0 1-2 2h-2" />
+        <path d="M7 21H5a2 2 0 0 1-2-2v-2" />
+        <line x1="7" y1="12" x2="7" y2="12.01" />
+        <line x1="12" y1="7" x2="12" y2="17" />
+        <line x1="17" y1="12" x2="17" y2="12.01" />
+    </svg>
+);
+
 export type SettingsCategory =
     | 'store'
     | 'financial'
@@ -16,7 +29,8 @@ export type SettingsCategory =
     | 'inventory'
     | 'verification'
     | 'billing'
-    | 'notifications';
+    | 'notifications'
+    | 'scanner';
 
 interface SettingsSidebarProps {
     activeCategory: SettingsCategory;
@@ -28,6 +42,7 @@ const categories = [
     { id: 'financial' as const, label: 'Financials', icon: BanknotesIcon, description: 'Currency and taxes', color: 'bg-emerald-500' },
     { id: 'pos' as const, label: 'POS Settings', icon: CalculatorIcon, description: 'Payment methods', color: 'bg-indigo-500' },
     { id: 'inventory' as const, label: 'Inventory', icon: PackageIcon, description: 'Stock rules', color: 'bg-amber-500' },
+    { id: 'scanner' as const, label: 'Barcode Scanner', icon: ScannerIcon, description: 'USB/HID device setup', color: 'bg-violet-500' },
     { id: 'verification' as const, label: 'Verification', icon: ShieldCheckIcon, description: 'Business status', color: 'bg-slate-500' },
     { id: 'billing' as const, label: 'Plans & Billing', icon: CreditCardIcon, description: 'Subscription info', color: 'bg-rose-500' },
     { id: 'notifications' as const, label: 'Notifications', icon: BuildingStorefrontIcon, description: 'Push & alert settings', color: 'bg-purple-500' },
