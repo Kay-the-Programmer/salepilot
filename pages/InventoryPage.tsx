@@ -13,12 +13,9 @@ import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
 import Pagination from '../components/ui/Pagination';
 import InventoryHeader from '../components/inventory/InventoryHeader';
-import InventoryMobileHeader from '../components/inventory/InventoryMobileHeader';
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
 import Header from "@/components/Header.tsx";
-import { GridIcon, ListIcon } from '../components/icons';
-
 
 
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
@@ -103,7 +100,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     }, [activeTab]);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
     const [showFilters, setShowFilters] = useState(false);
 
     // Resizable panel state
@@ -567,51 +564,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 setSearchTerm={setSearchTerm}
                 hideSearchOnMobile={false}
                 showSearch={true}
-                className={`z-50 ${!!selectedItem ? 'hidden md:block' : ''}`}
+                className={`z-50 hidden md:block`} // Always hidden on mobile now as we use custom header/tabs
                 rightContent={
                     <div className="flex items-center gap-2">
-                        {/* Mobile-only action buttons (visible on mobile, hidden on desktop) */}
-                        <div className="flex md:hidden items-center gap-1">
-                            {/* Grid/List toggle — products tab only */}
-                            {activeTab === 'products' && (
-                                <button
-                                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                                    className="p-2 rounded-full text-brand-text-muted hover:bg-surface-variant transition-all active:scale-90"
-                                    aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
-                                >
-                                    {viewMode === 'grid'
-                                        ? <ListIcon className="w-5 h-5" />
-                                        : <GridIcon className="w-5 h-5" />
-                                    }
-                                </button>
-                            )}
-                            {/* Scan camera */}
-                            {canManageProducts && activeTab === 'products' && (
-                                <button
-                                    onClick={() => setIsScanModalOpen(true)}
-                                    className="p-2 rounded-full text-brand-text-muted hover:bg-surface-variant transition-all active:scale-90"
-                                    aria-label="Scan Barcode"
-                                >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                    </svg>
-                                </button>
-                            )}
-                            {/* Add button */}
-                            {canManageProducts && (
-                                <button
-                                    onClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
-                                    className="w-9 h-9 flex items-center justify-center bg-brand-text rounded-full text-surface shadow-md hover:opacity-90 transition-all active:scale-90"
-                                    aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
-                                >
-                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </button>
-                            )}
-                        </div>
-
                         {/* Desktop-only full InventoryHeader */}
                         <div className="hidden md:flex">
                             <InventoryHeader
@@ -632,6 +587,41 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     </div>
                 }
             />
+
+            {/* Mobile Tab Navigation (Matches Sketch) */}
+            <div className={`md:hidden flex flex-col bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 z-40 ${!!selectedItem ? 'hidden' : ''}`}>
+                {/* Tabs and Search Row */}
+                <div className="flex items-center justify-between px-6 py-4">
+                    <div className="flex items-center gap-8">
+                        <button
+                            onClick={() => setActiveTab('products')}
+                            className={`text-[17px] transition-all duration-200 ${activeTab === 'products' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
+                        >
+                            Products
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('categories')}
+                            className={`text-[17px] transition-all duration-200 ${activeTab === 'categories' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
+                        >
+                            Categories
+                        </button>
+                    </div>
+                    <button
+                        onClick={() => {
+                            // Focus search input in the main header (Dashboard header)
+                            const searchInput = document.querySelector('header input') as HTMLInputElement;
+                            if (searchInput) {
+                                searchInput.focus();
+                            }
+                        }}
+                        className="p-2 -mr-2 text-slate-400 dark:text-slate-500 hover:text-brand-text transition-colors"
+                    >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
 
             {/* Onboarding Helpers */}
             <InventoryOnboardingHelpers
@@ -929,13 +919,32 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 />
             )}
 
-            {/* Mobile Bottom Navigation */}
-            <InventoryMobileHeader
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                selectedItem={!!selectedItem}
-            />
-
+            {/* Floating Action Buttons for Mobile */}
+            {canManageProducts && !selectedItem && (
+                <div className="md:hidden fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 z-50 animate-in fade-in slide-in-from-bottom-10 duration-500">
+                    <button
+                        onClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
+                        className="w-16 h-16 flex items-center justify-center bg-brand-text text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:scale-110 active:scale-95 transition-all duration-300 group"
+                        aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
+                    >
+                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                    {activeTab === 'products' && (
+                        <button
+                            onClick={() => setIsScanModalOpen(true)}
+                            className="w-16 h-16 flex items-center justify-center bg-white dark:bg-slate-800 text-brand-text dark:text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 dark:border-white/5 hover:scale-110 active:scale-95 transition-all duration-300"
+                            aria-label="Scan Barcode"
+                        >
+                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 };
