@@ -646,7 +646,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             <div className="h-full flex flex-col">
                                 <div className="flex-1 overflow-y-auto scroll-smooth p-3 md:p-6 pb-[100px] md:pb-24">
                                     <ProductList
-                                        products={paginatedProducts}
+                                        products={typeof window !== 'undefined' && window.innerWidth < 768 ? sortedProducts : paginatedProducts}
                                         categories={categories}
                                         onSelectProduct={handleSelectProduct}
                                         onStockChange={onStockChange}
@@ -659,16 +659,19 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                         selectedProductId={selectedProductId}
                                     />
                                 </div>
-                                <Pagination
-                                    total={sortedProducts.length}
-                                    page={page}
-                                    pageSize={pageSize}
-                                    onPageChange={setPage}
-                                    onPageSizeChange={setPageSize}
-                                    label="products"
-                                    className="border-t border-brand-border bg-surface/50 backdrop-blur-xl sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4 px-4"
-                                    compact={true}
-                                />
+                                {/* Pagination hidden on mobile as per request */}
+                                <div className="hidden md:block">
+                                    <Pagination
+                                        total={sortedProducts.length}
+                                        page={page}
+                                        pageSize={pageSize}
+                                        onPageChange={setPage}
+                                        onPageSizeChange={setPageSize}
+                                        label="products"
+                                        className="border-t border-brand-border bg-surface/50 backdrop-blur-xl sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4 px-4"
+                                        compact={true}
+                                    />
+                                </div>
                             </div>
                         ) : (
                             <div className="h-full overflow-y-auto scroll-smooth pb-[100px] md:pb-24 p-3 md:p-6">
