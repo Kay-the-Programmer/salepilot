@@ -102,6 +102,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
     const [showFilters, setShowFilters] = useState(false);
+    const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
 
     // Resizable panel state
     const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
@@ -590,37 +591,68 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
             {/* Mobile Tab Navigation (Matches Sketch) */}
             <div className={`md:hidden flex flex-col bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 z-40 ${!!selectedItem ? 'hidden' : ''}`}>
-                {/* Tabs and Search Row */}
-                <div className="flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-8">
+                {isMobileSearchActive ? (
+                    <div className="flex items-center gap-3 px-6 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex-1 flex items-center bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl px-4 py-2.5 border border-slate-200/50 dark:border-white/5 shadow-sm">
+                            <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                                type="text"
+                                autoFocus
+                                placeholder={`Search ${activeTab === 'products' ? 'products' : 'categories'}...`}
+                                className="w-full bg-transparent border-none focus:ring-0 text-[16px] ml-2 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 py-0"
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                            {searchTerm && (
+                                <button
+                                    onClick={() => setSearchTerm('')}
+                                    className="p-1.5 -mr-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                                >
+                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
                         <button
-                            onClick={() => setActiveTab('products')}
-                            className={`text-[17px] transition-all duration-200 ${activeTab === 'products' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
+                            onClick={() => {
+                                setIsMobileSearchActive(false);
+                                setSearchTerm('');
+                            }}
+                            className="text-[16px] font-bold text-brand-text active:scale-95 transition-all px-1"
                         >
-                            Products
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('categories')}
-                            className={`text-[17px] transition-all duration-200 ${activeTab === 'categories' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
-                        >
-                            Categories
+                            Cancel
                         </button>
                     </div>
-                    <button
-                        onClick={() => {
-                            // Focus search input in the main header (Dashboard header)
-                            const searchInput = document.querySelector('header input') as HTMLInputElement;
-                            if (searchInput) {
-                                searchInput.focus();
-                            }
-                        }}
-                        className="p-2 -mr-2 text-slate-400 dark:text-slate-500 hover:text-brand-text transition-colors"
-                    >
-                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                        </svg>
-                    </button>
-                </div>
+                ) : (
+                    <div className="flex items-center justify-between px-6 py-4">
+                        <div className="flex items-center gap-8">
+                            <button
+                                onClick={() => setActiveTab('products')}
+                                className={`text-[17px] transition-all duration-200 ${activeTab === 'products' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
+                            >
+                                Products
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('categories')}
+                                className={`text-[17px] transition-all duration-200 ${activeTab === 'categories' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
+                            >
+                                Categories
+                            </button>
+                        </div>
+                        <button
+                            onClick={() => setIsMobileSearchActive(true)}
+                            className="p-2 -mr-2 text-slate-400 dark:text-slate-500 hover:text-brand-text transition-colors active:scale-90"
+                            aria-label="Activate Search"
+                        >
+                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Onboarding Helpers */}
