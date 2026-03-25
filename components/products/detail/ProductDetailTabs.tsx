@@ -41,7 +41,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px-8 py-2.5 text-[13px] font-black tracking-widest uppercase transition-all duration-300 rounded-full active:scale-95 ${activeTab === tab.id
+                        className={`px-6 py-2 text-[12px] font-bold tracking-wide uppercase transition-all duration-300 rounded-full active:scale-95 ${activeTab === tab.id
                             ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-md'
                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                             }`}
@@ -52,15 +52,15 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
             </div>
 
             {/* Tab Content */}
-            <div className="py-6">
+            <div className="py-4">
                 <div className="min-h-[200px]">
                     {/* Details Tab */}
                     {activeTab === 'details' && (
-                        <div className="space-y-12 animate-glass-appear">
+                        <div className="space-y-4 animate-glass-appear">
                             {/* Description */}
                             {product.description && (
-                                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
-                                    <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-6">Product Narrative</h4>
+                                <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
+                                    <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Product Narrative</h4>
                                     <div className="text-[16px] text-slate-700 dark:text-slate-200 leading-relaxed whitespace-pre-wrap font-medium">
                                         {product.description}
                                     </div>
@@ -68,15 +68,15 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                             )}
 
                             {/* Basic Info */}
-                            <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
-                                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-10">{product.description ? 'Technical Specifications' : 'Product Fundamentals'}</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-                                    <div className="space-y-8">
+                            <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
+                                <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">{product.description ? 'Technical Specifications' : 'Product Fundamentals'}</h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                                    <div className="space-y-4">
                                         <DetailItem label="SKU Identification" value={<span className="font-mono tracking-tight">{product.sku || 'N/A'}</span>} icon={<BarcodeIcon className="w-4 h-4" />} />
                                         <DetailItem label="Global Barcode" value={<span className="font-mono tracking-tight">{product.barcode || 'N/A'}</span>} icon={<BarcodeIcon className="w-4 h-4" />} />
                                         <DetailItem label="Class Assignment" value={category?.name || 'Uncategorized'} icon={<TagIcon className="w-4 h-4" />} />
                                     </div>
-                                    <div className="space-y-8">
+                                    <div className="space-y-4">
                                         <DetailItem label="Manufacturer/Brand" value={product.brand || 'Generic Branding'} />
                                         <DetailItem label="Measuring Unit" value={product.unitOfMeasure || 'Standard Unit'} icon={<CubeIcon className="w-4 h-4" />} />
                                         <DetailItem label="Lifecycle Status" value={<span className="inline-block mt-1"><StatusBadge status={product.status} /></span>} />
@@ -87,9 +87,9 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                             {/* Supplier & Physical Info */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                                 {supplier && (
-                                    <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
-                                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-10">Supply Logistics</h4>
-                                        <div className="space-y-8">
+                                    <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
+                                        <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Supply Logistics</h4>
+                                        <div className="space-y-4">
                                             <DetailItem label="Entity Name" value={supplier.name} icon={<TruckIcon className="w-4 h-4" />} />
                                             {supplier.contactPerson && <DetailItem label="Authorized Representative" value={supplier.contactPerson} />}
                                             {supplier.phone && (
@@ -102,9 +102,9 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                                 )}
 
                                 {(product.weight || product.dimensions) && (
-                                    <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
-                                        <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-10">Physical Characteristics</h4>
-                                        <div className="space-y-8">
+                                    <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
+                                        <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Physical Characteristics</h4>
+                                        <div className="space-y-4">
                                             {product.weight && <DetailItem label="Net Weight" value={`${product.weight} kg`} icon={<ScaleIcon className="w-4 h-4" />} />}
                                             {product.dimensions && <DetailItem label="Volumetric Scale" value={product.dimensions} icon={<CubeIcon className="w-4 h-4" />} />}
                                         </div>
@@ -116,34 +116,32 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
 
                     {/* Inventory Tab */}
                     {activeTab === 'inventory' && (
-                        <div className="space-y-12 animate-glass-appear">
+                        <div className="space-y-4 animate-glass-appear">
                             {/* Stock Status */}
-                            <div className="bg-white dark:bg-slate-900/60 backdrop-blur-2xl rounded-[1.5rem] p-6 border border-slate-200/40 dark:border-white/5 shadow-sm">
-                                <h4 className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-8">Stock Status</h4>
-                                <div>
-                                    <StockIndicator product={product} storeSettings={storeSettings} />
-                                </div>
+                            <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
+                                <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Stock Status</h4>
+                                <StockIndicator product={product} storeSettings={storeSettings} />
                             </div>
 
                             {/* Financial Summary */}
-                            <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
-                                <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-10">Asset Valuation</h4>
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-12">
+                            <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
+                                <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Asset Valuation</h4>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                                     <div className="flex flex-col">
-                                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] mb-4">Current Asset Value</div>
-                                        <div className="text-[36px] font-black text-blue-600 dark:text-blue-400 tracking-tighter leading-none">
+                                        <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Asset Value</div>
+                                        <div className="text-[28px] font-black text-blue-600 dark:text-blue-400 tracking-tight leading-none">
                                             {formatCurrency(price * product.stock, storeSettings)}
                                         </div>
                                     </div>
                                     <div className="flex flex-col">
-                                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] mb-4">Reorder Index</div>
-                                        <div className="text-[32px] font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                                        <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Reorder Index</div>
+                                        <div className="text-[24px] font-black text-slate-900 dark:text-white tracking-tight leading-none">
                                             {product.reorderPoint || storeSettings.lowStockThreshold}
                                         </div>
                                     </div>
                                     <div className="flex flex-col">
-                                        <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.15em] mb-4">Safety Buffer</div>
-                                        <div className="text-[32px] font-black text-slate-900 dark:text-white tracking-tighter leading-none">
+                                        <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Safety Buffer</div>
+                                        <div className="text-[24px] font-black text-slate-900 dark:text-white tracking-tight leading-none">
                                             {product.safetyStock || 0}
                                         </div>
                                     </div>

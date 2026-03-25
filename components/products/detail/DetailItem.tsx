@@ -16,7 +16,7 @@ const DetailItem: React.FC<DetailItemProps> = ({ label, value, icon, className =
                         React.cloneElement(icon as React.ReactElement<any>, { className: 'w-3.5 h-3.5' }) : icon}
                 </div>
             )}
-            <span className="text-[11px] font-bold uppercase tracking-widest">{label}</span>
+            <span className="text-[10px] font-bold uppercase tracking-tight">{label}</span>
         </div>
         <div className="text-sm font-medium text-slate-900 dark:text-slate-100 break-words md:pl-[1.375rem]">
             {value}
