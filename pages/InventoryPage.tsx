@@ -676,7 +676,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
                             <div className="h-full flex flex-col">
-                                <div className="flex-1 overflow-y-auto scroll-smooth p-3 md:p-6 pb-[100px] md:pb-24">
+                                <div className="flex-1 overflow-y-auto scroll-smooth p-2 md:p-4 pb-[100px] md:pb-24">
                                     <ProductList
                                         products={typeof window !== 'undefined' && window.innerWidth < 768 ? sortedProducts : paginatedProducts}
                                         categories={categories}
@@ -706,7 +706,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                 </div>
                             </div>
                         ) : (
-                            <div className="h-full overflow-y-auto scroll-smooth pb-[100px] md:pb-24 p-3 md:p-6">
+                            <div className="h-full overflow-y-auto scroll-smooth pb-[100px] md:pb-24 p-2 md:p-4">
                                 <CategoryList
                                     categories={categories}
                                     searchTerm={searchTerm}

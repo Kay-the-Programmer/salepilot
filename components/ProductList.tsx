@@ -54,7 +54,7 @@ const ProductCard: React.FC<{
           onSelect();
         }
       }}
-      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-3xl transition-all duration-400 overflow-hidden cursor-pointer h-full active:scale-[0.98] ${isSelected
+      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-2xl transition-all duration-400 overflow-hidden cursor-pointer h-full active:scale-[0.98] ${isSelected
         ? 'ring-2 ring-blue-500/50 shadow-[0_12px_40px_rgba(59,130,246,0.15)] bg-blue-50/30'
         : 'shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1'
         }`}
@@ -88,7 +88,7 @@ const ProductCard: React.FC<{
       </div>
 
       {/* Card Body */}
-      <div className="p-5 flex-1 flex flex-col justify-between gap-3">
+      <div className="p-4 flex-1 flex flex-col justify-between gap-3">
         <div>
           <div className="flex justify-between items-center mb-2">
             <span className={`text-[10px] font-black tracking-[0.12em] uppercase px-2 py-0.5 rounded-md ${isSelected ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}`}>{categoryName}</span>
@@ -132,7 +132,7 @@ const ProductListRow: React.FC<{
 
   return (
     <div
-      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center gap-4 transition-all duration-400 cursor-pointer active:scale-[0.99] ${isSelected
+      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 transition-all duration-400 cursor-pointer active:scale-[0.99] ${isSelected
         ? 'ring-2 ring-blue-500/50 shadow-[0_8px_30px_rgba(59,130,246,0.12)] bg-blue-50/30'
         : 'shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)]'
         }`}
@@ -214,7 +214,7 @@ const ProductList: React.FC<Props> = React.memo(({
       selectedId={selectedProductId}
       getItemId={(product) => product.id}
       onItemClick={(product) => onSelectProduct(product)}
-      className="!p-4"
+      className="!p-0"
       gridColumns={{ minWidth: '180px' }}
       renderGridItem={(product, _index, isSelected) => (
         <ProductCard

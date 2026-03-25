@@ -136,9 +136,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     if (displayedCategories.length === 0) {
         return (
             <div className="px-4 py-12 sm:px-6">
-                <div className="text-center bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl p-8 rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5">
-                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-slate-50 dark:bg-slate-800 rotate-3 transition-transform hover:rotate-6 shadow-sm border border-slate-100 dark:border-white/5">
-                        <FolderIcon className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+                <div className="text-center bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl p-6 rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5">
+                    <div className="mx-auto flex items-center justify-center h-14 w-14 rounded-xl bg-slate-50 dark:bg-slate-800 rotate-3 transition-transform hover:rotate-6 shadow-sm border border-slate-100 dark:border-white/5">
+                        <FolderIcon className="h-7 w-7 text-slate-400 dark:text-slate-500" />
                     </div>
                     <h3 className="mt-5 text-[18px] font-bold text-slate-900 dark:text-white tracking-tight">No categories found</h3>
                     <p className="mt-2 text-[14px] font-medium text-slate-500 dark:text-slate-400">
@@ -168,7 +168,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                 onClick={() => onSelectCategory?.(category.id)}
             >
                 {/* Mobile View: Flexible Stack */}
-                <div className="sm:hidden px-4 py-3 flex items-start gap-3">
+                <div className="sm:hidden px-3 py-2 flex items-start gap-2">
                     {/* Indentation Spacer for Mobile Tree */}
                     {category.level > 0 && (
                         <div
@@ -239,7 +239,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                 </div>
 
                 {/* Desktop View: Grid Layout */}
-                <div className="hidden sm:grid grid-cols-12 gap-4 px-6 py-3 items-center">
+                <div className="hidden sm:grid grid-cols-12 gap-3 px-5 py-2.5 items-center">
                     {/* Column 1: Name (spans 6) */}
                     <div className="col-span-6 flex items-center min-w-0">
                         {/* Tree Guide Lines/Indentation */}
@@ -336,10 +336,10 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     };
 
     return (
-        <div className="px-4 py-4 sm:px-6 lg:px-8">
+        <div className="p-2 md:p-4">
             {/* Header stats */}
-            <div className="mb-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
-                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 relative overflow-hidden group">
+            <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5 p-4 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 relative overflow-hidden group">
                     <div className="absolute -right-6 -top-6 p-4 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
                         <FolderIcon className="w-28 h-28 text-blue-600 dark:text-blue-400" />
                     </div>
@@ -349,7 +349,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                         <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Active</span>
                     </div>
                 </div>
-                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 group">
+                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5 p-4 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 group">
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Top-Level</p>
                     <div className="flex items-baseline gap-2">
                         <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">
@@ -358,7 +358,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                         <span className="text-[12px] font-bold text-slate-400 dark:text-slate-600">Roots</span>
                     </div>
                 </div>
-                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm border border-slate-200/50 dark:border-white/5 p-6 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 group">
+                <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5 p-4 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 group">
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Custom Config</p>
                     <div className="flex items-baseline gap-2">
                         <p className="text-[36px] font-black tracking-tighter text-slate-900 dark:text-white leading-none">
@@ -370,9 +370,9 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
             </div>
 
             {/* Category list container */}
-            <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-3xl shadow-sm dark:shadow-none border border-slate-200/50 dark:border-white/5 overflow-hidden">
+            <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl shadow-sm dark:shadow-none border border-slate-200/50 dark:border-white/5 overflow-hidden">
                 {/* Desktop header */}
-                <div className="hidden sm:grid grid-cols-12 gap-4 bg-white/50 dark:bg-white/5 px-8 py-5 border-b border-slate-100/50 dark:border-white/5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] backdrop-blur-xl">
+                <div className="hidden sm:grid grid-cols-12 gap-3 bg-white/50 dark:bg-white/5 px-6 py-3 border-b border-slate-100/50 dark:border-white/5 text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] backdrop-blur-xl">
                     <div className="col-span-6">Category Name</div>
                     <div className="col-span-3">Attributes</div>
                     <div className="col-span-2">Sub-categories</div>
@@ -385,7 +385,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                 </div>
 
                 {/* Footer usage */}
-                <div className="bg-white/30 dark:bg-white/5 px-8 py-5 border-t border-slate-100/50 dark:border-white/5 text-[11px] font-black tracking-[0.1em] text-slate-400 dark:text-slate-500 uppercase flex justify-between">
+                <div className="bg-white/30 dark:bg-white/5 px-6 py-3 border-t border-slate-100/50 dark:border-white/5 text-[11px] font-black tracking-[0.1em] text-slate-400 dark:text-slate-500 uppercase flex justify-between">
                     <span>{displayedCategories.length} categories shown</span>
                 </div>
             </div>

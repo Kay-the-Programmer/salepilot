@@ -128,10 +128,10 @@ function UnifiedListGrid<T>({
     };
 
     return (
-        <div className={`p-4 ${className}`}>
+        <div className={`p-2 ${className}`}>
             {viewMode === 'grid' ? (
                 <div
-                    className={`grid gap-4 sm:gap-6 ${gridClassName}`}
+                    className={`grid gap-2 sm:gap-4 ${gridClassName}`}
                     style={gridStyle}
                 >
                     {items.map((item, index) => {
@@ -150,7 +150,7 @@ function UnifiedListGrid<T>({
                     })}
                 </div>
             ) : (
-                <div className={`space-y-3 ${listClassName}`}>
+                <div className={`space-y-2 ${listClassName}`}>
                     {items.map((item, index) => {
                         const id = getItemId(item);
                         const isSelected = selectedId === id;
