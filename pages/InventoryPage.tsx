@@ -956,23 +956,23 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
             {/* Floating Action Buttons for Mobile */}
             {canManageProducts && !selectedItem && (
-                <div className="md:hidden fixed bottom-10 left-1/2 -translate-x-1/2 flex items-center gap-6 z-50 animate-in fade-in slide-in-from-bottom-10 duration-500">
+                <div className="md:hidden fixed bottom-6 right-6 flex flex-col-reverse items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-6 duration-500">
                     <button
                         onClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
-                        className="w-16 h-16 flex items-center justify-center bg-brand-text text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.2)] hover:scale-110 active:scale-95 transition-all duration-300 group"
+                        className="w-14 h-14 flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.1)] hover:scale-110 active:scale-95 transition-all duration-300 group"
                         aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
                     >
-                        <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
                         </svg>
                     </button>
                     {activeTab === 'products' && (
                         <button
                             onClick={() => setIsScanModalOpen(true)}
-                            className="w-16 h-16 flex items-center justify-center bg-white dark:bg-slate-800 text-brand-text dark:text-white rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 dark:border-white/5 hover:scale-110 active:scale-95 transition-all duration-300"
+                            className="w-14 h-14 flex items-center justify-center bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] dark:shadow-none border border-slate-100 dark:border-white/5 hover:scale-110 active:scale-95 transition-all duration-300"
                             aria-label="Scan Barcode"
                         >
-                            <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
