@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Product, Category, CustomAttribute, Supplier, StoreSettings } from '../types';
-import { generateDescription as fetchAIDescription } from '../services/geminiService';
+import React, { useState, useEffect, useRef } from 'react';
+import { Product, Category, Supplier, StoreSettings } from '../types';
 import { api, buildAssetUrl } from '../services/api';
 import SparklesIcon from './icons/SparklesIcon';
 import XMarkIcon from './icons/XMarkIcon';
@@ -138,22 +137,6 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
         <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-4 border-b border-gray-100 pb-2">{title}</h3>
     );
 
-    const renderMobileSectionTabs = () => (
-        <div className="liquid-glass-header flex border-b border-gray-100 overflow-x-auto hide-scrollbar sticky top-0 z-20">
-            {mobileSections.map(s => (
-                <button
-                    key={s.id}
-                    onClick={() => setActiveSection(s.id)}
-                    className={`flex-1 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${activeSection === s.id
-                        ? 'border-gray-900 text-gray-900'
-                        : 'border-transparent text-gray-500 hover:text-gray-700'
-                        }`}
-                >
-                    {s.label}
-                </button>
-            ))}
-        </div>
-    );
 
     // Mobile section navigation
     const mobileSections = [
@@ -171,8 +154,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 return (
                     <>
                         {renderSectionTitle('Product Details')}
-                        <div className="space-y-4">
+                        <div className="p-0">
                             <InputField
+                                        className="rounded-none"
                                 label="Product Name"
                                 name="name"
                                 id="name"
@@ -190,7 +174,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         value={product.categoryId || ''}
                                         onChange={handleChange}
                                         required
-                                        className="flex-1 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                                        className="flex-1 w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                     >
                                         <option value="" disabled>Select a category</option>
                                         {categories.filter(c => c.parentId === null).map(c => (
@@ -207,7 +191,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         variant="secondary"
                                         onClick={onAddCategory}
                                         title="Add New Category"
-                                        className="px-4"
+                                        className="px-4 rounded-none"
                                     >
                                         <span className="text-lg font-bold text-blue-600">+</span>
                                     </Button>
@@ -216,9 +200,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                         </div>
 
                         {relevantAttributes.length > 0 && (
-                            <div className="mt-4 space-y-4">
+                            <div className="mt-4 space-y-2">
                                 {relevantAttributes.map(attr => (
                                     <InputField
+                                        className="rounded-none"
                                         key={attr.id}
                                         label={attr.name}
                                         name={`custom_${attr.id}`}
@@ -231,8 +216,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             </div>
                         )}
 
-                        <div className="space-y-4 mt-4">
+                        <div className="space-y-2 mt-4">
                             <InputField
+                                        className="rounded-none"
                                 label="Brand"
                                 name="brand"
                                 id="brand"
@@ -248,7 +234,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         id="supplierId"
                                         value={product.supplierId || ''}
                                         onChange={handleChange}
-                                        className="flex-1 w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                                        className="flex-1 w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                     >
                                         <option value="">No Supplier</option>
                                         {localSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -258,7 +244,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         variant="secondary"
                                         onClick={() => setIsSupplierModalOpen(true)}
                                         title="Add New Supplier"
-                                        className="px-4"
+                                        className="px-4 rounded-none"
                                     >
                                         <span className="text-lg font-bold text-blue-600">+</span>
                                     </Button>
@@ -275,14 +261,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     rows={4}
                                     value={product.description}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all pr-32"
+                                    className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all pr-32"
                                     placeholder="Enter product description..."
                                 />
                                 <button
                                     type="button"
                                     onClick={handleGenerateDescription}
                                     disabled={isGenerating || !product.name || !product.categoryId}
-                                    className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium active:scale-95 transition-all duration-300"
+                                    className="absolute bottom-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 rounded-none border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium active:scale-95 transition-all duration-300"
                                 >
                                     <SparklesIcon className="w-4 h-4" />
                                     {isGenerating ? 'Generating...' : 'Generate AI'}
@@ -295,9 +281,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 return (
                     <>
                         {renderSectionTitle('Pricing')}
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                             <div>
                                 <InputField
+                                        className="rounded-none"
                                     label={`Retail Price ${product.unitOfMeasure === 'kg' ? '(per kg)' : ''}`}
                                     name="price"
                                     id="price"
@@ -314,6 +301,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             </div>
                             <div>
                                 <InputField
+                                        className="rounded-none"
                                     label="Cost Price"
                                     name="costPrice"
                                     id="costPrice"
@@ -328,7 +316,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             </div>
 
                             {(product.price > 0 && product.costPrice !== undefined) && (
-                                <div className="p-3 rounded-xl bg-gray-50 border border-gray-100">
+                                <div className="p-3 rounded-none bg-gray-50 border border-gray-100">
                                     <div className="flex justify-between items-center mb-1">
                                         <span className="text-xs text-gray-500">Estimated Profit</span>
                                         <span className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
@@ -341,7 +329,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             {profitMargin.toFixed(2)}%
                                         </span>
                                     </div>
-                                    <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                    <div className="mt-2 w-full bg-gray-200 rounded-none h-1.5 overflow-hidden">
                                         <div
                                             className={`h-full transition-all duration-500 ${profitMargin >= 30 ? 'bg-green-500' : profitMargin >= 10 ? 'bg-blue-500' : 'bg-red-500'}`}
                                             style={{ width: `${Math.max(0, Math.min(100, profitMargin))}%` }}
@@ -356,8 +344,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 return (
                     <>
                         {renderSectionTitle('Inventory & Shipping')}
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                             <InputField
+                                        className="rounded-none"
                                 label="SKU"
                                 name="sku"
                                 id="sku"
@@ -371,12 +360,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <div className="flex gap-2">
                                         <div className="flex-1">
                                             <InputField
+                                                className="rounded-none mb-0"
                                                 name="barcode"
                                                 id="barcode"
                                                 value={product.barcode || ''}
                                                 onChange={handleChange}
                                                 placeholder="Scan or enter barcode"
-                                                className="mb-0"
                                             />
                                         </div>
                                         <Button
@@ -384,7 +373,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             variant="secondary"
                                             onClick={() => setIsBarcodeScannerOpen(true)}
                                             title="Scan Barcode"
-                                            className="px-4"
+                                            className="px-4 rounded-none"
                                         >
                                             <span role="img" aria-label="scan">📷</span>
                                         </Button>
@@ -393,7 +382,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <button
                                             type="button"
                                             onClick={handleGenerateBarcode}
-                                            className="flex-1 py-2.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 text-sm font-medium active:scale-95 transition-all duration-300"
+                                            className="flex-1 py-2.5 rounded-none border border-gray-300 bg-white hover:bg-gray-50 active:bg-gray-100 text-sm font-medium active:scale-95 transition-all duration-300"
                                         >
                                             Generate from SKU
                                         </button>
@@ -401,7 +390,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             type="button"
                                             onClick={() => handleLookup()}
                                             disabled={isGenerating}
-                                            className="flex-1 py-2.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 text-sm font-medium disabled:opacity-50 active:scale-95 transition-all duration-300"
+                                            className="flex-1 py-2.5 rounded-none border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 active:bg-blue-200 text-sm font-medium disabled:opacity-50 active:scale-95 transition-all duration-300"
                                         >
                                             {isGenerating ? 'Searching...' : 'Lookup Info'}
                                         </button>
@@ -412,6 +401,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <InputField
+                                        className="rounded-none"
                                         label="Current Stock"
                                         name="stock"
                                         id="stock"
@@ -430,7 +420,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         id="unitOfMeasure"
                                         value={product.unitOfMeasure || 'unit'}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                                        className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                     >
                                         <option value="unit">Unit</option>
                                         <option value="kg">Kilogram (kg)</option>
@@ -441,6 +431,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <InputField
+                                        className="rounded-none"
                                         label="Reorder Point"
                                         name="reorderPoint"
                                         id="reorderPoint"
@@ -454,6 +445,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 </div>
                                 <div>
                                     <InputField
+                                        className="rounded-none"
                                         label="Safety Stock"
                                         name="safetyStock"
                                         id="safetyStock"
@@ -469,6 +461,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
                                     <InputField
+                                        className="rounded-none"
                                         label="Weight (kg)"
                                         name="weight"
                                         id="weight"
@@ -481,6 +474,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 </div>
                                 <div>
                                     <InputField
+                                        className="rounded-none"
                                         label="Dimensions"
                                         name="dimensions"
                                         id="dimensions"
@@ -497,10 +491,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                 return (
                     <>
                         {renderSectionTitle('Variants')}
-                        <div className="space-y-4">
+                        <div className="space-y-2">
                             <p className="text-sm text-gray-600">Add product variants (e.g., sizes or colors). Each variant should have a unique SKU, price, and stock.</p>
                             {(product.variants || []).map((v, idx) => (
-                                <div key={idx} className="p-4 bg-gray-50 rounded-lg space-y-3">
+                                <div key={idx} className="p-4 bg-gray-50 rounded-none space-y-3">
                                     <div className="flex justify-between items-start">
                                         <span className="font-medium text-gray-700">Variant {idx + 1}</span>
                                         <button
@@ -568,7 +562,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                     ...prev,
                                                     variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, unitOfMeasure: e.target.value as any } : vv) || []
                                                 }))}
-                                                className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="unit">Unit</option>
                                                 <option value="kg">kg</option>
@@ -589,7 +583,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         unitOfMeasure: product.unitOfMeasure
                                     }]
                                 }))}
-                                className="w-full py-3 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors active:scale-95 transition-all duration-300"
+                                className="w-full py-3 rounded-none border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors active:scale-95 transition-all duration-300"
                             >
                                 + Add Variant
                             </button>
@@ -608,12 +602,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             <img
                                                 src={buildAssetUrl(imgSrc)}
                                                 alt="Product image"
-                                                className="w-full h-full object-cover rounded-lg shadow-sm border border-gray-200"
+                                                className="w-full h-full object-cover rounded-none shadow-sm border border-gray-200"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => removeImage(index)}
-                                                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-2 shadow-lg hover:bg-red-700 active:scale-95 transition-transform"
+                                                className="absolute -top-2 -right-2 bg-red-600 text-white rounded-none p-2 shadow-lg hover:bg-red-700 active:scale-95 transition-transform"
                                                 aria-label="Remove image"
                                             >
                                                 <XMarkIcon className="w-5 h-5" />
@@ -625,7 +619,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <button
                                             type="button"
                                             onClick={() => fileInputRef.current?.click()}
-                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors active:scale-95 transition-all duration-300"
+                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-none flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors active:scale-95 transition-all duration-300"
                                         >
                                             <ArrowUpTrayIcon className="w-8 h-8 text-gray-400" />
                                             <span className="text-sm font-medium text-gray-600">Upload</span>
@@ -633,7 +627,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <button
                                             type="button"
                                             onClick={() => setIsCameraModalOpen(true)}
-                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors active:scale-95 transition-all duration-300"
+                                            className="aspect-square border-2 border-dashed border-gray-300 rounded-none flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 transition-colors active:scale-95 transition-all duration-300"
                                         >
                                             <CameraIcon className="w-8 h-8 text-gray-400" />
                                             <span className="text-sm font-medium text-gray-600">Camera</span>
@@ -649,7 +643,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <button
                                         type="button"
                                         onClick={() => setProduct(prev => ({ ...prev, status: 'active' }))}
-                                        className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'active'
+                                        className={`flex-1 py-3 rounded-none border font-medium ${product.status === 'active'
                                             ? 'bg-green-100 border-green-500 text-green-700'
                                             : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                                             }`}
@@ -659,7 +653,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <button
                                         type="button"
                                         onClick={() => setProduct(prev => ({ ...prev, status: 'archived' }))}
-                                        className={`flex-1 py-3 rounded-lg border font-medium ${product.status === 'archived'
+                                        className={`flex-1 py-3 rounded-none border font-medium ${product.status === 'archived'
                                             ? 'bg-gray-100 border-gray-500 text-gray-700'
                                             : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'
                                             }`}
@@ -678,12 +672,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
     return (
         <>
-            <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4">
-                <div className="absolute inset-0 bg-slate-900/40 dark:bg-black/60 backdrop-blur-md animate-fade-in" onClick={onClose} />
-                <div className="w-full liquid-glass rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl max-h-[95vh] overflow-hidden flex flex-col animate-glass-appear sm:max-w-4xl relative z-10 border-none">
+            <div className="fixed inset-0 z-[100] bg-white dark:bg-slate-900 flex flex-col animate-fade-in overflow-hidden">
+                <div className="flex-1 w-full h-full flex flex-col relative z-10 overflow-hidden">
                     {/* Header */}
-                    <div className="sticky top-0 liquid-glass-header z-20 shadow-none">
-                        <div className="px-6 py-4 sm:px-10 flex items-center justify-between">
+                    <div className="sticky top-0 bg-white dark:bg-slate-900 z-20 border-b border-gray-100 dark:border-white/5">
+                        <div className="px-5 py-3 sm:px-8 flex items-center justify-between">
                             <div>
                                 <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-google">
                                     {productToEdit ? 'Edit Product' : 'Add Product'}
@@ -692,12 +685,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     {mobileSections.find(s => s.id === activeSection)?.label}
                                 </p>
                             </div>
-                            <button
+                                <button
                                 type="button"
                                 onClick={onClose}
-                                className="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-all duration-200 active:scale-90 active:scale-95 transition-all duration-300"
+                                className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-none transition-all duration-200 active:scale-95"
                             >
-                                <XMarkIcon className="w-6 h-6 text-slate-500 dark:text-slate-400" />
+                                <XMarkIcon className="w-5 h-5 text-slate-500 dark:text-slate-400" />
                             </button>
                         </div>
 
@@ -709,7 +702,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         key={section.id}
                                         type="button"
                                         onClick={() => setActiveSection(section.id)}
-                                        className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === section.id
+                                        className={`px-4 py-2 font-bold text-sm rounded-none transition-all duration-300 active:scale-95 ${activeSection === section.id
                                             ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
                                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                                             }`}
@@ -725,7 +718,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                     <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
                         <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                             {error && (
-                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-none">
                                     <p className="text-sm text-red-700">{error}</p>
                                 </div>
                             )}
@@ -749,7 +742,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             value={product.name}
                                             onChange={handleChange}
                                             required
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
                                     <div>
@@ -761,7 +754,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 value={product.categoryId || ''}
                                                 onChange={handleChange}
                                                 required
-                                                className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="flex-1 px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="" disabled>Select a category</option>
                                                 {categories.filter(c => c.parentId === null).map(c => (
@@ -776,7 +769,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             <button
                                                 type="button"
                                                 onClick={onAddCategory}
-                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
+                                                className="px-3 py-2 rounded-none border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                                 title="Add New Category"
                                             >
                                                 <span className="text-lg font-bold text-blue-600">+</span>
@@ -791,7 +784,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             id="brand"
                                             value={product.brand || ''}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                            className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                         />
                                     </div>
                                     <div>
@@ -802,7 +795,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 id="supplierId"
                                                 value={product.supplierId || ''}
                                                 onChange={handleChange}
-                                                className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="flex-1 px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="">No Supplier</option>
                                                 {localSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
@@ -810,7 +803,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             <button
                                                 type="button"
                                                 onClick={() => setIsSupplierModalOpen(true)}
-                                                className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
+                                                className="px-3 py-2 rounded-none border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                                 title="Add New Supplier"
                                             >
                                                 <span className="text-lg font-bold text-blue-600">+</span>
@@ -818,7 +811,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         </div>
                                     </div>
                                     {relevantAttributes.length > 0 && (
-                                        <div className="col-span-2 grid grid-cols-2 gap-4">
+                                        <div className="col-span-2 grid grid-cols-2 gap-2">
                                             {relevantAttributes.map(attr => (
                                                 <div key={attr.id}>
                                                     <label htmlFor={`custom_${attr.id}`} className="block text-sm font-medium text-gray-700 mb-1">{attr.name}</label>
@@ -828,7 +821,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                         id={`custom_${attr.id}`}
                                                         value={product.customAttributes?.[attr.id] || ''}
                                                         onChange={handleChange}
-                                                        className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     />
                                                 </div>
                                             ))}
@@ -846,13 +839,13 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             rows={3}
                                             value={product.description}
                                             onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-28"
+                                            className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-28"
                                         />
                                         <button
                                             type="button"
                                             onClick={handleGenerateDescription}
                                             disabled={isGenerating || !product.name || !product.categoryId}
-                                            className="absolute top-2 right-2 inline-flex items-center gap-1 px-3 py-1 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium active:scale-95 transition-all duration-300"
+                                            className="absolute top-2 right-2 inline-flex items-center gap-1 px-3 py-1 rounded-none border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium active:scale-95 transition-all duration-300"
                                         >
                                             <SparklesIcon className="w-3 h-3" />
                                             {isGenerating ? 'Generating...' : 'Generate AI'}
@@ -862,8 +855,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
                                 {/* Pricing */}
                                 {renderSectionTitle('Pricing')}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-2">
                                     <InputField
+                                        className="rounded-none"
                                         label={`Retail Price ${product.unitOfMeasure === 'kg' ? '(per kg)' : ''}`}
                                         name="price"
                                         id="price"
@@ -877,6 +871,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         placeholder="0.00"
                                     />
                                     <InputField
+                                        className="rounded-none"
                                         label="Cost Price"
                                         name="costPrice"
                                         id="costPrice"
@@ -891,7 +886,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 </div>
 
                                 {(product.price > 0 && product.costPrice !== undefined) && (
-                                    <div className="p-4 rounded-xl bg-gray-50 border border-gray-100 mt-2">
+                                    <div className="p-4 rounded-none bg-gray-50 border border-gray-100 mt-2">
                                         <div className="flex items-center gap-6">
                                             <div className="flex-1">
                                                 <div className="flex justify-between items-center mb-1">
@@ -900,7 +895,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                         {profitMargin.toFixed(2)}%
                                                     </span>
                                                 </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                                                <div className="w-full bg-gray-200 rounded-none h-1.5 overflow-hidden">
                                                     <div
                                                         className={`h-full transition-all duration-500 ${profitMargin >= 30 ? 'bg-green-500' : profitMargin >= 10 ? 'bg-blue-500' : 'bg-red-500'}`}
                                                         style={{ width: `${Math.max(0, Math.min(100, profitMargin))}%` }}
@@ -920,8 +915,8 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
                                 {/* Inventory & Shipping */}
                                 {renderSectionTitle('Inventory & Shipping')}
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-2 gap-2">
                                         <div>
                                             <label htmlFor="sku" className="block text-sm font-medium text-gray-700 mb-1">SKU</label>
                                             <input
@@ -931,7 +926,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 value={product.sku}
                                                 onChange={handleChange}
                                                 required
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
@@ -943,12 +938,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                     id="barcode"
                                                     value={product.barcode || ''}
                                                     onChange={handleChange}
-                                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                    className="flex-1 px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsBarcodeScannerOpen(true)}
-                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
+                                                    className="px-3 py-2 rounded-none border border-gray-300 bg-white hover:bg-gray-50 active:scale-95 transition-all duration-300"
                                                     title="Scan Barcode"
                                                 >
                                                     📷
@@ -957,21 +952,21 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                     type="button"
                                                     onClick={() => handleLookup()}
                                                     disabled={isGenerating}
-                                                    className="px-3 py-2 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-sm font-medium active:scale-95 transition-all duration-300"
+                                                    className="px-3 py-2 rounded-none border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 disabled:opacity-50 text-sm font-medium active:scale-95 transition-all duration-300"
                                                 >
                                                     {isGenerating ? '...' : 'Lookup'}
                                                 </button>
                                                 <button
                                                     type="button"
                                                     onClick={handleGenerateBarcode}
-                                                    className="px-3 py-2 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-sm active:scale-95 transition-all duration-300"
+                                                    className="px-3 py-2 rounded-none border border-gray-300 bg-white hover:bg-gray-50 text-sm active:scale-95 transition-all duration-300"
                                                 >
                                                     Generate
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-3 gap-2">
                                         <div>
                                             <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
                                                 Stock{product.unitOfMeasure === 'kg' ? ' (kg)' : ''} *
@@ -985,7 +980,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 required
                                                 min="0"
                                                 step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
@@ -995,7 +990,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 id="unitOfMeasure"
                                                 value={product.unitOfMeasure || 'unit'}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             >
                                                 <option value="unit">Unit</option>
                                                 <option value="kg">Kilogram (kg)</option>
@@ -1011,11 +1006,11 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 onChange={handleChange}
                                                 min="0"
                                                 step="1"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                     </div>
-                                    <div className="grid grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-3 gap-2">
                                         <div>
                                             <label htmlFor="safetyStock" className="block text-sm font-medium text-gray-700 mb-1">Safety Stock</label>
                                             <input
@@ -1026,7 +1021,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 onChange={handleChange}
                                                 min="0"
                                                 step="1"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
@@ -1039,7 +1034,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 onChange={handleChange}
                                                 min="0"
                                                 step="0.001"
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             />
                                         </div>
                                         <div>
@@ -1050,7 +1045,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 id="dimensions"
                                                 value={product.dimensions || ''}
                                                 onChange={handleChange}
-                                                className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="10 x 20 x 5 cm"
                                             />
                                         </div>
@@ -1062,7 +1057,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                 <div className="space-y-3">
                                     <p className="text-sm text-gray-600">Add product variants (e.g., sizes or colors). Each variant should have a unique SKU, price, and stock.</p>
                                     {(product.variants || []).map((v, idx) => (
-                                        <div key={idx} className="p-3 bg-gray-50 rounded-lg space-y-2">
+                                        <div key={idx} className="p-3 bg-gray-50 rounded-none space-y-2">
                                             <div className="grid grid-cols-5 gap-2 items-end">
                                                 <div className="col-span-2">
                                                     <label className="block text-xs font-medium text-gray-700 mb-1">Name</label>
@@ -1073,7 +1068,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                             ...prev,
                                                             variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, name: e.target.value } : vv) || []
                                                         }))}
-                                                        className="w-full px-2 py-1.5 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        className="w-full px-2 py-1.5 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     />
                                                 </div>
                                                 <div>
@@ -1085,7 +1080,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                             ...prev,
                                                             variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, sku: e.target.value } : vv) || []
                                                         }))}
-                                                        className="w-full px-2 py-1.5 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        className="w-full px-2 py-1.5 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     />
                                                 </div>
                                                 <div>
@@ -1099,7 +1094,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                             ...prev,
                                                             variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, price: parseFloat(e.target.value || '0') } : vv) || []
                                                         }))}
-                                                        className="w-full px-2 py-1.5 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        className="w-full px-2 py-1.5 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     />
                                                 </div>
                                                 <div className="flex gap-1">
@@ -1109,7 +1104,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                             ...prev,
                                                             variants: (prev.variants || []).filter((_, i) => i !== idx)
                                                         }))}
-                                                        className="px-2 py-1.5 text-sm rounded border border-red-300 text-red-700 hover:bg-red-50 active:scale-95 transition-all duration-300"
+                                                        className="px-2 py-1.5 text-sm rounded-none border border-red-300 text-red-700 hover:bg-red-50 active:scale-95 transition-all duration-300"
                                                     >
                                                         Remove
                                                     </button>
@@ -1127,7 +1122,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                             ...prev,
                                                             variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, stock: parseFloat(e.target.value || '0') } : vv) || []
                                                         }))}
-                                                        className="w-full px-2 py-1.5 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        className="w-full px-2 py-1.5 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     />
                                                 </div>
                                                 <div>
@@ -1138,7 +1133,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                             ...prev,
                                                             variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, unitOfMeasure: e.target.value as any } : vv) || []
                                                         }))}
-                                                        className="w-full px-2 py-1.5 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                        className="w-full px-2 py-1.5 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     >
                                                         <option value="unit">Unit</option>
                                                         <option value="kg">kg</option>
@@ -1159,7 +1154,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 unitOfMeasure: product.unitOfMeasure
                                             }]
                                         }))}
-                                        className="w-full py-2 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm active:scale-95 transition-all duration-300"
+                                        className="w-full py-2 rounded-none border-2 border-dashed border-gray-300 hover:border-blue-500 hover:bg-blue-50 text-gray-600 hover:text-blue-600 transition-colors text-sm active:scale-95 transition-all duration-300"
                                     >
                                         + Add Variant
                                     </button>
@@ -1167,19 +1162,19 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
                                 {/* Images */}
                                 {renderSectionTitle('Images')}
-                                <div className="space-y-4">
-                                    <div className="grid grid-cols-5 gap-4">
+                                <div className="space-y-2">
+                                    <div className="grid grid-cols-5 gap-2">
                                         {images.map((imgSrc, index) => (
                                             <div key={index} className="relative group aspect-square">
                                                 <img
                                                     src={imgSrc.startsWith('data:') ? imgSrc : buildAssetUrl(imgSrc)}
                                                     alt={`Product ${index + 1}`}
-                                                    className="w-full h-full object-cover rounded-xl shadow-sm border border-gray-200 group-hover:border-blue-500 transition-colors"
+                                                    className="w-full h-full object-cover rounded-none shadow-sm border border-gray-200 group-hover:border-blue-500 transition-colors"
                                                 />
                                                 <button
                                                     type="button"
                                                     onClick={() => removeImage(index)}
-                                                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 shadow-lg hover:bg-red-700 transition-all duration-200"
+                                                    className="absolute -top-2 -right-2 bg-red-600 text-white rounded-none p-1 opacity-0 group-hover:opacity-100 shadow-lg hover:bg-red-700 transition-all duration-200"
                                                     aria-label="Remove image"
                                                 >
                                                     <XMarkIcon className="w-4 h-4" />
@@ -1188,13 +1183,13 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         ))}
 
                                         {images.length < 5 && (
-                                            <div className="flex gap-4 col-span-2">
+                                            <div className="flex gap-2 col-span-2">
                                                 <button
                                                     type="button"
                                                     onClick={() => fileInputRef.current?.click()}
-                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group active:scale-95 transition-all duration-300"
+                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-none flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group active:scale-95 transition-all duration-300"
                                                 >
-                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600 active:scale-95 transition-all duration-300">
+                                                    <div className="p-3 bg-gray-50 rounded-none group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600 active:scale-95 transition-all duration-300">
                                                         <ArrowUpTrayIcon className="w-6 h-6" />
                                                     </div>
                                                     <span className="text-xs font-semibold">Upload</span>
@@ -1202,9 +1197,9 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 <button
                                                     type="button"
                                                     onClick={() => setIsCameraModalOpen(true)}
-                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group active:scale-95 transition-all duration-300"
+                                                    className="flex-1 aspect-square border-2 border-dashed border-gray-300 rounded-none flex flex-col items-center justify-center gap-2 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all group active:scale-95 transition-all duration-300"
                                                 >
-                                                    <div className="p-3 bg-gray-50 rounded-full group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600 active:scale-95 transition-all duration-300">
+                                                    <div className="p-3 bg-gray-50 rounded-none group-hover:bg-blue-100 transition-colors text-gray-400 group-hover:text-blue-600 active:scale-95 transition-all duration-300">
                                                         <CameraIcon className="w-6 h-6" />
                                                     </div>
                                                     <span className="text-xs font-semibold">Camera</span>
@@ -1221,7 +1216,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
 
                                 {/* Status */}
                                 {renderSectionTitle('Status')}
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 gap-2">
                                     <div>
                                         <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">Product Status</label>
                                         <select
@@ -1229,7 +1224,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                             name="status"
                                             value={product.status}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
+                                            className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all appearance-none"
                                         >
                                             <option value="active">Active</option>
                                             <option value="archived">Archived</option>
@@ -1248,13 +1243,14 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                         />
 
                         {/* Footer */}
-                        <div className="sticky bottom-0 bg-white border-t border-gray-200 p-4 sm:p-6">
+                        <div className="sticky bottom-0 bg-white dark:bg-slate-900 border-t border-gray-100 dark:border-white/5 p-4 sm:p-5">
                             <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-row sm:justify-end">
                                 <Button
                                     type="button"
                                     variant="secondary"
                                     onClick={onClose}
                                     disabled={isSaving}
+                                    className="rounded-none"
                                 >
                                     Cancel
                                 </Button>
@@ -1264,6 +1260,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     disabled={isSaving}
                                     isLoading={isSaving}
                                     loadingText="Saving..."
+                                    className="rounded-none"
                                 >
                                     {`Save ${productToEdit ? 'Changes' : 'Product'}`}
                                 </Button>
