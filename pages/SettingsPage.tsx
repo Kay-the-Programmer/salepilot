@@ -13,16 +13,21 @@ import BusinessVerificationSection from '../components/settings/BusinessVerifica
 import AccountVerificationSection from '../components/settings/AccountVerificationSection';
 import NotificationSettingsSection from '../components/settings/sections/NotificationSettingsSection';
 import BarcodeScannerSection from '../components/settings/sections/BarcodeScannerSection';
+import ReferralSection from '../components/settings/sections/ReferralSection';
 import SettingsCard from '../components/settings/SettingsCard';
 import SettingsSidebar, { SettingsCategory } from '../components/settings/SettingsSidebar';
 import ChevronLeftIcon from '../components/icons/ChevronLeftIcon';
+import { User } from '../types';
+import { SnackbarType } from '../App';
 
 interface SettingsPageProps {
     settings: StoreSettings;
+    user: User;
+    showSnackbar: (message: string, type?: SnackbarType) => void;
     onSave: (settings: StoreSettings) => void;
 }
 
-const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
+const SettingsPage: React.FC<SettingsPageProps> = ({ settings, user, showSnackbar, onSave }) => {
     const [editingSection, setEditingSection] = useState<string | null>(null);
     const [currentSettings, setCurrentSettings] = useState(settings);
     const [activeCategory, setActiveCategory] = useState<SettingsCategory>('store');
@@ -115,7 +120,8 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
             'scanner': 'Barcode Scanner',
             'verification': 'Verification',
             'billing': 'Plans & Billing',
-            'notifications': 'Notifications'
+            'notifications': 'Notifications',
+            'referrals': 'Referrals'
         };
         return titles[activeCategory] || 'Settings';
     };
@@ -338,6 +344,15 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ settings, onSave }) => {
                                         onEdit={() => setEditingSection('notifications')}
                                         onSave={() => setEditingSection(null)}
                                         onCancel={() => setEditingSection(null)}
+                                    />
+                                </div>
+                            )}
+
+                            {activeCategory === 'referrals' && (
+                                <div className="animate-fade-in px-4 md:px-0 pb-8">
+                                    <ReferralSection 
+                                        user={user} 
+                                        showSnackbar={showSnackbar} 
                                     />
                                 </div>
                             )}

@@ -31,6 +31,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [name, setName] = useState('');
+    const [referralCode, setReferralCode] = useState('');
     const [showPassword, setShowPassword] = useState(false);
 
     // OTP step state — used after registration
@@ -56,7 +57,15 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
     useEffect(() => {
         if (location.pathname.endsWith('/register')) setView('register');
         else if (location.pathname.endsWith('/login')) setView('login');
-    }, [location.pathname]);
+
+        // Capture referral code from URL
+        const params = new URLSearchParams(location.search);
+        const ref = params.get('ref') || params.get('referral');
+        if (ref) {
+            setReferralCode(ref.toUpperCase());
+            if (view !== 'register') setView('register');
+        }
+    }, [location.pathname, location.search]);
 
     const switchView = (v: 'login' | 'register') => {
         setView(v);
@@ -79,7 +88,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
             } else if (!isPendingOTP) {
                 // ── Step 1: Create Account ─────────────────────────────
                 if (password.length < 8) throw new Error('Password must be at least 8 characters.');
-                await register(name, email, password);
+                await register(name, email, password, referralCode);
                 setIsPendingOTP(true);
                 showSnackbar('We sent a 6-digit code to your email.', 'info');
 
@@ -326,6 +335,23 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                         {showPassword ? <HiOutlineEyeSlash className="h-5 w-5" /> : <HiOutlineEye className="h-5 w-5" />}
                                     </button>
                                 </div>
+
+                                {/* ── Referral Code (Optional) ── */}
+                                {view === 'register' && (
+                                    <div className="animate-in fade-in slide-in-from-right-4 duration-500 relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                                            <HiOutlineUser className="h-5 w-5 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors opacity-50" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            className="block w-full pl-12 pr-4 py-4 bg-slate-50 dark:bg-slate-800/50 border-0 rounded-2xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-600 focus:ring-2 focus:ring-blue-500/20 focus:bg-white dark:focus:bg-slate-800 transition-all text-sm font-bold"
+                                            placeholder="Referral Code (Optional)"
+                                            value={referralCode}
+                                            onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+                                            disabled={anyLoading}
+                                        />
+                                    </div>
+                                )}
 
                                 {/* ── Bottom links ── */}
                                 <div className="flex items-center justify-between px-1 pt-1">

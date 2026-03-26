@@ -60,6 +60,8 @@ export interface User {
     subscriptionStatus?: 'trial' | 'active' | 'past_due' | 'canceled';
     subscriptionEndsAt?: string;
     subscriptionPlan?: string;
+    referralCode?: string;
+    discountBalance?: number;
 }
 
 export interface CartItem {

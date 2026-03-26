@@ -1100,7 +1100,7 @@ export default function Dashboard() {
 
             switch (page) {
                 case 'quick-view':
-                    return <QuickView user={currentUser} products={products} />;
+                    return <QuickView user={currentUser} />;
                 case 'setup-store':
                     return (
                         <StoreSetupPage
@@ -1177,7 +1177,7 @@ export default function Dashboard() {
                 case 'profile':
                     return <ProfilePage user={currentUser} storeSettings={storeSettings!} onLogout={handleLogout} onInstall={handleInstall} installPrompt={installPrompt} onUpdateProfile={handleUpdateProfile} onChangePassword={handleChangePassword} />;
                 case 'settings':
-                    return <SettingsPage settings={storeSettings!} onSave={handleSaveSettings} />;
+                    return <SettingsPage settings={storeSettings!} user={currentUser!} showSnackbar={showSnackbar} onSave={handleSaveSettings} />;
                 case 'users':
                     return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
                 case 'notifications':

@@ -30,6 +30,7 @@ export type SettingsCategory =
     | 'verification'
     | 'billing'
     | 'notifications'
+    | 'referrals'
     | 'scanner';
 
 interface SettingsSidebarProps {
@@ -46,6 +47,7 @@ const categories = [
     { id: 'verification' as const, label: 'Verification', icon: ShieldCheckIcon, description: 'Business status', color: 'bg-slate-500' },
     { id: 'billing' as const, label: 'Plans & Billing', icon: CreditCardIcon, description: 'Subscription info', color: 'bg-rose-500' },
     { id: 'notifications' as const, label: 'Notifications', icon: BuildingStorefrontIcon, description: 'Push & alert settings', color: 'bg-purple-500' },
+    { id: 'referrals' as const, label: 'Referrals', icon: ShieldCheckIcon, description: 'Invite friends, earn rewards', color: 'bg-emerald-600' },
 ];
 
 const SettingsSidebar: React.FC<SettingsSidebarProps> = ({ activeCategory, onCategoryChange }) => {

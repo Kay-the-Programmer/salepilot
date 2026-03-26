@@ -45,6 +45,8 @@ const normalizeUser = (u: any): User => ({
     subscriptionEndsAt: u.subscriptionEndsAt || u.subscription_ends_at,
     subscriptionPlan: u.subscriptionPlan || u.subscription_plan,
     onboardingState: u.onboardingState || u.onboarding_state,
+    referralCode: u.referralCode || u.referral_code,
+    discountBalance: u.discountBalance || u.discount_balance,
 });
 
 const updateStoredUser = (updatedFields: Partial<User>): User | null => {
@@ -71,14 +73,14 @@ export const login = async (email: string, password?: string): Promise<User> => 
 };
 
 /** New business account registration */
-export const register = async (name: string, email: string, password?: string): Promise<User> => {
-    const u = await api.post<User>('/auth/register', { name, email, password });
+export const register = async (name: string, email: string, password?: string, referralCode?: string): Promise<User> => {
+    const u = await api.post<User>('/auth/register', { name, email, password, referralCode });
     return normalizeUser(u);
 };
 
 /** Customer self-registration */
-export const registerCustomer = async (name: string, email: string, password?: string): Promise<User> => {
-    const u = await api.post<User>('/auth/register-customer', { name, email, password });
+export const registerCustomer = async (name: string, email: string, password?: string, referralCode?: string): Promise<User> => {
+    const u = await api.post<User>('/auth/register-customer', { name, email, password, referralCode });
     const normalized = normalizeUser(u);
     if (normalized?.token) {
         localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
