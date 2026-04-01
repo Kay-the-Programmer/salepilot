@@ -43,6 +43,9 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     const pausedRef = useRef<boolean>(paused);
     const onScanSuccessRef = useRef(onScanSuccess);
     const onScanErrorRef = useRef(onScanError);
+    const onCloseRef = useRef(onClose);
+    const continuousRef = useRef(continuous);
+    const delayBetweenScansRef = useRef(delayBetweenScans);
 
     useEffect(() => {
         pausedRef.current = paused;
@@ -55,6 +58,15 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     useEffect(() => {
         onScanErrorRef.current = onScanError;
     }, [onScanError]);
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
+
+    useEffect(() => {
+        continuousRef.current = continuous;
+        delayBetweenScansRef.current = delayBetweenScans;
+    }, [continuous, delayBetweenScans]);
 
     // Initialize beep sound
     useEffect(() => {
@@ -178,54 +190,25 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     BarcodeFormat.ITF,
                     BarcodeFormat.QR_CODE
                 ]);
-                hints.set(DecodeHintType.TRY_HARDER, true);
+                // hints.set(DecodeHintType.TRY_HARDER, true); // Removed for performance on low-end hardware
 
                 const codeReader = new BrowserMultiFormatReader(hints);
                 codeReaderRef.current = codeReader;
-
-                // Get video devices
-                const devices = await navigator.mediaDevices.enumerateDevices();
-                const videoDevices = devices.filter(device => device.kind === 'videoinput');
-
-                if (videoDevices.length === 0) {
-                    throw new Error('No camera found');
-                }
-
-                // Select camera based on facing mode
-                let selectedDeviceId = videoDevices[0].deviceId;
-
-                if (facingMode === 'environment') {
-                    // Try to find back camera
-                    const backCamera = videoDevices.find(device =>
-                        /back|rear|environment/i.test(device.label)
-                    );
-                    if (backCamera) {
-                        selectedDeviceId = backCamera.deviceId;
-                    } else if (videoDevices.length > 1) {
-                        // Usually the second camera is the back camera on mobile
-                        selectedDeviceId = videoDevices[1].deviceId;
-                    }
-                } else {
-                    // Try to find front camera
-                    const frontCamera = videoDevices.find(device =>
-                        /front|user|selfie|face/i.test(device.label)
-                    );
-                    if (frontCamera) {
-                        selectedDeviceId = frontCamera.deviceId;
-                    }
-                }
 
                 // Get video element
                 if (!videoRef.current) {
                     throw new Error('Video element not ready');
                 }
 
-                // Start decoding with constraints optimized for mobile but preferring higher resolution
+                // Start decoding with constraints optimized for fast mobile initialization and decoding
+                // Skipping exact deviceId enumeration makes `getUserMedia` resolve significantly faster.
+                // Requesting standard VGA (640x480) instead of 720p drastically speeds up hardware initialization
+                // and frame processing on low-end mobile devices, improving scanner frame rate.
                 const constraints: MediaStreamConstraints = {
                     video: {
-                        deviceId: selectedDeviceId ? { exact: selectedDeviceId } : undefined,
-                        width: { ideal: 1920 },
-                        height: { ideal: 1080 },
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        frameRate: { ideal: 10, max: 15 },
                         facingMode: facingMode
                     }
                 };
@@ -302,7 +285,7 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                         }
 
                         const now = Date.now();
-                        if (now - lastScanTimeRef.current < delayBetweenScans) {
+                        if (now - lastScanTimeRef.current < delayBetweenScansRef.current) {
                             // Too soon, schedule next decode
                             setTimeout(decode, 300);
                             return;
@@ -314,13 +297,13 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                             onScanSuccessRef.current(result.getText());
                         }
 
-                        if (continuous && scanningRef.current) {
+                        if (continuousRef.current && scanningRef.current) {
                             // Continue scanning
-                            setTimeout(decode, delayBetweenScans);
+                            setTimeout(decode, delayBetweenScansRef.current);
                         } else {
                             // Single scan mode - close after success
                             cleanup().then(() => {
-                                if (isMounted) onClose();
+                                if (isMounted) onCloseRef.current();
                             });
                         }
                     } catch (err: any) {
@@ -372,14 +355,15 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
             }
         };
 
-        const timer = setTimeout(initScanner, 300);
+        // Use minimal timeout to allow UI to render first without artificial delay
+        const timer = setTimeout(initScanner, 10);
 
         return () => {
             isMounted = false;
             clearTimeout(timer);
             cleanup();
         };
-    }, [isOpen, onClose, continuous, delayBetweenScans, cleanup, provideFeedback, facingMode]);
+    }, [isOpen, cleanup, provideFeedback, facingMode]);
 
 
 

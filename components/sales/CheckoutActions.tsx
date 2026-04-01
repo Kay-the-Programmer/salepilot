@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import { CartItem, Customer, StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import {
@@ -8,7 +8,6 @@ import {
     DocumentPlusIcon,
     UserIcon,
 } from '../icons';
-import UnifiedScannerModal from '../UnifiedScannerModal';
 import CustomerSelect from './CustomerSelect';
 
 interface CheckoutActionsProps {
@@ -76,13 +75,9 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
     setCashReceived,
     processTransaction,
     isProcessing,
-    isScannerOpen,
-    setIsScannerOpen,
     cartActionTab,
     setCartActionTab,
     onHoldSale,
-    onContinuousScan,
-    onScanError,
     changeDue,
     mobileMoneyNumber,
     setMobileMoneyNumber,
@@ -118,25 +113,7 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
         <div className="hidden md:flex flex-none bg-white dark:bg-slate-900/95 border-t border-slate-200/60 dark:border-white/8 flex-col"
             style={{ height: '400px' }}>
 
-            {isScannerOpen ? (
-                <div className="flex-1 p-4 overflow-hidden flex flex-col">
-                    <div className="flex-1 w-full relative min-h-0 bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-white/10 overflow-hidden">
-                        <UnifiedScannerModal
-                            isOpen={true}
-                            variant="embedded"
-                            onClose={() => setIsScannerOpen(false)}
-                            onScanSuccess={onContinuousScan}
-                            onScanError={onScanError}
-                            continuous={true}
-                            delayBetweenScans={1500}
-                        />
-                    </div>
-                    <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-2">
-                        Point camera at a barcode to add to cart
-                    </p>
-                </div>
-            ) : (
-                <div className="flex flex-col h-full">
+            <div className="flex flex-col h-full">
                     {/* Tab Bar */}
                     <div className="flex-none px-4 pt-4">
                         <div className="flex bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-[18px] p-1 gap-1 relative z-10 shadow-inner" role="tablist">
@@ -416,7 +393,6 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                         </button>
                     </div>
                 </div>
-            )}
         </div>
     );
 };

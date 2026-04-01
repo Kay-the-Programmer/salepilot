@@ -481,8 +481,8 @@ export default function Sidebar({
                     className="md:hidden fixed inset-0 w-full h-full bg-white/70 dark:bg-black/70 backdrop-blur-2xl z-[100] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
                 >
                     {/* Header with Close Button & View Toggle */}
-                    <div className="px-6 pt-12 pb-4 select-none">
-                        <div className="flex items-center justify-between mb-6">
+                    <div className="px-6 pt-8 pb-0 select-none">
+                        <div className="flex items-center justify-between mb-0">
                             <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Menu</h2>
                             <div className="flex items-center gap-2">
                                 {/* Single toggle button: switches between grid and list */}
@@ -621,7 +621,7 @@ export default function Sidebar({
                     </div>
 
                     {/* Mobile Footer (User & Logout) */}
-                    <div className="p-6 pb-8 mx-auto w-full max-w-sm">
+                    <div className="p-0 m-0 mx-auto w-full max-w-sm">
                         <div className="flex items-center gap-4 p-4 rounded-[1.75rem] bg-white/60 dark:bg-white/10 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
                             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold shadow-inner text-lg" onClick={() => handleNavigation('profile')}>
                                 {user.name.charAt(0).toUpperCase()}

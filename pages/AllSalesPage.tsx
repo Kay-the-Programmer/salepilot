@@ -380,7 +380,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-xl rounded-[32px] border border-slate-200/50 dark:border-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden">
+                                            <div className="bg-transparent px-0 dark:bg-slate-900/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.1)] overflow-hidden">
                                                 <SalesList
                                                     sales={enrichedSales}
                                                     onSelectSale={setSelectedSale}
@@ -393,7 +393,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                                     </div>
 
                                     {/* Pagination Controls (Fixed Bottom) */}
-                                    <div className="p-4 md:px-6 flex-none bg-background border-t border-transparent z-10">
+                                    <div className="p-0 md:px-6 flex-none bg-background z-10">
                                         <Pagination
                                             total={total}
                                             page={page}

@@ -180,10 +180,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const taxRate = storeSettings.taxRate / 100;
 
-    const roundQty = (q: number) => Math.round(q * 1000) / 1000;
-    const getStepFor = (uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1);
+    const roundQty = useCallback((q: number) => Math.round(q * 1000) / 1000, []);
+    const getStepFor = useCallback((uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1), []);
 
-    const addToCart = (product: Product) => {
+    const addToCart = useCallback((product: Product) => {
         const existingItem = cart.find(item => item.productId === product.id);
         const step = getStepFor(product.unitOfMeasure);
         const stockInCart = existingItem ? existingItem.quantity : 0;
@@ -195,14 +195,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
             if (existingItem) {
                 const newQty = Math.min(availableStock, roundQty(existingItem.quantity + step));
                 // Option B: Move to top and update quantity
-                setCart([
+                setCart(prev => [
                     { ...existingItem, quantity: newQty },
-                    ...cart.filter(item => item.productId !== product.id)
+                    ...prev.filter(item => item.productId !== product.id)
                 ]);
                 showSnackbar(`Added another "${product.name}" to cart`, 'success');
             } else {
                 // Prepend new item to the top
-                setCart([
+                setCart(prev => [
                     {
                         productId: product.id,
                         name: product.name,
@@ -213,7 +213,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         unitOfMeasure: product.unitOfMeasure,
                         costPrice: product.costPrice,
                     },
-                    ...cart
+                    ...prev
                 ]);
                 showSnackbar(`Added "${product.name}" to cart`, 'success');
             }
@@ -222,9 +222,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
             setOutOfStockProduct(product);
             setShowOutOfStockModal(true);
         }
-    };
+    }, [cart, getStepFor, roundQty, showSnackbar]);
 
-    const updateQuantity = (productId: string, newQuantity: number) => {
+    const updateQuantity = useCallback((productId: string, newQuantity: number) => {
         setCart(currentCart => {
             const itemToUpdate = currentCart.find(item => item.productId === productId);
             if (!itemToUpdate) return currentCart;
@@ -243,15 +243,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 return currentCart;
             }
         });
-    };
+    }, [roundQty, showSnackbar]);
 
-    const removeFromCart = (productId: string) => {
+    const removeFromCart = useCallback((productId: string) => {
         const item = cart.find(item => item.productId === productId);
         if (item) {
-            setCart(cart.filter(item => item.productId !== productId));
+            setCart(prev => prev.filter(p => p.productId !== productId));
             showSnackbar(`Removed "${item.name}" from cart`, 'info');
         }
-    };
+    }, [cart, showSnackbar]);
 
     const clearCart = useCallback(() => {
         if (cart.length === 0) return;
@@ -299,8 +299,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         return filteredProducts.slice(startIndex, startIndex + pageSize);
     }, [filteredProducts, currentPage, pageSize]);
 
-    const handleContinuousScan = async (decodedText: string) => {    
-
+    const handleContinuousScan = useCallback(async (decodedText: string) => {
         const trimmed = decodedText.trim();
         const product = products.find(p =>
             p.status === 'active' &&
@@ -337,16 +336,16 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 }
             }
         }
-    };
+    }, [products, addToCart, showSnackbar]);
 
     // Keep ref current so stableScanCallback always delegates to latest handleContinuousScan
     useEffect(() => {
         handleContinuousScanRef.current = handleContinuousScan;
-    });
+    }, [handleContinuousScan]);
 
-    const handleScanError = (error: any) => {
+    const handleScanError = useCallback((error: any) => {
         console.warn(error);
-    };
+    }, []);
 
     const { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit } = useMemo(() => {
         const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
