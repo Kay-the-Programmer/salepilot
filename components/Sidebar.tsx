@@ -478,23 +478,21 @@ export default function Sidebar({
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden fixed inset-0 w-full h-full bg-white/70 dark:bg-black/70 backdrop-blur-2xl z-[100] flex flex-col pointer-events-auto animate-fade-in-up overflow-hidden"
+                    className="md:hidden fixed inset-0 w-full h-full bg-white dark:bg-zinc-950 z-[100] relative pointer-events-auto animate-fade-in-up overflow-hidden"
                 >
-                    {/* Header with Close Button & View Toggle */}
-                    <div className="px-6 pt-8 pb-0 select-none">
-                        <div className="flex items-center justify-between mb-0">
-                            <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Menu</h2>
-                            <div className="flex items-center gap-2">
-                                {/* Single toggle button: switches between grid and list */}
+                    {/* Minimal Floating Header */}
+                    <div className="sticky top-0 z-[110] px-6 pt-6 pb-2 select-none pointer-events-none">
+                        <div className="flex items-center justify-between p-2 px-4 rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-xl pointer-events-auto mx-auto w-full max-w-sm">
+                            <h2 className="text-lg font-black tracking-tight text-gray-900 dark:text-white uppercase opacity-40">Menu</h2>
+                            <div className="flex items-center gap-1.5">
                                 <button
                                     onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
                                     className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
                                     aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
-                                    title={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
                                 >
                                     {viewMode === 'grid'
-                                        ? <ListIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
-                                        : <GridIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                                        ? <ListIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
+                                        : <GridIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                                     }
                                 </button>
                                 <button
@@ -502,14 +500,14 @@ export default function Sidebar({
                                     className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
                                     aria-label="Close menu"
                                 >
-                                    <XMarkIcon className="w-6 h-6 text-gray-700 dark:text-gray-300" />
+                                    <XMarkIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
                                 </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Content Area */}
-                    <div className="flex-1 overflow-y-auto px-4 pb-4 custom-scrollbar">
+                    {/* Layered Content Area */}
+                    <div className="absolute inset-0 overflow-y-auto px-6 pt-24 pb-32 z-0 custom-scrollbar">
                         {viewMode === 'grid' ? (
                             <div className="grid grid-cols-4 gap-x-2 gap-y-7 mt-2">
                                 {navItems.map((item) => {
@@ -620,31 +618,31 @@ export default function Sidebar({
                         )}
                     </div>
 
-                    {/* Mobile Footer (User & Logout) */}
-                    <div className="p-0 m-0 mx-auto w-full max-w-sm">
-                        <div className="flex items-center gap-4 p-4 rounded-[1.75rem] bg-white/60 dark:bg-white/10 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.12)]">
-                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold shadow-inner text-lg" onClick={() => handleNavigation('profile')}>
+                    {/* Minimal Floating Footer */}
+                    <div className="fixed bottom-0 left-0 w-full z-[110] px-6 pb-10 select-none pointer-events-none">
+                        <div className="flex items-center gap-3 p-2.5 px-4 rounded-2xl bg-white/60 dark:bg-white/10 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-xl pointer-events-auto mx-auto w-full max-w-sm">
+                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold shadow-inner text-sm" onClick={() => handleNavigation('profile')}>
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
                             <div className="flex-1 min-w-0" onClick={() => handleNavigation('profile')}>
-                                <p className="text-base font-semibold text-gray-900 dark:text-white truncate tracking-tight">{user.name}</p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 truncate tracking-tight">{user.role}</p>
+                                <p className="text-xs font-bold text-gray-900 dark:text-white truncate tracking-tight">{user.name}</p>
+                                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate tracking-tight uppercase font-medium">{user.role}</p>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5">
                                 <button
                                     onClick={toggleTheme}
-                                    className="p-3 rounded-full bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:scale-105 active:scale-95 transition-all duration-300"
+                                    className="p-2 rounded-full bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm"
                                 >
-                                    {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
+                                    {theme === 'light' ? <MoonIcon className="w-4 h-4" /> : <SunIcon className="w-4 h-4" />}
                                 </button>
                                 <button
                                     onClick={() => {
                                         onMobileClose?.();
                                         onLogout();
                                     }}
-                                    className="p-3 rounded-full bg-danger-muted text-danger hover:scale-105 active:scale-95 transition-all duration-300"
+                                    className="p-2 rounded-full bg-danger-muted text-danger hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm"
                                 >
-                                    <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                                    <ArrowLeftOnRectangleIcon className="w-4 h-4" />
                                 </button>
                             </div>
                         </div>
