@@ -373,6 +373,7 @@ export default function Dashboard() {
                     const verifiedUser = await verifySession();
                     const authedUser = { ...verifiedUser, token: localUser.token } as User;
                     setCurrentUser(authedUser);
+                    try { localStorage.setItem('salePilotUser', JSON.stringify(authedUser)); } catch { }
                     // Check if current path is already valid before redirecting to 'desired'
                     const currentPath = location.pathname.substring(1);
                     if (!currentPath || !hasAccess(currentPath, authedUser.role)) {
@@ -1345,7 +1346,15 @@ export default function Dashboard() {
                                                     await api.post('/auth/resend-verification', { email: currentUser.email });
                                                     setShowOtpModal(true);
                                                 } catch (err: any) {
-                                                    showSnackbar(err.message || 'Failed to resend email.', 'error');
+                                                    if (err.message && err.message.toLowerCase().includes('already verified')) {
+                                                        // Update state to remove banner if backend confirmed they are verified
+                                                        const updated = { ...currentUser, isVerified: true };
+                                                        setCurrentUser(updated);
+                                                        try { localStorage.setItem('salePilotUser', JSON.stringify(updated)); } catch { }
+                                                        showSnackbar('Your email is already verified!', 'success');
+                                                    } else {
+                                                        showSnackbar(err.message || 'Failed to resend email.', 'error');
+                                                    }
                                                 }
                                             }}
                                             className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-600/20 transition-all active:scale-95 whitespace-nowrap"
