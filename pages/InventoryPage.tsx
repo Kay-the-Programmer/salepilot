@@ -25,6 +25,8 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import { barcodeService } from '../services/barcodeService';
 import BarcodeLookupModal from '../components/BarcodeLookupModal';
 import { logEvent } from '../src/utils/analytics';
+import { generateLowStockPDF } from '../utils/pdfExport';
+import { useToast } from '../contexts/ToastContext';
 
 interface InventoryPageProps {
     products: Product[];
@@ -69,7 +71,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     storeSettings,
     currentUser
 }) => {
-
+    const { showToast } = useToast();
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isEditingProduct, setIsEditingProduct] = useState(false); // Inline edit mode
     const [searchTerm, setSearchTerm] = useState('');
@@ -458,6 +460,30 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setSearchTerm('');
     };
 
+    const handleExportLowStock = () => {
+        // Find all unarchived products below or at reorder point
+        const lowStockProducts = products.filter(p => {
+            if (p.status === 'archived') return false;
+            const threshold = p.reorderPoint ?? storeSettings.lowStockThreshold;
+            const currentStock = typeof p.stock === 'number' ? p.stock : parseFloat(p.stock as unknown as string) || 0;
+            return currentStock <= threshold;
+        });
+
+        if (lowStockProducts.length === 0) {
+            showToast('No products are currently low on stock', 'info');
+            return;
+        }
+
+        try {
+            generateLowStockPDF(lowStockProducts, categories, storeSettings);
+            showToast('Low stock report generated successfully', 'success');
+            logEvent('Inventory', 'export_low_stock_pdf');
+        } catch (err: any) {
+            console.error('PDF Generation failed:', err);
+            showToast(err.message || 'Failed to generate PDF', 'error');
+        }
+    };
+
     const filteredProducts = useMemo(() => {
         return products.filter(product => {
             if (!showArchived && product.status === 'archived') {
@@ -559,7 +585,23 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             </a>
             {/* Header — hidden on mobile when in detail view */}
             <Header
-                title={activeTab === 'products' ? 'Products' : 'Categories'}
+                title={
+                    <div className="flex items-center gap-6 md:gap-8 pt-2">
+                        <button
+                            onClick={() => setActiveTab('products')}
+                            className={`text-[17px] md:text-2xl pb-1 transition-all duration-200 rounded-t-lg 
+                                ${activeTab === 'products' ? 'font-bold text-brand-text' : 'font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                        >
+                            Products
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('categories')}
+                            className={`text-[17px] md:text-2xl pb-1 transition-all duration-200 rounded-t-lg ${activeTab === 'categories' ? 'font-bold text-brand-text' : 'font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                        >
+                            Categories
+                        </button>
+                    </div>
+                }
                 onMenuClick={onOpenSidebar}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
@@ -583,6 +625,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                 canManageProducts={canManageProducts}
                                 onOpenAddProduct={handleOpenAddModal}
                                 onOpenAddCategory={handleOpenAddCategoryModal}
+                                onExportLowStock={handleExportLowStock}
                             />
                         </div>
                     </div>

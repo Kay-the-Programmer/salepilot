@@ -40,6 +40,10 @@ export interface Product {
     customAttributes?: { [attributeId: string]: string };
     createdAt?: string;
     updatedAt?: string;
+    // Carton / bulk pricing fields
+    cartonPrice?: number;     // Total price of one carton/box
+    unitsPerCarton?: number;  // Number of sellable units per carton
+    cartonsReceived?: number; // Total cartons received (for reference)
 }
 
 export interface User {

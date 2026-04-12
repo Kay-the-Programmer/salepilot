@@ -4,7 +4,7 @@ import XMarkIcon from './icons/XMarkIcon';
 import Bars3Icon from './icons/Bars3Icon';
 
 interface HeaderProps {
-    title: string;
+    title: string | React.ReactNode;
     buttonText?: string;
     onButtonClick?: () => void;
     onMenuClick?: () => void;
@@ -71,7 +71,11 @@ export default function Header({
                                 <Bars3Icon className="h-6 w-6" aria-hidden="true" />
                             </button>
                         )}
-                        <h1 className="text-[17px] md:text-2xl font-semibold tracking-tight text-brand-text truncate">{title}</h1>
+                        {typeof title === 'string' ? (
+                            <h1 className="text-[17px] md:text-2xl font-semibold tracking-tight text-brand-text truncate">{title}</h1>
+                        ) : (
+                            title
+                        )}
                     </div>
                 )}
 

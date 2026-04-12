@@ -48,6 +48,12 @@ export const useProductForm = ({
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState('');
 
+    // Carton / bulk pricing state (UI-only — values are derived & saved to product.costPrice)
+    const [cartonMode, setCartonMode] = useState(false);
+    const [cartonPrice, setCartonPrice] = useState('');
+    const [unitsPerCarton, setUnitsPerCarton] = useState('');
+    const [cartonsReceived, setCartonsReceived] = useState('');
+
     // Pre-calculate profit margin
     const profitMargin = useMemo(() => {
         const price = parseFloat(product.price.toString());
@@ -68,12 +74,32 @@ export const useProductForm = ({
         if (productToEdit) {
             setProduct({ ...getInitialProductState(), ...productToEdit });
             setImages(productToEdit.imageUrls || []);
+            // Restore carton mode if the product was previously saved with carton data
+            if (productToEdit.cartonPrice && productToEdit.unitsPerCarton) {
+                setCartonMode(true);
+                setCartonPrice(productToEdit.cartonPrice.toString());
+                setUnitsPerCarton(productToEdit.unitsPerCarton.toString());
+                setCartonsReceived(productToEdit.cartonsReceived?.toString() || '');
+            } else {
+                setCartonMode(false);
+                setCartonPrice('');
+                setUnitsPerCarton('');
+                setCartonsReceived('');
+            }
         } else if (initialValues) {
             setProduct({ ...getInitialProductState(), ...initialValues });
             setImages(initialValues.imageUrls || []);
+            setCartonMode(false);
+            setCartonPrice('');
+            setUnitsPerCarton('');
+            setCartonsReceived('');
         } else {
             setProduct(getInitialProductState());
             setImages([]);
+            setCartonMode(false);
+            setCartonPrice('');
+            setUnitsPerCarton('');
+            setCartonsReceived('');
         }
         setImageFiles([]);
         setImagesToDelete([]);
@@ -108,6 +134,49 @@ export const useProductForm = ({
             } else {
                 setProduct(prev => ({ ...prev, [name]: value }));
             }
+        }
+    };
+
+    const handleCartonChange = (field: 'cartonPrice' | 'unitsPerCarton' | 'cartonsReceived', value: string) => {
+        if (field === 'cartonPrice') setCartonPrice(value);
+        if (field === 'unitsPerCarton') setUnitsPerCarton(value);
+        if (field === 'cartonsReceived') setCartonsReceived(value);
+
+        const cp = field === 'cartonPrice' ? value : cartonPrice;
+        const upc = field === 'unitsPerCarton' ? value : unitsPerCarton;
+        const cr = field === 'cartonsReceived' ? value : cartonsReceived;
+
+        const cpNum = parseFloat(cp);
+        const upcNum = parseInt(upc, 10);
+        const crNum = parseInt(cr, 10);
+
+        setProduct(prev => {
+            const updates: any = {};
+            if (cpNum > 0 && upcNum > 0) {
+                const unitCost = cpNum / upcNum;
+                updates.costPrice = parseFloat(unitCost.toFixed(4));
+            } else if (cp === '' || upc === '') {
+                updates.costPrice = 0;
+            }
+            
+            if (crNum >= 0 && upcNum > 0 && cr !== '') {
+                updates.stock = crNum * upcNum;
+            } else if (cr === '') {
+                updates.stock = 0;
+            }
+            
+            return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+        });
+    };
+
+    const toggleCartonMode = (enabled: boolean) => {
+        setCartonMode(enabled);
+        if (!enabled) {
+            // Reset carton fields and restore manual cost price editing
+            setCartonPrice('');
+            setUnitsPerCarton('');
+            setCartonsReceived('');
+            setProduct(prev => ({ ...prev, cartonPrice: undefined, unitsPerCarton: undefined, cartonsReceived: undefined }));
         }
     };
 
@@ -278,6 +347,23 @@ export const useProductForm = ({
         formData.append('variants', JSON.stringify(product.variants || []));
         formData.append('custom_attributes', JSON.stringify(product.customAttributes || {}));
 
+        // Carton / bulk pricing fields
+        if (cartonMode && cartonPrice) {
+            formData.append('carton_price', cartonPrice);
+        }
+        if (cartonMode && unitsPerCarton) {
+            formData.append('units_per_carton', unitsPerCarton);
+        }
+        if (cartonMode && cartonsReceived) {
+            formData.append('cartons_received', cartonsReceived);
+        }
+        // If carton mode is off, clear stored carton values
+        if (!cartonMode) {
+            formData.append('carton_price', '');
+            formData.append('units_per_carton', '');
+            formData.append('cartons_received', '');
+        }
+
         const _dataUrlImages = images.filter(url => url.startsWith('data:'));
         const imagesToKeep = productToEdit
             ? productToEdit.imageUrls.filter(url => !imagesToDelete.includes(url))
@@ -340,6 +426,13 @@ export const useProductForm = ({
         profitAmount,
         validate,
         prepareFormData,
-        relevantAttributes
+        relevantAttributes,
+        // Carton mode
+        cartonMode,
+        toggleCartonMode,
+        cartonPrice,
+        unitsPerCarton,
+        cartonsReceived,
+        handleCartonChange,
     };
 };
