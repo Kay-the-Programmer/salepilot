@@ -1004,7 +1004,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 run={runTour}
                 onTourEnd={() => setRunTour(false)}
             />
-
         </div >
     );
 };

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Product, Category, Supplier, StoreSettings, User, Account, PurchaseOrder } from '../types';
 
 import ProductList from '../components/ProductList';
@@ -118,6 +118,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [detailedProduct, setDetailedProduct] = useState<Product | null>(null);
     const [detailIsLoading, setDetailIsLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
+
+    // Discard Modal State
+    const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
+    const [pendingProductId, setPendingProductId] = useState<string | null>(null);
+    const isProductFormDirtyRef = useRef(false);
 
     const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
     const supplierMap = useMemo(() => new Map(suppliers.map(s => [s.id, s])), [suppliers]);
@@ -447,7 +452,30 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     };
 
     const handleSelectProduct = (product: Product) => {
-        setSelectedProductId(product.id);
+        if (isEditingProduct && editingProduct && !editingProduct.id) {
+            if (isProductFormDirtyRef.current) {
+                setPendingProductId(product.id);
+                setIsDiscardModalOpen(true);
+            } else {
+                setSelectedProductId(product.id);
+                setIsEditingProduct(false);
+                setEditingProduct(null);
+            }
+        } else {
+            setSelectedProductId(product.id);
+            setIsEditingProduct(false);
+            setEditingProduct(null);
+        }
+    };
+
+    const handleConfirmDiscard = () => {
+        setIsDiscardModalOpen(false);
+        setIsEditingProduct(false);
+        setEditingProduct(null);
+        if (pendingProductId) {
+            setSelectedProductId(pendingProductId);
+            setPendingProductId(null);
+        }
     };
 
     const handleSelectCategory = (categoryId: string) => {
@@ -792,6 +820,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             onSave={handleSave}
                                             onCancel={handleCloseEditForm}
                                             onAddCategory={handleOpenAddCategoryModal}
+                                            onDirtyChange={(isDirty) => { isProductFormDirtyRef.current = isDirty; }}
                                         />
                                     ) : detailIsLoading ? (
                                         <LoadingSpinner fullScreen={false} text="Loading product details..." className="py-20" />
@@ -847,6 +876,16 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             </div>
 
             {/* Modals */}
+            <ConfirmationModal
+                isOpen={isDiscardModalOpen}
+                onClose={() => setIsDiscardModalOpen(false)}
+                onConfirm={handleConfirmDiscard}
+                title="Discard New Product?"
+                message="Are you sure you want to discard this new product? Any unsaved changes will be lost."
+                confirmText="Discard and View Details"
+                cancelText="Cancel"
+                confirmButtonClass="bg-red-600 hover:bg-red-500"
+            />
 
             {canManageProducts && isStockModalOpen && (
                 <StockAdjustmentModal

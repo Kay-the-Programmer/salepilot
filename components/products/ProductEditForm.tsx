@@ -21,6 +21,7 @@ interface ProductEditFormProps {
     onSave: (product: Product | Omit<Product, 'id'>) => Promise<void>;
     onCancel: () => void;
     onAddCategory?: () => void;
+    onDirtyChange?: (isDirty: boolean) => void;
 }
 
 const ProductEditForm: React.FC<ProductEditFormProps> = ({
@@ -30,7 +31,8 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     storeSettings,
     onSave,
     onCancel,
-    onAddCategory
+    onAddCategory,
+    onDirtyChange
 }) => {
     const {
         product,
@@ -78,6 +80,18 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     useEffect(() => {
         setLocalSuppliers(suppliers);
     }, [suppliers]);
+
+    useEffect(() => {
+        if (onDirtyChange) {
+            const isDirty = product.name.trim() !== '' || 
+                product.description.trim() !== '' || 
+                product.price > 0 || 
+                product.categoryId !== undefined || 
+                product.barcode !== '' || 
+                images.length > 0;
+            onDirtyChange(isDirty);
+        }
+    }, [product.name, product.description, product.price, product.categoryId, product.barcode, images.length, onDirtyChange]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

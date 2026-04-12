@@ -95,7 +95,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in"
+            className="fixed inset-0 z-[200] bg-slate-900/40 dark:bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"
