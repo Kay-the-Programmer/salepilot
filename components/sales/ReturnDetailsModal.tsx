@@ -17,7 +17,7 @@ const ReturnDetailsModal: React.FC<ReturnDetailsModalProps> = ({ isOpen, onClose
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[200] overflow-y-auto bg-gray-500 bg-opacity-75 flex items-center justify-center p-4 backdrop-blur-sm animate-fade-in">
             <div className="liquid-glass-card rounded-[2rem] max-w-lg w-full overflow-hidden animate-scale-up">
                 {/* Header */}
                 <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">

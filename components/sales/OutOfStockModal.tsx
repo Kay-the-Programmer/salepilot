@@ -13,7 +13,7 @@ const OutOfStockModal: React.FC<OutOfStockModalProps> = ({ isOpen, onClose, prod
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
             <div className="liquid-glass-card rounded-[2rem] max-w-md w-full mx-4 overflow-hidden animate-scale-up">
                 {/* Header */}
                 <div className="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-5 border-b border-red-100">

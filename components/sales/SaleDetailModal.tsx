@@ -20,7 +20,7 @@ export default function SaleDetailModal({ isOpen, onClose, sale, storeSettings }
     return (
         <>
             <div
-                className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center transition-all duration-300"
+                className="fixed inset-0 z-[200] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center transition-all duration-300"
                 aria-labelledby="sale-detail-title"
                 role="dialog"
                 aria-modal="true"

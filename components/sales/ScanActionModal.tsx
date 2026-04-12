@@ -19,7 +19,7 @@ const ScanActionModal: React.FC<ScanActionModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
             <div className="liquid-glass-card rounded-[2rem] /95 backdrop-blur-xl w-full max-w-sm overflow-hidden animate-scale-up border border-white/20">
                 <div className="p-6 text-center">
                     <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">

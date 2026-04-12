@@ -89,7 +89,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
 
     return (
         <div
-            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-4"
+            className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"

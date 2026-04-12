@@ -982,7 +982,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
             {/* Verification Loading Overlay */}
             {
                 isVerifyingPayment && (
-                    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
                         <div className="liquid-glass-card rounded-[2rem] p-6 flex flex-col items-center gap-4">
                             <LoadingSpinner size="lg" fullScreen={false} text="" />
                             <p className="font-semibold text-slate-900">{verifyingMessage}</p>

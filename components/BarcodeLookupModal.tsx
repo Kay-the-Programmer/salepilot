@@ -8,6 +8,7 @@ interface BarcodeLookupModalProps {
     onClose: () => void;
     onSearch: (barcode: string) => void;
 }
+ 
 
 const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({
     isOpen,
@@ -34,7 +35,7 @@ const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 dark:bg-black/70 backdrop-blur-sm p-4 animate-fade-in">
             <div glass-effect="" className="rounded-2xl w-full max-w-sm overflow-hidden shadow-xl animate-scale-in">
                 <div className="p-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                     <h3 className="font-bold text-gray-900 dark:text-gray-100">Manual Barcode Lookup</h3>

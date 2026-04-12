@@ -37,7 +37,7 @@ const PaymentChoiceModal: React.FC<PaymentChoiceModalProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[60] overflow-y-auto" aria-labelledby="payment-choice-modal" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[200] overflow-y-auto" aria-labelledby="payment-choice-modal" role="dialog" aria-modal="true">
             {/* Backdrop */}
             <div className="flex min-h-screen items-center justify-center p-4 text-center sm:p-0">
                 <div

@@ -148,7 +148,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 transition-all duration-300 animate-fade-in"
+            className="fixed inset-0 z-[200] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 transition-all duration-300 animate-fade-in"
             aria-labelledby="modal-title"
             role="dialog"
             aria-modal="true"

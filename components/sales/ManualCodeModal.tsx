@@ -37,7 +37,7 @@ const ManualCodeModal: React.FC<ManualCodeModalProps> = ({ isOpen, onClose, onSu
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
+      className="fixed inset-0 z-[200] bg-black/50 flex items-end sm:items-center justify-center animate-fade-in"
       aria-labelledby="manual-code-modal-title"
       role="dialog"
       aria-modal="true"

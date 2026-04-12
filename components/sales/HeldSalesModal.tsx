@@ -23,7 +23,7 @@ const HeldSalesModal: React.FC<HeldSalesModalProps> = ({
 
     return (
         <div
-            className="fixed inset-0 z-[100] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center animate-fade-in sm:p-4"
+            className="fixed inset-0 z-[200] bg-slate-900/40 dark:bg-slate-950/60 backdrop-blur-md flex items-center justify-center animate-fade-in sm:p-4"
             role="dialog"
             aria-modal="true"
             onClick={onClose}
