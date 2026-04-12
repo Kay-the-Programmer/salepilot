@@ -674,13 +674,13 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         <div className="flex items-center gap-8">
                             <button
                                 onClick={() => setActiveTab('products')}
-                                className={`text-[17px] transition-all duration-200 ${activeTab === 'products' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`text-[17px] transition-all duration-200 ${activeTab === 'products' ? 'font-bold text-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Products
                             </button>
                             <button
                                 onClick={() => setActiveTab('categories')}
-                                className={`text-[17px] transition-all duration-200 ${activeTab === 'categories' ? 'font-bold text-brand-text border-b-2 border-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
+                                className={`text-[17px] transition-all duration-200 ${activeTab === 'categories' ? 'font-bold text-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
                             >
                                 Categories
                             </button>
@@ -707,8 +707,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 onOpenAddModal={handleOpenAddModal}
                 onOpenAddCategoryModal={handleOpenAddCategoryModal}
             />
-
-            {/* (bottom nav rendered at bottom of layout) */}
 
             <div className="flex-1 flex overflow-hidden w-full relative z-10" id="inventory-content">
                 {/* Left Panel: List View */}

@@ -94,7 +94,7 @@ const ProductCard: React.FC<{
             <span className={`text-[10px] font-black tracking-[0.12em] uppercase px-2 py-0.5 rounded-md ${isSelected ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}`}>{categoryName}</span>
             <span className="text-[9px] text-slate-400 dark:text-slate-600 font-mono font-bold tracking-tighter opacity-60">#{product.sku?.slice(-6) || 'N/A'}</span>
           </div>
-          <h3 className={`font-bold text-[15px] leading-snug mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
+          <h3 className={`font-semibold text-[15px] leading-snug mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
             {product.name}
           </h3>
         </div>
@@ -102,11 +102,6 @@ const ProductCard: React.FC<{
           <div className="text-[18px] font-black tracking-tighter text-slate-900 dark:text-white">
             {formatPrice(product.price)}
             {product.unitOfMeasure === 'kg' && <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 ml-1">/kg</span>}
-          </div>
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${isSelected ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/40' : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-500/10 group-hover:text-blue-500'}`}>
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
           </div>
         </div>
       </div>
@@ -119,10 +114,8 @@ const ProductListRow: React.FC<{
   categoryName: string;
   storeSettings: StoreSettings;
   onSelect: () => void;
-  onAdjustStock: () => void;
   isSelected?: boolean;
-  canManage: boolean;
-}> = React.memo(({ product, categoryName, storeSettings, onSelect, onAdjustStock, isSelected, canManage }) => {
+}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected }) => {
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
   const asNumber = (val: any) => {
     const n = typeof val === 'number' ? val : parseFloat(val);
@@ -141,7 +134,7 @@ const ProductListRow: React.FC<{
       {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-3 mb-1.5">
-          <h3 className={`font-bold text-[16px] tracking-tight truncate ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-800 dark:text-slate-100'}`}>
+          <h3 className={`font-bold text-[16px] tracking-tight truncate ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-700 dark:text-slate-100'}`}>
             {product.name}
           </h3>
           <span className={`text-[9px] px-2.5 py-0.5 font-black tracking-widest uppercase rounded-full border ${isLowStock
@@ -152,7 +145,7 @@ const ProductListRow: React.FC<{
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-[11px] font-black tracking-widest text-slate-400 dark:text-slate-500 uppercase">{categoryName}</span>
+          <span className="text-[11px] font-semibold tracking-widest text-slate-400 dark:text-slate-500 uppercase">{categoryName}</span>
           <div className="h-3 w-px bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
           <span className="text-[11px] font-mono text-slate-400 dark:text-slate-600">SKU: {product.sku}</span>
           <div className="h-3 w-px bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
@@ -160,28 +153,6 @@ const ProductListRow: React.FC<{
             {formatPrice(product.price)}
           </span>
         </div>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2 shrink-0">
-        {canManage && (
-          <button
-            className="px-4 py-2 text-[12px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold tracking-wide rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-95"
-            onClick={(e) => { e.stopPropagation(); onAdjustStock(); }}
-          >
-            Adjust
-          </button>
-        )}
-        <button
-          className={`px-4 py-2 text-[12px] font-bold tracking-wide rounded-full transition-all duration-200 active:scale-95 ${isSelected
-            ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-            : 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20'
-            }`}
-          onClick={(e) => { e.stopPropagation(); onSelect(); }}
-        >
-          {isSelected ? 'Viewing' : 'Details'}
-        </button>
-
       </div>
     </div>
   );
@@ -191,18 +162,14 @@ const ProductList: React.FC<Props> = React.memo(({
   products,
   categories,
   onSelectProduct,
-  onAdjustStock,
   isLoading,
   error,
   storeSettings,
-  userRole,
   viewMode = 'grid',
   selectedProductId
 }) => {
   const getCategoryName = (categoryId?: string) =>
     categoryId ? (categories.find(c => c.id === categoryId)?.name || '-') : '-';
-
-  const canManage = userRole === 'admin' || userRole === 'inventory_manager';
 
   return (
     <UnifiedListGrid<Product>
@@ -231,9 +198,7 @@ const ProductList: React.FC<Props> = React.memo(({
           categoryName={getCategoryName(product.categoryId)}
           storeSettings={storeSettings}
           onSelect={() => onSelectProduct(product)}
-          onAdjustStock={() => onAdjustStock(product)}
           isSelected={isSelected}
-          canManage={canManage}
         />
       )}
     />
