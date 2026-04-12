@@ -99,6 +99,7 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                         <button
                             onClick={activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory}
                             className="flex items-center justify-center p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all duration-200 active:scale-95"
+                            title={activeTab === 'products' ? 'Add Product' : 'Add Category'}
                         >
                             <span className="text-base leading-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
