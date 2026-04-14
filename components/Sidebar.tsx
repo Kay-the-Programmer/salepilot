@@ -481,23 +481,19 @@ export default function Sidebar({
                     ref={sidebarRef}
                     className="md:hidden fixed inset-0 w-full h-[100dvh] bg-[#F2F2F7] dark:bg-black z-[100] animate-fade-in-up flex flex-col overflow-hidden pointer-events-auto"
                 >
-                    {/* Minimal Header */}
-                    <div className="sticky top-0 z-[110] px-6 pt-6 pb-2 flex items-center bg-[#F2F2F7]/80 dark:bg-black/80 backdrop-blur-xl">
+                    {/* Floating Close Button */}
+                    <div className="absolute top-5 left-5 z-[120]">
                         <button
                             onClick={onMobileClose}
-                            className="flex items-center gap-1 -ml-2 p-2 rounded-xl text-primary font-medium active:opacity-50 transition-all"
-                            aria-label="Back"
+                            className="flex items-center justify-center w-10 h-10 rounded-full bg-white/70 dark:bg-zinc-800/70 backdrop-blur-xl border border-gray-200/50 dark:border-zinc-700/50 shadow-lg text-gray-900 dark:text-white active:scale-95 transition-all"
+                            aria-label="Close"
                         >
-                            <span className="text-lg">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-                                </svg> 
-                            </span>
+                            <XMarkIcon className="w-6 h-6" />
                         </button>
                     </div>
 
                     {/* Content Scroll Area */}
-                    <div className="flex-1 min-h-0 overflow-y-auto pt-4 pb-12 custom-scrollbar">
+                    <div className="flex-1 min-h-0 overflow-y-auto pt-20 pb-12 custom-scrollbar">
                         {/* Profile Section - Apple Settings Style */}
                         <div 
                             onClick={() => handleNavigation('profile')}
@@ -510,7 +506,6 @@ export default function Sidebar({
                                 <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate leading-tight">{user.name}</h2>
                                 <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-0.5 capitalize">{user.role.replace('_', ' ')}</p>
                             </div>
-                            <ChevronRightIcon className="w-5 h-5 text-gray-300 dark:text-gray-600" />
                         </div>
 
                         {/* Navigation Groups */}
