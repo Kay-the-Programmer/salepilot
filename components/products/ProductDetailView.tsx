@@ -66,10 +66,18 @@ const ProductDetailView: React.FC<{
 
           {/* New Actions Section (Stacked) */}
           {canManage && (
-            <div className="mt-8 space-y-3 pb-24">
+            <div className="mt-8 space-y-3 pb-12">
               <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest px-2 mb-2">Management Actions</h3>
               
               <div className="grid grid-cols-1 gap-2">
+                <button
+                  onClick={() => onEdit(product)}
+                  className="w-full flex items-center gap-3 px-5 py-3.5 bg-white dark:bg-slate-900 rounded-2xl text-[14px] font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-white/5 shadow-sm transition-all active:scale-[0.98] hover:shadow-md"
+                >
+                  <PencilIcon className="w-5 h-5 text-primary" />
+                  Edit Product Details
+                </button>
+
                 <button
                   onClick={() => onAdjustStock(product)}
                   className="w-full flex items-center gap-3 px-5 py-3.5 bg-white/70 dark:bg-slate-900/40 backdrop-blur-xl border border-slate-200/50 dark:border-white/5 rounded-2xl text-[14px] font-bold text-slate-800 dark:text-slate-200 transition-all active:scale-[0.98] hover:bg-white dark:hover:bg-slate-800"
@@ -127,17 +135,6 @@ const ProductDetailView: React.FC<{
         </div>
       </div>
 
-      {/* Floating Edit Button */}
-      {canManage && (
-        <button
-          onClick={() => onEdit(product)}
-          className="fixed bottom-6 right-6 w-14 h-14 bg-slate-900 dark:bg-white rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.2)] dark:shadow-[0_8px_32px_rgba(255,255,255,0.1)] flex items-center justify-center text-white dark:text-slate-900 transition-all hover:scale-110 active:scale-90 z-50 group overflow-hidden"
-          aria-label="Edit Product"
-        >
-          <PencilIcon className="w-6 h-6 relative z-10" />
-          <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-        </button>
-      )}
     </div>
   );
 };
