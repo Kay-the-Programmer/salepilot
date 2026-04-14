@@ -69,12 +69,12 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
 
                             {/* Basic Info */}
                             <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
-                                <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">{product.description ? 'Technical Specifications' : 'Product Fundamentals'}</h4>
+                                <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">{product.description ? 'Technical Specifications' : 'Product Details'}</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
                                     <div className="space-y-4">
                                         <DetailItem label="SKU Identification" value={<span className="font-mono tracking-tight">{product.sku || 'N/A'}</span>} icon={<BarcodeIcon className="w-4 h-4" />} />
                                         <DetailItem label="Global Barcode" value={<span className="font-mono tracking-tight">{product.barcode || 'N/A'}</span>} icon={<BarcodeIcon className="w-4 h-4" />} />
-                                        <DetailItem label="Class Assignment" value={category?.name || 'Uncategorized'} icon={<TagIcon className="w-4 h-4" />} />
+                                        <DetailItem label="Category" value={category?.name || 'Uncategorized'} icon={<TagIcon className="w-4 h-4" />} />
                                     </div>
                                     <div className="space-y-4">
                                         <DetailItem label="Manufacturer/Brand" value={product.brand || 'Generic Branding'} />
@@ -90,7 +90,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                                     <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
                                         <h4 className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">Supply Logistics</h4>
                                         <div className="space-y-4">
-                                            <DetailItem label="Entity Name" value={supplier.name} icon={<TruckIcon className="w-4 h-4" />} />
+                                            <DetailItem label="Supplier Name" value={supplier.name} icon={<TruckIcon className="w-4 h-4" />} />
                                             {supplier.contactPerson && <DetailItem label="Authorized Representative" value={supplier.contactPerson} />}
                                             {supplier.phone && (
                                                 <DetailItem label="Direct Line" value={

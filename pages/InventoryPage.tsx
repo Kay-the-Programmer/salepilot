@@ -943,10 +943,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     } else {
                         // Product not found locally, try to look it up using API
                         setIsScanModalOpen(false);
+                        showToast(`Searching for product details (Code: ${code})...`, 'info');
                         try {
                             const scannedData = await barcodeService.lookupProduct(code);
 
                             if (scannedData) {
+                                showToast(`Product found via ${scannedData.source}!`, 'success');
                                 // Product found in API, open add modal with prefilled data
                                 handleOpenAddModal({
                                     name: scannedData.name || '',
@@ -959,6 +961,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     // Try to match category tags if possible, otherwise leave empty
                                 });
                             } else {
+                                showToast('Product details not found. Opening form to add manually.', 'info');
                                 // Product not found in API either, open add modal with just barcode
                                 handleOpenAddModal({
                                     barcode: code
@@ -966,6 +969,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             }
                         } catch (error) {
                             console.error("Error looking up barcode:", error);
+                            showToast('Search failed. Please enter details manually.', 'error');
                             // Fallback to just opening modal with barcode
                             handleOpenAddModal({
                                 barcode: code
@@ -992,10 +996,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     } else {
                         // Product not found locally, try to look it up using API
                         setIsManualLookupOpen(false);
+                        showToast(`Searching for product details (Code: ${code})...`, 'info');
                         try {
                             const scannedData = await barcodeService.lookupProduct(code);
 
                             if (scannedData) {
+                                showToast(`Product found via ${scannedData.source}!`, 'success');
                                 // Product found in API, open add modal with prefilled data
                                 handleOpenAddModal({
                                     name: scannedData.name || '',
@@ -1007,6 +1013,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     unitOfMeasure: scannedData.unitOfMeasure || 'unit',
                                 });
                             } else {
+                                showToast('Product details not found. Opening form to add manually.', 'info');
                                 // Product not found in API either, open add modal with just barcode
                                 handleOpenAddModal({
                                     barcode: code
@@ -1014,6 +1021,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             }
                         } catch (error) {
                             console.error("Error looking up barcode:", error);
+                            showToast('Search failed. Please enter details manually.', 'error');
                             handleOpenAddModal({
                                 barcode: code
                             });
