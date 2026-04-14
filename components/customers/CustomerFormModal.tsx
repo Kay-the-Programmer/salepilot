@@ -99,7 +99,7 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
     return (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 overflow-hidden">
             <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm animate-fade-in" onClick={onClose} />
-            <div className="relative w-full max-w-2xl max-h-[90vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl border border-slate-200/50 dark:border-white/10 overflow-hidden flex flex-col animate-scale-in">
+            <div className="relative w-full max-w-2xl max-h-[90vh] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[1rem] sm:rounded-[2.5rem] dark:border-white/10 overflow-hidden flex flex-col animate-scale-in">
                 {/* Header */}
                 <div className="px-8 py-6 border-b border-slate-200/50 dark:border-white/10 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
                     <div className="flex items-center gap-4">
@@ -133,7 +133,6 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                         </div>
                     )}
 
-                    <SectionHeader icon={UserIcon} title="Primary Identity" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <InputField
                             label="Full Name"
@@ -156,7 +155,6 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                         />
                     </div>
 
-                    <SectionHeader icon={EnvelopeIcon} title="Contact Channels" />
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <InputField
                             label="Email Address"
@@ -243,9 +241,8 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                         />
                     )}
 
-                    <SectionHeader icon={ChatBubbleLeftRightIcon} title="Intelligence & Notes" />
                     <InputField
-                        label="Internal Notes"
+                        label="Customer Notes"
                         name="notes"
                         multiline
                         rows={4}
@@ -270,7 +267,7 @@ const CustomerFormModal: React.FC<CustomerFormModalProps> = ({ isOpen, onClose, 
                         type="submit"
                         className="px-8 py-3 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all active:scale-[0.98] duration-300 text-sm shadow-sm"
                     >
-                        {customerToEdit ? 'Save Changes' : 'Initialize Profile'}
+                        {customerToEdit ? 'Save Changes' : 'Save'}
                     </button>
                 </div>
             </div>

@@ -30,6 +30,7 @@ import {
     MoonIcon,
     GridIcon,
     ListIcon,
+    ChevronLeftIcon,
     ChevronRightIcon
 } from './icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -478,173 +479,128 @@ export default function Sidebar({
             {showOnMobile && (
                 <div
                     ref={sidebarRef}
-                    className="md:hidden fixed inset-0 w-full h-full bg-white dark:bg-zinc-950 z-[100] relative pointer-events-auto animate-fade-in-up overflow-hidden"
+                    className="md:hidden fixed inset-0 w-full h-[100dvh] bg-[#F2F2F7] dark:bg-black z-[100] animate-fade-in-up flex flex-col overflow-hidden pointer-events-auto"
                 >
-                    {/* Minimal Floating Header */}
-                    <div className="sticky top-0 z-[110] px-6 pt-6 pb-2 select-none pointer-events-none">
-                        <div className="flex items-center justify-between p-2 px-4 rounded-2xl bg-white/40 dark:bg-black/40 backdrop-blur-xl border border-white/30 dark:border-white/10 shadow-xl pointer-events-auto mx-auto w-full max-w-sm">
-                            <h2 className="text-lg font-black tracking-tight text-gray-900 dark:text-white uppercase opacity-40">Menu</h2>
-                            <div className="flex items-center gap-1.5">
-                                <button
-                                    onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
-                                    className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
-                                    aria-label={viewMode === 'grid' ? 'Switch to list view' : 'Switch to grid view'}
-                                >
-                                    {viewMode === 'grid'
-                                        ? <ListIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                                        : <GridIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                                    }
-                                </button>
-                                <button
-                                    onClick={onMobileClose}
-                                    className="p-2 rounded-full bg-gray-200/50 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 transition-colors active:scale-95 duration-200"
-                                    aria-label="Close menu"
-                                >
-                                    <XMarkIcon className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-                                </button>
-                            </div>
-                        </div>
+                    {/* Minimal Header */}
+                    <div className="sticky top-0 z-[110] px-6 pt-6 pb-2 flex items-center bg-[#F2F2F7]/80 dark:bg-black/80 backdrop-blur-xl">
+                        <button
+                            onClick={onMobileClose}
+                            className="flex items-center gap-1 -ml-2 p-2 rounded-xl text-primary font-medium active:opacity-50 transition-all"
+                            aria-label="Back"
+                        >
+                            <span className="text-lg">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+                                </svg> 
+                            </span>
+                        </button>
                     </div>
 
-                    {/* Layered Content Area */}
-                    <div className="absolute inset-0 overflow-y-auto px-6 pt-24 pb-32 z-0 custom-scrollbar">
-                        {viewMode === 'grid' ? (
-                            <div className="grid grid-cols-4 gap-x-2 gap-y-7 mt-2">
-                                {navItems.map((item) => {
-                                    const IconComponent = item.icon;
-                                    const iconStyle = getAppIconStyle(item.page);
-
-                                    return (
-                                        <NavLink
-                                            key={item.page}
-                                            to={`/${item.page}`}
-                                            onClick={() => window.innerWidth < 768 && onMobileClose?.()}
-                                            className={({ isActive }) => `
-                                                flex flex-col items-center group
-                                                ${isActive ? 'active' : ''}
-                                            `}
-                                        >
-                                            <div className="relative">
-                                                <div className={`w-[64px] h-[64px] mx-auto rounded-[1.4rem] flex items-center justify-center transition-all duration-300 
-                                                    shadow-lg group-hover:scale-[1.03] group-active:scale-[0.93] 
-                                                    group-[.active]:ring-4 ring-offset-2 ring-offset-white dark:ring-offset-black group-[.active]:ring-primary/50
-                                                    ${iconStyle}
-                                                    `}>
-                                                    <IconComponent className="w-[30px] h-[30px]" />
-                                                </div>
-                                                {item.badge && (
-                                                    <div className="absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 bg-red-500 text-white text-[11px] font-bold flex items-center justify-center rounded-full border-2 border-white dark:border-slate-900 shadow-md z-10">
-                                                        {item.badge}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-primary dark:group-[.active]:text-primary-dark group-[.active]:font-semibold tracking-tight">
-                                                {item.name}
-                                            </span>
-                                        </NavLink>
-                                    );
-                                })}
-                                {installPrompt && (
-                                    <button
-                                        onClick={() => {
-                                            onInstall?.();
-                                            onMobileClose?.();
-                                        }}
-                                        className="flex flex-col items-center group"
-                                    >
-                                        <div className="relative">
-                                            <div className="w-[64px] h-[64px] mx-auto rounded-[1.4rem] flex items-center justify-center transition-all duration-300 
-                                                shadow-lg group-hover:scale-[1.03] group-active:scale-[0.93] 
-                                                bg-gradient-to-br from-primary to-primary-dark text-white shadow-primary/30">
-                                                <ArrowDownTrayIcon className="w-[30px] h-[30px]" />
-                                            </div>
-                                        </div>
-                                        <span className="text-[11px] font-medium text-center leading-tight text-gray-800 dark:text-gray-200 mt-2 truncate w-full px-0.5 group-[.active]:text-primary dark:group-[.active]:text-primary-dark group-[.active]:font-semibold tracking-tight">
-                                            Install App
-                                        </span>
-                                    </button>
-                                )}
-                            </div>
-                        ) : (
-                            <div className="space-y-6 mt-4">
-                                {getGroupedItems().map(([groupName, items]) => (
-                                    <div key={groupName} className="space-y-2">
-                                        <h3 className="px-2 text-[11px] font-bold tracking-widest text-gray-400 dark:text-gray-500 uppercase">{groupName}</h3>
-                                        <div className="bg-white/60 dark:bg-white/5 rounded-2xl overflow-hidden border border-gray-200/50 dark:border-white/5 divide-y divide-gray-100 dark:divide-white/5">
-                                            {items.map((item) => {
-                                                const IconComponent = item.icon;
-                                                const iconStyle = getAppIconStyle(item.page);
-                                                return (
-                                                    <NavLink
-                                                        key={item.page}
-                                                        to={`/${item.page}`}
-                                                        onClick={() => window.innerWidth < 768 && onMobileClose?.()}
-                                                        className={({ isActive }) => `
-                                                            flex items-center gap-4 px-4 py-3.5 transition-all
-                                                            ${isActive ? 'bg-primary/10 dark:bg-primary/20' : 'active:bg-gray-100 dark:active:bg-white/10'}
-                                                        `}
-                                                    >
-                                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-sm ${iconStyle}`}>
-                                                            <IconComponent className="w-5 h-5" />
-                                                        </div>
-                                                        <span className="flex-1 text-sm font-semibold text-gray-800 dark:text-gray-200 tracking-tight">{item.name}</span>
-                                                        <div className="flex items-center gap-2">
-                                                            {item.badge && (
-                                                                <span className="px-2 py-0.5 text-[10px] font-bold bg-danger text-white rounded-full">
-                                                                    {item.badge}
-                                                                </span>
-                                                            )}
-                                                            <ChevronRightIcon className="w-4 h-4 text-brand-text-muted" />
-                                                        </div>
-                                                    </NavLink>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                ))}
-                                {installPrompt && (
-                                    <button
-                                        onClick={() => { onInstall?.(); onMobileClose?.(); }}
-                                        className="w-full flex items-center gap-4 px-4 py-4 bg-primary/10 dark:bg-primary/20 rounded-2xl border border-primary/20 dark:border-primary-dark/20 active:scale-95 transition-all"
-                                    >
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary text-white">
-                                            <ArrowDownTrayIcon className="w-5 h-5" />
-                                        </div>
-                                        <span className="flex-1 text-left text-sm font-bold text-primary dark:text-primary-dark">Install Mobile App</span>
-                                        <ChevronRightIcon className="w-4 h-4 text-primary/40" />
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Minimal Floating Footer */}
-                    <div className="fixed bottom-0 left-0 w-full z-[110] px-6 pb-10 select-none pointer-events-none">
-                        <div className="flex items-center gap-3 p-2.5 px-4 rounded-2xl bg-white/60 dark:bg-white/10 backdrop-blur-2xl border border-white/40 dark:border-white/10 shadow-xl pointer-events-auto mx-auto w-full max-w-sm">
-                            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white font-bold shadow-inner text-sm" onClick={() => handleNavigation('profile')}>
+                    {/* Content Scroll Area */}
+                    <div className="flex-1 min-h-0 overflow-y-auto pt-4 pb-12 custom-scrollbar">
+                        {/* Profile Section - Apple Settings Style */}
+                        <div 
+                            onClick={() => handleNavigation('profile')}
+                            className="mx-4 mb-8 bg-white dark:bg-zinc-900 rounded-[20px] p-4 flex items-center gap-4 shadow-sm active:opacity-70 transition-opacity cursor-pointer border border-gray-100 dark:border-zinc-800"
+                        >
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl font-bold shadow-md">
                                 {user.name.charAt(0).toUpperCase()}
                             </div>
-                            <div className="flex-1 min-w-0" onClick={() => handleNavigation('profile')}>
-                                <p className="text-xs font-bold text-gray-900 dark:text-white truncate tracking-tight">{user.name}</p>
-                                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate tracking-tight uppercase font-medium">{user.role}</p>
+                            <div className="flex-1 min-w-0">
+                                <h2 className="text-lg font-bold text-gray-900 dark:text-white truncate leading-tight">{user.name}</h2>
+                                <p className="text-[13px] text-gray-500 dark:text-gray-400 mt-0.5 capitalize">{user.role.replace('_', ' ')}</p>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                                <button
-                                    onClick={toggleTheme}
-                                    className="p-2 rounded-full bg-gray-100/80 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm"
-                                >
-                                    {theme === 'light' ? <MoonIcon className="w-4 h-4" /> : <SunIcon className="w-4 h-4" />}
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        onMobileClose?.();
-                                        onLogout();
-                                    }}
-                                    className="p-2 rounded-full bg-danger-muted text-danger hover:scale-105 active:scale-95 transition-all duration-300 shadow-sm"
-                                >
-                                    <ArrowLeftOnRectangleIcon className="w-4 h-4" />
-                                </button>
+                            <ChevronRightIcon className="w-5 h-5 text-gray-300 dark:text-gray-600" />
+                        </div>
+
+                        {/* Navigation Groups */}
+                        <div className="space-y-8">
+                            {getGroupedItems().map(([groupName, items]) => (
+                                <div key={groupName}>
+                                    <div className="mx-4 bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden divide-y divide-gray-100 dark:divide-zinc-800 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                                        {items.map((item) => {
+                                            const IconComponent = item.icon;
+                                            const iconStyle = getAppIconStyle(item.page);
+                                            return (
+                                                <NavLink
+                                                    key={item.page}
+                                                    to={`/${item.page}`}
+                                                    onClick={() => window.innerWidth < 768 && onMobileClose?.()}
+                                                    className={({ isActive }) => `
+                                                        flex items-center gap-4 px-4 py-3.5 transition-all
+                                                        ${isActive ? 'bg-gray-50 dark:bg-zinc-800/50' : 'active:bg-gray-100 dark:active:bg-zinc-800'}
+                                                    `}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 ${iconStyle}`}>
+                                                        <IconComponent className="w-5 h-5" />
+                                                    </div>
+                                                    <span className="flex-1 text-[15px] font-medium text-gray-800 dark:text-gray-200">{item.name}</span>
+                                                    <div className="flex items-center gap-2">
+                                                        {item.badge && (
+                                                            <span className="px-2 py-0.5 text-[10px] font-bold bg-danger text-white rounded-full">
+                                                                {item.badge}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </NavLink>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {/* System Section */}
+                            <div>
+                                <div className="mx-4 bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden divide-y divide-gray-100 dark:divide-zinc-800 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                                    {/* Install App */}
+                                    {installPrompt && (
+                                        <button
+                                            onClick={() => { onInstall?.(); onMobileClose?.(); }}
+                                            className="w-full flex items-center gap-4 px-4 py-3.5 active:bg-gray-100 dark:active:bg-zinc-800 transition-all text-left"
+                                        >
+                                            <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-blue-500 text-white shadow-sm flex-shrink-0">
+                                                <ArrowDownTrayIcon className="w-5 h-5" />
+                                            </div>
+                                            <span className="flex-1 text-[15px] font-medium text-gray-800 dark:text-gray-200">Install Mobile App</span>
+                                        </button>
+                                    )}
+
+                                    {/* Appearance / Theme */}
+                                    <button
+                                        onClick={toggleTheme}
+                                        className="w-full flex items-center gap-4 px-4 py-3.5 active:bg-gray-100 dark:active:bg-zinc-800 transition-all text-left"
+                                    >
+                                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0 ${theme === 'light' ? 'bg-indigo-500 text-white' : 'bg-amber-400 text-gray-900'}`}>
+                                            {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
+                                        </div>
+                                        <span className="flex-1 text-[15px] font-medium text-gray-800 dark:text-gray-200">
+                                            {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-[13px] text-gray-400 dark:text-gray-500">{theme === 'light' ? 'Off' : 'On'}</span>
+                                        </div>
+                                    </button>
+
+                                    {/* Logout */}
+                                    <button
+                                        onClick={() => {
+                                            onMobileClose?.();
+                                            onLogout();
+                                        }}
+                                        className="w-full flex items-center gap-4 px-4 py-3.5 active:bg-gray-100 dark:active:bg-zinc-800 transition-all text-left"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500 text-white shadow-sm flex-shrink-0">
+                                            <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                                        </div>
+                                        <span className="flex-1 text-[15px] font-medium text-red-500">Sign Out</span>
+                                    </button>
+                                </div>
                             </div>
+                        </div>
+
+                        {/* Status Footer */}
+                        <div className="mt-8 px-8 flex flex-col items-center gap-1 opacity-50">
+                            <span className="text-[9px] text-gray-300 dark:text-gray-700 mt-2">SalePilot v2.4.0</span>
                         </div>
                     </div>
                 </div>
