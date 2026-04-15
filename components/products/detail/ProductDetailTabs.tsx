@@ -30,7 +30,6 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
         { id: 'inventory', label: 'Inventory' }
     ] as const;
 
-
     const price = typeof product.price === 'string' ? parseFloat(product.price) : product.price;
 
     return (
@@ -57,6 +56,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                     {/* Details Tab */}
                     {activeTab === 'details' && (
                         <div className="space-y-4 animate-glass-appear">
+
                             {/* Description */}
                             {product.description && (
                                 <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] transition-all duration-500">
@@ -110,6 +110,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                                         </div>
                                     </div>
                                 )}
+
                             </div>
                         </div>
                     )}

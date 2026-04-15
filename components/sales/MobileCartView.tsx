@@ -50,6 +50,9 @@ interface MobileCartViewProps {
     onContinuousScan: (decodedText: string) => void;
     onScanError: (error: any) => void;
     setAppliedStoreCredit: (amount: number) => void;
+    heldSalesCount: number;
+    onOpenHeldSales: () => void;
+    onScroll?: (scrollTop: number) => void;
 }
 
 // Payment icon helper
@@ -98,6 +101,9 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
     onContinuousScan,
     onScanError,
     setAppliedStoreCredit,
+    heldSalesCount,
+    onOpenHeldSales,
+    onScroll,
 }) => {
     const getStepFor = (uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1);
     const isCashMethod = (selectedPaymentMethod || '').toLowerCase().includes('cash');
@@ -193,7 +199,10 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
             )}
 
             {/* ── Main Scrollable Content ── */}
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div
+                className="flex-1 overflow-y-auto min-h-0"
+                onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
+            >
 
                 {/* Empty state */}
                 {cart.length === 0 && !isScannerOpen && (
@@ -219,6 +228,15 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                             >
                                 Browse Products
                             </button>
+                            {heldSalesCount > 0 && (
+                                <button
+                                    onClick={onOpenHeldSales}
+                                    className="w-full px-6 py-4 bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-2xl font-bold flex items-center justify-center gap-3 border border-amber-200/50 dark:border-amber-500/20 active:scale-95 transition-all"
+                                >
+                                    <ClockIcon className="w-5 h-5" />
+                                    Held Sales ({heldSalesCount})
+                                </button>
+                            )}
                         </div>
                     </div>
                 )}
@@ -252,7 +270,10 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                         </div>
 
                         {/* Bottom Half: Cart Items */}
-                        <div className="flex-1 bg-slate-50 dark:bg-slate-900 overflow-y-auto px-3 py-2 pb-24 space-y-2 relative border-t border-slate-200/50 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)] z-10">
+                        <div
+                            className="flex-1 bg-slate-50 dark:bg-slate-900 overflow-y-auto px-3 py-2 pb-24 space-y-2 relative border-t border-slate-200/50 dark:border-white/10 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-4px_20px_rgba(0,0,0,0.3)] z-10"
+                            onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
+                        >
                             {cart.length === 0 ? (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-70">
                                     <ShoppingCartIcon className="w-8 h-8 text-slate-400 dark:text-slate-500 mb-2" />
@@ -519,10 +540,9 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
             </div>
 
             {cart.length > 0 && !isScannerOpen && (
-                <div className="flex-none absolute bottom-[calc(env(safe-area-inset-bottom)+5rem)] left-0 right-0 z-30 animate-in fade-in slide-in-from-bottom-4 duration-300">
-                    {/* Frosted glass background */}
-                    <div className="bg-white/70 dark:bg-slate-900/70 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 px-4 pt-4 pb-4 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_-8px_30px_rgb(0,0,0,0.2)] relative rounded-t-3xl mx-2 mb-2">
-                        <div className="absolute inset-0 bg-gradient-to-t from-white/40 to-transparent dark:from-slate-900/40 pointer-events-none" />
+                <div className="flex-none absolute bottom-[calc(env(safe-area-inset-bottom)+5.5rem)] left-0 right-0 z-30 animate-in fade-in slide-in-from-bottom-4 duration-300">
+                    {/* Liquid Glass Apple Panel */}
+                    <div className="liquid-glass mx-3 mb-2 rounded-[2rem] px-4 pt-4 pb-4">
                         <div className="relative z-10 group">
                             {/* Scan button (compact, above) */}
                             <div className="grid grid-cols-4 gap-2 mb-2.5">

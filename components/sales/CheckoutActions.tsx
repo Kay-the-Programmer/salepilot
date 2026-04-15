@@ -110,13 +110,13 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
         : [];
 
     return (
-        <div className="hidden md:flex flex-none bg-white dark:bg-slate-900/95 border-t border-slate-200/60 dark:border-white/8 flex-col"
+        <div className="hidden md:flex flex-none liquid-glass border-t-0 flex-col shadow-none"
             style={{ height: '400px' }}>
 
             <div className="flex flex-col h-full">
                     {/* Tab Bar */}
                     <div className="flex-none px-4 pt-4">
-                        <div className="flex bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-[18px] p-1 gap-1 relative z-10 shadow-inner" role="tablist">
+                        <div className="flex liquid-glass !bg-slate-100/50 dark:!bg-slate-800/50 rounded-[18px] p-1 gap-1 relative z-10 shadow-inner border-none" role="tablist">
                             {tabItems.map(tab => (
                                 <button
                                     key={tab.id}
@@ -255,7 +255,7 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                                                 border transition-all duration-300 active:scale-[0.96]
                                                                 ${isSelected
                                                                     ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 shadow-[0_0_0_2px_rgba(99,102,241,0.2)]'
-                                                                    : 'border-slate-200 dark:border-white/10 bg-white/60 dark:bg-slate-800/60 backdrop-blur-md text-slate-600 dark:text-slate-400 hover:shadow-md hover:border-slate-300 dark:hover:border-white/20 hover:-translate-y-0.5'}
+                                                                    : 'border-slate-200 dark:border-white/10 liquid-glass !bg-white/60 dark:!bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:shadow-md hover:border-slate-300 dark:hover:border-white/20 hover:-translate-y-0.5'}
                                                             `}
                                                         >
                                                             <span className="text-base leading-none">{getPaymentIcon(method.name)}</span>

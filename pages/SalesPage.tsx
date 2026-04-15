@@ -28,7 +28,7 @@ import { MobileProductView } from '../components/sales/MobileProductView';
 import { SalesHeaderActions } from '../components/sales/SalesHeaderActions';
 
 // Icons for Bottom Navigation
-import { ShoppingCartIcon, ArchiveBoxIcon } from '../components/icons';
+import { ShoppingCartIcon, ArchiveBoxIcon, ClockIcon } from '../components/icons';
 
 interface SalesPageProps {
     user: User;
@@ -124,6 +124,26 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Pagination State
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(18); // Default matches historical 3x6 grid
+
+    // Mobile Nav Visibility State
+    const [isNavVisible, setIsNavVisible] = useState(true);
+
+    // Scroll Detection for hiding/showing bottom nav
+    const lastScrollY = useRef(0);
+    const handleMobileScroll = useCallback((currentScrollY: number) => {
+        if (typeof window === 'undefined' || window.innerWidth >= 768) return;
+
+        const scrollDiff = currentScrollY - lastScrollY.current;
+
+        if (scrollDiff > 10 && currentScrollY > 60) {
+            // Scrolling down
+            setIsNavVisible(false);
+        } else if (scrollDiff < -10) {
+            // Scrolling up
+            setIsNavVisible(true);
+        }
+        lastScrollY.current = currentScrollY;
+    }, []);
 
     // Persist view mode to localStorage
     useEffect(() => {
@@ -793,6 +813,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 updateQuantity={updateQuantity}
                 searchTerm={searchTerm}
                 viewMode={viewMode}
+                onScroll={handleMobileScroll}
             />
 
             {/* Mobile Cart View */}
@@ -830,49 +851,78 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 onContinuousScan={handleContinuousScan}
                 onScanError={handleScanError}
                 setAppliedStoreCredit={setAppliedStoreCredit}
+                heldSalesCount={heldSales.length}
+                onOpenHeldSales={() => setShowHeldPanel(true)}
+                onScroll={handleMobileScroll}
             />
 
             {/* Mobile Footer Spacing for Bottom Nav */}
             <div className="h-24 md:hidden flex-none"></div>
 
-            {/* Premium Mobile Bottom Navigation Bar */}
-            <nav aria-label="Mobile Bottom Navigation" className="md:hidden fixed bottom-0 left-0 right-0 z-[70] bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-200/50 dark:border-white/5 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] dark:shadow-[0_-8px_30px_rgba(0,0,0,0.2)] pb-[env(safe-area-inset-bottom)]">
-                <div className="flex items-center justify-around px-2 py-2">
+            {/* Premium Mobile Bottom Navigation Bar (Liquid Glass Apple Design) */}
+            <nav
+                aria-label="Mobile Bottom Navigation"
+                className={`
+                    md:hidden fixed z-[70] transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1)
+                    left-6 right-6 bottom-[calc(1.5rem+env(safe-area-inset-bottom))]
+                    liquid-glass
+                    rounded-[2.5rem]
+                    ${isNavVisible ? 'translate-y-0 opacity-100' : 'translate-y-[calc(100%+4rem)] opacity-0 pointer-events-none'}
+                `}
+            >
+                <div className="flex items-center justify-around px-3 py-2.5">
                     <button
                         onClick={() => setActiveTab('products')}
-                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1.5 py-1 transition-all duration-300 active:scale-95 outline-none ${activeTab === 'products' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90 outline-none ${activeTab === 'products' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}
                         aria-selected={activeTab === 'products'}
                     >
                         <div className="relative">
-                            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${activeTab === 'products' ? 'bg-blue-50 dark:bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
+                            <div className={`p-2 rounded-2xl transition-all duration-500 ${activeTab === 'products' ? 'bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100/50 dark:group-hover:bg-slate-800/50'}`}>
                                 <ArchiveBoxIcon className="w-[22px] h-[22px]" />
                             </div>
                             {activeTab === 'products' && (
-                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
+                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.6)]" />
                             )}
                         </div>
-                        <span className={`text-[9px] font-bold tracking-wide transition-all duration-300 uppercase ${activeTab === 'products' ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>Products</span>
+                        <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 uppercase ${activeTab === 'products' ? 'opacity-100' : 'opacity-60'}`}>Catalog</span>
                     </button>
 
                     <button
                         onClick={() => setActiveTab('cart')}
-                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1.5 py-1 transition-all duration-300 active:scale-95 outline-none ${activeTab === 'cart' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90 outline-none ${activeTab === 'cart' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}
                         aria-selected={activeTab === 'cart'}
                     >
                         <div className="relative">
-                            <div className={`p-1.5 rounded-2xl transition-all duration-300 ${activeTab === 'cart' ? 'bg-blue-50 dark:bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100 dark:group-hover:bg-slate-800'}`}>
+                            <div className={`p-2 rounded-2xl transition-all duration-500 ${activeTab === 'cart' ? 'bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100/50 dark:group-hover:bg-slate-800/50'}`}>
                                 <ShoppingCartIcon className="w-[22px] h-[22px]" />
                             </div>
                             {cart.length > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-rose-500 min-w-[16px] h-[16px] rounded-full flex items-center justify-center text-[9px] font-bold text-white shadow-sm border-2 border-white dark:border-slate-900 px-1 transition-transform">
+                                <div className="absolute -top-1 -right-1 bg-rose-500 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-[0_2px_8px_rgba(244,63,94,0.4)] border-2 border-white/80 dark:border-slate-800/80 px-1.5 transition-transform transform scale-110">
                                     {cart.length}
                                 </div>
                             )}
                             {activeTab === 'cart' && (
-                                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_8px_rgba(37,99,235,0.8)]" />
+                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.6)]" />
                             )}
                         </div>
-                        <span className={`text-[9px] font-bold tracking-wide transition-all duration-300 uppercase ${activeTab === 'cart' ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`}>Cart</span>
+                        <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 uppercase ${activeTab === 'cart' ? 'opacity-100' : 'opacity-60'}`}>Cart</span>
+                    </button>
+
+                    <button
+                        onClick={() => setShowHeldPanel(true)}
+                        className="group relative flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90 outline-none text-slate-500 dark:text-slate-400"
+                    >
+                        <div className="relative">
+                            <div className="p-2 rounded-2xl transition-all duration-500 bg-transparent group-hover:bg-slate-100/50 dark:group-hover:bg-slate-800/50">
+                                <ClockIcon className="w-[22px] h-[22px]" />
+                            </div>
+                            {heldSales.length > 0 && (
+                                <div className="absolute -top-1 -right-1 bg-amber-500 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-[0_2px_8px_rgba(245,158,11,0.4)] border-2 border-white/80 dark:border-slate-800/80 px-1.5 transition-transform transform scale-110">
+                                    {heldSales.length}
+                                </div>
+                            )}
+                        </div>
+                        <span className="text-[10px] font-extrabold tracking-tight transition-all duration-300 uppercase opacity-60 group-hover:opacity-100">Held</span>
                     </button>
                 </div>
             </nav>

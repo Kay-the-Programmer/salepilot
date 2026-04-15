@@ -14,6 +14,7 @@ interface MobileProductViewProps {
     updateQuantity?: (productId: string, quantity: number) => void;
     searchTerm: string;
     viewMode: 'grid' | 'list';
+    onScroll?: (scrollTop: number) => void;
 }
 
 export const MobileProductView: React.FC<MobileProductViewProps> = ({
@@ -25,13 +26,18 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
     updateQuantity,
     searchTerm,
     viewMode,
+    onScroll,
 }) => {
 
     return (
         <div className={`md:hidden fixed inset-x-0 bottom-0 top-16 z-50 transition-transform duration-300 ease-in-out flex flex-col bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-3xl ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
             {/* ── Product List/Grid ── */}
-            <div id="pos-mobile-product-list" className="flex-1 overflow-y-auto p-3 pt-2 pb-32">
+            <div
+                id="pos-mobile-product-list"
+                className="flex-1 overflow-y-auto p-3 pt-2 pb-32"
+                onScroll={(e) => onScroll?.(e.currentTarget.scrollTop)}
+            >
                 {products.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center">
                         <div className="w-16 h-16 rounded-3xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-white/10 flex items-center justify-center mb-4 shadow-sm">

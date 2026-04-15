@@ -55,7 +55,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     placeholder="Search products…"
-                    className="w-full pl-4 pr-9 py-2.5 bg-white/40 dark:bg-slate-900/40 backdrop-blur-md border border-slate-200/40 dark:border-white/10 focus:border-blue-500/50 dark:focus:border-blue-400/50 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-blue-500/5 dark:focus:ring-blue-500/5 transition-all"
+                    className="w-full pl-4 pr-9 py-2.5 liquid-glass focus:border-blue-500/50 dark:focus:border-blue-400/50 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-blue-500/5 dark:focus:ring-blue-500/5 transition-all"
                 />
                 {searchTerm ? (
                     <button
@@ -87,7 +87,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                 <button
                     id="pos-held-btn"
                     onClick={onOpenHeldSales}
-                    className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50 transition-all active:scale-95"
+                    className="relative flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white liquid-glass !bg-transparent hover:!bg-white/50 dark:hover:!bg-slate-700/50 transition-all active:scale-95"
                     aria-label={`Held sales${heldSalesCount > 0 ? ` (${heldSalesCount})` : ''}`}
                 >
                     <ClockIcon className="w-4 h-4" />
@@ -101,7 +101,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
 
                 <button
                     onClick={onTourStart}
-                    className="p-2 rounded-full text-slate-400 hover:text-slate-900 dark:text-slate-500 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50 transition-all active:scale-95"
+                    className="p-2 rounded-full text-slate-400 hover:text-slate-900 dark:text-slate-500 dark:hover:text-white liquid-glass !bg-transparent hover:!bg-white/50 dark:hover:!bg-slate-700/50 transition-all active:scale-95"
                     aria-label="Launch help guide"
                 >
                     <QuestionMarkCircleIcon className="w-4 h-4" />

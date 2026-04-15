@@ -485,7 +485,7 @@ export default function Sidebar({
                     <div className="absolute top-5 left-5 z-[120]">
                         <button
                             onClick={onMobileClose}
-                            className="flex items-center justify-center w-10 h-10 rounded-full bg-white/70 dark:bg-zinc-800/70 backdrop-blur-xl border border-gray-200/50 dark:border-zinc-700/50 shadow-lg text-gray-900 dark:text-white active:scale-95 transition-all"
+                            className="flex items-center justify-center w-10 h-10 rounded-full liquid-glass border-gray-200/50 dark:border-zinc-700/50 shadow-lg text-gray-900 dark:text-white active:scale-95 transition-all"
                             aria-label="Close"
                         >
                             <XMarkIcon className="w-6 h-6" />
@@ -497,7 +497,7 @@ export default function Sidebar({
                         {/* Profile Section - Apple Settings Style */}
                         <div 
                             onClick={() => handleNavigation('profile')}
-                            className="mx-4 mb-8 bg-white dark:bg-zinc-900 rounded-[20px] p-4 flex items-center gap-4 shadow-sm active:opacity-70 transition-opacity cursor-pointer border border-gray-100 dark:border-zinc-800"
+                            className="mx-4 mb-8 liquid-glass rounded-[20px] p-4 flex items-center gap-4 shadow-sm active:opacity-70 transition-opacity cursor-pointer border border-gray-100 dark:border-zinc-800"
                         >
                             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-primary-dark flex items-center justify-center text-white text-2xl font-bold shadow-md">
                                 {user.name.charAt(0).toUpperCase()}
@@ -512,7 +512,7 @@ export default function Sidebar({
                         <div className="space-y-8">
                             {getGroupedItems().map(([groupName, items]) => (
                                 <div key={groupName}>
-                                    <div className="mx-4 bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden divide-y divide-gray-100 dark:divide-zinc-800 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                                    <div className="mx-4 liquid-glass rounded-[20px] overflow-hidden divide-y divide-gray-100 dark:divide-zinc-800 border-none shadow-sm">
                                         {items.map((item) => {
                                             const IconComponent = item.icon;
                                             const iconStyle = getAppIconStyle(item.page);
@@ -546,7 +546,7 @@ export default function Sidebar({
 
                             {/* System Section */}
                             <div>
-                                <div className="mx-4 bg-white dark:bg-zinc-900 rounded-[20px] overflow-hidden divide-y divide-gray-100 dark:divide-zinc-800 border border-gray-100 dark:border-zinc-800 shadow-sm">
+                                <div className="mx-4 liquid-glass rounded-[20px] overflow-hidden divide-y divide-gray-100 dark:divide-zinc-800 border-none shadow-sm">
                                     {/* Install App */}
                                     {installPrompt && (
                                         <button
@@ -605,9 +605,9 @@ export default function Sidebar({
             <aside
                 className={`
                     hidden md:flex
-                    bg-surface/80 backdrop-blur-2xl
+                    liquid-glass
                     h-screen flex-col transition-all duration-300 ease-in-out z-50
-                    relative translate-x-0 border-r border-brand-border
+                    relative translate-x-0 border-r-0
                     ${isExpanded ? 'w-64' : 'w-20'}
                 `}
                 style={{
