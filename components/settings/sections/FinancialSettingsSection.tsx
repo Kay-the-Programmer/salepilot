@@ -1,6 +1,6 @@
 import React from 'react';
 import { StoreSettings } from '../../../types';
-import { CreditCardIcon, CurrencyDollarIcon, ChartBarIcon } from '../../icons';
+import { CreditCardIcon, CurrencyDollarIcon, ChartBarIcon, ShieldCheckIcon, XCircleIcon } from '../../icons';
 import SettingsCard from '../SettingsCard';
 import DetailItem from '../DetailItem';
 
@@ -60,7 +60,7 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                     </div>
 
                     <h4 className="text-sm font-semibold text-brand-text mb-4 flex items-center gap-2">
-                        <CreditCardIcon className="w-4 h-4" />
+                        <CurrencyDollarIcon className="w-4 h-4" />
                         Currency Settings
                     </h4>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -104,6 +104,37 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                             </select>
                         </div>
                     </div>
+
+                    <h4 className="text-sm font-semibold text-brand-text mb-4 flex items-center gap-2">
+                        <CreditCardIcon className="w-4 h-4" />
+                        Lenco Integration
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label htmlFor="lencoPublicKey" className="text-sm font-medium text-brand-text-muted">Lenco Public Key</label>
+                            <input
+                                type="text"
+                                name="lencoPublicKey"
+                                id="lencoPublicKey"
+                                value={currentSettings.lencoPublicKey || ''}
+                                onChange={handleChange}
+                                className={inputFieldClasses}
+                                placeholder="pk_live_..."
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label htmlFor="lencoSecretKey" className="text-sm font-medium text-brand-text-muted">Lenco Secret Key</label>
+                            <input
+                                type="password"
+                                name="lencoSecretKey"
+                                id="lencoSecretKey"
+                                value={currentSettings.lencoSecretKey || ''}
+                                onChange={handleChange}
+                                className={inputFieldClasses}
+                                placeholder="sk_live_..."
+                            />
+                        </div>
+                    </div>
                 </div>
             ) : (
                 <div className="flex flex-col">
@@ -125,6 +156,54 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                             </div>
                         }
                         icon={<CurrencyDollarIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Lenco Public Key"
+                        value={
+                            <div className="flex items-center justify-end gap-2">
+                                {settings.lencoPublicKey ? (
+                                    <>
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                            <ShieldCheckIcon className="w-3 h-3" />
+                                            Set
+                                        </span>
+                                        <span className="text-[14px] font-medium text-brand-text truncate max-w-[150px] opacity-70">
+                                            {settings.lencoPublicKey.length > 8 ? `${settings.lencoPublicKey.substring(0, 8)}...` : settings.lencoPublicKey}
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                        <XCircleIcon className="w-3 h-3" />
+                                        Not Set
+                                    </span>
+                                )}
+                            </div>
+                        }
+                        icon={<CreditCardIcon className="w-5 h-5" />}
+                    />
+                    <DetailItem
+                        label="Lenco Secret Key"
+                        value={
+                            <div className="flex items-center justify-end gap-2">
+                                {settings.lencoSecretKey ? (
+                                    <>
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                            <ShieldCheckIcon className="w-3 h-3" />
+                                            Set
+                                        </span>
+                                        <span className="text-[14px] font-medium text-brand-text opacity-70">
+                                            ••••••••••••
+                                        </span>
+                                    </>
+                                ) : (
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
+                                        <XCircleIcon className="w-3 h-3" />
+                                        Not Set
+                                    </span>
+                                )}
+                            </div>
+                        }
+                        icon={<CreditCardIcon className="w-5 h-5" />}
                     />
                 </div>
             )

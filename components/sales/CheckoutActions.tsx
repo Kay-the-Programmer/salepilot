@@ -278,7 +278,7 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
                                                     value={mobileMoneyNumber}
                                                     onChange={e => setMobileMoneyNumber(e.target.value)}
                                                     className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all"
-                                                    placeholder="e.g. 0961111111"
+                                                    placeholder="Phone number"
                                                 />
                                             </div>
                                         )}

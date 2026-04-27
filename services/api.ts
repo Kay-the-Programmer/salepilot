@@ -84,6 +84,7 @@ async function request<T>(endpoint: string, init: RequestInit = {}): Promise<T> 
     ...getAuthHeaders(),
     ...(init.headers as Record<string, string> | undefined),
   };
+  console.log('[api] Request to', url, 'with headers', headers);
   if (!isFormData && !('Content-Type' in headers) && !('content-type' in headers)) {
     headers['Content-Type'] = 'application/json';
   }

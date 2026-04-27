@@ -280,6 +280,7 @@ export interface StoreSettings {
 
     // Integrations
     lencoPublicKey?: string; // Merchant's own public key for direct settlement
+    lencoSecretKey?: string; // Merchant's own secret key for direct settlement
 }
 
 // --- Accounting Types ---

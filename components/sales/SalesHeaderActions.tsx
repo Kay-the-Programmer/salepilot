@@ -72,13 +72,15 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                 )}
             </div>
 
-            {/* View Toggle - Always Visible */}
-            <ListGridToggle
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-                size="sm"
-                className="!bg-transparent !border-none !shadow-none !p-2 hover:bg-white/50 dark:hover:bg-slate-700/50"
-            />
+            {/* View Toggle - Desktop Only (mobile is always list view) */}
+            <div className="hidden md:block">
+                <ListGridToggle
+                    viewMode={viewMode}
+                    onViewModeChange={setViewMode}
+                    size="sm"
+                    className="!bg-transparent !border-none !shadow-none !p-2 hover:bg-white/50 dark:hover:bg-slate-700/50"
+                />
+            </div>
 
             {/* Admin Actions - Desktop Only */}
             <div className="hidden md:flex items-center gap-2">

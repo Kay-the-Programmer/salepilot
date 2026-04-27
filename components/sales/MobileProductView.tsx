@@ -13,6 +13,7 @@ interface MobileProductViewProps {
     addToCart: (product: Product) => void;
     updateQuantity?: (productId: string, quantity: number) => void;
     searchTerm: string;
+    /** Ignored on mobile — list view is always used for better touch UX */
     viewMode: 'grid' | 'list';
     onScroll?: (scrollTop: number) => void;
 }
@@ -25,14 +26,13 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
     addToCart,
     updateQuantity,
     searchTerm,
-    viewMode,
     onScroll,
 }) => {
 
     return (
         <div className={`md:hidden fixed inset-x-0 bottom-0 top-16 z-50 transition-transform duration-300 ease-in-out flex flex-col bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur-3xl ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
-            {/* ── Product List/Grid ── */}
+            {/* ── Product List (always list mode on mobile) ── */}
             <div
                 id="pos-mobile-product-list"
                 className="flex-1 overflow-y-auto p-3 pt-2 pb-32"
@@ -49,26 +49,6 @@ export const MobileProductView: React.FC<MobileProductViewProps> = ({
                                 No results for "{searchTerm}"
                             </p>
                         )}
-                    </div>
-                ) : viewMode === 'grid' ? (
-                    <div className="grid grid-cols-2 gap-2.5">
-                        {products.slice(0, 60).map((product, index) => (
-                            <div
-                                key={product.id}
-                                className="animate-staggered-fade-in flex flex-col"
-                                style={{ animationDelay: `${Math.min(index, 20) * 0.04}s` }}
-                            >
-                                <ProductCard
-                                    product={product}
-                                    cartItem={cart.find(item => item.productId === product.id)}
-                                    storeSettings={storeSettings}
-                                    addToCart={addToCart}
-                                    updateQuantity={updateQuantity}
-                                    variant="mobile"
-                                    onLowStockAlert={() => { }}
-                                />
-                            </div>
-                        ))}
                     </div>
                 ) : (
                     <div className="space-y-1.5">

@@ -604,6 +604,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     showSearch={true}
                     hideSearchOnDesktop={true}
                     className="z-[60]"
+                    searchSuggestions={
+                        searchTerm.trim().length > 0
+                            ? filteredProducts.slice(0, 8).map(p => p.name)
+                            : []
+                    }
+                    onSuggestionSelect={(name) => setSearchTerm(name)}
                     rightContent={
                         <div className="flex items-center gap-2">
                             {/* External Scanner Status Badge */}

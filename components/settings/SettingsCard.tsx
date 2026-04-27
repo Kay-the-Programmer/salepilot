@@ -57,7 +57,7 @@ const SettingsCard: React.FC<SettingsCardProps> = ({
 
             {/* Card Content Envelope */}
             <div className="bg-white dark:bg-slate-900 rounded-2xl border overflow-hidden mx-4 sm:mx-0 border-slate-200/80 dark:border-white/10 shadow-sm transition-all duration-300">
-                <div className="p-0">
+                <div className="py-6 px-4 ">
                     {children}
                 </div>
             </div>
