@@ -45,6 +45,7 @@ const UserGuidePage = lazy(() => import('@/pages/UserGuidePage'));
 const WhatsAppConversationsPage = lazy(() => import('@/pages/WhatsAppConversationsPage'));
 const WhatsAppSettingsPage = lazy(() => import('@/pages/WhatsAppSettingsPage'));
 const SupportPage = lazy(() => import('@/pages/SupportPage'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 
 import Snackbar from './components/Snackbar';
 import LogoutConfirmationModal from './components/LogoutConfirmationModal';
@@ -77,12 +78,12 @@ type SnackbarState = {
 };
 
 const PERMISSIONS: Record<User['role'], string[]> = {
-    superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings'],
-    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'support'],
-    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view'],
-    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view'],
-    customer: ['profile', 'notifications', 'user-guide', 'quick-view'],
-    supplier: ['profile', 'notifications', 'user-guide', 'quick-view']
+    superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings', 'privacy'],
+    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'support', 'privacy'],
+    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
+    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
+    customer: ['profile', 'notifications', 'user-guide', 'quick-view', 'privacy'],
+    supplier: ['profile', 'notifications', 'user-guide', 'quick-view', 'privacy']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
@@ -1218,6 +1219,8 @@ export default function Dashboard() {
                     return <WhatsAppConversationsPage showSnackbar={showSnackbar} currentUser={currentUser} superMode={superMode} />;
                 case 'support':
                     return <SupportPage />;
+                case 'privacy':
+                    return <PrivacyPolicyPage />;
                 default:
                     return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
             }

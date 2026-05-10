@@ -352,6 +352,13 @@ const RegisterPage: React.FC = () => {
                             </div>
                         )}
 
+                        <div className="mt-8 text-center px-4">
+                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest leading-relaxed">
+                                By continuing, you agree to SalePilot's <br className="md:hidden" />
+                                <a href="/privacy" className="text-blue-600 dark:text-blue-400 hover:underline">Privacy Policy</a> and Terms of Service.
+                            </p>
+                        </div>
+
                         <div className="mt-12 flex flex-col md:flex-row gap-4">
                             {step > 1 && (
                                 <button type="button" onClick={prevStep} className="w-full md:w-1/3 py-5 px-4 rounded-2xl border border-slate-200 dark:border-slate-800 text-[11px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">

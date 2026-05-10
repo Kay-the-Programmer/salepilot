@@ -12,6 +12,7 @@ const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
+const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -35,6 +36,7 @@ export default function App() {
                         <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
                             <Routes>
                                 {/* Default route starts at Login/Dashboard */}
+                                <Route path="/privacy" element={<PrivacyPolicyPage />} />
                                 <Route
                                     path="/"
                                     element={<Dashboard />}
