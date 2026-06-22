@@ -26,6 +26,7 @@ const DEFAULT_TINT: Tint = ['#0c8f6e', '#00654b'];
 /** Per-app brand colours — a curated, premium palette for the icon tiles so the
  *  whole launcher reads as one consistent product family. */
 const TINTS: Record<string, Tint> = {
+    superadmin: ['#10a37d', '#00513c'],
     dash: ['#12a37d', '#00654b'],
     hustle: ['#f0a93c', '#d4820a'],
     assistant: ['#7b7bf0', '#4b4bc9'],
@@ -67,6 +68,7 @@ type AppDef = { name: string; page: string; route: string; desc: string; iconNam
 
 // Standalone apps that open in their own focused shell.
 const STANDALONE_APPS: AppDef[] = [
+    { name: 'Super Admin', page: 'superadmin', route: 'superadmin', desc: 'Platform control center', iconName: 'admin_panel_settings', requires: 'superadmin' },
     { name: 'Business Dashboard', page: 'dash', route: 'dash', desc: 'Sales, trends & insights', iconName: 'monitoring', requires: 'reports' },
     { name: 'Hustle POS', page: 'hustle', route: 'hustle', desc: 'Fast amount-entry sales', iconName: 'bolt', requires: 'sales' },
     { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
@@ -112,7 +114,7 @@ interface Tile {
 }
 
 export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, storeSettings, onLaunch, onOpenSidebar }) => {
-    const SUPERSEDED_BY_APP = ['users', 'support', 'inventory', 'suppliers', 'customers', 'returns', 'stock-takes', 'sales', 'sales-history', 'dash', 'quick-view', 'subscription', 'audit-trail', 'notifications', 'profile', 'accounting', 'logistics', 'purchase-orders', 'settings'];
+    const SUPERSEDED_BY_APP = ['users', 'support', 'inventory', 'suppliers', 'customers', 'returns', 'stock-takes', 'sales', 'sales-history', 'dash', 'quick-view', 'subscription', 'audit-trail', 'notifications', 'profile', 'accounting', 'logistics', 'purchase-orders', 'settings', 'superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/settings'];
 
     const rawPages = useMemo(
         () => getAccessibleNavItems(user, allowedPages).filter(item => !SUPERSEDED_BY_APP.includes(item.page)),

@@ -48,12 +48,9 @@ const AllSalesPage = lazy(() => import('@/pages/AllSalesPage'));
 const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
-const SuperAdminDashboard = lazy(() => import('@/pages/superadmin/SuperAdminDashboard'));
-const SuperAdminStores = lazy(() => import('@/pages/superadmin/SuperAdminStores'));
-const SuperAdminNotifications = lazy(() => import('@/pages/superadmin/SuperAdminNotifications'));
-const SuperAdminSubscriptions = lazy(() => import('@/pages/superadmin/SuperAdminSubscriptions'));
-const SuperAdminStoreDetails = lazy(() => import('@/pages/superadmin/SuperAdminStoreDetails'));
-const SuperAdminSettings = lazy(() => import('@/pages/superadmin/SuperAdminSettings'));
+// The Super Admin platform pages now live inside a single standalone app shell
+// (its own navigation + brand chrome), opened from Discover like the other apps.
+const SuperAdminApp = lazy(() => import('@/components/superadmin-app/SuperAdminApp'));
 const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
 const MarketplaceDashboard = lazy(() => import('@/pages/shop/CustomerDashboard')); // The Marketplace Portal
 const CustomerOrdersPage = lazy(() => import('@/pages/customers/CustomerDashboard')); // The My Orders Page
@@ -130,6 +127,7 @@ const STANDALONE_APP_REQUIRES: Record<string, string> = {
     po: 'purchase-orders',
     hustle: 'sales',
     config: 'settings',
+    superadmin: 'superadmin',
 };
 
 
@@ -1238,20 +1236,8 @@ export default function Dashboard() {
 
                 case 'track':
                     return <CustomerRequestTrackingPage />;
-                case 'superadmin': {
-                    const parts = location.pathname.split('/');
-                    const subPath = parts[2];
-                    const id = parts[3];
-
-                    if (subPath === 'stores') {
-                        if (id) return <SuperAdminStoreDetails storeId={id} />;
-                        return <SuperAdminStores />;
-                    }
-                    if (subPath === 'notifications') return <SuperAdminNotifications />;
-                    if (subPath === 'subscriptions') return <SuperAdminSubscriptions />;
-                    if (subPath === 'settings') return <SuperAdminSettings />;
-                    return <SuperAdminDashboard currentUser={currentUser} />;
-                }
+                // NOTE: /superadmin/* is intercepted earlier and rendered as the
+                // standalone SuperAdminApp shell, so it never reaches this switch.
 
                 case 'inventory':
                     return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
@@ -1657,7 +1643,8 @@ export default function Dashboard() {
                     : 'pos';
 
         const openPosDrawer = () => setPosDrawerOpen(true);
-        const posAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        // Superadmins see every admin app PLUS the Super Admin platform app.
+        const posAllowedPages = currentUser.role === 'superadmin' ? [...PERMISSIONS['admin'], 'superadmin'] : PERMISSIONS[currentUser.role];
         let posContent: ReactNode;
         if (posSection === 'inventory') {
             posContent = <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={openPosDrawer} />;
@@ -1686,6 +1673,30 @@ export default function Dashboard() {
                                 {posContent}
                             </Suspense>
                         </PosShell>
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Super Admin app (/superadmin, /superadmin/stores, …) ──
+    // The platform control center opens from Discover as its own focused app
+    // with its own navigation. Strictly superadmin-only.
+    const superParts = location.pathname.split('/');
+    if (superParts[1] === 'superadmin' && currentUser) {
+        if (currentUser.role !== 'superadmin') return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <SuperAdminApp
+                            user={currentUser}
+                            subPath={superParts[2]}
+                            storeId={superParts[2] === 'stores' ? superParts[3] : undefined}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        />
                     </Suspense>
                 </NotificationProvider>
             </OnboardingProvider>
