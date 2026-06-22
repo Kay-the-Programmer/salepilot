@@ -32,10 +32,10 @@ const premiumPillStyle: React.CSSProperties = {
 
 // Group the full-app sidebar entries into friendly launcher sections.
 const GROUPS: { title: string; pages: string[] }[] = [
-    { title: 'Overview', pages: ['reports', 'quick-view', 'superadmin', 'customer/dashboard'] },
-    { title: 'Sell & Stock', pages: ['pos', 'sales', 'sales-history', 'orders', 'inventory', 'stock-takes', 'returns', 'purchase-orders', 'accounting'] },
-    { title: 'Relationships', pages: ['customers', 'suppliers', 'users', 'logistics', 'superadmin/stores'] },
-    { title: 'System', pages: ['settings', 'audit-trail', 'subscription', 'notifications', 'user-guide', 'profile', 'superadmin/settings', 'superadmin/notifications', 'superadmin/subscriptions'] },
+    // { title: 'Overview', pages: ['reports', 'quick-view', 'superadmin', 'customer/dashboard'] },
+    // { title: 'Sell & Stock', pages: ['pos', 'sales', 'sales-history', 'orders', 'inventory', 'stock-takes', 'returns', 'purchase-orders', 'accounting'] },
+    // { title: 'Relationships', pages: ['customers', 'suppliers', 'users', 'logistics', 'superadmin/stores'] },
+    // { title: 'System', pages: ['settings', 'audit-trail', 'subscription', 'notifications', 'user-guide', 'profile', 'superadmin/settings', 'superadmin/notifications', 'superadmin/subscriptions'] },
 ];
 
 const DESCRIPTIONS: Record<string, string> = {
@@ -88,7 +88,7 @@ const STANDALONE_APPS: { name: string; page: string; route: string; desc: string
 export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, storeSettings, onLaunch, onOpenSidebar }) => {
     // Pages now fronted by a dedicated standalone app card above — hide the raw
     // nav entry so it isn't listed twice (e.g. legacy 'quick-view' → Business Assistant).
-    const SUPERSEDED_BY_APP = ['dash', 'quick-view', 'subscription', 'audit-trail', 'notifications', 'profile', 'accounting', 'logistics', 'purchase-orders', 'settings'];
+    const SUPERSEDED_BY_APP = ['users', 'support', 'inventory', 'suppliers', 'customers', 'returns', 'stock-takes', 'sales', 'sales-history', 'dash', 'quick-view', 'subscription', 'audit-trail', 'notifications', 'profile', 'accounting', 'logistics', 'purchase-orders', 'settings'];
 
     const available = useMemo<AppItem[]>(() => {
         // RBAC is enforced by the shared Sidebar logic layer (role + entitlement
@@ -133,25 +133,25 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                                 {apps.map(app => {
                                     const locked = !!app.module && !hasModule(storeSettings, app.module);
                                     return (
-                                    <button
-                                        key={app.page}
-                                        type="button"
-                                        className="appcard"
-                                        onClick={() => onLaunch(locked ? 'subscription' : app.route)}
-                                        title={locked ? 'Premium add-on — tap to unlock' : undefined}
-                                    >
-                                        <span className="appcard__icon">
-                                            <PosIcon name={app.iconName} size={24} />
-                                        </span>
-                                        <span className="appcard__name">
-                                            {app.name}
-                                            {locked && <span style={premiumPillStyle}>Premium</span>}
-                                        </span>
-                                        <span className="appcard__desc">{app.desc}</span>
-                                        <span className="appcard__go">
-                                            <PosIcon name={locked ? 'lock' : 'arrow_forward'} size={18} />
-                                        </span>
-                                    </button>
+                                        <button
+                                            key={app.page}
+                                            type="button"
+                                            className="appcard"
+                                            onClick={() => onLaunch(locked ? 'subscription' : app.route)}
+                                            title={locked ? 'Premium add-on — tap to unlock' : undefined}
+                                        >
+                                            <span className="appcard__icon">
+                                                <PosIcon name={app.iconName} size={24} />
+                                            </span>
+                                            <span className="appcard__name">
+                                                {app.name}
+                                                {locked && <span style={premiumPillStyle}>Premium</span>}
+                                            </span>
+                                            <span className="appcard__desc">{app.desc}</span>
+                                            <span className="appcard__go">
+                                                <PosIcon name={locked ? 'lock' : 'arrow_forward'} size={18} />
+                                            </span>
+                                        </button>
                                     );
                                 })}
                             </div>
