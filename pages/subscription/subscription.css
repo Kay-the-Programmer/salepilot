@@ -1,0 +1,85 @@
+/* ============================================================
+   SalePilot — Subscription (standalone app)
+   Reuses the shared Material-3 theme from assistant.css (the root
+   carries BOTH `sp-assistant` and `sp-subscription`, so all the M3
+   tokens + `m3-*` utilities are inherited). This file only adds the
+   subscription-specific pieces from the design template.
+   ============================================================ */
+
+/* Inverse surface (the "credit card" payment panel) — not defined in
+   assistant.css, so add the two tokens here. */
+.sp-subscription {
+  --m3-inverse-surface: #30312f;
+  --m3-inverse-on-surface: #f2f0ed;
+}
+html.dark .sp-subscription {
+  --m3-inverse-surface: #2b2e2a;
+  --m3-inverse-on-surface: #e4e2df;
+}
+
+/* Bento cards (My Subscription view) */
+.sp-subscription .bento-card {
+  background: var(--m3-surface-lowest);
+  border: 1px solid var(--m3-glass-border);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sp-subscription .bento-card:hover {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+}
+
+.sp-subscription .payment-card {
+  background: var(--m3-inverse-surface);
+  color: var(--m3-inverse-on-surface);
+}
+
+/* Pricing cards (Plans view) */
+.sp-subscription .pricing-card {
+  background: var(--m3-surface);
+  border: 1px solid color-mix(in srgb, var(--m3-outline-variant) 45%, transparent);
+}
+.sp-subscription .pricing-card--active {
+  border: 2px solid var(--m3-primary);
+  box-shadow: 0 20px 25px -5px rgba(0, 128, 96, 0.14), 0 10px 10px -5px rgba(0, 128, 96, 0.05);
+}
+
+/* Usage / progress bars */
+.sp-subscription .sub-progress {
+  height: 8px;
+  width: 100%;
+  background: var(--m3-surface-highest);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+.sp-subscription .sub-progress > span {
+  display: block;
+  height: 100%;
+  border-radius: 9999px;
+  background: var(--m3-primary);
+}
+
+/* Billing toggle knob */
+.sp-subscription .toggle-knob {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Sidebar / nav item */
+.sp-subscription .sub-navitem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  width: 100%;
+  text-align: left;
+  color: var(--m3-on-surface-variant);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.sp-subscription .sub-navitem:hover {
+  background: var(--m3-surface-high);
+}
+.sp-subscription .sub-navitem--active {
+  background: var(--m3-primary-container);
+  color: var(--m3-on-primary-container);
+}

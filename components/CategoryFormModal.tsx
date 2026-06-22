@@ -149,21 +149,21 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('basic')}
-                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'basic' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 dark:text-slate-400'}`}
+                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'basic' ? 'bg-primary text-white shadow-md shadow-primary/30' : 'text-slate-500 dark:text-slate-400'}`}
                             >
                                 Basic Info
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('attributes')}
-                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'attributes' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 dark:text-slate-400'}`}
+                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'attributes' ? 'bg-primary text-white shadow-md shadow-primary/30' : 'text-slate-500 dark:text-slate-400'}`}
                             >
                                 Attributes
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setActiveSection('accounting')}
-                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'accounting' ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30' : 'text-slate-500 dark:text-slate-400'}`}
+                                className={`px-4 py-2 font-bold text-sm rounded-full transition-all duration-300 active:scale-95 ${activeSection === 'accounting' ? 'bg-primary text-white shadow-md shadow-primary/30' : 'text-slate-500 dark:text-slate-400'}`}
                             >
                                 Accounting
                             </button>
@@ -192,7 +192,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                             id="parentId"
                                             value={category.parentId || 'null'}
                                             onChange={handleChange}
-                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent transition-all appearance-none text-gray-900 dark:text-white"
+                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-primary focus:border-transparent transition-all appearance-none text-gray-900 dark:text-white"
                                         >
                                             <option value="null" className="dark:bg-slate-800">None (Top-level category)</option>
                                             {availableParents.map(c => (
@@ -231,7 +231,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                                         placeholder="Attribute name"
                                                         value={attr.name}
                                                         onChange={e => handleAttributeChange(index, e.target.value)}
-                                                        className="block w-full bg-white dark:bg-slate-700 px-3 py-2 border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent focus:outline-none text-gray-900 dark:text-white"
+                                                        className="block w-full bg-white dark:bg-slate-700 px-3 py-2 border border-gray-200 dark:border-white/10 rounded-lg focus:ring-2 focus:ring-gray-900 dark:focus:ring-primary focus:border-transparent focus:outline-none text-gray-900 dark:text-white"
                                                     />
                                                 </div>
                                                 <button
@@ -283,7 +283,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                             id="revenueAccountId"
                                             value={category.revenueAccountId || ''}
                                             onChange={handleChange}
-                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent transition-all appearance-none text-gray-900 dark:text-white"
+                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-primary focus:border-transparent transition-all appearance-none text-gray-900 dark:text-white"
                                         >
                                             <option value="" className="dark:bg-slate-800">Default Revenue Account</option>
                                             {revenueAccounts.map(a => (
@@ -308,7 +308,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                             id="cogsAccountId"
                                             value={category.cogsAccountId || ''}
                                             onChange={handleChange}
-                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-blue-500 focus:border-transparent transition-all appearance-none text-gray-900 dark:text-white"
+                                            className="block w-full px-4 py-3 text-base bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-primary focus:border-transparent transition-all appearance-none text-gray-900 dark:text-white"
                                         >
                                             <option value="" className="dark:bg-slate-800">Default COGS Account</option>
                                             {cogsAccounts.map(a => (
@@ -343,7 +343,7 @@ const CategoryFormModal: React.FC<CategoryFormModalProps> = ({ isOpen, onClose, 
                                 <Button
                                     type="submit"
                                     variant="primary"
-                                    className="w-full sm:w-auto px-8 py-3 rounded-full font-bold shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+                                    className="w-full sm:w-auto px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/30 active:scale-95 transition-all"
                                 >
                                     {categoryToEdit ? 'Save Changes' : 'Create Category'}
                                 </Button>

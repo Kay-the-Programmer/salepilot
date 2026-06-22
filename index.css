@@ -1,11 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
 @import url('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Minimal global styles to ensure consistent layout and icon sizing even if Tailwind CDN is slow or offline. */
 
 /* Box sizing and base reset */
 *,
@@ -20,70 +17,96 @@ body,
   height: 100%;
 }
 
+/* ============================================================
+   CONFIDENT CLARITY — Design Token System
+   Primary: SalePilot Green #008060
+   Accent:  Amber/Gold    #D4820A
+   Ink:     Deep Charcoal #1A1A2E
+   BG:      Warm Off-White #F9F7F4
+   ============================================================ */
 :root {
-  --salepilot-navy: 10 46 92; /* #0A2E5C converted to rgb for opacity support */
-  --salepilot-navy-light: #154180;
-  --salepilot-orange: #FF7F27;
-  --salepilot-orange-dark: #E66B1F;
-  
-  /* Semantic Theme Variables */
-  --color-primary: 37 99 235; /* blue-600 */
-  --color-primary-dark: 29 78 216; /* blue-700 */
-  --color-secondary: 147 51 234; /* purple-600 */
-  --color-accent: 249 115 22; /* orange-500 */
-  --color-background: 248 250 252; /* slate-50 */
-  --color-surface: 255 255 255; /* white */
-  --color-text: 15 23 42; /* slate-900 */
-  --color-text-muted: 100 116 139; /* slate-500 */
-  --color-border: 226 232 240; /* slate-200 */
-  --color-success: 22 163 74; /* green-600 */
-  --color-success-muted: 220 252 231; /* green-100 */
-  --color-warning: 217 119 6; /* amber-600 */
-  --color-warning-muted: 254 243 199; /* amber-100 */
-  --color-danger: 220 38 38; /* red-600 */
-  --color-danger-muted: 254 226 226; /* red-100 */
-  --color-info: 37 99 235; /* blue-600 */
-  --color-info-muted: 219 234 254; /* blue-100 */
-  --color-surface-variant: 241 245 249; /* slate-100 */
+  /* Brand identity */
+  --sp-green:        #008060;
+  --sp-green-light:  #00A07A;
+  --sp-amber:        #D4820A;
+  --sp-ink:          #1A1A2E;
+  --sp-warm-white:   #F9F7F4;
+  --sp-warm-gray:    #F2EFE9;
+
+  /* Semantic color tokens — space-separated RGB for Tailwind alpha support */
+  --color-primary:        0 128 96;    /* #008060 SalePilot Green */
+  --color-primary-dark:   0 100 75;    /* #00644B */
+  --color-secondary:      212 130 10;  /* #D4820A Amber (used where secondary matters) */
+  --color-accent:         212 130 10;  /* #D4820A Amber/Gold */
+  --color-background:     249 247 244; /* #F9F7F4 warm off-white */
+  --color-surface:        255 255 255; /* white */
+  --color-text:           26 26 46;    /* #1A1A2E deep charcoal */
+  --color-text-muted:     107 106 128; /* muted charcoal */
+  --color-border:         229 225 218; /* warm border */
+  --color-success:        0 128 96;    /* same as primary */
+  --color-success-muted:  212 242 233; /* light green tint */
+  --color-warning:        212 130 10;  /* amber */
+  --color-warning-muted:  254 243 199; /* amber-100 */
+  --color-danger:         220 38 38;   /* red-600 */
+  --color-danger-muted:   254 226 226; /* red-100 */
+  --color-info:           0 128 96;    /* green for info */
+  --color-info-muted:     212 242 233;
+  --color-surface-variant: 242 239 233; /* #F2EFE9 warm gray */
 }
 
 .dark {
-  --salepilot-navy: 15 23 42; /* #0F172A converted to rgb for opacity support */
-  --salepilot-navy-light: #1E293B;
-  --salepilot-orange: #FB923C;
-  --salepilot-orange-dark: #F97316;
-
-  /* Semantic Theme Variables */
-  --color-primary: 59 130 246; /* blue-500 */
-  --color-primary-dark: 37 99 235; /* blue-600 */
-  --color-secondary: 168 85 247; /* purple-500 */
-  --color-accent: 251 146 60; /* orange-400 */
-  --color-background: 2 6 23; /* slate-950 */
-  --color-surface: 15 23 42; /* slate-900 */
-  --color-text: 248 250 252; /* slate-50 */
-  --color-text-muted: 148 163 184; /* slate-400 */
-  --color-border: 30 41 59; /* slate-800 */
-  --color-success: 34 197 94; /* green-500 */
-  --color-success-muted: 20 83 45; /* green-900/50 approx */
-  --color-warning: 245 158 11; /* amber-500 */
-  --color-warning-muted: 120 53 15; /* amber-900/50 approx */
-  --color-danger: 239 68 68; /* red-500 */
-  --color-danger-muted: 127 29 29; /* red-900/50 approx */
-  --color-info: 59 130 246; /* blue-500 */
-  --color-info-muted: 30 58 138; /* blue-900/50 approx */
-  --color-surface-variant: 30 41 59; /* slate-800 */
+  /* Semantic color tokens — dark mode */
+  --color-primary:        0 175 133;   /* lighter green */
+  --color-primary-dark:   0 128 96;    /* base green */
+  --color-secondary:      244 166 39;  /* lighter amber */
+  --color-accent:         244 166 39;  /* lighter amber */
+  --color-background:     26 26 46;    /* #1A1A2E deep charcoal */
+  --color-surface:        36 36 58;    /* slightly lifted charcoal */
+  --color-text:           249 247 244; /* warm near-white */
+  --color-text-muted:     156 155 180; /* muted */
+  --color-border:         55 55 80;    /* dark warm border */
+  --color-success:        0 175 133;
+  --color-success-muted:  0 50 38;
+  --color-warning:        244 166 39;
+  --color-warning-muted:  80 50 5;
+  --color-danger:         239 68 68;
+  --color-danger-muted:   127 29 29;
+  --color-info:           0 175 133;
+  --color-info-muted:     0 50 38;
+  --color-surface-variant: 44 44 68;
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  @apply bg-slate-50 text-slate-900 transition-colors duration-200;
+  font-feature-settings: 'kern' 1, 'liga' 1;
+  background-color: rgb(var(--color-background));
+  color: rgb(var(--color-text));
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.dark body {
-  @apply bg-slate-950 text-slate-100;
+/* Heading weight contrast — hallmark of Confident Clarity */
+h1, h2, h3 { font-weight: 800; letter-spacing: -0.02em; }
+h4, h5, h6 { font-weight: 700; }
+
+/* Tabular numerals for all financial figures */
+.tnum,
+[data-tnum],
+.font-mono {
+  font-feature-settings: 'tnum' 1;
+}
+
+/* Material Symbols helper (used in new components) */
+.material-symbols-rounded {
+  font-family: 'Material Symbols Rounded';
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  font-size: 24px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  user-select: none;
 }
 
 /* Images and SVGs behave nicely by default */
@@ -129,6 +152,16 @@ textarea {
 
 .sidebar-scroll::-webkit-scrollbar {
   /* Chrome, Safari and Opera */
+  display: none;
+}
+
+/* Hide scrollbar utility (e.g. horizontal category chip strips) */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
@@ -666,16 +699,22 @@ textarea {
   box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.07);
 }
 
-@keyframes pulse-glow {
+/* Product form cards — subtle lift when a field inside is focused */
+.form-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.form-card:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(26, 26, 46, 0.06);
+}
 
-  0%,
-  100% {
-    filter: drop-shadow(0 0 8px rgba(10, 46, 92, 0.3));
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 8px rgba(0, 128, 96, 0.35));
     transform: scale(1);
   }
-
   50% {
-    filter: drop-shadow(0 0 16px rgba(10, 46, 92, 0.6));
+    filter: drop-shadow(0 0 16px rgba(0, 128, 96, 0.65));
     transform: scale(1.05);
   }
 }
@@ -911,7 +950,8 @@ textarea {
 }
 
 .dashboard-card-glow {
-  @apply absolute inset-0 bg-gradient-to-tr from-blue-500/0 via-blue-500/0 to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[32px] z-0;
+  @apply absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[32px] z-0;
+  background: radial-gradient(ellipse at top right, rgba(0, 128, 96, 0.06), transparent 60%);
 }
 
 @keyframes snackbarBounceLeft {
@@ -1263,21 +1303,13 @@ textarea {
 
 /* Rotating shimmer border for the featured plan */
 @keyframes shimmerBorder {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  50% {
-    background-position: 100% 50%;
-  }
-
-  100% {
-    background-position: 0% 50%;
-  }
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
 }
 
 .shimmer-border {
-  background: linear-gradient(135deg, #6366f1, #3b82f6, #8b5cf6, #6366f1);
+  background: linear-gradient(135deg, #008060, #00AF85, #D4820A, #008060);
   background-size: 300% 300%;
   animation: shimmerBorder 4s ease infinite;
   padding: 2px;
@@ -1285,7 +1317,7 @@ textarea {
 }
 
 .dark .shimmer-border {
-  background: linear-gradient(135deg, #818cf8, #60a5fa, #a78bfa, #818cf8);
+  background: linear-gradient(135deg, #00AF85, #F4A627, #00AF85, #D4820A);
   background-size: 300% 300%;
 }
 
@@ -1507,19 +1539,19 @@ textarea {
 }
 
 .liquid-glass-pill.active {
-  background: #3b82f6;
+  background: #008060;
   color: white;
-  border-color: #2563eb;
+  border-color: #00644B;
   box-shadow:
-    0 4px 12px rgba(59, 130, 246, 0.3),
+    0 4px 12px rgba(0, 128, 96, 0.35),
     inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
 .dark .liquid-glass-pill.active {
-  background: #2563eb;
-  border-color: #1d4ed8;
+  background: #00AF85;
+  border-color: #008060;
   box-shadow:
-    0 4px 16px rgba(37, 99, 235, 0.4),
+    0 4px 16px rgba(0, 175, 133, 0.4),
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
@@ -1567,22 +1599,22 @@ textarea {
   opacity: 0;
 }
 
-/* Dashboard Background Gradient */
+/* Dashboard Background Gradient — Confident Clarity warm mesh */
 .bg-mesh-light {
-  background-color: #f8fafc;
+  background-color: #F9F7F4;
   background-image:
-    radial-gradient(at 0% 0%, hsla(210, 100%, 95%, 0.8) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(230, 100%, 96%, 0.8) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(200, 100%, 94%, 0.7) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(220, 100%, 95%, 0.7) 0px, transparent 50%);
+    radial-gradient(at 0% 0%,   hsla(160, 100%, 93%, 0.55) 0px, transparent 50%),
+    radial-gradient(at 100% 0%,  hsla(38,  100%, 95%, 0.55) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(160, 80%,  92%, 0.4) 0px, transparent 50%),
+    radial-gradient(at 0% 100%,   hsla(38,  80%,  94%, 0.4) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
 .dark .bg-mesh-light {
-  background-color: #0f172a;
+  background-color: #1A1A2E;
   background-image:
-    radial-gradient(at 0% 0%, hsla(220, 60%, 12%, 0.8) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, hsla(240, 50%, 14%, 0.8) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(210, 70%, 10%, 0.7) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, hsla(230, 60%, 12%, 0.7) 0px, transparent 50%);
+    radial-gradient(at 0% 0%,    hsla(160, 60%, 10%, 0.8) 0px, transparent 50%),
+    radial-gradient(at 100% 0%,  hsla(38,  50%, 10%, 0.7) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(160, 40%, 8%,  0.6) 0px, transparent 50%),
+    radial-gradient(at 0% 100%,   hsla(240, 30%, 12%, 0.8) 0px, transparent 50%);
 }

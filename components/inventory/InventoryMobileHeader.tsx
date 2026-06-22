@@ -23,7 +23,7 @@ const InventoryMobileHeader: React.FC<InventoryMobileHeaderProps> = ({
                 <button
                     onClick={() => setActiveTab('products')}
                     className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${activeTab === 'products'
-                            ? 'text-blue-600 dark:text-blue-400'
+                            ? 'text-primary dark:text-primary'
                             : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                         }`}
                     aria-label="Products"
@@ -31,7 +31,7 @@ const InventoryMobileHeader: React.FC<InventoryMobileHeaderProps> = ({
                 >
                     {/* Pill indicator */}
                     <span className={`transition-all duration-300 ${activeTab === 'products' ? 'opacity-100' : 'opacity-0'}`}>
-                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-blue-500 rounded-full" />
+                        <span className="absolute top-0 left-1/2 -translate-x-1/2 w-10 h-0.5 bg-primary rounded-full" />
                     </span>
                     <CubeIcon className={`w-5 h-5 transition-transform duration-200 ${activeTab === 'products' ? 'scale-110' : 'scale-100'}`} />
                     <span className={`text-[10px] font-semibold tracking-wide transition-all duration-200 ${activeTab === 'products' ? 'font-bold' : ''}`}>
@@ -43,7 +43,7 @@ const InventoryMobileHeader: React.FC<InventoryMobileHeaderProps> = ({
                 <button
                     onClick={() => setActiveTab('categories')}
                     className={`flex-1 flex flex-col items-center justify-center gap-1 transition-all duration-200 active:scale-95 ${activeTab === 'categories'
-                            ? 'text-blue-600 dark:text-blue-400'
+                            ? 'text-primary dark:text-primary'
                             : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
                         }`}
                     aria-label="Categories"

@@ -28,7 +28,7 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
                         {product.name}
                     </h1>
                     <div className="flex items-center gap-2 mt-1.5 font-medium text-[11px] text-brand-text-muted">
-                        <span className="text-blue-600 dark:text-blue-400 font-semibold uppercase tracking-tight">SKU</span>
+                        <span className="text-primary dark:text-primary font-semibold uppercase tracking-tight">SKU</span>
                         <span className="tracking-wide">{product.sku || 'N/A'}</span>
                     </div>
                 </div>

@@ -1,0 +1,356 @@
+/* ============================================================
+   Standalone POS shell (/pos) — focused app frame with its own
+   menu: Point of Sale, Inventory Manager, Dashboard.
+   Uses the Confident Clarity --v2-* tokens defined in sale-v2.css.
+   Mobile-first: desktop = left rail, mobile = off-canvas drawer.
+   ============================================================ */
+
+.posshell {
+  display: flex;
+  height: 100dvh;
+  background: var(--v2-color-bg);
+  color: var(--v2-color-text);
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.posshell__rail {
+  width: 248px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--v2-space-2);
+  background: var(--v2-color-surface-2);
+  border-right: 1px solid var(--v2-color-border);
+  padding: var(--v2-space-5) var(--v2-space-4);
+}
+.posshell__brand {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--v2-space-2) var(--v2-space-2) var(--v2-space-4);
+}
+.posshell__brand img { height: 26px; width: auto; object-fit: contain; align-self: flex-start; }
+.posshell__brand-sub { font-size: var(--v2-text-xs); font-weight: var(--v2-weight-medium); color: var(--v2-color-text-muted); padding-left: 2px; }
+
+.posshell__nav { display: flex; flex-direction: column; gap: 4px; }
+.posshell__navitem {
+  display: flex;
+  align-items: center;
+  gap: var(--v2-space-3);
+  width: 100%;
+  padding: var(--v2-space-3) var(--v2-space-4);
+  border: none;
+  background: none;
+  text-align: left;
+  border-radius: var(--v2-radius-md);
+  font-family: inherit;
+  font-size: var(--v2-text-base);
+  font-weight: var(--v2-weight-semibold);
+  color: var(--v2-color-text-muted);
+  cursor: pointer;
+  transition: background-color var(--v2-duration-fast) var(--v2-ease), color var(--v2-duration-fast) var(--v2-ease);
+}
+.posshell__navitem:hover { background: var(--v2-color-surface-3); color: var(--v2-color-ink); }
+.posshell__navitem--active { background: var(--v2-color-primary); color: var(--v2-color-on-primary); }
+.posshell__navitem--active:hover { background: var(--v2-color-primary-hover); color: var(--v2-color-on-primary); }
+
+.posshell__foot {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: var(--v2-space-4);
+  border-top: 1px solid var(--v2-color-border);
+}
+.posshell__foot .posshell__navitem--logout:hover { background: var(--v2-color-danger-soft); color: var(--v2-color-danger); }
+
+.posshell__content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  overflow-y: auto;
+}
+
+/* Mobile drawer */
+.posshell__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 115;
+  background: rgba(26, 26, 46, 0.45);
+}
+.posshell__drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 116;
+  width: 82%;
+  max-width: 300px;
+  box-shadow: var(--v2-shadow-lg);
+  animation: posshell-slidein var(--v2-duration) var(--v2-ease);
+}
+@keyframes posshell-slidein { from { transform: translateX(-100%); } to { transform: translateX(0); } }
+.posshell__drawer-close {
+  margin-left: auto;
+}
+
+@media (max-width: 860px) {
+  .posshell__rail--desktop { display: none; }
+}
+
+/* ============================================================
+   POS Dashboard (daily / monthly / yearly sales reports)
+   ============================================================ */
+.posdash { display: flex; flex-direction: column; min-height: 100%; flex: 1; }
+.posdash__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--v2-space-3);
+  padding: var(--v2-space-4) var(--v2-space-6);
+  border-bottom: 1px solid var(--v2-color-divider);
+  background: var(--v2-color-bg);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+.posdash__menu {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--v2-color-border);
+  border-radius: var(--v2-radius-md);
+  background: var(--v2-color-surface);
+  color: var(--v2-color-text);
+  cursor: pointer;
+}
+.posdash__title { font-size: var(--v2-text-xl); font-weight: var(--v2-weight-heavy); letter-spacing: -0.02em; color: var(--v2-color-ink); }
+
+.posdash__seg {
+  margin-left: auto;
+  display: inline-flex;
+  background: var(--v2-color-surface-2);
+  border: 1px solid var(--v2-color-border);
+  border-radius: var(--v2-radius-pill);
+  padding: 3px;
+  gap: 2px;
+}
+.posdash__seg button {
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--v2-text-sm);
+  font-weight: var(--v2-weight-bold);
+  color: var(--v2-color-text-muted);
+  padding: var(--v2-space-2) var(--v2-space-4);
+  border-radius: var(--v2-radius-pill);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.posdash__seg button.is-active { background: var(--v2-color-primary); color: var(--v2-color-on-primary); }
+
+.posdash__body {
+  padding: var(--v2-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--v2-space-5);
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.posdash__stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--v2-space-4);
+}
+.statcard {
+  border: 1px solid var(--v2-color-border);
+  border-radius: var(--v2-radius-lg);
+  background: var(--v2-color-surface);
+  padding: var(--v2-space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--v2-space-2);
+}
+.statcard__top { display: flex; align-items: center; justify-content: space-between; }
+.statcard__label { font-size: var(--v2-text-xs); font-weight: var(--v2-weight-bold); text-transform: uppercase; letter-spacing: 0.06em; color: var(--v2-color-text-subtle); }
+.statcard__icon { width: 32px; height: 32px; border-radius: var(--v2-radius-sm); display: inline-flex; align-items: center; justify-content: center; background: var(--v2-color-primary-soft); color: var(--v2-color-primary); }
+.statcard__value { font-size: var(--v2-text-2xl); font-weight: var(--v2-weight-heavy); color: var(--v2-color-ink); letter-spacing: -0.02em; }
+.statcard__value--accent { color: var(--v2-color-primary); }
+
+.posdash__card {
+  border: 1px solid var(--v2-color-border);
+  border-radius: var(--v2-radius-lg);
+  background: var(--v2-color-surface);
+  padding: var(--v2-space-5);
+}
+.posdash__card-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: var(--v2-space-4); }
+.posdash__card-head h3 { font-size: var(--v2-text-lg); font-weight: var(--v2-weight-heavy); color: var(--v2-color-ink); margin: 0; }
+.posdash__card-head span { font-size: var(--v2-text-xs); color: var(--v2-color-text-muted); }
+
+.chart {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--v2-space-2);
+  height: 200px;
+  overflow-x: auto;
+  padding-bottom: var(--v2-space-2);
+}
+.chart__col { flex: 1 0 auto; min-width: 22px; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; height: 100%; }
+.chart__bar-wrap { width: 100%; flex: 1; display: flex; align-items: flex-end; justify-content: center; }
+.chart__bar {
+  width: 70%;
+  max-width: 40px;
+  min-height: 3px;
+  background: var(--v2-color-primary);
+  border-radius: var(--v2-radius-sm) var(--v2-radius-sm) 0 0;
+  transition: height var(--v2-duration) var(--v2-ease);
+}
+.chart__col:hover .chart__bar { background: var(--v2-color-primary-hover); }
+.chart__label { font-size: 10px; font-weight: var(--v2-weight-semibold); color: var(--v2-color-text-subtle); white-space: nowrap; }
+
+.topitem { display: flex; align-items: center; justify-content: space-between; gap: var(--v2-space-3); padding: var(--v2-space-3) 0; border-bottom: 1px solid var(--v2-color-divider); }
+.topitem:last-child { border-bottom: none; }
+.topitem__rank { width: 24px; height: 24px; flex-shrink: 0; border-radius: var(--v2-radius-sm); background: var(--v2-color-surface-2); color: var(--v2-color-text-muted); font-size: var(--v2-text-xs); font-weight: var(--v2-weight-heavy); display: inline-flex; align-items: center; justify-content: center; }
+.topitem__name { flex: 1; min-width: 0; font-weight: var(--v2-weight-semibold); color: var(--v2-color-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.topitem__qty { font-size: var(--v2-text-xs); color: var(--v2-color-text-muted); }
+.topitem__rev { font-weight: var(--v2-weight-bold); color: var(--v2-color-ink); }
+
+.posdash__empty, .posdash__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--v2-space-3);
+  padding: var(--v2-space-16) var(--v2-space-4);
+  color: var(--v2-color-text-subtle);
+  text-align: center;
+}
+.posdash__spinner {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: 4px solid var(--v2-color-primary-soft);
+  border-top-color: var(--v2-color-primary);
+  animation: v2-spin 0.8s linear infinite;
+}
+
+/* ---------- Discover (app launcher) ---------- */
+.discover__sub { font-size: var(--v2-text-sm); color: var(--v2-color-text-muted); margin: 2px 0 0; }
+.discover__group { display: flex; flex-direction: column; gap: var(--v2-space-3); }
+.discover__group-title {
+  font-size: var(--v2-text-xs);
+  font-weight: var(--v2-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--v2-color-text-subtle);
+  margin: 0;
+}
+.discover__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--v2-space-4);
+}
+.appcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--v2-space-2);
+  padding: var(--v2-space-5);
+  border: 1px solid var(--v2-color-border);
+  border-radius: var(--v2-radius-lg);
+  background: var(--v2-color-surface);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: transform var(--v2-duration) var(--v2-ease), box-shadow var(--v2-duration) var(--v2-ease), border-color var(--v2-duration) var(--v2-ease);
+}
+.appcard:hover { transform: translateY(-3px); box-shadow: var(--v2-shadow-md); border-color: var(--v2-color-primary-border); }
+.appcard:active { transform: translateY(0); }
+.appcard__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--v2-radius-md);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--v2-color-primary-soft);
+  color: var(--v2-color-primary);
+}
+.appcard__name { font-size: var(--v2-text-base); font-weight: var(--v2-weight-bold); color: var(--v2-color-ink); }
+.appcard__desc { font-size: var(--v2-text-xs); color: var(--v2-color-text-muted); line-height: 1.4; }
+.appcard__go {
+  position: absolute;
+  top: var(--v2-space-4);
+  right: var(--v2-space-4);
+  color: var(--v2-color-text-subtle);
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity var(--v2-duration-fast) var(--v2-ease), transform var(--v2-duration-fast) var(--v2-ease);
+}
+.appcard:hover .appcard__go { opacity: 1; transform: translateX(0); color: var(--v2-color-primary); }
+
+@media (max-width: 860px) {
+  .posdash__menu { display: inline-flex; }
+  .posdash__bar { padding: var(--v2-space-3) var(--v2-space-4); flex-wrap: wrap; }
+  .posdash__seg { margin-left: 0; width: 100%; justify-content: space-between; }
+  .posdash__seg button { flex: 1; text-align: center; }
+  .posdash__body { padding: var(--v2-space-4); gap: var(--v2-space-4); }
+  .posdash__stats { grid-template-columns: repeat(2, 1fr); }
+  .discover__grid { grid-template-columns: repeat(2, 1fr); gap: var(--v2-space-3); }
+}
+
+/* ============================================================
+   Shared mobile bottom navigation (POS / Inventory / Dashboard)
+   ============================================================ */
+:root { --pos-nav-h: 58px; }
+
+.posbottomnav { display: none; }
+
+@media (max-width: 860px) {
+  .posbottomnav {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 70;
+    height: calc(var(--pos-nav-h) + env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom);
+    background: var(--v2-color-surface);
+    border-top: 1px solid var(--v2-color-border);
+    box-shadow: 0 -6px 20px rgba(26, 26, 46, 0.08);
+    align-items: stretch;
+    justify-content: space-around;
+  }
+  .posbottomnav__item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--v2-color-text-muted);
+    transition: color var(--v2-duration-fast) var(--v2-ease);
+  }
+  .posbottomnav__item span { font-size: 10px; font-weight: var(--v2-weight-semibold); }
+  .posbottomnav__item.is-active { color: var(--v2-color-primary); }
+  .posbottomnav__item:active { transform: scale(0.94); }
+
+  /* Clear the fixed bottom nav on content pages */
+  .posdash__body { padding-bottom: calc(var(--pos-nav-h) + var(--v2-space-8)); }
+}
+
+/* Inside the POS shell, the shared bottom nav replaces the drawer hamburger on
+   mobile, so hide the per-page menu buttons (POS / Dashboard / Discover).
+   (Admin context — e.g. /sales — is not inside .posshell, so it keeps its hamburger.) */
+.posshell .sale__menu,
+.posshell .posdash__menu {
+  display: none;
+}

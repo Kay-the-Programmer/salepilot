@@ -48,7 +48,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                                 </svg>
                             </button>
                         )}
-                        <div className="flex-shrink-0 p-3 bg-blue-600 dark:bg-blue-500 rounded-2xl shadow-xl shadow-blue-600/20 dark:shadow-blue-500/20">
+                        <div className="flex-shrink-0 p-3 bg-primary dark:bg-primary rounded-2xl shadow-xl shadow-primary/20 dark:shadow-primary/20">
                             <TagIcon className="w-6 h-6 text-white" />
                         </div>
                         <div className="min-w-0">
@@ -56,7 +56,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                                 {category.name}
                             </h1>
                             <div className="flex items-center gap-2 font-medium tracking-wide text-[11px] text-brand-text-muted">
-                                <span className="text-blue-600 dark:text-blue-400 font-bold uppercase tracking-wider">Class</span>
+                                <span className="text-primary dark:text-primary font-bold uppercase tracking-wider">Class</span>
                                 <span>Management Detail</span>
                             </div>
                         </div>
@@ -95,7 +95,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                     <div className="grid grid-cols-2 gap-5 md:gap-6">
                         <div className="p-6 md:p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500 relative overflow-hidden group">
                             <div className="absolute -right-4 -top-4 p-3 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
-                                <TagIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
+                                <TagIcon className="w-24 h-24 text-primary dark:text-primary" />
                             </div>
                             <p className="text-[10px] font-semibold text-brand-text-muted uppercase tracking-wider mb-4">Total Attributes</p>
                             <div className="flex items-baseline gap-2">
@@ -105,7 +105,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                         </div>
                         <div className="p-6 md:p-8 bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500 relative overflow-hidden group">
                             <div className="absolute -right-4 -top-4 p-3 opacity-5 group-hover:opacity-10 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
-                                <FolderIcon className="w-24 h-24 text-blue-600 dark:text-blue-400" />
+                                <FolderIcon className="w-24 h-24 text-primary dark:text-primary" />
                             </div>
                             <p className="text-[10px] font-semibold text-brand-text-muted uppercase tracking-wider mb-4">Nested Children</p>
                             <div className="flex items-baseline gap-2">
@@ -119,8 +119,8 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                         {/* Attributes Section */}
                         <section className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
                             <div className="flex items-center gap-3 mb-8">
-                                <div className="p-2.5 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl">
-                                    <TagIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                <div className="p-2.5 bg-primary/10 dark:bg-primary/10 rounded-xl">
+                                    <TagIcon className="w-5 h-5 text-primary dark:text-primary" />
                                 </div>
                                 <h3 className="text-sm font-semibold text-brand-text">
                                     Custom Attributes
@@ -148,8 +148,8 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                         {/* Subcategories Section */}
                         <section className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-[2.5rem] p-8 border border-white/20 dark:border-white/5 shadow-[0_20px_50px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_40px_80px_rgba(0,0,0,0.06)] transition-all duration-500">
                             <div className="flex items-center gap-3 mb-8">
-                                <div className="p-2.5 bg-blue-500/10 dark:bg-blue-400/10 rounded-xl">
-                                    <FolderIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                <div className="p-2.5 bg-primary/10 dark:bg-primary/10 rounded-xl">
+                                    <FolderIcon className="w-5 h-5 text-primary dark:text-primary" />
                                 </div>
                                 <h3 className="text-sm font-semibold text-brand-text">
                                     Sub-categories
@@ -162,11 +162,11 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                                         <div key={sub.id} className="group flex items-center justify-between p-4 bg-slate-100/50 dark:bg-white/5 hover:bg-white dark:hover:bg-white/10 border border-slate-200/50 dark:border-white/5 rounded-2xl transition-all duration-300">
                                             <div className="flex items-center gap-4">
                                                 <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-white/5 group-hover:scale-105 transition-transform">
-                                                    <FolderIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                                    <FolderIcon className="w-5 h-5 text-primary dark:text-primary" />
                                                 </div>
                                                 <span className="text-[15px] font-bold text-slate-900 dark:text-white">{sub.name}</span>
                                             </div>
-                                            <span className="px-3 py-1 bg-blue-50 dark:bg-blue-500/10 rounded-full text-[10px] text-blue-600 dark:text-blue-400 font-black uppercase tracking-widest border border-blue-500/20">
+                                            <span className="px-3 py-1 bg-success-muted dark:bg-primary/10 rounded-full text-[10px] text-primary dark:text-primary font-black uppercase tracking-widest border border-primary/20">
                                                 {sub.attributes.length} attributes
                                             </span>
                                         </div>
@@ -188,7 +188,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                     <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-2xl p-2.5 border border-white/20 dark:border-white/10 shadow-2xl flex items-center gap-3">
                         <button
                             onClick={() => onEdit(category)}
-                            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl font-semibold tracking-wide text-[13px] active:scale-95 transition-all duration-300"
+                            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-semibold tracking-wide text-[13px] active:scale-95 transition-all duration-300 shadow-lg shadow-primary/20"
                         >
                             <PencilIcon className="w-5 h-5" />
                             Edit Class

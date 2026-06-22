@@ -114,7 +114,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
                     <Button
                         type="button"
                         variant={confirmButtonClass.includes('red') ? 'danger' : 'primary'}
-                        className={`flex-1 py-3 px-6 rounded-full font-bold shadow-lg active:scale-95 transition-all ${confirmButtonClass.includes('red') ? 'shadow-red-500/20' : 'shadow-blue-500/20'}`}
+                        className={`flex-1 py-3 px-6 rounded-full font-bold shadow-lg active:scale-95 transition-all ${confirmButtonClass.includes('red') ? 'shadow-red-500/20' : 'shadow-primary/20'}`}
                         onClick={onConfirm}
                     >
                         {confirmText}

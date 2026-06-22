@@ -14,7 +14,7 @@ interface StockAdjustmentModalProps {
 
 const adjustmentReasons = [
     { value: "Receiving Stock", icon: "📦", color: "bg-green-100 text-green-800" },
-    { value: "Stock Count", icon: "📊", color: "bg-blue-100 text-blue-800" },
+    { value: "Stock Count", icon: "📊", color: "bg-success-muted text-primary" },
     { value: "Damaged Goods", icon: "⚠️", color: "bg-red-100 text-red-800" },
     { value: "Theft", icon: "🚫", color: "bg-red-50 text-red-700" },
     { value: "Return", icon: "↩️", color: "bg-orange-100 text-orange-800" },
@@ -150,7 +150,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                                 type="number"
                                 value={newQuantity}
                                 onChange={(e) => setNewQuantity(e.target.value)}
-                                className="w-full text-3xl font-bold px-0 py-2 bg-transparent border-b-2 border-gray-200 dark:border-slate-800 focus:outline-none focus:border-blue-500 dark:focus:border-blue-500 transition-colors text-gray-900 dark:text-slate-100 placeholder-gray-300 dark:placeholder-slate-700"
+                                className="w-full text-3xl font-bold px-0 py-2 bg-transparent border-b-2 border-gray-200 dark:border-slate-800 focus:outline-none focus:border-primary dark:focus:border-primary transition-colors text-gray-900 dark:text-slate-100 placeholder-gray-300 dark:placeholder-slate-700"
                                 placeholder="0"
                                 autoFocus
                                 step={product.unitOfMeasure === 'kg' ? '0.001' : '1'}
@@ -174,7 +174,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                                     type="button"
                                     onClick={() => setReason(value)}
                                     className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${reason === value
-                                        ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20'
+                                        ? 'bg-primary border-primary text-white shadow-md shadow-primary/20'
                                         : 'bg-white dark:bg-slate-800 border-gray-100 dark:border-slate-800 text-gray-600 dark:text-slate-400 hover:border-gray-200 dark:hover:border-slate-700'
                                         }`}
                                 >

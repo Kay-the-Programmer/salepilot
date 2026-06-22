@@ -407,11 +407,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                             {!isInitializing && (
                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
                                     <div className={`absolute inset-0 bg-white transition-opacity duration-150 ${isFlashing ? 'opacity-40' : 'opacity-0'}`}></div>
 
                                     {/* Simplified Box for embedded view */}
-                                    <div className="absolute border-2 border-blue-500/80 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)]" style={{
+                                    <div className="absolute border-2 border-primary/80 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)]" style={{
                                         width: '80%',
                                         height: '60%',
                                     }}>
@@ -522,13 +522,13 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                             {!isInitializing && (
                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
                                     {/* Scan Line Animation */}
-                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
 
                                     {/* Visual Haptic Flash */}
                                     <div className={`absolute inset-0 bg-white transition-opacity duration-150 ${isFlashing ? 'opacity-40' : 'opacity-0'}`}></div>
 
                                     {/* Scanning Box */}
-                                    <div className="absolute border-4 border-blue-500 rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.5)]" style={{
+                                    <div className="absolute border-4 border-primary rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.5)]" style={{
                                         width: '90%',
                                         height: '40%',
                                         maxWidth: '500px',

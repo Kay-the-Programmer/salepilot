@@ -1,19 +1,10 @@
 import React from 'react';
-import { CartItem, Customer, StoreSettings } from '../../types';
+import { StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
-import {
-    ShoppingCartIcon,
-    CreditCardIcon,
-    ClockIcon,
-    DocumentPlusIcon,
-    UserIcon,
-} from '../icons';
-import CustomerSelect from './CustomerSelect';
+import PosIcon from './PosIcon';
 
 interface CheckoutActionsProps {
-    cart: CartItem[];
     storeSettings: StoreSettings;
-    customers: Customer[];
     total: number;
     subtotal: number;
     taxAmount: number;
@@ -21,43 +12,19 @@ interface CheckoutActionsProps {
     setDiscount: (val: string) => void;
     discountType: 'amount' | 'percentage';
     setDiscountType: (val: 'amount' | 'percentage') => void;
-    selectedCustomer: Customer | null;
-    setSelectedCustomer: (c: Customer | null) => void;
-    onApplyStoreCredit: () => void;
     finalAppliedCredit: number;
-    selectedPaymentMethod: string;
-    setSelectedPaymentMethod: (val: string) => void;
-    cashReceived: string;
-    setCashReceived: (val: string) => void;
-    processTransaction: (type: 'paid' | 'invoice') => void;
-    isProcessing: boolean;
-    isScannerOpen: boolean;
-    setIsScannerOpen: (isOpen: boolean) => void;
-    cartActionTab: 'customer' | 'summary' | 'payment';
-    setCartActionTab: (tab: 'customer' | 'summary' | 'payment') => void;
+    onProcessPayment: () => void;
     onHoldSale: () => void;
-    onContinuousScan: (decodedText: string) => void;
-    onScanError: (error: any) => void;
-    changeDue: number;
-    mobileMoneyNumber: string;
-    setMobileMoneyNumber: (val: string) => void;
-    setAppliedStoreCredit: (amount: number) => void;
-    cashInputRef: React.RefObject<HTMLInputElement>;
+    clearCart: () => void;
 }
 
-// Payment method chip configuration
-const getPaymentIcon = (name: string) => {
-    const lower = name.toLowerCase();
-    if (lower.includes('cash')) return '💵';
-    if (lower.includes('card') || lower.includes('credit') || lower.includes('debit')) return '💳';
-    if (lower.includes('mobile') || lower.includes('mtn') || lower.includes('airtel') || lower.includes('lenco')) return '📱';
-    return '💰';
-};
-
+/**
+ * Cart-building foot — progressive disclosure: only the actions needed while
+ * assembling an order (discount, totals, then Process Payment / Hold / Clear).
+ * The payment-method picker lives in the separate PaymentPanel step.
+ */
 export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
-    cart,
     storeSettings,
-    customers,
     total,
     subtotal,
     taxAmount,
@@ -65,334 +32,78 @@ export const CheckoutActions: React.FC<CheckoutActionsProps> = ({
     setDiscount,
     discountType,
     setDiscountType,
-    selectedCustomer,
-    setSelectedCustomer,
-    onApplyStoreCredit,
     finalAppliedCredit,
-    selectedPaymentMethod,
-    setSelectedPaymentMethod,
-    cashReceived,
-    setCashReceived,
-    processTransaction,
-    isProcessing,
-    cartActionTab,
-    setCartActionTab,
+    onProcessPayment,
     onHoldSale,
-    changeDue,
-    mobileMoneyNumber,
-    setMobileMoneyNumber,
-    setAppliedStoreCredit,
-    cashInputRef
+    clearCart,
 }) => {
-    const isCashMethod = (selectedPaymentMethod || '').toLowerCase().includes('cash');
-    const isMobileMoney = ['mobile', 'lenco', 'mtn', 'airtel'].some(k =>
-        (selectedPaymentMethod || '').toLowerCase().includes(k)
-    );
-    const cashReceivedNumber = parseFloat(cashReceived || '0') || 0;
-
-    const paymentMethods = (storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
-        ? storeSettings.paymentMethods
-        : [{ id: 'pm_cash', name: 'Cash' }, { id: 'pm_card', name: 'Card' }];
-
-    const tabItems = [
-        { id: 'customer' as const, label: 'Customer', icon: <UserIcon className="w-3.5 h-3.5" /> },
-        { id: 'summary' as const, label: 'Summary', icon: <ShoppingCartIcon className="w-3.5 h-3.5" /> },
-        { id: 'payment' as const, label: 'Payment', icon: <CreditCardIcon className="w-3.5 h-3.5" /> },
-    ];
-
-    const isPayDisabled = cart.length === 0 || total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing;
-
-    // Quick cash amounts
-    const quickAmounts = total > 0
-        ? [total, Math.ceil(total / 50) * 50, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500]
-            .filter((v, i, a) => a.indexOf(v) === i) // deduplicate
-            .slice(0, 4)
-        : [];
-
     return (
-        <div className="hidden md:flex flex-none liquid-glass border-t-0 flex-col shadow-none"
-            style={{ height: '400px' }}>
+        <div className="cart__foot">
+            {/* Discount */}
+            <div className="cart__discount">
+                <PosIcon name="sell" size={18} className="cart__discount-icon" />
+                <select
+                    className="cart__discount-type"
+                    value={discountType}
+                    onChange={e => setDiscountType(e.target.value as 'amount' | 'percentage')}
+                    aria-label="Discount type"
+                >
+                    <option value="amount">{storeSettings.currency.symbol}</option>
+                    <option value="percentage">%</option>
+                </select>
+                <input
+                    type="number"
+                    min="0"
+                    value={discount}
+                    onChange={e => setDiscount(e.target.value)}
+                    placeholder="Discount"
+                    aria-label="Discount amount"
+                />
+            </div>
 
-            <div className="flex flex-col h-full">
-                    {/* Tab Bar */}
-                    <div className="flex-none px-4 pt-4">
-                        <div className="flex liquid-glass !bg-slate-100/50 dark:!bg-slate-800/50 rounded-[18px] p-1 gap-1 relative z-10 shadow-inner border-none" role="tablist">
-                            {tabItems.map(tab => (
-                                <button
-                                    key={tab.id}
-                                    id={`pos-tab-${tab.id}`}
-                                    role="tab"
-                                    aria-selected={cartActionTab === tab.id}
-                                    onClick={() => setCartActionTab(tab.id)}
-                                    className={`
-                                        flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 text-xs font-bold rounded-[14px]
-                                        transition-all duration-300 focus:outline-none active:scale-95
-                                        ${cartActionTab === tab.id
-                                            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-[0_2px_8px_rgb(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgb(0,0,0,0.3)]'
-                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}
-                                    `}
-                                >
-                                    {tab.icon}
-                                    {tab.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+            {/* Totals */}
+            <dl className="cart__totals">
+                <div><dt>Subtotal</dt><dd className="tnum">{formatCurrency(subtotal, storeSettings)}</dd></div>
+                {finalAppliedCredit > 0 && (
+                    <div className="cart__discount-row"><dt>Store credit</dt><dd className="tnum">−{formatCurrency(finalAppliedCredit, storeSettings)}</dd></div>
+                )}
+                <div><dt>Tax ({storeSettings.taxRate}%)</dt><dd className="tnum">{formatCurrency(taxAmount, storeSettings)}</dd></div>
+            </dl>
 
-                    {/* Tab Content */}
-                    <div className="flex-1 overflow-y-auto px-3 py-3 min-h-0" role="tabpanel">
-                        {cart.length > 0 ? (
-                            <>
-                                {/* ── Customer Tab ── */}
-                                {cartActionTab === 'customer' && (
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
-                                                Select Customer
-                                            </label>
-                                            <CustomerSelect
-                                                customers={customers}
-                                                selectedCustomer={selectedCustomer}
-                                                onSelectCustomer={c => {
-                                                    setSelectedCustomer(c);
-                                                    setAppliedStoreCredit(0);
-                                                }}
-                                            />
-                                        </div>
-                                        {selectedCustomer && selectedCustomer.storeCredit > 0 && storeSettings.enableStoreCredit && (
-                                            <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-2xl">
-                                                <div>
-                                                    <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">
-                                                        Store Credit
-                                                    </p>
-                                                    <p className="text-2xl font-light text-emerald-600 dark:text-emerald-400 mt-0.5 tabular-nums">
-                                                        {formatCurrency(selectedCustomer.storeCredit, storeSettings)}
-                                                    </p>
-                                                </div>
-                                                <button
-                                                    onClick={onApplyStoreCredit}
-                                                    className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 ${finalAppliedCredit > 0
-                                                        ? 'bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400'
-                                                        : 'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400'}`}
-                                                >
-                                                    {finalAppliedCredit > 0 ? 'Remove' : 'Apply'}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
+            {/* Process payment */}
+            <button
+                id="pos-process-btn"
+                type="button"
+                className="cart__charge"
+                disabled={total < 0}
+                onClick={onProcessPayment}
+                aria-label={`Process payment ${formatCurrency(total, storeSettings)}`}
+            >
+                <span className="cart__charge-label">
+                    <PosIcon name="point_of_sale" size={22} fill={1} />
+                    Process Payment
+                </span>
+                <span className="cart__charge-total tnum">{formatCurrency(total, storeSettings)}</span>
+            </button>
 
-                                {/* ── Summary Tab ── */}
-                                {cartActionTab === 'summary' && (
-                                    <div className="space-y-0">
-                                        {[
-                                            { label: 'Subtotal', value: formatCurrency(subtotal, storeSettings) },
-                                            ...(finalAppliedCredit > 0 ? [{ label: 'Store Credit', value: `−${formatCurrency(finalAppliedCredit, storeSettings)}`, color: 'text-emerald-600 dark:text-emerald-400' }] : []),
-                                            { label: `Tax (${storeSettings.taxRate}%)`, value: formatCurrency(taxAmount, storeSettings) },
-                                        ].map(row => (
-                                            <div key={row.label} className="flex justify-between items-center py-2.5 border-b border-slate-100 dark:border-white/5 last:border-0">
-                                                <span className="text-sm text-slate-500 dark:text-slate-400">{row.label}</span>
-                                                <span className={`text-sm font-medium tabular-nums ${(row as any).color || 'text-slate-800 dark:text-slate-200'}`}>{row.value}</span>
-                                            </div>
-                                        ))}
-
-                                        {/* Discount row */}
-                                        <div className="flex justify-between items-center py-2.5 border-b border-slate-100 dark:border-white/5">
-                                            <span className="text-sm text-slate-500 dark:text-slate-400">Discount</span>
-                                            <div className="flex items-center gap-1.5">
-                                                <select
-                                                    value={discountType}
-                                                    onChange={(e) => setDiscountType(e.target.value as 'amount' | 'percentage')}
-                                                    className="bg-transparent text-xs font-semibold text-slate-500 dark:text-slate-400 outline-none cursor-pointer appearance-none text-right pr-1"
-                                                >
-                                                    <option value="amount">{storeSettings.currency.symbol}</option>
-                                                    <option value="percentage">%</option>
-                                                </select>
-                                                <input
-                                                    type="number"
-                                                    value={discount}
-                                                    onChange={e => setDiscount(e.target.value)}
-                                                    aria-label="Discount amount"
-                                                    className="w-24 px-2 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-white/10 rounded-xl text-right text-sm font-medium tabular-nums focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all text-slate-800 dark:text-white"
-                                                    placeholder="0.00" min="0"
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* Total */}
-                                        <div className="flex justify-between items-center pt-3 mt-1">
-                                            <span className="text-base font-bold text-slate-900 dark:text-white">Total</span>
-                                            <span className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white tabular-nums">
-                                                {formatCurrency(total, storeSettings)}
-                                            </span>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* ── Payment Tab ── */}
-                                {cartActionTab === 'payment' && (
-                                    <div className="space-y-4">
-                                        {/* Big Total */}
-                                        <div className="text-center py-2">
-                                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Total Due</p>
-                                            <p className="text-[2.75rem] font-extrabold tracking-tight text-slate-900 dark:text-white tabular-nums leading-none">
-                                                {formatCurrency(total, storeSettings)}
-                                            </p>
-                                        </div>
-
-                                        {/* Payment Method Chips */}
-                                        <div>
-                                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Payment Method</p>
-                                            <div className={`grid gap-2 ${paymentMethods.length <= 3 ? 'grid-cols-3' : 'grid-cols-2'}`}>
-                                                {paymentMethods.map(method => {
-                                                    const isSelected = selectedPaymentMethod === method.name;
-                                                    return (
-                                                        <button
-                                                            key={method.id}
-                                                            onClick={() => setSelectedPaymentMethod(method.name)}
-                                                            className={`
-                                                                flex flex-col items-center justify-center gap-1.5 py-3 px-2 rounded-[20px] text-xs font-bold
-                                                                border transition-all duration-300 active:scale-[0.96]
-                                                                ${isSelected
-                                                                    ? 'border-indigo-500 bg-indigo-50/80 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 shadow-[0_0_0_2px_rgba(99,102,241,0.2)]'
-                                                                    : 'border-slate-200 dark:border-white/10 liquid-glass !bg-white/60 dark:!bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:shadow-md hover:border-slate-300 dark:hover:border-white/20 hover:-translate-y-0.5'}
-                                                            `}
-                                                        >
-                                                            <span className="text-base leading-none">{getPaymentIcon(method.name)}</span>
-                                                            <span className="truncate max-w-full text-center">{method.name}</span>
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-
-                                        {/* Mobile Money Number */}
-                                        {isMobileMoney && (
-                                            <div>
-                                                <label htmlFor="mobile-money-input" className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
-                                                    Payer Mobile Number
-                                                </label>
-                                                <input
-                                                    id="mobile-money-input"
-                                                    type="text"
-                                                    value={mobileMoneyNumber}
-                                                    onChange={e => setMobileMoneyNumber(e.target.value)}
-                                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-white/10 rounded-2xl text-sm font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all"
-                                                    placeholder="Phone number"
-                                                />
-                                            </div>
-                                        )}
-
-                                        {/* Cash Received */}
-                                        {isCashMethod && (
-                                            <div>
-                                                <label htmlFor="cash-received-input" className="block text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">
-                                                    Cash Received
-                                                </label>
-                                                <div className="relative">
-                                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 pointer-events-none font-medium">
-                                                        {storeSettings.currency.symbol}
-                                                    </span>
-                                                    <input
-                                                        id="cash-received-input"
-                                                        ref={cashInputRef}
-                                                        type="number"
-                                                        value={cashReceived}
-                                                        onChange={e => setCashReceived(e.target.value)}
-                                                        className="w-full pl-9 pr-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-white/10 rounded-2xl text-right text-lg font-bold tabular-nums text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none transition-all"
-                                                        placeholder="0.00"
-                                                    />
-                                                </div>
-
-                                                {/* Quick Amount Chips */}
-                                                {quickAmounts.length > 0 && (
-                                                    <div className="flex gap-1.5 mt-2">
-                                                        {quickAmounts.map((amt, i) => (
-                                                            <button
-                                                                key={i}
-                                                                onClick={() => setCashReceived(String(amt))}
-                                                                className={`flex-1 py-1.5 text-[11px] font-bold rounded-xl border transition-all active:scale-95
-                                                                    ${parseFloat(cashReceived) === amt
-                                                                        ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/50'
-                                                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20'}`}
-                                                            >
-                                                                {i === 0 ? 'Exact' : formatCurrency(amt, storeSettings)}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                )}
-
-                                                {changeDue > 0 && (
-                                                    <div className="flex justify-between items-center mt-2.5 py-2.5 px-3.5 bg-emerald-50 dark:bg-emerald-500/10 rounded-xl border border-emerald-200 dark:border-emerald-500/20">
-                                                        <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Change Due</span>
-                                                        <span className="text-lg font-extrabold text-emerald-600 dark:text-emerald-400 tabular-nums">
-                                                            {formatCurrency(changeDue, storeSettings)}
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </>
-                        ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-center py-4">
-                                <ShoppingCartIcon className="w-8 h-8 text-slate-200 dark:text-slate-700 mb-2" />
-                                <p className="text-sm text-slate-400 dark:text-slate-600">Add items to begin checkout</p>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* ── Action Buttons — always at bottom ── */}
-                    <div className="flex-none px-3 pb-3 pt-2 border-t border-slate-100 dark:border-white/5 space-y-2">
-                        <div className="grid grid-cols-4 gap-2">
-                            {/* Hold */}
-                            <button
-                                id="pos-hold-btn"
-                                onClick={onHoldSale}
-                                disabled={cart.length === 0}
-                                aria-label="Hold sale"
-                                className="col-span-1 py-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold flex flex-col items-center justify-center gap-1 hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
-                            >
-                                <ClockIcon className="w-4 h-4" />
-                                <span className="text-[10px]">Hold</span>
-                            </button>
-
-                            {/* Pay Button */}
-                            <button
-                                id="pos-pay-btn"
-                                onClick={() => processTransaction('paid')}
-                                disabled={isPayDisabled}
-                                aria-label={`Charge ${formatCurrency(total, storeSettings)}`}
-                                className="col-span-3 py-4 rounded-[20px] bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white font-extrabold text-base flex items-center justify-center gap-2.5 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.97] transition-all duration-300 shadow-[0_8px_20px_rgb(99,102,241,0.3)] hover:shadow-[0_12px_24px_rgb(99,102,241,0.4)] relative overflow-hidden group"
-                            >
-                                <div className="absolute inset-0 bg-white/20 w-full h-full -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] skew-x-12" />
-                                {isProcessing ? (
-                                    <>
-                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0" />
-                                        <span>Processing…</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <CreditCardIcon className="w-5 h-5 flex-shrink-0" />
-                                        <span>Charge {formatCurrency(total, storeSettings)}</span>
-                                    </>
-                                )}
-                            </button>
-                        </div>
-
-                        {/* Invoice */}
-                        <button
-                            onClick={() => processTransaction('invoice')}
-                            disabled={!selectedCustomer || isProcessing || cart.length === 0}
-                            aria-label="Create invoice"
-                            className="w-full py-2.5 text-sm text-slate-500 dark:text-slate-400 font-semibold bg-white dark:bg-slate-800/50 border border-slate-200/60 dark:border-white/8 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-xl active:scale-95 transition-all"
-                        >
-                            <DocumentPlusIcon className="w-4 h-4" />
-                            {!selectedCustomer ? 'Select a customer to invoice' : 'Create Invoice'}
-                        </button>
-                    </div>
-                </div>
+            {/* Secondary: hold + clear */}
+            <div className="cart__secondary">
+                <button
+                    id="pos-hold-btn"
+                    type="button"
+                    className="v2-btn v2-btn--secondary"
+                    onClick={onHoldSale}
+                >
+                    <PosIcon name="pause" size={18} /> Hold Sale
+                </button>
+                <button
+                    type="button"
+                    className="v2-btn v2-btn--ghost"
+                    onClick={clearCart}
+                >
+                    <PosIcon name="delete" size={18} /> Clear Cart
+                </button>
+            </div>
         </div>
     );
 };

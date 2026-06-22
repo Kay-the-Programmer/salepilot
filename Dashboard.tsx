@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import SocketService from './services/socketService';
 import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Expense, RecurringExpense } from './types';
@@ -8,9 +8,27 @@ import { lazy, Suspense } from 'react';
 
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
+import { hasModule, MODULES } from './utils/entitlements';
 
 const QuickView = lazy(() => import('@/pages/QuickView'));
 const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
+const PosShell = lazy(() => import('@/components/pos/PosShell'));
+const PosDashboard = lazy(() => import('@/components/pos/PosDashboard'));
+const PosDiscover = lazy(() => import('@/components/pos/PosDiscover'));
+const CrmApp = lazy(() => import('@/components/crm/CrmApp'));
+const DashboardApp = lazy(() => import('@/components/dash-app/DashboardApp'));
+const InventoryApp = lazy(() => import('@/components/inventory-app/InventoryApp'));
+const TeamApp = lazy(() => import('@/components/team-app/TeamApp'));
+const ProcureApp = lazy(() => import('@/components/procure-app/ProcureApp'));
+const AssistantApp = lazy(() => import('@/pages/assistant/AssistantApp'));
+const AuditApp = lazy(() => import('@/pages/audit/AuditApp'));
+const NotificationsApp = lazy(() => import('@/pages/notifications/NotificationsApp'));
+const ProfileApp = lazy(() => import('@/pages/profile/ProfileApp'));
+const AccountingApp = lazy(() => import('@/pages/accounting/AccountingApp'));
+const LogisticsApp = lazy(() => import('@/pages/logistics/LogisticsApp'));
+const PurchaseOrdersApp = lazy(() => import('@/pages/purchase-orders/PurchaseOrdersApp'));
+const HustleApp = lazy(() => import('@/pages/hustle/HustleApp'));
+const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
 const SalesPage = lazy(() => import('@/pages/SalesPage'));
 const CategoriesPage = lazy(() => import('@/pages/CategoriesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
@@ -55,10 +73,11 @@ import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
 import { dbService } from './services/dbService';
 import {
     Bars3Icon,
-    BuildingStorefrontIcon
+    BuildingStorefrontIcon,
+    ArrowLeftOnRectangleIcon
 } from './components/icons';
 import LoadingSpinner from './components/LoadingSpinner';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import NotificationBell from './components/NotificationBell';
 import PriorityNotificationModal from './components/PriorityNotificationModal';
 import TourGuide from './components/TourGuide';
@@ -78,21 +97,42 @@ type SnackbarState = {
 };
 
 const PERMISSIONS: Record<User['role'], string[]> = {
-    superadmin: ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings', 'privacy'],
-    admin: ['reports', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'support', 'privacy'],
-    staff: ['sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
-    inventory_manager: ['reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
+    superadmin: ['dash', 'superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'pos', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings', 'privacy'],
+    admin: ['dash', 'reports', 'pos', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'support', 'privacy'],
+    staff: ['pos', 'sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
+    inventory_manager: ['dash', 'reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
     customer: ['profile', 'notifications', 'user-guide', 'quick-view', 'privacy'],
     supplier: ['profile', 'notifications', 'user-guide', 'quick-view', 'privacy']
 };
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
     superadmin: 'superadmin',
-    admin: 'reports',
+    admin: 'dash',
     staff: 'sales',
-    inventory_manager: 'inventory',
+    inventory_manager: 'dash',
     customer: 'customer/dashboard',
     supplier: 'supplier/dashboard'
+};
+
+// Standalone app shells launched from Discover. Each opens in its own focused
+// frame and is gated by an underlying sidebar entitlement page key — keep this
+// in sync with PosDiscover's STANDALONE_APPS so deep-links/refreshes resolve.
+const STANDALONE_APP_REQUIRES: Record<string, string> = {
+    pos: 'pos',
+    assistant: 'quick-view',
+    dash: 'reports',
+    crm: 'customers',
+    inv: 'inventory',
+    team: 'users',
+    procure: 'suppliers',
+    audit: 'audit-trail',
+    notify: 'notifications',
+    account: 'profile',
+    books: 'accounting',
+    fleet: 'logistics',
+    po: 'purchase-orders',
+    hustle: 'sales',
+    config: 'settings',
 };
 
 
@@ -125,6 +165,8 @@ export default function Dashboard() {
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Mobile sidebar state
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    // Standalone POS shell (/pos) mobile drawer
+    const [posDrawerOpen, setPosDrawerOpen] = useState(false);
 
     // Superadmin mode and store selection
     const [superMode, setSuperMode] = useState<'superadmin' | 'store'>(() => {
@@ -199,11 +241,16 @@ export default function Dashboard() {
     }, [location.pathname]);
 
     const hasAccess = (page: string, role: User['role']) => {
+        const seg = page.split('/')[0];
         // When superadmin is in super mode, only allow strictly superadmin routes (Superadmin page)
         if (role === 'superadmin' && superMode === 'superadmin') {
-            return ['superadmin', 'whatsapp', 'profile'].includes(page);
+            return ['superadmin', 'whatsapp', 'profile'].includes(seg);
         }
         const effectiveRole: User['role'] = (role === 'superadmin' && superMode === 'store') ? 'admin' : role;
+        // Standalone app shells (their own focused frames) map to an underlying
+        // entitlement page key, so deep-linking / refreshing them doesn't bounce.
+        const required = STANDALONE_APP_REQUIRES[seg];
+        if (required) return PERMISSIONS[effectiveRole].includes(required);
         return PERMISSIONS[effectiveRole].includes(page);
     };
 
@@ -1124,15 +1171,16 @@ export default function Dashboard() {
                         suppliers={suppliers}
                         onProcessSale={handleProcessSale}
                         onSaveProduct={handleSaveProduct}
+                        onProcessReturn={handleProcessReturn}
                         isLoading={isLoading}
                         showSnackbar={showSnackbar}
                         storeSettings={storeSettings!}
-                        onOpenSidebar={() => setIsSidebarOpen(true)}
+                        onOpenSidebar={() => navigate('/pos/discover')}
                     />;
                 case 'sales-history':
                     return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
                 case 'orders':
-                    return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => setIsSidebarOpen(true)} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
+                    return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => navigate('/pos/discover')} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
                 case 'returns':
                     return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
                 case 'customers':
@@ -1233,6 +1281,452 @@ export default function Dashboard() {
         );
     };
 
+    // ── Standalone Business Assistant app (/assistant, /assistant/chat) ──
+    // Opens from the Discover launcher as its own focused app (AI Suite). Runs on
+    // the same in-memory data the dashboard already loaded, and the conversational
+    // view streams from the existing /ai/chat backend. Gated by the `quick-view`
+    // entitlement that every role with AI access already holds.
+    const assistantParts = location.pathname.split('/');
+    if (assistantParts[1] === 'assistant' && currentUser) {
+        const aiAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!aiAllowedPages.includes('quick-view')) {
+            return <Navigate to="/" replace />;
+        }
+        const aiSection = assistantParts[2] === 'chat' ? 'chat' : 'dashboard';
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <AssistantApp
+                            section={aiSection}
+                            user={currentUser}
+                            locked={currentUser.role !== 'superadmin' && !hasModule(storeSettings, MODULES.AI_ASSISTANT)}
+                            products={products}
+                            sales={sales}
+                            customers={customers}
+                            storeSettings={storeSettings}
+                            onNavigate={(s) => navigate(s === 'dashboard' ? '/assistant' : `/assistant/${s}`)}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Accounting Hub app (/books) ──
+    const booksParts = location.pathname.split('/');
+    if (booksParts[1] === 'books' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('accounting')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <AccountingApp
+                            accounts={accounts}
+                            journalEntries={journalEntries}
+                            sales={sales}
+                            expenses={expenses}
+                            supplierInvoices={supplierInvoices}
+                            storeSettings={storeSettings!}
+                            onSaveExpense={handleSaveExpense as any}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Settings app (/config) ──
+    const configParts = location.pathname.split('/');
+    if (configParts[1] === 'config' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('settings')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <SettingsApp settings={storeSettings!} user={currentUser} showSnackbar={showSnackbar} onSave={handleSaveSettings} />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Hustle POS app (/hustle) ──
+    const hustleParts = location.pathname.split('/');
+    if (hustleParts[1] === 'hustle' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('sales')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <HustleApp
+                            sales={sales}
+                            storeSettings={storeSettings!}
+                            showSnackbar={showSnackbar}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Purchase Orders app (/po) ──
+    const poParts = location.pathname.split('/');
+    if (poParts[1] === 'po' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('purchase-orders')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <PurchaseOrdersApp
+                            purchaseOrders={purchaseOrders}
+                            products={products}
+                            storeSettings={storeSettings!}
+                            onSaveProduct={handleSaveProduct}
+                            showSnackbar={showSnackbar}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Logistics app (/fleet) ──
+    const fleetParts = location.pathname.split('/');
+    if (fleetParts[1] === 'fleet' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('logistics')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <LogisticsApp storeSettings={storeSettings!} />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Audit Trail app (/audit) ──
+    const auditParts = location.pathname.split('/');
+    if (auditParts[1] === 'audit' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('audit-trail')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <AuditApp logs={auditLogs} users={users} />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Notifications app (/notify) ──
+    const notifyParts = location.pathname.split('/');
+    if (notifyParts[1] === 'notify' && currentUser) {
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <NotificationsApp />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Account / Profile app (/account) ──
+    const accountParts = location.pathname.split('/');
+    if (accountParts[1] === 'account' && currentUser) {
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <ProfileApp
+                            user={currentUser}
+                            storeSettings={storeSettings}
+                            onUpdateProfile={handleUpdateProfile}
+                            onChangePassword={handleChangePassword}
+                            onLogout={handleLogout}
+                            onInstall={handleInstall}
+                            installPrompt={installPrompt}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Business Dashboard app (/dash, /dash/sales, /dash/products) ──
+    // A modern reskin of the /reports overview that opens from Discover as its
+    // own focused app; every figure is derived from the live sales / products /
+    // customers already loaded above (no extra endpoints).
+    const dashParts = location.pathname.split('/');
+    if (dashParts[1] === 'dash' && currentUser) {
+        const dashAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!dashAllowedPages.includes('reports')) {
+            return <Navigate to="/" replace />;
+        }
+        const dashSection = (dashParts[2] === 'sales' ? 'sales' : dashParts[2] === 'products' ? 'products' : 'overview') as 'overview' | 'sales' | 'products';
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <DashboardApp
+                            section={dashSection}
+                            user={currentUser}
+                            sales={sales}
+                            products={products}
+                            customers={customers}
+                            storeSettings={storeSettings}
+                            onNavigate={(s) => navigate(s === 'overview' ? '/dash' : `/dash/${s}`)}
+                            onReports={() => navigate('/reports')}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                            onNewSale={() => navigate('/sales')}
+                            onInventory={() => navigate('/inventory')}
+                            onOrders={() => navigate('/orders')}
+                            onCustomers={() => navigate('/customers')}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone CRM app (/crm, /crm/customers, /crm/loyalty, /crm/insights) ──
+    // Opens from the Discover launcher as its own focused app; runs entirely on
+    // the existing backend data (customers + sales) already loaded above.
+    const crmParts = location.pathname.split('/');
+    if (crmParts[1] === 'crm' && currentUser) {
+        const crmAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!crmAllowedPages.includes('customers')) {
+            return <Navigate to="/" replace />;
+        }
+        const crmSection = crmParts[2] === 'customers' ? 'customers'
+            : crmParts[2] === 'loyalty' ? 'loyalty'
+                : crmParts[2] === 'insights' ? 'insights'
+                    : 'dashboard';
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <CrmApp
+                            section={crmSection}
+                            user={currentUser}
+                            customers={customers}
+                            sales={sales}
+                            storeSettings={storeSettings}
+                            canManage={currentUser.role === 'admin' || currentUser.role === 'superadmin'}
+                            onNavigate={(s) => navigate(s === 'dashboard' ? '/crm' : `/crm/${s}`)}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onUpgrade={() => navigate('/subscription')}
+                            onSaveCustomer={handleSaveCustomer}
+                            onDeleteCustomer={handleDeleteCustomer}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Supplier & Procurement Hub (/procure, /procure/suppliers, /procure/orders) ──
+    const procParts = location.pathname.split('/');
+    if (procParts[1] === 'procure' && currentUser) {
+        const procAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!procAllowedPages.includes('suppliers')) {
+            return <Navigate to="/" replace />;
+        }
+        const procSection = (procParts[2] === 'suppliers' ? 'suppliers' : procParts[2] === 'orders' ? 'orders' : 'dashboard') as 'dashboard' | 'suppliers' | 'orders';
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <ProcureApp
+                            section={procSection}
+                            user={currentUser}
+                            suppliers={suppliers}
+                            products={products}
+                            purchaseOrders={purchaseOrders}
+                            supplierInvoices={supplierInvoices}
+                            storeSettings={storeSettings}
+                            onSaveSupplier={handleSaveSupplier}
+                            onDeleteSupplier={handleDeleteSupplier}
+                            onSavePurchaseOrder={handleSavePurchaseOrder}
+                            onDeletePurchaseOrder={handleDeletePurchaseOrder}
+                            onReceivePOItems={handleReceivePOItems}
+                            showSnackbar={showSnackbar}
+                            onNavigate={(s) => navigate(s === 'dashboard' ? '/procure' : `/procure/${s}`)}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone User Manager app (/team, /team/roles) ──
+    // Admin-only. Adding an extra user beyond the free seat is a premium add-on.
+    const teamParts = location.pathname.split('/');
+    if (teamParts[1] === 'team' && currentUser) {
+        const teamAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!teamAllowedPages.includes('users')) {
+            return <Navigate to="/" replace />;
+        }
+        const teamSection = (teamParts[2] === 'roles' ? 'roles' : 'members') as 'members' | 'roles';
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <TeamApp
+                            section={teamSection}
+                            user={currentUser}
+                            users={users}
+                            storeSettings={storeSettings}
+                            onNavigate={(s) => navigate(s === 'members' ? '/team' : `/team/${s}`)}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                            onSaveUser={async (data, id) => { await saveUser(data, id); setUsers(await getUsers()); }}
+                            onDeleteUser={async (id) => { await deleteUser(id); setUsers(await getUsers()); }}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Inventory Manager app (/inv, /inv/items, /inv/alerts) ──
+    // Opens from Discover as its own app; the dashboard derives from live data
+    // and the "Inventory" tab reuses the existing InventoryPage management UI.
+    const invParts = location.pathname.split('/');
+    if (invParts[1] === 'inv' && currentUser) {
+        const invAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!invAllowedPages.includes('inventory')) {
+            return <Navigate to="/" replace />;
+        }
+        const invSection = (invParts[2] === 'items' ? 'items' : invParts[2] === 'alerts' ? 'alerts' : 'dashboard') as 'dashboard' | 'items' | 'alerts';
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <InventoryApp
+                            section={invSection}
+                            user={currentUser}
+                            products={products}
+                            categories={categories}
+                            sales={sales}
+                            purchaseOrders={purchaseOrders}
+                            storeSettings={storeSettings}
+                            renderItems={() => (
+                                <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} />
+                                </Suspense>
+                            )}
+                            onNavigate={(s) => navigate(s === 'dashboard' ? '/inv' : `/inv/${s}`)}
+                            onPos={() => navigate('/pos')}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                            onGeneratePO={() => navigate('/purchase-orders')}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone POS app (/pos, /pos/inventory, /pos/dashboard) ──
+    // Focused frame with its own menu; reuses the existing page logic/props.
+    const posParts = location.pathname.split('/');
+    if (posParts[1] === 'pos' && currentUser) {
+        const posSection = posParts[2] === 'inventory' ? 'inventory'
+            : posParts[2] === 'dashboard' ? 'dashboard'
+                : posParts[2] === 'discover' ? 'discover'
+                    : 'pos';
+
+        const openPosDrawer = () => setPosDrawerOpen(true);
+        const posAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        let posContent: ReactNode;
+        if (posSection === 'inventory') {
+            posContent = <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={openPosDrawer} />;
+        } else if (posSection === 'dashboard') {
+            posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
+        } else if (posSection === 'discover') {
+            posContent = <PosDiscover user={currentUser} allowedPages={posAllowedPages} storeSettings={storeSettings} onLaunch={(page) => navigate(`/${page}`)} onOpenSidebar={openPosDrawer} />;
+        } else {
+            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
+        }
+
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <PosShell
+                            active={posSection}
+                            user={currentUser}
+                            drawerOpen={posDrawerOpen}
+                            onCloseDrawer={() => setPosDrawerOpen(false)}
+                            onNavigate={(s) => navigate(s === 'pos' ? '/pos' : `/pos/${s}`)}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        >
+                            <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                                {posContent}
+                            </Suspense>
+                        </PosShell>
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // Superadmin mode switch + active-store selection — formerly housed in the
+    // Sidebar, now surfaced in the universal top bar below.
+    const changeSuperMode = (mode: 'superadmin' | 'store') => {
+        setSuperMode(mode);
+        try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
+        const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
+        const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin')
+            ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile']
+            : PERMISSIONS[effectiveRole];
+        const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
+        if (!allowed.includes(page)) {
+            const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
+            navigate(`/${next}`);
+            try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
+        }
+    };
+    const selectStore = async (storeId: string) => {
+        if (!storeId) return;
+        try {
+            await api.patch('/users/me/current-store', { storeId });
+            const stored = getCurrentUser();
+            if (stored) {
+                const merged = { ...stored, currentStoreId: storeId } as User;
+                localStorage.setItem('salePilotUser', JSON.stringify(merged));
+                setCurrentUser(merged);
+                showSnackbar('Store context updated.', 'success');
+            }
+        } catch (err: any) {
+            showSnackbar(err.message || 'Failed to set current store', 'error');
+        }
+    };
+
     return (
         <OnboardingProvider user={currentUser}>
             <NotificationProvider user={currentUser}>
@@ -1302,27 +1796,54 @@ export default function Dashboard() {
 
                     {/* Main content */}
                     <div id="main-content" className="flex-1 flex flex-col overflow-y-auto bg-background">
-                        {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
-                        {/* Mobile top bar with menu button - hidden on SalesPage as it has its own header */}
-                        {location.pathname !== '/sales' && (
-                            <div className="md:hidden h-14 bg-surface border-b border-brand-border flex items-center px-4 justify-between transition-all duration-200">
+                        {/* Universal top bar — the "Apps" button opens the Discover page,
+                            which is now the navigation surface that replaced the sidebar.
+                            Carries the global actions the sidebar used to own. Pages that
+                            ship their own full chrome (POS Sale, Reports) opt out. */}
+                        {location.pathname !== '/sales' && location.pathname !== '/reports' && (
+                            <header className="sticky top-0 z-40 h-14 bg-surface border-b border-brand-border flex items-center gap-2 px-3 md:px-4 transition-all duration-200">
                                 <button
-                                    onClick={() => setIsSidebarOpen(true)}
-                                    id="mobile-menu-toggle"
-                                    className="p-2 -ml-2 rounded-md text-brand-text hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-primary"
-                                    aria-label="Open menu"
-                                    aria-controls="app-sidebar"
-                                    aria-expanded={isSidebarOpen}
+                                    onClick={() => navigate('/pos/discover')}
+                                    id="apps-launcher"
+                                    className="flex items-center gap-2 p-2 rounded-lg text-brand-text hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-primary transition-colors active:scale-95"
+                                    aria-label="Open apps"
+                                    title="All apps"
                                 >
                                     <Bars3Icon className="w-6 h-6" />
+                                    <span className="hidden sm:block text-sm font-semibold">Apps</span>
                                 </button>
 
-                                <div className="flex items-center justify-center flex-1">
+                                <button onClick={() => navigate('/dash')} className="flex items-center" aria-label="Home dashboard">
                                     <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
-                                </div>
+                                </button>
+
+                                <div className="flex-1" />
+
+                                {currentUser.role === 'superadmin' && (
+                                    <div className="hidden md:flex items-center gap-2 mr-1">
+                                        <div className="flex items-center bg-surface-variant rounded-lg p-0.5">
+                                            <button onClick={() => changeSuperMode('superadmin')} className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${superMode === 'superadmin' ? 'bg-primary text-white shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}>Platform</button>
+                                            <button onClick={() => changeSuperMode('store')} className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${superMode === 'store' ? 'bg-primary text-white shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}>Store</button>
+                                        </div>
+                                        {superMode === 'store' && systemStores && systemStores.length > 0 && (
+                                            <select value={currentUser.currentStoreId || ''} onChange={(e) => selectStore(e.target.value)} className="px-2 py-1.5 text-xs border border-brand-border rounded-lg bg-surface text-brand-text focus:ring-2 focus:ring-primary">
+                                                <option value="">Select store</option>
+                                                {systemStores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                            </select>
+                                        )}
+                                    </div>
+                                )}
 
                                 <NotificationBell onNavigate={() => navigate('/notifications')} />
-                            </div>
+
+                                <button onClick={() => navigate('/profile')} aria-label="Your profile" title={currentUser?.name} className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white text-sm font-bold flex items-center justify-center shadow-sm active:scale-95 transition-transform flex-shrink-0">
+                                    {(currentUser?.name || 'U').charAt(0).toUpperCase()}
+                                </button>
+
+                                <button onClick={handleLogout} aria-label="Logout" title="Logout" className="p-2 rounded-lg text-brand-text-muted hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
+                                    <ArrowLeftOnRectangleIcon className="w-5 h-5" />
+                                </button>
+                            </header>
                         )}
 
                         {renderPage(currentPage)}

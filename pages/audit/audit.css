@@ -1,0 +1,17 @@
+/* Audit Trail — timeline connector line (scoped to .sp-audit).
+   Tokens/utilities come from the shared M3 theme in assistant.css. */
+.sp-audit .timeline-line::before {
+  content: '';
+  position: absolute;
+  left: 23px;
+  top: 48px;
+  bottom: -16px;
+  width: 2px;
+  background: var(--m3-outline-variant);
+  opacity: 0.4;
+}
+.sp-audit .timeline-item:last-child .timeline-line::before {
+  display: none;
+}
+.sp-audit .scrollbar-hide::-webkit-scrollbar { display: none; }
+.sp-audit .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }

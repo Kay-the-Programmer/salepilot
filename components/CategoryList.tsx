@@ -108,7 +108,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
         return (
             <div className="px-4 py-12 sm:px-6">
                 <div className="text-center">
-                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary dark:border-primary"></div>
                     <p className="mt-3 text-[15px] font-bold tracking-wide text-slate-700 dark:text-slate-300">Loading categories...</p>
                 </div>
             </div>
@@ -162,7 +162,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
             <div
                 key={category.id}
                 className={`group relative border-b border-slate-200/40 dark:border-white/5 last:border-0 transition-all duration-400 ease-out cursor-pointer active:scale-[0.99] ${isSelected
-                    ? 'bg-blue-50/50 dark:bg-blue-500/10 backdrop-blur-md'
+                    ? 'bg-success-muted/60 dark:bg-primary/10 backdrop-blur-md'
                     : 'hover:bg-white/40 dark:hover:bg-white/5'
                     }`}
                 onClick={() => onSelectCategory?.(category.id)}
@@ -186,10 +186,10 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                     e.stopPropagation();
                                     toggleExpand(category.id);
                                 }}
-                                className="p-1 -ml-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded active:bg-blue-100 dark:active:bg-blue-900/20"
+                                className="p-1 -ml-1 text-gray-400 hover:text-primary dark:hover:text-primary rounded active:bg-primary/10 dark:active:bg-primary/20"
                             >
                                 {isExpanded ? (
-                                    <FolderOpenIcon className={`w-5 h-5 ${isExpanded ? 'text-blue-600 dark:text-blue-400' : ''}`} />
+                                    <FolderOpenIcon className={`w-5 h-5 ${isExpanded ? 'text-primary dark:text-primary' : ''}`} />
                                 ) : (
                                     <FolderIcon className="w-5 h-5 text-gray-500 dark:text-gray-400" />
                                 )}
@@ -203,7 +203,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
 
                     <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center gap-2">
-                            <h3 className={`text-[15px] font-bold tracking-tight truncate transition-colors ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-500'}`}>
+                            <h3 className={`text-[15px] font-bold tracking-tight truncate transition-colors ${isSelected ? 'text-primary dark:text-primary' : 'text-slate-800 dark:text-slate-100 group-hover:text-primary'}`}>
                                 {category.name}
                             </h3>
                             {/* Mobile Actions */}
@@ -213,7 +213,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                         e.stopPropagation();
                                         onEdit(category);
                                     }}
-                                    className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-[12px] transition-all duration-300 active:scale-95"
+                                    className="p-1.5 text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-success-muted dark:hover:bg-primary/15 rounded-[12px] transition-all duration-300 active:scale-95"
                                 >
                                     <PencilIcon className="w-5 h-5" />
                                 </button>
@@ -265,18 +265,18 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
 
                         {/* Icon */}
                         <div className="flex-shrink-0 mr-3">
-                            <div className={`p-1.5 rounded-[12px] ${isExpanded ? 'bg-blue-50 dark:bg-blue-900/30' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 border border-transparent group-hover:border-slate-200 dark:group-hover:border-white/10 transition-colors'}`}>
+                            <div className={`p-1.5 rounded-[12px] ${isExpanded ? 'bg-success-muted dark:bg-primary/15' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-white dark:group-hover:bg-slate-700 border border-transparent group-hover:border-slate-200 dark:group-hover:border-white/10 transition-colors'}`}>
                                 {hasChildren && isExpanded ? (
-                                    <FolderOpenIcon className="w-4.5 h-4.5 text-blue-600 dark:text-blue-400" />
+                                    <FolderOpenIcon className="w-4.5 h-4.5 text-primary dark:text-primary" />
                                 ) : (
-                                    <FolderIcon className={`w-4.5 h-4.5 ${hasChildren ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`} />
+                                    <FolderIcon className={`w-4.5 h-4.5 ${hasChildren ? 'text-primary dark:text-primary' : 'text-slate-500 dark:text-slate-400'}`} />
                                 )}
                             </div>
                         </div>
 
                         {/* Name */}
                         <div className="flex-1 min-w-0 flex flex-col">
-                            <span className={`text-[15px] font-bold tracking-tight truncate transition-colors ${isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-500'}`}>
+                            <span className={`text-[15px] font-bold tracking-tight truncate transition-colors ${isSelected ? 'text-primary dark:text-primary' : 'text-slate-800 dark:text-slate-100 group-hover:text-primary'}`}>
                                 {category.name}
                             </span>
                             {category.level > 0 && (
@@ -299,7 +299,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                     {/* Column 3: Sub-categories (spans 2) */}
                     <div className="col-span-2">
                         {hasChildren ? (
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/10 text-[11px] font-black tracking-widest text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-500/20 uppercase">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full bg-success-muted dark:bg-primary/10 text-[11px] font-black tracking-widest text-primary dark:text-primary border border-primary/15 dark:border-primary/20 uppercase">
                                 {subCatCount} items
                             </span>
                         ) : (
@@ -314,7 +314,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                                 e.stopPropagation();
                                 onEdit(category);
                             }}
-                            className="p-1.5 text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-[10px] transition-colors active:scale-95 transition-all duration-300"
+                            className="p-1.5 text-slate-400 hover:text-primary dark:hover:text-primary hover:bg-success-muted dark:hover:bg-primary/15 rounded-[10px] transition-colors active:scale-95 transition-all duration-300"
                             title="Edit"
                         >
                             <PencilIcon className="w-4.5 h-4.5" />
@@ -341,7 +341,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5 p-4 transition-all duration-400 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 relative overflow-hidden group">
                     <div className="absolute -right-6 -top-6 p-4 opacity-5 group-hover:opacity-20 transition-all duration-700 group-hover:scale-110 group-hover:rotate-12">
-                        <FolderIcon className="w-28 h-28 text-blue-600 dark:text-blue-400" />
+                        <FolderIcon className="w-28 h-28 text-primary dark:text-primary" />
                     </div>
                     <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-[0.15em] uppercase mb-4">Total Categories</p>
                     <div className="flex items-baseline gap-2">

@@ -19,7 +19,20 @@ interface Props {
   selectedProductId?: string | null;
 }
 
-// Subcomponent to handle individual product card logic, especially image loading
+const asNumber = (val: any) => {
+  const n = typeof val === 'number' ? val : parseFloat(val);
+  return Number.isFinite(n) ? n : 0;
+};
+
+// Shared stock status → Confident Clarity semantics (green / amber / red)
+const stockTone = (product: Product, storeSettings: StoreSettings) => {
+  const stock = asNumber(product.stock);
+  const reorder = product.reorderPoint ?? storeSettings.lowStockThreshold;
+  if (stock <= 0) return { key: 'out', label: 'Out of stock' as const };
+  if (stock <= reorder) return { key: 'low', label: 'Low stock' as const };
+  return { key: 'ok', label: 'In stock' as const };
+};
+
 const ProductCard: React.FC<{
   product: Product;
   categoryName: string;
@@ -28,12 +41,7 @@ const ProductCard: React.FC<{
   isSelected?: boolean;
 }> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected }) => {
   const [imgError, setImgError] = React.useState(false);
-
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
-  const asNumber = (val: any) => {
-    const n = typeof val === 'number' ? val : parseFloat(val);
-    return Number.isFinite(n) ? n : 0;
-  };
 
   const imageUrl = React.useMemo(() => {
     if (!product.imageUrls || product.imageUrls.length === 0) return null;
@@ -45,22 +53,25 @@ const ProductCard: React.FC<{
   }, [product.imageUrls]);
 
   const showImage = imageUrl && !imgError;
-  const isLowStock = asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold);
+  const stock = asNumber(product.stock);
+  const tone = stockTone(product, storeSettings);
+
+  const badgeCls = tone.key === 'out'
+    ? 'bg-danger text-white'
+    : tone.key === 'low'
+      ? 'bg-warning text-white'
+      : 'bg-brand-text/80 dark:bg-white/90 text-white dark:text-brand-text';
 
   return (
     <div
-      onClick={(e) => {
-        if (!e.defaultPrevented) {
-          onSelect();
-        }
-      }}
-      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-2xl transition-all duration-400 overflow-hidden cursor-pointer h-full active:scale-[0.98] ${isSelected
-        ? 'ring-2 ring-blue-500/50 shadow-[0_12px_40px_rgba(59,130,246,0.15)] bg-blue-50/30'
-        : 'shadow-sm hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1'
+      onClick={(e) => { if (!e.defaultPrevented) onSelect(); }}
+      className={`group relative bg-surface/70 dark:bg-slate-900/40 backdrop-blur-2xl border rounded-2xl transition-all duration-300 overflow-hidden cursor-pointer h-full active:scale-[0.98] ${isSelected
+        ? 'border-primary ring-2 ring-primary/40 shadow-[0_12px_40px_rgba(0,128,96,0.15)] bg-success-muted/40'
+        : 'border-brand-border shadow-sm hover:shadow-[0_18px_40px_rgba(26,26,46,0.08)] dark:hover:shadow-[0_18px_40px_rgba(0,0,0,0.3)] hover:-translate-y-1 hover:border-primary/40'
         }`}
     >
-      {/* Card Header / Image Area */}
-      <div className="relative aspect-[4/3] bg-gradient-to-br from-slate-50/50 to-slate-200/50 dark:from-slate-800/30 dark:to-slate-900/50 flex items-center justify-center overflow-hidden">
+      {/* Image */}
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-warm-100 to-warm-200 dark:from-slate-800/30 dark:to-slate-900/50 flex items-center justify-center overflow-hidden">
         {showImage ? (
           <img
             src={imageUrl!}
@@ -69,39 +80,36 @@ const ProductCard: React.FC<{
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="text-slate-300 dark:text-slate-700/50">
+          <div className="text-brand-text-muted/40">
             <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
             </svg>
           </div>
         )}
 
-        {/* Stock Badge */}
+        {/* Stock badge */}
         <div className="absolute top-3 left-3">
-          <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] rounded-full backdrop-blur-md border shadow-sm ${isLowStock
-            ? 'bg-rose-500 text-white border-white/20'
-            : 'bg-slate-900/80 dark:bg-white/90 text-white dark:text-slate-900 border-white/10 dark:border-slate-200'
-            }`}>
-            {asNumber(product.stock)} LEFT
+          <span className={`px-3 py-1 text-[9px] font-black uppercase tracking-[0.1em] rounded-full backdrop-blur-md shadow-sm ${badgeCls}`}>
+            {tone.key === 'out' ? 'Sold Out' : `${stock} left`}
           </span>
         </div>
       </div>
 
-      {/* Card Body */}
+      {/* Body */}
       <div className="p-4 flex-1 flex flex-col justify-between gap-3">
         <div>
           <div className="flex justify-between items-center mb-2">
-            <span className={`text-[10px] font-black tracking-[0.12em] uppercase px-2 py-0.5 rounded-md ${isSelected ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400' : 'bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400'}`}>{categoryName}</span>
-            <span className="text-[9px] text-slate-400 dark:text-slate-600 font-mono font-bold tracking-tighter opacity-60">#{product.sku?.slice(-6) || 'N/A'}</span>
+            <span className={`text-[10px] font-black tracking-[0.12em] uppercase px-2 py-0.5 rounded-md ${isSelected ? 'bg-success-muted dark:bg-primary/20 text-primary' : 'bg-warm-100 dark:bg-white/5 text-brand-text-muted'}`}>{categoryName}</span>
+            <span className="text-[9px] text-brand-text-muted/60 font-mono font-bold tracking-tighter">#{product.sku?.slice(-6) || 'N/A'}</span>
           </div>
-          <h3 className={`font-semibold text-[15px] leading-snug mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
+          <h3 className={`font-semibold text-[15px] leading-snug mb-1 line-clamp-2 transition-colors ${isSelected ? 'text-primary dark:text-white' : 'text-brand-text group-hover:text-primary'}`}>
             {product.name}
           </h3>
         </div>
         <div className="flex items-end justify-between">
-          <div className="text-[18px] font-black tracking-tighter text-slate-900 dark:text-white">
+          <div className="text-[18px] font-black tracking-tight text-brand-text tabular-nums">
             {formatPrice(product.price)}
-            {product.unitOfMeasure === 'kg' && <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 ml-1">/kg</span>}
+            {product.unitOfMeasure === 'kg' && <span className="text-[11px] font-bold text-brand-text-muted ml-1">/kg</span>}
           </div>
         </div>
       </div>
@@ -117,39 +125,39 @@ const ProductListRow: React.FC<{
   isSelected?: boolean;
 }> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected }) => {
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
-  const asNumber = (val: any) => {
-    const n = typeof val === 'number' ? val : parseFloat(val);
-    return Number.isFinite(n) ? n : 0;
-  };
-  const isLowStock = asNumber(product.stock) <= (product.reorderPoint ?? storeSettings.lowStockThreshold);
+  const stock = asNumber(product.stock);
+  const tone = stockTone(product, storeSettings);
+
+  const pillCls = tone.key === 'out'
+    ? 'bg-danger-muted text-danger'
+    : tone.key === 'low'
+      ? 'bg-warning-muted text-warning'
+      : 'bg-success-muted text-primary';
 
   return (
     <div
-      className={`group relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-2xl border border-slate-200/40 dark:border-white/5 rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 transition-all duration-400 cursor-pointer active:scale-[0.99] ${isSelected
-        ? 'ring-2 ring-blue-500/50 shadow-[0_8px_30px_rgba(59,130,246,0.12)] bg-blue-50/30'
-        : 'shadow-sm hover:shadow-[0_12px_30px_rgba(0,0,0,0.05)] dark:hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)]'
+      className={`group relative bg-surface/70 dark:bg-slate-900/40 backdrop-blur-2xl border rounded-xl p-3 flex flex-col sm:flex-row items-start sm:items-center gap-3 transition-all duration-300 cursor-pointer active:scale-[0.99] ${isSelected
+        ? 'border-primary ring-2 ring-primary/40 shadow-[0_8px_30px_rgba(0,128,96,0.12)] bg-success-muted/40'
+        : 'border-brand-border shadow-sm hover:shadow-[0_12px_30px_rgba(26,26,46,0.06)] dark:hover:shadow-[0_12px_30px_rgba(0,0,0,0.2)] hover:border-primary/40'
         }`}
       onClick={onSelect}
     >
-      {/* Info */}
       <div className="flex-1 min-w-0">
         <div className="flex flex-wrap items-center gap-3 mb-1.5">
-          <h3 className={`font-bold text-[16px] tracking-tight truncate ${isSelected ? 'text-blue-900 dark:text-white' : 'text-slate-700 dark:text-slate-100'}`}>
+          <h3 className={`font-bold text-[16px] tracking-tight truncate transition-colors ${isSelected ? 'text-primary dark:text-white' : 'text-brand-text group-hover:text-primary'}`}>
             {product.name}
           </h3>
-          <span className={`text-[9px] px-2.5 py-0.5 font-black tracking-widest uppercase rounded-full border ${isLowStock
-            ? 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-200/50 dark:border-rose-500/20'
-            : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-200/50 dark:border-emerald-500/20'
-            }`}>
-            {asNumber(product.stock)} {product.unitOfMeasure === 'kg' ? 'kg' : 'units'}
+          <span className={`inline-flex items-center gap-1.5 text-[10px] px-2.5 py-0.5 font-black tracking-widest uppercase rounded-full ${pillCls}`}>
+            <span className="w-1.5 h-1.5 rounded-full bg-current" />
+            {stock} {product.unitOfMeasure === 'kg' ? 'kg' : 'units'}
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <span className="text-[11px] font-semibold tracking-widest text-slate-400 dark:text-slate-500 uppercase">{categoryName}</span>
-          <div className="h-3 w-px bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
-          <span className="text-[11px] font-mono text-slate-400 dark:text-slate-600">SKU: {product.sku}</span>
-          <div className="h-3 w-px bg-slate-200 dark:bg-white/10 hidden sm:block"></div>
-          <span className="text-[15px] font-black tracking-tighter text-slate-900 dark:text-white">
+          <span className="text-[11px] font-semibold tracking-widest text-brand-text-muted uppercase">{categoryName}</span>
+          <div className="h-3 w-px bg-brand-border hidden sm:block"></div>
+          <span className="text-[11px] font-mono text-brand-text-muted">SKU: {product.sku}</span>
+          <div className="h-3 w-px bg-brand-border hidden sm:block"></div>
+          <span className="text-[15px] font-black tracking-tight text-brand-text tabular-nums">
             {formatPrice(product.price)}
           </span>
         </div>

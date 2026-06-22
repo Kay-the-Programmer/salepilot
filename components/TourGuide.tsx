@@ -5,48 +5,42 @@ import { User } from '../types';
 interface TourGuideProps {
     user: User;
     run?: boolean; // Optional prop to force run
-    page?: 'dashboard' | 'sales'; // New prop to differentiate tours
+    page?: 'dashboard' | 'sales'; // Differentiate tours
     onTourEnd?: () => void;
 }
+
+// Confident Clarity palette
+const SP_GREEN = '#008060';
+const SP_INK = '#1a1a2e';
+const SP_MUTED = '#6b6b78';
+const SP_SUBTLE = '#9a9aa6';
 
 export default function TourGuide({ user, run: propsRun, page = 'dashboard', onTourEnd }: TourGuideProps) {
     const [run, setRun] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
-        // specific check for mobile screens
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768);
-        };
-
+        const checkMobile = () => setIsMobile(window.innerWidth < 768);
         checkMobile();
         window.addEventListener('resize', checkMobile);
-
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
     useEffect(() => {
-        // If propsRun is explicitly true, we want to run the tour (manual trigger)
+        // If propsRun is explicitly true, run the tour (manual trigger)
         if (propsRun) {
             setRun(true);
             return;
         }
-
         // Otherwise, only run if they haven't seen it and propsRun isn't false
         const tourKey = page === 'dashboard' ? `salePilot.tourSeen.${user.id}` : `salePilot.tourSeen.${page}.${user.id}`;
         const hasSeenTour = localStorage.getItem(tourKey) === 'true';
-
-        if (hasSeenTour) {
-            setRun(false);
-        } else {
-            setRun(propsRun !== false);
-        }
+        setRun(hasSeenTour ? false : propsRun !== false);
     }, [user.id, propsRun, page]);
 
     const handleJoyrideCallback = (data: CallBackProps) => {
         const { status } = data;
         const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-
         if (finishedStatuses.includes(status)) {
             setRun(false);
             const tourKey = page === 'dashboard' ? `salePilot.tourSeen.${user.id}` : `salePilot.tourSeen.${page}.${user.id}`;
@@ -60,7 +54,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: 'body',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Welcome to SalePilot! 🚀</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Welcome to SalePilot! 🚀</h3>
                     <p>Let's take a quick tour to help you get started with your new POS and Inventory management system.</p>
                 </div>
             ),
@@ -71,7 +65,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: '#app-sidebar',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Navigation Sidebar</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Navigation Sidebar</h3>
                     <p>This is your main navigation hub. Access all your modules here, including Sales, Inventory, Reports, and Settings.</p>
                 </div>
             ),
@@ -81,7 +75,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: '#sidebar-nav-reports',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Dashboard & Reports</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Dashboard & Reports</h3>
                     <p>Get a bird's-eye view of your business performance, sales metrics, and low stock alerts right here.</p>
                 </div>
             ),
@@ -91,7 +85,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: '#sidebar-nav-sales',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Point of Sale</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Point of Sale</h3>
                     <p>Process sales quickly and efficiently. Compatible with barcode scanners and receipt printers.</p>
                 </div>
             ),
@@ -101,10 +95,10 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: '#sidebar-nav-inventory',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Inventory Management</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Inventory Management</h3>
                     <p>Track your stock levels, manage suppliers, and organize categories.</p>
-                    <p className="mt-2 text-sm text-blue-600 bg-blue-50 p-2 rounded border border-blue-100 italic">
-                        💡 Tip: Click here to view your products. Once on the Inventory page, click the <strong>"Add Product"</strong> button in the top right to create new items.
+                    <p className="mt-2 text-sm p-2 rounded-lg italic" style={{ color: SP_GREEN, background: 'rgba(0,128,96,0.08)', border: '1px solid rgba(0,128,96,0.18)' }}>
+                        💡 Tip: Click here to view your products. On the Inventory page, click <strong>"Add Product"</strong> in the top right to create new items.
                     </p>
                 </div>
             ),
@@ -114,7 +108,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: '#sidebar-profile-section',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Your Profile</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Your Profile</h3>
                     <p>Manage your account settings, switch stores (if you have multiple), and log out from here.</p>
                 </div>
             ),
@@ -124,225 +118,11 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: 'body',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">You're All Set!</h3>
+                    <h3 className="font-extrabold text-lg mb-2">You're All Set!</h3>
                     <p>Explore the app and enjoy using SalePilot. If you need help, check the documentation or contact support.</p>
                 </div>
             ),
             placement: 'center',
-        },
-    ];
-
-    const desktopSalesSteps: Step[] = [
-        {
-            target: 'body',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Point of Sale Tour 🛒</h3>
-                    <p>Welcome to the POS terminal. This is where you process sales and manage transactions.</p>
-                </div>
-            ),
-            placement: 'center',
-            disableBeacon: true,
-        },
-        {
-            target: '#pos-search-container',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Find Products</h3>
-                    <p>Search for products by name, SKU, or barcode here.</p>
-                </div>
-            ),
-            placement: 'bottom',
-        },
-        {
-            target: '#pos-view-toggle',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">View Toggle</h3>
-                    <p>Switch between Grid and List view based on your preference.</p>
-                </div>
-            ),
-            placement: 'bottom',
-        },
-        {
-            target: '#pos-product-list',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Product Catalog</h3>
-                    <p>Tap any product to add it to your shopping cart.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-cart-items',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Shopping Cart</h3>
-                    <p>View all items currently in the cart. You can adjust quantities or remove items here.</p>
-                </div>
-            ),
-            placement: 'left',
-        },
-        {
-            target: '#pos-scanner-btn',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Barcode Scanner</h3>
-                    <p>Enable the camera to scan product barcodes directly into the cart.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-tab-customer',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Customer Selection</h3>
-                    <p>Assign a customer to the sale to track history or apply store credit.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-tab-summary',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Order Summary</h3>
-                    <p>Add discounts and review tax calculations before finalizing.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-tab-payment',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Payment Details</h3>
-                    <p>Select the payment method and enter cash received if applicable.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-pay-btn',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Finalize Sale</h3>
-                    <p>Click here to complete the transaction and generate a receipt.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-hold-btn',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Hold Sale</h3>
-                    <p>Pause this sale for later. You can recall it anytime from the "Held Sales" button.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-held-btn',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Recall Held Sales</h3>
-                    <p>Access your suspended transactions here.</p>
-                </div>
-            ),
-            placement: 'bottom',
-        },
-    ];
-
-    const mobileSalesSteps: Step[] = [
-        {
-            target: 'body',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">POS Mobile Tour 🛒</h3>
-                    <p>Welcome! This terminal is optimized for your mobile device.</p>
-                </div>
-            ),
-            placement: 'center',
-            disableBeacon: true,
-        },
-        {
-            target: '#pos-mobile-header',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">App Menu</h3>
-                    <p>Tap here to access the main navigation and switch between modules.</p>
-                </div>
-            ),
-            placement: 'bottom',
-            disableScrolling: true,
-        },
-        {
-            target: '#pos-mobile-help-btn',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Help Guide</h3>
-                    <p>Tap this icon anytime to restart this tour and learn about POS features.</p>
-                </div>
-            ),
-            placement: 'bottom',
-            disableScrolling: true,
-        },
-        {
-            target: '#pos-mobile-search-container',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Find Products</h3>
-                    <p>Search for items quickly using the search bar.</p>
-                </div>
-            ),
-            placement: 'bottom',
-            disableScrolling: true,
-        },
-        {
-            target: '#pos-mobile-product-list',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Product Grid</h3>
-                    <p>Tap products to add them to your cart instantly.</p>
-                </div>
-            ),
-            placement: 'top',
-        },
-        {
-            target: '#pos-mobile-scanner-fab',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Quick Scan</h3>
-                    <p>Use your camera to scan barcodes and add products even faster.</p>
-                </div>
-            ),
-            placement: 'top',
-            disableScrolling: true,
-        },
-        {
-            target: '#pos-mobile-cart-fab',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">View Cart</h3>
-                    <p>Tap here to review your items, adjust quantities, and proceed to checkout.</p>
-                </div>
-            ),
-            placement: 'top',
-            disableScrolling: true,
-        },
-        {
-            target: '#pos-mobile-held-fab',
-            content: (
-                <div>
-                    <h3 className="font-bold text-lg mb-2">Held Sales</h3>
-                    <p>Access your paused transactions here on mobile.</p>
-                </div>
-            ),
-            placement: 'top',
-            disableScrolling: true,
         },
     ];
 
@@ -351,7 +131,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: 'body',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Welcome to SalePilot! 🚀</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Welcome to SalePilot! 🚀</h3>
                     <p>Let's take a quick tour to help you get started with your new POS and Inventory management system.</p>
                 </div>
             ),
@@ -362,7 +142,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: '#mobile-menu-toggle',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">Main Menu</h3>
+                    <h3 className="font-extrabold text-lg mb-2">Main Menu</h3>
                     <p>Tap here to access all modules including Dashboard, POS, Inventory, and Settings.</p>
                 </div>
             ),
@@ -372,7 +152,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             target: 'body',
             content: (
                 <div>
-                    <h3 className="font-bold text-lg mb-2">You're All Set!</h3>
+                    <h3 className="font-extrabold text-lg mb-2">You're All Set!</h3>
                     <p>Tap the menu button to start exploring features. Enjoy using SalePilot!</p>
                 </div>
             ),
@@ -380,10 +160,74 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
         },
     ];
 
+    // POS tour — targets elements that exist in the redesigned POS on both
+    // desktop and mobile (search, category strip, catalog, held sales).
+    const salesSteps: Step[] = [
+        {
+            target: 'body',
+            content: (
+                <div>
+                    <h3 className="font-extrabold text-lg mb-2">Point of Sale Tour 🛒</h3>
+                    <p>Welcome to the POS terminal — where you build orders and take payments.</p>
+                </div>
+            ),
+            placement: 'center',
+            disableBeacon: true,
+        },
+        {
+            target: '#pos-search',
+            content: (
+                <div>
+                    <h3 className="font-extrabold text-lg mb-2">Find Products</h3>
+                    <p>Search by name, SKU or barcode — or use a hardware scanner to add items instantly.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: '.sale__chips',
+            content: (
+                <div>
+                    <h3 className="font-extrabold text-lg mb-2">Browse by Category</h3>
+                    <p>Swipe through categories to filter the catalog. Tap <strong>Scan</strong> to focus the scanner.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: '#pos-product-list',
+            content: (
+                <div>
+                    <h3 className="font-extrabold text-lg mb-2">Product Catalog</h3>
+                    <p>Tap any product to add it to the current sale. The cart updates live on the right.</p>
+                </div>
+            ),
+            placement: 'top',
+        },
+        {
+            target: '#pos-menu-btn',
+            content: (
+                <div>
+                    <h3 className="font-extrabold text-lg mb-2">POS Menu</h3>
+                    <p>Open the menu to view <strong>Sales History</strong>, process refunds, recall <strong>Held Sales</strong>, or replay this guide.</p>
+                </div>
+            ),
+            placement: 'bottom',
+        },
+        {
+            target: 'body',
+            content: (
+                <div>
+                    <h3 className="font-extrabold text-lg mb-2">Take Payment</h3>
+                    <p>Add items, hit <strong>Process Payment</strong>, pick a method, and you're done. Enjoy SalePilot!</p>
+                </div>
+            ),
+            placement: 'center',
+        },
+    ];
+
     const getSteps = () => {
-        if (page === 'sales') {
-            return isMobile ? mobileSalesSteps : desktopSalesSteps;
-        }
+        if (page === 'sales') return salesSteps;
         return isMobile ? mobileSteps : desktopSteps;
     };
 
@@ -394,31 +238,38 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
             continuous
             showProgress
             showSkipButton
-            locale={{ last: 'Okay' }}
+            locale={{ last: 'Done' }}
             callback={handleJoyrideCallback}
             styles={{
                 options: {
                     zIndex: 10000,
-                    primaryColor: '#3B82F6', // Blue-500
+                    primaryColor: SP_GREEN,
                     backgroundColor: '#ffffff',
                     arrowColor: '#ffffff',
-                    textColor: '#333333',
+                    textColor: SP_INK,
+                    width: 340,
                 },
+                tooltip: {
+                    borderRadius: 18,
+                    padding: 20,
+                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                    boxShadow: '0 12px 28px rgba(26,26,46,0.18)',
+                },
+                tooltipContent: { padding: '4px 0 8px', color: SP_MUTED, lineHeight: 1.5 },
                 buttonNext: {
-                    backgroundColor: '#3B82F6',
+                    backgroundColor: SP_GREEN,
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    padding: '10px 18px',
                 },
-                buttonBack: {
-                    color: '#3B82F6',
-                },
-                spotlight: {
-                    borderRadius: 12,
-                }
+                buttonBack: { color: SP_MUTED, fontWeight: 600, marginRight: 8 },
+                buttonSkip: { color: SP_SUBTLE, fontWeight: 600 },
+                spotlight: { borderRadius: 14 },
             }}
-            spotlightPadding={5}
+            spotlightPadding={6}
             spotlightClicks={true}
-            floaterProps={{
-                disableAnimation: true,
-            }}
+            floaterProps={{ disableAnimation: true }}
         />
     );
 }

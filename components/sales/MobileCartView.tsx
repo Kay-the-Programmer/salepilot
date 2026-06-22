@@ -147,7 +147,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
 
             {/* ── Header ── */}
             <div className="flex-none bg-white/70 dark:bg-slate-900/70 backdrop-blur-2xl border-b border-slate-200/50 dark:border-white/5 px-4 py-3 z-10 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 right-10 w-32 h-32 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-full blur-2xl -translate-y-1/2 pointer-events-none"></div>
+                <div className="absolute top-0 right-10 w-32 h-32 bg-primary/5 dark:bg-primary/10 rounded-full blur-2xl -translate-y-1/2 pointer-events-none"></div>
                 <div className="flex items-center gap-3 relative z-10">
                     <button
                         onClick={onClose}
@@ -217,7 +217,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                         <div className="flex flex-col gap-3 w-full max-w-xs">
                             <button
                                 onClick={() => setIsScannerOpen(true)}
-                                className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-indigo-500/30 active:scale-95 transition-all"
+                                className="w-full px-6 py-4 bg-gradient-to-r from-primary-dark to-primary text-white rounded-2xl font-bold flex items-center justify-center gap-3 shadow-lg shadow-primary/30 active:scale-95 transition-all"
                             >
                                 <QrCodeIcon className="w-5 h-5" />
                                 Scan Barcode
@@ -416,7 +416,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                         type="number"
                                         value={discount}
                                         onChange={e => setDiscount(e.target.value)}
-                                        className="w-20 px-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-xl text-right text-sm font-medium tabular-nums focus:ring-2 focus:ring-indigo-400 outline-none transition-all text-slate-800 dark:text-white"
+                                        className="w-20 px-2 py-1.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-xl text-right text-sm font-medium tabular-nums focus:ring-2 focus:ring-primary/50 outline-none transition-all text-slate-800 dark:text-white"
                                         placeholder="0.00"
                                         min="0"
                                     />
@@ -459,7 +459,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                 flex flex-col items-center justify-center gap-1.5 py-4 px-2 rounded-2xl text-xs font-semibold
                                                 border-2 transition-all duration-150 active:scale-95
                                                 ${isSelected
-                                                    ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300'
+                                                    ? 'border-primary bg-success-muted dark:bg-primary/20 text-primary'
                                                     : 'border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-700/50 text-slate-600 dark:text-slate-400'}
                                             `}
                                         >
@@ -481,7 +481,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                     type="text"
                                     value={mobileMoneyNumber}
                                     onChange={e => setMobileMoneyNumber(e.target.value)}
-                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-400 outline-none"
+                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-2xl text-base font-bold text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none"
                                     placeholder="e.g. 0961111111"
                                 />
                             </div>
@@ -502,7 +502,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                         type="number"
                                         value={cashReceived}
                                         onChange={e => setCashReceived(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-2xl text-right text-xl font-bold tabular-nums text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-400 outline-none"
+                                        className="w-full pl-9 pr-4 py-3.5 bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-white/10 rounded-2xl text-right text-xl font-bold tabular-nums text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 outline-none"
                                         placeholder="0.00"
                                     />
                                 </div>
@@ -516,7 +516,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                                 onClick={() => setCashReceived(String(amt))}
                                                 className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all active:scale-95
                                                     ${cashReceivedNumber === amt
-                                                        ? 'bg-indigo-50 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/50'
+                                                        ? 'bg-success-muted dark:bg-primary/20 text-primary border-primary/30 dark:border-primary/50'
                                                         : 'bg-slate-50 dark:bg-slate-700 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-white/10'}`}
                                             >
                                                 {i === 0 ? 'Exact' : formatCurrency(amt, storeSettings)}
@@ -559,7 +559,7 @@ export const MobileCartView: React.FC<MobileCartViewProps> = ({
                                     id="pos-mobile-pay-btn"
                                     onClick={() => processTransaction('paid')}
                                     disabled={isPayDisabled}
-                                    className="col-span-3 py-4 rounded-[20px] bg-gradient-to-r from-indigo-600 to-indigo-500 text-white font-extrabold text-base flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.96] transition-all duration-300 shadow-[0_8px_20px_rgb(99,102,241,0.3)] overflow-hidden relative"
+                                    className="col-span-3 py-4 rounded-[20px] bg-gradient-to-r from-primary-dark to-primary text-white font-extrabold text-base flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.96] transition-all duration-300 shadow-[0_8px_20px_rgb(0,128,96,0.3)] overflow-hidden relative"
                                 >
                                     {isProcessing ? (
                                         <>

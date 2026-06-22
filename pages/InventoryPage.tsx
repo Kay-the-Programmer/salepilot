@@ -13,6 +13,7 @@ import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
 import Pagination from '../components/ui/Pagination';
 import InventoryHeader from '../components/inventory/InventoryHeader';
+import InventoryMobileShell from '../components/inventory/InventoryMobileShell';
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
 import Header from "@/components/Header.tsx";
@@ -77,6 +78,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [showArchived, setShowArchived] = useState(false);
+    const [categoryFilter, setCategoryFilter] = useState<string>('all'); // mobile category chip filter ('all' or category id)
     const [isStockModalOpen, setIsStockModalOpen] = useState(false);
     const [stockAdjustProduct, setStockAdjustProduct] = useState<Product | null>(null);
     const [stockAdjustInitialReason, setStockAdjustInitialReason] = useState<string | undefined>(undefined);
@@ -104,7 +106,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
     const [showFilters, setShowFilters] = useState(false);
-    const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
 
     // Resizable panel state
     const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
@@ -518,6 +519,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 return false;
             }
 
+            if (categoryFilter !== 'all' && product.categoryId !== categoryFilter) {
+                return false;
+            }
+
             if (debouncedSearchTerm.trim() === '') return true;
 
             const term = debouncedSearchTerm.toLowerCase();
@@ -533,12 +538,12 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 (product.brand && product.brand.toLowerCase().includes(term))
             );
         });
-    }, [products, showArchived, debouncedSearchTerm, categoryMap, supplierMap]);
+    }, [products, showArchived, categoryFilter, debouncedSearchTerm, categoryMap, supplierMap]);
 
     type SortBy = 'name' | 'price' | 'stock' | 'category' | 'sku';
     type SortOrder = 'asc' | 'desc';
     const [sortBy] = useState<SortBy>('name');
-    const [sortOrder] = useState<SortOrder>('asc');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
     const sortedProducts = useMemo(() => {
         const arr = [...filteredProducts];
@@ -660,71 +665,27 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 }
             />
 
-            {/* Mobile Tab Navigation (Matches Sketch) */}
-            <div className={`md:hidden flex flex-col bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border-b border-slate-100 dark:border-white/5 z-40 ${!!selectedItem ? 'hidden' : ''}`}>
-                {isMobileSearchActive ? (
-                    <div className="flex items-center gap-3 px-6 py-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="flex-1 flex items-center bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl px-4 py-2.5 border border-slate-200/50 dark:border-white/5 shadow-sm">
-                            <svg className="w-5 h-5 text-slate-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            <input
-                                type="text"
-                                autoFocus
-                                placeholder={`Search ${activeTab === 'products' ? 'products' : 'categories'}...`}
-                                className="w-full bg-transparent border-none focus:ring-0 text-[16px] ml-2 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 py-0"
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            {searchTerm && (
-                                <button
-                                    onClick={() => setSearchTerm('')}
-                                    className="p-1.5 -mr-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                                >
-                                    <svg className="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            )}
-                        </div>
-                        <button
-                            onClick={() => {
-                                setIsMobileSearchActive(false);
-                                setSearchTerm('');
-                            }}
-                            className="text-[16px] font-bold text-brand-text active:scale-95 transition-all px-1"
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                ) : (
-                    <div className="flex items-center justify-between px-6 py-4">
-                        <div className="flex items-center gap-8">
-                            <button
-                                onClick={() => setActiveTab('products')}
-                                className={`text-[17px] transition-all duration-200 ${activeTab === 'products' ? 'font-bold text-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
-                            >
-                                Products
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('categories')}
-                                className={`text-[17px] transition-all duration-200 ${activeTab === 'categories' ? 'font-bold text-brand-text' : 'text-slate-400 dark:text-slate-500'}`}
-                            >
-                                Categories
-                            </button>
-                        </div>
-                        <button
-                            onClick={() => setIsMobileSearchActive(true)}
-                            className="p-2 -mr-2 text-slate-400 dark:text-slate-500 hover:text-brand-text transition-colors active:scale-90"
-                            aria-label="Activate Search"
-                        >
-                            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </button>
-                    </div>
-                )}
-            </div>
+            {/* Mobile inventory — exact v2 mobile layout (logic preserved) */}
+            {!selectedItem && (
+                <InventoryMobileShell
+                    products={sortedProducts}
+                    categories={categories}
+                    storeSettings={storeSettings}
+                    user={currentUser}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                    categoryFilter={categoryFilter}
+                    setCategoryFilter={setCategoryFilter}
+                    sortOrder={sortOrder}
+                    onToggleSort={() => setSortOrder(o => (o === 'asc' ? 'desc' : 'asc'))}
+                    onSelectProduct={handleSelectProduct}
+                    selectedProductId={selectedProductId}
+                    onAddProduct={handleOpenAddModal}
+                    onScan={() => setIsScanModalOpen(true)}
+                    canManage={canManageProducts}
+                    isLoading={isLoading}
+                />
+            )}
 
             {/* Onboarding Helpers */}
             <InventoryOnboardingHelpers
@@ -736,10 +697,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 onOpenAddCategoryModal={handleOpenAddCategoryModal}
             />
 
-            <div className="flex-1 flex overflow-hidden w-full relative z-10" id="inventory-content">
+            <div className={`flex-1 ${selectedItem ? 'flex' : 'hidden'} md:flex overflow-hidden w-full relative z-10`} id="inventory-content">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent ${selectedItem ? 'hidden md:flex' : 'flex w-full'}`}
+                    className={`flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent hidden md:flex ${selectedItem ? '' : 'md:w-full'}`}
                     style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '420px' : 'none' }}
                 >
                     <div className="flex-1 overflow-hidden relative">
@@ -1042,32 +1003,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 />
             )}
 
-            {/* Floating Action Buttons for Mobile */}
-            {canManageProducts && !selectedItem && (
-                <div className="md:hidden fixed bottom-6 right-6 flex flex-col-reverse items-center gap-4 z-50 animate-in fade-in slide-in-from-bottom-6 duration-500">
-                    <button
-                        onClick={() => activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal()}
-                        className="w-14 h-14 flex items-center justify-center bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.2)] dark:shadow-[0_8px_30px_rgba(255,255,255,0.1)] hover:scale-110 active:scale-95 transition-all duration-300 group"
-                        aria-label={activeTab === 'products' ? 'Add Product' : 'Add Category'}
-                    >
-                        <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
-                        </svg>
-                    </button>
-                    {activeTab === 'products' && (
-                        <button
-                            onClick={() => setIsScanModalOpen(true)}
-                            className="w-14 h-14 flex items-center justify-center bg-white dark:bg-slate-800 text-slate-800 dark:text-white rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.1)] dark:shadow-none border border-slate-100 dark:border-white/5 hover:scale-110 active:scale-95 transition-all duration-300"
-                            aria-label="Scan Barcode"
-                        >
-                            <svg className="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                        </button>
-                    )}
-                </div>
-            )}
         </div>
     );
 };

@@ -75,7 +75,7 @@ const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({
                         </Button>
                         <Button
                             type="submit"
-                            className="flex-1 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white active:scale-95 transition-all duration-300"
+                            className="flex-1 bg-primary hover:bg-primary-dark dark:bg-primary dark:hover:bg-primary text-white active:scale-95 transition-all duration-300"
                             disabled={!barcode.trim() || isSubmitting}
                         >
                             {isSubmitting ? 'Searching...' : 'Lookup Product'}

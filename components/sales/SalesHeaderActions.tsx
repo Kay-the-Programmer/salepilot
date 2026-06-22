@@ -55,7 +55,7 @@ export const SalesHeaderActions: React.FC<SalesHeaderActionsProps> = ({
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                     placeholder="Search products…"
-                    className="w-full pl-4 pr-9 py-2.5 liquid-glass focus:border-blue-500/50 dark:focus:border-blue-400/50 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-blue-500/5 dark:focus:ring-blue-500/5 transition-all"
+                    className="w-full pl-4 pr-9 py-2.5 liquid-glass focus:border-primary/50 dark:focus:border-primary/50 rounded-full text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-4 focus:ring-primary/5 dark:focus:ring-primary/5 transition-all"
                 />
                 {searchTerm ? (
                     <button

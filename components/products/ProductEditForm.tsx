@@ -75,7 +75,29 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
     const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
     const [localSuppliers, setLocalSuppliers] = useState<Supplier[]>(suppliers);
-    const [activeSection, setActiveSection] = useState<string>('details');
+
+    // Shared field styling (Confident Clarity, mobile-first)
+    const labelCls = 'block text-[13px] font-semibold text-brand-text-muted mb-1.5';
+    const fieldCls = 'w-full bg-white dark:bg-slate-800 border border-brand-border rounded-xl text-sm py-3 px-4 text-brand-text placeholder:text-brand-text-muted/60 focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all';
+    const cardCls = 'form-card bg-surface dark:bg-slate-900/60 p-5 sm:p-6 rounded-2xl shadow-sm border border-brand-border';
+    const sectionTitleCls = 'text-base font-bold text-brand-text mb-4';
+    const Chevron = () => (
+        <svg className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+        </svg>
+    );
+    const AddBtn: React.FC<{ onClick: () => void; label: string }> = ({ onClick, label }) => (
+        <button
+            type="button"
+            onClick={onClick}
+            aria-label={label}
+            className="flex-none w-12 grid place-items-center rounded-xl border border-brand-border hover:bg-warm-100 dark:hover:bg-slate-700 text-primary active:scale-95 transition-all"
+        >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+        </button>
+    );
 
     useEffect(() => {
         setLocalSuppliers(suppliers);
@@ -83,11 +105,11 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
 
     useEffect(() => {
         if (onDirtyChange) {
-            const isDirty = product.name.trim() !== '' || 
-                product.description.trim() !== '' || 
-                product.price > 0 || 
-                product.categoryId !== undefined || 
-                product.barcode !== '' || 
+            const isDirty = product.name.trim() !== '' ||
+                product.description.trim() !== '' ||
+                product.price > 0 ||
+                product.categoryId !== undefined ||
+                product.barcode !== '' ||
                 images.length > 0;
             onDirtyChange(isDirty);
         }
@@ -155,659 +177,426 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
         }
     };
 
-    const sections = [
-        { id: 'details', label: 'Details' },
-        { id: 'pricing', label: 'Pricing' },
-        { id: 'inventory', label: 'Inventory' },
-        { id: 'images', label: 'Images' },
-    ];
-
-    const renderSectionContent = () => {
-        switch (activeSection) {
-            case 'details':
-                return (
-                    <div className="p-0">
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Product Name *</label>
-                            <input
-                                type="text"
-                                name="name"
-                                id="name"
-                                value={product.name}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="categoryId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category *</label>
-                            <div className="flex gap-2">
-                                <select
-                                    name="categoryId"
-                                    id="categoryId"
-                                    value={product.categoryId || ''}
-                                    onChange={handleChange}
-                                    required
-                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="" disabled>Select a category</option>
-                                    {categories.filter(c => c.parentId === null).map(c => (
-                                        <React.Fragment key={c.id}>
-                                            <option value={c.id} className="font-bold">{c.name}</option>
-                                            {categories.filter(sub => sub.parentId === c.id).map(sub => (
-                                                <option key={sub.id} value={sub.id}>&nbsp;&nbsp;{sub.name}</option>
-                                            ))}
-                                        </React.Fragment>
-                                    ))}
-                                </select>
-                                {onAddCategory && (
-                                    <button
-                                        type="button"
-                                        onClick={onAddCategory}
-                                        className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                        </svg>
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="brand" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Brand</label>
-                            <input
-                                type="text"
-                                name="brand"
-                                id="brand"
-                                value={product.brand || ''}
-                                onChange={handleChange}
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="supplierId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Supplier</label>
-                            <div className="flex gap-2">
-                                <select
-                                    name="supplierId"
-                                    id="supplierId"
-                                    value={product.supplierId || ''}
-                                    onChange={handleChange}
-                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="">No Supplier</option>
-                                    {localSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                                <button
-                                    type="button"
-                                    onClick={() => setIsSupplierModalOpen(true)}
-                                    className="px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-400 font-bold active:scale-95 transition-all duration-300"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label htmlFor="description" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
-                            <div className="relative">
-                                <textarea
-                                    name="description"
-                                    id="description"
-                                    rows={3}
-                                    value={product.description}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent pr-28"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={handleGenerateDescription}
-                                    disabled={isGenerating || !product.name || !product.categoryId}
-                                    className="absolute bottom-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 text-xs font-medium active:scale-95 transition-all duration-300"
-                                >
-                                    <SparklesIcon className="w-3 h-3" />
-                                    {isGenerating ? 'Generating...' : 'AI'}
-                                </button>
-                            </div>
-                        </div>
-
-                        {relevantAttributes.length > 0 && (
-                            <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700">
-                                <p className="text-xs text-slate-500 dark:text-slate-400">Custom Attributes</p>
-                                {relevantAttributes.map(attr => (
-                                    <div key={attr.id}>
-                                        <label htmlFor={`custom_${attr.id}`} className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{attr.name}</label>
-                                        <input
-                                            type="text"
-                                            name={`custom_${attr.id}`}
-                                            id={`custom_${attr.id}`}
-                                            value={product.customAttributes?.[attr.id] || ''}
-                                            onChange={handleChange}
-                                            className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                        />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </div>
-                );
-
-            case 'pricing':
-                return (
-                    <div className="space-y-4">
-
-                        {/* ── Carton / Bulk Pricing Premium Toggle ── */}
-                        <div className={`rounded-2xl overflow-hidden transition-all duration-500 border ${cartonMode ? 'border-blue-400/50 shadow-[0_0_20px_rgba(59,130,246,0.15)] dark:shadow-[0_0_30px_rgba(59,130,246,0.1)] bg-gradient-to-br from-blue-50/80 to-indigo-50/50 dark:from-blue-900/20 dark:to-indigo-900/10' : 'border-slate-200 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-800/20'} backdrop-blur-md`}>
-                            {/* Toggle header */}
-                            <button
-                                type="button"
-                                id="carton-mode-toggle"
-                                onClick={() => toggleCartonMode(!cartonMode)}
-                                className={`w-full flex items-center justify-between px-5 py-4 transition-colors duration-200 ${cartonMode ? 'hover:bg-white/40 dark:hover:bg-slate-900/40' : 'hover:bg-slate-100/50 dark:hover:bg-slate-700/50'}`}
-                            >
-                                <div className="flex items-center gap-4">
-                                    <div className={`p-2.5 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${cartonMode ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 scale-110' : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}>
-                                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                                        </svg>
-                                    </div>
-                                    <div className="text-left">
-                                        <p className={`text-[15px] font-bold transition-colors duration-300 ${cartonMode ? 'text-blue-800 dark:text-blue-300' : 'text-slate-700 dark:text-slate-200'}`}>Receive by Carton / Box?</p>
-                                        <p className={`text-xs mt-0.5 transition-colors duration-300 ${cartonMode ? 'text-blue-600/80 dark:text-blue-400/80' : 'text-slate-500 dark:text-slate-400'}`}>
-                                            {cartonMode ? 'Unit cost is calculated from carton data' : 'Enter carton details to auto-calculate unit costs'}
-                                        </p>
-                                    </div>
-                                </div>
-                                {/* Pill toggle switch */}
-                                <div className={`relative w-12 h-7 rounded-full transition-all duration-300 shadow-inner ${cartonMode ? 'bg-blue-600 shadow-[inset_0_2px_4px_rgba(0,0,0,0.1)]' : 'bg-slate-300 dark:bg-slate-600'
-                                    }`}>
-                                    <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ease-spring ${cartonMode ? 'translate-x-5 shadow-[0_0_10px_rgba(37,99,235,0.4)]' : 'translate-x-0'
-                                        }`} />
-                                </div>
-                            </button>
-
-                            {/* Carton fields — animated slide-down */}
-                            <div className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${cartonMode ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
-                                }`}>
-                                <div className="p-5 space-y-5 bg-white/40 dark:bg-slate-900/20 border-t border-blue-100 dark:border-blue-800/50">
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="group">
-                                            <label htmlFor="cartonPrice" className="block text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300 mb-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                                                Carton Price *
-                                            </label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">{storeSettings.currency?.symbol || ''}</span>
-                                                <input
-                                                    type="number"
-                                                    id="cartonPrice"
-                                                    value={cartonPrice}
-                                                    onChange={e => handleCartonChange('cartonPrice', e.target.value)}
-                                                    min="0.01"
-                                                    step="0.01"
-                                                    placeholder="0.00"
-                                                    className="w-full pl-8 pr-3 py-2.5 text-sm rounded-xl border border-blue-200 dark:border-blue-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div className="group">
-                                            <label htmlFor="unitsPerCarton" className="block text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300 mb-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                                                Units per Carton *
-                                            </label>
-                                            <div className="relative">
-                                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">#</span>
-                                                <input
-                                                    type="number"
-                                                    id="unitsPerCarton"
-                                                    value={unitsPerCarton}
-                                                    onChange={e => handleCartonChange('unitsPerCarton', e.target.value)}
-                                                    min="1"
-                                                    step="1"
-                                                    placeholder="24"
-                                                    className="w-full pl-8 pr-3 py-2.5 text-sm rounded-xl border border-blue-200 dark:border-blue-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="group">
-                                        <label htmlFor="cartonsReceived" className="block text-xs font-bold uppercase tracking-wider text-blue-800 dark:text-blue-300 mb-1.5 opacity-80 group-hover:opacity-100 transition-opacity flex justify-between items-end">
-                                            <span>Cartons Received</span>
-                                            <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 normal-case font-medium tracking-normal bg-blue-100/50 dark:bg-blue-900/30 px-2 py-0.5 rounded">auto-syncs to stock</span>
-                                        </label>
-                                        <div className="relative">
-                                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">📦</span>
-                                            <input
-                                                type="number"
-                                                id="cartonsReceived"
-                                                value={cartonsReceived}
-                                                onChange={e => handleCartonChange('cartonsReceived', e.target.value)}
-                                                min="0"
-                                                step="1"
-                                                placeholder="e.g. 5"
-                                                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-blue-200 dark:border-blue-700/50 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all shadow-sm"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {/* Auto-calculated unit cost preview */}
-                                    {parseFloat(cartonPrice) > 0 && parseInt(unitsPerCarton, 10) > 0 && (
-                                        <div className="flex items-center gap-3 p-4 bg-gradient-to-r from-emerald-50/80 to-teal-50/50 dark:from-emerald-900/20 dark:to-teal-900/10 border border-emerald-200/60 dark:border-emerald-700/40 rounded-xl shadow-[0_4px_12px_rgba(16,185,129,0.06)] animate-glass-appear">
-                                            <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-800/50 flex items-center justify-center shrink-0 shadow-sm">
-                                                <svg className="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                                </svg>
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-baseline justify-between">
-                                                    <p className="text-xs text-emerald-700/80 dark:text-emerald-400/80 font-bold uppercase tracking-wider">
-                                                        Unit Cost Price
-                                                    </p>
-                                                    <span className="font-extrabold text-emerald-700 dark:text-emerald-300 text-base drop-shadow-sm">
-                                                        {formatCurrency(parseFloat(cartonPrice) / parseInt(unitsPerCarton, 10), storeSettings)}
-                                                    </span>
-                                                </div>
-                                                {cartonsReceived && parseInt(cartonsReceived, 10) > 0 && parseInt(unitsPerCarton, 10) > 0 && (
-                                                    <div className="flex items-baseline justify-between mt-1.5 pt-1.5 border-t border-emerald-200/50 dark:border-emerald-800/40">
-                                                        <p className="text-[11px] text-emerald-600/80 dark:text-emerald-500/80 font-semibold">
-                                                            Total Stock Added
-                                                        </p>
-                                                        <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm bg-emerald-100/50 dark:bg-emerald-800/30 px-2 rounded">
-                                                            +{parseInt(cartonsReceived, 10) * parseInt(unitsPerCarton, 10)} units
-                                                        </span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* ── Retail Price ── */}
-                        <div>
-                            <label htmlFor="price" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                Retail Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''} *
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">{storeSettings.currency?.symbol || ''}</span>
-                                <input
-                                    type="number"
-                                    name="price"
-                                    id="price"
-                                    value={product.price}
-                                    onChange={handleChange}
-                                    required
-                                    min="0.01"
-                                    step="0.01"
-                                    className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-
-                        {/* ── Cost Price (auto or manual) ── */}
-                        <div className={`transition-all duration-300 ${cartonMode ? 'opacity-80' : ''}`}>
-                            <label htmlFor="costPrice" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
-                                <span>Cost Price</span>
-                                {cartonMode && (
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 shadow-sm">
-                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                        Auto-calculated
-                                    </span>
-                                )}
-                            </label>
-                            <div className="relative">
-                                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">{storeSettings.currency?.symbol || ''}</span>
-                                <input
-                                    type="number"
-                                    name="costPrice"
-                                    id="costPrice"
-                                    value={product.costPrice === 0 ? '' : product.costPrice || ''}
-                                    onChange={handleChange}
-                                    readOnly={cartonMode}
-                                    min="0"
-                                    step="0.01"
-                                    className={`w-full pl-8 pr-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${cartonMode
-                                        ? 'border-blue-200/60 dark:border-blue-800/40 bg-slate-100/70 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-inner'
-                                        : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100'
-                                        }`}
-                                />
-                                {cartonMode && (
-                                    <div className="absolute inset-0 z-10 cursor-not-allowed" title="Disable Carton Mode to edit manually"></div>
-                                )}
-                            </div>
-                        </div>
-
-                        {(product.price > 0 && product.costPrice !== undefined) && (
-                            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 mt-2">
-                                <div className="flex justify-between items-center mb-1">
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">Estimated Profit</span>
-                                    <span className={`text-sm font-bold ${profitAmount >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        {formatCurrency(profitAmount, storeSettings)}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center">
-                                    <span className="text-xs text-slate-500 dark:text-slate-400">Margin</span>
-                                    <span className={`text-sm font-bold ${profitMargin >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                                        {profitMargin.toFixed(2)}%
-                                    </span>
-                                </div>
-                                <div className="mt-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 overflow-hidden">
-                                    <div
-                                        className={`h-full transition-all duration-500 ${profitMargin >= 30 ? 'bg-green-500' : profitMargin >= 10 ? 'bg-blue-500' : 'bg-red-500'}`}
-                                        style={{ width: `${Math.max(0, Math.min(100, profitMargin))}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                );
-
-            case 'inventory':
-                return (
-                    <div className="space-y-4">
-                        <div>
-                            <label htmlFor="sku" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">SKU *</label>
-                            <input
-                                type="text"
-                                name="sku"
-                                id="sku"
-                                value={product.sku}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="barcode" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Barcode</label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    name="barcode"
-                                    id="barcode"
-                                    value={product.barcode || ''}
-                                    onChange={handleChange}
-                                    className="flex-1 px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setIsBarcodeScannerOpen(true)}
-                                    className="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 active:scale-95 transition-all duration-300"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
-                                    </svg>
-
-                                </button>
-                            </div>
-                            <div className="flex gap-2 mt-2">
-                                <button
-                                    type="button"
-                                    onClick={handleGenerateBarcode}
-                                    className="flex-1 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-sm active:scale-95 transition-all duration-300"
-                                >
-                                    Generate from SKU
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleLookup()}
-                                    disabled={isGenerating}
-                                    className="flex-1 py-2 rounded-lg border border-blue-200 dark:border-blue-700 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-sm disabled:opacity-50 active:scale-95 transition-all duration-300"
-                                >
-                                    {isGenerating ? 'Searching...' : 'Lookup Info'}
-                                </button>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className={`transition-all duration-300 ${cartonMode ? 'opacity-80' : ''}`}>
-                                <label htmlFor="stock" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 flex items-center justify-between">
-                                    <span>Stock</span>
-                                    {cartonMode && (
-                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-400 shadow-sm">
-                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                                            Auto-sync
-                                        </span>
-                                    )}
-                                </label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        name="stock"
-                                        id="stock"
-                                        value={product.stock}
-                                        onChange={handleChange}
-                                        required
-                                        min="0"
-                                        readOnly={cartonMode}
-                                        step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
-                                        className={`w-full px-3 py-2 text-sm rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${cartonMode
-                                            ? 'border-blue-200/60 dark:border-blue-800/40 bg-slate-100/70 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 cursor-not-allowed shadow-inner'
-                                            : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100'
-                                            }`}
-                                    />
-                                    {cartonMode && (
-                                        <div className="absolute inset-0 z-10 cursor-not-allowed" title="Update Cartons Received to change stock"></div>
-                                    )}
-                                </div>
-                            </div>
-                            <div>
-                                <label htmlFor="unitOfMeasure" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Unit</label>
-                                <select
-                                    name="unitOfMeasure"
-                                    id="unitOfMeasure"
-                                    value={product.unitOfMeasure || 'unit'}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                >
-                                    <option value="unit">Unit</option>
-                                    <option value="kg">Kilogram (kg)</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label htmlFor="reorderPoint" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Reorder Point</label>
-                                <input
-                                    type="number"
-                                    name="reorderPoint"
-                                    id="reorderPoint"
-                                    value={product.reorderPoint || ''}
-                                    onChange={handleChange}
-                                    min="0"
-                                    step="1"
-                                    placeholder={`${storeSettings.lowStockThreshold}`}
-                                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="safetyStock" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Safety Stock</label>
-                                <input
-                                    type="number"
-                                    name="safetyStock"
-                                    id="safetyStock"
-                                    value={product.safetyStock || ''}
-                                    onChange={handleChange}
-                                    min="0"
-                                    step="1"
-                                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                            <div>
-                                <label htmlFor="weight" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Weight (kg)</label>
-                                <input
-                                    type="number"
-                                    name="weight"
-                                    id="weight"
-                                    value={product.weight || ''}
-                                    onChange={handleChange}
-                                    min="0"
-                                    step="0.001"
-                                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="dimensions" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Dimensions</label>
-                                <input
-                                    type="text"
-                                    name="dimensions"
-                                    id="dimensions"
-                                    value={product.dimensions || ''}
-                                    onChange={handleChange}
-                                    placeholder="10 x 20 x 5 cm"
-                                    className="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                />
-                            </div>
-                        </div>
-                    </div>
-                );
-
-            case 'images':
-                return (
-                    <div className="space-y-4">
-                        <div className="flex gap-2">
-                            <button
-                                type="button"
-                                onClick={() => fileInputRef.current?.click()}
-                                className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <ArrowUpTrayIcon className="w-5 h-5" />
-                                Upload Image
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setIsCameraModalOpen(true)}
-                                className="py-3 px-4 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 hover:border-blue-400 dark:hover:border-blue-500 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                            >
-                                <CameraIcon className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {images.length > 0 && (
-                            <div className="grid grid-cols-2 gap-3">
-                                {images.map((url, index) => (
-                                    <div key={index} className="relative group aspect-square rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
-                                        <img
-                                            src={url.startsWith('data:') ? url : buildAssetUrl(url)}
-                                            alt={`Product ${index + 1}`}
-                                            className="w-full h-full object-cover"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => removeImage(index)}
-                                            className="absolute top-2 right-2 p-1.5 rounded-full bg-red-500 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                        >
-                                            <XMarkIcon className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {images.length === 0 && (
-                            <div className="text-center py-8 text-slate-400 dark:text-slate-500">
-                                <p className="text-sm">No images uploaded</p>
-                            </div>
-                        )}
-                    </div>
-                );
-
-            default:
-                return null;
-        }
-    };
+    const heroImage = images[0] ? (images[0].startsWith('data:') ? images[0] : buildAssetUrl(images[0])) : null;
+    const sym = storeSettings.currency?.symbol || '';
 
     return (
         <>
             <div className="flex flex-col h-full bg-transparent overflow-hidden">
-                {/* Header */}
-                <div className="px-5 sm:px-8 py-4 liquid-glass-header flex items-center justify-between sticky top-0 z-10 w-full shadow-none">
-                    <div className="flex items-center gap-3">
+                {/* ── Top app bar ── */}
+                <header className="flex-none flex items-center justify-between px-4 sm:px-6 h-16 bg-surface/80 dark:bg-slate-900/60 backdrop-blur-xl border-b border-brand-border sticky top-0 z-20">
+                    <div className="flex items-center gap-2 min-w-0">
                         <button
+                            type="button"
                             onClick={onCancel}
-                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors md:hidden active:scale-95 transition-all duration-300"
+                            className="p-2 -ml-1 rounded-full text-primary hover:bg-success-muted dark:hover:bg-primary/15 transition-colors active:scale-90"
                             aria-label="Go back"
                         >
-                            <ArrowLeftIcon className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                            <ArrowLeftIcon className="w-5 h-5" />
                         </button>
-                        <div>
-                            <h1 className="text-[17px] md:text-2xl font-semibold text-brand-text tracking-tight">
+                        <div className="min-w-0">
+                            <h1 className="text-lg sm:text-xl font-bold text-primary tracking-tight truncate">
                                 {productToEdit.id ? 'Edit Product' : 'Add New Product'}
                             </h1>
                             {productToEdit.id && (
-                                <p className="text-[11px] font-medium text-brand-text-muted hidden sm:block truncate max-w-xs mt-0.5">
-                                    {productToEdit.name}
-                                </p>
+                                <p className="text-[11px] font-medium text-brand-text-muted truncate hidden sm:block">{productToEdit.name}</p>
                             )}
                         </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={onCancel}
-                            disabled={isSaving}
-                            className="px-5 py-2 liquid-glass-pill rounded-xl border text-sm font-semibold tracking-wide text-slate-700 dark:text-slate-300 transition-all duration-200 active:scale-95 hidden sm:block"
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isSaving}
-                            className="px-6 py-2 bg-blue-600 text-white rounded-xl text-sm font-semibold tracking-wide hover:bg-blue-700 transition-all duration-300 shadow-lg shadow-blue-500/20 active:scale-95 disabled:opacity-50"
-                        >
-                            {isSaving ? 'Saving...' : (productToEdit.id ? 'Save Changes' : 'Create Product')}
-                        </button>
-                    </div>
-                </div>
+                    <button
+                        type="button"
+                        onClick={handleSubmit}
+                        disabled={isSaving}
+                        className="p-2 rounded-full text-primary hover:bg-success-muted dark:hover:bg-primary/15 transition-colors active:scale-90 disabled:opacity-50"
+                        aria-label="Save product"
+                    >
+                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                        </svg>
+                    </button>
+                </header>
 
-                {/* Section Tabs */}
-                <div className="p-2 border-b border-slate-200 dark:border-white/10 overflow-x-auto scrollbar-hide bg-slate-50/50 dark:bg-slate-800/50 backdrop-blur-md">
-                    <div className="flex gap-2">
-                        {sections.map((section) => (
-                            <button
-                                key={section.id}
-                                type="button"
-                                onClick={() => setActiveSection(section.id)}
-                                className={`px-6 py-2 text-sm font-semibold tracking-wide whitespace-nowrap transition-all duration-300 rounded-xl active:scale-95 ${activeSection === section.id
-                                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-                                    }`}
-                            >
-                                {section.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Content */}
                 <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
-                    <div className="flex-1 overflow-y-auto p-0 ">
+                    <div className="flex-1 overflow-y-auto scroll-smooth px-4 sm:px-6 py-5 space-y-4 max-w-4xl mx-auto w-full">
+
                         {error && (
-                            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
-                                <p className="text-sm font-bold text-red-600 dark:text-red-400">{error}</p>
+                            <div className="p-4 bg-danger-muted/60 border border-danger/20 rounded-2xl">
+                                <p className="text-sm font-bold text-danger">{error}</p>
                             </div>
                         )}
-                        <div className="liquid-glass-card rounded-none p-1 sm:p-8 animate-glass-appear">
-                            {renderSectionContent()}
+
+                        {/* ── Visual identity ── */}
+                        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            {/* Image */}
+                            <div className="md:col-span-1">
+                                <label className={labelCls}>Product Image</label>
+                                <div
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className="relative aspect-square rounded-2xl bg-warm-100 dark:bg-slate-800/40 border-2 border-dashed border-brand-border hover:border-primary flex flex-col items-center justify-center text-brand-text-muted cursor-pointer group overflow-hidden transition-colors"
+                                >
+                                    {heroImage ? (
+                                        <img src={heroImage} alt={product.name || 'Product'} className="absolute inset-0 w-full h-full object-cover" />
+                                    ) : (
+                                        <>
+                                            <ArrowUpTrayIcon className="w-8 h-8 mb-2 group-hover:scale-110 transition-transform" />
+                                            <span className="text-xs px-4 text-center font-medium">Tap to upload</span>
+                                        </>
+                                    )}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setIsCameraModalOpen(true); }}
+                                        className="absolute bottom-2 right-2 p-2 rounded-full bg-surface/90 dark:bg-slate-900/90 border border-brand-border text-primary shadow-sm hover:scale-105 active:scale-95 transition-transform"
+                                        aria-label="Take photo"
+                                    >
+                                        <CameraIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Basics */}
+                            <div className={`md:col-span-2 ${cardCls} space-y-4`}>
+                                <div>
+                                    <label htmlFor="name" className={labelCls}>Product Name *</label>
+                                    <input type="text" name="name" id="name" value={product.name} onChange={handleChange} required placeholder="e.g. Artisanal Coffee Beans" className={fieldCls} />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="categoryId" className={labelCls}>Category *</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <select name="categoryId" id="categoryId" value={product.categoryId || ''} onChange={handleChange} required className={`${fieldCls} appearance-none pr-10`}>
+                                                    <option value="" disabled>Select a category</option>
+                                                    {categories.filter(c => c.parentId === null).map(c => (
+                                                        <React.Fragment key={c.id}>
+                                                            <option value={c.id} className="font-bold">{c.name}</option>
+                                                            {categories.filter(sub => sub.parentId === c.id).map(sub => (
+                                                                <option key={sub.id} value={sub.id}>&nbsp;&nbsp;{sub.name}</option>
+                                                            ))}
+                                                        </React.Fragment>
+                                                    ))}
+                                                </select>
+                                                <Chevron />
+                                            </div>
+                                            {onAddCategory && <AddBtn onClick={onAddCategory} label="Add category" />}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="unitOfMeasure" className={labelCls}>Unit of Measure</label>
+                                        <div className="relative">
+                                            <select name="unitOfMeasure" id="unitOfMeasure" value={product.unitOfMeasure || 'unit'} onChange={handleChange} className={`${fieldCls} appearance-none pr-10`}>
+                                                <option value="unit">Unit</option>
+                                                <option value="kg">Kilogram (kg)</option>
+                                            </select>
+                                            <Chevron />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ── Details ── */}
+                        <section className={cardCls}>
+                            <h2 className={sectionTitleCls}>Details</h2>
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label htmlFor="brand" className={labelCls}>Brand</label>
+                                        <input type="text" name="brand" id="brand" value={product.brand || ''} onChange={handleChange} className={fieldCls} />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="supplierId" className={labelCls}>Supplier</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <select name="supplierId" id="supplierId" value={product.supplierId || ''} onChange={handleChange} className={`${fieldCls} appearance-none pr-10`}>
+                                                    <option value="">No Supplier</option>
+                                                    {localSuppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                                                </select>
+                                                <Chevron />
+                                            </div>
+                                            <AddBtn onClick={() => setIsSupplierModalOpen(true)} label="Add supplier" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="description" className={labelCls}>Description</label>
+                                    <div className="relative">
+                                        <textarea name="description" id="description" rows={3} value={product.description} onChange={handleChange} className={`${fieldCls} pr-24 resize-none`} />
+                                        <button
+                                            type="button"
+                                            onClick={handleGenerateDescription}
+                                            disabled={isGenerating || !product.name || !product.categoryId}
+                                            className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-success-muted dark:bg-primary/15 text-primary hover:bg-primary/15 disabled:opacity-50 text-xs font-bold active:scale-95 transition-all"
+                                        >
+                                            <SparklesIcon className="w-3.5 h-3.5" />
+                                            {isGenerating ? 'Generating…' : 'AI'}
+                                        </button>
+                                    </div>
+                                </div>
+                                {relevantAttributes.length > 0 && (
+                                    <div className="space-y-3 pt-1">
+                                        <p className="text-[11px] font-bold text-brand-text-muted uppercase tracking-wide">Custom Attributes</p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {relevantAttributes.map(attr => (
+                                                <div key={attr.id}>
+                                                    <label htmlFor={`custom_${attr.id}`} className={labelCls}>{attr.name}</label>
+                                                    <input type="text" name={`custom_${attr.id}`} id={`custom_${attr.id}`} value={product.customAttributes?.[attr.id] || ''} onChange={handleChange} className={fieldCls} />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        {/* ── Identification ── */}
+                        <section className={cardCls}>
+                            <h2 className={sectionTitleCls}>Identification</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label htmlFor="sku" className={labelCls}>SKU *</label>
+                                    <input type="text" name="sku" id="sku" value={product.sku} onChange={handleChange} required placeholder="Enter or generate SKU" className={fieldCls} />
+                                </div>
+                                <div>
+                                    <label htmlFor="barcode" className={labelCls}>Barcode</label>
+                                    <div className="relative">
+                                        <input type="text" name="barcode" id="barcode" value={product.barcode || ''} onChange={handleChange} placeholder="Scan or enter barcode" className={`${fieldCls} pr-14`} />
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsBarcodeScannerOpen(true)}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-warm-100 dark:bg-slate-700 text-primary hover:bg-primary hover:text-white transition-all active:scale-90"
+                                            aria-label="Scan barcode"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div className="flex gap-2 mt-2">
+                                        <button type="button" onClick={handleGenerateBarcode} className="flex-1 py-2.5 rounded-xl border border-brand-border bg-white dark:bg-slate-800 hover:bg-warm-100 dark:hover:bg-slate-700 text-sm font-semibold text-brand-text active:scale-95 transition-all">
+                                            Generate from SKU
+                                        </button>
+                                        <button type="button" onClick={() => handleLookup()} disabled={isGenerating} className="flex-1 py-2.5 rounded-xl border border-primary/40 bg-success-muted dark:bg-primary/15 text-primary text-sm font-semibold hover:bg-primary/15 disabled:opacity-50 active:scale-95 transition-all">
+                                            {isGenerating ? 'Searching…' : 'Lookup Info'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ── Pricing ── */}
+                        <section className={cardCls}>
+                            <h2 className={sectionTitleCls}>Pricing</h2>
+                            <div className="space-y-4">
+
+                                {/* Carton / Bulk Pricing Premium Toggle */}
+                                <div className={`rounded-2xl overflow-hidden transition-all duration-500 border ${cartonMode ? 'border-primary/50 shadow-[0_0_20px_rgba(0,128,96,0.15)] dark:shadow-[0_0_30px_rgba(0,128,96,0.1)] bg-gradient-to-br from-primary/80 to-primary/50 dark:from-primary/20 dark:to-primary/10' : 'border-brand-border bg-warm-100/50 dark:bg-slate-800/20'} backdrop-blur-md`}>
+                                    <button
+                                        type="button"
+                                        id="carton-mode-toggle"
+                                        onClick={() => toggleCartonMode(!cartonMode)}
+                                        className={`w-full flex items-center justify-between px-5 py-4 transition-colors duration-200 ${cartonMode ? 'hover:bg-white/40 dark:hover:bg-slate-900/40' : 'hover:bg-warm-100/60 dark:hover:bg-slate-700/50'}`}
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`p-2.5 rounded-xl flex items-center justify-center transition-all duration-500 shadow-sm ${cartonMode ? 'bg-white dark:bg-slate-800 text-primary scale-110' : 'bg-white dark:bg-slate-800 text-brand-text-muted'}`}>
+                                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                                                </svg>
+                                            </div>
+                                            <div className="text-left">
+                                                <p className={`text-[15px] font-bold transition-colors duration-300 ${cartonMode ? 'text-white' : 'text-brand-text'}`}>Receive by Carton / Box?</p>
+                                                <p className={`text-xs mt-0.5 transition-colors duration-300 ${cartonMode ? 'text-white/80' : 'text-brand-text-muted'}`}>
+                                                    {cartonMode ? 'Unit cost is calculated from carton data' : 'Enter carton details to auto-calculate unit costs'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className={`relative w-12 h-7 rounded-full transition-all duration-300 shadow-inner ${cartonMode ? 'bg-white/30' : 'bg-slate-300 dark:bg-slate-600'}`}>
+                                            <div className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ease-spring ${cartonMode ? 'translate-x-5 shadow-[0_0_10px_rgba(255,255,255,0.6)]' : 'translate-x-0'}`} />
+                                        </div>
+                                    </button>
+
+                                    <div className={`transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] overflow-hidden ${cartonMode ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                                        <div className="p-5 space-y-5 bg-white/40 dark:bg-slate-900/20 border-t border-white/30 dark:border-primary/50">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="group">
+                                                    <label htmlFor="cartonPrice" className="block text-xs font-bold uppercase tracking-wider text-white dark:text-primary mb-1.5">Carton Price *</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">{sym}</span>
+                                                        <input type="number" id="cartonPrice" value={cartonPrice} onChange={e => handleCartonChange('cartonPrice', e.target.value)} min="0.01" step="0.01" placeholder="0.00" className="w-full pl-8 pr-3 py-2.5 text-sm rounded-xl border border-white/40 dark:border-primary/40 bg-white/90 dark:bg-slate-800/80 text-brand-text focus:ring-2 focus:ring-white focus:border-white outline-none transition-all shadow-sm" />
+                                                    </div>
+                                                </div>
+                                                <div className="group">
+                                                    <label htmlFor="unitsPerCarton" className="block text-xs font-bold uppercase tracking-wider text-white dark:text-primary mb-1.5">Units per Carton *</label>
+                                                    <div className="relative">
+                                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">#</span>
+                                                        <input type="number" id="unitsPerCarton" value={unitsPerCarton} onChange={e => handleCartonChange('unitsPerCarton', e.target.value)} min="1" step="1" placeholder="24" className="w-full pl-8 pr-3 py-2.5 text-sm rounded-xl border border-white/40 dark:border-primary/40 bg-white/90 dark:bg-slate-800/80 text-brand-text focus:ring-2 focus:ring-white focus:border-white outline-none transition-all shadow-sm" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="group">
+                                                <label htmlFor="cartonsReceived" className="block text-xs font-bold uppercase tracking-wider text-white dark:text-primary mb-1.5 flex justify-between items-end">
+                                                    <span>Cartons Received</span>
+                                                    <span className="text-[10px] text-white/80 dark:text-primary/70 normal-case font-medium tracking-normal bg-white/20 dark:bg-primary/15 px-2 py-0.5 rounded">auto-syncs to stock</span>
+                                                </label>
+                                                <div className="relative">
+                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-medium">📦</span>
+                                                    <input type="number" id="cartonsReceived" value={cartonsReceived} onChange={e => handleCartonChange('cartonsReceived', e.target.value)} min="0" step="1" placeholder="e.g. 5" className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-white/40 dark:border-primary/40 bg-white/90 dark:bg-slate-800/80 text-brand-text focus:ring-2 focus:ring-white focus:border-white outline-none transition-all shadow-sm" />
+                                                </div>
+                                            </div>
+                                            {parseFloat(cartonPrice) > 0 && parseInt(unitsPerCarton, 10) > 0 && (
+                                                <div className="flex items-center gap-3 p-4 bg-white/90 dark:bg-slate-900/40 border border-white/40 dark:border-primary/30 rounded-xl shadow-sm">
+                                                    <div className="w-10 h-10 rounded-full bg-success-muted dark:bg-primary/20 flex items-center justify-center shrink-0">
+                                                        <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="flex items-baseline justify-between">
+                                                            <p className="text-xs text-brand-text-muted font-bold uppercase tracking-wider">Unit Cost Price</p>
+                                                            <span className="font-extrabold text-primary text-base">{formatCurrency(parseFloat(cartonPrice) / parseInt(unitsPerCarton, 10), storeSettings)}</span>
+                                                        </div>
+                                                        {cartonsReceived && parseInt(cartonsReceived, 10) > 0 && parseInt(unitsPerCarton, 10) > 0 && (
+                                                            <div className="flex items-baseline justify-between mt-1.5 pt-1.5 border-t border-brand-border">
+                                                                <p className="text-[11px] text-brand-text-muted font-semibold">Total Stock Added</p>
+                                                                <span className="font-bold text-primary text-sm bg-success-muted dark:bg-primary/20 px-2 rounded">+{parseInt(cartonsReceived, 10) * parseInt(unitsPerCarton, 10)} units</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Cost + Selling */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className={`transition-all duration-300 ${cartonMode ? 'opacity-80' : ''}`}>
+                                        <label htmlFor="costPrice" className={`${labelCls} flex items-center justify-between`}>
+                                            <span>Cost Price</span>
+                                            {cartonMode && (
+                                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success-muted text-primary">
+                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                    Auto
+                                                </span>
+                                            )}
+                                        </label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-text-muted font-medium">{sym}</span>
+                                            <input type="number" name="costPrice" id="costPrice" value={product.costPrice === 0 ? '' : product.costPrice || ''} onChange={handleChange} readOnly={cartonMode} min="0" step="0.01" placeholder="0.00"
+                                                className={`w-full pl-9 pr-4 py-4 text-2xl font-bold tabular-nums rounded-xl border outline-none transition-all ${cartonMode ? 'border-primary/40 bg-warm-100/70 dark:bg-slate-800/40 text-brand-text-muted cursor-not-allowed' : 'border-brand-border bg-white dark:bg-slate-800 text-brand-text focus:border-primary focus:ring-4 focus:ring-primary/10'}`} />
+                                            {cartonMode && <div className="absolute inset-0 z-10 cursor-not-allowed" title="Disable Carton Mode to edit manually" />}
+                                        </div>
+                                        <p className="text-[11px] text-brand-text-muted mt-1.5">What you paid for this item.</p>
+                                    </div>
+                                    <div>
+                                        <label htmlFor="price" className={labelCls}>Selling Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''} *</label>
+                                        <div className="relative">
+                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-medium">{sym}</span>
+                                            <input type="number" name="price" id="price" value={product.price} onChange={handleChange} required min="0.01" step="0.01" placeholder="0.00"
+                                                className="w-full pl-9 pr-4 py-4 text-2xl font-bold tabular-nums rounded-xl border border-brand-border bg-white dark:bg-slate-800 text-primary focus:border-primary focus:ring-4 focus:ring-primary/10 outline-none transition-all" />
+                                        </div>
+                                        {(product.price > 0 && product.costPrice !== undefined) && (
+                                            <div className="flex justify-between items-center bg-success-muted/60 dark:bg-primary/10 mt-2 p-3 rounded-xl">
+                                                <span className="text-[12px] font-semibold text-brand-text-muted">Est. Profit Margin</span>
+                                                <span className={`text-sm font-extrabold tabular-nums ${profitMargin >= 0 ? 'text-primary' : 'text-danger'}`}>{profitMargin.toFixed(1)}%</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {(product.price > 0 && product.costPrice !== undefined) && (
+                                    <div className="p-3.5 rounded-2xl bg-warm-100 dark:bg-slate-800/50 border border-brand-border">
+                                        <div className="flex justify-between items-center mb-1.5">
+                                            <span className="text-xs text-brand-text-muted">Estimated Profit</span>
+                                            <span className={`text-sm font-bold tabular-nums ${profitAmount >= 0 ? 'text-primary' : 'text-danger'}`}>{formatCurrency(profitAmount, storeSettings)}</span>
+                                        </div>
+                                        <div className="w-full bg-brand-border rounded-full h-1.5 overflow-hidden">
+                                            <div className={`h-full transition-all duration-500 ${profitMargin >= 30 ? 'bg-primary' : profitMargin >= 10 ? 'bg-warning' : 'bg-danger'}`} style={{ width: `${Math.max(0, Math.min(100, profitMargin))}%` }} />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </section>
+
+                        {/* ── Inventory ── */}
+                        <section className={cardCls}>
+                            <h2 className={sectionTitleCls}>Inventory</h2>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className={`transition-all duration-300 ${cartonMode ? 'opacity-80' : ''}`}>
+                                    <label htmlFor="stock" className={`${labelCls} flex items-center justify-between`}>
+                                        <span>Stock *</span>
+                                        {cartonMode && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success-muted text-primary">
+                                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                                Auto-sync
+                                            </span>
+                                        )}
+                                    </label>
+                                    <div className="relative">
+                                        <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" readOnly={cartonMode} step={product.unitOfMeasure === 'kg' ? '0.001' : '1'}
+                                            className={`${fieldCls} ${cartonMode ? '!bg-warm-100/70 dark:!bg-slate-800/40 !border-primary/40 text-brand-text-muted cursor-not-allowed' : ''}`} />
+                                        {cartonMode && <div className="absolute inset-0 z-10 cursor-not-allowed" title="Update Cartons Received to change stock" />}
+                                    </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="reorderPoint" className={labelCls}>Reorder Point</label>
+                                    <input type="number" name="reorderPoint" id="reorderPoint" value={product.reorderPoint || ''} onChange={handleChange} min="0" step="1" placeholder={`${storeSettings.lowStockThreshold}`} className={fieldCls} />
+                                </div>
+                                <div>
+                                    <label htmlFor="safetyStock" className={labelCls}>Safety Stock</label>
+                                    <input type="number" name="safetyStock" id="safetyStock" value={product.safetyStock || ''} onChange={handleChange} min="0" step="1" className={fieldCls} />
+                                </div>
+                                <div>
+                                    <label htmlFor="weight" className={labelCls}>Weight (kg)</label>
+                                    <input type="number" name="weight" id="weight" value={product.weight || ''} onChange={handleChange} min="0" step="0.001" className={fieldCls} />
+                                </div>
+                                <div className="sm:col-span-2">
+                                    <label htmlFor="dimensions" className={labelCls}>Dimensions</label>
+                                    <input type="text" name="dimensions" id="dimensions" value={product.dimensions || ''} onChange={handleChange} placeholder="10 x 20 x 5 cm" className={fieldCls} />
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* ── Images ── */}
+                        <section className={cardCls}>
+                            <h2 className={sectionTitleCls}>Gallery</h2>
+                            <div className="flex gap-2 mb-4">
+                                <button type="button" onClick={() => fileInputRef.current?.click()} className="flex-1 py-3 px-4 rounded-xl border-2 border-dashed border-brand-border hover:border-primary bg-warm-100 dark:bg-slate-800 text-brand-text-muted hover:text-primary transition-colors flex items-center justify-center gap-2 text-sm font-semibold">
+                                    <ArrowUpTrayIcon className="w-5 h-5" />
+                                    Upload Image
+                                </button>
+                                <button type="button" onClick={() => setIsCameraModalOpen(true)} className="py-3 px-4 rounded-xl border-2 border-dashed border-brand-border hover:border-primary bg-warm-100 dark:bg-slate-800 text-brand-text-muted hover:text-primary transition-colors">
+                                    <CameraIcon className="w-5 h-5" />
+                                </button>
+                            </div>
+                            {images.length > 0 ? (
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                                    {images.map((url, index) => (
+                                        <div key={index} className="relative group aspect-square rounded-xl overflow-hidden border border-brand-border">
+                                            <img src={url.startsWith('data:') ? url : buildAssetUrl(url)} alt={`Product ${index + 1}`} className="w-full h-full object-cover" />
+                                            <button type="button" onClick={() => removeImage(index)} className="absolute top-1.5 right-1.5 p-1.5 rounded-full bg-danger text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <XMarkIcon className="w-3.5 h-3.5" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-6 text-brand-text-muted text-sm">No images uploaded</div>
+                            )}
+                        </section>
+                    </div>
+
+                    {/* ── Bottom action bar ── */}
+                    <div className="flex-none border-t border-brand-border bg-surface/80 dark:bg-slate-900/70 backdrop-blur-xl px-4 sm:px-6 py-3 safe-area-bottom">
+                        <div className="max-w-4xl mx-auto flex gap-3">
+                            <button type="button" onClick={onCancel} disabled={isSaving} className="flex-1 py-3.5 rounded-xl border border-brand-border text-brand-text font-bold text-sm hover:bg-warm-100 dark:hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-50">
+                                Cancel
+                            </button>
+                            <button type="submit" disabled={isSaving} className="flex-[2] py-3.5 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                                {isSaving ? 'Saving…' : (productToEdit.id ? 'Save Changes' : 'Save Product')}
+                            </button>
                         </div>
                     </div>
 
                     {/* Hidden file input */}
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        onChange={handleImageUpload}
-                        className="hidden"
-                        accept="image/*"
-                    />
+                    <input ref={fileInputRef} type="file" onChange={handleImageUpload} className="hidden" accept="image/*" />
                 </form>
             </div>
 

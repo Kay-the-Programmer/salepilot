@@ -8,7 +8,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
 const OfferLiveTracking = lazy(() => import('@/components/offers/OfferLiveTracking'));
-const SubscriptionPage = lazy(() => import('@/pages/SubscriptionPage'));
+const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionApp'));
+const TrackShipmentPage = lazy(() => import('@/pages/logistics/TrackShipmentPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
@@ -55,6 +56,51 @@ export default function App() {
 
                                 <Route path="/setup-store" element={<Dashboard />} />
 
+                                {/* Standalone POS app (own shell: POS / Inventory / Dashboard) */}
+                                <Route path="/pos" element={<Dashboard />} />
+                                <Route path="/pos/inventory" element={<Dashboard />} />
+                                <Route path="/pos/dashboard" element={<Dashboard />} />
+                                <Route path="/pos/discover" element={<Dashboard />} />
+
+                                {/* Standalone Business Dashboard app (own shell: Dashboard / Sales / Products) */}
+                                <Route path="/dash" element={<Dashboard />} />
+                                <Route path="/dash/sales" element={<Dashboard />} />
+                                <Route path="/dash/products" element={<Dashboard />} />
+
+                                {/* Standalone CRM app (own shell: Dashboard / Customers / Loyalty / Insights) */}
+                                <Route path="/crm" element={<Dashboard />} />
+                                <Route path="/crm/customers" element={<Dashboard />} />
+                                <Route path="/crm/loyalty" element={<Dashboard />} />
+                                <Route path="/crm/insights" element={<Dashboard />} />
+
+                                {/* Standalone Business Assistant app (AI Suite — own shell rendered by Dashboard) */}
+                                <Route path="/assistant" element={<Dashboard />} />
+                                <Route path="/assistant/chat" element={<Dashboard />} />
+
+                                {/* Standalone utility apps (own M3 shell rendered by Dashboard) */}
+                                <Route path="/audit" element={<Dashboard />} />
+                                <Route path="/notify" element={<Dashboard />} />
+                                <Route path="/account" element={<Dashboard />} />
+                                <Route path="/books" element={<Dashboard />} />
+                                <Route path="/fleet" element={<Dashboard />} />
+                                <Route path="/po" element={<Dashboard />} />
+                                <Route path="/hustle" element={<Dashboard />} />
+                                <Route path="/config" element={<Dashboard />} />
+
+                                {/* Standalone Inventory Manager app (own shell: Dashboard / Inventory / Alerts) */}
+                                <Route path="/inv" element={<Dashboard />} />
+                                <Route path="/inv/items" element={<Dashboard />} />
+                                <Route path="/inv/alerts" element={<Dashboard />} />
+
+                                {/* Standalone User Manager app (own shell: Team / Roles) */}
+                                <Route path="/team" element={<Dashboard />} />
+                                <Route path="/team/roles" element={<Dashboard />} />
+
+                                {/* Standalone Supplier & Procurement Hub (own shell: Dashboard / Suppliers / Orders) */}
+                                <Route path="/procure" element={<Dashboard />} />
+                                <Route path="/procure/suppliers" element={<Dashboard />} />
+                                <Route path="/procure/orders" element={<Dashboard />} />
+
                                 {/* Admin Dashboard Routes (All point to Dashboard) */}
                                 <Route path="/reports" element={<Dashboard />} />
                                 <Route path="/inventory" element={<Dashboard />} />
@@ -89,6 +135,10 @@ export default function App() {
                                 <Route path="/marketplace" element={<MarketplacePage />} />
                                 <Route path="/marketplace/track/:requestId" element={<CustomerRequestTrackingPage />} /> */}
                                 <Route path="/offers/track/:id" element={<OfferLiveTracking />} />
+
+                                {/* Public shipment tracking — no auth, for customers with a tracking number */}
+                                <Route path="/track" element={<TrackShipmentPage />} />
+                                <Route path="/track/:trackingNumber" element={<TrackShipmentPage />} />
 
                                 {/* Customer Dashboard - Protected by Dashboard logic */}
                                 {/* <Route path="/customer/login" element={<Dashboard />} />

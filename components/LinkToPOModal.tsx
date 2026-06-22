@@ -84,11 +84,11 @@ const LinkToPOModal: React.FC<LinkToPOModalProps> = ({
                                         <button
                                             key={po.id}
                                             onClick={() => onLink(po)}
-                                            className="w-full text-left p-4 bg-white/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 rounded-2xl hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all group active:scale-95 transition-all duration-300"
+                                            className="w-full text-left p-4 bg-white/50 dark:bg-slate-800/50 border border-gray-100 dark:border-slate-800 rounded-2xl hover:border-primary/50 dark:hover:border-primary/50 hover:bg-success-muted/50 dark:hover:bg-primary/5 transition-all group active:scale-95 transition-all duration-300"
                                         >
                                             <div className="flex justify-between items-start">
                                                 <div className="flex flex-col">
-                                                    <span className="font-bold text-gray-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                    <span className="font-bold text-gray-900 dark:text-slate-100 group-hover:text-primary dark:group-hover:text-primary transition-colors">
                                                         {po.poNumber}
                                                     </span>
                                                     <span className="text-xs text-gray-500 dark:text-slate-500 mt-0.5">
@@ -96,7 +96,7 @@ const LinkToPOModal: React.FC<LinkToPOModalProps> = ({
                                                     </span>
                                                 </div>
                                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${po.status === 'ordered'
-                                                    ? 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'
+                                                    ? 'bg-success-muted dark:bg-primary/20 text-primary-dark dark:text-primary'
                                                     : 'bg-orange-100 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400'
                                                     }`}>
                                                     {po.status.replace('_', ' ')}
@@ -111,7 +111,7 @@ const LinkToPOModal: React.FC<LinkToPOModalProps> = ({
                                                         Got: <span className="font-medium text-gray-700 dark:text-slate-300">{item.receivedQuantity}</span>
                                                     </span>
                                                 </div>
-                                                <span className={`font-bold ${remaining > 0 ? 'text-blue-600 dark:text-blue-400' : 'text-emerald-600 dark:text-emerald-400'}`}>
+                                                <span className={`font-bold ${remaining > 0 ? 'text-primary dark:text-primary' : 'text-emerald-600 dark:text-emerald-400'}`}>
                                                     Need: {remaining}
                                                 </span>
                                             </div>
@@ -133,7 +133,7 @@ const LinkToPOModal: React.FC<LinkToPOModalProps> = ({
 
                     <button
                         onClick={onCreateNew}
-                        className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-2xl text-gray-400 dark:text-slate-500 hover:border-blue-500/50 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/50 dark:hover:bg-blue-500/5 transition-all text-sm font-medium active:scale-95 transition-all duration-300"
+                        className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-gray-100 dark:border-slate-800 rounded-2xl text-gray-400 dark:text-slate-500 hover:border-primary/50 hover:text-primary dark:hover:text-primary hover:bg-success-muted/50 dark:hover:bg-primary/5 transition-all text-sm font-medium active:scale-95 transition-all duration-300"
                     >
                         <PlusIcon className="w-5 h-5" />
                         New Purchase Order

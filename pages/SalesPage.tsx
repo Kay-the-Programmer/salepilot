@@ -1,34 +1,28 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Supplier, User } from '../types';
+import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Supplier, User, Return } from '../types';
 import { SnackbarType } from '../App';
 import { api } from '@/services/api';
 import { formatCurrency } from '../utils/currency';
-import {
-    MagnifyingGlassIcon
-} from '../components/icons';
 import TourGuide from '../components/TourGuide';
-import PaymentChoiceModal from '../components/sales/PaymentChoiceModal';
-import LoadingSpinner from '../components/LoadingSpinner';
-import Header from "@/components/Header.tsx";
-import Pagination from '../components/ui/Pagination';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
-import { ProductCardSkeleton } from '../components/sales/ProductCardSkeleton';
 import ProductFormModal from '../components/ProductFormModal';
 import OutOfStockModal from '../components/sales/OutOfStockModal';
 import LowStockAlertModal from '../components/sales/LowStockAlertModal';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
 
-// New Modular Components
+// POS components — redesigned to match salepilot_web_v2/src/pages/pos
 import { ProductCard } from '../components/sales/ProductCard';
 import { CartPanel } from '../components/sales/CartPanel';
 import { CheckoutActions } from '../components/sales/CheckoutActions';
-import { MobileCartView } from '../components/sales/MobileCartView';
-import { MobileProductView } from '../components/sales/MobileProductView';
-import { SalesHeaderActions } from '../components/sales/SalesHeaderActions';
-
-// Icons for Bottom Navigation
-import { ShoppingCartIcon, ArchiveBoxIcon, ClockIcon } from '../components/icons';
+import { PaymentPanel } from '../components/sales/PaymentPanel';
+import { ConfirmPaymentPanel } from '../components/sales/ConfirmPaymentPanel';
+import { SalesHistoryView } from '../components/sales/SalesHistoryView';
+import CustomerSelect from '../components/sales/CustomerSelect';
+import PosIcon from '../components/sales/PosIcon';
+import UnifiedScannerModal from '../components/UnifiedScannerModal';
+import Logo from '../assets/logo.png';
+import './sale-v2.css';
 
 interface SalesPageProps {
     user: User;
@@ -42,6 +36,7 @@ interface SalesPageProps {
     categories: Category[];
     suppliers: Supplier[];
     onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
+    onProcessReturn: (returnInfo: Return) => void;
 }
 
 const SalesPage: React.FC<SalesPageProps> = ({
@@ -55,26 +50,35 @@ const SalesPage: React.FC<SalesPageProps> = ({
     onOpenSidebar,
     categories,
     suppliers,
-    onSaveProduct
+    onSaveProduct,
+    onProcessReturn
 }) => {
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
+    const [activeCategory, setActiveCategory] = useState('All Items');
     const [discount, setDiscount] = useState<string>('0');
     const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
     const [heldSales, setHeldSales] = useState<CartItem[][]>([]);
     const [showReceiptModal, setShowReceiptModal] = useState(false);
     const [lastSale, setLastSale] = useState<Sale | null>(null);
-    const [isScannerOpen, setIsScannerOpen] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    const [showCustomerPicker, setShowCustomerPicker] = useState(false);
+    // Progressive disclosure: 'cart' = building the order, 'payment' = method/charge step,
+    // 'confirm' = mobile-money gateway/manual confirmation step.
+    const [cartView, setCartView] = useState<'cart' | 'payment' | 'confirm'>('cart');
+    // Mobile: cart aside opens as a full-screen sheet
+    const [mobileCartOpen, setMobileCartOpen] = useState(false);
+    // POS top-level view + menu (Sell vs Sales History & Refunds)
+    const [posView, setPosView] = useState<'sell' | 'history'>('sell');
+    const [posMenuOpen, setPosMenuOpen] = useState(false);
     const [appliedStoreCredit, setAppliedStoreCredit] = useState(0);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
     const [cashReceived, setCashReceived] = useState<string>('');
     const [isProcessing, setIsProcessing] = useState(false);
     const cashInputRef = useRef<HTMLInputElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
-    const [shouldFocusCashInput, setShouldFocusCashInput] = useState(false);
-    const mobileCashInputRef = useRef<HTMLInputElement>(null);
     const [mobileMoneyNumber, setMobileMoneyNumber] = useState('');
 
     // External Product Lookup State
@@ -82,7 +86,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [initialProductValues, setInitialProductValues] = useState<Partial<Product> | undefined>(undefined);
 
     // Scan Action State
-    const [showPaymentChoiceModal, setShowPaymentChoiceModal] = useState(false);
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
     const [verifyingMessage, setVerifyingMessage] = useState('Verifying Payment...');
     const [runTour, setRunTour] = useState(false);
@@ -97,8 +100,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [showLowStockAlert, setShowLowStockAlert] = useState(false);
     const [lowStockProduct, setLowStockProduct] = useState<Product | null>(null);
 
+    // Camera barcode scanner (triggered from the search bar)
+    const [isCamScannerOpen, setIsCamScannerOpen] = useState(false);
+
     // External barcode scanner hook — paused while any modal overlapping the POS is open
-    const isScannerModalOpen = showOutOfStockModal || showLowStockAlert || isProductFormOpen || showPaymentChoiceModal;
+    const isScannerModalOpen = showOutOfStockModal || showLowStockAlert || isProductFormOpen || isCamScannerOpen || cartView === 'confirm';
+
+    // Premium entitlement: the automated Payment Gateway add-on. Unlocked when the
+    // store has bought the module, or has configured its own merchant gateway key.
+    const isGatewayUnlocked = !!storeSettings.lencoPublicKey || (storeSettings.enabledModules?.includes('payment_gateway') ?? false);
 
     // Stable ref so the scanner callback never becomes stale
     const handleContinuousScanRef = useRef<(barcode: string) => void>(() => {});
@@ -108,49 +118,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     }, []);
 
     const { isActive: isExternalScannerActive } = useBarcodeScanner(stableScanCallback, { paused: isScannerModalOpen });
-
-    const [activeTab, setActiveTab] = useState<'products' | 'cart'>('products');
-
-    const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-        const saved = localStorage.getItem('pos-view-mode');
-        if (saved === 'list' || saved === 'grid') return saved;
-        return typeof window !== 'undefined' && window.innerWidth < 768 ? 'list' : 'grid';
-    });
-
-    // Cart Actions Tab State
-    const [cartActionTab, setCartActionTab] = useState<'customer' | 'summary' | 'payment'>('payment');
-
-
-    // Pagination State
-    const [currentPage, setCurrentPage] = useState(1);
-    const [pageSize, setPageSize] = useState(18); // Default matches historical 3x6 grid
-
-    // Mobile Nav Visibility State
-    const [isNavVisible, setIsNavVisible] = useState(true);
-
-    // Scroll Detection for hiding/showing bottom nav
-    const lastScrollY = useRef(0);
-    const handleMobileScroll = useCallback((currentScrollY: number) => {
-        if (typeof window === 'undefined' || window.innerWidth >= 768) return;
-
-        const scrollDiff = currentScrollY - lastScrollY.current;
-
-        if (scrollDiff > 10 && currentScrollY > 60) {
-            // Scrolling down
-            setIsNavVisible(false);
-        } else if (scrollDiff < -10) {
-            // Scrolling up
-            setIsNavVisible(true);
-        }
-        lastScrollY.current = currentScrollY;
-    }, []);
-
-    // Persist view mode to localStorage
-    useEffect(() => {
-        localStorage.setItem('pos-view-mode', viewMode);
-    }, [viewMode]);
-
-
 
     // Auto-select first payment method
     useEffect(() => {
@@ -169,34 +136,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
         setMobileMoneyNumber('');
     }, [selectedPaymentMethod]);
 
-    // Close cart panel on mobile when cart is cleared
+    // An empty cart can never be in the payment step, and the mobile sheet should close.
     useEffect(() => {
-        if (cart.length === 0 && window.innerWidth < 768) {
-            setActiveTab('products');
+        if (cart.length === 0) {
+            setCartView('cart');
+            setMobileCartOpen(false);
         }
     }, [cart.length]);
-
-    // Reset pagination when search changes
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [searchTerm]);
-
-    // Auto-focus cash input when proceeding to payment
-    useEffect(() => {
-        if (shouldFocusCashInput) {
-            // Small delay to allow tab switching animation to complete
-            const timer = setTimeout(() => {
-                // Try mobile ref first if visible (based on window width or just existence)
-                if (window.innerWidth < 768 && mobileCashInputRef.current) {
-                    mobileCashInputRef.current.focus();
-                } else if (cashInputRef.current) {
-                    cashInputRef.current.focus();
-                }
-                setShouldFocusCashInput(false);
-            }, 300); // Wait for animations
-            return () => clearTimeout(timer);
-        }
-    }, [shouldFocusCashInput]);
 
     const taxRate = storeSettings.taxRate / 100;
 
@@ -204,6 +150,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const getStepFor = useCallback((uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1), []);
 
     const addToCart = useCallback((product: Product) => {
+        // Adding a product returns us to the cart-building view (hides held list / payment step).
+        setCartView('cart');
         const existingItem = cart.find(item => item.productId === product.id);
         const step = getStepFor(product.unitOfMeasure);
         const stockInCart = existingItem ? existingItem.quantity : 0;
@@ -303,21 +251,21 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const filteredProducts = useMemo(() => {
         const term = searchTerm.toLowerCase();
-        if (!term) return products.filter(p => p.status === 'active');
+        const catObj = activeCategory !== 'All Items'
+            ? categories.find(c => c.name === activeCategory)
+            : undefined;
 
-        return products.filter(p =>
-            p.status === 'active' &&
-            (p.name.toLowerCase().includes(term) ||
+        return products.filter(p => {
+            if (p.status !== 'active') return false;
+            if (activeCategory !== 'All Items' && (!catObj || (p as any).categoryId !== catObj.id)) return false;
+            if (!term) return true;
+            return (
+                p.name.toLowerCase().includes(term) ||
                 (p.sku && p.sku.toLowerCase().includes(term)) ||
-                (p.barcode && p.barcode.toLowerCase().includes(term)))
-        );
-    }, [products, searchTerm]);
-
-    // Pagination Logic
-    const paginatedProducts = useMemo(() => {
-        const startIndex = (currentPage - 1) * pageSize;
-        return filteredProducts.slice(startIndex, startIndex + pageSize);
-    }, [filteredProducts, currentPage, pageSize]);
+                (p.barcode && p.barcode.toLowerCase().includes(term))
+            );
+        });
+    }, [products, searchTerm, activeCategory, categories]);
 
     const handleContinuousScan = useCallback(async (decodedText: string) => {
         const trimmed = decodedText.trim();
@@ -342,7 +290,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         categoryId: undefined
                     });
                     setIsProductFormOpen(true);
-                    setIsScannerOpen(false); // Close scanner to focus on modal
                     showSnackbar('Product found online! Please confirm details.', 'success');
                 } else {
                     showSnackbar('No product found for scanned code', 'error');
@@ -362,10 +309,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     useEffect(() => {
         handleContinuousScanRef.current = handleContinuousScan;
     }, [handleContinuousScan]);
-
-    const handleScanError = useCallback((error: any) => {
-        console.warn(error);
-    }, []);
 
     const { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit } = useMemo(() => {
         const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -460,7 +403,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     payments: [],
                 };
             } else {
-                // Intercept Mobile Money for Modal Choice
+                // Intercept Mobile Money → show the Confirm Payment step (inline page, not a modal)
                 if (!reference) {
                     const isMobileMoney = (selectedPaymentMethod || '').toLowerCase().includes('mobile') ||
                         (selectedPaymentMethod || '').toLowerCase().includes('lenco') ||
@@ -473,13 +416,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             if (storeSettings.lencoPublicKey) {
                                 const localRef = `SP-${Date.now()}`;
                                 setLencoReference(localRef);
-                                setShowPaymentChoiceModal(true);
+                                setCartView('confirm');
                             } else {
                                 // Standard flow: Fetch reference from backend
                                 const refResponse = await api.post<any>('/payments/lenco/initiate', { prefix: 'SP_SALE' });
                                 if (refResponse.status && refResponse.data.reference) {
-                                    setShowPaymentChoiceModal(true);
                                     setLencoReference(refResponse.data.reference);
+                                    setCartView('confirm');
                                 }
                             }
                         } catch (err) {
@@ -528,7 +471,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
         if (retries === 0) {
             setIsVerifyingPayment(true);
             setVerifyingMessage('Initiating verification...');
-            setShowPaymentChoiceModal(false);
             stopPollingRef.current = false;
         }
 
@@ -588,352 +530,401 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
     };
 
+    const categoryChips = useMemo(
+        () => ['All Items', ...categories.map(c => c.name)],
+        [categories]
+    );
+
+    const avatarInitials = (user?.name || user?.email || 'SP')
+        .replace(/[^a-zA-Z ]/g, '')
+        .trim()
+        .split(' ')
+        .map(p => p[0])
+        .slice(0, 2)
+        .join('') || 'SP';
+
     return (
-        <div className="h-[100dvh] w-full bg-background relative selection:bg-primary/30 flex flex-col md:flex-row overflow-hidden font-google">
-            {/* Background elements */}
-            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
-
-            <div className="flex-1 flex flex-col h-full overflow-hidden min-w-0 relative z-10">
-                <Header
-                    title="Point of Sale"
-                    onMenuClick={onOpenSidebar}
-                    searchTerm={searchTerm}
-                    setSearchTerm={setSearchTerm}
-                    hideSearchOnMobile={false}
-                    showSearch={true}
-                    hideSearchOnDesktop={true}
-                    className="z-[60]"
-                    searchSuggestions={
-                        searchTerm.trim().length > 0
-                            ? filteredProducts.slice(0, 8).map(p => p.name)
-                            : []
-                    }
-                    onSuggestionSelect={(name) => setSearchTerm(name)}
-                    rightContent={
-                        <div className="flex items-center gap-2">
-                            {/* External Scanner Status Badge */}
-                            {isExternalScannerActive && (
-                                <div
-                                    className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300 text-[11px] font-semibold select-none"
-                                    title="External barcode scanner is active"
-                                >
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                                    </span>
-                                    Scanner Active
-                                </div>
-                            )}
-                            <SalesHeaderActions
-                                searchTerm={searchTerm}
-                                setSearchTerm={setSearchTerm}
-                                viewMode={viewMode}
-                                setViewMode={setViewMode}
-                                heldSalesCount={heldSales.length}
-                                onOpenHeldSales={() => setShowHeldPanel(true)}
-                                onTourStart={() => setRunTour(true)}
-                            />
-                        </div>
-                    }
-                />
-
-                <div className="flex-1 overflow-hidden">
-                    <div className="h-full flex flex-col">
-                        <div className="flex-1 flex flex-col h-full min-w-0">
-                            {/* Products Grid/List */}
-                            <div
-                                id="pos-product-list"
-                                className="flex-1 overflow-y-auto p-3 md:p-4 scroll-smooth pb-24 md:pb-4"
-                                role="region"
-                                aria-label="Product catalog"
-                            >
-                                {isLoading ? (
-                                    <div className="max-w-7xl mx-auto w-full">
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
-                                            {Array.from({ length: 12 }).map((_, i) => (
-                                                <ProductCardSkeleton key={i} />
-                                            ))}
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="max-w-7xl mx-auto w-full">
-                                        {viewMode === 'grid' ? (
-                                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
-                                                {paginatedProducts.map(product => {
-                                                    const cartItem = cart.find(item => item.productId === product.id);
-                                                    return (
-                                                        <ProductCard
-                                                            key={product.id}
-                                                            product={product}
-                                                            cartItem={cartItem}
-                                                            storeSettings={storeSettings}
-                                                            addToCart={addToCart}
-                                                            updateQuantity={updateQuantity}
-                                                            onLowStockAlert={(product) => {
-                                                                setLowStockProduct(product);
-                                                                setShowLowStockAlert(true);
-                                                            }}
-                                                            variant="grid"
-                                                        />
-                                                    );
-                                                })}
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-1.5">
-                                                {paginatedProducts.map(product => {
-                                                    const cartItem = cart.find(item => item.productId === product.id);
-                                                    return (
-                                                        <ProductCard
-                                                            key={product.id}
-                                                            product={product}
-                                                            cartItem={cartItem}
-                                                            storeSettings={storeSettings}
-                                                            addToCart={addToCart}
-                                                            updateQuantity={updateQuantity}
-                                                            onLowStockAlert={(product) => {
-                                                                setLowStockProduct(product);
-                                                                setShowLowStockAlert(true);
-                                                            }}
-                                                            variant="list"
-                                                        />
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-
-                                        {filteredProducts.length === 0 && (
-                                            <div className="flex flex-col items-center justify-center py-16 text-center" role="status">
-                                                <div className="w-16 h-16 rounded-3xl bg-surface border border-brand-border flex items-center justify-center mb-4 shadow-sm">
-                                                    <MagnifyingGlassIcon className="w-7 h-7 text-brand-text-muted" />
-                                                </div>
-                                                <p className="text-brand-text font-semibold">No products found</p>
-                                                <p className="text-sm text-brand-text-muted mt-1 max-w-xs">
-                                                    {searchTerm ? `No results for "${searchTerm}" — try a different search` : 'No active products yet'}
-                                                </p>
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-
-                            <Pagination
-                                total={filteredProducts.length}
-                                page={currentPage}
-                                pageSize={pageSize}
-                                onPageChange={setCurrentPage}
-                                onPageSizeChange={setPageSize}
-                                label="products"
-                            />
-                        </div>
-                    </div>
+        <div className="sale">
+            {/* ── Top bar ── */}
+            <header className="sale__topbar">
+                {onOpenSidebar && (
+                    <button type="button" className="sale__menu" aria-label="Open menu" onClick={onOpenSidebar}>
+                        <PosIcon name="menu" size={22} />
+                    </button>
+                )}
+                <div className="sale__brand">
+                    <img src={Logo} alt="SalePilot" className="sale__brand-logo" />
+                    <h1 className="sale__title">{posView === 'history' ? 'Sales History' : 'Point of Sale'}</h1>
                 </div>
-            </div>
 
-            {/* Right Column - Cart & Checkout */}
-            <aside
-                className="w-full md:w-[380px] xl:w-[420px] flex-none hidden md:flex flex-col h-full bg-surface/80 backdrop-blur-3xl border-l border-brand-border shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-[-20px_0_40px_rgb(0,0,0,0.2)] z-20"
-                aria-label="Shopping cart"
-            >
-                {/* Cart Header */}
-                <div className="flex-none px-6 py-5 border-b border-brand-border bg-transparent relative">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
-                    <div className="flex items-center justify-between relative z-10">
-                        <div>
-                            <h2 className="text-[17px] font-bold tracking-tight text-brand-text leading-none">Order</h2>
-                            <p className="text-[13px] font-medium text-brand-text-muted mt-1.5 tabular-nums">
-                                {cart.length > 0
-                                    ? <span className="flex items-center gap-2">
-                                        <span className="bg-primary/10 dark:bg-primary/20 text-primary-dark dark:text-primary px-2 py-0.5 rounded-full text-[11px] font-bold">{cart.length} {cart.length === 1 ? 'item' : 'items'}</span>
-                                        <span className="text-slate-300 dark:text-slate-600">•</span>
-                                        <span>{formatCurrency(subtotal, storeSettings)}</span>
-                                    </span>
-                                    : 'Nothing added yet'}
-                            </p>
-                        </div>
-                        {cart.length > 0 && (
-                            <button
-                                onClick={clearCart}
-                                className="text-xs font-semibold text-danger hover:text-danger/80 transition-colors active:scale-95"
-                                aria-label="Clear all items from cart"
-                            >
-                                Clear all
-                            </button>
+                <div className="sale__topactions">
+                    {isExternalScannerActive && (
+                        <span className="sale__scanbadge" title="External barcode scanner is active">
+                            <span className="sale__scanbadge-dot" />
+                            Scanner Active
+                        </span>
+                    )}
+
+                    {/* Simple POS menu — Sell / Sales History / Held / Help */}
+                    <div className="sale__menuwrap">
+                        <button
+                            type="button"
+                            id="pos-menu-btn"
+                            className="sale__iconbtn sale__menubtn"
+                            aria-label="Open POS menu"
+                            aria-haspopup="menu"
+                            aria-expanded={posMenuOpen}
+                            onClick={() => setPosMenuOpen(v => !v)}
+                        >
+                            <PosIcon name="more_vert" size={22} />
+                            {heldSales.length > 0 && <span className="sale__menubtn-badge">{heldSales.length}</span>}
+                        </button>
+                        {posMenuOpen && (
+                            <>
+                                <div className="sale__menu-backdrop" onClick={() => setPosMenuOpen(false)} />
+                                <div className="sale__menu-pop" role="menu">
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className={`sale__menu-item${posView === 'sell' ? ' sale__menu-item--active' : ''}`}
+                                        onClick={() => { setPosView('sell'); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="point_of_sale" size={20} fill={posView === 'sell' ? 1 : 0} />
+                                        Point of Sale
+                                        {posView === 'sell' && <PosIcon name="check" size={18} className="sale__menu-check" />}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className={`sale__menu-item${posView === 'history' ? ' sale__menu-item--active' : ''}`}
+                                        onClick={() => { setPosView('history'); setMobileCartOpen(false); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="receipt_long" size={20} fill={posView === 'history' ? 1 : 0} />
+                                        Sales History &amp; Refunds
+                                        {posView === 'history' && <PosIcon name="check" size={18} className="sale__menu-check" />}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className="sale__menu-item"
+                                        onClick={() => { setShowHeldPanel(true); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="history" size={20} />
+                                        Held Sales
+                                        {heldSales.length > 0 && <span className="sale__menu-count">{heldSales.length}</span>}
+                                    </button>
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className="sale__menu-item"
+                                        onClick={() => { setRunTour(true); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="help" size={20} />
+                                        Help Guide
+                                    </button>
+                                </div>
+                            </>
                         )}
                     </div>
+
+                    <span className="sale__avatar" title={user?.name || user?.email || ''}>{avatarInitials}</span>
                 </div>
 
-                {/* Cart Items */}
-                <CartPanel
-                    cart={cart}
-                    storeSettings={storeSettings}
-                    updateQuantity={updateQuantity}
-                    removeFromCart={removeFromCart}
-                />
+                {posView === 'sell' && (
+                    <div className="sale__search">
+                        <PosIcon name="search" size={20} className="sale__search-icon" />
+                        <input
+                            ref={searchInputRef}
+                            id="pos-search"
+                            type="text"
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                            placeholder="Search products or scan barcode"
+                            aria-label="Search products"
+                        />
+                        <div className="sale__search-actions">
+                            {searchTerm && (
+                                <button
+                                    type="button"
+                                    className="sale__search-clear"
+                                    aria-label="Clear search"
+                                    onClick={() => { setSearchTerm(''); searchInputRef.current?.focus(); }}
+                                >
+                                    <PosIcon name="close" size={16} />
+                                </button>
+                            )}
+                            <button
+                                type="button"
+                                className="sale__search-scan"
+                                aria-label="Scan barcode"
+                                onClick={() => setIsCamScannerOpen(true)}
+                            >
+                                <PosIcon name="barcode_scanner" size={20} />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </header>
 
-                {/* Cart Summary & Actions (Fixed Bottom) - Now Resizable */}
-                <CheckoutActions
-                    cart={cart}
+            {posView === 'history' ? (
+                <SalesHistoryView
                     storeSettings={storeSettings}
                     customers={customers}
-                    total={total}
-                    subtotal={subtotal}
-                    taxAmount={taxAmount}
-                    discount={discount}
-                    setDiscount={setDiscount}
-                    discountType={discountType}
-                    setDiscountType={setDiscountType}
-                    selectedCustomer={selectedCustomer}
-                    setSelectedCustomer={setSelectedCustomer}
-                    onApplyStoreCredit={handleApplyStoreCredit}
-                    finalAppliedCredit={finalAppliedCredit}
-                    selectedPaymentMethod={selectedPaymentMethod}
-                    setSelectedPaymentMethod={setSelectedPaymentMethod}
-                    cashReceived={cashReceived}
-                    setCashReceived={setCashReceived}
-                    processTransaction={processTransaction}
-                    isProcessing={isProcessing}
-                    isScannerOpen={isScannerOpen}
-                    setIsScannerOpen={setIsScannerOpen}
-                    cartActionTab={cartActionTab}
-                    setCartActionTab={setCartActionTab}
-                    onHoldSale={handleHoldSale}
-                    onContinuousScan={handleContinuousScan}
-                    onScanError={handleScanError}
-                    changeDue={changeDue}
-                    mobileMoneyNumber={mobileMoneyNumber}
-                    setMobileMoneyNumber={setMobileMoneyNumber}
-                    setAppliedStoreCredit={setAppliedStoreCredit}
-                    cashInputRef={cashInputRef as React.RefObject<HTMLInputElement>}
+                    onProcessReturn={onProcessReturn}
+                    showSnackbar={showSnackbar}
                 />
-
-            </aside>
-
-            {/* Mobile View Components */}
-            <MobileProductView
-                isOpen={activeTab === 'products'}
-                products={filteredProducts}
-                cart={cart}
-                storeSettings={storeSettings}
-                addToCart={addToCart}
-                updateQuantity={updateQuantity}
-                searchTerm={searchTerm}
-                viewMode={viewMode}
-                onScroll={handleMobileScroll}
-            />
-
-            {/* Mobile Cart View */}
-            <MobileCartView
-                isOpen={activeTab === 'cart'}
-                onClose={() => setActiveTab('products')}
-                cart={cart}
-                storeSettings={storeSettings}
-                updateQuantity={updateQuantity}
-                removeFromCart={removeFromCart}
-                clearCart={clearCart}
-                customers={customers}
-                selectedCustomer={selectedCustomer}
-                setSelectedCustomer={setSelectedCustomer}
-                discount={discount}
-                setDiscount={setDiscount}
-                discountType={discountType}
-                setDiscountType={setDiscountType}
-                subtotal={subtotal}
-                taxAmount={taxAmount}
-                total={total}
-                selectedPaymentMethod={selectedPaymentMethod}
-                setSelectedPaymentMethod={setSelectedPaymentMethod}
-                mobileMoneyNumber={mobileMoneyNumber}
-                setMobileMoneyNumber={setMobileMoneyNumber}
-                cashReceived={cashReceived}
-                setCashReceived={setCashReceived}
-                changeDue={changeDue}
-                onHoldSale={handleHoldSale}
-                processTransaction={processTransaction}
-                isProcessing={isProcessing}
-                mobileCashInputRef={mobileCashInputRef}
-                isScannerOpen={isScannerOpen}
-                setIsScannerOpen={setIsScannerOpen}
-                onContinuousScan={handleContinuousScan}
-                onScanError={handleScanError}
-                setAppliedStoreCredit={setAppliedStoreCredit}
-                heldSalesCount={heldSales.length}
-                onOpenHeldSales={() => setShowHeldPanel(true)}
-                onScroll={handleMobileScroll}
-            />
-
-            {/* Mobile Footer Spacing for Bottom Nav */}
-            <div className="h-24 md:hidden flex-none"></div>
-
-            {/* Premium Mobile Bottom Navigation Bar (Liquid Glass Apple Design) */}
-            <nav
-                aria-label="Mobile Bottom Navigation"
-                className={`
-                    md:hidden fixed z-[70] transition-all duration-700 cubic-bezier(0.16, 1, 0.3, 1)
-                    left-6 right-6 bottom-[calc(1.5rem+env(safe-area-inset-bottom))]
-                    liquid-glass
-                    rounded-[2.5rem]
-                    ${isNavVisible ? 'translate-y-0 opacity-100' : 'translate-y-[calc(100%+4rem)] opacity-0 pointer-events-none'}
-                `}
-            >
-                <div className="flex items-center justify-around px-3 py-2.5">
-                    <button
-                        onClick={() => setActiveTab('products')}
-                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90 outline-none ${activeTab === 'products' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}
-                        aria-selected={activeTab === 'products'}
-                    >
-                        <div className="relative">
-                            <div className={`p-2 rounded-2xl transition-all duration-500 ${activeTab === 'products' ? 'bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100/50 dark:group-hover:bg-slate-800/50'}`}>
-                                <ArchiveBoxIcon className="w-[22px] h-[22px]" />
-                            </div>
-                            {activeTab === 'products' && (
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.6)]" />
-                            )}
+            ) : (
+            <div className="sale__body">
+                {/* ── Browse ── */}
+                <main className="sale__browse">
+                    <div className="sale__browse-head">
+                        <h2>Browse Inventory</h2>
+                        <div className="sale__chips" role="tablist" aria-label="Categories">
+                            {categoryChips.map(c => (
+                                <button
+                                    key={c}
+                                    type="button"
+                                    className={`sale__chip${activeCategory === c ? ' sale__chip--active' : ''}`}
+                                    aria-selected={activeCategory === c}
+                                    onClick={() => setActiveCategory(c)}
+                                >
+                                    {c}
+                                </button>
+                            ))}
+                            <button
+                                type="button"
+                                className="sale__chip sale__chip--scan"
+                                onClick={() => {
+                                    searchInputRef.current?.focus();
+                                    showSnackbar('Scan a barcode or type to search', 'info');
+                                }}
+                            >
+                                <PosIcon name="barcode_scanner" size={18} />
+                                Scan
+                            </button>
                         </div>
-                        <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 uppercase ${activeTab === 'products' ? 'opacity-100' : 'opacity-60'}`}>Catalog</span>
-                    </button>
+                    </div>
 
-                    <button
-                        onClick={() => setActiveTab('cart')}
-                        className={`group relative flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90 outline-none ${activeTab === 'cart' ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400'}`}
-                        aria-selected={activeTab === 'cart'}
-                    >
-                        <div className="relative">
-                            <div className={`p-2 rounded-2xl transition-all duration-500 ${activeTab === 'cart' ? 'bg-blue-500/10 scale-110' : 'bg-transparent group-hover:bg-slate-100/50 dark:group-hover:bg-slate-800/50'}`}>
-                                <ShoppingCartIcon className="w-[22px] h-[22px]" />
+                    <div className="sale__grid" id="pos-product-list" role="region" aria-label="Product catalog">
+                        {isLoading ? (
+                            Array.from({ length: 10 }).map((_, i) => (
+                                <div key={i} className="prodcard" style={{ height: 210, opacity: 0.4, pointerEvents: 'none' }} />
+                            ))
+                        ) : filteredProducts.length === 0 ? (
+                            <div className="sale__empty">
+                                <PosIcon name="search_off" size={40} />
+                                <p>
+                                    {searchTerm
+                                        ? `No products match “${searchTerm}”.`
+                                        : 'No active products in this category yet.'}
+                                </p>
                             </div>
+                        ) : (
+                            filteredProducts.map(product => {
+                                const cartItem = cart.find(item => item.productId === product.id);
+                                return (
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                        cartItem={cartItem}
+                                        storeSettings={storeSettings}
+                                        addToCart={addToCart}
+                                        updateQuantity={updateQuantity}
+                                        onLowStockAlert={(p) => {
+                                            setLowStockProduct(p);
+                                            setShowLowStockAlert(true);
+                                        }}
+                                        variant="grid"
+                                    />
+                                );
+                            })
+                        )}
+                    </div>
+                </main>
+
+                {/* ── Cart / Payment (progressive disclosure) ── */}
+                <aside className={`cart${mobileCartOpen ? ' cart--open' : ''}`} aria-label="Current sale">
+                    {cartView === 'confirm' ? (
+                        <ConfirmPaymentPanel
+                            storeSettings={storeSettings}
+                            totalAmount={total}
+                            customerEmail={selectedCustomer?.email || 'guest@salepilot.com'}
+                            customerName={selectedCustomer?.name || 'Guest'}
+                            customerPhone={mobileMoneyNumber || selectedCustomer?.phone || ''}
+                            reference={lencoReference}
+                            merchantPublicKey={storeSettings.lencoPublicKey}
+                            isGatewayUnlocked={isGatewayUnlocked}
+                            onLencoSuccess={(response) => {
+                                if (storeSettings.lencoPublicKey) {
+                                    processTransaction('paid', response.reference);
+                                    showSnackbar('Payment confirmed via Merchant Account', 'success');
+                                } else {
+                                    handleLencoVerification(response.reference);
+                                }
+                            }}
+                            onConfirmationPending={(response) => {
+                                if (storeSettings.lencoPublicKey) {
+                                    setCartView('payment');
+                                    showSnackbar('Payment initiated. Please confirm on your device.', 'info');
+                                } else {
+                                    handleLencoVerification(response.reference);
+                                }
+                            }}
+                            onManualConfirm={() => processTransaction('paid', `MANUAL-${Date.now()}`)}
+                            onUpgrade={() => showSnackbar('Payment Gateway is a premium add-on — manage it from Settings → Subscription.', 'info')}
+                            onBack={() => setCartView('payment')}
+                            onCloseMobile={() => setMobileCartOpen(false)}
+                        />
+                    ) : cartView === 'payment' ? (
+                        <PaymentPanel
+                            cart={cart}
+                            storeSettings={storeSettings}
+                            total={total}
+                            subtotal={subtotal}
+                            taxAmount={taxAmount}
+                            finalAppliedCredit={finalAppliedCredit}
+                            selectedCustomer={selectedCustomer}
+                            onApplyStoreCredit={handleApplyStoreCredit}
+                            selectedPaymentMethod={selectedPaymentMethod}
+                            setSelectedPaymentMethod={setSelectedPaymentMethod}
+                            cashReceived={cashReceived}
+                            setCashReceived={setCashReceived}
+                            cashInputRef={cashInputRef as React.RefObject<HTMLInputElement>}
+                            changeDue={changeDue}
+                            mobileMoneyNumber={mobileMoneyNumber}
+                            setMobileMoneyNumber={setMobileMoneyNumber}
+                            processTransaction={processTransaction}
+                            isProcessing={isProcessing}
+                            onBack={() => setCartView('cart')}
+                            onCloseMobile={() => setMobileCartOpen(false)}
+                        />
+                    ) : (
+                        <>
+                            <div className="cart__head">
+                                <div>
+                                    <h2>Current Sale</h2>
+                                    <p className="cart__meta tnum">
+                                        {cart.length > 0
+                                            ? `${cart.length} ${cart.length === 1 ? 'item' : 'items'} · ${formatCurrency(subtotal, storeSettings)}`
+                                            : 'Walk-in Customer'}
+                                        {selectedCustomer ? ` · ${selectedCustomer.name}` : ''}
+                                    </p>
+                                </div>
+                                <div className="cart__head-actions">
+                                    <button
+                                        type="button"
+                                        className={`v2-iconbtn${selectedCustomer ? ' cart__method--active' : ''}`}
+                                        aria-label="Add customer to sale"
+                                        aria-expanded={showCustomerPicker}
+                                        onClick={() => setShowCustomerPicker(v => !v)}
+                                    >
+                                        <PosIcon name={selectedCustomer ? 'person' : 'person_add'} size={20} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="cart__close"
+                                        aria-label="Close cart"
+                                        onClick={() => setMobileCartOpen(false)}
+                                    >
+                                        <PosIcon name="close" size={20} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {showCustomerPicker && (
+                                <div className="cart__customer">
+                                    <CustomerSelect
+                                        customers={customers}
+                                        selectedCustomer={selectedCustomer}
+                                        onSelectCustomer={(c) => {
+                                            setSelectedCustomer(c);
+                                            setAppliedStoreCredit(0);
+                                        }}
+                                    />
+                                </div>
+                            )}
+
+                            {cart.length > 0 ? (
+                                <CartPanel
+                                    cart={cart}
+                                    storeSettings={storeSettings}
+                                    updateQuantity={updateQuantity}
+                                    removeFromCart={removeFromCart}
+                                />
+                            ) : heldSales.length > 0 ? (
+                                <div className="cart__lines">
+                                    <div className="cart__held-head">Held Sales <span>{heldSales.length}</span></div>
+                                    {heldSales.map((hc, i) => {
+                                        const heldTotal = hc.reduce((a, it) => a + it.price * it.quantity, 0);
+                                        const heldUnits = hc.reduce((a, it) => a + it.quantity, 0);
+                                        return (
+                                            <div className="heldcard" key={i}>
+                                                <div className="heldcard__info">
+                                                    <span className="heldcard__title">Held #{i + 1}</span>
+                                                    <span className="heldcard__sub tnum">
+                                                        {heldUnits} {heldUnits === 1 ? 'item' : 'items'} · {formatCurrency(heldTotal, storeSettings)}
+                                                    </span>
+                                                </div>
+                                                <button type="button" className="v2-btn v2-btn--secondary" onClick={() => handleRecallSale(i)}>
+                                                    <PosIcon name="restore" size={18} /> Recall
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="cart__lines">
+                                    <div className="cart__empty">
+                                        <PosIcon name="shopping_cart" size={34} />
+                                        <p>Add items to start a sale</p>
+                                        <span>Tap any product on the left to add it here.</span>
+                                    </div>
+                                </div>
+                            )}
+
                             {cart.length > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-rose-500 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-[0_2px_8px_rgba(244,63,94,0.4)] border-2 border-white/80 dark:border-slate-800/80 px-1.5 transition-transform transform scale-110">
-                                    {cart.length}
-                                </div>
+                                <CheckoutActions
+                                    storeSettings={storeSettings}
+                                    total={total}
+                                    subtotal={subtotal}
+                                    taxAmount={taxAmount}
+                                    discount={discount}
+                                    setDiscount={setDiscount}
+                                    discountType={discountType}
+                                    setDiscountType={setDiscountType}
+                                    finalAppliedCredit={finalAppliedCredit}
+                                    onProcessPayment={() => setCartView('payment')}
+                                    onHoldSale={handleHoldSale}
+                                    clearCart={clearCart}
+                                />
                             )}
-                            {activeTab === 'cart' && (
-                                <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-1.5 h-1 rounded-full bg-blue-600 dark:bg-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.6)]" />
-                            )}
-                        </div>
-                        <span className={`text-[10px] font-extrabold tracking-tight transition-all duration-300 uppercase ${activeTab === 'cart' ? 'opacity-100' : 'opacity-60'}`}>Cart</span>
-                    </button>
+                        </>
+                    )}
+                </aside>
+            </div>
+            )}
 
+            {/* ── Mobile cart bar — opens the cart sheet ── */}
+            {posView === 'sell' && cart.length > 0 && !mobileCartOpen && (
+                <div className="sale__cartbar">
+                    <div className="sale__cartbar-info">
+                        <span className="sale__cartbar-count">
+                            {cart.length} {cart.length === 1 ? 'item' : 'items'} in cart
+                        </span>
+                        <span className="sale__cartbar-total tnum">{formatCurrency(total, storeSettings)}</span>
+                    </div>
                     <button
-                        onClick={() => setShowHeldPanel(true)}
-                        className="group relative flex flex-1 flex-col items-center justify-center gap-1 transition-all duration-300 active:scale-90 outline-none text-slate-500 dark:text-slate-400"
+                        type="button"
+                        className="sale__cartbar-btn"
+                        onClick={() => setMobileCartOpen(true)}
                     >
-                        <div className="relative">
-                            <div className="p-2 rounded-2xl transition-all duration-500 bg-transparent group-hover:bg-slate-100/50 dark:group-hover:bg-slate-800/50">
-                                <ClockIcon className="w-[22px] h-[22px]" />
-                            </div>
-                            {heldSales.length > 0 && (
-                                <div className="absolute -top-1 -right-1 bg-amber-500 min-w-[18px] h-[18px] rounded-full flex items-center justify-center text-[10px] font-black text-white shadow-[0_2px_8px_rgba(245,158,11,0.4)] border-2 border-white/80 dark:border-slate-800/80 px-1.5 transition-transform transform scale-110">
-                                    {heldSales.length}
-                                </div>
-                            )}
-                        </div>
-                        <span className="text-[10px] font-extrabold tracking-tight transition-all duration-300 uppercase opacity-60 group-hover:opacity-100">Held</span>
+                        <PosIcon name="shopping_cart" size={20} fill={1} />
+                        View Order
                     </button>
                 </div>
-            </nav>
+            )}
 
-            {/* Modals */}
+            {/* ── Modals ── */}
             <HeldSalesModal
                 isOpen={showHeldPanel}
                 onClose={() => setShowHeldPanel(false)}
@@ -941,19 +932,17 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 onRecallSale={handleRecallSale}
                 storeSettings={storeSettings}
             />
-            {
-                showReceiptModal && lastSale && (
-                    <ReceiptModal
-                        isOpen={showReceiptModal}
-                        onClose={() => setShowReceiptModal(false)}
-                        saleData={lastSale}
-                        showSnackbar={showSnackbar}
-                        storeSettings={storeSettings}
-                    />
-                )
-            }
 
-            {/* Modals */}
+            {showReceiptModal && lastSale && (
+                <ReceiptModal
+                    isOpen={showReceiptModal}
+                    onClose={() => setShowReceiptModal(false)}
+                    saleData={lastSale}
+                    showSnackbar={showSnackbar}
+                    storeSettings={storeSettings}
+                />
+            )}
+
             <OutOfStockModal
                 isOpen={showOutOfStockModal}
                 onClose={() => {
@@ -992,67 +981,35 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         console.error("Failed to save product:", error);
                     }
                 }}
-
                 categories={categories}
                 suppliers={suppliers}
                 storeSettings={storeSettings}
                 initialValues={initialProductValues}
             />
 
-            <PaymentChoiceModal
-                isOpen={showPaymentChoiceModal}
-                onClose={() => setShowPaymentChoiceModal(false)}
-                totalAmount={total} // Using the memoized total instead of re-calculating
-                customerEmail={selectedCustomer?.email || 'guest@salepilot.com'}
-                customerName={selectedCustomer?.name || 'Guest'}
-                customerPhone={mobileMoneyNumber || selectedCustomer?.phone || ''}
-                storeSettings={storeSettings}
-                reference={lencoReference}
-                merchantPublicKey={storeSettings.lencoPublicKey}
-                onLencoSuccess={(response) => {
-                    if (storeSettings.lencoPublicKey) {
-                        // Direct settlement: Trust the widget callback and finalize immediately
-                        setShowPaymentChoiceModal(false);
-                        processTransaction('paid', response.reference);
-                        showSnackbar('Payment confirmed via Merchant Account', 'success');
-                    } else {
-                        // Standard platform settlement: Backend verification required
-                        handleLencoVerification(response.reference);
-                    }
-                }}
-                onConfirmationPending={(response) => {
-                    if (storeSettings.lencoPublicKey) {
-                        // For merchant keys, we can't really track pending status via backend
-                        setShowPaymentChoiceModal(false);
-                        showSnackbar('Payment initiated. Please confirm on your device.', 'info');
-                    } else {
-                        handleLencoVerification(response.reference);
-                    }
-                }}
-                onManualConfirm={() => {
-                    setShowPaymentChoiceModal(false);
-                    processTransaction('paid', `MANUAL-${Date.now()}`);
-                }}
-            />
-
             {/* Verification Loading Overlay */}
-            {
-                isVerifyingPayment && (
-                    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-                        <div className="liquid-glass-card rounded-[2rem] p-6 flex flex-col items-center gap-4">
-                            <LoadingSpinner size="lg" fullScreen={false} text="" />
-                            <p className="font-semibold text-slate-900">{verifyingMessage}</p>
-                            <p className="text-sm text-slate-500 text-center">Please wait while we confirm your transaction with Lenco.</p>
-                            <button
-                                onClick={handleCancelVerification}
-                                className="mt-4 px-6 py-2 bg-red-50 text-red-600 rounded-xl font-bold border border-red-200 hover:bg-red-100 transition-all text-sm active:scale-95 transition-all duration-300"
-                            >
-                                Cancel Transaction
-                            </button>
-                        </div>
+            {isVerifyingPayment && (
+                <div className="payverify">
+                    <div className="payverify__card">
+                        <div className="payverify__spinner" />
+                        <h3 className="payverify__title">{verifyingMessage}</h3>
+                        <p className="payverify__sub">Please wait while we confirm your transaction with the payment gateway.</p>
+                        <button type="button" onClick={handleCancelVerification} className="payverify__cancel">
+                            Cancel Transaction
+                        </button>
                     </div>
-                )
-            }
+                </div>
+            )}
+
+            <UnifiedScannerModal
+                isOpen={isCamScannerOpen}
+                onClose={() => setIsCamScannerOpen(false)}
+                onScanSuccess={(code) => {
+                    setIsCamScannerOpen(false);
+                    handleContinuousScan(code);
+                }}
+                title="Scan Product"
+            />
 
             <TourGuide
                 user={user}
@@ -1060,7 +1017,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 run={runTour}
                 onTourEnd={() => setRunTour(false)}
             />
-        </div >
+        </div>
     );
 };
 

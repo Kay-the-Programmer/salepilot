@@ -94,7 +94,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                                             {supplier.contactPerson && <DetailItem label="Authorized Representative" value={supplier.contactPerson} />}
                                             {supplier.phone && (
                                                 <DetailItem label="Direct Line" value={
-                                                    <a href={`tel:${supplier.phone}`} className="text-blue-600 dark:text-blue-400 font-bold hover:underline transition-all">{supplier.phone}</a>
+                                                    <a href={`tel:${supplier.phone}`} className="text-primary dark:text-primary font-bold hover:underline transition-all">{supplier.phone}</a>
                                                 } />
                                             )}
                                         </div>
@@ -130,7 +130,7 @@ const ProductDetailTabs: React.FC<ProductDetailTabsProps> = ({
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
                                     <div className="flex flex-col">
                                         <div className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Asset Value</div>
-                                        <div className="text-[28px] font-black text-blue-600 dark:text-blue-400 tracking-tight leading-none">
+                                        <div className="text-[28px] font-black text-primary dark:text-primary tracking-tight leading-none">
                                             {formatCurrency(price * product.stock, storeSettings)}
                                         </div>
                                     </div>

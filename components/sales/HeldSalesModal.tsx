@@ -65,7 +65,7 @@ const HeldSalesModal: React.FC<HeldSalesModalProps> = ({
                                 const itemCount = heldCart.reduce((sum, item) => sum + item.quantity, 0);
 
                                 return (
-                                    <div key={index} className="bg-white dark:bg-slate-800/80 rounded-[20px] p-4 border border-slate-200/60 dark:border-white/5 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:shadow-md transition-all duration-300 group">
+                                    <div key={index} className="bg-white dark:bg-slate-800/80 rounded-[20px] p-4 border border-slate-200/60 dark:border-white/5 hover:border-primary/50 dark:hover:border-primary/40 hover:shadow-md transition-all duration-300 group">
                                         <div className="flex items-center justify-between mb-3">
                                             <div className="flex items-center gap-3">
                                                 <span className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-500/20 text-amber-700 dark:text-amber-400 text-sm font-bold flex items-center justify-center">
@@ -89,7 +89,7 @@ const HeldSalesModal: React.FC<HeldSalesModalProps> = ({
                                                     onRecallSale(index);
                                                     onClose();
                                                 }}
-                                                className="px-4 py-2 bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-sm font-bold rounded-xl hover:bg-indigo-100 dark:hover:bg-indigo-500/20 active:scale-95 transition-all duration-300 border border-indigo-100 dark:border-indigo-500/20"
+                                                className="px-4 py-2 bg-success-muted dark:bg-primary/10 text-primary dark:text-primary text-sm font-bold rounded-xl hover:bg-primary/10 dark:hover:bg-primary/20 active:scale-95 transition-all duration-300 border border-primary/10 dark:border-primary/20"
                                             >
                                                 Recall
                                             </button>

@@ -52,19 +52,19 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
             </label>
 
             {selectedCustomer ? (
-                <div className="flex items-center justify-between p-3 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/30 rounded-2xl shadow-sm transition-all duration-300">
+                <div className="flex items-center justify-between p-3 bg-success-muted dark:bg-primary/10 border border-primary/20 dark:border-primary/30 rounded-2xl shadow-sm transition-all duration-300">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-500/20 flex items-center justify-center">
-                            <UserCircleIcon className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                        <div className="w-10 h-10 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center">
+                            <UserCircleIcon className="w-6 h-6 text-primary dark:text-primary" />
                         </div>
                         <div>
-                            <p className="font-semibold text-sm text-indigo-900 dark:text-indigo-300">{selectedCustomer.name}</p>
-                            <p className="text-xs text-indigo-600 dark:text-indigo-400">{selectedCustomer.email}</p>
+                            <p className="font-semibold text-sm text-slate-900 dark:text-primary">{selectedCustomer.name}</p>
+                            <p className="text-xs text-primary dark:text-primary">{selectedCustomer.email}</p>
                         </div>
                     </div>
                     <button
                         onClick={handleClear}
-                        className="p-1.5 text-indigo-500 dark:text-indigo-400 hover:text-white dark:hover:text-white rounded-full hover:bg-indigo-500 dark:hover:bg-indigo-500 active:scale-95 transition-all duration-300"
+                        className="p-1.5 text-primary dark:text-primary hover:text-white dark:hover:text-white rounded-full hover:bg-primary dark:hover:bg-primary active:scale-95 transition-all duration-300"
                         aria-label="Remove customer"
                     >
                         <XMarkIcon className="w-4 h-4" />
@@ -82,7 +82,7 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
                             setIsDropdownOpen(true);
                         }}
                         onFocus={() => setIsDropdownOpen(true)}
-                        className="w-full px-4 py-3 border border-slate-200 dark:border-white/10 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all shadow-sm"
+                        className="w-full px-4 py-3 border border-slate-200 dark:border-white/10 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all shadow-sm"
                     />
 
                     {isDropdownOpen && filteredCustomers.length > 0 && (

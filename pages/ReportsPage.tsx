@@ -1,32 +1,24 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { StoreSettings, User } from '../types';
+import { StoreSettings, User, DashboardCardConfig } from '../types';
 import { useNotifications } from '../contexts/NotificationContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { api } from '../services/api';
 import { formatCurrency } from '../utils/currency';
+import { hasModule, MODULES } from '../utils/entitlements';
 import { useNavigate } from 'react-router-dom';
 
-// Icons
-import CurrencyDollarIcon from '../components/icons/CurrencyDollarIcon';
-import ArchiveBoxIcon from '../components/icons/ArchiveBoxIcon';
-import UsersIcon from '../components/icons/UsersIcon';
-import HomeIcon from '../components/icons/HomeIcon';
-import XMarkIcon from '../components/icons/XMarkIcon';
-import CalendarIcon from '../components/icons/CalendarIcon';
-import BellAlertIcon from '../components/icons/BellAlertIcon';
-import UserCircleIcon from '../components/icons/UserCircleIcon';
-import ArrowDownTrayIcon from '../components/icons/ArrowDownTrayIcon';
-import ChevronDownIcon from '../components/icons/ChevronDownIcon';
+// Shared boutique-green M3 chrome (the SalePilot standalone-app design system)
+import { Icon, Avatar } from '../components/crm/CrmBits';
+import '../components/crm/crm.css';
 
-// Components
+// Report content tabs (data wired) + AI summary
 import { OverviewTab } from '../components/reports/OverviewTab';
 import { SalesTab } from '../components/reports/SalesTab';
 import { InventoryTab } from '../components/reports/InventoryTab';
 import { CustomersTab } from '../components/reports/CustomersTab';
 import { AiSummaryCard } from '../components/reports/AiSummaryCard';
 import { Settings, X, LayoutGrid } from 'lucide-react';
-import { DashboardCardConfig } from '../types';
 
 const DEFAULT_CARDS: DashboardCardConfig[] = [
     { id: 'tips', label: 'Tips & Guidance', visible: true, order: 0 },
@@ -43,6 +35,7 @@ const DEFAULT_CARDS: DashboardCardConfig[] = [
     { id: 'recent-orders', label: 'Recent Orders', visible: true, order: 11 },
     { id: 'top-sales', label: 'Top Selling Products', visible: true, order: 12 },
 ];
+
 interface ReportsPageProps {
     storeSettings: StoreSettings;
     onClose?: () => void;
@@ -61,36 +54,46 @@ const getGreeting = () => {
     if (hour >= 5 && hour < 12) return 'Good morning';
     if (hour >= 12 && hour < 17) return 'Good afternoon';
     if (hour >= 17 && hour < 22) return 'Good evening';
-    return 'Good night';
+    return 'Good evening';
 };
 
-const TABS = [
-    { id: 'overview', label: 'Overview', Icon: HomeIcon },
-    { id: 'sales', label: 'Sales', Icon: CurrencyDollarIcon },
-    { id: 'inventory', label: 'Inventory', Icon: ArchiveBoxIcon },
-    { id: 'customers', label: 'Customers', Icon: UsersIcon },
+type SectionId = 'overview' | 'sales' | 'inventory' | 'customers';
+
+const SECTIONS: { id: SectionId; label: string; icon: string }[] = [
+    { id: 'overview', label: 'Overview', icon: 'dashboard' },
+    { id: 'sales', label: 'Sales', icon: 'payments' },
+    { id: 'inventory', label: 'Inventory', icon: 'inventory_2' },
+    { id: 'customers', label: 'Customers', icon: 'group' },
+];
+
+const DATE_PRESETS: { id: '7d' | '30d' | 'month'; label: string }[] = [
+    { id: '7d', label: '7 Days' },
+    { id: '30d', label: '30 Days' },
+    { id: 'month', label: 'This Month' },
 ];
 
 const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const navigate = useNavigate();
+
+    // Advanced Reports is a premium add-on module — locked unless the store has
+    // unlocked it (granted by the platform after payment).
+    const reportsUnlocked = hasModule(storeSettings, MODULES.ADVANCED_REPORTS);
+
     const [startDate, setStartDate] = useState(() => {
         const d = new Date();
         d.setDate(d.getDate() - 29);
         return toDateInputString(d);
     });
     const [endDate, setEndDate] = useState(toDateInputString(new Date()));
-    const [activeTab, setActiveTab] = useState<string>(() => localStorage.getItem('reports.activeTab') || 'overview');
+    const [activeTab, setActiveTab] = useState<SectionId>(() => (localStorage.getItem('reports.activeTab') as SectionId) || 'overview');
     const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
     const exportMenuRef = useRef<HTMLDivElement>(null);
-    const filterMenuRef = useRef<HTMLDivElement>(null);
-    const [showFilters, setShowFilters] = useState(false);
     const [datePreset, setDatePreset] = useState<'7d' | '30d' | 'month' | 'custom'>('30d');
     const [recentOrdersTab, setRecentOrdersTab] = useState<'all' | 'online' | 'pos'>('all');
     const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
     const notificationsRef = useRef<HTMLDivElement>(null);
-    const tabBarRef = useRef<HTMLDivElement>(null);
-    const contentRef = useRef<HTMLDivElement>(null);
+    const [menuOpen, setMenuOpen] = useState(false);
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -100,7 +103,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
             try {
                 return JSON.parse(saved);
             } catch (e) {
-                console.error("Failed to parse dashboard config", e);
+                console.error('Failed to parse dashboard config', e);
             }
         }
         return DEFAULT_CARDS;
@@ -116,58 +119,15 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
         ));
     };
 
-    // Sales Pagination State
+    // Sales pagination state
     const [dailyPage, setDailyPage] = useState(1);
     const [dailyPageSize, setDailyPageSize] = useState(10);
 
-    // Keyboard navigation for tabs (arrow keys)
-    const handleTabKeyDown = useCallback((e: React.KeyboardEvent) => {
-        const tabIds = TABS.map(t => t.id);
-        const currentIndex = tabIds.indexOf(activeTab);
-        let nextIndex = -1;
-
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-            e.preventDefault();
-            nextIndex = (currentIndex + 1) % tabIds.length;
-        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-            e.preventDefault();
-            nextIndex = (currentIndex - 1 + tabIds.length) % tabIds.length;
-        } else if (e.key === 'Home') {
-            e.preventDefault();
-            nextIndex = 0;
-        } else if (e.key === 'End') {
-            e.preventDefault();
-            nextIndex = tabIds.length - 1;
-        }
-
-        if (nextIndex !== -1) {
-            const nextTabId = tabIds[nextIndex];
-            setActiveTab(nextTabId);
-            const nextTabElement = document.getElementById(`tab-${nextTabId}`);
-            nextTabElement?.focus();
-        }
-    }, [activeTab]);
-
-    const sortedAnnouncements = notifications; // Already sorted by context/backend
-
-    // Auto-scroll tab into view
     useEffect(() => {
-        if (activeTab && tabBarRef.current) {
-            const activeElement = document.getElementById(`tab-${activeTab}`);
-            if (activeElement) {
-                // Determine if we are on mobile (where tabs are hidden)
-                const isMobile = window.innerWidth < 768;
-                if (!isMobile) {
-                    activeElement.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-                }
-            }
-        }
         localStorage.setItem('reports.activeTab', activeTab);
     }, [activeTab]);
 
-    const activeTabIndex = TABS.findIndex(t => t.id === activeTab);
-
-    // Data fetching logic
+    // Data fetching
     const [reportData, setReportData] = useState<any | null>(null);
     const [dailySales, setDailySales] = useState<any[] | null>(null);
     const [personalUse, setPersonalUse] = useState<any[] | null>(null);
@@ -183,14 +143,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
             setDailySales((salesRes as any).dailySales || []);
             setPersonalUse((personalRes as any).personalUse || []);
         } catch (err) {
-            console.error("Failed to fetch report data", err);
-        } finally {
+            console.error('Failed to fetch report data', err);
         }
     }, [startDate, endDate]);
 
     useEffect(() => {
-        fetchData();
-    }, [fetchData]);
+        if (reportsUnlocked) fetchData();
+    }, [fetchData, reportsUnlocked]);
 
     // Close menus on outside click
     useEffect(() => {
@@ -198,34 +157,20 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
             if (exportMenuRef.current && !exportMenuRef.current.contains(event.target as Node)) {
                 setIsExportMenuOpen(false);
             }
-            if (filterMenuRef.current && !filterMenuRef.current.contains(event.target as Node)) {
-                setShowFilters(false);
-            }
             if (notificationsRef.current && !notificationsRef.current.contains(event.target as Node)) {
                 setIsNotificationsOpen(false);
             }
         };
-
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Export functionality
+    // Export
     const handleExportCSV = () => {
         if (!dailySales) return;
         const headers = ['Date', 'Revenue', 'Profit', 'Transactions'];
-        const rows = dailySales.map(day => [
-            day.date,
-            day.revenue,
-            day.profit,
-            day.transactions
-        ]);
-
-        const csvContent = [
-            headers.join(','),
-            ...rows.map(row => row.join(','))
-        ].join('\n');
-
+        const rows = dailySales.map(day => [day.date, day.revenue, day.profit, day.transactions]);
+        const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
         const url = URL.createObjectURL(blob);
@@ -240,26 +185,18 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
     const handleExportPDF = () => {
         if (!reportData || !dailySales) return;
         const doc = new jsPDF() as any;
-
         doc.setFontSize(20);
         doc.text('Sales Report', 14, 22);
         doc.setFontSize(11);
         doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
-
-        const tableColumn = ["Date", "Revenue", "Profit", "Transactions"];
+        const tableColumn = ['Date', 'Revenue', 'Profit', 'Transactions'];
         const tableRows = dailySales.map(day => [
             day.date,
             formatCurrency(day.revenue, storeSettings),
             formatCurrency(day.profit, storeSettings),
             day.transactions
         ]);
-
-        doc.autoTable({
-            head: [tableColumn],
-            body: tableRows,
-            startY: 40,
-        });
-
+        doc.autoTable({ head: [tableColumn], body: tableRows, startY: 40 });
         doc.save(`sales_report_${startDate}_to_${endDate}.pdf`);
     };
 
@@ -267,22 +204,22 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
         setDatePreset(preset);
         const end = new Date();
         const start = new Date();
-
-        if (preset === '7d') {
-            start.setDate(end.getDate() - 6);
-        } else if (preset === '30d') {
-            start.setDate(end.getDate() - 29);
-        } else if (preset === 'month') {
-            start.setDate(1);
-        }
-
+        if (preset === '7d') start.setDate(end.getDate() - 6);
+        else if (preset === '30d') start.setDate(end.getDate() - 29);
+        else if (preset === 'month') start.setDate(1);
         setStartDate(toDateInputString(start));
         setEndDate(toDateInputString(end));
     };
 
     const renderContent = () => {
-        if (!reportData) return <div className="p-8 text-center text-slate-500">Loading data...</div>;
-
+        if (!reportData) {
+            return (
+                <div className="crm-empty" style={{ padding: '72px 16px' }}>
+                    <span className="crm-spinner" aria-hidden="true" />
+                    <p className="crm-empty__text" style={{ marginTop: 16 }}>Loading your reports…</p>
+                </div>
+            );
+        }
         switch (activeTab) {
             case 'overview':
                 return (
@@ -312,369 +249,432 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                     />
                 );
             case 'inventory':
-                return (
-                    <InventoryTab
-                        reportData={reportData}
-                        storeSettings={storeSettings}
-                    />
-                );
+                return <InventoryTab reportData={reportData} storeSettings={storeSettings} />;
             case 'customers':
-                return (
-                    <CustomersTab
-                        reportData={reportData}
-                        storeSettings={storeSettings}
-                    />
-                );
-            case 'cashflow':
-            case 'personal-use':
-                // These are now merged into 'overview'
-                setActiveTab('overview');
-                return null;
+                return <CustomersTab reportData={reportData} storeSettings={storeSettings} />;
             default:
                 return null;
         }
     };
 
-    const datePresetLabel = datePreset === '7d' ? '7D' : datePreset === '30d' ? '30D' : datePreset === 'month' ? 'Mo' : 'Custom';
+    const firstName = user?.name?.split(' ')[0] || 'there';
+    const todayLabel = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+    const dateInputStyle: React.CSSProperties = {
+        height: 40, padding: '0 12px', fontSize: 13, fontFamily: 'inherit',
+        border: '1px solid var(--c-outline-variant)', borderRadius: 'var(--c-radius-lg)',
+        background: 'var(--c-surface-lowest)', color: 'var(--c-on-bg)', outline: 'none',
+    };
+    const menuStyle: React.CSSProperties = {
+        position: 'absolute', right: 0, top: 'calc(100% + 8px)', zIndex: 40, minWidth: 200,
+        background: 'var(--c-surface-lowest)', borderRadius: 'var(--c-radius-lg)',
+        boxShadow: '0 12px 32px rgba(0,0,0,0.16)', border: '1px solid var(--c-outline-variant)',
+        overflow: 'hidden', padding: 6,
+    };
+    const menuItemStyle: React.CSSProperties = {
+        display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px',
+        border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14,
+        fontWeight: 600, color: 'var(--c-on-bg)', textAlign: 'left', borderRadius: 'var(--c-radius)',
+    };
+
+    // ── Premium gate ──────────────────────────────────────────────────────────
+    // Advanced Reports is a paid add-on. When locked, show an on-brand unlock
+    // screen (soft upgrade CTA) instead of the report content.
+    if (!reportsUnlocked) {
+        const PERKS = [
+            { icon: 'query_stats', text: 'Profit & loss, cashflow and financial position' },
+            { icon: 'insights', text: 'Sales, inventory and customer analytics' },
+            { icon: 'download', text: 'Export to CSV & PDF for tax and investors' },
+            { icon: 'auto_awesome', text: 'AI business summaries and guidance' },
+        ];
+        return (
+            <div className="crm">
+                <aside className="crm-rail" aria-label="Reports navigation">
+                    <div className="crm-rail__brand">
+                        <span className="crm-bar__logo"><Icon name="monitoring" size={22} fill={1} /></span>
+                        <div className="crm-rail__brand-text">
+                            <span className="crm-rail__brand-title">SalePilot Reports</span>
+                            <span className="crm-rail__brand-sub">Premium add-on</span>
+                        </div>
+                    </div>
+                    <nav className="crm-rail__nav">
+                        {SECTIONS.map(s => (
+                            <button key={s.id} type="button" className="crm-rail__item" disabled style={{ opacity: 0.55, cursor: 'not-allowed' }}>
+                                <Icon name={s.icon} size={22} />
+                                <span style={{ flex: 1 }}>{s.label}</span>
+                                <Icon name="lock" size={16} />
+                            </button>
+                        ))}
+                    </nav>
+                    <div className="crm-rail__foot">
+                        <button type="button" className="crm-rail__item" onClick={() => navigate('/dash')}>
+                            <Icon name="dashboard" size={22} /> Dashboard
+                        </button>
+                        <button type="button" className="crm-rail__item" onClick={() => navigate('/pos/discover')}>
+                            <Icon name="menu" size={22} /> Discover Apps
+                        </button>
+                        <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
+                            <Icon name="grid_view" size={22} /> Full App
+                        </button>
+                    </div>
+                </aside>
+
+                <div className="crm-body">
+                    <header className="crm-bar crm-bar--mobile">
+                        <div className="crm-bar__brand">
+                            <span className="crm-bar__logo"><Icon name="monitoring" size={22} fill={1} /></span>
+                            <span className="crm-bar__title">Reports</span>
+                        </div>
+                        <button type="button" className="crm-iconbtn" aria-label="Close" onClick={() => navigate('/dash')}>
+                            <Icon name="close" size={22} />
+                        </button>
+                    </header>
+
+                    <main className="crm-main crm-section-fade" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div className="reports-lock">
+                            <span className="reports-lock__badge">
+                                <Icon name="workspace_premium" size={16} fill={1} /> Premium add-on
+                            </span>
+                            <span className="reports-lock__icon"><Icon name="lock" size={40} fill={1} /></span>
+                            <h2 className="reports-lock__title">Unlock Advanced Reports</h2>
+                            <p className="reports-lock__sub">
+                                Detailed business reporting is a premium feature. Unlock it to dive into your
+                                full financial picture — and pay only for what your shop needs.
+                            </p>
+                            <ul className="reports-lock__perks">
+                                {PERKS.map(p => (
+                                    <li key={p.text}>
+                                        <span className="reports-lock__perk-ic"><Icon name={p.icon} size={20} /></span>
+                                        {p.text}
+                                    </li>
+                                ))}
+                            </ul>
+                            <div className="reports-lock__actions">
+                                <button type="button" className="crm-btn crm-btn--primary" onClick={() => navigate('/subscription')}>
+                                    <Icon name="lock_open" size={20} /> Unlock Advanced Reports
+                                </button>
+                                <button type="button" className="crm-btn crm-btn--outline" onClick={() => navigate('/dash')}>
+                                    Back to Dashboard
+                                </button>
+                            </div>
+                            <p className="reports-lock__foot">Manage your plan &amp; add-ons from Subscription.</p>
+                        </div>
+                    </main>
+
+                    <nav className="crm-bottomnav" aria-label="Reports navigation">
+                        {SECTIONS.map(s => (
+                            <button key={s.id} type="button" className="crm-bottomnav__item" style={{ opacity: 0.55 }} onClick={() => navigate('/subscription')}>
+                                <Icon name={s.icon} size={24} />
+                                <span>{s.label}</span>
+                            </button>
+                        ))}
+                    </nav>
+                </div>
+
+                <style>{`
+                    .crm .reports-lock { max-width: 520px; width: 100%; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 32px 24px; background: var(--c-surface-lowest); border: 1px solid rgba(189,201,194,0.3); border-radius: var(--c-radius-xl); box-shadow: var(--c-elev-1); }
+                    .crm .reports-lock__badge { display: inline-flex; align-items: center; gap: 6px; padding: 5px 14px; border-radius: var(--c-radius-pill); background: var(--c-secondary-container); color: var(--c-on-secondary-container); font-size: 12px; font-weight: 700; }
+                    .crm .reports-lock__icon { width: 80px; height: 80px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--c-primary-container); color: var(--c-on-primary-container); box-shadow: 0 8px 24px -8px rgba(0,101,75,0.5); margin-top: 4px; }
+                    .crm .reports-lock__title { font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: var(--c-on-bg); margin: 0; }
+                    .crm .reports-lock__sub { font-size: 15px; line-height: 1.55; color: var(--c-on-surface-variant); margin: 0; max-width: 420px; }
+                    .crm .reports-lock__perks { list-style: none; margin: 8px 0 4px; padding: 0; display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 380px; text-align: left; }
+                    .crm .reports-lock__perks li { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 500; color: var(--c-on-bg); }
+                    .crm .reports-lock__perk-ic { width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--c-radius); display: inline-flex; align-items: center; justify-content: center; background: var(--c-surface-high); color: var(--c-primary); }
+                    .crm .reports-lock__actions { display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 380px; margin-top: 10px; }
+                    .crm .reports-lock__actions .crm-btn { width: 100%; }
+                    .crm .reports-lock__foot { font-size: 12px; color: var(--c-on-surface-variant); margin: 4px 0 0; }
+                `}</style>
+
+                {/* AI summary stays available even when reports is locked */}
+            </div>
+        );
+    }
 
     return (
-        <div className="flex flex-col h-[100dvh] bg-background font-google overflow-hidden relative">
-            {/* Skip to content link for accessibility */}
-            <a
-                href="#report-content"
-                className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-[200] focus:px-4 focus:py-2 focus:bg-blue-600 focus:text-white focus:rounded-lg focus:text-sm focus:font-bold focus:shadow-lg focus:outline-none"
-            >
-                Skip to report content
-            </a>
-
-            {/* Header — compact on mobile */}
-            <header className="flex-none sticky top-0 z-40 bg-background/90 backdrop-blur-2xl border-b border-transparent transition-all duration-300" role="banner">
-                <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-3 md:py-6 flex items-center justify-between">
-                    <div className="flex items-center gap-4 min-w-0">
-                        <div className="min-w-0">
-                            <p className="text-[13px] md:text-sm font-semibold text-brand-text-muted mb-1 tracking-wide uppercase">
-                                {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
-                            </p>
-                            <h1 className="text-2xl md:text-[34px] font-bold md:font-semibold text-brand-text leading-tight truncate tracking-tight">
-                                {getGreeting()}, {user?.name?.split(' ')[0] || "User"}
-                            </h1>
-                        </div>
+        <div className="crm">
+            {/* Desktop side nav (the Reports app's own sidenav) */}
+            <aside className="crm-rail" aria-label="Reports navigation">
+                <div className="crm-rail__brand">
+                    <span className="crm-bar__logo"><Icon name="monitoring" size={22} fill={1} /></span>
+                    <div className="crm-rail__brand-text">
+                        <span className="crm-rail__brand-title">SalePilot Reports</span>
+                        <span className="crm-rail__brand-sub">Business Insights</span>
                     </div>
-                    <div className="flex items-center gap-2 md:gap-4 flex-shrink-0">
-                        <div className="flex md:hidden items-center gap-2" ref={filterMenuRef}>
-                            <button
-                                onClick={() => navigate('/profile')}
-                                className="w-10 h-10 rounded-full overflow-hidden border border-brand-border flex-shrink-0 active:scale-95 transition-transform bg-surface shadow-sm"
-                                aria-label="Go to profile"
-                            >
-                                {user?.profilePicture ? (
-                                    <img src={user.profilePicture} alt={user?.name || 'Profile'} className="w-full h-full object-cover" />
-                                ) : (
-                                    <UserCircleIcon className="w-full h-full text-brand-text-muted" />
-                                )}
-                            </button>
-                            <div className="relative">
-                                <button
-                                    onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-surface-variant backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
-                                    aria-label={`Date filter: ${datePresetLabel}`}
-                                    aria-expanded={showFilters}
-                                >
-                                    <CalendarIcon className="w-5 h-5 text-brand-text group-hover:text-primary transition-colors" />
-                                </button>
+                </div>
 
-                                {showFilters && (
-                                    <div className="absolute top-full right-0 mt-3 w-48 bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/50 dark:border-white/10 z-50 transform origin-top-right transition-all animate-notification-slide-down">
-                                        {(['7d', '30d', 'month'] as const).map((preset) => (
-                                            <button
-                                                key={preset}
-                                                onClick={() => { handleDatePreset(preset); setShowFilters(false); }}
-                                                className={`w-full text-left px-5 py-3.5 text-[15px] font-medium transition-colors ${datePreset === preset
-                                                    ? 'bg-blue-50/50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400'
-                                                    : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-700/50'
-                                                    }`}
-                                            >
-                                                {preset === '7d' ? 'Last 7 Days' : preset === '30d' ? 'Last 30 Days' : 'This Month'}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="relative hidden md:block" ref={notificationsRef}>
-                            <button
-                                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                                className="relative flex items-center justify-center w-10 h-10 rounded-full bg-surface-variant backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
-                                aria-label={`Notifications${unreadCount > 0 ? `, ${unreadCount} unread` : ''}`}
-                                aria-expanded={isNotificationsOpen}
-                                aria-haspopup="true"
-                            >
-                                <BellAlertIcon className="w-5 h-5 text-brand-text group-hover:text-primary transition-colors" />
-                                {unreadCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 min-w-[20px] h-5 flex items-center justify-center px-1 text-[10px] font-bold text-white bg-danger rounded-full shadow-md border-2 border-surface animate-pulse" aria-hidden="true">
-                                        {unreadCount > 99 ? '99+' : unreadCount}
-                                    </span>
-                                )}
-                            </button>
-                        </div>
-
+                <nav className="crm-rail__nav">
+                    {SECTIONS.map(s => (
                         <button
-                            onClick={() => navigate('/profile')}
-                            className="hidden md:flex items-center justify-center w-10 h-10 rounded-full bg-slate-100/80 dark:bg-slate-800/80 backdrop-blur-xl transition-all duration-300 active:scale-95 shadow-sm group"
-                            aria-label="Go to profile"
+                            key={s.id}
+                            type="button"
+                            className={`crm-rail__item${activeTab === s.id ? ' is-active' : ''}`}
+                            aria-current={activeTab === s.id ? 'page' : undefined}
+                            onClick={() => setActiveTab(s.id)}
                         >
-                            <UserCircleIcon className="w-5 h-5 text-slate-700 dark:text-slate-200 group-hover:text-blue-600 transition-colors" />
+                            <Icon name={s.icon} size={22} fill={activeTab === s.id ? 1 : 0} />
+                            {s.label}
                         </button>
+                    ))}
+                </nav>
 
-                        <div className="relative hidden md:block" ref={exportMenuRef}>
+                <div className="crm-rail__foot">
+                    <button type="button" className="crm-rail__item" onClick={() => navigate('/dash')}>
+                        <Icon name="dashboard" size={22} /> Dashboard
+                    </button>
+                    <button type="button" className="crm-rail__item" onClick={() => navigate('/pos/discover')}>
+                        <Icon name="menu" size={22} /> Discover Apps
+                    </button>
+                    <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
+                        <Icon name="grid_view" size={22} /> Full App
+                    </button>
+                    <button type="button" className="crm-rail__item" onClick={() => navigate('/profile')}>
+                        <div className="crm-rail__user" style={{ border: 'none', padding: 0, margin: 0 }}>
+                            <Avatar name={user?.name} src={user?.profilePicture} size={32} />
+                            <div className="crm-rail__user-info">
+                                <span className="crm-rail__user-name">{user?.name}</span>
+                                <span className="crm-rail__user-role">{user?.role}</span>
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </aside>
+
+            {/* Content column */}
+            <div className="crm-body">
+                {/* Mobile top bar */}
+                <header className="crm-bar crm-bar--mobile">
+                    <div className="crm-bar__brand">
+                        <span className="crm-bar__logo"><Icon name="monitoring" size={22} fill={1} /></span>
+                        <span className="crm-bar__title">Reports</span>
+                    </div>
+                    <div className="crm-bar__actions">
+                        <button type="button" className="crm-iconbtn" aria-label="Notifications" onClick={() => setIsNotificationsOpen(true)}>
+                            <Icon name="notifications" size={22} />
+                            {unreadCount > 0 && <span className="crm-iconbtn__dot" />}
+                        </button>
+                        <div style={{ position: 'relative' }}>
                             <button
-                                onClick={() => setIsExportMenuOpen(!isExportMenuOpen)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-semibold text-[15px] tracking-wide transition-all duration-300 active:scale-95 ${isExportMenuOpen
-                                    ? 'bg-slate-800 text-white dark:bg-white dark:text-slate-900 shadow-lg'
-                                    : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-200 backdrop-blur-xl hover:shadow-sm'
-                                    }`}
-                                aria-expanded={isExportMenuOpen}
-                                aria-haspopup="true"
+                                type="button"
+                                className="crm-bar__avatar"
+                                aria-label="Account menu"
+                                onClick={() => setMenuOpen(o => !o)}
                             >
-                                <ArrowDownTrayIcon className={`w-4.5 h-4.5`} />
-                                <span>Export</span>
-                                <ChevronDownIcon className={`w-3.5 h-3.5 transition-transform duration-300 ${isExportMenuOpen ? 'rotate-180' : ''}`} />
+                                {user?.profilePicture ? <img src={user.profilePicture} alt={user.name} /> : (user?.name?.[0]?.toUpperCase() || 'U')}
                             </button>
-
-                            {isExportMenuOpen && (
-                                <div className="absolute top-full right-0 mt-3 w-48 bg-white/90 dark:bg-slate-800/90 backdrop-blur-2xl rounded-3xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200/50 dark:border-white/10 z-50 transform origin-top-right transition-all animate-notification-slide-down">
-                                    <button
-                                        onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }}
-                                        className="w-full text-left px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors flex items-center gap-3 active:scale-95 transition-all duration-300"
-                                    >
-                                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                                        Export as CSV
-                                    </button>
-                                    <button
-                                        onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }}
-                                        className="w-full text-left px-5 py-3.5 text-[15px] font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50/50 dark:hover:bg-slate-700/50 transition-colors border-t border-slate-100 dark:border-white/5 flex items-center gap-3 active:scale-95 transition-all duration-300"
-                                    >
-                                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
-                                        Export as PDF
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </header>
-
-            {/* Desktop Apple-style Segmented Control Tab Bar */}
-            <nav
-                ref={tabBarRef}
-                className="flex flex-none sticky top-0 md:top-[90px] z-30 transition-all duration-300 bg-background pb-2 border-b border-transparent overflow-x-auto scrollbar-hide"
-                role="tablist"
-                aria-label="Report sections"
-                onKeyDown={handleTabKeyDown}
-            >
-                <div className="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between w-full min-w-max md:min-w-0">
-                    <div className="flex bg-slate-200/60 dark:bg-slate-800/80 p-1 rounded-[20px] md:rounded-[20px] overflow-hidden gap-1 w-full relative shadow-inner ring-1 ring-slate-900/5 dark:ring-white/10">
-                        <div className="grid grid-cols-4 gap-1.5 flex-1 relative isolate">
-                            {/* Sliding Indicator (Magic Pill) */}
-                            <div
-                                className="absolute top-0 bottom-0 left-0 bg-white dark:bg-slate-700/80 rounded-[16px] shadow-[0_2px_8px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_8px_rgba(0,0,0,0.2)] border border-slate-200/50 dark:border-white/5 transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] -z-10"
-                                style={{
-                                    width: `calc((100% - 15px) / 4)`, // 3 gaps of 5px (gap-1) = 15px
-                                    transform: `translateX(calc(${activeTabIndex} * 100% + ${activeTabIndex * 5}px))`
-                                }}
-                                aria-hidden="true"
-                            />
-
-                            {TABS.map((tab) => {
-                                const isActive = activeTab === tab.id;
-                                const Icon = tab.Icon;
-                                return (
-                                    <button
-                                        key={tab.id}
-                                        role="tab"
-                                        id={`tab-${tab.id}`}
-                                        aria-selected={isActive}
-                                        aria-controls={`tabpanel-${tab.id}`}
-                                        tabIndex={isActive ? 0 : -1}
-                                        onClick={() => setActiveTab(tab.id)}
-                                        className={`flex items-center justify-center gap-2 px-2 py-2.5 rounded-[16px] text-[14px] font-semibold tracking-wide whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 transition-colors duration-300 ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                                    >
-                                        <Icon className={`w-4.5 h-4.5 transition-colors duration-300 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
-                                        <span>{tab.label}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-
-                        {activeTab === 'overview' && (
-                            <div className="flex items-center gap-1 ml-2 border-l border-slate-300 dark:border-white/10 pl-2">
-                                {isEditMode && (
-                                    <button
-                                        onClick={() => setIsSettingsOpen(true)}
-                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500 text-white rounded-xl transition-all active:scale-95 shadow-md shadow-blue-500/20"
-                                    >
-                                        <LayoutGrid className="w-4 h-4 md:w-3.5 md:h-3.5" />
-                                        <span className="text-[10px] font-bold uppercase tracking-wider hidden lg:block">Library</span>
-                                    </button>
-                                )}
-                                <button
-                                    onClick={() => setIsEditMode(!isEditMode)}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all active:scale-95 group/settings ${isEditMode
-                                        ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-lg'
-                                        : 'bg-white/50 dark:bg-white/5 text-slate-600 dark:text-slate-400 hover:bg-white/80 dark:hover:bg-white/10'
-                                        }`}
-                                >
-                                    <Settings className={`w-4 h-4 md:w-3.5 md:h-3.5 ${isEditMode ? 'animate-spin-slow' : 'group-hover/settings:rotate-90 transition-transform duration-500'}`} />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider hidden sm:block">
-                                        {isEditMode ? 'Done' : 'Customize'}
-                                    </span>
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </nav>
-
-            <main
-                ref={contentRef}
-                id="report-content"
-                className="flex-1 overflow-y-auto px-4 md:px-8 py-6 md:py-8 scroll-smooth"
-                tabIndex={-1}
-            >
-                <div className="max-w-[1400px] mx-auto w-full pb-20 md:pb-0">
-                    {renderContent()}
-                </div>
-            </main>
-
-            {/* Mobile Footer Spacing for Bottom Nav — REMOVED to simplify */}
-
-            {/* Notification Drawer - simplified for this component */}
-            {isNotificationsOpen && (
-                <div className="fixed inset-0 z-[100] flex justify-end">
-                    <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsNotificationsOpen(false)}></div>
-                    <div className="relative w-full max-w-md h-full bg-white dark:bg-slate-900 shadow-2xl animate-notification-slide-left flex flex-col">
-                        <div className="p-6 border-b border-slate-100 dark:border-white/10 flex items-center justify-between">
-                            <h2 className="text-xl font-bold dark:text-white">Notifications</h2>
-                            <div className="flex items-center gap-2">
-                                {unreadCount > 0 && (
-                                    <button onClick={markAllAsRead} className="text-xs font-bold text-blue-600 hover:underline">Mark all as read</button>
-                                )}
-                                <button onClick={() => setIsNotificationsOpen(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-white/10 rounded-full transition-colors active:scale-95 transition-all duration-300">
-                                    <XMarkIcon className="w-5 h-5 dark:text-white" />
-                                </button>
-                            </div>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                            {sortedAnnouncements.length > 0 ? (
-                                sortedAnnouncements.map((n) => (
-                                    <div
-                                        key={n.id}
-                                        onClick={() => !n.isRead && markAsRead(n.id)}
-                                        className={`p-4 rounded-2xl border transition-all duration-200 cursor-pointer ${n.isRead
-                                            ? 'bg-slate-50 dark:bg-white/5 border-transparent'
-                                            : 'bg-white dark:bg-slate-800 border-blue-100 dark:border-blue-900 shadow-sm'
-                                            }`}
-                                    >
-                                        <div className="flex justify-between items-start mb-1">
-                                            <h3 className={`font-bold text-sm ${n.isRead ? 'text-slate-600 dark:text-slate-400' : 'text-slate-900 dark:text-white'}`}>{n.title}</h3>
-                                            {!n.isRead && <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5"></div>}
-                                        </div>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2 line-clamp-2 leading-relaxed">{n.message}</p>
-                                        <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wider">{new Date(n.createdAt).toLocaleDateString()}</span>
-                                    </div>
-                                ))
-                            ) : (
-                                <div className="h-full flex flex-col items-center justify-center text-slate-400 p-8 text-center">
-                                    <div className="w-16 h-16 bg-slate-50 dark:bg-white/5 rounded-full flex items-center justify-center mb-4">
-                                        <BellAlertIcon className="w-8 h-8 opacity-20" />
-                                    </div>
-                                    <p className="text-sm font-medium">No notifications yet</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Premium Apple-Style Dashboard Settings Drawer */}
-            {isSettingsOpen && (
-                <div className="fixed inset-0 z-[150] flex justify-end">
-                    <div
-                        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity duration-500"
-                        onClick={() => setIsSettingsOpen(false)}
-                    ></div>
-                    <div className="relative w-full max-w-sm h-full bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl shadow-[0_0_40px_rgba(0,0,0,0.1)] animate-notification-slide-left flex flex-col border-l border-white/20 dark:border-white/5">
-                        <div className="px-8 pt-12 pb-6 flex items-center justify-between">
-                            <div>
-                                <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
-                                    Customize
-                                </h2>
-                                <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-1.5 font-medium leading-relaxed">
-                                    Tailor your dashboard layout to focus on what matters most.
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setIsSettingsOpen(false)}
-                                className="w-10 h-10 flex items-center justify-center bg-slate-200/50 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 rounded-full transition-all active:scale-90"
-                            >
-                                <X className="w-5 h-5 text-slate-600 dark:text-slate-300" />
-                            </button>
-                        </div>
-
-                        <div className="flex-1 overflow-y-auto px-6 py-4 custom-scrollbar">
-                            <div className="bg-white/40 dark:bg-white/5 rounded-[28px] overflow-hidden border border-white/20 dark:border-white/5 shadow-sm">
-                                {cardConfig.sort((a, b) => a.order - b.order).map((card, index) => (
-                                    <div
-                                        key={card.id}
-                                        className={`flex items-center justify-between p-4 group transition-colors ${index !== cardConfig.length - 1 ? 'border-b border-slate-100/50 dark:border-white/5' : ''
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-500 ${card.visible
-                                                ? 'bg-blue-500 shadow-[0_4px_12px_rgba(59,130,246,0.3)]'
-                                                : 'bg-slate-200 dark:bg-slate-800'
-                                                }`}>
-                                                <LayoutGrid className={`w-5 h-5 ${card.visible ? 'text-white' : 'text-slate-400'}`} />
-                                            </div>
-                                            <span className={`text-[15px] font-semibold tracking-tight transition-colors ${card.visible ? 'text-slate-900 dark:text-white' : 'text-slate-400'
-                                                }`}>{card.label}</span>
-                                        </div>
-
-                                        {/* iOS-Style Toggle Switch */}
-                                        <button
-                                            onClick={() => toggleCardVisibility(card.id)}
-                                            className={`w-[52px] h-[32px] rounded-full p-1 transition-all duration-300 relative outline-none focus:ring-2 focus:ring-blue-500/20 ${card.visible
-                                                ? 'bg-[#34C759]'
-                                                : 'bg-slate-200 dark:bg-slate-700'
-                                                }`}
-                                        >
-                                            <div className={`w-[24px] h-[24px] bg-white rounded-full shadow-[0_2px_4_rgba(0,0,0,0.15)] transition-all duration-300 transform ${card.visible ? 'translate-x-[20px]' : 'translate-x-0'
-                                                }`} />
+                            {menuOpen && (
+                                <>
+                                    <div style={{ position: 'fixed', inset: 0, zIndex: 60 }} onClick={() => setMenuOpen(false)} aria-hidden="true" />
+                                    <div role="menu" style={menuStyle}>
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/dash'); }}>
+                                            <Icon name="dashboard" size={20} /> Dashboard
+                                        </button>
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/pos/discover'); }}>
+                                            <Icon name="menu" size={20} /> Discover Apps
+                                        </button>
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/profile'); }}>
+                                            <Icon name="account_circle" size={20} /> Account
                                         </button>
                                     </div>
-                                ))}
-                            </div>
-                            <div className="mt-6 px-4">
-                                <p className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest text-center">
-                                    Changes are saved automatically
-                                </p>
-                            </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </header>
+
+                <main className="crm-main crm-section-fade">
+                    {/* Page header — greeting, date range, export */}
+                    <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between', rowGap: 16 }}>
+                        <div>
+                            <p className="crm-pagehead__eyebrow">{todayLabel}</p>
+                            <h2 className="crm-pagehead__title">Financial Reports</h2>
+                            <p className="crm-pagehead__sub">{getGreeting()}, {firstName} — review your business health.</p>
                         </div>
 
-                        <div className="p-8 mt-auto backdrop-blur-xl bg-white/10 dark:bg-slate-900/10">
+                        <div className="crm-pagehead__actions" style={{ alignItems: 'center' }}>
+                            <div className="crm-chips" style={{ paddingBottom: 0 }}>
+                                {DATE_PRESETS.map(p => (
+                                    <button
+                                        key={p.id}
+                                        type="button"
+                                        className={`crm-chip${datePreset === p.id ? ' is-active' : ''}`}
+                                        onClick={() => handleDatePreset(p.id)}
+                                    >
+                                        {p.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <input
+                                    type="date"
+                                    value={startDate}
+                                    max={endDate}
+                                    onChange={(e) => { setStartDate(e.target.value); setDatePreset('custom'); }}
+                                    style={dateInputStyle}
+                                    aria-label="Start date"
+                                />
+                                <span style={{ color: 'var(--c-on-surface-variant)' }}>–</span>
+                                <input
+                                    type="date"
+                                    value={endDate}
+                                    min={startDate}
+                                    onChange={(e) => { setEndDate(e.target.value); setDatePreset('custom'); }}
+                                    style={dateInputStyle}
+                                    aria-label="End date"
+                                />
+                            </div>
+
+                            {activeTab === 'overview' && (
+                                <>
+                                    {isEditMode && (
+                                        <button type="button" className="crm-btn crm-btn--tonal" onClick={() => setIsSettingsOpen(true)}>
+                                            <LayoutGrid className="w-4 h-4" /> Library
+                                        </button>
+                                    )}
+                                    <button
+                                        type="button"
+                                        className={`crm-btn ${isEditMode ? 'crm-btn--filled' : 'crm-btn--outline'}`}
+                                        onClick={() => setIsEditMode(v => !v)}
+                                    >
+                                        <Settings className="w-4 h-4" /> {isEditMode ? 'Done' : 'Customize'}
+                                    </button>
+                                </>
+                            )}
+
+                            <div style={{ position: 'relative' }} ref={exportMenuRef}>
+                                <button type="button" className="crm-btn crm-btn--primary" onClick={() => setIsExportMenuOpen(o => !o)}>
+                                    <Icon name="download" size={20} /> Export
+                                    <Icon name="expand_more" size={18} />
+                                </button>
+                                {isExportMenuOpen && (
+                                    <div role="menu" style={menuStyle}>
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }}>
+                                            <span style={{ width: 10, height: 10, borderRadius: 99, background: 'var(--c-primary)' }} /> Export as CSV
+                                        </button>
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }}>
+                                            <span style={{ width: 10, height: 10, borderRadius: 99, background: 'var(--c-error)' }} /> Export as PDF
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {renderContent()}
+                </main>
+
+                {/* Mobile bottom nav = the report sections */}
+                <nav className="crm-bottomnav" aria-label="Reports navigation">
+                    {SECTIONS.map(s => {
+                        const isActive = activeTab === s.id;
+                        return (
                             <button
-                                onClick={() => setIsSettingsOpen(false)}
-                                className="w-full py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-[22px] font-bold text-[15px] shadow-[0_8px_24_rgba(0,0,0,0.15)] hover:scale-[1.02] active:scale-98 transition-all duration-300"
+                                key={s.id}
+                                type="button"
+                                className={`crm-bottomnav__item${isActive ? ' is-active' : ''}`}
+                                aria-current={isActive ? 'page' : undefined}
+                                onClick={() => setActiveTab(s.id)}
                             >
-                                Done
+                                <Icon name={s.icon} size={24} fill={isActive ? 1 : 0} />
+                                <span>{s.label}</span>
                             </button>
+                        );
+                    })}
+                </nav>
+            </div>
+
+            {/* Notifications drawer */}
+            {isNotificationsOpen && (
+                <div className="crm-modal-backdrop" style={{ alignItems: 'stretch', justifyContent: 'flex-end' }} onClick={() => setIsNotificationsOpen(false)}>
+                    <div
+                        className="crm-modal"
+                        style={{ maxWidth: 420, height: '100%', maxHeight: '100dvh', borderRadius: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="crm-modal__bar">
+                            <h2 className="crm-modal__title" style={{ flex: 1 }}>Notifications</h2>
+                            {unreadCount > 0 && (
+                                <button className="crm-link" onClick={markAllAsRead}>Mark all read</button>
+                            )}
+                            <button className="crm-iconbtn" aria-label="Close" onClick={() => setIsNotificationsOpen(false)}>
+                                <Icon name="close" size={22} />
+                            </button>
+                        </div>
+                        <div className="crm-modal__body" style={{ gap: 12 }}>
+                            {notifications.length > 0 ? (
+                                notifications.map((n) => (
+                                    <button
+                                        key={n.id}
+                                        type="button"
+                                        onClick={() => !n.isRead && markAsRead(n.id)}
+                                        className="crm-recip"
+                                        style={{ textAlign: 'left', cursor: 'pointer', flexDirection: 'column', alignItems: 'stretch', gap: 4, borderLeft: n.isRead ? undefined : '3px solid var(--c-primary)' }}
+                                    >
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+                                            <span className="crm-recip__name" style={{ fontSize: 14 }}>{n.title}</span>
+                                            {!n.isRead && <span style={{ width: 8, height: 8, borderRadius: 99, background: 'var(--c-primary)', marginTop: 4, flexShrink: 0 }} />}
+                                        </div>
+                                        <span className="crm-recip__meta" style={{ whiteSpace: 'normal' }}>{n.message}</span>
+                                        <span className="crm-recip__meta">{new Date(n.createdAt).toLocaleDateString()}</span>
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="crm-empty" style={{ padding: '48px 16px' }}>
+                                    <Icon name="notifications_off" size={36} />
+                                    <p className="crm-empty__text">No notifications yet</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* AI Assistant Floating Button */}
+            {/* Dashboard customize drawer */}
+            {isSettingsOpen && (
+                <div className="crm-modal-backdrop" style={{ alignItems: 'stretch', justifyContent: 'flex-end' }} onClick={() => setIsSettingsOpen(false)}>
+                    <div
+                        className="crm-modal"
+                        style={{ maxWidth: 400, height: '100%', maxHeight: '100dvh', borderRadius: 0 }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="crm-modal__bar" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2, paddingTop: 20, paddingBottom: 16 }}>
+                            <div style={{ display: 'flex', width: '100%', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <h2 className="crm-modal__title">Customize</h2>
+                                <button className="crm-iconbtn" aria-label="Close" onClick={() => setIsSettingsOpen(false)}>
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            <p style={{ fontSize: 13, color: 'var(--c-on-surface-variant)', margin: 0 }}>Choose which cards appear on your overview.</p>
+                        </div>
+                        <div className="crm-modal__body" style={{ gap: 8 }}>
+                            {cardConfig.slice().sort((a, b) => a.order - b.order).map((card) => (
+                                <div key={card.id} className="crm-recip">
+                                    <div className="crm-recip__id">
+                                        <span className="crm-reward__icon" style={{ width: 40, height: 40, background: card.visible ? 'var(--c-primary-container)' : 'var(--c-surface-high)', color: card.visible ? 'var(--c-on-primary-container)' : 'var(--c-on-surface-variant)' }}>
+                                            <LayoutGrid className="w-5 h-5" />
+                                        </span>
+                                        <span className="crm-recip__name" style={{ fontSize: 14 }}>{card.label}</span>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        className={`crm-switch${card.visible ? ' is-on' : ''}`}
+                                        aria-pressed={card.visible}
+                                        aria-label={`Toggle ${card.label}`}
+                                        onClick={() => toggleCardVisibility(card.id)}
+                                    >
+                                        <span className="crm-switch__knob" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="crm-modal__foot">
+                            <button type="button" className="crm-btn crm-btn--primary crm-btn--block" onClick={() => setIsSettingsOpen(false)}>Done</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* AI summary floating helper */}
             {reportData && (
                 <AiSummaryCard reportData={reportData} storeSettings={storeSettings} userName={user?.name} />
             )}

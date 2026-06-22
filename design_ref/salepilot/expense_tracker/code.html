@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Accounting Hub - Expense Management</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary-fixed": "#111c2d",
+                    "surface-dim": "#cbdbf5",
+                    "outline": "#6e7a73",
+                    "on-tertiary-fixed-variant": "#444749",
+                    "surface-bright": "#f8f9ff",
+                    "on-primary-container": "#d6ffeb",
+                    "primary-fixed": "#92f6cf",
+                    "on-surface-variant": "#3e4944",
+                    "surface-container-high": "#dce9ff",
+                    "surface-container": "#e5eeff",
+                    "on-primary-fixed-variant": "#00513c",
+                    "on-tertiary-fixed": "#191c1e",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "outline-variant": "#bdc9c2",
+                    "loss-ruby": "#E11D48",
+                    "on-tertiary-container": "#f4f6f8",
+                    "on-primary": "#ffffff",
+                    "profit-emerald": "#008060",
+                    "tertiary": "#55595b",
+                    "tertiary-fixed-dim": "#c4c7c9",
+                    "on-error-container": "#93000a",
+                    "primary": "#00654b",
+                    "surface": "#f8f9ff",
+                    "secondary": "#545f73",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#d5e0f8",
+                    "on-surface": "#0b1c30",
+                    "tertiary-container": "#6e7173",
+                    "inverse-primary": "#75d9b3",
+                    "primary-fixed-dim": "#75d9b3",
+                    "background": "#f8f9ff",
+                    "surface-container-highest": "#d3e4fe",
+                    "inverse-on-surface": "#eaf1ff",
+                    "surface-warm": "#FAF9F6",
+                    "surface-variant": "#d3e4fe",
+                    "surface-container-low": "#eff4ff",
+                    "on-error": "#ffffff",
+                    "border-subtle": "#E2E8F0",
+                    "pending-amber": "#F59E0B",
+                    "secondary-fixed": "#d8e3fb",
+                    "surface-tint": "#006c50",
+                    "error-container": "#ffdad6",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#213145",
+                    "on-background": "#0b1c30",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "primary-container": "#008060",
+                    "tertiary-fixed": "#e0e3e5",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-container": "#586377",
+                    "on-primary-fixed": "#002116",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "margin-desktop": "32px",
+                    "gutter": "16px",
+                    "unit": "8px",
+                    "margin-mobile": "16px",
+                    "container-max": "1440px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Plus Jakarta Sans"],
+                    "headline-lg": ["Plus Jakarta Sans"],
+                    "label-md": ["Plus Jakarta Sans"],
+                    "label-sm": ["Plus Jakarta Sans"],
+                    "headline-md": ["Plus Jakarta Sans"],
+                    "body-lg": ["Plus Jakarta Sans"],
+                    "data-mono": ["Plus Jakarta Sans"],
+                    "headline-sm": ["Plus Jakarta Sans"],
+                    "body-md": ["Plus Jakarta Sans"]
+            },
+            "fontSize": {
+                    "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "label-sm": ["11px", {"lineHeight": "14px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "data-mono": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .donut-segment {
+            transition: stroke-dasharray 0.3s ease;
+        }
+
+        .modal-overlay {
+            backdrop-filter: blur(4px);
+            background-color: rgba(11, 28, 48, 0.4);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-bright text-on-surface min-h-screen font-body-md">
+<!-- Top App Bar -->
+<header class="bg-surface-bright dark:bg-inverse-surface shadow-sm flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" style="font-size: 24px;">account_balance</span>
+<h1 class="font-headline-sm text-headline-sm text-primary dark:text-primary-fixed-dim">Accounting Hub</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-low transition-colors p-2 rounded-full">search</button>
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a business executive in a high-end corporate setting. The lighting is soft and natural, emphasizing a warm, accessible personality. The background is a blurred office interior with soft emerald and ivory tones, consistent with a modern financial brand aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAYDe00eVorX1DOGXnl32xqoChHoAsbtye7X6ChX1eQcMFVYW5kfMWQPANuDCxctMDjEc2dQUn-PUu4lWczem0tVtGtN4fyZGJNULsUpevdtjbm40p5mu0aqGER0NWGu6ED7pJP-O5yn5hbA_Am1R5TWKKxsSN9EZzXeX0NlGu4sI6q91Yk8GLVecO0ZUDBPPCPaatp0sSV7zFxYK_zFjdIbwPc-c0TA0423n3-5v5sm4JqxuH2CCVwJEVM5aXgeWyjnXH5teEAl2A"/>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-unit pb-32">
+<!-- Header Section -->
+<section class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 py-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Expenses</h2>
+<p class="text-on-surface-variant font-body-md">Track and manage your business outflows.</p>
+</div>
+<button class="flex items-center gap-2 bg-primary text-on-primary px-6 py-3 rounded-xl font-label-md hover:opacity-90 active:scale-95 transition-all shadow-md" onclick="toggleModal('add-expense-modal')">
+<span class="material-symbols-outlined">add</span>
+                Add Expense
+            </button>
+</section>
+<!-- Insights Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter mb-8">
+<!-- Donut Chart Card -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-6 rounded-xl shadow-sm flex flex-col md:flex-row items-center gap-8 border border-border-subtle">
+<div class="relative w-48 h-48">
+<svg class="w-full h-full -rotate-90" viewbox="0 0 36 36">
+<circle class="stroke-surface-container-high" cx="18" cy="18" fill="none" r="16" stroke-width="4"></circle>
+<!-- Segments (Travel, Food, SaaS, Rent) -->
+<circle class="stroke-profit-emerald donut-segment" cx="18" cy="18" fill="none" r="16" stroke-dasharray="40 100" stroke-dashoffset="0" stroke-width="4"></circle>
+<circle class="stroke-pending-amber donut-segment" cx="18" cy="18" fill="none" r="16" stroke-dasharray="25 100" stroke-dashoffset="-40" stroke-width="4"></circle>
+<circle class="stroke-secondary donut-segment" cx="18" cy="18" fill="none" r="16" stroke-dasharray="15 100" stroke-dashoffset="-65" stroke-width="4"></circle>
+<circle class="stroke-loss-ruby donut-segment" cx="18" cy="18" fill="none" r="16" stroke-dasharray="20 100" stroke-dashoffset="-80" stroke-width="4"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-label-sm text-on-surface-variant">Total</span>
+<span class="font-headline-sm text-headline-sm">$12,450</span>
+</div>
+</div>
+<div class="flex-1 grid grid-cols-2 gap-4 w-full">
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-profit-emerald"></div>
+<div>
+<p class="text-label-sm text-on-surface-variant">Travel</p>
+<p class="font-label-md">$4,980</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-pending-amber"></div>
+<div>
+<p class="text-label-sm text-on-surface-variant">Dining</p>
+<p class="font-label-md">$3,112</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<div>
+<p class="text-label-sm text-on-surface-variant">SaaS</p>
+<p class="font-label-md">$1,867</p>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-loss-ruby"></div>
+<div>
+<p class="text-label-sm text-on-surface-variant">Logistics</p>
+<p class="font-label-md">$2,490</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Stats -->
+<div class="flex flex-col gap-4">
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-border-subtle flex items-center justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Pending Approval</p>
+<h4 class="font-headline-sm text-headline-sm text-pending-amber">$1,240.00</h4>
+</div>
+<span class="material-symbols-outlined text-pending-amber text-3xl">pending_actions</span>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl shadow-sm border border-border-subtle flex items-center justify-between">
+<div>
+<p class="text-label-sm text-on-surface-variant">Reimbursed This Month</p>
+<h4 class="font-headline-sm text-headline-sm text-profit-emerald">$8,560.40</h4>
+</div>
+<span class="material-symbols-outlined text-profit-emerald text-3xl">task_alt</span>
+</div>
+</div>
+</div>
+<!-- Recent Expenses List -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm border border-border-subtle overflow-hidden">
+<div class="px-6 py-4 border-b border-border-subtle flex justify-between items-center">
+<h3 class="font-headline-sm text-headline-sm">Recent Transactions</h3>
+<button class="text-primary font-label-md hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low text-on-surface-variant font-label-sm">
+<tr>
+<th class="px-6 py-3">Receipt</th>
+<th class="px-6 py-3">Vendor & Date</th>
+<th class="px-6 py-3">Category</th>
+<th class="px-6 py-3">Amount</th>
+<th class="px-6 py-3">Status</th>
+<th class="px-6 py-3 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-border-subtle">
+<!-- Transaction 1 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-border-subtle group-hover:scale-105 transition-transform">
+<img class="w-full h-full object-cover" data-alt="A macro photograph of a business receipt on a clean, white marble surface. The lighting is bright and professional, highlighting crisp text and a clearly visible total amount. The style is minimalist and high-quality corporate photography." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaAF64i6FGVBasGOrKXUVdcsyxxQGh6dSV3uvFHPfggBGEX5CCl0Zm-4ffuZBuw-73FcCYakfyZm7wJupL_jj8DItvDzAXuC2gSKq1tcFR-NCmVRsJwtoj4YUwCjEB3r7ywPtz_XUr2HpaON3-cYl2Qdl99mhGMDChwvLtPFXe2FQbB0wcmbVTNT85jlap2tUGKCKgw7n8J3Yqf81rmax7zpojx-DsWetmhZCHez3AlEp8kHVpbHaqDkuqdGAarDcro1h-wSBWQlQ"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="font-label-md text-on-surface">Amazon Web Services</div>
+<div class="text-label-sm text-on-surface-variant">Oct 24, 2023</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-sm">Software</span>
+</td>
+<td class="px-6 py-4 font-data-mono text-on-surface font-bold">
+                                $452.12
+                            </td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-profit-emerald font-label-sm">
+<span class="w-2 h-2 rounded-full bg-profit-emerald"></span>
+                                    Approved
+                                </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-on-surface-variant">more_vert</button>
+</td>
+</tr>
+<!-- Transaction 2 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-border-subtle group-hover:scale-105 transition-transform">
+<img class="w-full h-full object-cover" data-alt="A sharp, clear photograph of a cafe receipt placed next to a sleek, modern smartphone on a light wood tabletop. The scene conveys a 'business travel' vibe with bright, natural lighting and soft shadows. High-resolution corporate imagery." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBe8Lc-lUnUkO1p0YdDkC7BfOJ091YhHmWoCrCYJtWifzR1uKCscPAuqe5cIX_hPOfOQj9-SpaNmLTIbNsutOVdfk33AmYrZKFUtoEjjQUzDCMEuRQve7pa7HYNfxaE1ZVLize-I_Vjni5j7vkZXy8cVRsP089e0onEZICsXBl6FaGncYRIOTIxKWnFvSE223M8iMc-RkvAG4L0ZAWzgGRoDPwQECVZ3bJHtzAIR5K3BGVYrll_-um2fpvC8cnPoDZWEArug85wpaE"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="font-label-md text-on-surface">Starbucks Reserve</div>
+<div class="text-label-sm text-on-surface-variant">Oct 22, 2023</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-label-sm">Meals</span>
+</td>
+<td class="px-6 py-4 font-data-mono text-on-surface font-bold">
+                                $18.50
+                            </td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-pending-amber font-label-sm">
+<span class="w-2 h-2 rounded-full bg-pending-amber"></span>
+                                    Pending
+                                </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-on-surface-variant">more_vert</button>
+</td>
+</tr>
+<!-- Transaction 3 -->
+<tr class="hover:bg-surface-container-low transition-colors cursor-pointer group">
+<td class="px-6 py-4">
+<div class="w-12 h-12 rounded-lg bg-surface-container overflow-hidden border border-border-subtle group-hover:scale-105 transition-transform">
+<img class="w-full h-full object-cover" data-alt="A close-up of a crumpled gas station receipt being smoothed out on a clean light-colored surface. The lighting is soft and focused, creating a realistic, everyday business expense moment. Professional corporate aesthetic with clean lines." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQrhuybqqUJEya3N4NrxBIxUOVnbf0ZnKHqLLLiOnyA885lfx5hyHU5Fh6p-2z1yCQ2i2ms8TYLOLHv2Rz5D_mJs0bY_d7ZQr7LkAVzQkkFLIt5pcDAsVrh4m0NAemgKkUFiwcTuIWV8hAcu1k1UQxitWzCjgqesLrL4OOrhLPt91gHShWS8jXuZO3CX1DRrQuy2JNkpI0v62Xv92REqo1q00hW6-HvztPl3NioxfT3ImDCIxtjdzu0BzYr-SsxSACApKxnK9yMc4"/>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="font-label-md text-on-surface">Shell Oil Co.</div>
+<div class="text-label-sm text-on-surface-variant">Oct 21, 2023</div>
+</td>
+<td class="px-6 py-4">
+<span class="bg-surface-container-high text-on-surface-variant px-3 py-1 rounded-full text-label-sm">Transport</span>
+</td>
+<td class="px-6 py-4 font-data-mono text-on-surface font-bold">
+                                $84.00
+                            </td>
+<td class="px-6 py-4">
+<div class="flex items-center gap-2 text-loss-ruby font-label-sm">
+<span class="w-2 h-2 rounded-full bg-loss-ruby"></span>
+                                    Rejected
+                                </div>
+</td>
+<td class="px-6 py-4 text-right">
+<button class="material-symbols-outlined text-on-surface-variant">more_vert</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</main>
+<!-- Navigation Shell -->
+<nav class="fixed bottom-0 w-full z-50 flex justify-around items-center h-20 bg-surface-container-lowest dark:bg-on-secondary-fixed px-2 pb-safe shadow-lg border-t border-outline-variant md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-dim hover:bg-surface-container-high transition-all px-4 py-1" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-dim hover:bg-surface-container-high transition-all px-4 py-1" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="font-label-sm text-label-sm">Ledger</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-xl px-4 py-1" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-sm text-label-sm">Expenses</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-surface-dim hover:bg-surface-container-high transition-all px-4 py-1" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-label-sm text-label-sm">Reports</span>
+</a>
+</nav>
+<!-- Add Expense Modal -->
+<div class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4" id="add-expense-modal">
+<div class="modal-overlay absolute inset-0" onclick="toggleModal('add-expense-modal')"></div>
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden flex flex-col max-h-[795px]">
+<!-- Modal Header -->
+<div class="px-6 py-4 border-b border-border-subtle flex justify-between items-center bg-surface-container-low">
+<h3 class="font-headline-sm text-headline-sm">New Expense</h3>
+<button class="material-symbols-outlined text-on-surface-variant hover:bg-surface-container-high p-1 rounded-full" onclick="toggleModal('add-expense-modal')">close</button>
+</div>
+<!-- Modal Body -->
+<div class="p-6 overflow-y-auto space-y-6">
+<!-- Receipt Capture -->
+<div class="group relative aspect-video bg-surface-container-high rounded-xl border-2 border-dashed border-outline-variant flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors overflow-hidden">
+<span class="material-symbols-outlined text-4xl text-on-surface-variant group-hover:text-primary mb-2">add_a_photo</span>
+<p class="font-label-md text-on-surface-variant">Tap to Take Photo of Receipt</p>
+<input accept="image/*" capture="environment" class="absolute inset-0 opacity-0 cursor-pointer" type="file"/>
+</div>
+<form class="space-y-6">
+<div>
+<label class="block font-label-md text-on-surface-variant mb-2">Amount</label>
+<div class="relative">
+<span class="absolute left-4 top-1/2 -translate-y-1/2 font-headline-sm text-on-surface-variant">$</span>
+<input class="w-full bg-surface-container-lowest border-2 border-border-subtle rounded-xl py-4 pl-10 pr-4 font-headline-sm focus:border-primary focus:ring-0 outline-none transition-all" placeholder="0.00" step="0.01" type="number"/>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-on-surface-variant mb-2">Category</label>
+<div class="flex flex-wrap gap-2">
+<button class="px-4 py-2 rounded-full border border-border-subtle text-label-md bg-primary-container text-on-primary-container" type="button">Travel</button>
+<button class="px-4 py-2 rounded-full border border-border-subtle text-label-md hover:bg-surface-container-high" type="button">Meals</button>
+<button class="px-4 py-2 rounded-full border border-border-subtle text-label-md hover:bg-surface-container-high" type="button">Software</button>
+<button class="px-4 py-2 rounded-full border border-border-subtle text-label-md hover:bg-surface-container-high" type="button">Logistics</button>
+<button class="px-4 py-2 rounded-full border border-border-subtle text-label-md hover:bg-surface-container-high" type="button">Marketing</button>
+</div>
+</div>
+<div>
+<label class="block font-label-md text-on-surface-variant mb-2">Notes</label>
+<textarea class="w-full bg-surface-container-lowest border-2 border-border-subtle rounded-xl p-4 focus:border-primary focus:ring-0 outline-none transition-all" placeholder="What was this for?" rows="3"></textarea>
+</div>
+</form>
+</div>
+<!-- Modal Footer -->
+<div class="p-6 border-t border-border-subtle flex gap-4">
+<button class="flex-1 py-4 rounded-xl font-label-md border border-border-subtle hover:bg-surface-container-low transition-colors" onclick="toggleModal('add-expense-modal')">Cancel</button>
+<button class="flex-1 py-4 bg-primary text-on-primary rounded-xl font-label-md hover:opacity-90 active:scale-95 transition-all shadow-md">Save Expense</button>
+</div>
+</div>
+</div>
+<script>
+        function toggleModal(id) {
+            const modal = document.getElementById(id);
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            } else {
+                modal.classList.add('hidden');
+                document.body.style.overflow = '';
+            }
+        }
+
+        // Simple Donut Animation on Load
+        window.addEventListener('DOMContentLoaded', () => {
+            const segments = document.querySelectorAll('.donut-segment');
+            segments.forEach(segment => {
+                const dashArray = segment.getAttribute('stroke-dasharray');
+                segment.style.strokeDasharray = '0 100';
+                setTimeout(() => {
+                    segment.style.strokeDasharray = dashArray;
+                }, 100);
+            });
+        });
+    </script>
+</body></html>

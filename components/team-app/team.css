@@ -1,0 +1,64 @@
+/* ============================================================
+   Standalone User Manager — team-specific pieces.
+   Rendered inside a `.crm` root so it inherits the M3 tokens + chrome.
+   ============================================================ */
+
+/* Seat / premium banner */
+.team-seats { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 18px 20px; border-radius: var(--c-radius-lg); margin-bottom: 24px; }
+.team-seats--ok { background: var(--c-surface-low); border: 1px solid rgba(189, 201, 194, 0.3); }
+.team-seats--locked { background: var(--c-secondary-fixed); }
+.team-seats__left { display: flex; align-items: center; gap: 14px; }
+.team-seats__icon { width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--c-radius-lg); display: inline-flex; align-items: center; justify-content: center; }
+.team-seats--ok .team-seats__icon { background: rgba(0, 128, 96, 0.12); color: var(--c-primary); }
+.team-seats--locked .team-seats__icon { background: rgba(255, 255, 255, 0.5); color: var(--c-secondary); }
+.team-seats__title { font-size: 15px; font-weight: 700; margin: 0; color: var(--c-on-bg); }
+.team-seats--locked .team-seats__title { color: var(--c-on-secondary-fixed); }
+.team-seats__text { font-size: 13px; margin: 2px 0 0; color: var(--c-on-surface-variant); }
+.team-seats--locked .team-seats__text { color: var(--c-on-secondary-fixed-variant); }
+
+/* Member rows */
+.team-list { display: flex; flex-direction: column; }
+.team-row { display: flex; align-items: center; gap: 14px; padding: 14px 20px; border-top: 1px solid rgba(189, 201, 194, 0.18); }
+.team-row:first-child { border-top: none; }
+.team-row__id { display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1; }
+.team-row__name { font-size: 15px; font-weight: 600; color: var(--c-on-bg); margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team-row__name .team-you { font-size: 11px; font-weight: 700; color: var(--c-primary); margin-left: 6px; }
+.team-row__email { font-size: 13px; color: var(--c-on-surface-variant); margin: 2px 0 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team-row__actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+/* Role badge */
+.team-rolebadge { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: var(--c-radius-pill); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.team-rolebadge--p { background: var(--c-primary-fixed); color: var(--c-on-primary-fixed); }
+.team-rolebadge--s { background: var(--c-secondary-container); color: var(--c-on-secondary-container); }
+.team-rolebadge--t { background: var(--c-tertiary-fixed); color: var(--c-on-tertiary-fixed); }
+
+/* Roles reference cards */
+.team-roles { display: grid; grid-template-columns: 1fr; gap: 16px; }
+@media (min-width: 768px) { .team-roles { grid-template-columns: repeat(3, 1fr); } }
+.team-rolecard { background: var(--c-surface-lowest); border: 1px solid rgba(26, 26, 46, 0.05); border-radius: var(--c-radius-lg); box-shadow: var(--c-elev-1); padding: 22px; }
+.team-rolecard__icon { width: 48px; height: 48px; border-radius: var(--c-radius-lg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; }
+.team-rolecard__icon--p { background: rgba(0, 128, 96, 0.1); color: var(--c-primary); }
+.team-rolecard__icon--s { background: rgba(255, 165, 53, 0.14); color: var(--c-secondary); }
+.team-rolecard__icon--t { background: rgba(111, 110, 134, 0.12); color: var(--c-tertiary); }
+.team-rolecard__name { font-size: 18px; font-weight: 700; color: var(--c-on-bg); margin: 0 0 2px; }
+.team-rolecard__desc { font-size: 13px; color: var(--c-on-surface-variant); margin: 0 0 14px; }
+.team-rolecard__count { font-size: 12px; font-weight: 700; color: var(--c-primary); }
+.team-rolecard__list { list-style: none; margin: 14px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.team-rolecard__list li { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--c-on-bg); }
+.team-rolecard__list .msr { color: var(--c-primary); flex-shrink: 0; }
+
+/* Role picker (in the form) */
+.team-rolepick { display: flex; flex-direction: column; gap: 10px; }
+.team-roleopt { display: flex; align-items: center; gap: 14px; padding: 14px; border: 2px solid var(--c-outline-variant); border-radius: var(--c-radius-lg); background: var(--c-surface-lowest); cursor: pointer; text-align: left; font-family: inherit; transition: border-color 0.15s var(--c-ease), background-color 0.15s var(--c-ease); }
+.team-roleopt:hover { border-color: var(--c-outline); }
+.team-roleopt.is-active { border-color: var(--c-primary); background: rgba(0, 128, 96, 0.06); }
+.team-roleopt__icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--c-radius); display: inline-flex; align-items: center; justify-content: center; background: var(--c-surface-high); color: var(--c-on-surface-variant); }
+.team-roleopt.is-active .team-roleopt__icon { background: var(--c-primary); color: #fff; }
+.team-roleopt__name { font-size: 15px; font-weight: 700; color: var(--c-on-bg); margin: 0; }
+.team-roleopt__desc { font-size: 12px; color: var(--c-on-surface-variant); margin: 2px 0 0; }
+.team-roleopt__check { margin-left: auto; color: var(--c-primary); opacity: 0; }
+.team-roleopt.is-active .team-roleopt__check { opacity: 1; }
+
+/* Password strength */
+.team-pw { height: 6px; width: 100%; background: var(--c-surface-container); border-radius: var(--c-radius-pill); overflow: hidden; margin-top: 8px; }
+.team-pw__fill { height: 100%; border-radius: var(--c-radius-pill); transition: width 0.2s var(--c-ease), background-color 0.2s var(--c-ease); }

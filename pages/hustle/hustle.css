@@ -1,0 +1,33 @@
+/* Hustle Mode — scoped tactile POS styling. Tokens come from assistant.css
+   (root carries `sp-assistant sp-hustle`). */
+.sp-hustle .keypad-btn {
+  background: var(--m3-surface-lowest);
+  border: 1px solid var(--m3-outline-variant);
+  color: var(--m3-on-surface);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: transform 0.08s ease, background-color 0.12s ease;
+}
+.sp-hustle .keypad-btn:active {
+  transform: scale(0.93);
+  background: var(--m3-surface-high);
+}
+
+.sp-hustle .tactile {
+  border: 2px solid var(--m3-outline-variant);
+  background: var(--m3-surface-lowest);
+  box-shadow: 0 4px 0 0 rgba(0, 0, 0, 0.05);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, background-color 0.15s, border-color 0.15s;
+}
+.sp-hustle .tactile:active { transform: translateY(2px); box-shadow: 0 2px 0 0 rgba(0, 0, 0, 0.05); }
+.sp-hustle .tactile.selected {
+  border-color: var(--m3-primary);
+  background: var(--m3-on-primary-container);
+}
+.sp-hustle .tactile.selected .tactile-icon,
+.sp-hustle .tactile.selected .tactile-label { color: var(--m3-primary); }
+
+.sp-hustle .big-green-button { transition: transform 0.1s ease; }
+.sp-hustle .big-green-button:active { transform: scale(0.98); }
+
+.sp-hustle .amount-pulse { transition: transform 0.1s ease; }

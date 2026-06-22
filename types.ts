@@ -281,6 +281,11 @@ export interface StoreSettings {
     // Integrations
     lencoPublicKey?: string; // Merchant's own public key for direct settlement
     lencoSecretKey?: string; // Merchant's own secret key for direct settlement
+
+    // Subscription entitlements (modular packaging — see MODULAR_PACKAGING_PLAN.md).
+    // Runtime source of truth for which add-on modules/features the store has bought.
+    // e.g. 'payment_gateway' unlocks automated mobile-money collection at checkout.
+    enabledModules?: string[];
 }
 
 // --- Accounting Types ---

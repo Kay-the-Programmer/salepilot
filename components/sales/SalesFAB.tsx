@@ -82,21 +82,21 @@ export const SalesFAB: React.FC<SalesFABProps> = ({
                                 flex-1 flex flex-col items-center justify-center gap-1 py-3 px-1 relative
                                 transition-all duration-150 active:scale-90
                                 ${tab.accent
-                                    ? 'text-indigo-600 dark:text-indigo-400'
+                                    ? 'text-primary dark:text-primary'
                                     : tab.active
-                                        ? 'text-indigo-600 dark:text-indigo-400'
+                                        ? 'text-primary dark:text-primary'
                                         : 'text-slate-500 dark:text-slate-400'}
                             `}
                             aria-label={tab.label}
                         >
                             {/* Active indicator bar */}
                             {tab.active && (
-                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-indigo-600 dark:bg-indigo-400" />
+                                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-6 h-0.5 rounded-full bg-primary dark:bg-primary" />
                             )}
 
                             {/* Scanner gets a special accent pill */}
                             {tab.accent ? (
-                                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-indigo-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white">
+                                <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary-dark to-primary flex items-center justify-center shadow-lg shadow-primary/30 text-white">
                                     {tab.icon}
                                 </div>
                             ) : (
@@ -109,7 +109,7 @@ export const SalesFAB: React.FC<SalesFABProps> = ({
                                     )}
                                 </div>
                             )}
-                            <span className={`text-[10px] font-semibold leading-none ${tab.accent ? 'text-indigo-600 dark:text-indigo-400' : ''}`}>
+                            <span className={`text-[10px] font-semibold leading-none ${tab.accent ? 'text-primary dark:text-primary' : ''}`}>
                                 {tab.label}
                             </span>
                         </button>

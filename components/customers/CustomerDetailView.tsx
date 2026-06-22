@@ -1,5 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Customer, Sale, StoreSettings } from '../../types';
+import SendSmsModal from './SendSmsModal';
+import PremiumUpgradeModal from '../ui/PremiumUpgradeModal';
+import { hasModule, MODULES } from '../../utils/entitlements';
 import MapPinIcon from '../icons/MapPinIcon';
 import EnvelopeIcon from '../icons/EnvelopeIcon';
 import PhoneIcon from '../icons/PhoneIcon';
@@ -28,6 +31,9 @@ const InfoCard: React.FC<{ title: string; children: React.ReactNode; icon?: Reac
 );
 
 const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales, storeSettings }) => {
+    const [smsOpen, setSmsOpen] = useState(false);
+    const [upgradeOpen, setUpgradeOpen] = useState(false);
+    const smsUnlocked = hasModule(storeSettings, MODULES.SMS_MESSAGING);
     const unpaidInvoices = sales.filter(s => s.paymentStatus !== 'paid');
     const paidSales = sales.filter(s => s.paymentStatus === 'paid');
 
@@ -102,6 +108,23 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                                     <dd className="text-sm text-gray-700 dark:text-slate-300 italic border-l-2 border-gray-200 dark:border-slate-800 pl-2">"{customer.notes}"</dd>
                                 </div>
                             )}
+                            <button
+                                type="button"
+                                onClick={() => (smsUnlocked ? setSmsOpen(true) : setUpgradeOpen(true))}
+                                disabled={smsUnlocked && !customer.phone}
+                                title={smsUnlocked
+                                    ? (customer.phone ? 'Send an SMS to this customer' : 'Add a phone number to send an SMS')
+                                    : 'SMS messaging is a premium add-on — tap to unlock'}
+                                className="w-full mt-2 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-surface rounded-xl text-sm font-semibold shadow-sm hover:opacity-90 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100"
+                            >
+                                {smsUnlocked ? (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 3v-3z" /></svg>
+                                ) : (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                                )}
+                                Send SMS
+                                {!smsUnlocked && <span className="ml-1 px-1.5 py-0.5 rounded bg-surface/25 text-[10px] font-bold uppercase tracking-wide">Premium</span>}
+                            </button>
                         </div>
                     </InfoCard>
                 </div>
@@ -201,6 +224,15 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                     </InfoCard>
                 </div>
             </div>
+
+            <SendSmsModal
+                customer={customer}
+                storeSettings={storeSettings}
+                isOpen={smsOpen}
+                onClose={() => setSmsOpen(false)}
+            />
+
+            <PremiumUpgradeModal isOpen={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
         </div>
     );
 };

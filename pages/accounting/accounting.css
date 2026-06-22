@@ -1,0 +1,39 @@
+/* Accounting Hub — scoped extras (tokens/utilities come from assistant.css).
+   Root carries `sp-assistant sp-books`. */
+
+/* Desktop segmented tab control */
+.sp-books .seg {
+  display: inline-flex;
+  background: var(--m3-surface-container);
+  border-radius: 9999px;
+  padding: 4px;
+  gap: 2px;
+}
+.sp-books .seg button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--m3-on-surface-variant);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.sp-books .seg button:hover { color: var(--m3-on-surface); }
+.sp-books .seg button.is-active {
+  background: var(--m3-primary);
+  color: var(--m3-on-primary);
+}
+
+/* Cash-flow bars */
+.sp-books .bar {
+  border-radius: 6px 6px 0 0;
+  transition: height 0.4s ease;
+}
+
+/* Donut chart ring (conic-gradient set inline via --donut) */
+.sp-books .donut {
+  background: var(--donut);
+  border-radius: 9999px;
+}

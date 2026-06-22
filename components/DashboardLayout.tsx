@@ -275,7 +275,7 @@ export default function DashboardLayout() {
     return (
         <OnboardingProvider user={currentUser}>
             <NotificationProvider user={currentUser}>
-                <div className="flex h-screen bg-mesh-light font-google">
+                <div className="flex h-screen bg-mesh-light">
                     {/* Mobile overlay */}
                     {isSidebarOpen && (
                         <div className="fixed inset-0 bg-black/40 z-[55] md:hidden" onClick={() => setIsSidebarOpen(false)} aria-hidden="true" />
@@ -362,7 +362,7 @@ export default function DashboardLayout() {
                                     >
                                         <BellAlertIcon className={`w-6 h-6 text-slate-700 dark:text-slate-300 ${(announcements || []).some(a => !a.isRead) ? 'animate-bell-ring' : ''}`} />
                                         {(announcements || []).some(a => !a.isRead) && (
-                                            <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-orange-500 rounded-full ring-2 ring-white dark:ring-slate-900"></span>
+                                            <span className="absolute top-3 right-3 w-2.5 h-2.5 bg-warning rounded-full ring-2 ring-white dark:ring-slate-900"></span>
                                         )}
                                     </button>
 
@@ -390,13 +390,13 @@ export default function DashboardLayout() {
 
                         {/* SuperAdmin "Command Deck" Mobile Nav */}
                         {currentUser.role === 'superadmin' && superMode === 'superadmin' && (
-                            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 bg-slate-900/90 backdrop-blur-xl border border-indigo-500/30 rounded-2xl shadow-[0_0_30px_rgba(79,70,229,0.25)] flex items-center justify-around px-2 z-[45] pointer-events-auto overflow-hidden">
+                            <div className="md:hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] h-16 bg-warm-900/90 backdrop-blur-xl border border-primary/30 rounded-2xl shadow-[0_0_30px_rgba(0,128,96,0.22)] flex items-center justify-around px-2 z-[45] pointer-events-auto overflow-hidden">
                                 {/* Deck Glow */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-indigo-500/10 to-transparent pointer-events-none"></div>
+                                <div className="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent pointer-events-none"></div>
 
                                 <button
                                     onClick={() => navigate('/superadmin')}
-                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname === '/superadmin' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname === '/superadmin' ? 'text-primary bg-primary/10' : 'text-slate-400'}`}
                                 >
                                     <HomeIcon className="w-5 h-5" />
                                     <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">HUB</span>
@@ -404,7 +404,7 @@ export default function DashboardLayout() {
 
                                 <button
                                     onClick={() => navigate('/superadmin/stores')}
-                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/stores') ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/stores') ? 'text-primary bg-primary/10' : 'text-slate-400'}`}
                                 >
                                     <BuildingStorefrontIcon className="w-5 h-5" />
                                     <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">FLEET</span>
@@ -412,7 +412,7 @@ export default function DashboardLayout() {
 
                                 <button
                                     onClick={() => navigate('/superadmin/notifications')}
-                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/notifications') ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/notifications') ? 'text-primary bg-primary/10' : 'text-slate-400'}`}
                                 >
                                     <EnvelopeIcon className="w-5 h-5" />
                                     <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">COMMS</span>
@@ -420,12 +420,9 @@ export default function DashboardLayout() {
 
                                 <button
                                     onClick={() => {
-                                        // Trigger AI Chat (it's a component in SuperAdminDashboard, but we might want a global way to open it)
-                                        // For now, let's navigate to dashboard if not there, or we can use a context/state
                                         if (location.pathname !== '/superadmin') navigate('/superadmin');
-                                        // The AI card will be accessible via its FAB
                                     }}
-                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/ai') ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400'}`}
+                                    className={`flex flex-col items-center justify-center gap-1 w-14 h-14 rounded-xl transition-all ${location.pathname.includes('/ai') ? 'text-primary bg-primary/10' : 'text-slate-400'}`}
                                 >
                                     <SparklesIcon className="w-5 h-5" />
                                     <span className="text-[8px] font-mono font-bold tracking-tighter uppercase">INTEL</span>

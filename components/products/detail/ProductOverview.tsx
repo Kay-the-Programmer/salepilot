@@ -47,7 +47,7 @@ const ProductOverview: React.FC<ProductOverviewProps> = ({ product, storeSetting
                             />
                             {!imageLoaded && (
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-8 h-8 border-2 border-slate-200/20 border-t-blue-500 rounded-full animate-spin" />
+                                    <div className="w-8 h-8 border-2 border-slate-200/20 border-t-primary rounded-full animate-spin" />
                                 </div>
                             )}
                         </>
@@ -67,7 +67,7 @@ const ProductOverview: React.FC<ProductOverviewProps> = ({ product, storeSetting
                 <div className="grid grid-cols-2 gap-4">
                     {/* Price Card */}
                     <div className="bg-white/70 dark:bg-slate-900/40 backdrop-blur-3xl rounded-2xl p-4 sm:p-6 border border-white/20 dark:border-white/5 shadow-[0_10px_30px_rgba(0,0,0,0.03)] dark:shadow-none hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:hover:shadow-[0_20px_40px_rgba(0,0,0,0.2)] transition-all duration-500 relative overflow-hidden group">
-                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-blue-500/5 dark:bg-blue-400/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
+                        <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/5 dark:bg-primary/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
                         <div className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">Unit Price</div>
                         <div className="text-[28px] font-black text-slate-900 dark:text-white tracking-tight leading-none mb-2">
                             {formatCurrency(price, storeSettings)}

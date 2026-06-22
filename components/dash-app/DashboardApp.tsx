@@ -1,0 +1,100 @@
+import React, { useMemo, useState } from 'react';
+import { Product, Sale, Customer, StoreSettings, User } from '../../types';
+import { DashboardShell, DashSection } from './DashboardShell';
+import BizOverview from './BizOverview';
+import BizSales from './BizSales';
+import BizProducts from './BizProducts';
+import { buildDashboard, DashPeriod } from './dashboardModel';
+import '../crm/crm.css';
+import './dash.css';
+
+interface DashboardAppProps {
+    section: DashSection;
+    user: User;
+    sales: Sale[];
+    products: Product[];
+    customers: Customer[];
+    storeSettings: StoreSettings | null;
+    onNavigate: (section: DashSection) => void;
+    onReports: () => void;
+    onDiscover: () => void;
+    onExit: () => void;
+    onLogout: () => void;
+    onNewSale: () => void;
+    onInventory: () => void;
+    onOrders: () => void;
+    onCustomers: () => void;
+}
+
+/**
+ * Standalone Business Dashboard. A modern reskin of the /reports overview that
+ * opens from Discover as its own focused app — every figure is derived live
+ * from the sales / products / customers the host already loaded.
+ */
+export const DashboardApp: React.FC<DashboardAppProps> = ({
+    section, user, sales, products, customers, storeSettings,
+    onNavigate, onReports, onDiscover, onExit, onLogout,
+    onNewSale, onInventory, onOrders, onCustomers,
+}) => {
+    const [period, setPeriod] = useState<DashPeriod>('week');
+
+    const overview = useMemo(
+        () => buildDashboard(sales, products, customers, storeSettings, period),
+        [sales, products, customers, storeSettings, period],
+    );
+
+    let content: React.ReactNode;
+    if (section === 'sales') {
+        content = (
+            <BizSales
+                overview={overview}
+                storeSettings={storeSettings}
+                period={period}
+                onPeriod={setPeriod}
+                onReports={onReports}
+            />
+        );
+    } else if (section === 'products') {
+        content = (
+            <BizProducts
+                overview={overview}
+                storeSettings={storeSettings}
+                period={period}
+                onPeriod={setPeriod}
+                onInventory={onInventory}
+            />
+        );
+    } else {
+        content = (
+            <BizOverview
+                overview={overview}
+                storeSettings={storeSettings}
+                user={user}
+                period={period}
+                onPeriod={setPeriod}
+                onViewSales={() => onNavigate('sales')}
+                onViewProducts={() => onNavigate('products')}
+                onNewSale={onNewSale}
+                onInventory={onInventory}
+                onOrders={onOrders}
+                onCustomers={onCustomers}
+            />
+        );
+    }
+
+    return (
+        <DashboardShell
+            active={section}
+            user={user}
+            onNavigate={onNavigate}
+            onReports={onReports}
+            onDiscover={onDiscover}
+            onExit={onExit}
+            onLogout={onLogout}
+        >
+            {content}
+        </DashboardShell>
+    );
+};
+
+export default DashboardApp;
