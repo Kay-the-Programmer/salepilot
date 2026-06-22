@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HiOutlineArrowLeftOnRectangle, HiOutlineArrowRight, HiOutlineShoppingBag } from 'react-icons/hi2';
 import PostOfferModal from '../../../components/offers/PostOfferModal';
+import Modal from '../../ui/Modal';
 
 // Reusing parts of the original MarketplacePage logic
 export default function QuickOffersView() {
@@ -88,8 +89,7 @@ export default function QuickOffersView() {
 
             {/* Product Detail Modal */}
             {selectedProduct && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm">
-                    <div className="bg-surface border border-brand-border rounded-3xl shadow-xl max-w-2xl w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                <Modal open onClose={() => setSelectedProduct(null)} size="2xl" className="rounded-3xl" zIndexClass="z-[100]">
                         <div className="grid grid-cols-1 md:grid-cols-2 h-full">
                             <div className="bg-surface-variant p-12 flex items-center justify-center">
                                 <HiOutlineShoppingBag className="w-32 h-32 text-brand-border" />
@@ -116,8 +116,7 @@ export default function QuickOffersView() {
                                 </button>
                             </div>
                         </div>
-                    </div>
-                </div>
+                </Modal>
             )}
         </div>
     );

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
+import { formatMoney } from '../../utils/currency';
 import { RevenueSummary, StoreStats, User } from '../../types';
 
 /**
@@ -29,12 +30,7 @@ const HEALTH_BADGE: Record<'checking' | 'ok' | 'degraded', { cls: string; dot: s
 };
 
 const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('en-ZM', {
-        style: 'currency',
-        currency: 'ZMW',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(amount || 0);
+    formatMoney(amount, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 
 const formatNumber = (n: number) => new Intl.NumberFormat('en-US').format(n || 0);
 

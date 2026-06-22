@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import MarketplaceLayout from '../../components/marketplace/MarketplaceLayout';
+import Modal from '../../components/ui/Modal';
 import QuickOffersView from '../../components/marketplace/views/QuickOffersView';
 import SuppliersView from '../../components/marketplace/views/SuppliersView';
 import RetailersView from '../../components/marketplace/views/RetailersView';
@@ -130,8 +131,7 @@ export default function MarketplacePage() {
 
             {/* Shipping Details Modal */}
             {isShippingModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm">
-                    <div className="bg-surface border border-brand-border rounded-2xl shadow-xl max-w-md w-full p-8 relative animate-in zoom-in-95 duration-200">
+                <Modal open onClose={() => setIsShippingModalOpen(false)} size="md" className="p-8 relative" zIndexClass="z-[100]">
                         <button
                             onClick={() => setIsShippingModalOpen(false)}
                             className="absolute top-4 right-4 p-2 bg-surface-variant rounded-full hover:bg-brand-border transition-colors active:scale-95"
@@ -161,8 +161,7 @@ export default function MarketplacePage() {
                         >
                             Got it
                         </button>
-                    </div>
-                </div>
+                </Modal>
             )}
         </div>
     );

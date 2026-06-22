@@ -8,6 +8,7 @@ import EnvelopeIcon from '../icons/EnvelopeIcon';
 import PhoneIcon from '../icons/PhoneIcon';
 import DocumentTextIcon from '../icons/DocumentTextIcon';
 import BanknotesIcon from '../icons/BanknotesIcon';
+import { toneClass, fulfillmentMeta, paymentMeta } from '../ui/StatusPill';
 import CreditCardIcon from '../icons/CreditCardIcon';
 import CalendarIcon from '../icons/CalendarIcon';
 import UserCircleIcon from '../icons/UserCircleIcon';
@@ -39,25 +40,6 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
 
     // Sort by timestamp descending to get recent orders
     const recentOrders = [...sales].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).slice(0, 5);
-
-    const getStatusStyles = (status?: string) => {
-        switch (status) {
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800';
-            case 'fulfilled': return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800';
-            case 'shipped': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800';
-            case 'cancelled': return 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700';
-        }
-    };
-
-    const getPaymentStatusStyles = (status?: string) => {
-        switch (status) {
-            case 'paid': return 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800';
-            case 'pending': return 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800';
-            case 'partially_paid': return 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800';
-            default: return 'bg-slate-50 text-slate-700 border-slate-200 dark:bg-slate-800/50 dark:text-slate-400 dark:border-slate-700';
-        }
-    };
 
     return (
         <div className="space-y-6">
@@ -146,10 +128,10 @@ const CustomerDetailView: React.FC<CustomerDetailViewProps> = ({ customer, sales
                                                     <span className="text-xs text-gray-500 dark:text-slate-500">{new Date(sale.timestamp).toLocaleDateString()}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1 mt-1">
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getStatusStyles(sale.fulfillmentStatus)}`}>
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${toneClass(fulfillmentMeta(sale.fulfillmentStatus).tone)}`}>
                                                         {sale.fulfillmentStatus?.replace('_', ' ') || 'pending'}
                                                     </span>
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${getPaymentStatusStyles(sale.paymentStatus)}`}>
+                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${toneClass(paymentMeta(sale.paymentStatus).tone)}`}>
                                                         {sale.paymentStatus === 'paid' ? 'Paid' : (sale.paymentStatus === 'partially_paid' ? 'Partial' : 'Unpaid')}
                                                     </span>
                                                 </div>

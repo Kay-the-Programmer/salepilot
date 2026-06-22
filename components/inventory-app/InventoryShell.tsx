@@ -61,10 +61,7 @@ export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, on
                         <Icon name="point_of_sale" size={22} /> Point of Sale
                     </button>
                     <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="menu" size={22} /> Discover Apps
-                    </button>
-                    <button type="button" className="crm-rail__item" onClick={onExit}>
-                        <Icon name="grid_view" size={22} /> Full App
+                        <Icon name="apps" size={22} /> Discover Apps
                     </button>
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout

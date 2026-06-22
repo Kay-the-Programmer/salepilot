@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { INPUT_CLASS } from '../../utils/ui';
+import { StatusPill, storeMeta } from '../../components/ui/StatusPill';
 import {
     ArrowLeftIcon,
     BuildingStorefrontIcon,
@@ -77,20 +79,11 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
         }
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'active': return 'bg-success-muted text-success';
-            case 'inactive': return 'bg-surface-variant text-brand-text-muted';
-            case 'suspended': return 'bg-danger-muted text-danger';
-            default: return 'bg-surface-variant text-brand-text-muted';
-        }
-    };
-
     if (loading) return <div className="min-h-screen bg-background p-8 text-center text-brand-text-muted">Loading store details...</div>;
     if (error) return <div className="min-h-screen bg-background p-8 text-center text-danger">Error: {error}</div>;
     if (!store) return <div className="min-h-screen bg-background p-8 text-center text-brand-text-muted">Store not found</div>;
 
-    const inputClass = "w-full bg-surface border border-brand-border rounded-xl px-3.5 py-2.5 text-sm text-brand-text placeholder-brand-text-muted focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none transition-colors";
+    const inputClass = INPUT_CLASS;
 
     return (
         <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">
@@ -107,9 +100,9 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                         <h1 className="text-2xl font-extrabold tracking-tight text-brand-text">{store.name}</h1>
                         <p className="text-sm text-brand-text-muted">Store ID: {store.id}</p>
                     </div>
-                    <div className={`ml-auto px-3 py-1 rounded-full text-sm font-bold ${getStatusColor(store.status)} capitalize`}>
+                    <StatusPill tone={storeMeta(store.status).tone} className="ml-auto text-sm capitalize">
                         {store.status}
-                    </div>
+                    </StatusPill>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

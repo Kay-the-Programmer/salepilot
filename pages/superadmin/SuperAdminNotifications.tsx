@@ -1,5 +1,8 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../services/api';
+import { formatRelativeDate as formatDate } from '../../utils/date';
+import { INPUT_CLASS } from '../../utils/ui';
+import Modal from '../../components/ui/Modal';
 import {
     ClockIcon,
     EyeIcon,
@@ -192,25 +195,6 @@ const SuperAdminNotifications: React.FC = () => {
         return configs[type || 'info'];
     };
 
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffMins = Math.floor(diffMs / (1000 * 60));
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-        if (diffMins < 60) return `${diffMins}m ago`;
-        if (diffHours < 24) return `${diffHours}h ago`;
-        if (diffDays < 7) return `${diffDays}d ago`;
-
-        return date.toLocaleDateString('en-ZM', {
-            month: 'short',
-            day: 'numeric',
-            year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-        });
-    };
-
     const getStats = () => {
         const total = notifications.length;
         const today = notifications.filter(n => {
@@ -231,7 +215,7 @@ const SuperAdminNotifications: React.FC = () => {
 
     const stats = getStats();
 
-    const inputClass = "w-full bg-surface border border-brand-border rounded-xl px-3.5 py-2.5 text-sm text-brand-text placeholder-brand-text-muted focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none transition-colors";
+    const inputClass = INPUT_CLASS;
 
     return (
         <div className="min-h-screen bg-background">
@@ -549,14 +533,7 @@ const SuperAdminNotifications: React.FC = () => {
 
                 {/* Status Modal */}
                 {isModalOpen && selectedNotif && (
-                    <div
-                        className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 lg:p-10 bg-warm-900/50 backdrop-blur-sm"
-                        onClick={() => setIsModalOpen(false)}
-                    >
-                        <div
-                            className="bg-surface rounded-2xl shadow-xl w-full max-w-5xl max-h-full flex flex-col border border-brand-border overflow-hidden animate-in fade-in zoom-in-95 duration-300"
-                            onClick={(e) => e.stopPropagation()}
-                        >
+                    <Modal open onClose={() => setIsModalOpen(false)} size="5xl" zIndexClass="z-[100]">
                             {/* Modal Header */}
                             <div className="p-6 border-b border-brand-border flex justify-between items-center gap-4">
                                 <div className="flex items-center gap-4 min-w-0">
@@ -713,8 +690,7 @@ const SuperAdminNotifications: React.FC = () => {
                                     Close
                                 </button>
                             </div>
-                        </div>
-                    </div>
+                </Modal>
                 )}
             </div>
         </div>

@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { api } from '../../services/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import { ChatBubbleLeftRightIcon } from '../../components/icons';
+import { INPUT_CLASS } from '../../utils/ui';
 
 interface SupportContactConfig {
     phone: string;
@@ -68,7 +69,7 @@ const SuperAdminSettings: React.FC = () => {
         return <LoadingSpinner />;
     }
 
-    const inputClass = "w-full bg-surface border border-brand-border rounded-xl px-3.5 py-2.5 text-sm text-brand-text placeholder-brand-text-muted shadow-sm focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none transition-colors";
+    const inputClass = `${INPUT_CLASS} shadow-sm`;
 
     return (
         <div className="min-h-screen bg-background p-4 sm:p-6 lg:p-8">

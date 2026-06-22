@@ -1,5 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../services/api';
+import { formatDate as fmtDate } from '../../utils/date';
+import { formatMoney } from '../../utils/currency';
+import { INPUT_CLASS } from '../../utils/ui';
+import Modal from '../../components/ui/Modal';
+import { StatusPill, subscriptionMeta } from '../../components/ui/StatusPill';
 import {
     CreditCardIcon,
     CalendarIcon,
@@ -163,21 +168,9 @@ const SuperAdminSubscriptions: React.FC = () => {
         }
     };
 
-    const formatDate = (dateStr?: string | null) => {
-        if (!dateStr) return 'N/A';
-        return new Date(dateStr).toLocaleDateString(undefined, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
-        });
-    };
+    const formatDate = (dateStr?: string | null) => fmtDate(dateStr, 'N/A');
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-ZM', {
-            style: 'currency',
-            currency: 'ZMW'
-        }).format(amount);
-    };
+    const formatCurrency = (amount: number) => formatMoney(amount);
 
     const filteredStores = useMemo(() => {
         return stores.filter(store => {
@@ -196,33 +189,15 @@ const SuperAdminSubscriptions: React.FC = () => {
         });
     }, [stores, search, statusFilter]);
 
-    const getSubscriptionConfig = (status: StoreRow['subscriptionStatus']) => {
-        const configs = {
-            active: {
-                color: 'bg-success-muted text-success',
-                icon: <CheckCircleIcon className="w-4 h-4" />,
-                label: 'Active'
-            },
-            trial: {
-                color: 'bg-sp-amber-soft text-sp-amber',
-                icon: <ClockIcon className="w-4 h-4" />,
-                label: 'Trial'
-            },
-            past_due: {
-                color: 'bg-danger-muted text-danger',
-                icon: <ExclamationTriangleIcon className="w-4 h-4" />,
-                label: 'Past Due'
-            },
-            canceled: {
-                color: 'bg-surface-variant text-brand-text-muted',
-                icon: <XCircleIcon className="w-4 h-4" />,
-                label: 'Canceled'
-            }
-        };
-        return configs[status];
+    // Subscription status icons; tone, label & colours come from the shared StatusPill meta.
+    const SUB_STATUS_ICON: Record<StoreRow['subscriptionStatus'], React.ReactNode> = {
+        active: <CheckCircleIcon className="w-4 h-4" />,
+        trial: <ClockIcon className="w-4 h-4" />,
+        past_due: <ExclamationTriangleIcon className="w-4 h-4" />,
+        canceled: <XCircleIcon className="w-4 h-4" />,
     };
 
-    const inputClass = "w-full bg-surface border border-brand-border rounded-xl px-3.5 py-2.5 text-sm text-brand-text placeholder-brand-text-muted focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none transition-colors";
+    const inputClass = INPUT_CLASS;
 
     return (
         <div className="min-h-screen bg-background">
@@ -398,8 +373,6 @@ const SuperAdminSubscriptions: React.FC = () => {
                                     ))
                                 ) : filteredStores.length > 0 ? (
                                     filteredStores.map(store => {
-                                        const config = getSubscriptionConfig(store.subscriptionStatus);
-
                                         return (
                                             <tr key={store.id} className="hover:bg-surface-variant/60 transition-colors group">
                                                 <td className="px-6 py-4">
@@ -418,10 +391,9 @@ const SuperAdminSubscriptions: React.FC = () => {
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1">
                                                         <div className="flex items-center gap-2">
-                                                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${config.color}`}>
-                                                                {config.icon}
-                                                                {config.label}
-                                                            </span>
+                                                            <StatusPill tone={subscriptionMeta(store.subscriptionStatus).tone} icon={SUB_STATUS_ICON[store.subscriptionStatus]}>
+                                                                {subscriptionMeta(store.subscriptionStatus).label}
+                                                            </StatusPill>
                                                             {store.planName && (
                                                                 <span className="text-xs text-brand-text-muted">
                                                                     • {store.planName}
@@ -500,14 +472,7 @@ const SuperAdminSubscriptions: React.FC = () => {
 
             {/* Payment Modal */}
             {isPaymentModalOpen && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm transition-opacity duration-300"
-                    onClick={() => !processing && setPaymentModalOpen(false)}
-                >
-                    <div
-                        className="bg-surface w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl shadow-xl border border-brand-border animate-in fade-in zoom-in-95 duration-300"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                <Modal open onClose={() => setPaymentModalOpen(false)} disabled={processing} size="lg">
                         <div className="p-6 border-b border-brand-border flex justify-between items-center">
                             <h3 className="font-extrabold text-lg text-brand-text flex items-center gap-2">
                                 <CreditCardIcon className="w-5 h-5 text-sp-green-dark" />
@@ -715,8 +680,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
-                </div>
+                </Modal>
             )}
         </div>
     );

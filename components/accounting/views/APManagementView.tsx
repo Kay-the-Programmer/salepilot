@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { SupplierInvoice, PurchaseOrder, StoreSettings, SupplierPayment, Supplier } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
+import { toneClass, toneDot } from '../../ui/StatusPill';
 import PlusIcon from '../../icons/PlusIcon';
 import DocumentChartBarIcon from '../../icons/DocumentChartBarIcon';
 import BuildingOfficeIcon from '../../icons/BuildingOfficeIcon';
@@ -26,17 +27,17 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
     const [activeActionMenu, setActiveActionMenu] = useState<string | null>(null);
 
     const StatusBadge: React.FC<{ status: SupplierInvoice['status'] }> = ({ status }) => {
-        const statusConfig = {
-            unpaid: { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-400', dot: 'bg-amber-500' },
-            partially_paid: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500' },
-            paid: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-400', dot: 'bg-emerald-500' },
-            overdue: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-400', dot: 'bg-red-500' },
+        const TONE: Record<string, 'amber' | 'primary' | 'success' | 'danger'> = {
+            unpaid: 'amber',
+            partially_paid: 'primary',
+            paid: 'success',
+            overdue: 'danger',
         };
-        const config = statusConfig[status] || statusConfig.unpaid;
+        const tone = TONE[status] || 'amber';
 
         return (
-            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-                <div className={`w-1.5 h-1.5 rounded-full ${config.dot}`}></div>
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${toneClass(tone)}`}>
+                <div className={`w-1.5 h-1.5 rounded-full ${toneDot(tone)}`}></div>
                 {status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
             </span>
         );

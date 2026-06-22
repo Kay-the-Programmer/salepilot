@@ -7,10 +7,11 @@ import SuperAdminStores from '../../pages/superadmin/SuperAdminStores';
 import SuperAdminStoreDetails from '../../pages/superadmin/SuperAdminStoreDetails';
 import SuperAdminNotifications from '../../pages/superadmin/SuperAdminNotifications';
 import SuperAdminSubscriptions from '../../pages/superadmin/SuperAdminSubscriptions';
+import SuperAdminCatalog from '../../pages/superadmin/SuperAdminCatalog';
 import SuperAdminSettings from '../../pages/superadmin/SuperAdminSettings';
 import '../crm/crm.css';
 
-export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'settings';
+export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'settings';
 
 interface SuperAdminAppProps {
     user: User;
@@ -28,6 +29,7 @@ const NAV: { id: SuperSection; label: string; icon: string; route: string }[] = 
     { id: 'stores',     label: 'Stores',     icon: 'storefront',      route: '/superadmin/stores' },
     { id: 'broadcasts', label: 'Broadcasts', icon: 'campaign',        route: '/superadmin/notifications' },
     { id: 'billing',    label: 'Billing',    icon: 'payments',        route: '/superadmin/subscriptions' },
+    { id: 'catalog',    label: 'Plans & Pricing', icon: 'sell',       route: '/superadmin/catalog' },
     { id: 'settings',   label: 'Settings',   icon: 'settings',        route: '/superadmin/settings' },
 ];
 
@@ -36,6 +38,7 @@ const sectionForSub = (subPath?: string): SuperSection => {
         case 'stores': return 'stores';
         case 'notifications': return 'broadcasts';
         case 'subscriptions': return 'billing';
+        case 'catalog': return 'catalog';
         case 'settings': return 'settings';
         default: return 'overview';
     }
@@ -65,6 +68,9 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
             break;
         case 'billing':
             content = <SuperAdminSubscriptions />;
+            break;
+        case 'catalog':
+            content = <SuperAdminCatalog />;
             break;
         case 'settings':
             content = <SuperAdminSettings />;

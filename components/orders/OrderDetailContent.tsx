@@ -9,6 +9,7 @@ import {
     HiOutlineCalendar
 } from 'react-icons/hi2';
 import { formatCurrency } from '../../utils/currency';
+import { toneClass, fulfillmentMeta, paymentMeta } from '../ui/StatusPill';
 
 interface OrderDetailContentProps {
     order: Sale;
@@ -16,25 +17,6 @@ interface OrderDetailContentProps {
 }
 
 const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSettings }) => {
-    const getStatusStyles = (status?: string) => {
-        switch (status) {
-            case 'pending': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
-            case 'fulfilled': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-            case 'shipped': return 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
-            case 'cancelled': return 'bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800';
-            default: return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
-        }
-    };
-
-    const getPaymentStatusStyles = (status?: string) => {
-        switch (status) {
-            case 'paid': return 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-            case 'pending': return 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800';
-            case 'partially_paid': return 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
-            default: return 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
-        }
-    };
-
     const formatStatusString = (status?: string) => {
         if (!status) return 'Unknown';
         return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -55,7 +37,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
 
             {/* Status Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div glass-effect="" className={`p-1 rounded-2xl border-2 border-slate-200 dark:border-slate-700 ${getStatusStyles(order.fulfillmentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
+                <div glass-effect="" className={`p-1 rounded-2xl border-2 border-brand-border ${toneClass(fulfillmentMeta(order.fulfillmentStatus).tone)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
                     <div className="p-3">
                         <HiOutlineTruck className="w-6 h-6" />
                     </div>
@@ -66,7 +48,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                         </div>
                     </div>
                 </div>
-                <div glass-effect="" className={`p-1 rounded-2xl border-2 border-slate-200 dark:border-slate-700 ${getPaymentStatusStyles(order.paymentStatus)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
+                <div glass-effect="" className={`p-1 rounded-2xl border-2 border-brand-border ${toneClass(paymentMeta(order.paymentStatus).tone)} flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-200`}>
                     <div className="p-3">
                         <HiOutlineCurrencyDollar className="w-6 h-6" />
                     </div>

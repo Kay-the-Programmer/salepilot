@@ -1,5 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, ReactNode } from 'react';
 import { api } from '../../services/api';
+import { formatDate } from '../../utils/date';
+import { formatMoney } from '../../utils/currency';
+import { fulfillmentMeta, toneClass } from '../../components/ui/StatusPill';
 import {
   HiOutlineShoppingBag,
   HiOutlineTruck,
@@ -33,51 +36,28 @@ export default function CustomerDashboard() {
     fetchOrders();
   }, []);
 
+  // Fulfillment icons (page-specific); tone, label & colours come from the shared StatusPill meta.
+  const STATUS_ICON: Record<string, ReactNode> = {
+    delivered: <HiOutlineCheckCircle className="w-4 h-4" />,
+    fulfilled: <HiOutlineCheckCircle className="w-4 h-4" />,
+    completed: <HiOutlineCheckCircle className="w-4 h-4" />,
+    shipped: <HiOutlineTruck className="w-4 h-4" />,
+    processing: <HiOutlineClock className="w-4 h-4" />,
+    pending: <HiOutlineClock className="w-4 h-4" />,
+    cancelled: <HiOutlineXCircle className="w-4 h-4" />,
+  };
+
   const getStatusConfig = (status: string) => {
-    const configs = {
-      delivered: {
-        color: 'text-emerald-700 bg-emerald-50 border-emerald-100',
-        icon: <HiOutlineCheckCircle className="w-4 h-4" />,
-        label: 'Delivered'
-      },
-      shipped: {
-        color: 'text-blue-700 bg-blue-50 border-blue-100',
-        icon: <HiOutlineTruck className="w-4 h-4" />,
-        label: 'Shipped'
-      },
-      processing: {
-        color: 'text-amber-700 bg-amber-50 border-amber-100',
-        icon: <HiOutlineClock className="w-4 h-4" />,
-        label: 'Processing'
-      },
-      cancelled: {
-        color: 'text-rose-700 bg-rose-50 border-rose-100',
-        icon: <HiOutlineXCircle className="w-4 h-4" />,
-        label: 'Cancelled'
-      }
-    };
-    return configs[status as keyof typeof configs] || {
-      color: 'text-slate-600 bg-slate-50 border-slate-100',
-      icon: <HiOutlineShoppingBag className="w-4 h-4" />,
-      label: 'Pending'
+    const meta = fulfillmentMeta(status);
+    return {
+      color: toneClass(meta.tone),
+      icon: STATUS_ICON[status] ?? <HiOutlineShoppingBag className="w-4 h-4" />,
+      label: meta.label,
     };
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 2
-    }).format(amount);
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
+  const formatCurrency = (amount: number) =>
+    formatMoney(amount, { currency: 'USD', locale: 'en-US', minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
   const filteredOrders = filter === 'all'
     ? orders

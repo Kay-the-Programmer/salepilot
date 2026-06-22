@@ -6,6 +6,7 @@ import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
 import ThemeToggle from './components/ThemeToggle';
 import ErrorBoundary from './components/ErrorBoundary';
+import PaywallHost from './components/PaywallHost';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
@@ -131,6 +132,7 @@ export default function App() {
                                 <Route path="/superadmin/stores" element={<Dashboard />} />
                                 <Route path="/superadmin/notifications" element={<Dashboard />} />
                                 <Route path="/superadmin/subscriptions" element={<Dashboard />} />
+                                <Route path="/superadmin/catalog" element={<Dashboard />} />
 
 
                                 {/* <Route path="/directory" element={<MarketplacePage />} />
@@ -164,6 +166,9 @@ export default function App() {
 
                     {/* Global, always-visible light/dark switch */}
                     <ThemeToggle />
+
+                    {/* Global soft paywall — pops an upgrade prompt on a 402 (locked add-on) */}
+                    <PaywallHost />
                 </div>
 
             </ToastProvider>

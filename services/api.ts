@@ -100,6 +100,14 @@ async function request<T>(endpoint: string, init: RequestInit = {}): Promise<T> 
         message = body.message;
       }
     } catch (_) { }
+    // Entitlement paywall: a 402 with a `module` means the feature is a locked
+    // premium add-on. Broadcast it so a global host can offer an in-context
+    // upgrade, then still throw so the calling feature fails gracefully.
+    if (resp.status === 402 && body && typeof body === 'object' && body.module && typeof window !== 'undefined') {
+      try {
+        window.dispatchEvent(new CustomEvent('salepilot:paywall', { detail: { module: body.module, message } }));
+      } catch (_) { }
+    }
     throw new HttpError(resp.status, message, body);
   }
   // Try parse JSON, allow empty

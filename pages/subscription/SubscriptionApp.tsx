@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../../services/authService';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
+import { formatLongDate as formatDate } from '../../utils/date';
 import type { BackendPlan, SubscriptionHistoryItem } from '../../types/subscription';
 import { logEvent } from '../../src/utils/analytics';
 import '../assistant/assistant.css';
@@ -15,7 +16,25 @@ declare global {
   interface Window { LencoPay: any; }
 }
 
-type View = 'manage' | 'plans';
+type View = 'manage' | 'plans' | 'addons';
+
+interface PurchasableAddon {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  owned: boolean;
+  activeUntil: string | null;
+  autoRenew: boolean;
+}
+
+interface AddonCheckout {
+  amount: number;
+  currency: string;
+  moduleIds: string[];
+  label: string;
+}
 
 const currencySymbol = (code = 'ZMW') =>
   code === 'USD' ? '$' : code === 'ZMW' ? 'K' : code === 'GBP' ? '£' : code === 'EUR' ? '€' : '';
@@ -26,17 +45,13 @@ const money = (amount: number, code = 'ZMW') => {
   return sym ? `${sym}${n}` : `${code} ${n}`;
 };
 
-const formatDate = (s?: string) => {
-  if (!s) return '—';
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? '—' : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-};
 
 const tierLabel = (index: number, total: number) =>
   index === 0 ? 'Basic' : index === total - 1 ? 'Maximum' : 'Advanced';
 
 const SubscriptionApp: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { theme, toggleTheme } = useTheme();
   const { showToast } = useToast();
 
@@ -55,11 +70,24 @@ const SubscriptionApp: React.FC = () => {
   const stopPollingRef = useRef(false);
   const historyRef = useRef<HTMLDivElement>(null);
 
+  // Add-ons (à-la-carte modules)
+  const [addons, setAddons] = useState<PurchasableAddon[]>([]);
+  const [fetchingAddons, setFetchingAddons] = useState(true);
+  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
+  const [addonCheckout, setAddonCheckout] = useState<AddonCheckout | null>(null);
+
   useEffect(() => {
     const u = getCurrentUser();
     if (!u) { navigate('/login', { replace: true }); return; }
     setUser(u);
   }, [navigate]);
+
+  // Deep-link from the soft paywall: /subscription?view=addons&module=<id>
+  useEffect(() => {
+    if (searchParams.get('view') === 'addons') setView('addons');
+    const m = searchParams.get('module');
+    if (m) setSelectedAddons((prev) => new Set(prev).add(m));
+  }, [searchParams]);
 
   const fetchPlans = useCallback(async () => {
     try {
@@ -83,11 +111,24 @@ const SubscriptionApp: React.FC = () => {
     }
   }, []);
 
+  const fetchAddons = useCallback(async () => {
+    try {
+      const data = await api.get<PurchasableAddon[]>('/subscriptions/addons');
+      setAddons(Array.isArray(data) ? data : []);
+    } catch (e) {
+      console.warn('Could not load add-ons', e);
+      setAddons([]);
+    } finally {
+      setFetchingAddons(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (!user) return;
     fetchPlans();
+    fetchAddons();
     if (user.currentStoreId) fetchHistory(user.currentStoreId);
-  }, [user, fetchPlans, fetchHistory]);
+  }, [user, fetchPlans, fetchAddons, fetchHistory]);
 
   // ---- Payment flow (ported from the existing SubscriptionPage) ----
   const pollVerification = useCallback(async (reference: string, retries = 0) => {
@@ -95,14 +136,18 @@ const SubscriptionApp: React.FC = () => {
     try {
       const data = await api.get<any>(`/subscriptions/verify/${reference}`);
       if (data.success) {
-        showToast('Payment successful! Your subscription is now active.', 'success');
-        logEvent('Subscription', 'Subscribe', planToPay?.name);
+        const wasAddon = !!addonCheckout;
+        showToast(wasAddon ? 'Payment successful! Your add-on is now active.' : 'Payment successful! Your subscription is now active.', 'success');
+        logEvent('Subscription', wasAddon ? 'BuyAddon' : 'Subscribe', wasAddon ? addonCheckout?.label : planToPay?.name);
         setLoading(false);
         setIsPaymentModalOpen(false);
+        setSelectedAddons(new Set());
+        setAddonCheckout(null);
         const u = getCurrentUser();
         setUser(u);
         if (u?.currentStoreId) fetchHistory(u.currentStoreId);
-        setView('manage');
+        fetchAddons();
+        setView(wasAddon ? 'addons' : 'manage');
       } else if (data.pending) {
         if (retries < 20) setTimeout(() => pollVerification(reference, retries + 1), 3000);
         else { showToast('Payment confirmation is taking longer than expected. Please check back later.', 'warning'); setLoading(false); setIsPaymentModalOpen(false); }
@@ -114,17 +159,20 @@ const SubscriptionApp: React.FC = () => {
       if (retries < 20) setTimeout(() => pollVerification(reference, retries + 1), 3000);
       else { showToast('Failed to verify payment. If you were charged, please contact support.', 'error'); setLoading(false); setIsPaymentModalOpen(false); }
     }
-  }, [planToPay, showToast, fetchHistory]);
+  }, [planToPay, addonCheckout, showToast, fetchHistory, fetchAddons]);
 
   const handlePayment = useCallback(async (method: 'card' | 'mobile-money', phoneNumber?: string) => {
-    if (!planToPay) return;
+    const isAddon = !!addonCheckout;
+    if (!isAddon && !planToPay) return;
     if (!user?.currentStoreId) { showToast('Store context missing. Please re-login.', 'error'); return; }
     setLoading(true);
     try {
-      const response = await api.post<any>('/subscriptions/pay', {
-        storeId: user.currentStoreId, planId: planToPay.id, method, phoneNumber,
-      });
+      const response = isAddon
+        ? await api.post<any>('/subscriptions/addons/pay', { moduleIds: addonCheckout!.moduleIds, method, phoneNumber })
+        : await api.post<any>('/subscriptions/pay', { storeId: user.currentStoreId, planId: planToPay!.id, method, phoneNumber });
       const { reference, lencoResult } = response;
+      const amount = isAddon ? addonCheckout!.amount : planToPay!.price;
+      const currency = isAddon ? addonCheckout!.currency : (planToPay!.currency || 'ZMW');
       setCurrentReference(reference);
       stopPollingRef.current = false;
 
@@ -136,7 +184,7 @@ const SubscriptionApp: React.FC = () => {
       if (!window.LencoPay) throw new Error('Lenco SDK not loaded. Please refresh the page.');
       window.LencoPay.getPaid({
         key: import.meta.env.VITE_LENCO_PUBLIC_KEY,
-        reference, email: user.email, amount: planToPay.price, currency: planToPay.currency || 'ZMW',
+        reference, email: user.email, amount, currency,
         channels: [method], customer: { phone: phoneNumber },
         onSuccess: async () => { await pollVerification(reference); },
         onClose: () => { setLoading(false); setIsPaymentModalOpen(false); },
@@ -147,15 +195,46 @@ const SubscriptionApp: React.FC = () => {
       showToast(e.message || 'Failed to process payment. Please try again.', 'error');
       setLoading(false);
     }
-  }, [planToPay, user, showToast, pollVerification]);
+  }, [planToPay, addonCheckout, user, showToast, pollVerification]);
 
   const handleSelectPlan = useCallback((planId: string) => {
     const plan = plans.find((p) => p.id === planId);
     if (!plan) return;
     setSelectedPlan(planId);
+    setAddonCheckout(null);
     setPlanToPay(plan);
     setIsPaymentModalOpen(true);
   }, [plans]);
+
+  const toggleAddon = useCallback((id: string) => {
+    setSelectedAddons((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleToggleAutoRenew = useCallback(async (moduleId: string, autoRenew: boolean) => {
+    // Optimistic update, then persist.
+    setAddons((prev) => prev.map((a) => (a.id === moduleId ? { ...a, autoRenew } : a)));
+    try {
+      await api.patch(`/subscriptions/addons/${moduleId}/auto-renew`, { autoRenew });
+      showToast(autoRenew ? 'Auto-renew turned on.' : 'Auto-renew turned off.', 'success');
+    } catch (e: any) {
+      setAddons((prev) => prev.map((a) => (a.id === moduleId ? { ...a, autoRenew: !autoRenew } : a)));
+      showToast(e?.message || 'Could not update auto-renew.', 'error');
+    }
+  }, [showToast]);
+
+  const handleBuyAddons = useCallback(() => {
+    const chosen = addons.filter((a) => selectedAddons.has(a.id) && !a.owned);
+    if (chosen.length === 0) { showToast('Select at least one add-on to continue.', 'info'); return; }
+    const amount = chosen.reduce((s, a) => s + a.price, 0);
+    const currency = chosen[0].currency || 'ZMW';
+    setPlanToPay(null);
+    setAddonCheckout({ amount, currency, moduleIds: chosen.map((a) => a.id), label: chosen.length === 1 ? chosen[0].name : `${chosen.length} add-ons` });
+    setIsPaymentModalOpen(true);
+  }, [addons, selectedAddons, showToast]);
 
   const handleCancelTransaction = useCallback(async () => {
     if (!currentReference) return;
@@ -180,6 +259,7 @@ const SubscriptionApp: React.FC = () => {
 
   const goPlans = () => setView('plans');
   const goManage = () => setView('manage');
+  const goAddons = () => setView('addons');
   const goBilling = () => { setView('manage'); requestAnimationFrame(() => historyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })); };
 
   if (!user) return null;
@@ -187,6 +267,7 @@ const SubscriptionApp: React.FC = () => {
   const navItems: { id: string; icon: string; label: string; onClick: () => void; active: boolean }[] = [
     { id: 'manage', icon: 'card_membership', label: 'My Subscription', onClick: goManage, active: view === 'manage' },
     { id: 'plans', icon: 'upgrade', label: 'Plans', onClick: goPlans, active: view === 'plans' },
+    { id: 'addons', icon: 'extension', label: 'Add-ons', onClick: goAddons, active: view === 'addons' },
     { id: 'billing', icon: 'receipt_long', label: 'Billing History', onClick: goBilling, active: false },
   ];
 
@@ -251,16 +332,26 @@ const SubscriptionApp: React.FC = () => {
         {/* Main content */}
         <main className="flex-1 min-h-0 overflow-y-auto sp-scroll px-4 md:px-8 py-6 pb-28 lg:pb-8">
           <div className="max-w-6xl mx-auto">
-            {view === 'manage'
-              ? <ManageView
-                  user={user} firstName={firstName} activePlan={activePlan} history={history}
-                  historyRef={historyRef} onChangePlan={goPlans}
-                />
-              : <PlansView
-                  plans={plans} fetchingPlans={fetchingPlans} isAnnual={isAnnual} setIsAnnual={setIsAnnual}
-                  activePlanId={user?.subscriptionPlan} loading={loading} selectedPlan={selectedPlan}
-                  onSelect={handleSelectPlan} planPrice={planPrice}
-                />}
+            {view === 'manage' && (
+              <ManageView
+                user={user} firstName={firstName} activePlan={activePlan} history={history}
+                historyRef={historyRef} onChangePlan={goPlans} onBrowseAddons={goAddons}
+              />
+            )}
+            {view === 'plans' && (
+              <PlansView
+                plans={plans} fetchingPlans={fetchingPlans} isAnnual={isAnnual} setIsAnnual={setIsAnnual}
+                activePlanId={user?.subscriptionPlan} loading={loading} selectedPlan={selectedPlan}
+                onSelect={handleSelectPlan} planPrice={planPrice}
+              />
+            )}
+            {view === 'addons' && (
+              <AddonsView
+                addons={addons} fetching={fetchingAddons} selected={selectedAddons}
+                onToggle={toggleAddon} onBuy={handleBuyAddons} loading={loading}
+                onToggleAutoRenew={handleToggleAutoRenew}
+              />
+            )}
           </div>
         </main>
       </div>
@@ -269,19 +360,19 @@ const SubscriptionApp: React.FC = () => {
       <nav className="lg:hidden flex-shrink-0 m3-bg-surface shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl h-[68px] flex justify-around items-center z-20">
         <BottomItem icon="card_membership" label="Plan" active={view === 'manage'} onClick={goManage} />
         <BottomItem icon="upgrade" label="Plans" active={view === 'plans'} onClick={goPlans} />
+        <BottomItem icon="extension" label="Add-ons" active={view === 'addons'} onClick={goAddons} />
         <BottomItem icon="receipt_long" label="Billing" active={false} onClick={goBilling} />
-        <BottomItem icon="menu" label="Apps" active={false} onClick={() => navigate('/pos/discover')} />
       </nav>
 
       {isPaymentModalOpen && (
         <Suspense fallback={null}>
           <CustomPaymentModal
             isOpen={isPaymentModalOpen}
-            onClose={() => { stopPollingRef.current = true; setIsPaymentModalOpen(false); }}
+            onClose={() => { stopPollingRef.current = true; setIsPaymentModalOpen(false); setAddonCheckout(null); }}
             onConfirm={({ method, phoneNumber }) => handlePayment(method, phoneNumber)}
-            planName={planToPay?.name || ''}
-            amount={planToPay?.price || 0}
-            currency={planToPay?.currency || 'ZMW'}
+            planName={addonCheckout ? addonCheckout.label : (planToPay?.name || '')}
+            amount={addonCheckout ? addonCheckout.amount : (planToPay?.price || 0)}
+            currency={addonCheckout ? addonCheckout.currency : (planToPay?.currency || 'ZMW')}
             loading={loading}
             onCancelTransaction={handleCancelTransaction}
           />
@@ -294,8 +385,9 @@ const SubscriptionApp: React.FC = () => {
 /* ------------------------------- Manage view ------------------------------- */
 const ManageView: React.FC<{
   user: any; firstName: string; activePlan: BackendPlan | null;
-  history: SubscriptionHistoryItem[]; historyRef: React.RefObject<HTMLDivElement | null>; onChangePlan: () => void;
-}> = ({ user, activePlan, history, historyRef, onChangePlan }) => {
+  history: SubscriptionHistoryItem[]; historyRef: React.RefObject<HTMLDivElement | null>;
+  onChangePlan: () => void; onBrowseAddons: () => void;
+}> = ({ user, activePlan, history, historyRef, onChangePlan, onBrowseAddons }) => {
   const lastMethod = history.find((h) => h.paymentMethod)?.paymentMethod;
   const statusActive = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial';
   const planName = activePlan?.name || (user?.subscriptionPlan ? user.subscriptionPlan : 'Free / Trial');
@@ -310,6 +402,7 @@ const ManageView: React.FC<{
           <p className="text-sm m3-text-on-surface-variant mt-1">Manage your billing preferences and view your invoice history.</p>
         </div>
         <div className="flex gap-2">
+          <button onClick={onBrowseAddons} className="px-5 py-2.5 rounded-xl text-sm font-semibold m3-bg-surface-high m3-text-on-surface active:scale-95 transition hover:opacity-90">Browse add-ons</button>
           <button onClick={onChangePlan} className="px-5 py-2.5 rounded-xl text-sm font-semibold m3-bg-primary m3-text-on-primary shadow active:scale-95 transition hover:opacity-90">Change plan</button>
         </div>
       </div>
@@ -527,6 +620,101 @@ const PlansView: React.FC<{
     </div>
   </div>
 );
+
+/* -------------------------------- Add-ons view ----------------------------- */
+const AddonsView: React.FC<{
+  addons: PurchasableAddon[]; fetching: boolean; selected: Set<string>;
+  onToggle: (id: string) => void; onBuy: () => void; loading: boolean;
+  onToggleAutoRenew: (id: string, v: boolean) => void;
+}> = ({ addons, fetching, selected, onToggle, onBuy, loading, onToggleAutoRenew }) => {
+  const chosen = addons.filter((a) => !a.owned && selected.has(a.id));
+  const total = chosen.reduce((s, a) => s + a.price, 0);
+  const cur = chosen[0]?.currency || addons[0]?.currency || 'ZMW';
+
+  return (
+    <div className="sp-fade-in pb-24">
+      <div className="text-center mb-8">
+        <h2 className="text-2xl md:text-[32px] font-bold m3-text-on-surface mb-2">Add-ons — pay only for what you need</h2>
+        <p className="text-base md:text-lg m3-text-on-surface-variant max-w-2xl mx-auto">Unlock individual features à la carte, without jumping to a bigger plan.</p>
+      </div>
+
+      {fetching ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[0, 1, 2, 3].map((i) => <div key={i} className="h-32 rounded-2xl m3-bg-surface-container animate-pulse" />)}
+        </div>
+      ) : addons.length === 0 ? (
+        <div className="text-center py-16 m3-text-on-surface-variant">No add-ons available right now.</div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {addons.map((a) => {
+            const isSel = selected.has(a.id);
+            if (a.owned) {
+              // Owned add-ons are not selectable; they show status + an auto-renew switch.
+              return (
+                <div key={a.id} className="bento-card rounded-2xl p-5">
+                  <div className="flex items-start justify-between gap-3 mb-1.5">
+                    <h3 className="font-bold m3-text-on-surface">{a.name}</h3>
+                    <span className="text-lg font-bold m3-text-primary whitespace-nowrap">{money(a.price, a.currency)}<span className="text-xs m3-text-on-surface-variant font-medium">/mo</span></span>
+                  </div>
+                  <p className="text-sm m3-text-on-surface-variant mb-3">{a.description}</p>
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full m3-bg-primary-container m3-text-on-primary-container">
+                      <span className="material-symbols-outlined" style={{ fontSize: 15, fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+                      Active{a.activeUntil ? ` · until ${formatDate(a.activeUntil)}` : ''}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onToggleAutoRenew(a.id, !a.autoRenew)}
+                      className="inline-flex items-center gap-2 text-xs font-semibold m3-text-on-surface-variant active:scale-95 transition"
+                      title={a.autoRenew ? 'Auto-renew is on' : 'Auto-renew is off'}
+                    >
+                      Auto-renew
+                      <span className={`w-9 h-5 rounded-full p-0.5 transition-colors ${a.autoRenew ? 'm3-bg-primary' : 'm3-bg-surface-high'}`}>
+                        <span className="block w-4 h-4 bg-white rounded-full shadow transition-transform" style={{ transform: a.autoRenew ? 'translateX(16px)' : 'translateX(0)' }} />
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+            return (
+              <button
+                key={a.id}
+                type="button"
+                onClick={() => onToggle(a.id)}
+                className={`text-left bento-card rounded-2xl p-5 transition relative ${isSel ? 'ring-2 ring-[var(--c-primary)]' : 'hover:shadow-md'}`}
+              >
+                <div className="flex items-start justify-between gap-3 mb-1.5">
+                  <h3 className="font-bold m3-text-on-surface">{a.name}</h3>
+                  <span className="text-lg font-bold m3-text-primary whitespace-nowrap">{money(a.price, a.currency)}<span className="text-xs m3-text-on-surface-variant font-medium">/mo</span></span>
+                </div>
+                <p className="text-sm m3-text-on-surface-variant mb-3">{a.description}</p>
+                <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${isSel ? 'm3-bg-primary m3-text-on-primary' : 'm3-bg-surface-high m3-text-on-surface-variant'}`}>
+                  <span className="material-symbols-outlined" style={{ fontSize: 15 }}>{isSel ? 'check' : 'add'}</span>
+                  {isSel ? 'Selected' : 'Add'}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {chosen.length > 0 && (
+        <div className="fixed bottom-[84px] lg:bottom-6 left-1/2 -translate-x-1/2 z-30 w-[calc(100%-2rem)] max-w-md">
+          <div className="m3-bg-surface-container shadow-xl rounded-2xl p-4 flex items-center justify-between gap-4 border m3-border-outline-variant">
+            <div>
+              <p className="text-xs m3-text-on-surface-variant">{chosen.length} add-on{chosen.length === 1 ? '' : 's'} selected</p>
+              <p className="text-xl font-bold m3-text-on-surface">{money(total, cur)}<span className="text-sm font-medium m3-text-on-surface-variant">/mo</span></p>
+            </div>
+            <button onClick={onBuy} disabled={loading} className="px-6 py-3 rounded-xl text-sm font-bold m3-bg-primary m3-text-on-primary shadow active:scale-95 transition disabled:opacity-60">
+              {loading ? 'Processing…' : 'Unlock now'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const BottomItem: React.FC<{ icon: string; label: string; active: boolean; onClick: () => void }> = ({ icon, label, active, onClick }) => (
   <button onClick={onClick} className={`flex flex-col items-center justify-center px-4 py-1 rounded-2xl transition active:scale-90 ${active ? 'm3-bg-primary-fixed m3-text-primary' : 'm3-text-on-surface-variant hover:m3-text-primary'}`}>

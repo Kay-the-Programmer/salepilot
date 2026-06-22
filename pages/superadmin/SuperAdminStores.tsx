@@ -1,6 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { api } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { formatDate } from '../../utils/date';
+import { INPUT_CLASS } from '../../utils/ui';
+import Modal from '../../components/ui/Modal';
+import { StatusPill, storeMeta, subscriptionMeta } from '../../components/ui/StatusPill';
 import {
     SearchIcon,
     FilterIcon,
@@ -40,7 +44,7 @@ type PendingChange =
     | { kind: 'single'; storeId: string; storeName: string; status: StoreRow['status'] }
     | { kind: 'bulk'; ids: string[]; status: StoreRow['status'] };
 
-const STATUS_INPUT = "w-full bg-surface border border-brand-border rounded-xl px-3.5 py-2.5 text-sm text-brand-text placeholder-brand-text-muted focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none transition-colors";
+const STATUS_INPUT = INPUT_CLASS;
 
 const SuperAdminStores: React.FC = () => {
     const navigate = useNavigate();
@@ -156,74 +160,11 @@ const SuperAdminStores: React.FC = () => {
         return filteredStores.slice(start, end);
     }, [filteredStores, currentPage]);
 
-    // Status badge styling
-    const getStatusConfig = (status: StoreRow['status']) => {
-        const configs = {
-            active: {
-                color: 'bg-success-muted text-success',
-                icon: <CheckCircleIcon className="w-3 h-3" />
-            },
-            inactive: {
-                color: 'bg-surface-variant text-brand-text-muted',
-                icon: <ChevronDownIcon className="w-3 h-3" />
-            },
-            suspended: {
-                color: 'bg-danger-muted text-danger',
-                icon: <XCircleIcon className="w-3 h-3" />
-            }
-        };
-        return configs[status];
-    };
-
-    // Subscription badge styling
-    const getSubscriptionConfig = (status: StoreRow['subscriptionStatus']) => {
-        const configs = {
-            trial: {
-                color: 'bg-sp-amber-soft text-sp-amber',
-                label: 'Trial'
-            },
-            active: {
-                color: 'bg-success-muted text-success',
-                label: 'Active'
-            },
-            past_due: {
-                color: 'bg-danger-muted text-danger',
-                label: 'Past Due'
-            },
-            canceled: {
-                color: 'bg-surface-variant text-brand-text-muted',
-                label: 'Canceled'
-            }
-        };
-        return configs[status];
-    };
-
-    const getStatusStyle = (status: StoreRow['status']) => {
-        const styles = {
-            active: 'bg-success-muted text-success',
-            inactive: 'bg-surface-variant text-brand-text-muted',
-            suspended: 'bg-danger-muted text-danger'
-        };
-        return styles[status] || styles.inactive;
-    };
-
-    const getSubscriptionStyle = (status: StoreRow['subscriptionStatus']) => {
-        const styles = {
-            trial: 'bg-sp-amber-soft text-sp-amber',
-            active: 'bg-success-muted text-success',
-            past_due: 'bg-danger-muted text-danger',
-            canceled: 'bg-surface-variant text-brand-text-muted'
-        };
-        return styles[status] || styles.canceled;
-    };
-
-    // Format date
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        });
+    // Store status icons; tone, label & colours come from the shared StatusPill meta.
+    const STORE_STATUS_ICON: Record<StoreRow['status'], React.ReactNode> = {
+        active: <CheckCircleIcon className="w-3 h-3" />,
+        inactive: <ChevronDownIcon className="w-3 h-3" />,
+        suspended: <XCircleIcon className="w-3 h-3" />,
     };
 
     // Handle store selection
@@ -443,9 +384,6 @@ const SuperAdminStores: React.FC = () => {
                                     ))
                                 ) : paginatedStores.length > 0 ? (
                                     paginatedStores.map(store => {
-                                        const statusConfig = getStatusConfig(store.status);
-                                        const subConfig = getSubscriptionConfig(store.subscriptionStatus);
-
                                         return (
                                             <tr
                                                 key={store.id}
@@ -474,10 +412,9 @@ const SuperAdminStores: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold capitalize ${getStatusStyle(store.status)}`}>
-                                                            {statusConfig.icon}
+                                                        <StatusPill tone={storeMeta(store.status).tone} icon={STORE_STATUS_ICON[store.status]} className="capitalize">
                                                             {store.status}
-                                                        </span>
+                                                        </StatusPill>
                                                         {store.usersCount !== undefined && (
                                                             <span className="text-xs text-brand-text-muted">
                                                                 • {store.usersCount} user{store.usersCount !== 1 ? 's' : ''}
@@ -487,9 +424,9 @@ const SuperAdminStores: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1">
-                                                        <span className={`inline-flex items-center self-start px-2.5 py-1 rounded-full text-xs font-bold ${getSubscriptionStyle(store.subscriptionStatus)}`}>
-                                                            {subConfig.label}
-                                                        </span>
+                                                        <StatusPill tone={subscriptionMeta(store.subscriptionStatus).tone} className="self-start">
+                                                            {subscriptionMeta(store.subscriptionStatus).label}
+                                                        </StatusPill>
                                                         {store.subscriptionEndsAt && (
                                                             <span className="text-xs text-brand-text-muted">
                                                                 Ends {formatDate(store.subscriptionEndsAt)}
@@ -624,14 +561,7 @@ const SuperAdminStores: React.FC = () => {
 
             {/* Strict status-change confirmation: reason code (+ typed confirm to suspend) */}
             {pending && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm"
-                    onClick={() => setPending(null)}
-                >
-                    <div
-                        className="bg-surface border border-brand-border rounded-2xl shadow-xl w-full max-w-md p-6"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                <Modal open onClose={() => setPending(null)} size="md" className="p-6">
                         <div className="flex items-start gap-3">
                             <span className={`material-symbols-rounded w-11 h-11 rounded-xl flex items-center justify-center text-[22px] ${pending.status === 'suspended' ? 'bg-danger-muted text-danger' : 'bg-sp-amber-soft text-sp-amber'}`}>
                                 {pending.status === 'suspended' ? 'gpp_bad' : 'pause_circle'}
@@ -691,8 +621,7 @@ const SuperAdminStores: React.FC = () => {
                                 {verb}
                             </button>
                         </div>
-                    </div>
-                </div>
+                </Modal>
             )}
         </div>
     );
