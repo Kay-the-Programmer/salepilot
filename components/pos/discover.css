@@ -136,6 +136,22 @@
   transform: rotate(-8deg);
 }
 
+/* Animated assistant character (first slide) */
+.dfeat__character {
+  position: absolute;
+  right: 14px;
+  bottom: 0;
+  z-index: 1;
+  width: 232px;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+.dfeat__character svg { width: 100%; height: auto; max-height: 102%; }
+.dfeat__slide--character .dfeat__content { max-width: 60%; }
+
 /* Controller — exactly three buttons: back · pause/play · forward,
    in a centered media-control row below the slide (no overlay clutter). */
 .dfeat__nav {
@@ -334,6 +350,8 @@
   .dfeat__content { max-width: 86%; }
   .dfeat__title { font-size: 1.55rem; }
   .dfeat__ghost { right: -40px; bottom: -60px; }
+  .dfeat__character { width: 140px; right: -10px; }
+  .dfeat__slide--character .dfeat__content { max-width: 62%; }
   .dapptile-grid { grid-template-columns: 1fr; }
   .dpromo { flex-direction: column; align-items: flex-start; }
   .dpromo__cta { align-self: stretch; justify-content: center; }

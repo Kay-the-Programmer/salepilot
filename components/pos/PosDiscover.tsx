@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import gsap from 'gsap';
 import { User, StoreSettings } from '../../types';
 import { getAccessibleNavItems } from '../Sidebar';
 import PosIcon from '../sales/PosIcon';
+import AssistantCharacter from './AssistantCharacter';
 import { hasModule, MODULES, isPageEntitled } from '../../utils/entitlements';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
@@ -85,11 +87,12 @@ const STANDALONE_APPS: AppDef[] = [
 type Feature = {
     requires: string; route: string; module?: string; premium?: boolean;
     eyebrow: string; title: string; text: string; cta: string; icon: string; tint: Tint;
+    character?: boolean;
 };
 
 // Top-of-page promotional slides — invite users to try premium / high-value apps.
 const FEATURES: Feature[] = [
-    { requires: 'quick-view', route: 'assistant', module: MODULES.AI_ASSISTANT, eyebrow: 'AI Suite', title: 'Meet your AI business partner', text: 'Ask anything about your shop — sales, stock, customers — and get instant answers.', cta: 'Try Assistant', icon: 'auto_awesome', tint: ['#7b7bf0', '#4b3bc9'] },
+    { requires: 'quick-view', route: 'assistant', module: MODULES.AI_ASSISTANT, eyebrow: 'AI Suite', title: 'Meet your AI business partner', text: 'Ask anything about your shop — sales, stock, customers — and get instant answers.', cta: 'Try Assistant', icon: 'auto_awesome', tint: ['#7b7bf0', '#4b3bc9'], character: true },
     { requires: 'reports', route: 'reports', premium: true, eyebrow: 'Premium', title: 'Unlock Advanced Reports', text: 'P&L, cashflow & deep analytics — export-ready for tax and investors.', cta: 'Unlock now', icon: 'query_stats', tint: ['#0e9c78', '#00513c'] },
     { requires: 'customers', route: 'crm', eyebrow: 'Grow revenue', title: 'Turn buyers into regulars', text: 'Loyalty, segments and re-engagement that keep customers coming back.', cta: 'Open CRM', icon: 'diversity_3', tint: ['#e0728f', '#a8325c'] },
     { requires: 'inventory', route: 'inv', eyebrow: 'Stay in stock', title: 'Never run out again', text: 'Live stock value, low-stock alerts and smart reorder insights.', cta: 'Open Inventory', icon: 'inventory_2', tint: ['#1fb0a0', '#0c6258'] },
@@ -156,6 +159,22 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
     const closeTip = () => { dismissedRef.current = true; setTipOpen(false); };
     const nextTip = () => setTipIdx(i => (i + 1) % TIPS.length);
 
+    // ── GSAP entrance polish (runs once, respects reduced-motion) ─────────────
+    const pageRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (reduce) return;
+        const ctx = gsap.context(() => {
+            gsap.from('.ddisc__title', { y: 18, opacity: 0, duration: 0.55, ease: 'power3.out' });
+            gsap.from('.ddisc__sub', { y: 14, opacity: 0, duration: 0.55, delay: 0.06, ease: 'power3.out' });
+            gsap.from('.ddisc__search', { y: 14, opacity: 0, duration: 0.55, delay: 0.12, ease: 'power3.out' });
+            gsap.from('.dfeat', { y: 22, opacity: 0, duration: 0.65, delay: 0.1, ease: 'power3.out' });
+            gsap.from('.dapptile', { y: 16, opacity: 0, duration: 0.5, stagger: 0.035, delay: 0.2, ease: 'power2.out' });
+            gsap.from('.dpromo', { y: 16, opacity: 0, duration: 0.5, delay: 0.24, ease: 'power2.out' });
+        }, pageRef);
+        return () => ctx.revert();
+    }, []);
+
     // ── Normalised app tiles ─────────────────────────────────────────────────
     const standaloneTiles: Tile[] = useMemo(() => STANDALONE_APPS
         .filter(a => allowedPages.includes(a.requires))
@@ -212,7 +231,7 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
     );
 
     return (
-        <div className="posdash ddisc">
+        <div className="posdash ddisc" ref={pageRef}>
             {/* Hero */}
             <header className="ddisc__hero">
                 <div className="ddisc__hero-top">
@@ -252,7 +271,7 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                             <div className="dfeat__track" style={{ transform: `translateX(-${slide * 100}%)` }}>
                                 {features.map((f, i) => (
                                     <article
-                                        className="dfeat__slide"
+                                        className={`dfeat__slide${f.character ? ' dfeat__slide--character' : ''}`}
                                         key={f.route}
                                         style={{ backgroundImage: `linear-gradient(125deg, ${f.tint[0]}, ${f.tint[1]})` }}
                                         aria-hidden={i !== slide}
@@ -269,9 +288,13 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                                                 <PosIcon name="arrow_forward" size={18} />
                                             </button>
                                         </div>
-                                        <span className="dfeat__ghost" aria-hidden="true">
-                                            <PosIcon name={f.icon} size={200} fill={1} />
-                                        </span>
+                                        {f.character ? (
+                                            <AssistantCharacter className="dfeat__character" />
+                                        ) : (
+                                            <span className="dfeat__ghost" aria-hidden="true">
+                                                <PosIcon name={f.icon} size={200} fill={1} />
+                                            </span>
+                                        )}
                                     </article>
                                 ))}
                             </div>

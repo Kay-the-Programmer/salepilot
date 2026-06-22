@@ -12,6 +12,7 @@ export const MODULES = {
     AI_ASSISTANT: 'ai_assistant',
     QUICK_IMPORT: 'quick_import',
     ADVANCED_REPORTS: 'advanced_reports',
+    PUBLIC_TRACKING: 'public_tracking',
 } as const;
 
 export type ModuleId = typeof MODULES[keyof typeof MODULES];
