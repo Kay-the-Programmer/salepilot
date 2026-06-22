@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { ONBOARDING_ACTIONS } from '../../services/onboardingService';
 import ChevronDownIcon from '../icons/ChevronDownIcon';
@@ -9,35 +10,35 @@ interface OnboardingTask {
     title: string;
     description: string;
     actionId: string;
-    link?: string;
+    link: string;
 }
 
 const ONBOARDING_TASKS: OnboardingTask[] = [
     {
         id: 'add-product',
         title: 'Add your first product',
-        description: 'Start building your inventory',
+        description: 'Build your inventory in Inventory → Products',
         actionId: ONBOARDING_ACTIONS.ADDED_FIRST_PRODUCT,
         link: '/inventory'
     },
     {
+        id: 'create-category',
+        title: 'Organize with categories',
+        description: 'Group products on the Categories page',
+        actionId: ONBOARDING_ACTIONS.CREATED_FIRST_CATEGORY,
+        link: '/categories'
+    },
+    {
         id: 'make-sale',
         title: 'Make your first sale',
-        description: 'Process a transaction',
+        description: 'Ring up a transaction at the Sales till',
         actionId: ONBOARDING_ACTIONS.MADE_FIRST_SALE,
         link: '/sales'
     },
     {
-        id: 'create-category',
-        title: 'Organize with categories',
-        description: 'Create product categories',
-        actionId: ONBOARDING_ACTIONS.CREATED_FIRST_CATEGORY,
-        link: '/inventory'
-    },
-    {
         id: 'view-reports',
         title: 'Check your reports',
-        description: 'Monitor your business metrics',
+        description: 'Track performance on the Reports dashboard',
         actionId: ONBOARDING_ACTIONS.VIEWED_REPORTS,
         link: '/reports'
     },
@@ -45,6 +46,7 @@ const ONBOARDING_TASKS: OnboardingTask[] = [
 
 export default function OnboardingChecklist() {
     const { isActionCompleted } = useOnboarding();
+    const navigate = useNavigate();
     const [isExpanded, setIsExpanded] = useState(true);
 
     const completedCount = ONBOARDING_TASKS.filter(task =>
@@ -52,81 +54,82 @@ export default function OnboardingChecklist() {
     ).length;
     const totalCount = ONBOARDING_TASKS.length;
     const progress = (completedCount / totalCount) * 100;
+    const allDone = completedCount === totalCount;
 
     return (
-        <div className="glass-effect rounded-[2rem] border border-white/40 dark:border-slate-800/40 overflow-hidden shadow-lg animate-fade-in-up">
+        <div className="bg-surface border border-brand-border rounded-2xl overflow-hidden shadow-sm animate-fade-in-up">
             {/* Header */}
-            <div
-                className="px-6 py-4 bg-gradient-to-r from-blue-600/90 to-indigo-700/90 text-white cursor-pointer active:scale-[0.98] transition-all duration-300 relative overflow-hidden group"
+            <button
+                type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
+                className="w-full text-left px-5 py-4 hover:bg-surface-variant/60 transition-colors"
             >
-                <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div className="flex items-center justify-between relative z-10">
-                    <div className="flex-1">
-                        <h3 className="font-bold text-base font-outfit tracking-tight">Getting Started</h3>
-                        <p className="text-xs font-medium text-white/80 mt-0.5">
-                            {completedCount} of {totalCount} completed
+                <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                        <h3 className="text-base font-bold text-brand-text tracking-tight">Getting started</h3>
+                        <p className="text-xs font-medium text-brand-text-muted mt-0.5">
+                            {allDone ? 'All set — nice work!' : `${completedCount} of ${totalCount} complete`}
                         </p>
                     </div>
-                    <div className="flex items-center space-x-3">
-                        <div className="px-2 py-0.5 bg-white/20 rounded-full text-[10px] font-bold tracking-wider uppercase">
+                    <div className="flex items-center gap-3">
+                        <span className="px-2.5 py-1 bg-success-muted text-primary rounded-full text-xs font-bold tabular-nums">
                             {Math.round(progress)}%
-                        </div>
-                        <div className="p-1.5 bg-white/10 rounded-full">
-                            <ChevronDownIcon
-                                className={`h-4 w-4 transition-transform duration-500 ${isExpanded ? 'rotate-180' : ''}`}
-                            />
-                        </div>
+                        </span>
+                        <ChevronDownIcon
+                            className={`h-5 w-5 text-brand-text-muted transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+                        />
                     </div>
                 </div>
 
                 {/* Progress bar */}
-                <div className="mt-4 bg-white/20 rounded-full h-1.5 overflow-hidden">
+                <div className="mt-3 bg-warm-200 dark:bg-white/10 rounded-full h-1.5 overflow-hidden">
                     <div
-                        className="bg-white h-full transition-all duration-700 ease-out shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                        className="bg-primary h-full rounded-full transition-all duration-500 ease-out"
                         style={{ width: `${progress}%` }}
                     />
                 </div>
-            </div>
+            </button>
 
-            {/* Task List */}
+            {/* Task list */}
             {isExpanded && (
-                <div className="p-3 space-y-2">
-                    {ONBOARDING_TASKS.map((task, index) => {
+                <div className="px-3 pb-3 pt-1 space-y-1.5">
+                    {ONBOARDING_TASKS.map((task) => {
                         const isCompleted = isActionCompleted(task.actionId);
 
                         return (
                             <div
                                 key={task.id}
-                                className={`flex items-center p-3 rounded-2xl transition-all duration-300 ${isCompleted
-                                    ? 'bg-green-500/5 border border-green-500/10'
-                                    : 'bg-white/40 dark:bg-slate-800/40 border border-white/20 dark:border-slate-700/20 hover:bg-white/60 dark:hover:bg-slate-800/60'
-                                    }`}
-                                style={{ animationDelay: `${index * 50}ms` }}
+                                className={`flex items-center gap-3 p-3 rounded-xl border transition-colors ${
+                                    isCompleted
+                                        ? 'bg-success-muted/40 border-primary/10'
+                                        : 'bg-background border-brand-border hover:bg-surface-variant/60'
+                                }`}
                             >
                                 <div className="flex-shrink-0">
                                     {isCompleted ? (
-                                        <div className="h-6 w-6 bg-green-500 rounded-full flex items-center justify-center shadow-sm shadow-green-500/20">
+                                        <div className="h-6 w-6 bg-primary rounded-full flex items-center justify-center">
                                             <CheckIcon className="h-3.5 w-3.5 text-white" />
                                         </div>
                                     ) : (
-                                        <div className="h-6 w-6 border-2 border-slate-300 dark:border-slate-600 rounded-full" />
+                                        <div className="h-6 w-6 border-2 border-warm-300 dark:border-white/20 rounded-full" />
                                     )}
                                 </div>
-                                <div className="ml-4 flex-1">
-                                    <h4 className={`text-sm font-semibold font-outfit ${isCompleted ? 'text-slate-400 line-through' : 'text-slate-800 dark:text-slate-100'
-                                        }`}>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className={`text-sm font-bold tracking-tight ${
+                                        isCompleted ? 'text-brand-text-muted line-through' : 'text-brand-text'
+                                    }`}>
                                         {task.title}
                                     </h4>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{task.description}</p>
+                                    <p className="text-xs text-brand-text-muted mt-0.5 truncate">{task.description}</p>
                                 </div>
-                                {!isCompleted && task.link && (
-                                    <a
-                                        href={task.link}
-                                        className="ml-3 px-3 py-1 bg-blue-600/10 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-600 hover:text-white transition-all"
+                                {!isCompleted && (
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(task.link)}
+                                        className="flex-shrink-0 px-3 py-1.5 bg-primary hover:bg-primary-dark text-white text-xs font-bold rounded-lg shadow-sm transition-all active:scale-95"
                                     >
-                                        Go →
-                                    </a>
+                                        Go
+                                    </button>
                                 )}
                             </div>
                         );

@@ -1,8 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Product, Category, Supplier } from '../../types';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import { ONBOARDING_ACTIONS, ONBOARDING_HELPERS } from '../../services/onboardingService';
 import OnboardingHelper from '../../components/onboarding/OnboardingHelper';
+import CubeIcon from '../../components/icons/CubeIcon';
+import TagIcon from '../../components/icons/TagIcon';
+import TruckIcon from '../../components/icons/TruckIcon';
 
 interface InventoryOnboardingHelpersProps {
     products: Product[];
@@ -22,6 +26,7 @@ const InventoryOnboardingHelpers: React.FC<InventoryOnboardingHelpersProps> = ({
     onOpenAddCategoryModal
 }) => {
     const { completeAction } = useOnboarding();
+    const navigate = useNavigate();
 
     const handleAddFirstProduct = () => {
         onOpenAddModal();
@@ -43,44 +48,48 @@ const InventoryOnboardingHelpers: React.FC<InventoryOnboardingHelpersProps> = ({
 
     return (
         <div className="px-max mx-auto w-full mt-4 md:mt-0 mb-6">
-            {/* Add first product helper */}
-            {activeTab === 'products' && (
+            {/* Empty Products tab → add the first product */}
+            {activeTab === 'products' && products.length === 0 && (
                 <OnboardingHelper
                     helperId={ONBOARDING_HELPERS.ADD_FIRST_PRODUCT}
-                    title="👋 Add your first product"
-                    description="Get started by adding products to your inventory. Click the button below to create your first product and start tracking your stock."
+                    title="Add your first product"
+                    description="Your inventory is empty. Add a product to start tracking stock levels, set prices, and ring it up at the till."
+                    icon={<CubeIcon />}
                     actionButton={{
-                        label: "Add Product",
+                        label: 'Add product',
                         onClick: handleAddFirstProduct
                     }}
                     variant="card"
-                    showWhen={products.length === 0}
                 />
             )}
 
-            {/* Create categories helper */}
-            {activeTab === 'categories' && (
+            {/* Empty Categories tab → create the first category */}
+            {activeTab === 'categories' && categories.length === 0 && (
                 <OnboardingHelper
                     helperId={ONBOARDING_HELPERS.CREATE_CATEGORIES}
-                    title="📂 Organize with categories"
-                    description="Create categories to organize your products and make them easier to find. Categories help you group similar items together."
+                    title="Create your first category"
+                    description="Group products into categories so they're faster to find at checkout and clearer in your sales reports."
+                    icon={<TagIcon />}
                     actionButton={{
-                        label: "Create Category",
+                        label: 'Create category',
                         onClick: handleAddCategory
                     }}
                     variant="card"
-                    showWhen={categories.length === 0}
                 />
             )}
 
-            {/* Add suppliers helper */}
-            {activeTab === 'products' && products.length > 0 && (
+            {/* Has products but no suppliers → point to the Suppliers section */}
+            {activeTab === 'products' && products.length > 0 && suppliers.length === 0 && (
                 <OnboardingHelper
                     helperId={ONBOARDING_HELPERS.ADD_SUPPLIERS}
-                    title="🏢 Track your suppliers"
-                    description="Add suppliers to track where your products come from and manage purchase orders more efficiently."
+                    title="Add your suppliers"
+                    description="Record who you buy from to raise purchase orders and track restocking."
+                    icon={<TruckIcon />}
+                    actionButton={{
+                        label: 'Go to Suppliers',
+                        onClick: () => navigate('/suppliers')
+                    }}
                     variant="compact"
-                    showWhen={suppliers.length === 0}
                 />
             )}
         </div>

@@ -1,6 +1,7 @@
 import { ReactNode } from 'react';
 import { useOnboarding } from '../../contexts/OnboardingContext';
 import XMarkIcon from '../icons/XMarkIcon';
+import ArrowRightIcon from '../icons/ArrowRightIcon';
 
 export interface OnboardingHelperProps {
     helperId: string;
@@ -35,113 +36,89 @@ export default function OnboardingHelper({
         dismissHelper(helperId);
     };
 
+    const dismissBtn = (
+        <button
+            onClick={handleDismiss}
+            aria-label="Dismiss"
+            title="Dismiss"
+            className="flex-shrink-0 p-1.5 -m-1 rounded-lg text-brand-text-muted hover:text-brand-text hover:bg-surface-variant transition-colors"
+        >
+            <XMarkIcon className="h-4 w-4" />
+        </button>
+    );
+
+    const primaryAction = actionButton && (
+        <button
+            onClick={actionButton.onClick}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-sm transition-all active:scale-95"
+        >
+            {actionButton.label}
+            <ArrowRightIcon className="h-4 w-4" />
+        </button>
+    );
+
+    // ── Banner: full-width informational strip ──
     if (variant === 'banner') {
         return (
-            <div className="glass-effect border border-white/20 dark:border-slate-800/20 p-4 mb-6 rounded-2xl shadow-sm animate-fade-in-up">
-                <div className="flex items-start">
-                    {icon && (
-                        <div className="flex-shrink-0 mr-3 text-blue-500 dark:text-blue-400">
-                            {icon}
-                        </div>
-                    )}
-                    <div className="flex-1">
-                        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-1 font-outfit">{title}</h3>
-                        <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">{description}</p>
+            <div className="bg-surface border border-brand-border rounded-2xl p-4 mb-6 shadow-sm animate-fade-in-up">
+                <div className="flex items-start gap-3">
+                    {icon && <div className="flex-shrink-0 mt-0.5 text-primary [&>*]:h-5 [&>*]:w-5">{icon}</div>}
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-bold text-brand-text tracking-tight">{title}</h3>
+                        <p className="mt-0.5 text-sm text-brand-text-muted leading-relaxed">{description}</p>
                         {actionButton && (
                             <button
                                 onClick={actionButton.onClick}
-                                className="mt-3 inline-flex items-center px-4 py-1.5 text-sm font-medium text-white bg-blue-600 dark:bg-blue-500 rounded-full hover:bg-blue-700 dark:hover:bg-blue-600 transition-all active:scale-95 shadow-sm"
+                                className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-sm transition-all active:scale-95"
                             >
                                 {actionButton.label}
+                                <ArrowRightIcon className="h-4 w-4" />
                             </button>
                         )}
                     </div>
-                    <button
-                        onClick={handleDismiss}
-                        className="flex-shrink-0 ml-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-                        title="Dismiss"
-                    >
-                        <XMarkIcon className="h-5 w-5" />
-                    </button>
+                    {dismissBtn}
                 </div>
             </div>
         );
     }
 
+    // ── Compact: single dense row ──
     if (variant === 'compact') {
         return (
-            <div className="glass-effect border border-white/30 dark:border-slate-800/30 p-3 rounded-2xl shadow-sm mb-4 animate-fade-in-up">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center flex-1">
-                        {icon && (
-                            <div className="flex-shrink-0 mr-3 text-blue-500 dark:text-blue-400">
-                                {icon}
-                            </div>
-                        )}
-                        <div className="flex-1">
-                            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 font-outfit">{title}</p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">{description}</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center ml-3 space-x-2">
-                        {actionButton && (
-                            <button
-                                onClick={actionButton.onClick}
-                                className="px-3 py-1 text-xs font-semibold text-white bg-blue-600 dark:bg-blue-500 rounded-full hover:bg-blue-700 dark:hover:bg-blue-600 transition-all active:scale-95 shadow-sm"
-                            >
-                                {actionButton.label}
-                            </button>
-                        )}
-                        <button
-                            onClick={handleDismiss}
-                            className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors rounded-full hover:bg-slate-100 dark:hover:bg-slate-800"
-                            title="Dismiss"
-                        >
-                            <XMarkIcon className="h-4 w-4" />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
-    // Default: card variant
-    return (
-        <div className="glass-effect rounded-[2rem] border border-white/40 dark:border-slate-800/40 p-6 mb-6 shadow-lg animate-fade-in-up hover:shadow-xl transition-all group overflow-hidden relative">
-            {/* Subtle background glow */}
-            <div className="absolute -top-24 -right-24 w-48 h-48 bg-blue-400/10 blur-[80px] rounded-full group-hover:bg-blue-400/20 transition-all duration-700"></div>
-
-            <div className="flex items-start relative z-10">
-                {icon && (
-                    <div className="flex-shrink-0 mr-5 text-blue-500 dark:text-blue-400 p-3 bg-white/50 dark:bg-slate-800/50 rounded-2xl shadow-sm">
-                        {icon}
-                    </div>
-                )}
-                <div className="flex-1">
-                    <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                            <h3 className="text-xl font-bold text-slate-900 dark:text-slate-50 mb-2 font-outfit tracking-tight">{title}</h3>
-                            <p className="text-base text-slate-600 dark:text-slate-400 leading-relaxed">{description}</p>
-                        </div>
-                        <button
-                            onClick={handleDismiss}
-                            className="ml-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all rounded-full hover:bg-white/80 dark:hover:bg-slate-800/80"
-                            title="Dismiss"
-                        >
-                            <XMarkIcon className="h-5 w-5" />
-                        </button>
+            <div className="bg-surface border border-brand-border rounded-xl p-3 mb-4 shadow-sm animate-fade-in-up">
+                <div className="flex items-center gap-3">
+                    {icon && <div className="flex-shrink-0 text-primary [&>*]:h-5 [&>*]:w-5">{icon}</div>}
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-brand-text tracking-tight">{title}</p>
+                        <p className="mt-0.5 text-xs text-brand-text-muted leading-snug line-clamp-1">{description}</p>
                     </div>
                     {actionButton && (
                         <button
                             onClick={actionButton.onClick}
-                            className="mt-6 inline-flex items-center px-6 py-2.5 text-sm font-bold text-white bg-blue-600 dark:bg-blue-500 rounded-full hover:bg-blue-700 dark:hover:bg-blue-600 shadow-[0_4px_12px_rgba(37,99,235,0.3)] hover:shadow-[0_6px_16px_rgba(37,99,235,0.4)] transition-all active:scale-95 duration-200"
+                            className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-sm transition-all active:scale-95"
                         >
                             {actionButton.label}
-                            <svg className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                            </svg>
+                            <ArrowRightIcon className="h-3.5 w-3.5" />
                         </button>
                     )}
+                    {dismissBtn}
+                </div>
+            </div>
+        );
+    }
+
+    // ── Card (default): prominent empty-state guidance ──
+    return (
+        <div className="bg-success-muted/50 dark:bg-primary/[0.06] border border-primary/15 rounded-2xl p-5 md:p-6 mb-6 shadow-sm animate-fade-in-up">
+            <div className="flex items-start gap-4">
+                {icon && <div className="flex-shrink-0 w-11 h-11 flex items-center justify-center rounded-xl bg-white dark:bg-primary/10 text-primary shadow-sm [&>*]:h-6 [&>*]:w-6">{icon}</div>}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-3">
+                        <h3 className="text-base md:text-lg font-bold text-brand-text tracking-tight">{title}</h3>
+                        {dismissBtn}
+                    </div>
+                    <p className="mt-1 text-sm text-brand-text-muted leading-relaxed max-w-prose">{description}</p>
+                    {primaryAction && <div className="mt-4">{primaryAction}</div>}
                 </div>
             </div>
         </div>

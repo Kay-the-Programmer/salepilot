@@ -22,7 +22,7 @@ export const OnboardingTaskList: React.FC<OnboardingTaskListProps> = ({ stats })
             id: 'products',
             label: 'Add your first product',
             completed: stats.totalUnits > 0,
-            description: 'Start by adding products you want to sell.',
+            description: 'Add what you sell in Inventory → Products.',
             path: '/inventory',
             icon: <ArchiveBoxIcon className="w-5 h-5" />
         },
@@ -30,7 +30,7 @@ export const OnboardingTaskList: React.FC<OnboardingTaskListProps> = ({ stats })
             id: 'suppliers',
             label: 'Add your first supplier',
             completed: stats.totalSuppliers > 0,
-            description: 'Keep track of where you source your items.',
+            description: 'Track who you source from on the Suppliers page.',
             path: '/suppliers',
             icon: <UsersIcon className="w-5 h-5" />
         },
@@ -41,51 +41,50 @@ export const OnboardingTaskList: React.FC<OnboardingTaskListProps> = ({ stats })
     if (allCompleted) return null;
 
     return (
-        <div className="glass-effect rounded-[2rem] p-6 lg:p-10 border border-white/40 dark:border-slate-800/40 mb-8 shadow-xl animate-fade-in-up group overflow-hidden relative">
-            {/* Background decorative element */}
-            <div className="absolute -top-24 -left-24 w-64 h-64 bg-indigo-500/5 blur-[100px] rounded-full"></div>
+        <div className="bg-surface border border-brand-border rounded-2xl p-6 lg:p-8 mb-8 shadow-sm animate-fade-in-up">
+            <h3 className="text-xl font-bold text-brand-text tracking-tight">Welcome to SalePilot</h3>
+            <p className="text-sm text-brand-text-muted mt-1 mb-6">A couple of quick steps to get your store running.</p>
 
-            <div className="relative z-10">
-                <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2 font-outfit tracking-tight">Welcome to SalePilot! 🚀</h3>
-                <p className="text-slate-500 dark:text-slate-400 mb-8 font-medium">Follow these simple steps to get your store up and running.</p>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {tasks.map((task) => (
-                        <button
-                            key={task.id}
-                            disabled={task.completed}
-                            onClick={() => navigate(task.path)}
-                            className={`flex flex-col items-start text-left p-6 rounded-[2rem] border transition-all duration-500 group/item relative overflow-hidden
-                                ${task.completed
-                                    ? 'bg-slate-50/50 dark:bg-white/5 border-slate-100 dark:border-white/5 opacity-60'
-                                    : 'bg-white/60 dark:bg-slate-800/60 border-white dark:border-slate-700/30 hover:border-indigo-500/50 dark:hover:border-indigo-400/50 hover:shadow-2xl hover:shadow-indigo-500/10 hover:-translate-y-1'}`}
-                        >
-                            <div className="flex justify-between items-start w-full mb-6 py-2">
-                                <div className={`p-4 rounded-2xl shadow-sm ${task.completed ? 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400' : 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-100/50 dark:border-indigo-500/20 group-hover/item:bg-indigo-600 dark:group-hover/item:bg-indigo-500 group-hover/item:text-white group-hover/item:border-transparent transition-all duration-300'}`}>
-                                    {task.icon}
-                                </div>
-                                <div className={`flex-shrink-0 flex items-center justify-center ${task.completed ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-300 dark:text-slate-700'}`}>
-                                    {task.completed ? (
-                                        <div className="bg-emerald-500/10 p-2 rounded-full">
-                                            <CheckCircleIcon className="w-7 h-7" />
-                                        </div>
-                                    ) : (
-                                        <div className="w-6 h-6 rounded-full border-2 border-current opacity-40" />
-                                    )}
-                                </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {tasks.map((task) => (
+                    <button
+                        key={task.id}
+                        disabled={task.completed}
+                        onClick={() => navigate(task.path)}
+                        className={`flex flex-col items-start text-left p-5 rounded-xl border transition-all duration-200
+                            ${task.completed
+                                ? 'bg-success-muted/40 border-primary/10 cursor-default'
+                                : 'bg-background border-brand-border hover:border-primary/40 hover:shadow-sm hover:-translate-y-0.5'}`}
+                    >
+                        <div className="flex justify-between items-center w-full mb-4">
+                            <div className={`p-2.5 rounded-xl ${
+                                task.completed
+                                    ? 'bg-white/60 dark:bg-white/5 text-brand-text-muted'
+                                    : 'bg-success-muted text-primary'
+                            }`}>
+                                {task.icon}
                             </div>
-                            <h4 className={`text-lg font-bold mb-1 font-outfit ${task.completed ? 'text-slate-400 dark:text-slate-500 line-through' : 'text-slate-900 dark:text-white'}`}>{task.label}</h4>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 mb-4 line-clamp-1">{task.description}</p>
-
-                            {!task.completed && (
-                                <div className="mt-auto flex items-center gap-2 text-indigo-600 dark:text-indigo-400 text-[10px] font-extrabold uppercase tracking-[0.15em]">
-                                    <span>Get Started</span>
-                                    <ArrowRightIcon className="w-3 h-3 group-hover/item:translate-x-1 transition-transform" />
-                                </div>
+                            {task.completed ? (
+                                <CheckCircleIcon className="w-6 h-6 text-primary" />
+                            ) : (
+                                <div className="w-5 h-5 rounded-full border-2 border-warm-300 dark:border-white/20" />
                             )}
-                        </button>
-                    ))}
-                </div>
+                        </div>
+                        <h4 className={`text-base font-bold tracking-tight ${
+                            task.completed ? 'text-brand-text-muted line-through' : 'text-brand-text'
+                        }`}>
+                            {task.label}
+                        </h4>
+                        <p className="text-sm text-brand-text-muted mt-0.5">{task.description}</p>
+
+                        {!task.completed && (
+                            <span className="mt-4 inline-flex items-center gap-1.5 text-primary text-xs font-bold uppercase tracking-wide">
+                                Get started
+                                <ArrowRightIcon className="w-3.5 h-3.5" />
+                            </span>
+                        )}
+                    </button>
+                ))}
             </div>
         </div>
     );

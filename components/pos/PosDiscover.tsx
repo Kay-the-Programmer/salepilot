@@ -238,7 +238,7 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
             <header className="ddisc__hero">
                 <div className="ddisc__hero-top">
                     <button type="button" className="posdash__menu" aria-label="Open menu" onClick={onOpenSidebar}>
-                        <PosIcon name="menu" size={22} />
+                        <PosIcon name="apps" size={22} />
                     </button>
                     <span className="ddisc__eyebrow">{greeting}, {firstName}</span>
                 </div>

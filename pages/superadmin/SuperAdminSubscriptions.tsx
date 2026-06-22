@@ -63,6 +63,7 @@ const SuperAdminSubscriptions: React.FC = () => {
     const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
     const [selectedStore, setSelectedStore] = useState<StoreRow | null>(null);
     const [processing, setProcessing] = useState(false);
+    const [storePickerSearch, setStorePickerSearch] = useState('');
 
     // Payment Form
     const [paymentForm, setPaymentForm] = useState<PaymentFormData>({
@@ -126,6 +127,7 @@ const SuperAdminSubscriptions: React.FC = () => {
 
     const openPaymentModal = (store?: StoreRow) => {
         setSelectedStore(store || null);
+        setStorePickerSearch('');
         setPaymentForm({
             storeId: store?.id || '',
             amount: '',
@@ -502,7 +504,10 @@ const SuperAdminSubscriptions: React.FC = () => {
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm transition-opacity duration-300"
                     onClick={() => !processing && setPaymentModalOpen(false)}
                 >
-                    <div className="bg-surface w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl shadow-xl border border-brand-border animate-in fade-in zoom-in-95 duration-300">
+                    <div
+                        className="bg-surface w-full max-w-lg max-h-[90vh] flex flex-col rounded-2xl shadow-xl border border-brand-border animate-in fade-in zoom-in-95 duration-300"
+                        onClick={(e) => e.stopPropagation()}
+                    >
                         <div className="p-6 border-b border-brand-border flex justify-between items-center">
                             <h3 className="font-extrabold text-lg text-brand-text flex items-center gap-2">
                                 <CreditCardIcon className="w-5 h-5 text-sp-green-dark" />
@@ -527,14 +532,24 @@ const SuperAdminSubscriptions: React.FC = () => {
                                             type="text"
                                             placeholder="Search stores..."
                                             className={`${inputClass} pl-10`}
-                                            onChange={() => {/* Implement local search if needed */ }}
+                                            value={storePickerSearch}
+                                            onChange={e => setStorePickerSearch(e.target.value)}
                                         />
                                     </div>
                                     <div className="max-h-60 overflow-y-auto border border-brand-border rounded-xl divide-y divide-brand-border">
-                                        {stores.slice(0, 10).map(s => (
+                                        {stores
+                                            .filter(s => {
+                                                const q = storePickerSearch.trim().toLowerCase();
+                                                if (!q) return true;
+                                                return s.name.toLowerCase().includes(q)
+                                                    || (s.email?.toLowerCase().includes(q) ?? false)
+                                                    || s.id.toLowerCase().includes(q);
+                                            })
+                                            .slice(0, 10)
+                                            .map(s => (
                                             <button
                                                 key={s.id}
-                                                onClick={() => setSelectedStore(s)}
+                                                onClick={() => { setSelectedStore(s); setPaymentForm(prev => ({ ...prev, storeId: s.id })); }}
                                                 className="w-full px-4 py-3 text-left hover:bg-surface-variant/60 flex items-center justify-between group transition-colors active:scale-95"
                                             >
                                                 <div>
@@ -554,7 +569,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                             <div className="font-semibold text-brand-text">{selectedStore.name}</div>
                                         </div>
                                         <button
-                                            onClick={() => setSelectedStore(null)}
+                                            onClick={() => { setSelectedStore(null); setPaymentForm(prev => ({ ...prev, storeId: '' })); }}
                                             className="text-sm text-sp-green-dark hover:text-sp-green font-semibold"
                                         >
                                             Change
@@ -659,7 +674,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                                     <span className="font-bold">Summary</span>
                                                 </div>
                                                 <div className="text-sm text-sp-green-dark">
-                                                    This will extend the subscription by {paymentForm.periodDays} days from today.
+                                                    This will extend the subscription by {paymentForm.periodDays} days from its current expiry (or from today if already expired).
                                                     {paymentForm.amount && (
                                                         <div className="mt-1 font-bold">
                                                             Total: {paymentForm.currency} {parseFloat(paymentForm.amount).toFixed(2)}
@@ -680,7 +695,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                             </button>
                                             <button
                                                 type="submit"
-                                                disabled={processing || !paymentForm.storeId || !paymentForm.amount}
+                                                disabled={processing || !selectedStore || !paymentForm.amount}
                                                 className="flex-1 py-3 bg-sp-green text-white font-bold rounded-xl hover:bg-sp-green-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
                                             >
                                                 {processing ? (
