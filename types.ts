@@ -549,10 +549,25 @@ export interface WhatsAppMessage {
 // --- Superadmin Dashboard Types ---
 
 export interface RevenueSummary {
+    /** Lifetime cash collected (only payments that were actually paid). */
     totalAmount: number;
     count: number;
     byMonth: { month: string; amount: number; count: number; }[];
     growthPercentage?: number;
+    /** Cash collected in the current calendar month. */
+    thisMonthCollected?: number;
+    /** Monthly Recurring Revenue: sum of plan prices for active, plan-based subscriptions. */
+    mrr?: number;
+    /** Annual Recurring Revenue (mrr × 12). */
+    arr?: number;
+    /** Active subscriptions counted from a known plan (contribute to MRR). */
+    activeSubscriptions?: number;
+    /** Active subscriptions with no recognised plan (e.g. manual extensions) — excluded from MRR. */
+    activeWithoutPlan?: number;
+    trialCount?: number;
+    pastDueCount?: number;
+    canceledCount?: number;
+    currency?: string;
 }
 
 export interface StoreStats {
@@ -560,6 +575,8 @@ export interface StoreStats {
     active: number;
     trial: number;
     inactive: number;
+    pastDue?: number;
+    canceled?: number;
 }
 
 export interface QuickAction {

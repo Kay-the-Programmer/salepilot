@@ -39,21 +39,21 @@ export default function MarketplacePage() {
                 return <RetailersView />;
             case 'quick-offers':
             default:
-                return <QuickOffersView currentUser={currentUser} />;
+                return <QuickOffersView />;
         }
     };
 
     return (
-        <div className="min-h-screen bg-white font-sans text-slate-900">
+        <div className="min-h-screen bg-background text-brand-text">
             {/* Top Bar - Recopied from original to maintain consistent header look */}
-            <div className="bg-slate-100 py-2 text-center border-b border-slate-200 hidden sm:block">
-                <p className="text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                    Free express worldwide shipping on all orders over $200. <span onClick={() => setIsShippingModalOpen(true)} className="underline cursor-pointer hover:text-indigo-600 transition-colors active:scale-95 transition-all duration-300">See Details</span>
+            <div className="bg-surface-variant py-2 text-center border-b border-brand-border hidden sm:block">
+                <p className="text-[11px] font-bold text-brand-text-muted uppercase tracking-wider">
+                    Free express worldwide shipping on all orders over $200. <span onClick={() => setIsShippingModalOpen(true)} className="underline cursor-pointer hover:text-sp-green-dark transition-colors active:scale-95">See Details</span>
                 </p>
             </div>
 
             {/* Main Header - Recopied for consistency across all views */}
-            <header className="bg-[#0A2E5C] text-white sticky top-0 z-50">
+            <header className="bg-warm-900 text-white sticky top-0 z-50">
                 <div className="max-w-[1400px] mx-auto px-6 h-20 flex items-center justify-between gap-8">
                     {/* Logo & Category Toggle */}
                     <div className="flex items-center gap-6">
@@ -64,7 +64,7 @@ export default function MarketplacePage() {
                         <div className="relative">
                             <button
                                 onClick={() => setIsCategoryMenuOpen(!isCategoryMenuOpen)}
-                                className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-colors ${isCategoryMenuOpen ? 'bg-white text-slate-900' : 'bg-white/10 hover:bg-white/20'}`}
+                                className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-full cursor-pointer transition-colors ${isCategoryMenuOpen ? 'bg-white text-brand-text' : 'bg-white/10 hover:bg-white/20'}`}
                             >
                                 <HiOutlineBolt className="w-4 h-4" />
                                 <span className="text-xs font-bold uppercase tracking-wider">Categories</span>
@@ -72,10 +72,10 @@ export default function MarketplacePage() {
 
                             {/* Categories Dropdown */}
                             {isCategoryMenuOpen && (
-                                <div className="liquid-glass-card rounded-[2rem] absolute top-full left-0 mt-2 w-64 border border-slate-100 overflow-hidden py-2 text-slate-900 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-slate-400">Browse By</div>
+                                <div className="absolute top-full left-0 mt-2 w-64 bg-surface border border-brand-border rounded-2xl shadow-lg overflow-hidden py-2 text-brand-text z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                    <div className="px-4 py-2 text-[10px] font-black uppercase tracking-widest text-brand-text-muted">Browse By</div>
                                     {['Electronics', 'Fashion', 'Home & Garden', 'Industrial', 'Raw Materials', 'Services'].map(cat => (
-                                        <button key={cat} className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-slate-50 hover:text-indigo-600 transition-colors active:scale-95 transition-all duration-300">
+                                        <button key={cat} className="w-full text-left px-4 py-3 text-sm font-bold hover:bg-surface-variant hover:text-sp-green-dark transition-colors active:scale-95">
                                             {cat}
                                         </button>
                                     ))}
@@ -89,9 +89,9 @@ export default function MarketplacePage() {
                         <input
                             type="text"
                             placeholder="Search marketplace..."
-                            className="w-full h-11 pl-5 pr-12 rounded-full bg-white text-slate-900 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="w-full h-11 pl-5 pr-12 rounded-full bg-white text-brand-text text-sm font-medium focus:outline-none focus:ring-2 focus:ring-sp-green"
                         />
-                        <button className="absolute right-1 top-1 bottom-1 w-12 bg-[#FF7F27] rounded-full flex items-center justify-center hover:bg-[#E66B1F] transition-colors active:scale-95 transition-all duration-300">
+                        <button className="absolute right-1 top-1 bottom-1 w-12 bg-sp-green rounded-full flex items-center justify-center hover:bg-sp-green-dark transition-colors active:scale-95">
                             <HiOutlineMagnifyingGlass className="w-5 h-5 text-white" />
                         </button>
                     </div>
@@ -101,23 +101,23 @@ export default function MarketplacePage() {
                         {currentUser ? (
                             <div className="flex items-center gap-4">
                                 <button className="flex flex-col items-center gap-1 group" onClick={() => navigate(currentUser.role === 'customer' ? '/customer/dashboard' : '/reports')}>
-                                    <HiOutlineUserCircle className="w-6 h-6 text-slate-300 group-hover:text-white transition-colors" />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-white">Account</span>
+                                    <HiOutlineUserCircle className="w-6 h-6 text-white/70 group-hover:text-white transition-colors" />
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 group-hover:text-white">Account</span>
                                 </button>
                                 {currentUser.role === 'customer' && (
                                     <button className="flex flex-col items-center gap-1 group" onClick={() => navigate('/customer/dashboard')}>
                                         <div className="relative">
-                                            <HiOutlineShoppingBag className="w-6 h-6 text-slate-300 group-hover:text-white transition-colors" />
-                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[10px] font-bold flex items-center justify-center">0</span>
+                                            <HiOutlineShoppingBag className="w-6 h-6 text-white/70 group-hover:text-white transition-colors" />
+                                            <span className="absolute -top-1 -right-1 w-4 h-4 bg-sp-amber text-warm-900 rounded-full text-[10px] font-bold flex items-center justify-center">0</span>
                                         </div>
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 group-hover:text-white">Cart</span>
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 group-hover:text-white">Cart</span>
                                     </button>
                                 )}
                             </div>
                         ) : (
                             <div className="flex items-center gap-4">
-                                <button onClick={() => navigate('/customer/login')} className="text-sm font-bold text-slate-300 hover:text-white">Login</button>
-                                <button onClick={() => navigate('/customer/register')} className="px-5 py-2 bg-indigo-600 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors active:scale-95 transition-all duration-300">Sign Up</button>
+                                <button onClick={() => navigate('/customer/login')} className="text-sm font-bold text-white/80 hover:text-white">Login</button>
+                                <button onClick={() => navigate('/customer/register')} className="px-5 py-2 bg-sp-green rounded-full text-xs font-bold uppercase tracking-widest hover:bg-sp-green-dark transition-colors active:scale-95">Sign Up</button>
                             </div>
                         )}
                     </div>
@@ -130,34 +130,34 @@ export default function MarketplacePage() {
 
             {/* Shipping Details Modal */}
             {isShippingModalOpen && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="liquid-glass-card rounded-[2rem] max-w-md w-full p-8 relative animate-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm">
+                    <div className="bg-surface border border-brand-border rounded-2xl shadow-xl max-w-md w-full p-8 relative animate-in zoom-in-95 duration-200">
                         <button
                             onClick={() => setIsShippingModalOpen(false)}
-                            className="absolute top-4 right-4 p-2 bg-slate-100 rounded-full hover:bg-slate-200 transition-colors active:scale-95 transition-all duration-300"
+                            className="absolute top-4 right-4 p-2 bg-surface-variant rounded-full hover:bg-brand-border transition-colors active:scale-95"
                         >
-                            <HiOutlineXMark className="w-5 h-5 text-slate-500" />
+                            <HiOutlineXMark className="w-5 h-5 text-brand-text-muted" />
                         </button>
-                        <h3 className="text-2xl font-black text-slate-900 mb-4">Shipping Policy</h3>
-                        <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
+                        <h3 className="text-2xl font-extrabold tracking-tight text-brand-text mb-4">Shipping Policy</h3>
+                        <div className="space-y-4 text-brand-text-muted text-sm leading-relaxed">
                             <p>
-                                <strong>Free Express Shipping:</strong> Available on all orders over $200 (subtotal).
+                                <strong className="text-brand-text">Free Express Shipping:</strong> Available on all orders over $200 (subtotal).
                                 We partner with major logistics providers to ensure your goods arrive safely and on time.
                             </p>
                             <p>
-                                <strong>Delivery Times:</strong>
+                                <strong className="text-brand-text">Delivery Times:</strong>
                                 <ul className="list-disc pl-5 mt-2 space-y-1">
                                     <li>Domestic: 1-3 business days</li>
                                     <li>International: 3-7 business days</li>
                                 </ul>
                             </p>
-                            <p className="bg-slate-50 p-4 rounded-xl text-xs font-medium text-slate-500 border border-slate-100">
+                            <p className="bg-surface-variant p-4 rounded-xl text-xs font-medium text-brand-text-muted border border-brand-border">
                                 Note: Shipping times are estimates and may vary based on customs processing for international orders.
                             </p>
                         </div>
                         <button
                             onClick={() => setIsShippingModalOpen(false)}
-                            className="w-full mt-8 py-3 bg-slate-900 text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-indigo-600 transition-colors active:scale-95 transition-all duration-300"
+                            className="w-full mt-8 py-3 bg-sp-green text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-sp-green-dark transition-colors active:scale-95"
                         >
                             Got it
                         </button>

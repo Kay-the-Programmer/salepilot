@@ -23,6 +23,7 @@ const SuperAdminSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ text: string, type: 'success' | 'error' } | null>(null);
+    const [tokenConfigured, setTokenConfigured] = useState(false);
 
     useEffect(() => {
         loadConfig();
@@ -40,6 +41,7 @@ const SuperAdminSettings: React.FC = () => {
                     webhook_verify_token: result.webhook_verify_token && result.webhook_verify_token !== 'system' ? result.webhook_verify_token : `sb_${Math.random().toString(36).substr(2, 9)}`,
                     access_token: result.access_token && result.access_token !== 'system' ? result.access_token : ''
                 });
+                setTokenConfigured(!!(result as any).access_token_set);
             }
         } catch (error) {
             console.warn('Failed to load support contact config', error);
@@ -155,11 +157,16 @@ const SuperAdminSettings: React.FC = () => {
                                     </label>
                                     <input
                                         type="password"
-                                        placeholder="EAAG..."
+                                        placeholder={tokenConfigured ? '•••••••• (leave blank to keep)' : 'EAAG...'}
                                         className={inputClass}
                                         value={config.access_token}
                                         onChange={(e) => setConfig({ ...config, access_token: e.target.value })}
                                     />
+                                    <p className="text-xs text-brand-text-muted mt-1.5">
+                                        {tokenConfigured
+                                            ? 'A token is securely stored. Leave blank to keep it, or enter a new one to replace.'
+                                            : 'Stored securely and never shown again after saving.'}
+                                    </p>
                                 </div>
                             </div>
 

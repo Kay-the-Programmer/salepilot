@@ -59,7 +59,7 @@ export default function PostOfferModal({ isOpen, onClose, onOfferCreated }: Post
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+                    <div className="fixed inset-0 bg-warm-900/40 backdrop-blur-sm" />
                 </Transition.Child>
 
                 <div className="fixed inset-0 overflow-y-auto">
@@ -73,61 +73,61 @@ export default function PostOfferModal({ isOpen, onClose, onOfferCreated }: Post
                             leaveFrom="opacity-100 scale-100"
                             leaveTo="opacity-0 scale-95"
                         >
-                            <Dialog.Panel className="liquid-glass-card rounded-[2rem] w-full max-w-2xl transform overflow-hidden p-6 text-left align-middle transition-all">
+                            <Dialog.Panel className="bg-surface border border-brand-border rounded-2xl shadow-xl w-full max-w-2xl transform overflow-hidden p-6 text-left align-middle transition-all">
                                 <div className="flex justify-between items-center mb-4">
-                                    <Dialog.Title as="h3" className="text-lg font-medium leading-6 text-gray-900">
+                                    <Dialog.Title as="h3" className="text-lg font-extrabold tracking-tight leading-6 text-brand-text">
                                         Post New Offer
                                     </Dialog.Title>
-                                    <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+                                    <button onClick={onClose} className="text-brand-text-muted hover:text-brand-text">
                                         <X size={20} />
                                     </button>
                                 </div>
 
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Title</label>
+                                        <label className="block text-sm font-semibold text-brand-text">Title</label>
                                         <input
                                             type="text"
                                             required
                                             value={title}
                                             onChange={(e) => setTitle(e.target.value)}
-                                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className="mt-1 block w-full rounded-xl border border-brand-border bg-surface px-3 py-2 text-brand-text placeholder-brand-text-muted shadow-sm focus:border-sp-green focus:outline-none focus:ring-1 focus:ring-sp-green"
                                             placeholder="I need..."
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700">Description</label>
+                                        <label className="block text-sm font-semibold text-brand-text">Description</label>
                                         <textarea
                                             rows={3}
                                             value={description}
                                             onChange={(e) => setDescription(e.target.value)}
-                                            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                            className="mt-1 block w-full rounded-xl border border-brand-border bg-surface px-3 py-2 text-brand-text placeholder-brand-text-muted shadow-sm focus:border-sp-green focus:outline-none focus:ring-1 focus:ring-sp-green"
                                             placeholder="Details about what you are looking for..."
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-2">Location (Required)</label>
-                                        <p className="text-xs text-gray-500 mb-2">Drag the marker to your location.</p>
+                                        <label className="block text-sm font-semibold text-brand-text mb-2">Location (Required)</label>
+                                        <p className="text-xs text-brand-text-muted mb-2">Drag the marker to your location.</p>
                                         <LocationPicker
                                             onLocationSelect={(loc) => setLocation({ lat: loc.lat, lng: loc.lng })}
                                         />
                                         {location && (
-                                            <p className="text-xs text-green-600 mt-1">
+                                            <p className="text-xs text-success mt-1">
                                                 Selected: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}
                                             </p>
                                         )}
                                     </div>
 
                                     {error && (
-                                        <div className="text-red-500 text-sm">{error}</div>
+                                        <div className="text-danger text-sm">{error}</div>
                                     )}
 
                                     <div className="mt-4 flex justify-end">
                                         <button
                                             type="button"
-                                            className="inline-flex justify-center rounded-md border border-transparent bg-gray-100 px-4 py-2 text-sm font-medium text-gray-900 hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2 mr-2 active:scale-95 transition-all duration-300"
+                                            className="inline-flex justify-center rounded-xl border border-brand-border bg-surface-variant px-4 py-2 text-sm font-semibold text-brand-text hover:bg-brand-border focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-border focus-visible:ring-offset-2 mr-2 active:scale-95 transition-all"
                                             onClick={onClose}
                                         >
                                             Cancel
@@ -135,7 +135,7 @@ export default function PostOfferModal({ isOpen, onClose, onOfferCreated }: Post
                                         <button
                                             type="submit"
                                             disabled={loading}
-                                            className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 active:scale-95 transition-all duration-300"
+                                            className="inline-flex justify-center rounded-xl border border-transparent bg-sp-green px-4 py-2 text-sm font-bold text-white hover:bg-sp-green-dark focus:outline-none focus-visible:ring-2 focus-visible:ring-sp-green focus-visible:ring-offset-2 disabled:opacity-50 active:scale-95 transition-all"
                                         >
                                             {loading ? 'Posting...' : 'Post Offer'}
                                         </button>

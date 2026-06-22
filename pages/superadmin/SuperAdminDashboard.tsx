@@ -12,13 +12,20 @@ import { RevenueSummary, StoreStats, User } from '../../types';
  * animation — information first.
  */
 
-type Tone = 'primary' | 'success' | 'amber' | 'neutral';
+type Tone = 'primary' | 'success' | 'amber' | 'danger' | 'neutral';
 
 const TONE: Record<Tone, { chip: string; icon: string; accent: string }> = {
     primary: { chip: 'bg-sp-green-soft text-sp-green-dark', icon: 'text-sp-green-dark', accent: 'text-sp-green-dark' },
     success: { chip: 'bg-success-muted text-success', icon: 'text-success', accent: 'text-success' },
     amber:   { chip: 'bg-sp-amber-soft text-sp-amber', icon: 'text-sp-amber', accent: 'text-sp-amber' },
+    danger:  { chip: 'bg-danger-muted text-danger', icon: 'text-danger', accent: 'text-danger' },
     neutral: { chip: 'bg-surface-variant text-brand-text-muted', icon: 'text-brand-text-muted', accent: 'text-brand-text-muted' },
+};
+
+const HEALTH_BADGE: Record<'checking' | 'ok' | 'degraded', { cls: string; dot: string; label: string; pulse: boolean }> = {
+    checking: { cls: 'bg-surface-variant text-brand-text-muted', dot: 'bg-brand-text-muted', label: 'Checking status…', pulse: false },
+    ok:       { cls: 'bg-success-muted text-success', dot: 'bg-success', label: 'All systems operational', pulse: true },
+    degraded: { cls: 'bg-danger-muted text-danger', dot: 'bg-danger', label: 'Service degraded', pulse: false },
 };
 
 const formatCurrency = (amount: number) =>
@@ -77,7 +84,7 @@ const Pill: React.FC<{ children: React.ReactNode; tone: 'up' | 'down' | 'flat' }
     );
 };
 
-const RevenueChart: React.FC<{ revSummary: RevenueSummary | null }> = ({ revSummary }) => {
+const RevenueChart: React.FC<{ revSummary: RevenueSummary | null; growth: number | null }> = ({ revSummary, growth }) => {
     const [range, setRange] = useState<'3m' | '6m' | '1y'>('6m');
 
     const months = useMemo(() => {
@@ -93,8 +100,15 @@ const RevenueChart: React.FC<{ revSummary: RevenueSummary | null }> = ({ revSumm
         <div className="bg-surface border border-brand-border rounded-2xl shadow-sm h-full flex flex-col">
             <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border">
                 <div>
-                    <h2 className="text-lg font-extrabold tracking-tight text-brand-text">Subscription revenue</h2>
-                    <p className="text-sm text-brand-text-muted">Monthly recurring revenue across all stores</p>
+                    <div className="flex items-center gap-2">
+                        <h2 className="text-lg font-extrabold tracking-tight text-brand-text">Cash collected</h2>
+                        {growth !== null && (
+                            <Pill tone={growth >= 0 ? 'up' : 'down'}>{Math.abs(growth).toFixed(1)}%</Pill>
+                        )}
+                    </div>
+                    <p className="text-sm text-brand-text-muted">
+                        {formatCurrency(revSummary?.thisMonthCollected || 0)} this month · {formatCurrency(revSummary?.totalAmount || 0)} lifetime
+                    </p>
                 </div>
                 <div className="flex items-center gap-1 bg-surface-variant p-1 rounded-xl">
                     {(['3m', '6m', '1y'] as const).map(p => (
@@ -150,14 +164,15 @@ const StoreHealth: React.FC<{ stats: StoreStats }> = ({ stats }) => {
     const rows: { label: string; value: number; tone: Tone; icon: string }[] = [
         { label: 'Active', value: stats.active, tone: 'success', icon: 'check_circle' },
         { label: 'On trial', value: stats.trial, tone: 'amber', icon: 'schedule' },
-        { label: 'Inactive', value: stats.inactive, tone: 'neutral', icon: 'pause_circle' },
+        { label: 'Past due', value: stats.pastDue ?? 0, tone: 'danger', icon: 'error' },
+        { label: 'Canceled', value: stats.canceled ?? 0, tone: 'neutral', icon: 'cancel' },
     ];
     const total = Math.max(stats.total, 1);
 
     return (
         <div className="bg-surface border border-brand-border rounded-2xl shadow-sm h-full flex flex-col">
             <div className="p-6 border-b border-brand-border">
-                <h2 className="text-lg font-extrabold tracking-tight text-brand-text">Store health</h2>
+                <h2 className="text-lg font-extrabold tracking-tight text-brand-text">Subscription health</h2>
                 <p className="text-sm text-brand-text-muted">{formatNumber(stats.total)} stores on the platform</p>
             </div>
             <div className="p-6 space-y-5 flex-1">
@@ -175,7 +190,7 @@ const StoreHealth: React.FC<{ stats: StoreStats }> = ({ stats }) => {
                             <div className="h-2.5 rounded-full bg-surface-variant overflow-hidden">
                                 <div
                                     className={`h-full rounded-full transition-all duration-500 ${
-                                        r.tone === 'success' ? 'bg-success' : r.tone === 'amber' ? 'bg-sp-amber' : 'bg-warm-400'
+                                        r.tone === 'success' ? 'bg-success' : r.tone === 'amber' ? 'bg-sp-amber' : r.tone === 'danger' ? 'bg-danger' : 'bg-warm-400'
                                     }`}
                                     style={{ width: `${pct}%` }}
                                 />
@@ -211,6 +226,7 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
     const [loading, setLoading] = useState(true);
     const [revSummary, setRevSummary] = useState<RevenueSummary | null>(null);
     const [storeStats, setStoreStats] = useState<StoreStats>({ total: 0, active: 0, trial: 0, inactive: 0 });
+    const [health, setHealth] = useState<'checking' | 'ok' | 'degraded'>('checking');
 
     useEffect(() => {
         let cancelled = false;
@@ -223,16 +239,34 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
                 if (cancelled) return;
                 setRevSummary(revResp.summary);
                 const stores = storesResp.stores || [];
+                // Count on a single, mutually-exclusive dimension (subscription status) so the
+                // same store can't be tallied under two cards at once.
                 setStoreStats({
                     total: stores.length,
-                    active: stores.filter((s: any) => s.status === 'active').length,
+                    active: stores.filter((s: any) => s.subscriptionStatus === 'active').length,
                     trial: stores.filter((s: any) => s.subscriptionStatus === 'trial').length,
+                    pastDue: stores.filter((s: any) => s.subscriptionStatus === 'past_due').length,
+                    canceled: stores.filter((s: any) => s.subscriptionStatus === 'canceled').length,
                     inactive: stores.filter((s: any) => s.status === 'inactive').length,
                 });
             } catch (err) {
                 console.error('Failed to load dashboard data', err);
             } finally {
                 if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, []);
+
+    // Live platform health (real check, not a hardcoded label).
+    useEffect(() => {
+        let cancelled = false;
+        (async () => {
+            try {
+                const h = await api.get<{ status?: string }>('/health');
+                if (!cancelled) setHealth(h?.status === 'OK' ? 'ok' : 'degraded');
+            } catch {
+                if (!cancelled) setHealth('degraded');
             }
         })();
         return () => { cancelled = true; };
@@ -270,32 +304,30 @@ const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) =
                         </h1>
                         <p className="mt-1 text-brand-text-muted">Here's how SalePilot is performing across every store.</p>
                     </div>
-                    <span className="inline-flex items-center gap-2 self-start sm:self-auto rounded-full bg-success-muted px-3 py-1.5 text-sm font-bold text-success">
-                        <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                        All systems operational
+                    <span className={`inline-flex items-center gap-2 self-start sm:self-auto rounded-full px-3 py-1.5 text-sm font-bold ${HEALTH_BADGE[health].cls}`}>
+                        <span className={`w-2 h-2 rounded-full ${HEALTH_BADGE[health].dot} ${HEALTH_BADGE[health].pulse ? 'animate-pulse' : ''}`} />
+                        {HEALTH_BADGE[health].label}
                     </span>
                 </header>
 
                 {/* KPI cards */}
                 <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
                     <StatCard
-                        label="Total revenue"
-                        value={formatCurrency(revSummary?.totalAmount || 0)}
+                        label="Monthly recurring (MRR)"
+                        value={formatCurrency(revSummary?.mrr || 0)}
                         icon="payments"
                         tone="primary"
-                        sub={growth !== null ? (
-                            <Pill tone={growth >= 0 ? 'up' : 'down'}>{Math.abs(growth).toFixed(1)}%</Pill>
-                        ) : undefined}
+                        sub={<span className="text-xs font-bold text-brand-text-muted whitespace-nowrap">ARR {formatCurrency(revSummary?.arr || 0)}</span>}
                     />
-                    <StatCard label="Active stores" value={formatNumber(storeStats.active)} icon="storefront" tone="success" />
-                    <StatCard label="On trial" value={formatNumber(storeStats.trial)} icon="schedule" tone="amber" />
+                    <StatCard label="Active subscriptions" value={formatNumber(revSummary?.activeSubscriptions ?? storeStats.active)} icon="verified" tone="success" />
+                    <StatCard label="On trial" value={formatNumber(revSummary?.trialCount ?? storeStats.trial)} icon="schedule" tone="amber" />
                     <StatCard label="Total stores" value={formatNumber(storeStats.total)} icon="apartment" tone="neutral" />
                 </section>
 
                 {/* Revenue + store health */}
                 <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2">
-                        <RevenueChart revSummary={revSummary} />
+                        <RevenueChart revSummary={revSummary} growth={growth} />
                     </div>
                     <div className="lg:col-span-1">
                         <StoreHealth stats={storeStats} />

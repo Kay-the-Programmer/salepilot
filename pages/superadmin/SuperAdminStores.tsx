@@ -33,12 +33,27 @@ interface StoreFilters {
     subscription: 'all' | StoreRow['subscriptionStatus'];
 }
 
+// Reason codes captured (and audited) for destructive lifecycle changes.
+const REASON_CODES = ['Non-payment', 'Policy violation', 'Fraud / abuse', 'Customer request', 'Maintenance', 'Other'];
+
+type PendingChange =
+    | { kind: 'single'; storeId: string; storeName: string; status: StoreRow['status'] }
+    | { kind: 'bulk'; ids: string[]; status: StoreRow['status'] };
+
+const STATUS_INPUT = "w-full bg-surface border border-brand-border rounded-xl px-3.5 py-2.5 text-sm text-brand-text placeholder-brand-text-muted focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none transition-colors";
+
 const SuperAdminStores: React.FC = () => {
     const navigate = useNavigate();
     const [stores, setStores] = useState<StoreRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
     const [showFilters, setShowFilters] = useState(false);
+
+    // Strict status-change workflow (reason code + typed confirmation to suspend)
+    const [pending, setPending] = useState<PendingChange | null>(null);
+    const [reasonCode, setReasonCode] = useState('');
+    const [reasonNote, setReasonNote] = useState('');
+    const [confirmText, setConfirmText] = useState('');
 
     // Filters
     const [filters, setFilters] = useState<StoreFilters>({
@@ -68,14 +83,12 @@ const SuperAdminStores: React.FC = () => {
         }
     };
 
-    const updateStoreStatus = async (id: string, newStatus: StoreRow['status']) => {
-        if (!window.confirm(`Change store status to ${newStatus}? This will affect store access.`)) return;
+    const needsConfirm = (status: StoreRow['status']) => status === 'suspended' || status === 'inactive';
 
+    const executeSingle = async (id: string, status: StoreRow['status'], reason?: string) => {
         setUpdatingId(id);
         try {
-            const resp = await api.patch<{ store: StoreRow }>(`/superadmin/stores/${id}`, {
-                status: newStatus
-            });
+            const resp = await api.patch<{ store: StoreRow }>(`/superadmin/stores/${id}`, { status, reason });
             setStores(prev => prev.map(s => s.id === id ? resp.store : s));
         } catch (e: any) {
             alert(e.message || 'Update failed');
@@ -84,20 +97,39 @@ const SuperAdminStores: React.FC = () => {
         }
     };
 
-    const bulkUpdateStatus = async (newStatus: StoreRow['status']) => {
-        if (!selectedStores.length) return;
-        if (!window.confirm(`Update ${selectedStores.length} stores to ${newStatus}?`)) return;
-
+    const executeBulk = async (ids: string[], status: StoreRow['status'], reason?: string) => {
         try {
-            const promises = selectedStores.map(id =>
-                api.patch(`/superadmin/stores/${id}`, { status: newStatus })
-            );
-            await Promise.all(promises);
+            await Promise.all(ids.map(id => api.patch(`/superadmin/stores/${id}`, { status, reason })));
             await loadStores();
             setSelectedStores([]);
         } catch (e: any) {
             alert('Bulk update failed');
         }
+    };
+
+    // Entry points used by the buttons: positive/reversible changes run immediately;
+    // suspend/deactivate open a modal requiring a reason (+ typed confirmation to suspend).
+    const updateStoreStatus = (id: string, newStatus: StoreRow['status']) => {
+        if (!needsConfirm(newStatus)) { executeSingle(id, newStatus); return; }
+        const store = stores.find(s => s.id === id);
+        setReasonCode(''); setReasonNote(''); setConfirmText('');
+        setPending({ kind: 'single', storeId: id, storeName: store?.name || id, status: newStatus });
+    };
+
+    const bulkUpdateStatus = (newStatus: StoreRow['status']) => {
+        if (!selectedStores.length) return;
+        if (!needsConfirm(newStatus)) { executeBulk(selectedStores, newStatus); return; }
+        setReasonCode(''); setReasonNote(''); setConfirmText('');
+        setPending({ kind: 'bulk', ids: [...selectedStores], status: newStatus });
+    };
+
+    const runPending = async () => {
+        if (!pending || !canConfirm) return;
+        const reason = reasonCode === 'Other' ? reasonNote.trim() : (reasonNote.trim() ? `${reasonCode} — ${reasonNote.trim()}` : reasonCode);
+        const p = pending;
+        setPending(null);
+        if (p.kind === 'single') await executeSingle(p.storeId, p.status, reason);
+        else await executeBulk(p.ids, p.status, reason);
     };
 
     // Filter stores
@@ -210,6 +242,12 @@ const SuperAdminStores: React.FC = () => {
             setSelectedStores(paginatedStores.map(store => store.id));
         }
     };
+
+    const verb = pending?.status === 'suspended' ? 'Suspend' : 'Deactivate';
+    const confirmRequirement = pending?.kind === 'single' ? pending.storeName : 'SUSPEND';
+    const confirmNeedsTyping = pending?.status === 'suspended';
+    const reasonValid = reasonCode === 'Other' ? reasonNote.trim().length > 0 : reasonCode.length > 0;
+    const canConfirm = !!pending && reasonValid && (!confirmNeedsTyping || confirmText.trim() === confirmRequirement);
 
     return (
         <div className="min-h-screen bg-background">
@@ -583,6 +621,79 @@ const SuperAdminStores: React.FC = () => {
                     )}
                 </div>
             </div>
+
+            {/* Strict status-change confirmation: reason code (+ typed confirm to suspend) */}
+            {pending && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm"
+                    onClick={() => setPending(null)}
+                >
+                    <div
+                        className="bg-surface border border-brand-border rounded-2xl shadow-xl w-full max-w-md p-6"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex items-start gap-3">
+                            <span className={`material-symbols-rounded w-11 h-11 rounded-xl flex items-center justify-center text-[22px] ${pending.status === 'suspended' ? 'bg-danger-muted text-danger' : 'bg-sp-amber-soft text-sp-amber'}`}>
+                                {pending.status === 'suspended' ? 'gpp_bad' : 'pause_circle'}
+                            </span>
+                            <div>
+                                <h3 className="text-lg font-extrabold tracking-tight text-brand-text">
+                                    {verb} {pending.kind === 'single' ? 'store' : `${pending.ids.length} stores`}
+                                </h3>
+                                <p className="text-sm text-brand-text-muted">
+                                    {pending.kind === 'single' ? pending.storeName : `${pending.ids.length} selected stores`} — this affects store access.
+                                </p>
+                            </div>
+                        </div>
+
+                        <label className="block mt-5 text-sm font-semibold text-brand-text mb-1.5">Reason <span className="text-danger">*</span></label>
+                        <select className={STATUS_INPUT} value={reasonCode} onChange={(e) => setReasonCode(e.target.value)}>
+                            <option value="">Select a reason…</option>
+                            {REASON_CODES.map(r => <option key={r} value={r}>{r}</option>)}
+                        </select>
+
+                        <label className="block mt-4 text-sm font-semibold text-brand-text mb-1.5">
+                            Note {reasonCode === 'Other' && <span className="text-danger">*</span>}
+                        </label>
+                        <textarea
+                            className={`${STATUS_INPUT} h-20 resize-none`}
+                            placeholder="Add context — recorded in the audit log…"
+                            value={reasonNote}
+                            onChange={(e) => setReasonNote(e.target.value)}
+                        />
+
+                        {confirmNeedsTyping && (
+                            <>
+                                <label className="block mt-4 text-sm font-semibold text-brand-text mb-1.5">
+                                    Type <span className="font-mono font-bold text-danger">{confirmRequirement}</span> to confirm
+                                </label>
+                                <input
+                                    className={STATUS_INPUT}
+                                    value={confirmText}
+                                    onChange={(e) => setConfirmText(e.target.value)}
+                                    placeholder={confirmRequirement}
+                                />
+                            </>
+                        )}
+
+                        <div className="flex gap-3 mt-6">
+                            <button
+                                onClick={() => setPending(null)}
+                                className="flex-1 py-2.5 rounded-xl bg-surface-variant text-brand-text font-semibold hover:bg-brand-border transition-all active:scale-95"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                disabled={!canConfirm}
+                                onClick={runPending}
+                                className={`flex-1 py-2.5 rounded-xl text-white font-bold transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${pending.status === 'suspended' ? 'bg-danger hover:opacity-90' : 'bg-sp-amber hover:opacity-90'}`}
+                            >
+                                {verb}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

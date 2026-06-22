@@ -78,12 +78,8 @@ export const PosShell: React.FC<PosShellProps> = ({
                     aria-current={active === 'discover' ? 'page' : undefined}
                     onClick={() => { onNavigate('discover'); onCloseDrawer(); }}
                 >
-                    <PosIcon name="menu" size={22} fill={active === 'discover' ? 1 : 0} />
+                    <PosIcon name="apps" size={22} fill={active === 'discover' ? 1 : 0} />
                     Discover Apps
-                </button>
-                <button type="button" className="posshell__navitem" onClick={() => { onExit(); onCloseDrawer(); }}>
-                    <PosIcon name="grid_view" size={22} />
-                    Full App
                 </button>
                 <button type="button" className="posshell__navitem posshell__navitem--logout" onClick={() => { onLogout(); onCloseDrawer(); }}>
                     <PosIcon name="logout" size={22} />

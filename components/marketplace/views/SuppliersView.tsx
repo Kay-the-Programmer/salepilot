@@ -72,46 +72,46 @@ export default function SuppliersView() {
 
     return (
         <div className="max-w-[1400px] mx-auto px-6 py-8">
-            <h2 className="text-2xl font-black text-slate-900 mb-6">Registered Suppliers</h2>
+            <h2 className="text-2xl font-black text-brand-text mb-6">Registered Suppliers</h2>
 
             {loading ? (
                 <div className="flex justify-center py-12">
-                    <div className="animate-spin w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full"></div>
+                    <div className="animate-spin w-8 h-8 border-4 border-sp-green-soft border-t-sp-green rounded-full"></div>
                 </div>
             ) : suppliers.length === 0 ? (
-                <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
-                    <HiOutlineUserCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-bold text-slate-900">No Suppliers Found</h3>
-                    <p className="text-slate-500">Be the first to register as a supplier!</p>
+                <div className="text-center py-20 bg-surface rounded-3xl border border-dashed border-brand-border">
+                    <HiOutlineUserCircle className="w-16 h-16 text-brand-border mx-auto mb-4" />
+                    <h3 className="text-lg font-bold text-brand-text">No Suppliers Found</h3>
+                    <p className="text-brand-text-muted">Be the first to register as a supplier!</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {suppliers.map(supplier => (
-                        <div key={supplier.id} className="liquid-glass-card rounded-[2rem] p-6 border border-slate-100 hover: transition- flex flex-col">
+                        <div key={supplier.id} className="bg-surface border border-brand-border rounded-2xl shadow-sm p-6 hover:shadow-md transition-all flex flex-col">
                             <div className="flex items-center gap-4 mb-4">
-                                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-600 font-bold text-xl">
+                                <div className="w-12 h-12 bg-sp-green-soft rounded-full flex items-center justify-center text-sp-green-dark font-bold text-xl">
                                     {supplier.name.charAt(0)}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900">{supplier.name}</h4>
-                                    <span className="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full font-bold uppercase tracking-wider">Supplier</span>
+                                    <h4 className="font-bold text-brand-text">{supplier.name}</h4>
+                                    <span className="text-xs bg-sp-green-soft text-sp-green-dark px-2 py-1 rounded-full font-bold uppercase tracking-wider">Supplier</span>
                                 </div>
                             </div>
-                            <div className="space-y-2 text-sm text-slate-500 flex-1">
+                            <div className="space-y-2 text-sm text-brand-text-muted flex-1">
                                 <p>Email: {supplier.email}</p>
                                 {supplier.phone && <p>Phone: {supplier.phone}</p>}
-                                {supplier.currentStoreId && <p className="text-xs text-slate-400 mt-2">Store ID: {supplier.currentStoreId}</p>}
+                                {supplier.currentStoreId && <p className="text-xs text-brand-text-muted mt-2">Store ID: {supplier.currentStoreId}</p>}
                             </div>
 
                             <div className="mt-6 flex gap-3">
                                 <button
                                     onClick={() => handleViewProfile(supplier.name)}
-                                    className="flex-1 py-2 border border-slate-200 text-slate-700 rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-slate-50 transition-colors active:scale-95 transition-all duration-300">
+                                    className="flex-1 py-2 border border-brand-border text-brand-text rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-surface-variant transition-colors active:scale-95">
                                     View Profile
                                 </button>
                                 <button
                                     onClick={() => handleBuyFromSupplier(supplier)}
-                                    className="flex-1 py-2 bg-indigo-600 text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                                    className="flex-1 py-2 bg-sp-green text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-sp-green-dark transition-colors flex items-center justify-center gap-2 active:scale-95"
                                 >
                                     <HiShoppingCart className="w-4 h-4" />
                                     Order Now

@@ -36,7 +36,12 @@ interface PaymentFormData {
     periodDays: string;
     notes?: string;
     paymentMethod?: string;
+    reference?: string;
 }
+
+// Stable idempotency key per payment attempt so a double-submit can't double-charge/extend.
+const newPaymentReference = () =>
+    `manual_${(globalThis.crypto?.randomUUID?.() ?? `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`)}`;
 
 interface SubscriptionStats {
     total: number;
@@ -127,7 +132,8 @@ const SuperAdminSubscriptions: React.FC = () => {
             currency: 'ZMW',
             periodDays: '30',
             notes: '',
-            paymentMethod: 'manual'
+            paymentMethod: 'manual',
+            reference: newPaymentReference()
         });
         setPaymentModalOpen(true);
     };
@@ -144,7 +150,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                 storeId: selectedStore.id
             };
 
-            await api.post("/superadmin/payments/record", payload);
+            await api.post("/superadmin/revenue/payments", payload);
             setPaymentModalOpen(false);
             loadStores(); // Reload to see updates
         } catch (err: any) {

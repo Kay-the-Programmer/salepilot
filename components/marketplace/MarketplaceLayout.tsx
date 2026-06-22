@@ -29,9 +29,9 @@ export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) 
     };
 
     return (
-        <div className="min-h-screen bg-mesh-light font-google">
+        <div className="min-h-screen bg-mesh-light">
             {/* Navigation Tabs */}
-            <div className="bg-white border-b border-slate-200 sticky top-20 z-40">
+            <div className="bg-surface border-b border-brand-border sticky top-20 z-40">
                 <div className="max-w-[1400px] mx-auto px-6">
                     <div className="flex items-center gap-8 overflow-x-auto no-scrollbar">
                         {tabs.map(tab => (
@@ -41,8 +41,8 @@ export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) 
                                 className={`
                                     flex items-center gap-2 py-4 border-b-2 text-sm font-bold uppercase tracking-wider transition-colors whitespace-nowrap
                                     ${activeView === tab.id
-                                        ? 'border-indigo-600 text-indigo-600'
-                                        : 'border-transparent text-slate-500 hover:text-slate-900'}
+                                        ? 'border-sp-green text-sp-green-dark'
+                                        : 'border-transparent text-brand-text-muted hover:text-brand-text'}
                                 `}
                             >
                                 <tab.icon className="w-5 h-5" />

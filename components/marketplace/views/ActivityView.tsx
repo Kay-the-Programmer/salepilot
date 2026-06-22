@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HiOutlineInbox, HiOutlinePaperAirplane, HiOutlineShoppingBag, HiOutlineCheckCircle, HiOutlineClock } from 'react-icons/hi2';
+import { HiOutlineInbox, HiOutlinePaperAirplane, HiOutlineCheckCircle, HiOutlineClock } from 'react-icons/hi2';
 
 export default function ActivityView() {
     const [activeTab, setActiveTab] = useState<'received' | 'sent'>('sent');
@@ -18,19 +18,19 @@ export default function ActivityView() {
 
     return (
         <div className="max-w-[1400px] mx-auto px-6 py-8">
-            <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-8">My Activity</h2>
+            <h2 className="text-3xl font-black text-brand-text tracking-tight mb-8">My Activity</h2>
 
             {/* Sub-tabs */}
-            <div className="flex items-center gap-4 mb-8 border-b border-slate-200">
+            <div className="flex items-center gap-4 mb-8 border-b border-brand-border">
                 <button
                     onClick={() => setActiveTab('sent')}
-                    className={`pb-4 text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === 'sent' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`pb-4 text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === 'sent' ? 'text-sp-green-dark border-b-2 border-sp-green' : 'text-brand-text-muted hover:text-brand-text'}`}
                 >
                     Sent Offers
                 </button>
                 <button
                     onClick={() => setActiveTab('received')}
-                    className={`pb-4 text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === 'received' ? 'text-indigo-600 border-b-2 border-indigo-600' : 'text-slate-400 hover:text-slate-600'}`}
+                    className={`pb-4 text-sm font-bold uppercase tracking-wider transition-colors ${activeTab === 'received' ? 'text-sp-green-dark border-b-2 border-sp-green' : 'text-brand-text-muted hover:text-brand-text'}`}
                 >
                     My Requests
                 </button>
@@ -39,27 +39,27 @@ export default function ActivityView() {
             {activeTab === 'sent' && (
                 <div className="space-y-4">
                     {sentOffers.length > 0 ? sentOffers.map(offer => (
-                        <div key={offer.id} className="liquid-glass-card rounded-[2rem] p-6 border border-slate-100 flex items-center justify-between hover: transition-all">
+                        <div key={offer.id} className="bg-surface border border-brand-border rounded-2xl shadow-sm p-6 flex items-center justify-between hover:shadow-md transition-all">
                             <div className="flex items-center gap-4">
-                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${offer.status === 'accepted' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'}`}>
+                                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${offer.status === 'accepted' ? 'bg-success-muted text-success' : 'bg-sp-amber-soft text-sp-amber'}`}>
                                     {offer.status === 'accepted' ? <HiOutlineCheckCircle className="w-6 h-6" /> : <HiOutlineClock className="w-6 h-6" />}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-slate-900">{offer.item}</h4>
-                                    <p className="text-xs text-slate-500 font-bold uppercase tracking-wider">To: {offer.to} • {offer.date}</p>
+                                    <h4 className="font-bold text-brand-text">{offer.item}</h4>
+                                    <p className="text-xs text-brand-text-muted font-bold uppercase tracking-wider">To: {offer.to} • {offer.date}</p>
                                 </div>
                             </div>
                             <div className="text-right">
-                                <p className="text-lg font-black text-slate-900">{offer.price}</p>
-                                <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${offer.status === 'accepted' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                                <p className="text-lg font-black text-brand-text">{offer.price}</p>
+                                <span className={`inline-block px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${offer.status === 'accepted' ? 'bg-success-muted text-success' : 'bg-sp-amber-soft text-sp-amber'}`}>
                                     {offer.status}
                                 </span>
                             </div>
                         </div>
                     )) : (
-                        <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-200">
-                            <HiOutlinePaperAirplane className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                            <p className="text-slate-500 font-medium">You haven't sent any offers yet.</p>
+                        <div className="text-center py-12 bg-surface rounded-3xl border border-dashed border-brand-border">
+                            <HiOutlinePaperAirplane className="w-12 h-12 text-brand-border mx-auto mb-3" />
+                            <p className="text-brand-text-muted font-medium">You haven't sent any offers yet.</p>
                         </div>
                     )}
                 </div>
@@ -70,10 +70,10 @@ export default function ActivityView() {
                     {receivedRequests.length > 0 ? (
                         <div>Requests list...</div>
                     ) : (
-                        <div className="text-center py-12 bg-white rounded-3xl border border-dashed border-slate-200">
-                            <HiOutlineInbox className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                            <p className="text-slate-500 font-medium">No active requests found.</p>
-                            <button className="mt-4 px-6 py-2 bg-indigo-50 text-indigo-600 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-indigo-100 transition-colors active:scale-95 transition-all duration-300">
+                        <div className="text-center py-12 bg-surface rounded-3xl border border-dashed border-brand-border">
+                            <HiOutlineInbox className="w-12 h-12 text-brand-border mx-auto mb-3" />
+                            <p className="text-brand-text-muted font-medium">No active requests found.</p>
+                            <button className="mt-4 px-6 py-2 bg-sp-green-soft text-sp-green-dark rounded-full text-xs font-bold uppercase tracking-widest hover:bg-sp-green/15 transition-colors active:scale-95">
                                 Create New Request
                             </button>
                         </div>
