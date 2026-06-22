@@ -128,14 +128,14 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
     // ── Featured slider ──────────────────────────────────────────────────────
     const features = useMemo(() => FEATURES.filter(f => allowedPages.includes(f.requires)), [allowedPages]);
     const [slide, setSlide] = useState(0);
-    const [paused, setPaused] = useState(false);
+    const [playing, setPlaying] = useState(true);
     const slideCount = features.length;
 
     useEffect(() => {
-        if (slideCount <= 1 || paused) return;
+        if (slideCount <= 1 || !playing) return;
         const t = setInterval(() => setSlide(s => (s + 1) % slideCount), 5200);
         return () => clearInterval(t);
-    }, [slideCount, paused]);
+    }, [slideCount, playing]);
 
     useEffect(() => { if (slide >= slideCount && slideCount > 0) setSlide(0); }, [slideCount, slide]);
 
@@ -245,8 +245,6 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                 {!q && features.length > 0 && (
                     <section
                         className="dfeat"
-                        onMouseEnter={() => setPaused(true)}
-                        onMouseLeave={() => setPaused(false)}
                         aria-roledescription="carousel"
                         aria-label="Featured"
                     >
@@ -280,26 +278,23 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                         </div>
 
                         {slideCount > 1 && (
-                            <>
+                            <div className="dfeat__nav">
                                 <button type="button" className="dfeat__arrow dfeat__arrow--prev" aria-label="Previous" onClick={() => setSlide(s => (s - 1 + slideCount) % slideCount)}>
                                     <PosIcon name="chevron_left" size={22} />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="dfeat__pause"
+                                    aria-label={playing ? 'Pause' : 'Play'}
+                                    aria-pressed={!playing}
+                                    onClick={() => setPlaying(p => !p)}
+                                >
+                                    <PosIcon name={playing ? 'pause' : 'play_arrow'} size={24} fill={1} />
                                 </button>
                                 <button type="button" className="dfeat__arrow dfeat__arrow--next" aria-label="Next" onClick={() => setSlide(s => (s + 1) % slideCount)}>
                                     <PosIcon name="chevron_right" size={22} />
                                 </button>
-                                <div className="dfeat__dots" role="tablist">
-                                    {features.map((f, i) => (
-                                        <button
-                                            key={f.route}
-                                            type="button"
-                                            className={`dfeat__dot${i === slide ? ' is-active' : ''}`}
-                                            aria-label={`Go to slide ${i + 1}`}
-                                            aria-selected={i === slide}
-                                            onClick={() => setSlide(i)}
-                                        />
-                                    ))}
-                                </div>
-                            </>
+                            </div>
                         )}
                     </section>
                 )}

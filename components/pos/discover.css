@@ -136,27 +136,35 @@
   transform: rotate(-8deg);
 }
 
-.dfeat__arrow {
-  position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
-  width: 38px; height: 38px; border-radius: 50%; cursor: pointer;
+/* Controller — exactly three buttons: back · pause/play · forward,
+   in a centered media-control row below the slide (no overlay clutter). */
+.dfeat__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--v2-space-4);
+  margin-top: var(--v2-space-4);
+}
+.dfeat__arrow,
+.dfeat__pause {
   display: inline-flex; align-items: center; justify-content: center;
-  background: rgba(255, 255, 255, 0.85); color: var(--v2-color-ink);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
-  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
-  opacity: 0; transition: opacity var(--v2-duration) var(--v2-ease), background-color var(--v2-duration-fast) var(--v2-ease);
+  border-radius: 50%; cursor: pointer;
+  border: 1px solid var(--v2-color-border);
+  background: var(--v2-color-surface); color: var(--v2-color-text);
+  box-shadow: var(--v2-shadow-sm);
+  transition: transform var(--v2-duration-fast) var(--v2-ease), background-color var(--v2-duration-fast) var(--v2-ease), color var(--v2-duration-fast) var(--v2-ease);
 }
-.dfeat:hover .dfeat__arrow { opacity: 1; }
-.dfeat__arrow:hover { background: #fff; }
-.dfeat__arrow--prev { left: 14px; }
-.dfeat__arrow--next { right: 14px; }
-
-.dfeat__dots { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); z-index: 3; display: flex; gap: 7px; }
-.dfeat__dot {
-  width: 7px; height: 7px; border-radius: 50%; border: none; cursor: pointer; padding: 0;
-  background: rgba(255, 255, 255, 0.5); transition: width var(--v2-duration) var(--v2-ease), background-color var(--v2-duration) var(--v2-ease);
+.dfeat__arrow { width: 42px; height: 42px; }
+.dfeat__arrow:hover { background: var(--v2-color-surface-2); color: var(--v2-color-ink); }
+.dfeat__arrow:active,
+.dfeat__pause:active { transform: scale(0.9); }
+.dfeat__pause {
+  width: 50px; height: 50px;
+  background: var(--v2-color-primary); color: var(--v2-color-on-primary);
+  border-color: transparent;
+  box-shadow: 0 6px 16px -4px rgba(0, 128, 96, 0.5);
 }
-.dfeat__dot.is-active { width: 22px; border-radius: var(--v2-radius-pill); background: #fff; }
+.dfeat__pause:hover { background: var(--v2-color-primary-hover); }
 
 /* ---------- Sections ---------- */
 .ddisc__section { display: flex; flex-direction: column; gap: var(--v2-space-4); }
@@ -343,5 +351,5 @@
 .dark .ddisc .dapptile:hover .dapptile__cta { background: var(--v2-color-primary); color: #fff; }
 .dark .ddisc .dapptile__cta--locked { background: rgba(255, 184, 107, 0.16); color: #ffc88a; }
 .dark .ddisc .dapptile:hover .dapptile__cta--locked { background: var(--v2-color-accent); color: #fff; }
-.dark .ddisc .dfeat__arrow { background: rgba(20, 20, 28, 0.7); color: #fff; border-color: rgba(255, 255, 255, 0.12); }
+.dark .ddisc .dfeat__arrow { background: var(--v2-color-surface); color: var(--v2-color-text); border-color: var(--v2-color-border); }
 .dark .ddisc .dfeat__cta { background: #fff; color: #10231b; }
