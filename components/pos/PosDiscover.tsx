@@ -243,7 +243,7 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                     <span className="ddisc__eyebrow">{greeting}, {firstName}</span>
                 </div>
                 <h1 className="ddisc__title">Discover</h1>
-                <p className="ddisc__sub">Your toolkit for running the whole shop — explore what each app can do.</p>
+                <p className="ddisc__sub">Your toolkit for running and managing your business, explore what each app can do.</p>
                 <div className="ddisc__search">
                     <PosIcon name="search" size={20} />
                     <input

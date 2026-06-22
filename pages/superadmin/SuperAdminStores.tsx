@@ -128,15 +128,15 @@ const SuperAdminStores: React.FC = () => {
     const getStatusConfig = (status: StoreRow['status']) => {
         const configs = {
             active: {
-                color: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                color: 'bg-success-muted text-success',
                 icon: <CheckCircleIcon className="w-3 h-3" />
             },
             inactive: {
-                color: 'bg-gray-50 text-gray-700 border-gray-200',
+                color: 'bg-surface-variant text-brand-text-muted',
                 icon: <ChevronDownIcon className="w-3 h-3" />
             },
             suspended: {
-                color: 'bg-red-50 text-red-700 border-red-200',
+                color: 'bg-danger-muted text-danger',
                 icon: <XCircleIcon className="w-3 h-3" />
             }
         };
@@ -147,19 +147,19 @@ const SuperAdminStores: React.FC = () => {
     const getSubscriptionConfig = (status: StoreRow['subscriptionStatus']) => {
         const configs = {
             trial: {
-                color: 'bg-purple-50 text-purple-700 border-purple-200',
+                color: 'bg-sp-amber-soft text-sp-amber',
                 label: 'Trial'
             },
             active: {
-                color: 'bg-blue-50 text-blue-700 border-blue-200',
+                color: 'bg-success-muted text-success',
                 label: 'Active'
             },
             past_due: {
-                color: 'bg-amber-50 text-amber-700 border-amber-200',
+                color: 'bg-danger-muted text-danger',
                 label: 'Past Due'
             },
             canceled: {
-                color: 'bg-gray-50 text-gray-700 border-gray-200',
+                color: 'bg-surface-variant text-brand-text-muted',
                 label: 'Canceled'
             }
         };
@@ -168,19 +168,19 @@ const SuperAdminStores: React.FC = () => {
 
     const getStatusStyle = (status: StoreRow['status']) => {
         const styles = {
-            active: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20',
-            inactive: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:border-gray-700',
-            suspended: 'bg-red-50 text-red-700 border-red-200 dark:bg-red-500/10 dark:text-red-400 dark:border-red-500/20'
+            active: 'bg-success-muted text-success',
+            inactive: 'bg-surface-variant text-brand-text-muted',
+            suspended: 'bg-danger-muted text-danger'
         };
         return styles[status] || styles.inactive;
     };
 
     const getSubscriptionStyle = (status: StoreRow['subscriptionStatus']) => {
         const styles = {
-            trial: 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-500/10 dark:text-purple-400 dark:border-purple-500/20',
-            active: 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20',
-            past_due: 'bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20',
-            canceled: 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-slate-800 dark:text-gray-400 dark:border-gray-700'
+            trial: 'bg-sp-amber-soft text-sp-amber',
+            active: 'bg-success-muted text-success',
+            past_due: 'bg-danger-muted text-danger',
+            canceled: 'bg-surface-variant text-brand-text-muted'
         };
         return styles[status] || styles.canceled;
     };
@@ -212,20 +212,21 @@ const SuperAdminStores: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen bg-mesh-light dark:bg-slate-950 transition-colors duration-300 font-google">
+        <div className="min-h-screen bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
                 {/* Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Store Management</h1>
-                        <p className="text-gray-600 dark:text-slate-400 mt-1">
+                        <p className="text-sm font-bold uppercase tracking-widest text-sp-green-dark">Platform</p>
+                        <h1 className="mt-1 text-2xl sm:text-3xl font-extrabold tracking-tight text-brand-text">Store Management</h1>
+                        <p className="text-brand-text-muted mt-1">
                             Monitor and manage all stores on your platform
                         </p>
                     </div>
                     <div className="flex items-center gap-3">
                         <button
                             onClick={loadStores}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors shadow-sm active:scale-95 transition-all duration-300"
+                            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-brand-text bg-surface border border-brand-border rounded-xl hover:bg-surface-variant transition-all shadow-sm active:scale-95"
                         >
                             <RefreshIcon className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                             Refresh
@@ -235,25 +236,25 @@ const SuperAdminStores: React.FC = () => {
 
                 {/* Stats Summary */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-white/5 backdrop-blur-sm">
-                        <div className="text-sm text-gray-600 dark:text-slate-400">Total Stores</div>
-                        <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{stores.length}</div>
+                    <div className="bg-surface rounded-2xl p-4 border border-brand-border shadow-sm">
+                        <div className="text-sm text-brand-text-muted">Total Stores</div>
+                        <div className="text-2xl font-extrabold text-brand-text mt-1 tnum">{stores.length}</div>
                     </div>
-                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-emerald-500/20 backdrop-blur-sm">
-                        <div className="text-sm text-gray-600 dark:text-slate-400">Active</div>
-                        <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+                    <div className="bg-surface rounded-2xl p-4 border border-brand-border shadow-sm">
+                        <div className="text-sm text-brand-text-muted">Active</div>
+                        <div className="text-2xl font-extrabold text-success mt-1 tnum">
                             {stores.filter(s => s.status === 'active').length}
                         </div>
                     </div>
-                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-purple-500/20 backdrop-blur-sm">
-                        <div className="text-sm text-gray-600 dark:text-slate-400">On Trial</div>
-                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mt-1">
+                    <div className="bg-surface rounded-2xl p-4 border border-brand-border shadow-sm">
+                        <div className="text-sm text-brand-text-muted">On Trial</div>
+                        <div className="text-2xl font-extrabold text-sp-amber mt-1 tnum">
                             {stores.filter(s => s.subscriptionStatus === 'trial').length}
                         </div>
                     </div>
-                    <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 p-4 border border-gray-200 dark:border-red-500/20 backdrop-blur-sm">
-                        <div className="text-sm text-gray-600 dark:text-slate-400">Suspended</div>
-                        <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">
+                    <div className="bg-surface rounded-2xl p-4 border border-brand-border shadow-sm">
+                        <div className="text-sm text-brand-text-muted">Suspended</div>
+                        <div className="text-2xl font-extrabold text-danger mt-1 tnum">
                             {stores.filter(s => s.status === 'suspended').length}
                         </div>
                     </div>
@@ -261,37 +262,37 @@ const SuperAdminStores: React.FC = () => {
 
                 {/* Bulk Actions Bar */}
                 {selectedStores.length > 0 && (
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-500/30 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 backdrop-blur-sm">
+                    <div className="bg-sp-green-soft border border-sp-green/20 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 flex items-center justify-center bg-blue-100 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-lg">
+                            <div className="w-8 h-8 flex items-center justify-center bg-sp-green/15 text-sp-green-dark font-bold rounded-lg">
                                 {selectedStores.length}
                             </div>
-                            <span className="font-medium text-blue-900 dark:text-blue-200">
+                            <span className="font-semibold text-sp-green-dark">
                                 {selectedStores.length} store{selectedStores.length !== 1 ? 's' : ''} selected
                             </span>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
                             <button
                                 onClick={() => bulkUpdateStatus('active')}
-                                className="px-3 py-1.5 text-sm font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-500/30 transition-colors active:scale-95 transition-all duration-300"
+                                className="px-3 py-1.5 text-sm font-semibold text-success bg-success-muted rounded-lg hover:opacity-80 transition-all active:scale-95"
                             >
                                 Activate
                             </button>
                             <button
                                 onClick={() => bulkUpdateStatus('inactive')}
-                                className="px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-slate-300 bg-gray-50 dark:bg-slate-700 border border-gray-200 dark:border-slate-600 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-600 transition-colors active:scale-95 transition-all duration-300"
+                                className="px-3 py-1.5 text-sm font-semibold text-brand-text bg-surface border border-brand-border rounded-lg hover:bg-surface-variant transition-all active:scale-95"
                             >
                                 Deactivate
                             </button>
                             <button
                                 onClick={() => bulkUpdateStatus('suspended')}
-                                className="px-3 py-1.5 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-500/20 border border-red-200 dark:border-red-500/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-500/30 transition-colors active:scale-95 transition-all duration-300"
+                                className="px-3 py-1.5 text-sm font-semibold text-danger bg-danger-muted rounded-lg hover:opacity-80 transition-all active:scale-95"
                             >
                                 Suspend
                             </button>
                             <button
                                 onClick={() => setSelectedStores([])}
-                                className="px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white"
+                                className="px-3 py-1.5 text-sm font-semibold text-brand-text-muted hover:text-brand-text"
                             >
                                 Clear Selection
                             </button>
@@ -300,16 +301,16 @@ const SuperAdminStores: React.FC = () => {
                 )}
 
                 {/* Filters & Search */}
-                <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900/50 border border-gray-200 dark:border-white/5 overflow-hidden backdrop-blur-sm">
-                    <div className="p-4 border-b border-gray-100 dark:border-white/5">
+                <div className="bg-surface border border-brand-border rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-brand-border">
                         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
                             {/* Search */}
                             <div className="relative flex-1">
-                                <SearchIcon className="w-5 h-5 text-gray-400 dark:text-slate-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                                <SearchIcon className="w-5 h-5 text-brand-text-muted absolute left-3 top-1/2 transform -translate-y-1/2" />
                                 <input
                                     type="text"
                                     placeholder="Search stores by name, email, or ID..."
-                                    className="w-full pl-10 pr-4 py-3 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 dark:focus:border-indigo-500 outline-none transition-colors text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-slate-500"
+                                    className="w-full pl-10 pr-4 py-3 bg-surface border border-brand-border rounded-xl focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none transition-colors text-brand-text placeholder-brand-text-muted"
                                     value={filters.search}
                                     onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
                                 />
@@ -318,21 +319,21 @@ const SuperAdminStores: React.FC = () => {
                             {/* Filter Toggle */}
                             <button
                                 onClick={() => setShowFilters(!showFilters)}
-                                className="flex items-center gap-2 px-4 py-3 bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
+                                className="flex items-center gap-2 px-4 py-3 bg-surface border border-brand-border rounded-xl hover:bg-surface-variant transition-all active:scale-95"
                             >
-                                <FilterIcon className="w-5 h-5 text-gray-500 dark:text-slate-400" />
-                                <span className="text-sm font-medium text-gray-700 dark:text-slate-200">Filters</span>
-                                <ChevronDownIcon className={`w-4 h-4 text-gray-500 dark:text-slate-400 transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                                <FilterIcon className="w-5 h-5 text-brand-text-muted" />
+                                <span className="text-sm font-semibold text-brand-text">Filters</span>
+                                <ChevronDownIcon className={`w-4 h-4 text-brand-text-muted transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                             </button>
                         </div>
 
                         {/* Advanced Filters */}
                         {showFilters && (
-                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5 grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="mt-4 pt-4 border-t border-brand-border grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Status</label>
+                                    <label className="block text-sm font-semibold text-brand-text mb-2">Status</label>
                                     <select
-                                        className="w-full bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg py-2.5 px-3 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none"
+                                        className="w-full bg-surface border border-brand-border rounded-xl py-2.5 px-3 text-sm text-brand-text focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none"
                                         value={filters.status}
                                         onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value as any }))}
                                     >
@@ -343,9 +344,9 @@ const SuperAdminStores: React.FC = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 dark:text-slate-300 mb-2">Subscription</label>
+                                    <label className="block text-sm font-semibold text-brand-text mb-2">Subscription</label>
                                     <select
-                                        className="w-full bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-700 rounded-lg py-2.5 px-3 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 focus:border-indigo-500 outline-none"
+                                        className="w-full bg-surface border border-brand-border rounded-xl py-2.5 px-3 text-sm text-brand-text focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none"
                                         value={filters.subscription}
                                         onChange={(e) => setFilters(prev => ({ ...prev, subscription: e.target.value as any }))}
                                     >
@@ -362,44 +363,44 @@ const SuperAdminStores: React.FC = () => {
 
                     {/* Table */}
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200 dark:divide-slate-800">
-                            <thead className="bg-gray-50 dark:bg-slate-900/50">
+                        <table className="min-w-full divide-y divide-brand-border">
+                            <thead className="bg-surface-variant">
                                 <tr>
                                     <th className="w-12 px-6 py-3">
                                         <input
                                             type="checkbox"
                                             checked={paginatedStores.length > 0 && selectedStores.length === paginatedStores.length}
                                             onChange={selectAllStores}
-                                            className="h-4 w-4 text-indigo-600 dark:text-indigo-500 rounded border-gray-300 dark:border-slate-600 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 bg-white dark:bg-slate-800"
+                                            className="h-4 w-4 rounded border-brand-border accent-sp-green"
                                         />
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-brand-text-muted uppercase tracking-wider">
                                         Store
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-brand-text-muted uppercase tracking-wider">
                                         Status
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-brand-text-muted uppercase tracking-wider">
                                         Subscription
                                     </th>
-                                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-left text-xs font-bold text-brand-text-muted uppercase tracking-wider">
                                         Created
                                     </th>
-                                    <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-slate-400 uppercase tracking-wider">
+                                    <th className="px-6 py-3 text-right text-xs font-bold text-brand-text-muted uppercase tracking-wider">
                                         Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-transparent divide-y divide-gray-100 dark:divide-white/5">
+                            <tbody className="bg-surface divide-y divide-brand-border">
                                 {loading ? (
                                     Array.from({ length: 5 }).map((_, i) => (
                                         <tr key={i} className="animate-pulse">
-                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-4"></div></td>
-                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-32"></div></td>
-                                            <td className="px-6 py-4"><div className="h-6 bg-gray-200 dark:bg-slate-700 rounded w-16"></div></td>
-                                            <td className="px-6 py-4"><div className="h-6 bg-gray-200 dark:bg-slate-700 rounded w-20"></div></td>
-                                            <td className="px-6 py-4"><div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-24"></div></td>
-                                            <td className="px-6 py-4"><div className="h-8 bg-gray-200 dark:bg-slate-700 rounded w-20 ml-auto"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-surface-variant rounded w-4"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-surface-variant rounded w-32"></div></td>
+                                            <td className="px-6 py-4"><div className="h-6 bg-surface-variant rounded w-16"></div></td>
+                                            <td className="px-6 py-4"><div className="h-6 bg-surface-variant rounded w-20"></div></td>
+                                            <td className="px-6 py-4"><div className="h-4 bg-surface-variant rounded w-24"></div></td>
+                                            <td className="px-6 py-4"><div className="h-8 bg-surface-variant rounded w-20 ml-auto"></div></td>
                                         </tr>
                                     ))
                                 ) : paginatedStores.length > 0 ? (
@@ -410,37 +411,37 @@ const SuperAdminStores: React.FC = () => {
                                         return (
                                             <tr
                                                 key={store.id}
-                                                className="hover:bg-gray-50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300"
+                                                className="hover:bg-surface-variant/60 transition-colors group"
                                             >
                                                 <td className="px-6 py-4">
                                                     <input
                                                         type="checkbox"
                                                         checked={selectedStores.includes(store.id)}
                                                         onChange={() => toggleStoreSelection(store.id)}
-                                                        className="h-4 w-4 text-indigo-600 dark:text-indigo-500 rounded border-gray-300 dark:border-slate-600 focus:ring-indigo-500 dark:focus:ring-indigo-500/50 bg-white dark:bg-slate-800"
+                                                        className="h-4 w-4 rounded border-brand-border accent-sp-green"
                                                     />
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col">
-                                                        <div className="font-medium text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                                                        <div className="font-semibold text-brand-text group-hover:text-sp-green-dark transition-colors">
                                                             {store.name}
                                                         </div>
-                                                        <div className="text-sm text-gray-500 dark:text-slate-400 truncate max-w-[200px]">
+                                                        <div className="text-sm text-brand-text-muted truncate max-w-[200px]">
                                                             {store.email || 'No email'}
                                                         </div>
-                                                        <div className="text-xs font-mono text-gray-400 dark:text-slate-500 mt-1">
+                                                        <div className="text-xs font-mono text-brand-text-muted mt-1">
                                                             ID: {store.id.substring(0, 8)}...
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusStyle(store.status)}`}>
+                                                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold capitalize ${getStatusStyle(store.status)}`}>
                                                             {statusConfig.icon}
                                                             {store.status}
                                                         </span>
                                                         {store.usersCount !== undefined && (
-                                                            <span className="text-xs text-gray-500 dark:text-slate-500">
+                                                            <span className="text-xs text-brand-text-muted">
                                                                 • {store.usersCount} user{store.usersCount !== 1 ? 's' : ''}
                                                             </span>
                                                         )}
@@ -448,22 +449,22 @@ const SuperAdminStores: React.FC = () => {
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex flex-col gap-1">
-                                                        <span className={`inline-flex items-center self-start px-2 py-1 rounded text-xs font-medium border ${getSubscriptionStyle(store.subscriptionStatus)}`}>
+                                                        <span className={`inline-flex items-center self-start px-2.5 py-1 rounded-full text-xs font-bold ${getSubscriptionStyle(store.subscriptionStatus)}`}>
                                                             {subConfig.label}
                                                         </span>
                                                         {store.subscriptionEndsAt && (
-                                                            <span className="text-xs text-gray-500 dark:text-slate-400">
+                                                            <span className="text-xs text-brand-text-muted">
                                                                 Ends {formatDate(store.subscriptionEndsAt)}
                                                             </span>
                                                         )}
                                                         {store.plan && (
-                                                            <span className="text-xs text-gray-500 dark:text-slate-400">
+                                                            <span className="text-xs text-brand-text-muted">
                                                                 {store.plan} Plan
                                                             </span>
                                                         )}
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-gray-500 dark:text-slate-400">
+                                                <td className="px-6 py-4 text-sm text-brand-text-muted">
                                                     {formatDate(store.createdAt)}
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -471,9 +472,9 @@ const SuperAdminStores: React.FC = () => {
                                                         <button
                                                             onClick={() => updateStoreStatus(store.id, store.status === 'active' ? 'inactive' : 'active')}
                                                             disabled={updatingId === store.id}
-                                                            className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${store.status === 'active'
-                                                                ? 'text-red-600 bg-red-50 border border-red-200 hover:bg-red-100'
-                                                                : 'text-emerald-600 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100'
+                                                            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all active:scale-95 ${store.status === 'active'
+                                                                ? 'text-danger bg-danger-muted hover:opacity-80'
+                                                                : 'text-success bg-success-muted hover:opacity-80'
                                                                 } ${updatingId === store.id ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                         >
                                                             {updatingId === store.id ? (
@@ -488,14 +489,14 @@ const SuperAdminStores: React.FC = () => {
                                                             <button
                                                                 onClick={() => updateStoreStatus(store.id, 'suspended')}
                                                                 disabled={updatingId === store.id}
-                                                                className="px-3 py-1.5 text-xs font-medium text-amber-600 bg-amber-50 border border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 rounded-lg hover:bg-amber-100 dark:hover:bg-amber-500/20 transition-colors disabled:opacity-50 active:scale-95 transition-all duration-300"
+                                                                className="px-3 py-1.5 text-xs font-semibold text-sp-amber bg-sp-amber-soft rounded-lg hover:opacity-80 transition-all disabled:opacity-50 active:scale-95"
                                                             >
                                                                 Suspend
                                                             </button>
                                                         )}
                                                         <button
                                                             onClick={() => navigate(`/superadmin/stores/${store.id}`)}
-                                                            className="p-1.5 text-gray-400 hover:text-indigo-600 transition-colors"
+                                                            className="p-1.5 text-brand-text-muted hover:text-sp-green-dark transition-colors"
                                                             title="View details"
                                                         >
                                                             <EyeIcon className="w-4 h-4" />
@@ -508,9 +509,9 @@ const SuperAdminStores: React.FC = () => {
                                 ) : (
                                     <tr>
                                         <td colSpan={6} className="px-6 py-12 text-center">
-                                            <div className="flex flex-col items-center justify-center text-gray-400">
+                                            <div className="flex flex-col items-center justify-center text-brand-text-muted">
                                                 <FilterIcon className="w-12 h-12 mb-3 opacity-50" />
-                                                <p className="text-sm font-medium">No stores found</p>
+                                                <p className="text-sm font-semibold">No stores found</p>
                                                 <p className="text-xs mt-1">
                                                     Try adjusting your search or filters
                                                 </p>
@@ -524,17 +525,17 @@ const SuperAdminStores: React.FC = () => {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="px-6 py-4 border-t border-gray-200 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                            <div className="text-sm text-gray-500 dark:text-slate-400">
-                                Showing <span className="font-medium">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
-                                <span className="font-medium">{Math.min(currentPage * itemsPerPage, filteredStores.length)}</span> of{' '}
-                                <span className="font-medium">{filteredStores.length}</span> stores
+                        <div className="px-6 py-4 border-t border-brand-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div className="text-sm text-brand-text-muted">
+                                Showing <span className="font-semibold text-brand-text">{(currentPage - 1) * itemsPerPage + 1}</span> to{' '}
+                                <span className="font-semibold text-brand-text">{Math.min(currentPage * itemsPerPage, filteredStores.length)}</span> of{' '}
+                                <span className="font-semibold text-brand-text">{filteredStores.length}</span> stores
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                     disabled={currentPage === 1}
-                                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 transition-all duration-300"
+                                    className="flex items-center gap-1 px-3 py-2 text-sm font-semibold text-brand-text bg-surface border border-brand-border rounded-lg hover:bg-surface-variant disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
                                 >
                                     <ChevronLeftIcon className="w-4 h-4" />
                                     Previous
@@ -556,9 +557,9 @@ const SuperAdminStores: React.FC = () => {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
-                                                className={`w-8 h-8 flex items-center justify-center text-sm font-medium rounded-lg transition-colors ${currentPage === pageNum
-                                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
-                                                    : 'text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-white/5'
+                                                className={`w-8 h-8 flex items-center justify-center text-sm font-semibold rounded-lg transition-colors ${currentPage === pageNum
+                                                    ? 'bg-sp-green text-white shadow-sm'
+                                                    : 'text-brand-text hover:bg-surface-variant'
                                                     }`}
                                             >
                                                 {pageNum}
@@ -566,13 +567,13 @@ const SuperAdminStores: React.FC = () => {
                                         );
                                     })}
                                     {totalPages > 5 && (
-                                        <span className="px-2 text-gray-500 dark:text-slate-500">...</span>
+                                        <span className="px-2 text-brand-text-muted">...</span>
                                     )}
                                 </div>
                                 <button
                                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                     disabled={currentPage === totalPages}
-                                    className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-gray-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg hover:bg-gray-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors active:scale-95 transition-all duration-300"
+                                    className="flex items-center gap-1 px-3 py-2 text-sm font-semibold text-brand-text bg-surface border border-brand-border rounded-lg hover:bg-surface-variant disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95"
                                 >
                                     Next
                                     <ChevronRightIcon className="w-4 h-4" />
