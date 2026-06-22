@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { User, StoreSettings } from '../../types';
 import { getAccessibleNavItems } from '../Sidebar';
 import PosIcon from '../sales/PosIcon';
 import { hasModule, MODULES, isPageEntitled } from '../../utils/entitlements';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
+import './discover.css';
 
 interface PosDiscoverProps {
     user: User;
@@ -17,57 +18,53 @@ interface PosDiscoverProps {
     onOpenSidebar?: () => void;
 }
 
-const premiumPillStyle: React.CSSProperties = {
-    marginLeft: 6,
-    padding: '1px 7px',
-    borderRadius: 999,
-    fontSize: 10,
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: '0.04em',
-    background: '#ffe2b8',
-    color: '#8a5a00',
-    verticalAlign: 'middle',
+type Tint = [string, string];
+const DEFAULT_TINT: Tint = ['#0c8f6e', '#00654b'];
+
+/** Per-app brand colours — a curated, premium palette for the icon tiles so the
+ *  whole launcher reads as one consistent product family. */
+const TINTS: Record<string, Tint> = {
+    dash: ['#12a37d', '#00654b'],
+    hustle: ['#f0a93c', '#d4820a'],
+    assistant: ['#7b7bf0', '#4b4bc9'],
+    crm: ['#e0728f', '#b83a66'],
+    inv: ['#1fb0a0', '#0c6f66'],
+    team: ['#5aa0f2', '#2f6fd0'],
+    procure: ['#f0894b', '#d4630a'],
+    books: ['#34b27b', '#0c8f6e'],
+    fleet: ['#46c6e0', '#1f9fc0'],
+    po: ['#f0b54b', '#cf9410'],
+    subscription: ['#f0c64b', '#d4a017'],
+    config: ['#8a93a6', '#5b6478'],
+    audit: ['#7d8aa0', '#566076'],
+    notify: ['#ef7070', '#d64545'],
+    account: ['#5ab0f2', '#2f8fd0'],
+    // raw pages
+    reports: ['#12a37d', '#00513c'],
+    pos: ['#34b27b', '#0c8f6e'],
+    directory: ['#b07ce0', '#8a4fd0'],
+    'user-guide': ['#5aa0f2', '#2f6fd0'],
 };
 
-// Group the full-app sidebar entries into friendly launcher sections.
-const GROUPS: { title: string; pages: string[] }[] = [
-    // { title: 'Overview', pages: ['reports', 'quick-view', 'superadmin', 'customer/dashboard'] },
-    // { title: 'Sell & Stock', pages: ['pos', 'sales', 'sales-history', 'orders', 'inventory', 'stock-takes', 'returns', 'purchase-orders', 'accounting'] },
-    // { title: 'Relationships', pages: ['customers', 'suppliers', 'users', 'logistics', 'superadmin/stores'] },
-    // { title: 'System', pages: ['settings', 'audit-trail', 'subscription', 'notifications', 'user-guide', 'profile', 'superadmin/settings', 'superadmin/notifications', 'superadmin/subscriptions'] },
-];
+/** Marketing badges — novelty & social proof drive taps. */
+const TAGS: Record<string, 'New' | 'Popular'> = {
+    dash: 'New',
+    assistant: 'Popular',
+    crm: 'Popular',
+    inv: 'New',
+};
 
 const DESCRIPTIONS: Record<string, string> = {
     'reports': 'Detailed reports & export',
-    'quick-view': 'AI business assistant',
     'pos': 'Point of sale terminal',
-    'sales': 'Process a new sale',
-    'sales-history': 'Past transactions',
-    'orders': 'Online & pending orders',
-    'inventory': 'Products & stock levels',
-    'stock-takes': 'Count & reconcile stock',
-    'returns': 'Returns & refunds',
-    'purchase-orders': 'Restock from suppliers',
-    'accounting': 'Books, expenses & P&L',
-    'customers': 'Customer directory',
-    'suppliers': 'Supplier directory',
-    'users': 'Team & permissions',
-    'logistics': 'Deliveries & tracking',
-    'settings': 'Store configuration',
-    'audit-trail': 'Activity log',
-    'subscription': 'Plan & billing',
-    'notifications': 'Alerts & messages',
+    'directory': 'Marketplace & requests',
     'user-guide': 'Help & documentation',
-    'profile': 'Your account',
-    'superadmin': 'Platform control center',
 };
 
-type AppItem = { name: string; page: string; icon: React.ComponentType<{ className?: string }> };
+type AppDef = { name: string; page: string; route: string; desc: string; iconName: string; requires: string; module?: string };
 
-// Standalone apps that open in their own focused shell (not plain sidebar pages).
-// Each is gated by a sidebar page the role/plan already grants.
-const STANDALONE_APPS: { name: string; page: string; route: string; desc: string; iconName: string; requires: string; module?: string }[] = [
+// Standalone apps that open in their own focused shell.
+const STANDALONE_APPS: AppDef[] = [
     { name: 'Business Dashboard', page: 'dash', route: 'dash', desc: 'Sales, trends & insights', iconName: 'monitoring', requires: 'reports' },
     { name: 'Hustle POS', page: 'hustle', route: 'hustle', desc: 'Fast amount-entry sales', iconName: 'bolt', requires: 'sales' },
     { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
@@ -85,120 +82,299 @@ const STANDALONE_APPS: { name: string; page: string; route: string; desc: string
     { name: 'Account', page: 'account', route: 'account', desc: 'Profile & preferences', iconName: 'account_circle', requires: 'profile' },
 ];
 
+type Feature = {
+    requires: string; route: string; module?: string; premium?: boolean;
+    eyebrow: string; title: string; text: string; cta: string; icon: string; tint: Tint;
+};
+
+// Top-of-page promotional slides — invite users to try premium / high-value apps.
+const FEATURES: Feature[] = [
+    { requires: 'quick-view', route: 'assistant', module: MODULES.AI_ASSISTANT, eyebrow: 'AI Suite', title: 'Meet your AI business partner', text: 'Ask anything about your shop — sales, stock, customers — and get instant answers.', cta: 'Try Assistant', icon: 'auto_awesome', tint: ['#7b7bf0', '#4b3bc9'] },
+    { requires: 'reports', route: 'reports', premium: true, eyebrow: 'Premium', title: 'Unlock Advanced Reports', text: 'P&L, cashflow & deep analytics — export-ready for tax and investors.', cta: 'Unlock now', icon: 'query_stats', tint: ['#0e9c78', '#00513c'] },
+    { requires: 'customers', route: 'crm', eyebrow: 'Grow revenue', title: 'Turn buyers into regulars', text: 'Loyalty, segments and re-engagement that keep customers coming back.', cta: 'Open CRM', icon: 'diversity_3', tint: ['#e0728f', '#a8325c'] },
+    { requires: 'inventory', route: 'inv', eyebrow: 'Stay in stock', title: 'Never run out again', text: 'Live stock value, low-stock alerts and smart reorder insights.', cta: 'Open Inventory', icon: 'inventory_2', tint: ['#1fb0a0', '#0c6258'] },
+];
+
+type Tip = { icon: string; title: string; text: string; cta: string; route: string; premium?: boolean };
+const TIPS: Tip[] = [
+    { icon: 'auto_awesome', title: 'Did you know?', text: 'The Business Assistant can summarise your whole day in one tap.', cta: 'Try it', route: 'assistant' },
+    { icon: 'workspace_premium', title: 'Pro tip', text: 'Unlock Advanced Reports to export a P&L statement for your accountant.', cta: 'See plans', route: 'subscription', premium: true },
+    { icon: 'diversity_3', title: 'Grow faster', text: 'Stores using CRM loyalty see customers return up to 30% more often.', cta: 'Open CRM', route: 'crm' },
+    { icon: 'inventory_2', title: 'Stay stocked', text: 'Inventory Manager warns you before your bestsellers sell out.', cta: 'Open', route: 'inv' },
+];
+
+interface Tile {
+    key: string; name: string; desc: string; icon: React.ReactNode;
+    tint: Tint; tag?: 'New' | 'Popular'; locked: boolean; onClick: () => void;
+}
+
 export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, storeSettings, onLaunch, onOpenSidebar }) => {
-    // Pages now fronted by a dedicated standalone app card above — hide the raw
-    // nav entry so it isn't listed twice (e.g. legacy 'quick-view' → Business Assistant).
     const SUPERSEDED_BY_APP = ['users', 'support', 'inventory', 'suppliers', 'customers', 'returns', 'stock-takes', 'sales', 'sales-history', 'dash', 'quick-view', 'subscription', 'audit-trail', 'notifications', 'profile', 'accounting', 'logistics', 'purchase-orders', 'settings'];
 
-    const available = useMemo<AppItem[]>(() => {
-        // RBAC is enforced by the shared Sidebar logic layer (role + entitlement
-        // allow-list); Discover is now the design layer that renders it.
-        return getAccessibleNavItems(user, allowedPages)
-            .filter(item => !SUPERSEDED_BY_APP.includes(item.page));
-    }, [user, allowedPages]);
+    const rawPages = useMemo(
+        () => getAccessibleNavItems(user, allowedPages).filter(item => !SUPERSEDED_BY_APP.includes(item.page)),
+        [user, allowedPages],
+    );
 
-    const grouped = useMemo(() => {
-        const claimed = new Set<string>();
-        const sections = GROUPS.map(g => {
-            const items = available.filter(a => g.pages.includes(a.page));
-            items.forEach(i => claimed.add(i.page));
-            return { title: g.title, items };
-        }).filter(s => s.items.length > 0);
+    const [query, setQuery] = useState('');
+    const greeting = (() => {
+        const h = new Date().getHours();
+        if (h < 12) return 'Good morning';
+        if (h < 17) return 'Good afternoon';
+        return 'Good evening';
+    })();
+    const firstName = user?.name?.split(' ')[0] || 'there';
 
-        const more = available.filter(a => !claimed.has(a.page));
-        if (more.length > 0) sections.push({ title: 'More', items: more });
-        return sections;
-    }, [available]);
+    // ── Featured slider ──────────────────────────────────────────────────────
+    const features = useMemo(() => FEATURES.filter(f => allowedPages.includes(f.requires)), [allowedPages]);
+    const [slide, setSlide] = useState(0);
+    const [paused, setPaused] = useState(false);
+    const slideCount = features.length;
+
+    useEffect(() => {
+        if (slideCount <= 1 || paused) return;
+        const t = setInterval(() => setSlide(s => (s + 1) % slideCount), 5200);
+        return () => clearInterval(t);
+    }, [slideCount, paused]);
+
+    useEffect(() => { if (slide >= slideCount && slideCount > 0) setSlide(0); }, [slideCount, slide]);
+
+    const launchFeature = (f: Feature) => {
+        const locked = f.premium || (!!f.module && !hasModule(storeSettings, f.module));
+        onLaunch(locked ? 'subscription' : f.route);
+    };
+
+    // ── "Did you know?" popup ────────────────────────────────────────────────
+    const [tipOpen, setTipOpen] = useState(false);
+    const [tipIdx, setTipIdx] = useState(() => Math.floor(Math.random() * TIPS.length));
+    const dismissedRef = useRef(false);
+    useEffect(() => {
+        const t = setTimeout(() => { if (!dismissedRef.current) setTipOpen(true); }, 4000);
+        return () => clearTimeout(t);
+    }, []);
+    const tip = TIPS[tipIdx % TIPS.length];
+    const closeTip = () => { dismissedRef.current = true; setTipOpen(false); };
+    const nextTip = () => setTipIdx(i => (i + 1) % TIPS.length);
+
+    // ── Normalised app tiles ─────────────────────────────────────────────────
+    const standaloneTiles: Tile[] = useMemo(() => STANDALONE_APPS
+        .filter(a => allowedPages.includes(a.requires))
+        .map(app => {
+            const locked = !!app.module && !hasModule(storeSettings, app.module);
+            return {
+                key: app.page,
+                name: app.name,
+                desc: app.desc,
+                icon: <PosIcon name={app.iconName} size={26} fill={1} />,
+                tint: TINTS[app.route] || DEFAULT_TINT,
+                tag: TAGS[app.route],
+                locked,
+                onClick: () => onLaunch(locked ? 'subscription' : app.route),
+            };
+        }), [allowedPages, storeSettings, onLaunch]);
+
+    const moreTiles: Tile[] = useMemo(() => rawPages.map(item => {
+        const Icon = item.icon;
+        const locked = !isPageEntitled(storeSettings, item.page);
+        return {
+            key: item.page,
+            name: item.name,
+            desc: DESCRIPTIONS[item.page] || 'Open app',
+            icon: <Icon className="dapptile__glyph" />,
+            tint: TINTS[item.page] || DEFAULT_TINT,
+            tag: TAGS[item.page],
+            locked,
+            onClick: () => onLaunch(locked ? 'subscription' : item.page),
+        };
+    }), [rawPages, storeSettings, onLaunch]);
+
+    const q = query.trim().toLowerCase();
+    const match = (t: Tile) => !q || t.name.toLowerCase().includes(q) || t.desc.toLowerCase().includes(q);
+    const standaloneFiltered = standaloneTiles.filter(match);
+    const moreFiltered = moreTiles.filter(match);
+    const noResults = q && standaloneFiltered.length === 0 && moreFiltered.length === 0;
+
+    const renderTile = (t: Tile) => (
+        <button key={t.key} type="button" className="dapptile" onClick={t.onClick} title={t.locked ? 'Premium add-on — tap to unlock' : t.name}>
+            <span className="dapptile__icon" style={{ backgroundImage: `linear-gradient(135deg, ${t.tint[0]}, ${t.tint[1]})` }}>
+                {t.icon}
+                <span className="dapptile__gloss" aria-hidden="true" />
+            </span>
+            <span className="dapptile__body">
+                <span className="dapptile__name">{t.name}</span>
+                <span className="dapptile__desc">{t.desc}</span>
+            </span>
+            <span className={`dapptile__cta${t.locked ? ' dapptile__cta--locked' : ''}`}>
+                {t.locked ? <><PosIcon name="lock" size={13} /> Unlock</> : 'Open'}
+            </span>
+            {t.tag && <span className={`dapptile__tag dapptile__tag--${t.tag.toLowerCase()}`}>{t.tag}</span>}
+        </button>
+    );
 
     return (
-        <div className="posdash">
-            <header className="posdash__bar">
-                <button type="button" className="posdash__menu" aria-label="Open menu" onClick={onOpenSidebar}>
-                    <PosIcon name="menu" size={22} />
-                </button>
-                <div>
-                    <h1 className="posdash__title">Discover Apps</h1>
-                    <p className="discover__sub">Jump to any SalePilot app</p>
+        <div className="posdash ddisc">
+            {/* Hero */}
+            <header className="ddisc__hero">
+                <div className="ddisc__hero-top">
+                    <button type="button" className="posdash__menu" aria-label="Open menu" onClick={onOpenSidebar}>
+                        <PosIcon name="menu" size={22} />
+                    </button>
+                    <span className="ddisc__eyebrow">{greeting}, {firstName}</span>
+                </div>
+                <h1 className="ddisc__title">Discover</h1>
+                <p className="ddisc__sub">Your toolkit for running the whole shop — explore what each app can do.</p>
+                <div className="ddisc__search">
+                    <PosIcon name="search" size={20} />
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search apps & features"
+                        aria-label="Search apps"
+                    />
+                    {query && (
+                        <button type="button" className="ddisc__search-clear" aria-label="Clear search" onClick={() => setQuery('')}>
+                            <PosIcon name="close" size={18} />
+                        </button>
+                    )}
                 </div>
             </header>
 
-            <div className="posdash__body">
-                {(() => {
-                    const apps = STANDALONE_APPS.filter(a => allowedPages.includes(a.requires));
-                    if (apps.length === 0) return null;
-                    return (
-                        <div className="discover__group">
-                            <h2 className="discover__group-title">SalePilot Apps</h2>
-                            <div className="discover__grid">
-                                {apps.map(app => {
-                                    const locked = !!app.module && !hasModule(storeSettings, app.module);
-                                    return (
-                                        <button
-                                            key={app.page}
-                                            type="button"
-                                            className="appcard"
-                                            onClick={() => onLaunch(locked ? 'subscription' : app.route)}
-                                            title={locked ? 'Premium add-on — tap to unlock' : undefined}
-                                        >
-                                            <span className="appcard__icon">
-                                                <PosIcon name={app.iconName} size={24} />
+            <div className="ddisc__body">
+                {/* Featured slider */}
+                {!q && features.length > 0 && (
+                    <section
+                        className="dfeat"
+                        onMouseEnter={() => setPaused(true)}
+                        onMouseLeave={() => setPaused(false)}
+                        aria-roledescription="carousel"
+                        aria-label="Featured"
+                    >
+                        <div className="dfeat__viewport">
+                            <div className="dfeat__track" style={{ transform: `translateX(-${slide * 100}%)` }}>
+                                {features.map((f, i) => (
+                                    <article
+                                        className="dfeat__slide"
+                                        key={f.route}
+                                        style={{ backgroundImage: `linear-gradient(125deg, ${f.tint[0]}, ${f.tint[1]})` }}
+                                        aria-hidden={i !== slide}
+                                    >
+                                        <div className="dfeat__content">
+                                            <span className="dfeat__eyebrow">
+                                                {f.premium && <PosIcon name="workspace_premium" size={14} fill={1} />}
+                                                {f.eyebrow}
                                             </span>
-                                            <span className="appcard__name">
-                                                {app.name}
-                                                {locked && <span style={premiumPillStyle}>Premium</span>}
-                                            </span>
-                                            <span className="appcard__desc">{app.desc}</span>
-                                            <span className="appcard__go">
-                                                <PosIcon name={locked ? 'lock' : 'arrow_forward'} size={18} />
-                                            </span>
-                                        </button>
-                                    );
-                                })}
+                                            <h2 className="dfeat__title">{f.title}</h2>
+                                            <p className="dfeat__text">{f.text}</p>
+                                            <button type="button" className="dfeat__cta" onClick={() => launchFeature(f)}>
+                                                {f.cta}
+                                                <PosIcon name="arrow_forward" size={18} />
+                                            </button>
+                                        </div>
+                                        <span className="dfeat__ghost" aria-hidden="true">
+                                            <PosIcon name={f.icon} size={200} fill={1} />
+                                        </span>
+                                    </article>
+                                ))}
                             </div>
                         </div>
-                    );
-                })()}
 
-                {grouped.length === 0 ? (
+                        {slideCount > 1 && (
+                            <>
+                                <button type="button" className="dfeat__arrow dfeat__arrow--prev" aria-label="Previous" onClick={() => setSlide(s => (s - 1 + slideCount) % slideCount)}>
+                                    <PosIcon name="chevron_left" size={22} />
+                                </button>
+                                <button type="button" className="dfeat__arrow dfeat__arrow--next" aria-label="Next" onClick={() => setSlide(s => (s + 1) % slideCount)}>
+                                    <PosIcon name="chevron_right" size={22} />
+                                </button>
+                                <div className="dfeat__dots" role="tablist">
+                                    {features.map((f, i) => (
+                                        <button
+                                            key={f.route}
+                                            type="button"
+                                            className={`dfeat__dot${i === slide ? ' is-active' : ''}`}
+                                            aria-label={`Go to slide ${i + 1}`}
+                                            aria-selected={i === slide}
+                                            onClick={() => setSlide(i)}
+                                        />
+                                    ))}
+                                </div>
+                            </>
+                        )}
+                    </section>
+                )}
+
+                {noResults ? (
                     <div className="posdash__empty">
-                        <PosIcon name="apps" size={40} />
-                        <p>No apps available for your account.</p>
+                        <PosIcon name="search_off" size={40} />
+                        <p>No apps match “{query}”.</p>
                     </div>
                 ) : (
-                    grouped.map(section => (
-                        <div className="discover__group" key={section.title}>
-                            <h2 className="discover__group-title">{section.title}</h2>
-                            <div className="discover__grid">
-                                {section.items.map(item => {
-                                    const Icon = item.icon;
-                                    const locked = !isPageEntitled(storeSettings, item.page);
-                                    return (
-                                        <button
-                                            key={item.page}
-                                            type="button"
-                                            className="appcard"
-                                            onClick={() => onLaunch(locked ? 'subscription' : item.page)}
-                                            title={locked ? 'Premium add-on — tap to unlock' : undefined}
-                                        >
-                                            <span className="appcard__icon">
-                                                <Icon className="w-6 h-6" />
-                                            </span>
-                                            <span className="appcard__name">
-                                                {item.name}
-                                                {locked && <span style={premiumPillStyle}>Premium</span>}
-                                            </span>
-                                            <span className="appcard__desc">{DESCRIPTIONS[item.page] || 'Open app'}</span>
-                                            <span className="appcard__go">
-                                                <PosIcon name={locked ? 'lock' : 'arrow_forward'} size={18} />
-                                            </span>
-                                        </button>
-                                    );
-                                })}
+                    <>
+                        {standaloneFiltered.length > 0 && (
+                            <section className="ddisc__section">
+                                <div className="ddisc__section-head">
+                                    <h2 className="ddisc__section-title">SalePilot Apps</h2>
+                                    <span className="ddisc__section-count">{standaloneFiltered.length}</span>
+                                </div>
+                                <div className="dapptile-grid">
+                                    {standaloneFiltered.map(renderTile)}
+                                </div>
+                            </section>
+                        )}
+
+                        {/* Upgrade / cross-sell banner */}
+                        {!q && (
+                            <button type="button" className="dpromo" onClick={() => onLaunch('subscription')}>
+                                <span className="dpromo__icon"><PosIcon name="rocket_launch" size={26} fill={1} /></span>
+                                <span className="dpromo__body">
+                                    <span className="dpromo__title">Get more from SalePilot</span>
+                                    <span className="dpromo__text">Add only the premium modules your shop needs — and pay less than all-in-one suites.</span>
+                                </span>
+                                <span className="dpromo__cta">Explore plans <PosIcon name="arrow_forward" size={18} /></span>
+                            </button>
+                        )}
+
+                        {moreFiltered.length > 0 && (
+                            <section className="ddisc__section">
+                                <div className="ddisc__section-head">
+                                    <h2 className="ddisc__section-title">More</h2>
+                                    <span className="ddisc__section-count">{moreFiltered.length}</span>
+                                </div>
+                                <div className="dapptile-grid">
+                                    {moreFiltered.map(renderTile)}
+                                </div>
+                            </section>
+                        )}
+
+                        {standaloneTiles.length === 0 && moreTiles.length === 0 && (
+                            <div className="posdash__empty">
+                                <PosIcon name="apps" size={40} />
+                                <p>No apps available for your account.</p>
                             </div>
-                        </div>
-                    ))
+                        )}
+                    </>
                 )}
             </div>
+
+            {/* "Did you know?" marketing popup */}
+            {tipOpen && (
+                <div className="dtip" role="status">
+                    <span className="dtip__icon"><PosIcon name={tip.icon} size={22} fill={1} /></span>
+                    <div className="dtip__body">
+                        <p className="dtip__title">
+                            {tip.title}
+                            {tip.premium && <span className="dtip__premium">Premium</span>}
+                        </p>
+                        <p className="dtip__text">{tip.text}</p>
+                    </div>
+                    <div className="dtip__actions">
+                        <button type="button" className="dtip__cta" onClick={() => { onLaunch(tip.route); closeTip(); }}>{tip.cta}</button>
+                        <button type="button" className="dtip__next" aria-label="Next tip" onClick={nextTip}><PosIcon name="refresh" size={16} /></button>
+                        <button type="button" className="dtip__close" aria-label="Dismiss" onClick={closeTip}><PosIcon name="close" size={18} /></button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
