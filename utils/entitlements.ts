@@ -26,14 +26,25 @@ export const hasModule = (settings: StoreSettings | null | undefined, moduleId: 
 
 /**
  * Sidebar page keys that live behind a premium add-on module. A page absent from
- * this map is always entitled (core). Keep in sync with the module registry.
+ * this map is always entitled (core). This static map is the fallback; the live
+ * map is configured by the Super Admin (each module's "pages") and loaded at
+ * runtime via {@link setPageModules}.
  */
 export const PAGE_MODULES: Record<string, string> = {
     reports: MODULES.ADVANCED_REPORTS,
 };
 
+/** Catalog-driven page→module map loaded from the backend; null until loaded. */
+let dynamicPageModules: Record<string, string> | null = null;
+
+/** Install the live catalog page→module map (call once after fetching it). */
+export const setPageModules = (map: Record<string, string> | null | undefined): void => {
+    dynamicPageModules = map && typeof map === 'object' ? map : null;
+};
+
 /** Whether the current store may open a given page (core pages are always allowed). */
 export const isPageEntitled = (settings: StoreSettings | null | undefined, page: string): boolean => {
-    const moduleId = PAGE_MODULES[page];
+    const map = dynamicPageModules || PAGE_MODULES;
+    const moduleId = map[page];
     return !moduleId || hasModule(settings, moduleId);
 };

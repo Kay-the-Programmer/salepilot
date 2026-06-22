@@ -30,6 +30,16 @@ interface SuperAdminStoreDetailsProps {
     storeId: string;
 }
 
+interface CatalogModuleLite {
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+    active: boolean;
+}
+
+const modMoney = (n: number, c = 'ZMW') => `${c === 'ZMW' ? 'K' : c === 'USD' ? '$' : ''}${(Number.isFinite(n) ? n : 0).toLocaleString()}`;
+
 const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId }) => {
     const navigate = useNavigate();
     const [store, setStore] = useState<StoreDetails | null>(null);
@@ -41,9 +51,48 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
     const [notifMessage, setNotifMessage] = useState('');
     const [sending, setSending] = useState(false);
 
+    // Premium add-on grant state
+    const [modules, setModules] = useState<CatalogModuleLite[]>([]);
+    const [enabled, setEnabled] = useState<Set<string>>(new Set());
+    const [modLoading, setModLoading] = useState(true);
+    const [savingMod, setSavingMod] = useState<string | null>(null);
+
     useEffect(() => {
         loadStoreDetails();
+        loadModules();
     }, [storeId]);
+
+    const loadModules = async () => {
+        setModLoading(true);
+        try {
+            const [cat, ent] = await Promise.all([
+                api.get<{ modules: CatalogModuleLite[] }>('/superadmin/catalog/modules'),
+                api.get<{ enabledModules: string[] }>(`/superadmin/stores/${storeId}/modules`),
+            ]);
+            setModules(cat.modules || []);
+            setEnabled(new Set(ent.enabledModules || []));
+        } catch (e) {
+            console.warn('Could not load store modules', e);
+        } finally {
+            setModLoading(false);
+        }
+    };
+
+    const toggleModule = async (id: string) => {
+        const prev = enabled;
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        setEnabled(next); // optimistic
+        setSavingMod(id);
+        try {
+            await api.put(`/superadmin/stores/${storeId}/modules`, { enabledModules: Array.from(next) });
+        } catch (e: any) {
+            setEnabled(prev); // revert
+            alert(e.message || 'Failed to update add-ons for this store');
+        } finally {
+            setSavingMod(null);
+        }
+    };
 
     const loadStoreDetails = async () => {
         setLoading(true);
@@ -175,6 +224,47 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                                     </button>
                                 </div>
                             </form>
+                        </div>
+
+                        {/* Premium add-on grants */}
+                        <div className="bg-surface border border-brand-border rounded-2xl shadow-sm p-6">
+                            <h2 className="text-lg font-extrabold tracking-tight text-brand-text mb-1 flex items-center gap-2">
+                                <span className="material-symbols-rounded text-sp-green text-[20px]">extension</span>
+                                Premium Add-ons
+                            </h2>
+                            <p className="text-sm text-brand-text-muted mb-4">Grant or revoke à-la-carte add-ons for this store — e.g. comp a customer or unlock after a manual payment. Changes take effect immediately.</p>
+                            {modLoading ? (
+                                <div className="space-y-2">{[0, 1, 2].map(i => <div key={i} className="h-14 rounded-xl bg-surface-variant animate-pulse" />)}</div>
+                            ) : modules.length === 0 ? (
+                                <p className="text-sm text-brand-text-muted">No add-on modules in the catalog yet. Create some under Plans &amp; Pricing.</p>
+                            ) : (
+                                <div className="space-y-2">
+                                    {modules.map(m => {
+                                        const on = enabled.has(m.id);
+                                        return (
+                                            <div key={m.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-brand-border">
+                                                <div className="min-w-0">
+                                                    <div className="text-sm font-bold text-brand-text flex items-center gap-2">
+                                                        {m.name}
+                                                        {!m.active && <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-surface-variant text-brand-text-muted">inactive</span>}
+                                                    </div>
+                                                    <div className="text-xs text-brand-text-muted">{modMoney(m.price, m.currency)}/mo · {m.id}</div>
+                                                </div>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => toggleModule(m.id)}
+                                                    disabled={savingMod === m.id}
+                                                    aria-pressed={on}
+                                                    title={on ? 'Granted — tap to revoke' : 'Locked — tap to grant'}
+                                                    className={`shrink-0 w-12 h-7 rounded-full p-0.5 transition-colors disabled:opacity-50 ${on ? 'bg-sp-green' : 'bg-surface-variant border border-brand-border'}`}
+                                                >
+                                                    <span className="block w-6 h-6 bg-white rounded-full shadow transition-transform" style={{ transform: on ? 'translateX(20px)' : 'translateX(0)' }} />
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
 

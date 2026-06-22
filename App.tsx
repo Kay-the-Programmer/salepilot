@@ -22,12 +22,19 @@ import { ThemeProvider } from './contexts/ThemeContext';
 
 import usePageTracking from "./src/hooks/usePageTracking";
 import { initGA } from "./src/utils/analytics";
+import { api } from './services/api';
+import { setPageModules } from './utils/entitlements';
 
 
 export default function App() {
     useEffect(() => {
         // Initialize GA
         initGA();
+        // Load the Super-Admin-configured page→add-on map so page gating reflects
+        // the live catalog (falls back to the static map on failure).
+        api.get<Record<string, string>>('/subscriptions/page-modules')
+            .then(setPageModules)
+            .catch(() => { /* keep static fallback */ });
     }, []);
 
     usePageTracking();

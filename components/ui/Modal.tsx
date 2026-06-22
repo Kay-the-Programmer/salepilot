@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 type ModalSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '5xl';
 
@@ -63,9 +64,12 @@ export function Modal({
         return () => document.removeEventListener('keydown', onKey);
     }, [open, closeOnEsc, disabled, onClose]);
 
-    if (!open) return null;
+    if (!open || typeof document === 'undefined') return null;
 
-    return (
+    // Render into a portal at <body> so the fixed overlay can never be clipped or
+    // mis-positioned by an ancestor with `transform` / `filter` / `overflow` (the
+    // classic "modal doesn't show / appears off-screen" bug).
+    return createPortal(
         <div
             className={`fixed inset-0 ${zIndexClass} flex items-center justify-center p-4 bg-warm-900/50 backdrop-blur-sm`}
             onClick={() => { if (closeOnBackdrop && !disabled) onClose(); }}
@@ -96,7 +100,8 @@ export function Modal({
                 )}
                 {children}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
