@@ -1,0 +1,43 @@
+/* Global floating theme toggle — visible on every screen, both themes. */
+.theme-toggle {
+  position: fixed;
+  left: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 95;
+  width: 44px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(26, 26, 46, 0.08);
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #1a1a2e;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(26, 26, 46, 0.18);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: transform 120ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    background-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+.theme-toggle:hover { transform: translateY(-2px) scale(1.04); }
+.theme-toggle:active { transform: scale(0.94); }
+.theme-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.35); }
+.theme-toggle__icon { font-size: 22px; line-height: 1; }
+
+.dark .theme-toggle {
+  background: rgba(36, 36, 58, 0.92);
+  color: #f4f2ee;
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.5);
+}
+
+/* Lift above the mobile bottom navigation present in the standalone app shells. */
+@media (max-width: 860px) {
+  .theme-toggle {
+    left: 14px;
+    bottom: calc(72px + env(safe-area-inset-bottom));
+    width: 42px;
+    height: 42px;
+  }
+}

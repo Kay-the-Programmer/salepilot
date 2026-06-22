@@ -4,6 +4,7 @@ import { ToastProvider } from './contexts/ToastContext';
 import { Routes, Route } from 'react-router-dom';
 import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
+import ThemeToggle from './components/ThemeToggle';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
@@ -157,6 +158,9 @@ export default function App() {
                         </Suspense>
 
                     </div>
+
+                    {/* Global, always-visible light/dark switch */}
+                    <ThemeToggle />
                 </div>
 
             </ToastProvider>

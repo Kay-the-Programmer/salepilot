@@ -746,3 +746,68 @@ textarea.crm-input { height: auto; min-height: 120px; padding: 14px 16px; line-h
 .crm-toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 130; display: inline-flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: var(--c-radius-lg); background: var(--c-inverse-surface); color: var(--c-inverse-on-surface); box-shadow: 0 8px 30px rgba(0,0,0,0.3); font-size: 14px; font-weight: 600; animation: crm-fade 0.25s var(--c-ease) both; }
 .crm-toast .msr { color: var(--c-primary-fixed); }
 @media (min-width: 768px) { .crm-toast { bottom: 32px; left: auto; right: 32px; transform: none; } }
+
+/* ============================================================
+   Dark mode — the standalone-app chrome follows the global
+   theme (ThemeContext toggles `html.dark`). Boutique-green kept
+   as the accent; surfaces drop to warm charcoal.
+   ============================================================ */
+.dark .crm {
+  --c-primary: #2db58c;
+  --c-primary-container: #00674c;
+  --c-on-primary: #00251a;
+  --c-on-primary-container: #b8ffe2;
+  --c-primary-fixed: #00513c;
+  --c-primary-fixed-dim: #5fd0a8;
+  --c-on-primary-fixed: #b8ffe2;
+  --c-on-primary-fixed-variant: #75d9b3;
+
+  --c-secondary: #ffb86b;
+  --c-secondary-container: #6a3f00;
+  --c-on-secondary-container: #ffdcbc;
+  --c-secondary-fixed: #5e3a00;
+  --c-secondary-fixed-dim: #ffb86b;
+  --c-on-secondary-fixed: #ffdcbc;
+  --c-on-secondary-fixed-variant: #ffce9a;
+
+  --c-tertiary: #c8c5e0;
+  --c-tertiary-container: #45455b;
+  --c-tertiary-fixed: #45455b;
+  --c-tertiary-fixed-dim: #c6c4df;
+  --c-on-tertiary-fixed: #e2e0fc;
+
+  --c-error: #ffb4ab;
+  --c-error-container: #93000a;
+  --c-on-error-container: #ffdad6;
+
+  --c-bg: #10130f;
+  --c-on-bg: #e3e3dd;
+  --c-surface: #10130f;
+  --c-surface-lowest: #0b0e0a;
+  --c-surface-low: #181b15;
+  --c-surface-container: #1c1f19;
+  --c-surface-high: #262a22;
+  --c-surface-highest: #30342c;
+  --c-surface-variant: #424940;
+  --c-on-surface-variant: #c2c9bd;
+  --c-outline: #8c9387;
+  --c-outline-variant: #424940;
+  --c-inverse-surface: #e3e3dd;
+  --c-inverse-on-surface: #2d302a;
+
+  --c-elev-1: 0 4px 20px 0 rgba(0, 0, 0, 0.40);
+  --c-elev-2: 0 12px 30px -10px rgba(0, 0, 0, 0.55);
+  --c-elev-card: 0 4px 12px 0 rgba(0, 0, 0, 0.38);
+}
+
+/* Components that paint text directly on the primary tone need the deeper
+   container in dark so white/light text keeps its contrast. */
+.dark .crm .crm-bar__avatar,
+.dark .crm .crm-avatar { background: var(--c-primary-container); color: var(--c-on-primary-container); }
+.dark .crm .crm-loycard { background: var(--c-primary-container); }
+.dark .crm .crm-channel button.is-active { background: var(--c-primary-container); }
+.dark .crm .crm-btn--primary:hover { background: var(--c-primary); filter: brightness(1.08); }
+.dark .crm .crm-seg-toggle button.is-active { background: var(--c-surface-high); color: var(--c-primary); }
+/* White hairlines around stacked avatars / badges → blend into dark surface. */
+.dark .crm .crm-stack > *,
+.dark .crm .crm-hero__badge { border-color: var(--c-surface-lowest); }

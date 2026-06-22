@@ -337,3 +337,11 @@
   .dfeat__track { transition: none; }
   .dtip { animation: none; }
 }
+
+/* ---------- Dark mode touch-ups (v2 tokens already flip via .dark) ---------- */
+.dark .ddisc .dapptile__cta { background: rgba(95, 208, 168, 0.14); color: #6fe0b8; }
+.dark .ddisc .dapptile:hover .dapptile__cta { background: var(--v2-color-primary); color: #fff; }
+.dark .ddisc .dapptile__cta--locked { background: rgba(255, 184, 107, 0.16); color: #ffc88a; }
+.dark .ddisc .dapptile:hover .dapptile__cta--locked { background: var(--v2-color-accent); color: #fff; }
+.dark .ddisc .dfeat__arrow { background: rgba(20, 20, 28, 0.7); color: #fff; border-color: rgba(255, 255, 255, 0.12); }
+.dark .ddisc .dfeat__cta { background: #fff; color: #10231b; }
