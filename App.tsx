@@ -5,6 +5,7 @@ import { Routes, Route } from 'react-router-dom';
 import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
 import ThemeToggle from './components/ThemeToggle';
+import ErrorBoundary from './components/ErrorBoundary';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
@@ -35,6 +36,7 @@ export default function App() {
                 <div className="flex flex-col h-screen overflow-hidden dark:bg-slate-950 transition-colors duration-200">
                     <TitleBar />
                     <div className="flex-1 overflow-auto">
+                      <ErrorBoundary name="routes">
                         <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
                             <Routes>
                                 {/* Default route starts at Login/Dashboard */}
@@ -156,6 +158,7 @@ export default function App() {
                                 <Route path="*" element={<Dashboard />} />
                             </Routes>
                         </Suspense>
+                      </ErrorBoundary>
 
                     </div>
 

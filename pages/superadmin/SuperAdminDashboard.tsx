@@ -1,615 +1,315 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
 import { RevenueSummary, StoreStats, User } from '../../types';
 
-// Components
-import WelcomeHero from '../../components/superadmin/dashboard/WelcomeHero';
-import DashboardStatsGrid from '../../components/superadmin/dashboard/DashboardStatsGrid';
-import DashboardRevenueChart from '../../components/superadmin/dashboard/DashboardRevenueChart';
-import SuperAdminAiCard from '../../components/superadmin/dashboard/SuperAdminAiCard';
-import HoloComputeHub from '../../components/superadmin/dashboard/HoloComputeHub';
-import LiveRobot from '../../components/superadmin/dashboard/LiveRobot';
+/**
+ * Super Admin Dashboard — "Modern Tactile" redesign (see design_ref/DESIGN.md).
+ *
+ * A clean, warm, high-legibility platform overview built on the SalePilot
+ * design tokens: warm off-white canvas, SalePilot Green primary, soft shadows,
+ * generously rounded surfaces and pill status indicators. No decorative
+ * animation — information first.
+ */
+
+type Tone = 'primary' | 'success' | 'amber' | 'neutral';
+
+const TONE: Record<Tone, { chip: string; icon: string; accent: string }> = {
+    primary: { chip: 'bg-sp-green-soft text-sp-green-dark', icon: 'text-sp-green-dark', accent: 'text-sp-green-dark' },
+    success: { chip: 'bg-success-muted text-success', icon: 'text-success', accent: 'text-success' },
+    amber:   { chip: 'bg-sp-amber-soft text-sp-amber', icon: 'text-sp-amber', accent: 'text-sp-amber' },
+    neutral: { chip: 'bg-surface-variant text-brand-text-muted', icon: 'text-brand-text-muted', accent: 'text-brand-text-muted' },
+};
+
+const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-ZM', {
+        style: 'currency',
+        currency: 'ZMW',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+    }).format(amount || 0);
+
+const formatNumber = (n: number) => new Intl.NumberFormat('en-US').format(n || 0);
+
+const greeting = () => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 18) return 'Good afternoon';
+    return 'Good evening';
+};
+
+/* ────────────────────────────── Sub-components ───────────────────────────── */
+
+const StatCard: React.FC<{
+    label: string;
+    value: string;
+    icon: string;
+    tone: Tone;
+    sub?: React.ReactNode;
+}> = ({ label, value, icon, tone, sub }) => {
+    const t = TONE[tone];
+    return (
+        <div className="group bg-surface border border-brand-border rounded-2xl p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5">
+            <div className="flex items-start justify-between">
+                <span className={`material-symbols-rounded ${t.chip} w-11 h-11 rounded-xl flex items-center justify-center text-[22px]`}>
+                    {icon}
+                </span>
+                {sub}
+            </div>
+            <p className="mt-4 text-[13px] font-semibold tracking-wide text-brand-text-muted uppercase">{label}</p>
+            <p className="mt-1 text-3xl font-extrabold tracking-tight text-brand-text tnum">{value}</p>
+        </div>
+    );
+};
+
+const Pill: React.FC<{ children: React.ReactNode; tone: 'up' | 'down' | 'flat' }> = ({ children, tone }) => {
+    const cls =
+        tone === 'up' ? 'bg-success-muted text-success'
+        : tone === 'down' ? 'bg-danger-muted text-danger'
+        : 'bg-surface-variant text-brand-text-muted';
+    return (
+        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${cls}`}>
+            {tone !== 'flat' && (
+                <span className="material-symbols-rounded text-[14px]">{tone === 'up' ? 'trending_up' : 'trending_down'}</span>
+            )}
+            {children}
+        </span>
+    );
+};
+
+const RevenueChart: React.FC<{ revSummary: RevenueSummary | null }> = ({ revSummary }) => {
+    const [range, setRange] = useState<'3m' | '6m' | '1y'>('6m');
+
+    const months = useMemo(() => {
+        const all = revSummary?.byMonth ?? [];
+        const take = range === '3m' ? 3 : range === '6m' ? 6 : 12;
+        // byMonth is newest-first; show oldest → newest along the x-axis.
+        return all.slice(0, take).slice().reverse();
+    }, [revSummary?.byMonth, range]);
+
+    const max = Math.max(...months.map(m => m.amount), 1);
+
+    return (
+        <div className="bg-surface border border-brand-border rounded-2xl shadow-sm h-full flex flex-col">
+            <div className="p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border">
+                <div>
+                    <h2 className="text-lg font-extrabold tracking-tight text-brand-text">Subscription revenue</h2>
+                    <p className="text-sm text-brand-text-muted">Monthly recurring revenue across all stores</p>
+                </div>
+                <div className="flex items-center gap-1 bg-surface-variant p-1 rounded-xl">
+                    {(['3m', '6m', '1y'] as const).map(p => (
+                        <button
+                            key={p}
+                            onClick={() => setRange(p)}
+                            className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-colors ${
+                                range === p ? 'bg-surface text-sp-green-dark shadow-sm' : 'text-brand-text-muted hover:text-brand-text'
+                            }`}
+                        >
+                            {p.toUpperCase()}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="p-6 flex-1">
+                {months.length > 0 ? (
+                    <div className="h-64 flex items-end justify-between gap-2 sm:gap-4">
+                        {months.map((m, i) => {
+                            const height = Math.max((m.amount / max) * 100, 3);
+                            return (
+                                <div key={i} className="flex-1 flex flex-col items-center gap-3 group">
+                                    <div className="w-full flex-1 flex items-end justify-center relative">
+                                        <div
+                                            style={{ height: `${height}%` }}
+                                            className="w-full max-w-[44px] rounded-t-lg bg-sp-green/80 group-hover:bg-sp-green transition-all duration-300"
+                                        />
+                                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 -translate-y-full opacity-0 group-hover:opacity-100 transition-opacity bg-warm-900 text-white text-xs rounded-lg px-3 py-2 shadow-lg pointer-events-none whitespace-nowrap text-center z-10">
+                                            <div className="font-bold">{formatCurrency(m.amount)}</div>
+                                            <div className="text-warm-400 text-[10px]">{m.count} payments</div>
+                                        </div>
+                                    </div>
+                                    <span className="text-[11px] font-semibold text-brand-text-muted">
+                                        {m.month.substring(0, 3)}
+                                    </span>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <div className="h-64 flex flex-col items-center justify-center text-brand-text-muted">
+                        <span className="material-symbols-rounded text-5xl opacity-30">bar_chart</span>
+                        <p className="text-sm mt-2">No revenue recorded yet</p>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+const StoreHealth: React.FC<{ stats: StoreStats }> = ({ stats }) => {
+    const rows: { label: string; value: number; tone: Tone; icon: string }[] = [
+        { label: 'Active', value: stats.active, tone: 'success', icon: 'check_circle' },
+        { label: 'On trial', value: stats.trial, tone: 'amber', icon: 'schedule' },
+        { label: 'Inactive', value: stats.inactive, tone: 'neutral', icon: 'pause_circle' },
+    ];
+    const total = Math.max(stats.total, 1);
+
+    return (
+        <div className="bg-surface border border-brand-border rounded-2xl shadow-sm h-full flex flex-col">
+            <div className="p-6 border-b border-brand-border">
+                <h2 className="text-lg font-extrabold tracking-tight text-brand-text">Store health</h2>
+                <p className="text-sm text-brand-text-muted">{formatNumber(stats.total)} stores on the platform</p>
+            </div>
+            <div className="p-6 space-y-5 flex-1">
+                {rows.map(r => {
+                    const pct = Math.round((r.value / total) * 100);
+                    return (
+                        <div key={r.label}>
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="inline-flex items-center gap-2 text-sm font-semibold text-brand-text">
+                                    <span className={`material-symbols-rounded text-[18px] ${TONE[r.tone].icon}`}>{r.icon}</span>
+                                    {r.label}
+                                </span>
+                                <span className="text-sm font-bold text-brand-text tnum">{formatNumber(r.value)} <span className="text-brand-text-muted font-medium">· {pct}%</span></span>
+                            </div>
+                            <div className="h-2.5 rounded-full bg-surface-variant overflow-hidden">
+                                <div
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                        r.tone === 'success' ? 'bg-success' : r.tone === 'amber' ? 'bg-sp-amber' : 'bg-warm-400'
+                                    }`}
+                                    style={{ width: `${pct}%` }}
+                                />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};
+
+const QuickLink: React.FC<{ icon: string; title: string; desc: string; onClick: () => void }> = ({ icon, title, desc, onClick }) => (
+    <button
+        onClick={onClick}
+        className="group text-left bg-surface border border-brand-border rounded-2xl p-5 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 hover:border-sp-green/40"
+    >
+        <div className="flex items-center justify-between">
+            <span className="material-symbols-rounded w-11 h-11 rounded-xl bg-sp-green-soft text-sp-green-dark flex items-center justify-center text-[22px]">
+                {icon}
+            </span>
+            <span className="material-symbols-rounded text-brand-text-muted group-hover:text-sp-green-dark transition-colors">arrow_forward</span>
+        </div>
+        <p className="mt-4 font-bold text-brand-text">{title}</p>
+        <p className="text-sm text-brand-text-muted">{desc}</p>
+    </button>
+);
+
+/* ──────────────────────────────── Page ──────────────────────────────────── */
 
 const SuperAdminDashboard: React.FC<{ currentUser: User }> = ({ currentUser }) => {
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [revSummary, setRevSummary] = useState<RevenueSummary | null>(null);
-    const [storeStats, setStoreStats] = useState<StoreStats>({
-        total: 0,
-        active: 0,
-        trial: 0,
-        inactive: 0
-    });
-    const [aiInsight, setAiInsight] = useState<string>("Analyzing platform performance...");
-
-    // ROBOT DUO STATE
-    const [scoutState, setScoutState] = useState<{
-        x: number | string;
-        y: number | string;
-        scale: number;
-        isScanning: boolean;
-        isCalling?: boolean;
-        speech: string | null;
-        mode: 'PATROL' | 'RETURN' | 'IDLE' | 'REPORT' | 'MAINTENANCE' | 'RESEARCH' | 'SCAN';
-        mood: 'NORMAL' | 'HAPPY' | 'SCANNING' | 'THINKING' | 'WARNING' | 'ANGRY' | 'SURPRISED';
-        isLanding?: boolean;
-    }>({
-        x: '85%',
-        y: '80px',
-        scale: 0.8,
-        isScanning: false,
-        isCalling: false,
-        speech: null,
-        mode: 'IDLE',
-        mood: 'NORMAL'
-    });
-
-    const [commanderSpeech, setCommanderSpeech] = useState<string | null>(null);
-    const [commanderMood, setCommanderMood] = useState<'NORMAL' | 'HAPPY' | 'THINKING' | 'WARNING' | 'ANGRY' | 'SURPRISED'>('NORMAL');
-    const [commanderCalling, setCommanderCalling] = useState(false);
-    const [showDataBeam, setShowDataBeam] = useState(false);
-    const [flippedCardId, setFlippedCardId] = useState<string | null>(null);
-    const [highlightedCardId, setHighlightedCardId] = useState<string | null>(null);
-    const [isResearching, setIsResearching] = useState(false);
-    const [glitchCardId, setGlitchCardId] = useState<string | null>(null);
-    const [isDraggingCommander, setIsDraggingCommander] = useState(false);
-    const [isDraggingScout, setIsDraggingScout] = useState(false);
-    const [lastInteractionTime, setLastInteractionTime] = useState(Date.now());
-
-    // --- HELPER FUNCTIONS (Defined before use) ---
-
-    function formatCurrency(amount: number) {
-        return new Intl.NumberFormat('en-ZM', {
-            style: 'currency',
-            currency: 'ZMW',
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        }).format(amount);
-    }
-
-    function getScoutScreenPos() {
-        const getNumeric = (val: string | number) => {
-            if (typeof val === 'number') return val;
-            if (typeof val !== 'string') return 0;
-            if (val.includes('calc')) {
-                if (val.includes('100%')) {
-                    const pixels = parseInt(val.match(/\d+px/)?.[0] || '0');
-                    return (typeof window !== 'undefined' ? window.innerWidth : 1920) - pixels;
-                }
-                return 500;
-            }
-            if (val.includes('%')) {
-                return (parseFloat(val) / 100) * (typeof window !== 'undefined' ? window.innerWidth : 1920);
-            }
-            return parseFloat(val) || 0;
-        };
-
-        const currentX = getNumeric(scoutState.x);
-        const currentY = getNumeric(scoutState.y);
-        return { x: currentX, y: currentY };
-    }
-
-    function getRandomMetricComment() {
-        if (!revSummary || !storeStats) return "Systems nominal.";
-
-        const comments = [
-            `Global revenue holding at ${formatCurrency(revSummary.totalAmount)}.`,
-            `Active fleet: ${storeStats.active} stores operational.`,
-            `Platform growth is within projected vectors.`,
-            `Analyzing capital flow... ZMW liquidity is stable.`,
-            `${storeStats.trial} new units in trial phase. Monitoring conversion.`
-        ];
-        return comments[Math.floor(Math.random() * comments.length)];
-    }
-
-    // REACHABILITY/PROXIMITY DETECTION
-    useEffect(() => {
-        const checkProximity = () => {
-            const scoutPos = getScoutScreenPos();
-            let nearestId = null;
-            let minDistance = 150; // Threshold for proximity
-
-            Object.entries(cardRefs.current).forEach(([id, ref]) => {
-                if (ref) {
-                    const rect = ref.getBoundingClientRect();
-                    const cardX = rect.left + rect.width / 2;
-                    const cardY = rect.top + rect.height / 2;
-                    const dist = Math.hypot(scoutPos.x - (cardX - window.scrollX), scoutPos.y - (cardY - window.scrollY));
-
-                    if (dist < minDistance) {
-                        minDistance = dist;
-                        nearestId = id;
-                    }
-                }
-            });
-
-            setHighlightedCardId(nearestId);
-        };
-
-        const interval = setInterval(checkProximity, 100);
-        return () => clearInterval(interval);
-    }, [scoutState.x, scoutState.y]);
-
-    // REPORT STATE
-    const [isTypingReport, setIsTypingReport] = useState(false);
-    const [reportText, setReportText] = useState("");
-
-    const cardRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
-    const welcomeRef = useRef<HTMLDivElement>(null);
-    const containerRef = useRef<HTMLDivElement>(null);
-    const scoutRef = useRef<HTMLDivElement>(null);
-    const refreshPlatformInsight = async () => {
-        try {
-            setAiInsight("Analyzing platform performance...");
-            const response = await api.get<{ insight: string }>("/ai/platform-insight");
-            setAiInsight(response.insight);
-        } catch (err: any) {
-            console.error("Failed to refresh insight", err);
-            if (err.response?.status === 429) {
-                setAiInsight("Daily AI quota reached. Standard platform metrics indicate stable performance across all regions.");
-            } else {
-                setAiInsight("Platform metrics are stable. Real-time analysis suggests a positive trend in global commerce engagement.");
-            }
-        }
-    };
+    const [storeStats, setStoreStats] = useState<StoreStats>({ total: 0, active: 0, trial: 0, inactive: 0 });
 
     useEffect(() => {
-        const fetchData = async () => {
+        let cancelled = false;
+        (async () => {
             try {
                 const [revResp, storesResp] = await Promise.all([
-                    api.get<{ summary: RevenueSummary }>("/superadmin/revenue/summary"),
-                    api.get<{ stores: any[] }>("/superadmin/stores")
+                    api.get<{ summary: RevenueSummary }>('/superadmin/revenue/summary'),
+                    api.get<{ stores: any[] }>('/superadmin/stores'),
                 ]);
-
+                if (cancelled) return;
                 setRevSummary(revResp.summary);
                 const stores = storesResp.stores || [];
                 setStoreStats({
                     total: stores.length,
                     active: stores.filter((s: any) => s.status === 'active').length,
                     trial: stores.filter((s: any) => s.subscriptionStatus === 'trial').length,
-                    inactive: stores.filter((s: any) => s.status === 'inactive').length
+                    inactive: stores.filter((s: any) => s.status === 'inactive').length,
                 });
-
-                // Default insight if not loaded
-                setAiInsight("Platform intelligence is ready. Click the refresh icon to generate live strategic insights.");
             } catch (err) {
-                console.error("Failed to load dashboard data", err);
+                console.error('Failed to load dashboard data', err);
             } finally {
-                setLoading(false);
+                if (!cancelled) setLoading(false);
             }
-        };
-        fetchData();
+        })();
+        return () => { cancelled = true; };
     }, []);
 
-
-    // MOUSE TRACKING STATE FOR COMMANDER
-    const [commanderPos, setCommanderPos] = useState({ x: typeof window !== 'undefined' ? window.innerWidth - 100 : 1800, y: 100 });
-
-    // Simplified follow logic
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (isDraggingCommander || isDraggingScout) return;
-            setCommanderPos({ x: e.clientX - 70, y: e.clientY - 50 });
-        };
-
-        window.addEventListener('mousemove', handleMouseMove);
-        return () => window.removeEventListener('mousemove', handleMouseMove);
-    }, [isDraggingCommander, isDraggingScout]);
-
-    // DRAGGING LOGIC
-    useEffect(() => {
-        const handleMouseMove = (e: MouseEvent) => {
-            if (isDraggingCommander) {
-                setCommanderPos({ x: e.clientX - 70, y: e.clientY - 50 });
-                setLastInteractionTime(Date.now());
-            }
-            if (isDraggingScout) {
-                setScoutState(prev => ({
-                    ...prev,
-                    x: e.clientX - 40,
-                    y: e.clientY - 40,
-                    mode: 'IDLE',
-                    mood: 'SURPRISED'
-                }));
-                setLastInteractionTime(Date.now());
-            }
-        };
-
-        const handleMouseUp = () => {
-            if (isDraggingCommander) {
-                setIsDraggingCommander(false);
-                setCommanderMood('HAPPY');
-                setCommanderSpeech("Back in formation.");
-                setTimeout(() => setCommanderSpeech(null), 2000);
-            }
-            if (isDraggingScout) {
-                setIsDraggingScout(false);
-                setScoutState(prev => ({ ...prev, mood: 'HAPPY', speech: "Area secured!" }));
-                setTimeout(() => setScoutState(prev => ({ ...prev, speech: null })), 2000);
-            }
-        };
-
-        if (isDraggingCommander || isDraggingScout) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
-        }
-
-        return () => {
-            window.removeEventListener('mousemove', handleMouseMove);
-            window.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isDraggingCommander, isDraggingScout]);
-
-
-    // IDLE BEHAVIOR ENGINE
-    useEffect(() => {
-        if (loading || isDraggingCommander || isDraggingScout) return;
-
-        const interval = setInterval(() => {
-            const now = Date.now();
-            if (now - lastInteractionTime < 5000) return; // Wait after interaction
-            if (Math.random() > 0.7) {
-                // Random Idle Action
-                const action = Math.floor(Math.random() * 4);
-                switch (action) {
-                    case 0: // Commander comments
-                        setCommanderMood('THINKING');
-                        setCommanderSpeech(getRandomMetricComment());
-                        setTimeout(() => {
-                            setCommanderSpeech(null);
-                            setCommanderMood('NORMAL');
-                        }, 3000);
-                        break;
-                    case 1: // Scout investigates highlighted card
-                        if (highlightedCardId) {
-                            setScoutState(prev => ({ ...prev, mood: 'SCANNING', speech: "Scanning sector..." }));
-                            setTimeout(() => setScoutState(prev => ({ ...prev, speech: null, mood: 'HAPPY' })), 3000);
-                        }
-                        break;
-                    case 2: // Joint scan
-                        setCommanderMood('SCANNING' as any); // Type cast if needed, but 'SCANNING' might match mood in CSS if added
-                        setScoutState(prev => ({ ...prev, mood: 'SCANNING', speech: "Cross-referencing data..." }));
-                        setTimeout(() => {
-                            setCommanderMood('NORMAL');
-                            setScoutState(prev => ({ ...prev, mood: 'NORMAL', speech: null }));
-                        }, 4000);
-                        break;
-                    case 3: // Scout looks at Commander
-                        setScoutState(prev => ({ ...prev, mood: 'HAPPY', speech: "Commander, awaiting orders." }));
-                        setTimeout(() => setScoutState(prev => ({ ...prev, speech: null })), 2500);
-                        break;
-                }
-            }
-        }, 12000);
-
-        return () => clearInterval(interval);
-    }, [loading, isDraggingCommander, isDraggingScout, revSummary, storeStats, highlightedCardId, lastInteractionTime]);
-
-    // ROBOT ORCHESTRATION
-    const runPatrolMission = async () => {
-        const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
-
-        // 1. Commander Orders via Phone
-        setCommanderMood('HAPPY');
-        setCommanderSpeech("Unit Beta, move to the terminal for data uplink.");
-        await wait(2500);
-        setCommanderSpeech(null);
-
-        // 2. Scout Acknowledges & Moves to HUB TABLE
-        setScoutState(prev => ({ ...prev, speech: "Understood. Initiating terminal sequence.", mood: 'HAPPY' }));
-        await wait(1500);
-        setScoutState(prev => ({ ...prev, speech: null }));
-
-        // MOVE TO HUB TABLE
-        setScoutState(prev => ({
-            ...prev,
-            x: 'calc(100% - 310px)',
-            y: 'calc(15% + 480px)',
-            scale: 0.95,
-            mode: 'RESEARCH'
-        }));
-        await wait(2000);
-
-        setIsResearching(true);
-        setIsTypingReport(true);
-        setReportText("DECRYPTING_SECURE_PROTOCOLS...\nUPLINK: 88%\nLATENCY: 4ms");
-        await wait(2000);
-        setScoutState(prev => ({ ...prev, mood: 'HAPPY', speech: "Uplink Secure." }));
-        setIsTypingReport(false);
-        setReportText("");
-        await wait(1500);
-        setIsResearching(false);
-        setScoutState(prev => ({ ...prev, speech: null, mode: 'IDLE' }));
-
-        // DATA SYNC BEAM
-        setScoutState(prev => ({ ...prev, x: '88%', y: '160px', mood: 'SCANNING' }));
-        await wait(1500);
-        setShowDataBeam(true);
-        setCommanderMood('THINKING');
-        await wait(3000);
-        setShowDataBeam(false);
-        setCommanderMood('HAPPY');
-        setCommanderSpeech("Data received. Proceed.");
-        setScoutState(prev => ({ ...prev, mood: 'HAPPY', speech: "Sync Complete." }));
-        await wait(2000);
-        setCommanderSpeech(null);
-        setCommanderMood('NORMAL');
-
-        // 3. SCAN LIVE CARDS
-        const liveCards = ['revenue', 'active_stores'];
-        for (const cardId of liveCards) {
-            const card = cardRefs.current[cardId];
-            if (card) {
-                const rect = card.getBoundingClientRect();
-                setScoutState(prev => ({
-                    ...prev,
-                    x: rect.left + window.scrollX + 20,
-                    y: rect.top + window.scrollY - 80,
-                    mode: 'SCAN',
-                    isScanning: true,
-                    mood: 'SCANNING'
-                }));
-                setFlippedCardId(cardId);
-                await wait(2500);
-                setFlippedCardId(null);
-                setScoutState(prev => ({ ...prev, isScanning: false, mood: 'HAPPY' }));
-                await wait(800);
-            }
-        }
-
-        // 4. Commander Calling
-        setCommanderMood('HAPPY');
-        setCommanderSpeech("Excellent metrics.");
-        setCommanderCalling(true);
-        await wait(3000);
-        setCommanderCalling(false);
-        setCommanderSpeech(null);
-
-        // 5. JOINT RESEARCH PHASE
-        setScoutState(s => ({
-            ...s,
-            mode: 'RESEARCH',
-            mood: 'THINKING',
-            x: 'calc(100% - 250px)',
-            y: 'calc(15% + 150px)',
-            speech: "Deep scanning market trends..."
-        }));
-        await wait(2000);
-        setIsResearching(true);
-        setCommanderMood('THINKING');
-        setCommanderSpeech("Analyzing satellite link...");
-        setCommanderCalling(true);
-        await wait(4000);
-        setCommanderCalling(false);
-        setCommanderSpeech(null);
-        setCommanderMood('HAPPY');
-        setScoutState(s => ({ ...s, mood: 'HAPPY', speech: "Optimization vectors mapped!" }));
-        await wait(2000);
-        setIsResearching(false);
-        setScoutState(s => ({ ...s, speech: null, mode: 'IDLE' }));
-
-        // 6. Return to Base
-        setScoutState(prev => ({
-            ...prev,
-            x: '85%',
-            y: '100px',
-            scale: 0.8,
-            mode: 'IDLE'
-        }));
-    };
-
-    const runSecuritySweep = async () => {
-        const wait = (ms: number) => new Promise(r => setTimeout(r, ms));
-        const cards = Object.keys(cardRefs.current);
-        const targetCardId = cards[Math.floor(Math.random() * cards.length)];
-
-        setGlitchCardId(targetCardId);
-        setCommanderMood('WARNING');
-        setCommanderSpeech("Anomalous activity detected in the data stream!");
-        await wait(2000);
-
-        setScoutState(prev => ({
-            ...prev,
-            mood: 'SCANNING',
-            speech: "Intercepting glitch... move to intercept!"
-        }));
-
-        const cardRef = cardRefs.current[targetCardId];
-        if (cardRef) {
-            const rect = cardRef.getBoundingClientRect();
-            setScoutState(prev => ({
-                ...prev,
-                x: rect.left + window.scrollX + 20,
-                y: rect.top + window.scrollY - 80,
-                mode: 'SCAN',
-                isScanning: true
-            }));
-        }
-        await wait(3000);
-
-        setGlitchCardId(null);
-        setScoutState(prev => ({ ...prev, mood: 'HAPPY', speech: "Glitch neutralized.", isScanning: false }));
-        setCommanderSpeech("Excellent work, Unit Beta.");
-        setCommanderMood('HAPPY');
-        await wait(2000);
-        setCommanderSpeech(null);
-        setCommanderMood('NORMAL');
-        setScoutState(prev => ({ ...prev, speech: null, mode: 'IDLE' }));
-    };
-
-
-    useEffect(() => {
-        if (loading || isDraggingCommander || isDraggingScout) return;
-        const interval = setInterval(() => {
-            const rand = Math.random();
-            if (rand > 0.9) runPatrolMission();
-            else if (rand > 0.8) runSecuritySweep();
-        }, 120000);
-        return () => clearInterval(interval);
-    }, [loading, isDraggingCommander, isDraggingScout, revSummary]);
-
+    // Month-over-month revenue growth (newest two months in byMonth).
+    const growth = useMemo(() => {
+        const m = revSummary?.byMonth ?? [];
+        if (m.length < 2 || !m[1].amount) return null;
+        return ((m[0].amount - m[1].amount) / m[1].amount) * 100;
+    }, [revSummary?.byMonth]);
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-950 transition-colors duration-300 flex items-center justify-center">
-                <div className="text-white font-mono animate-pulse">INIT_SALE_PILOT_OS...</div>
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <div className="flex flex-col items-center gap-3 text-brand-text-muted">
+                    <span className="material-symbols-rounded text-4xl text-sp-green animate-spin">progress_activity</span>
+                    <p className="text-sm font-semibold">Loading platform overview…</p>
+                </div>
             </div>
         );
     }
 
-
-    const scoutScreenPos = getScoutScreenPos();
+    const firstName = (currentUser?.name || 'Super Admin').split(' ')[0];
 
     return (
-        <div ref={containerRef} className="min-h-screen bg-slate-950 transition-colors duration-300 overflow-x-hidden selection:bg-indigo-500/30 selection:text-indigo-200 relative">
-            {/* Background Atmosphere */}
-            <div className="fixed inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-indigo-900/5 rounded-full blur-[120px]"></div>
-                <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-cyan-900/5 rounded-full blur-[120px]"></div>
-            </div>
-
-            {/* --- ROBOT LAYER --- */}
-
-            {/* ROBOT SHADOWS */}
-            <div className="fixed inset-0 pointer-events-none z-0">
-                <div
-                    className="absolute w-24 h-4 bg-black/10 blur-xl rounded-full"
-                    style={{ transform: `translate3d(${commanderPos.x + 30}px, ${commanderPos.y + 150}px, 0)` }}
-                ></div>
-                <div
-                    className="absolute w-16 h-3 bg-black/10 blur-lg rounded-full"
-                    style={{ transform: `translate3d(${scoutScreenPos.x + 20}px, ${scoutScreenPos.y + 100}px, 0)` }}
-                ></div>
-            </div>
-
-
-            {/* 1. Commander */}
-            <LiveRobot
-                variant="APPLE"
-                speech={commanderSpeech}
-                mood={commanderMood}
-                isCalling={commanderCalling}
-                isDragging={isDraggingCommander}
-                onMouseDown={() => setIsDraggingCommander(true)}
-                mode={isResearching ? 'RESEARCH' : 'IDLE'}
-                className="fixed transition-all duration-300 z-50 scale-75 md:scale-100"
-                style={{
-                    left: `${commanderPos.x}px`,
-                    top: `${commanderPos.y}px`
-                }}
-            />
-
-            {/* 2. Scout */}
-            <div
-                ref={scoutRef}
-                className="fixed z-[49] pointer-events-none transition-all duration-1000 ease-in-out"
-                style={{
-                    left: scoutState.x,
-                    top: scoutState.y,
-                    transform: `scale(${typeof scoutState.x === 'number' ? scoutState.scale * 0.7 : scoutState.scale})`, // Smaller on mobile if dynamic pos
-                }}
-            >
-                <LiveRobot
-                    variant="ANDROID"
-                    isScanning={scoutState.isScanning}
-                    isCalling={scoutState.isCalling}
-                    speech={scoutState.speech}
-                    mood={scoutState.mood}
-                    isLanding={scoutState.isLanding}
-                    isDragging={isDraggingScout}
-                    targetPos={showDataBeam ? { x: commanderPos.x + 70, y: commanderPos.y + 70 } : null}
-                    className={`drop-shadow-2xl md:scale-100 scale-75 ${scoutState.mode === 'MAINTENANCE' ? 'animate-scrub' : ''}`}
-                    onClick={() => {
-                        setScoutState(prev => ({ ...prev, mood: 'HAPPY', speech: "Systems 100% operational!" }));
-                        setLastInteractionTime(Date.now());
-                        setTimeout(() => setScoutState(prev => ({ ...prev, speech: null })), 2000);
-                    }}
-                    onMouseDown={() => {
-                        setIsDraggingScout(true);
-                        setScoutState(prev => ({ ...prev, mode: 'IDLE' }));
-                    }}
-                />
-            </div>
-
-            {/* MOBILE TECH ACCENT (Simplified Hub) */}
-            <div className="lg:hidden fixed top-[10%] left-0 w-full pointer-events-none z-0 opacity-40 overflow-hidden h-40">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[80px]"></div>
-                <div className="absolute top-10 left-[10%] w-32 h-32 border border-indigo-500/10 rounded-full"></div>
-            </div>
-
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 z-10">
-                {/* Hero Section */}
-                <div ref={welcomeRef} className="relative">
-                    <WelcomeHero
-                        userName="Super Admin"
-                        stats={{
-                            totalRevenue: formatCurrency(revSummary?.totalAmount || 0),
-                            activeStores: storeStats.active
-                        }}
-                        isTypingReport={isTypingReport}
-                        reportText={reportText}
-                        description={aiInsight}
-                        onRefreshInsight={refreshPlatformInsight}
-                    />
-                    <HoloComputeHub isSyncing={showDataBeam} isResearching={isResearching} />
-                </div>
-
-                {/* Stats Grid */}
-                <DashboardStatsGrid
-                    revSummary={revSummary}
-                    storeStats={storeStats}
-                    formatCurrency={formatCurrency}
-                    cardRefs={cardRefs}
-                    flippedCardId={flippedCardId}
-                    highlightedCardId={highlightedCardId}
-                    glitchCardId={glitchCardId}
-                    className={glitchCardId ? 'animate-pulse' : ''}
-                />
-
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pb-32">
-                    <div className="lg:col-span-3">
-                        <DashboardRevenueChart
-                            revSummary={revSummary}
-                            formatCurrency={formatCurrency}
-                        />
+        <div className="min-h-screen bg-background">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10 space-y-8">
+                {/* Header */}
+                <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                    <div>
+                        <p className="text-sm font-bold uppercase tracking-widest text-sp-green-dark">Platform</p>
+                        <h1 className="mt-1 text-3xl md:text-4xl font-extrabold tracking-tight text-brand-text">
+                            {greeting()}, {firstName}
+                        </h1>
+                        <p className="mt-1 text-brand-text-muted">Here's how SalePilot is performing across every store.</p>
                     </div>
-                </div>
-            </div>
+                    <span className="inline-flex items-center gap-2 self-start sm:self-auto rounded-full bg-success-muted px-3 py-1.5 text-sm font-bold text-success">
+                        <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                        All systems operational
+                    </span>
+                </header>
 
-            {/* Dashboard AI Card FAB (Optimized for Mobile) */}
-            <div className="fixed bottom-24 right-6 md:bottom-10 md:right-10 z-[51]">
-                {/* Visual Connector to Floating Deck (Mobile) */}
-                <div className="md:hidden absolute bottom-[-10px] right-1/2 translate-x-1/2 w-1 h-10 bg-gradient-to-t from-indigo-500/40 to-transparent"></div>
-                <SuperAdminAiCard
-                    userName={currentUser?.name || 'Commander'}
-                    platformStats={{
-                        totalStores: storeStats.total,
-                        activeStores: storeStats.active,
-                        totalRevenue: revSummary?.totalAmount || 0
-                    }}
-                />
-            </div>
+                {/* KPI cards */}
+                <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                    <StatCard
+                        label="Total revenue"
+                        value={formatCurrency(revSummary?.totalAmount || 0)}
+                        icon="payments"
+                        tone="primary"
+                        sub={growth !== null ? (
+                            <Pill tone={growth >= 0 ? 'up' : 'down'}>{Math.abs(growth).toFixed(1)}%</Pill>
+                        ) : undefined}
+                    />
+                    <StatCard label="Active stores" value={formatNumber(storeStats.active)} icon="storefront" tone="success" />
+                    <StatCard label="On trial" value={formatNumber(storeStats.trial)} icon="schedule" tone="amber" />
+                    <StatCard label="Total stores" value={formatNumber(storeStats.total)} icon="apartment" tone="neutral" />
+                </section>
 
-            <style>{`
-                @keyframes scrub {
-                    0%, 100% { transform: rotate(0deg) translateX(0); }
-                    25% { transform: rotate(5deg) translateX(10px); }
-                    75% { transform: rotate(-5deg) translateX(-10px); }
-                }
-                .animate-scrub { animation: scrub 0.5s ease-in-out infinite; }
-                
-                @keyframes glitch-shake {
-                    0%, 100% { transform: translate(0); }
-                    20% { transform: translate(-2px, 2px); }
-                    40% { transform: translate(-2px, -2px); }
-                    60% { transform: translate(2px, 2px); }
-                    80% { transform: translate(2px, -2px); }
-                }
-                .glitch-card {
-                    animation: glitch-shake 0.2s linear infinite;
-                    filter: hue-rotate(90deg) contrast(1.5);
-                }
-            `}</style>
-        </div >
+                {/* Revenue + store health */}
+                <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-2">
+                        <RevenueChart revSummary={revSummary} />
+                    </div>
+                    <div className="lg:col-span-1">
+                        <StoreHealth stats={storeStats} />
+                    </div>
+                </section>
+
+                {/* Quick links */}
+                <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
+                    <QuickLink icon="storefront" title="Manage stores" desc="Review, activate & configure stores" onClick={() => navigate('/superadmin/stores')} />
+                    <QuickLink icon="campaign" title="Send a broadcast" desc="Notify stores platform-wide" onClick={() => navigate('/superadmin/notifications')} />
+                    <QuickLink icon="credit_card" title="Billing & revenue" desc="Subscriptions and payments" onClick={() => navigate('/superadmin/subscriptions')} />
+                </section>
+            </div>
+        </div>
     );
 };
 

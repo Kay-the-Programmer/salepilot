@@ -1,4 +1,5 @@
 import { User } from '../types';
+import { canAccessPage } from '../utils/rbac';
 import {
     HomeIcon,
     ShoppingCartIcon,
@@ -267,7 +268,10 @@ export const NAV_ITEMS: NavItem[] = [
  * applied; Discover now consumes it to render only permitted app cards.
  */
 export function getAccessibleNavItems(user: Pick<User, 'role'>, allowedPages?: string[]): NavItem[] {
-    let items = NAV_ITEMS.filter(item => item.roles.includes(user.role));
+    // Authority comes from the canonical RBAC map (utils/rbac.ts), NOT the
+    // per-item `roles` field (kept only as display metadata) — this guarantees
+    // the launcher and the route guard agree.
+    let items = NAV_ITEMS.filter(item => canAccessPage(user.role, item.page));
     if (allowedPages && allowedPages.length > 0) {
         items = items.filter(item => allowedPages.includes(item.page));
     }

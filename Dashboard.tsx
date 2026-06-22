@@ -9,6 +9,7 @@ import { lazy, Suspense } from 'react';
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
 import { hasModule, MODULES } from './utils/entitlements';
+import { ROLE_PAGES } from './utils/rbac';
 
 const QuickView = lazy(() => import('@/pages/QuickView'));
 const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
@@ -96,14 +97,10 @@ type SnackbarState = {
     type: SnackbarType;
 };
 
-const PERMISSIONS: Record<User['role'], string[]> = {
-    superadmin: ['dash', 'superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'reports', 'pos', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'whatsapp/conversations', 'whatsapp/settings', 'privacy'],
-    admin: ['dash', 'reports', 'pos', 'sales', 'sales-history', 'orders', 'inventory', 'categories', 'stock-takes', 'returns', 'customers', 'suppliers', 'purchase-orders', 'accounting', 'audit-trail', 'users', 'settings', 'profile', 'notifications', 'subscription', 'logistics', 'user-guide', 'quick-view', 'support', 'privacy'],
-    staff: ['pos', 'sales', 'sales-history', 'orders', 'inventory', 'returns', 'customers', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
-    inventory_manager: ['dash', 'reports', 'inventory', 'categories', 'stock-takes', 'suppliers', 'purchase-orders', 'profile', 'notifications', 'logistics', 'user-guide', 'quick-view', 'privacy'],
-    customer: ['profile', 'notifications', 'user-guide', 'quick-view', 'privacy'],
-    supplier: ['profile', 'notifications', 'user-guide', 'quick-view', 'privacy']
-};
+// Role → page access. Sourced from the single canonical RBAC map in
+// utils/rbac.ts so the route guard here and the app launcher (PosDiscover)
+// can never disagree about who may open what.
+const PERMISSIONS: Record<User['role'], string[]> = ROLE_PAGES;
 
 const DEFAULT_PAGES: Record<User['role'], string> = {
     superadmin: 'superadmin',
