@@ -25,6 +25,22 @@
 .theme-toggle:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.35); }
 .theme-toggle__icon { font-size: 22px; line-height: 1; }
 
+/* "Auto / follows device" cue — a small accent dot + tinted icon. */
+.theme-toggle--auto { color: #008060; border-color: rgba(0, 128, 96, 0.35); }
+.theme-toggle--auto::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #008060;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+}
+.dark .theme-toggle--auto { color: #5fd0a8; border-color: rgba(95, 208, 168, 0.4); }
+.dark .theme-toggle--auto::after { background: #5fd0a8; border-color: rgba(36, 36, 58, 0.95); }
+
 .dark .theme-toggle {
   background: rgba(36, 36, 58, 0.92);
   color: #f4f2ee;

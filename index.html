@@ -38,6 +38,20 @@
       animation: fadeIn 0.3s ease-out forwards;
     }
   </style>
+  <!-- Apply the device/saved theme before first paint to avoid a flash -->
+  <script>
+    (function () {
+      try {
+        var pref = localStorage.getItem('themePreference');
+        var system = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        var theme = (pref === 'light' || pref === 'dark') ? pref : system;
+        var root = document.documentElement;
+        root.classList.remove('light', 'dark');
+        root.classList.add(theme);
+        root.style.colorScheme = theme;
+      } catch (e) { }
+    })();
+  </script>
   <link rel="stylesheet" href="/index.css">
 </head>
 
