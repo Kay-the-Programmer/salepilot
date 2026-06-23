@@ -10,6 +10,7 @@ import CrmInsights from './CrmInsights';
 import CrmRewardsSettings from './CrmRewardsSettings';
 import SendMessageModal from './SendMessageModal';
 import { Icon } from './CrmBits';
+import { useConfirm } from '../ui/useConfirm';
 import { buildOverview, LoyaltyConfig, RedemptionEntry, formatMoney, num } from './crmModel';
 import loyaltyService from './loyaltyService';
 import { smsService, SmsConfig } from '../../services/smsService';
@@ -55,6 +56,7 @@ export const CrmApp: React.FC<CrmAppProps> = ({
     const [config, setConfig] = useState<LoyaltyConfig>(() => loyaltyService.getConfig(storeId));
     const [ledger, setLedger] = useState<RedemptionEntry[]>(() => loyaltyService.getLedger(storeId));
     const [smsInfo, setSmsInfo] = useState<SmsConfig | null>(null);
+    const { confirm, confirmDialog } = useConfirm();
 
     // Discover whether the server can send SMS (best-effort; non-blocking).
     useEffect(() => {
@@ -100,13 +102,18 @@ export const CrmApp: React.FC<CrmAppProps> = ({
         notify(editing ? 'Customer updated.' : 'Customer added.');
     };
 
-    const handleDelete = (c: Customer) => {
+    const handleDelete = async (c: Customer) => {
         if (!canManage) { notify('You do not have permission to delete customers.'); return; }
-        if (window.confirm(`Delete ${c.name}? This cannot be undone.`)) {
-            onDeleteCustomer(c.id);
-            setSelectedId(null);
-            notify('Customer deleted.');
-        }
+        const ok = await confirm({
+            title: `Delete ${c.name}?`,
+            message: 'This permanently removes the customer and their profile. This cannot be undone.',
+            confirmLabel: 'Delete',
+            danger: true,
+        });
+        if (!ok) return;
+        onDeleteCustomer(c.id);
+        setSelectedId(null);
+        notify('Customer deleted.');
     };
 
     const handleSaveConfig = (cfg: LoyaltyConfig) => {
@@ -277,6 +284,8 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                     {toast}
                 </div>
             )}
+
+            {confirmDialog}
         </CrmShell>
     );
 };

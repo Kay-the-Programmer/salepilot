@@ -210,7 +210,10 @@ const AssistantChat: React.FC<AssistantChatProps> = ({
   /* ----------------------------- voice ----------------------------- */
   const startVoice = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { alert('Voice recognition is not supported in this browser.'); return; }
+    if (!SR) {
+      setMessages((prev) => [...prev, { id: Date.now().toString(), type: 'ai', content: "Voice input isn't supported in this browser. Try Chrome on desktop or Android.", timestamp: Date.now() }]);
+      return;
+    }
     const rec = new SR();
     recognitionRef.current = rec;
     rec.continuous = false;

@@ -97,7 +97,7 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                     </div>
                     {overview.topProducts.length === 0 ? (
                         <div className="dash-empty">
-                            <Icon name="trophy" size={32} />
+                            <Icon name="emoji_events" size={32} />
                             <p>No product sales yet in this period.</p>
                         </div>
                     ) : (

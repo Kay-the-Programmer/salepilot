@@ -1,12 +1,50 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Product, Category, Sale, PurchaseOrder, StoreSettings, User } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { InventoryShell, InvSection } from './InventoryShell';
 import InventoryDashboard from './InventoryDashboard';
 import InventoryAlerts from './InventoryAlerts';
 import { buildInventoryOverview } from './inventoryModel';
+import { hasModule, MODULES, FREE_PRODUCT_LIMIT } from '../../utils/entitlements';
 import '../crm/crm.css';
 import './inventory.css';
+
+/**
+ * Proactive freemium product-cap meter. Appears as the store approaches the free
+ * limit and turns into a hard "limit reached" prompt at the cap, deep-linking to
+ * the Unlimited Products add-on. Hidden when the store already has it.
+ */
+const ProductCapBanner: React.FC<{ count: number; storeSettings: StoreSettings | null }> = ({ count, storeSettings }) => {
+    const navigate = useNavigate();
+    if (hasModule(storeSettings, MODULES.UNLIMITED_PRODUCTS)) return null;
+    if (count < Math.floor(FREE_PRODUCT_LIMIT * 0.8)) return null; // only nudge near the cap
+
+    const reached = count >= FREE_PRODUCT_LIMIT;
+    const pct = Math.min(100, Math.round((count / FREE_PRODUCT_LIMIT) * 100));
+    const goUnlock = () => navigate(`/subscription?view=addons&module=${MODULES.UNLIMITED_PRODUCTS}`);
+
+    return (
+        <div style={{ margin: '0 16px 12px', padding: '14px 16px', borderRadius: 16, border: '1px solid var(--c-outline-variant)', background: reached ? 'var(--c-error-container, #fde7e7)' : 'var(--c-surface-container, #f6f3ee)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                <div style={{ minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--c-on-surface)' }}>
+                        {reached ? "You've reached your product limit" : 'Approaching your product limit'}
+                    </div>
+                    <div style={{ fontSize: 12, color: 'var(--c-on-surface-variant)' }}>
+                        {count} of {FREE_PRODUCT_LIMIT} products used{reached ? ' — unlock Unlimited Products to add more.' : '.'}
+                    </div>
+                </div>
+                <button type="button" onClick={goUnlock} className="crm-btn crm-btn--filled" style={{ whiteSpace: 'nowrap' }}>
+                    <Icon name="bolt" size={18} /> Get Unlimited
+                </button>
+            </div>
+            <div style={{ marginTop: 10, height: 6, borderRadius: 999, background: 'var(--c-surface-high, #e7e2da)', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, borderRadius: 999, background: reached ? 'var(--c-error, #c8372d)' : 'var(--c-primary, #2f7d52)', transition: 'width .3s' }} />
+            </div>
+        </div>
+    );
+};
 
 interface InventoryAppProps {
     section: InvSection;
@@ -85,6 +123,7 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
             onExit={onExit}
             onLogout={onLogout}
         >
+            <ProductCapBanner count={products.length} storeSettings={storeSettings} />
             {content}
 
             {toast && (

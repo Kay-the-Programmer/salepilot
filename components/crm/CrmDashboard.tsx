@@ -43,7 +43,7 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
                 </div>
                 <div className="crm-pagehead__actions">
                     <button className="crm-btn crm-btn--outline" type="button" onClick={onViewInsights}>
-                        <Icon name="calendar_today" size={20} /> All time
+                        <Icon name="insights" size={20} /> Insights
                     </button>
                     <button className="crm-btn crm-btn--filled" type="button" onClick={onAddCustomer}>
                         <Icon name="person_add" size={20} /> New Customer
@@ -134,7 +134,9 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
                                         key={sale.transactionId}
                                         className="crm-activity__row"
                                         role={metrics ? 'button' : undefined}
+                                        tabIndex={metrics ? 0 : undefined}
                                         onClick={() => metrics && onOpenCustomer(metrics.customer.id)}
+                                        onKeyDown={metrics ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenCustomer(metrics.customer.id); } } : undefined}
                                     >
                                         <Avatar name={name} size={48} />
                                         <div className="crm-activity__body">

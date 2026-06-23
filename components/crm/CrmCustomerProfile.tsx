@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Sale, StoreSettings } from '../../types';
 import { Icon, Avatar } from './CrmBits';
-import { CustomerMetrics, LoyaltyConfig, formatMoney, formatDate, formatMonthYear, timeAgo } from './crmModel';
+import { CustomerMetrics, LoyaltyConfig, formatMoney, formatDate, formatMonthYear, timeAgo, parseApiDate } from './crmModel';
 
 interface CrmCustomerProfileProps {
     metrics: CustomerMetrics;
@@ -28,7 +28,7 @@ export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics,
     const c = metrics.customer;
 
     const ownSales = useMemo(
-        () => sales.filter(s => s.customerId === c.id).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()),
+        () => sales.filter(s => s.customerId === c.id).sort((a, b) => (parseApiDate(b.timestamp)?.getTime() ?? 0) - (parseApiDate(a.timestamp)?.getTime() ?? 0)),
         [sales, c.id],
     );
 

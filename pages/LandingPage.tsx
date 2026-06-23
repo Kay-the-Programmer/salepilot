@@ -4,6 +4,7 @@ import Header from '../components/landing/LandingPageHeader';
 import Hero from '../components/landing/Hero';
 import SocialProof from '../components/landing/SocialProof';
 import ValueProposition from '../components/landing/ValueProposition';
+import PricingPreview from '../components/landing/PricingPreview';
 import FinalCTA from '../components/landing/FinalCTA';
 import Testimonial from '../components/landing/Testimonial';
 import FAQ from '../components/landing/FAQ';
@@ -38,6 +39,7 @@ const LandingPage: React.FC = () => {
                 <Hero onStartTrial={handleStartTrial} />
                 <SocialProof />
                 <ValueProposition />
+                <PricingPreview onStartFree={handleStartFree} />
                 <FinalCTA onStartTrial={handleStartTrial} />
                 <Testimonial />
                 <FAQ />

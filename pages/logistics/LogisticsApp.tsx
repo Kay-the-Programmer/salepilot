@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Shipment, Courier, Bus, StoreSettings } from '../../types';
 import { api } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
 import { formatCurrency } from '../../utils/currency';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
@@ -49,6 +50,7 @@ const Modal: React.FC<{ title: string; onClose: () => void; children: React.Reac
 
 const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [tab, setTab] = useState<Tab>('shipments');
   const [shipments, setShipments] = useState<Shipment[]>([]);
   const [couriers, setCouriers] = useState<Courier[]>([]);
@@ -87,12 +89,12 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
   const createCourier = async (e: React.FormEvent) => {
     e.preventDefault();
     try { const c = await api.post<Courier>('/logistics/couriers', courierForm); setCouriers((p) => [c, ...p]); setModal(null); setCourierForm({ isActive: true }); }
-    catch { alert('Failed to create courier'); }
+    catch { showToast('Failed to create courier', 'error'); }
   };
   const createBus = async (e: React.FormEvent) => {
     e.preventDefault();
     try { const b = await api.post<Bus>('/logistics/buses', busForm); setBuses((p) => [b, ...p]); setModal(null); setBusForm({ isActive: true }); }
-    catch { alert('Failed to create bus'); }
+    catch { showToast('Failed to create bus', 'error'); }
   };
   const createShipment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,20 +102,20 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
       const payload = { ...shipForm, tracking_number: shipForm.tracking_number || `TRK-${Date.now()}` };
       const s = await api.post<Shipment>('/logistics/shipments', payload);
       setShipments((p) => [s, ...p]); setModal(null); setShipForm({ status: 'pending', shipping_cost: 0, method: 'courier' });
-    } catch { alert('Failed to create shipment'); }
+    } catch { showToast('Failed to create shipment', 'error'); }
   };
   const removeItem = (type: 'courier' | 'bus', id: string) => {
     setConfirm({
       title: `Delete ${type}`, msg: 'This action cannot be undone.',
       onYes: async () => {
         try { await api.delete(`/logistics/${type}s/${id}`); if (type === 'courier') setCouriers((p) => p.filter((c) => c.id !== id)); else setBuses((p) => p.filter((b) => b.id !== id)); setConfirm(null); }
-        catch { alert('Failed to delete'); }
+        catch { showToast('Failed to delete', 'error'); }
       },
     });
   };
   const updateStatus = async (id: string, status: string) => {
     try { const u = await api.patch<Shipment>(`/logistics/shipments/${id}/status`, { status }); setShipments((p) => p.map((s) => (s.id === id ? u : s))); }
-    catch { alert('Failed to update status'); }
+    catch { showToast('Failed to update status', 'error'); }
   };
 
   const navItems = [

@@ -5,6 +5,7 @@ import { num, formatMoney } from '../crm/crmModel';
 import ProcureSupplierForm from './ProcureSupplierForm';
 import ProcureSupplierProfile from './ProcureSupplierProfile';
 import { OPEN_STATUSES } from './procureModel';
+import { useConfirm } from '../ui/useConfirm';
 
 interface ProcureSuppliersProps {
     suppliers: Supplier[];
@@ -29,6 +30,7 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<Supplier | null>(null);
+    const { confirm, confirmDialog } = useConfirm();
 
     const statsById = useMemo(() => {
         const map = new Map<string, { orders: number; openOrders: number; spend: number; products: number }>();
@@ -61,11 +63,16 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
     const openAdd = () => { setEditing(null); setFormOpen(true); };
     const openEdit = (s: Supplier) => { setEditing(s); setFormOpen(true); };
     const handleSave = (s: Supplier) => { onSaveSupplier(s); setFormOpen(false); setEditing(null); };
-    const handleDelete = (s: Supplier) => {
-        if (window.confirm(`Delete ${s.name}? This cannot be undone.`)) {
-            onDeleteSupplier(s.id);
-            if (selectedId === s.id) setSelectedId(null);
-        }
+    const handleDelete = async (s: Supplier) => {
+        const ok = await confirm({
+            title: `Delete ${s.name}?`,
+            message: 'This permanently removes the supplier from your directory. This cannot be undone.',
+            confirmLabel: 'Delete',
+            danger: true,
+        });
+        if (!ok) return;
+        onDeleteSupplier(s.id);
+        if (selectedId === s.id) setSelectedId(null);
     };
 
     // ── Profile detail ──
@@ -89,6 +96,7 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
                     onSave={handleSave}
                     supplierToEdit={editing}
                 />
+                {confirmDialog}
             </>
         );
     }
@@ -177,6 +185,8 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
                 onSave={handleSave}
                 supplierToEdit={editing}
             />
+
+            {confirmDialog}
         </main>
     );
 };

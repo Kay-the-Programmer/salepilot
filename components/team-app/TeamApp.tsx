@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { User, StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import PremiumUpgradeModal from '../ui/PremiumUpgradeModal';
+import { useConfirm } from '../ui/useConfirm';
 import { hasModule, MODULES, FREE_SEATS } from '../../utils/entitlements';
 import { TeamShell, TeamSection } from './TeamShell';
 import TeamMembers from './TeamMembers';
@@ -36,6 +37,7 @@ export const TeamApp: React.FC<TeamAppProps> = ({
     const [editing, setEditing] = useState<User | null>(null);
     const [upgradeOpen, setUpgradeOpen] = useState(false);
     const [toast, setToast] = useState<string | null>(null);
+    const { confirm, confirmDialog } = useConfirm();
 
     const notify = (msg: string) => setToast(msg);
 
@@ -67,7 +69,13 @@ export const TeamApp: React.FC<TeamAppProps> = ({
 
     const handleDelete = async (u: User) => {
         if (u.id === user.id) { notify('You cannot remove your own account.'); return; }
-        if (!window.confirm(`Remove ${u.name} from the team? They will lose access.`)) return;
+        const ok = await confirm({
+            title: `Remove ${u.name}?`,
+            message: 'They will immediately lose access to this store. This cannot be undone.',
+            confirmLabel: 'Remove',
+            danger: true,
+        });
+        if (!ok) return;
         try {
             await onDeleteUser(u.id);
             notify('Member removed.');
@@ -129,6 +137,8 @@ export const TeamApp: React.FC<TeamAppProps> = ({
                     {toast}
                 </div>
             )}
+
+            {confirmDialog}
         </TeamShell>
     );
 };

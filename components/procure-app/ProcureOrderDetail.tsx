@@ -3,6 +3,7 @@ import { PurchaseOrder, StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { num, formatMoney, formatDate } from '../crm/crmModel';
 import { poStatus, OPEN_STATUSES } from './procureModel';
+import { useConfirm } from '../ui/useConfirm';
 
 interface ProcureOrderDetailProps {
     po: PurchaseOrder;
@@ -23,6 +24,7 @@ const STEPS: { id: PurchaseOrder['status']; label: string }[] = [
 
 export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, storeSettings, onBack, onEdit, onReceive, onUpdateStatus, onDelete }) => {
     const st = poStatus(po.status);
+    const { confirm, confirmDialog } = useConfirm();
 
     const m = useMemo(() => {
         let ordered = 0, received = 0;
@@ -35,7 +37,16 @@ export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, stor
     const canCancel = po.status !== 'received' && po.status !== 'canceled';
     const stepIndex = po.status === 'canceled' ? -1 : STEPS.findIndex(s => s.id === po.status);
 
-    const cancel = () => { if (window.confirm(`Cancel ${po.poNumber}? Items will not be received.`)) onUpdateStatus('canceled'); };
+    const cancel = async () => {
+        const ok = await confirm({
+            title: `Cancel ${po.poNumber}?`,
+            message: 'The order will be marked canceled and its items will not be received.',
+            confirmLabel: 'Cancel order',
+            cancelLabel: 'Keep order',
+            danger: true,
+        });
+        if (ok) onUpdateStatus('canceled');
+    };
 
     return (
         <main className="crm-main crm-section-fade">
@@ -177,6 +188,8 @@ export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, stor
                     <Icon name="delete" size={20} /> Delete
                 </button>
             </div>
+
+            {confirmDialog}
         </main>
     );
 };

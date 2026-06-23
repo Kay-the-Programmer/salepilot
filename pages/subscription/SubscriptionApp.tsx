@@ -75,6 +75,7 @@ const SubscriptionApp: React.FC = () => {
   const [fetchingAddons, setFetchingAddons] = useState(true);
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
   const [addonCheckout, setAddonCheckout] = useState<AddonCheckout | null>(null);
+  const [planAutoRenew, setPlanAutoRenew] = useState<boolean>(true);
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -127,8 +128,25 @@ const SubscriptionApp: React.FC = () => {
     if (!user) return;
     fetchPlans();
     fetchAddons();
-    if (user.currentStoreId) fetchHistory(user.currentStoreId);
+    if (user.currentStoreId) {
+      fetchHistory(user.currentStoreId);
+      api.get<{ autoRenew: boolean }>('/subscriptions/auto-renew')
+        .then((d) => setPlanAutoRenew(!!d?.autoRenew))
+        .catch(() => { /* default on */ });
+    }
   }, [user, fetchPlans, fetchAddons, fetchHistory]);
+
+  const handleTogglePlanAutoRenew = useCallback(async () => {
+    const next = !planAutoRenew;
+    setPlanAutoRenew(next); // optimistic
+    try {
+      await api.patch('/subscriptions/auto-renew', { autoRenew: next });
+      showToast(next ? 'Auto-renew turned on.' : 'Auto-renew turned off.', 'success');
+    } catch (e: any) {
+      setPlanAutoRenew(!next);
+      showToast(e?.message || 'Could not update auto-renew.', 'error');
+    }
+  }, [planAutoRenew, showToast]);
 
   // ---- Payment flow (ported from the existing SubscriptionPage) ----
   const pollVerification = useCallback(async (reference: string, retries = 0) => {
@@ -169,9 +187,12 @@ const SubscriptionApp: React.FC = () => {
     try {
       const response = isAddon
         ? await api.post<any>('/subscriptions/addons/pay', { moduleIds: addonCheckout!.moduleIds, method, phoneNumber })
-        : await api.post<any>('/subscriptions/pay', { storeId: user.currentStoreId, planId: planToPay!.id, method, phoneNumber });
+        : await api.post<any>('/subscriptions/pay', { storeId: user.currentStoreId, planId: planToPay!.id, method, phoneNumber, billingCycle: isAnnual ? 'annual' : 'monthly' });
       const { reference, lencoResult } = response;
-      const amount = isAddon ? addonCheckout!.amount : planToPay!.price;
+      // Use the backend-computed amount (authoritative for annual pricing + discounts).
+      const amount = (typeof response.amount === 'number' && response.amount > 0)
+        ? response.amount
+        : (isAddon ? addonCheckout!.amount : planToPay!.price);
       const currency = isAddon ? addonCheckout!.currency : (planToPay!.currency || 'ZMW');
       setCurrentReference(reference);
       stopPollingRef.current = false;
@@ -195,7 +216,7 @@ const SubscriptionApp: React.FC = () => {
       showToast(e.message || 'Failed to process payment. Please try again.', 'error');
       setLoading(false);
     }
-  }, [planToPay, addonCheckout, user, showToast, pollVerification]);
+  }, [planToPay, addonCheckout, isAnnual, user, showToast, pollVerification]);
 
   const handleSelectPlan = useCallback((planId: string) => {
     const plan = plans.find((p) => p.id === planId);
@@ -255,7 +276,11 @@ const SubscriptionApp: React.FC = () => {
   const firstName = useMemo(() => user?.name?.split(' ')[0] || '', [user]);
   const initial = (user?.name?.trim()?.[0] || 'S').toUpperCase();
   const activePlan = useMemo(() => plans.find((p) => p.id === user?.subscriptionPlan) || null, [plans, user]);
+  // Per-month display price (annual shows the discounted monthly-equivalent).
   const planPrice = (p: BackendPlan) => (isAnnual ? Math.round(p.price * 0.8) : p.price);
+  // Actual amount charged now (annual = 12 months at 20% off). Mirrors backend
+  // ANNUAL_DISCOUNT_PERCENT default; the backend amount is authoritative at charge time.
+  const planChargeAmount = (p: BackendPlan) => (isAnnual ? Math.round(p.price * 12 * 0.8) : p.price);
 
   const goPlans = () => setView('plans');
   const goManage = () => setView('manage');
@@ -336,6 +361,7 @@ const SubscriptionApp: React.FC = () => {
               <ManageView
                 user={user} firstName={firstName} activePlan={activePlan} history={history}
                 historyRef={historyRef} onChangePlan={goPlans} onBrowseAddons={goAddons}
+                planAutoRenew={planAutoRenew} onTogglePlanAutoRenew={handleTogglePlanAutoRenew}
               />
             )}
             {view === 'plans' && (
@@ -370,8 +396,8 @@ const SubscriptionApp: React.FC = () => {
             isOpen={isPaymentModalOpen}
             onClose={() => { stopPollingRef.current = true; setIsPaymentModalOpen(false); setAddonCheckout(null); }}
             onConfirm={({ method, phoneNumber }) => handlePayment(method, phoneNumber)}
-            planName={addonCheckout ? addonCheckout.label : (planToPay?.name || '')}
-            amount={addonCheckout ? addonCheckout.amount : (planToPay?.price || 0)}
+            planName={addonCheckout ? addonCheckout.label : `${planToPay?.name || ''}${planToPay && isAnnual ? ' — billed yearly' : ''}`}
+            amount={addonCheckout ? addonCheckout.amount : (planToPay ? planChargeAmount(planToPay) : 0)}
             currency={addonCheckout ? addonCheckout.currency : (planToPay?.currency || 'ZMW')}
             loading={loading}
             onCancelTransaction={handleCancelTransaction}
@@ -387,9 +413,11 @@ const ManageView: React.FC<{
   user: any; firstName: string; activePlan: BackendPlan | null;
   history: SubscriptionHistoryItem[]; historyRef: React.RefObject<HTMLDivElement | null>;
   onChangePlan: () => void; onBrowseAddons: () => void;
-}> = ({ user, activePlan, history, historyRef, onChangePlan, onBrowseAddons }) => {
+  planAutoRenew: boolean; onTogglePlanAutoRenew: () => void;
+}> = ({ user, activePlan, history, historyRef, onChangePlan, onBrowseAddons, planAutoRenew, onTogglePlanAutoRenew }) => {
   const lastMethod = history.find((h) => h.paymentMethod)?.paymentMethod;
   const statusActive = user?.subscriptionStatus === 'active' || user?.subscriptionStatus === 'trial';
+  const isPaidActive = user?.subscriptionStatus === 'active' && !!activePlan;
   const planName = activePlan?.name || (user?.subscriptionPlan ? user.subscriptionPlan : 'Free / Trial');
   const cur = activePlan?.currency || 'ZMW';
 
@@ -425,7 +453,7 @@ const ManageView: React.FC<{
           </div>
           <div className="flex flex-wrap items-center justify-between gap-4 border-t m3-border-outline-variant pt-5">
             <div>
-              <p className="text-[11px] uppercase tracking-wide m3-text-on-surface-variant">Next billing date</p>
+              <p className="text-[11px] uppercase tracking-wide m3-text-on-surface-variant">{planAutoRenew && isPaidActive ? 'Renews on' : 'Expires on'}</p>
               <p className="text-lg font-semibold m3-text-on-surface">{formatDate(user?.subscriptionEndsAt)}</p>
             </div>
             <div className="text-right">
@@ -433,6 +461,24 @@ const ManageView: React.FC<{
               <p className="text-2xl font-bold m3-text-primary">{activePlan ? money(activePlan.price, cur) : '—'}<span className="text-sm font-medium">{activePlan ? `/${activePlan.interval || 'mo'}` : ''}</span></p>
             </div>
           </div>
+          {isPaidActive && (
+            <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t m3-border-outline-variant">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold m3-text-on-surface">Auto-renew</p>
+                <p className="text-xs m3-text-on-surface-variant">{planAutoRenew ? "We'll renew your plan automatically before it expires." : 'Your plan will expire unless you renew it manually.'}</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={planAutoRenew}
+                onClick={onTogglePlanAutoRenew}
+                title={planAutoRenew ? 'Auto-renew is on' : 'Auto-renew is off'}
+                className={`shrink-0 w-12 h-7 rounded-full p-0.5 transition-colors ${planAutoRenew ? 'm3-bg-primary' : 'm3-bg-surface-high'}`}
+              >
+                <span className="block w-6 h-6 bg-white rounded-full shadow transition-transform" style={{ transform: planAutoRenew ? 'translateX(20px)' : 'translateX(0)' }} />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Payment method */}
@@ -558,10 +604,15 @@ const PlansView: React.FC<{
                 <span className={`text-xs font-semibold uppercase tracking-wider ${featured ? 'm3-text-primary' : 'm3-text-on-surface-variant'}`}>{tierLabel(i, plans.length)}</span>
                 <h3 className="text-2xl font-semibold m3-text-on-surface mt-1">{plan.name}</h3>
               </div>
-              <div className="mb-6">
+              <div className={isAnnual ? 'mb-2' : 'mb-6'}>
                 <span className="text-4xl font-bold m3-text-on-surface">{money(planPrice(plan), cur)}</span>
                 <span className="m3-text-on-surface-variant"> /{isAnnual ? 'mo, billed yearly' : (plan.interval || 'month')}</span>
               </div>
+              {isAnnual && plan.price > 0 && (
+                <p className="text-xs m3-text-secondary font-medium mb-6">
+                  {money(Math.round(plan.price * 12 * 0.8), cur)} billed today · save {money(Math.round(plan.price * 12 * 0.2), cur)}/yr
+                </p>
+              )}
               <ul className="flex-1 space-y-3 mb-8">
                 {(plan.features || []).map((f, idx) => (
                   <li key={idx} className="flex items-center gap-2">

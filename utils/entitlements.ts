@@ -13,12 +13,19 @@ export const MODULES = {
     QUICK_IMPORT: 'quick_import',
     ADVANCED_REPORTS: 'advanced_reports',
     PUBLIC_TRACKING: 'public_tracking',
+    UNLIMITED_PRODUCTS: 'unlimited_products',
 } as const;
 
 export type ModuleId = typeof MODULES[keyof typeof MODULES];
 
 /** User seats included for free (the owner). Extra seats need TEAM_MEMBERS. */
 export const FREE_SEATS = 1;
+
+/**
+ * Products allowed on the free core (display hint — backend is authoritative and
+ * may override via the FREE_PRODUCT_LIMIT env). Beyond this needs UNLIMITED_PRODUCTS.
+ */
+export const FREE_PRODUCT_LIMIT = 100;
 
 /** Whether a store has a given premium module unlocked. Defaults to locked. */
 export const hasModule = (settings: StoreSettings | null | undefined, moduleId: string): boolean =>

@@ -82,7 +82,14 @@ export const CrmLoyalty: React.FC<CrmLoyaltyProps> = ({ overview, storeSettings,
                         ) : (
                             <div className="crm-activity">
                                 {topByPoints.map(m => (
-                                    <div key={m.customer.id} className="crm-activity__row" role="button" onClick={() => onOpenCustomer(m.customer.id)}>
+                                    <div
+                                        key={m.customer.id}
+                                        className="crm-activity__row"
+                                        role="button"
+                                        tabIndex={0}
+                                        onClick={() => onOpenCustomer(m.customer.id)}
+                                        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onOpenCustomer(m.customer.id); } }}
+                                    >
                                         <Avatar name={m.customer.name} size={48} />
                                         <div className="crm-activity__body">
                                             <p className="crm-activity__name">{m.customer.name}</p>

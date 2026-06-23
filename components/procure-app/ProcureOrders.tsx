@@ -6,6 +6,7 @@ import { poStatus, OPEN_STATUSES, generateReorderDrafts, ReorderDraft } from './
 import ProcureOrderForm from './ProcureOrderForm';
 import ProcureOrderReceive from './ProcureOrderReceive';
 import ProcureOrderDetail from './ProcureOrderDetail';
+import { useConfirm } from '../ui/useConfirm';
 
 interface ProcureOrdersProps {
     purchaseOrders: PurchaseOrder[];
@@ -47,6 +48,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     const [receivePo, setReceivePo] = useState<PurchaseOrder | null>(null);
     const [detailPo, setDetailPo] = useState<PurchaseOrder | null>(null);
     const [filter, setFilter] = useState<Filter>('all');
+    const { confirm, confirmDialog } = useConfirm();
 
     // Keep the open detail in sync with refreshed data (after receive / status change).
     useEffect(() => {
@@ -111,11 +113,16 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     };
     const openDetail = (po: PurchaseOrder) => { setDetailPo(po); setView('detail'); };
     const handleSave = (po: PurchaseOrder) => { onSave(po); setFormItems(undefined); setView(detailPo ? 'detail' : 'list'); setEditing(null); };
-    const handleDelete = (po: PurchaseOrder) => {
-        if (window.confirm(`Delete ${po.poNumber}? This cannot be undone.`)) {
-            onDelete(po.id);
-            if (detailPo?.id === po.id) { setDetailPo(null); setView('list'); }
-        }
+    const handleDelete = async (po: PurchaseOrder) => {
+        const ok = await confirm({
+            title: `Delete ${po.poNumber}?`,
+            message: 'This permanently removes the purchase order. This cannot be undone.',
+            confirmLabel: 'Delete',
+            danger: true,
+        });
+        if (!ok) return;
+        onDelete(po.id);
+        if (detailPo?.id === po.id) { setDetailPo(null); setView('list'); }
     };
     const updateStatus = (status: PurchaseOrder['status']) => {
         if (!detailPo) return;
@@ -149,6 +156,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                         onReceive={items => onReceiveItems(receivePo.id, items)}
                     />
                 )}
+                {confirmDialog}
             </>
         );
     }
@@ -301,6 +309,8 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                     onReceive={items => onReceiveItems(receivePo.id, items)}
                 />
             )}
+
+            {confirmDialog}
         </main>
     );
 };

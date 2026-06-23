@@ -10,7 +10,7 @@ interface CrmInsightsProps {
     onNotify: (msg: string) => void;
 }
 
-export const CrmInsights: React.FC<CrmInsightsProps> = ({ overview, storeSettings, onReengage, onNotify }) => {
+export const CrmInsights: React.FC<CrmInsightsProps> = ({ overview, storeSettings, onReengage }) => {
     const { growth, segments, churnCount, avgLifetimeValue } = overview;
 
     const maxBar = useMemo(
@@ -39,10 +39,7 @@ export const CrmInsights: React.FC<CrmInsightsProps> = ({ overview, storeSetting
                     <p className="crm-pagehead__eyebrow">Performance Overview</p>
                     <h2 className="crm-pagehead__title">CRM Insights</h2>
                 </div>
-                <div className="crm-seg-toggle">
-                    <button type="button" className="is-active">All time</button>
-                    <button type="button" onClick={() => onNotify('Date ranges are coming soon.')}>Last 90 Days</button>
-                </div>
+                <span className="crm-pagehead__sub" style={{ alignSelf: 'flex-end' }}>All-time figures</span>
             </div>
 
             {/* Stat row */}
@@ -149,7 +146,7 @@ export const CrmInsights: React.FC<CrmInsightsProps> = ({ overview, storeSetting
                             : <>Start recording sales against customers to unlock spending patterns and tier recommendations.</>}
                     </p>
                 </div>
-                <button className="crm-btn crm-btn--outline" type="button" onClick={() => onNotify('Strategy suggestions are coming soon.')}>Apply Strategy</button>
+                <button className="crm-btn crm-btn--outline" type="button" onClick={onReengage}>Re-engage at-risk</button>
             </div>
         </main>
     );
