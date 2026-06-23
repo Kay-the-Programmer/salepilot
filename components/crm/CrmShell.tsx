@@ -64,10 +64,7 @@ export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, on
 
                 <div className="crm-rail__foot">
                     <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="menu" size={22} /> Discover Apps
-                    </button>
-                    <button type="button" className="crm-rail__item" onClick={onExit}>
-                        <Icon name="grid_view" size={22} /> Full App
+                        <Icon name="apps" size={22} /> Discover Apps
                     </button>
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout

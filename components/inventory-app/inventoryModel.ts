@@ -1,5 +1,8 @@
 import { Product, Category, Sale, PurchaseOrder, StoreSettings } from '../../types';
-import { num } from '../crm/crmModel';
+import { num, parseApiDate } from '../crm/crmModel';
+
+/** Epoch ms for a backend timestamp, UTC-safe (naive strings = server-local = UTC). */
+const tsOf = (v?: string): number => parseApiDate(v ?? null)?.getTime() ?? 0;
 
 /**
  * Inventory dashboard metrics — all derived from the live products / sales /
@@ -112,7 +115,7 @@ export const buildInventoryOverview = (
     const activity: InvActivity[] = [];
     const recentSales = [...sales]
         .filter(s => !!s.timestamp)
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .sort((a, b) => tsOf(b.timestamp) - tsOf(a.timestamp))
         .slice(0, 25);
     for (const s of recentSales) {
         for (const item of s.cart || []) {
@@ -148,7 +151,7 @@ export const buildInventoryOverview = (
             }
         }
     }
-    activity.sort((a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime());
+    activity.sort((a, b) => tsOf(b.ts) - tsOf(a.ts));
 
     // Top mover by units sold (recent sales).
     const moverTally = new Map<string, number>();

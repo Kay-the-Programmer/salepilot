@@ -8,6 +8,7 @@
  * render. The conversational view is what actually calls the AI.
  */
 import { api } from '../../services/api';
+import { parseApiDate } from '../../components/crm/crmModel';
 import type { Product, Sale, Customer, StoreSettings } from '../../types';
 
 export interface CurrencyContext {
@@ -112,7 +113,8 @@ function buildSalesAlert(sales: Sale[], c: CurrencyContext): InsightCard {
   let todayCount = 0;
   let lwTotal = 0;
   for (const s of sales) {
-    const t = new Date(s.timestamp);
+    const t = parseApiDate(s.timestamp);
+    if (!t) continue;
     if (sameDay(t, now)) {
       todayTotal += s.total || 0;
       todayCount += 1;
@@ -156,7 +158,8 @@ function buildInventoryTip(products: Product[], sales: Sale[], settings: StoreSe
   const weekAgo = Date.now() - 7 * DAY_MS;
   const velocity = new Map<string, number>();
   for (const s of sales) {
-    if (new Date(s.timestamp).getTime() < weekAgo) continue;
+    const st = parseApiDate(s.timestamp);
+    if (!st || st.getTime() < weekAgo) continue;
     for (const item of s.cart || []) {
       velocity.set(item.productId, (velocity.get(item.productId) || 0) + (item.quantity || 0));
     }
@@ -198,9 +201,10 @@ function buildInventoryTip(products: Product[], sales: Sale[], settings: StoreSe
 
 function buildCustomerNote(customers: Customer[], sales: Sale[], c: CurrencyContext): InsightCard {
   const monthAgo = Date.now() - 30 * DAY_MS;
-  const newThisMonth = customers.filter(
-    (cu) => cu.createdAt && new Date(cu.createdAt).getTime() >= monthAgo,
-  ).length;
+  const newThisMonth = customers.filter((cu) => {
+    const d = parseApiDate(cu.createdAt);
+    return !!d && d.getTime() >= monthAgo;
+  }).length;
 
   // Top customer by spend.
   const spend = new Map<string, number>();
@@ -247,7 +251,8 @@ function buildSummary(
   let todayTotal = 0;
   let todayCount = 0;
   for (const s of sales) {
-    if (sameDay(new Date(s.timestamp), now)) {
+    const d = parseApiDate(s.timestamp);
+    if (d && sameDay(d, now)) {
       todayTotal += s.total || 0;
       todayCount += 1;
     }
@@ -255,9 +260,10 @@ function buildSummary(
   const lowStockCount = products.filter(
     (p) => p.status !== 'archived' && (p.stock ?? 0) <= (p.reorderPoint ?? defaultReorder),
   ).length;
-  const newThisMonth = customers.filter(
-    (cu) => cu.createdAt && new Date(cu.createdAt).getTime() >= Date.now() - 30 * DAY_MS,
-  ).length;
+  const newThisMonth = customers.filter((cu) => {
+    const d = parseApiDate(cu.createdAt);
+    return !!d && d.getTime() >= Date.now() - 30 * DAY_MS;
+  }).length;
 
   const parts: string[] = [];
   parts.push(

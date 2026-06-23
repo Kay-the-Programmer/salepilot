@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Supplier, Product, PurchaseOrder, SupplierInvoice, StoreSettings } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
-import { num, formatMoney, formatDate } from '../crm/crmModel';
+import { num, formatMoney, formatDate, parseApiDate } from '../crm/crmModel';
 import { OPEN_STATUSES, poStatus } from './procureModel';
 
 interface ProcureSupplierProfileProps {
@@ -47,7 +47,7 @@ export const ProcureSupplierProfile: React.FC<ProcureSupplierProfileProps> = ({
             const bal = Math.max(0, num(inv.amount) - num(inv.amountPaid));
             if (inv.status === 'paid' || bal <= 0) continue;
             payable += bal;
-            const due = inv.dueDate ? new Date(inv.dueDate).getTime() : 0;
+            const due = inv.dueDate ? (parseApiDate(inv.dueDate)?.getTime() ?? 0) : 0;
             if (inv.status === 'overdue' || (due && due < Date.now())) overdue += bal;
         }
 
@@ -56,7 +56,7 @@ export const ProcureSupplierProfile: React.FC<ProcureSupplierProfileProps> = ({
                 const ao = OPEN_STATUSES.includes(a.status) ? 0 : 1;
                 const bo = OPEN_STATUSES.includes(b.status) ? 0 : 1;
                 if (ao !== bo) return ao - bo;
-                return (new Date(b.createdAt).getTime() || 0) - (new Date(a.createdAt).getTime() || 0);
+                return (parseApiDate(b.createdAt)?.getTime() ?? 0) - (parseApiDate(a.createdAt)?.getTime() ?? 0);
             })
             .slice(0, 4);
 

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { Account, JournalEntry, Sale, Expense, SupplierInvoice, StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
+import { parseApiDate } from '../../components/crm/crmModel';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
 import './accounting.css';
 
@@ -30,6 +31,14 @@ const DONUT_COLORS = ['#008060', '#ffa535', '#56566d', '#ba1a1a', '#75d9b3', '#8
 
 const sameMonth = (d: Date, y: number, m: number) => d.getFullYear() === y && d.getMonth() === m;
 
+/** UTC-safe timestamp helpers (backend naive strings = server-local = UTC). */
+const tsOf = (v?: string): number => parseApiDate(v ?? null)?.getTime() ?? 0;
+const inMonth = (v: string | undefined, y: number, m: number): boolean => {
+  const d = parseApiDate(v ?? null);
+  return !!d && sameMonth(d, y, m);
+};
+const fmtLocalDate = (v?: string): string => parseApiDate(v ?? null)?.toLocaleDateString() ?? '';
+
 const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries, sales, expenses, supplierInvoices, storeSettings, onSaveExpense }) => {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('dashboard');
@@ -44,8 +53,8 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
     const now = new Date();
     const months = period === 'quarterly' ? 3 : 1;
     const start = new Date(now.getFullYear(), now.getMonth() - (months - 1), 1).getTime();
-    const revenue = sales.filter((s) => new Date(s.timestamp).getTime() >= start).reduce((a, s) => a + (s.total || 0), 0);
-    const exp = expenses.filter((e) => new Date(e.date).getTime() >= start).reduce((a, e) => a + (e.amount || 0), 0);
+    const revenue = sales.filter((s) => tsOf(s.timestamp) >= start).reduce((a, s) => a + (s.total || 0), 0);
+    const exp = expenses.filter((e) => tsOf(e.date) >= start).reduce((a, e) => a + (e.amount || 0), 0);
     const sum = (t: Account['type']) => accounts.filter((a) => a.type === t).reduce((a, x) => a + (x.balance || 0), 0);
     const totalAssets = sum('asset');
     const totalLiabilities = sum('liability');
@@ -76,8 +85,8 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const y = d.getFullYear(), m = d.getMonth();
-      const income = sales.filter((s) => sameMonth(new Date(s.timestamp), y, m)).reduce((a, s) => a + (s.total || 0), 0);
-      const expense = expenses.filter((e) => sameMonth(new Date(e.date), y, m)).reduce((a, e) => a + (e.amount || 0), 0);
+      const income = sales.filter((s) => inMonth(s.timestamp, y, m)).reduce((a, s) => a + (s.total || 0), 0);
+      const expense = expenses.filter((e) => inMonth(e.date, y, m)).reduce((a, e) => a + (e.amount || 0), 0);
       out.push({ label: MONTHS[m], income, expense });
     }
     return out;
@@ -90,15 +99,16 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
       .map((inv) => ({ inv, due: (inv.amount || 0) - (inv.amountPaid || 0) }))
       .filter((x) => x.due > 0.01 && x.inv.status !== 'paid')
       .map((x) => {
-        const days = Math.round((new Date(x.inv.dueDate).getTime() - now) / 86400000);
-        return { ...x, days, overdue: days < 0 || x.inv.status === 'overdue' };
+        const dueTs = parseApiDate(x.inv.dueDate)?.getTime() ?? null;
+        const days = dueTs !== null ? Math.round((dueTs - now) / 86400000) : 9999;
+        return { ...x, days, overdue: (dueTs !== null && days < 0) || x.inv.status === 'overdue' };
       })
       .sort((a, b) => a.days - b.days)
       .slice(0, 4);
   }, [supplierInvoices]);
 
   const recentLedger = useMemo(
-    () => [...journalEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5),
+    () => [...journalEntries].sort((a, b) => tsOf(b.date) - tsOf(a.date)).slice(0, 5),
     [journalEntries],
   );
   const entryAmount = (e: JournalEntry) => e.lines.filter((l) => l.type === 'debit').reduce((a, l) => a + l.amount, 0);
@@ -107,7 +117,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
     const now = new Date();
     let debit = 0, credit = 0;
     journalEntries.forEach((e) => {
-      if (sameMonth(new Date(e.date), now.getFullYear(), now.getMonth())) {
+      if (inMonth(e.date, now.getFullYear(), now.getMonth())) {
         e.lines.forEach((l) => { if (l.type === 'debit') debit += l.amount; else credit += l.amount; });
       }
     });
@@ -122,7 +132,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
   const expenseTotal = expenseByCategory.reduce((a, c) => a + c.value, 0);
   const monthExpense = useMemo(() => {
     const now = new Date();
-    return expenses.filter((e) => sameMonth(new Date(e.date), now.getFullYear(), now.getMonth())).reduce((a, e) => a + (e.amount || 0), 0);
+    return expenses.filter((e) => inMonth(e.date, now.getFullYear(), now.getMonth())).reduce((a, e) => a + (e.amount || 0), 0);
   }, [expenses]);
 
   const byType = (t: Account['type']) => accounts.filter((a) => a.type === t).filter((a) => Math.abs(a.balance) > 0.001);
@@ -244,7 +254,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
                 <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span> New Entry
               </button>
             </div>
-            <LedgerTable entries={[...journalEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())} fmt={fmt} />
+            <LedgerTable entries={[...journalEntries].sort((a, b) => tsOf(b.date) - tsOf(a.date))} fmt={fmt} />
           </div>
         )}
 
@@ -298,12 +308,12 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
                 <p className="p-6 text-center text-sm m3-text-on-surface-variant">No expenses yet.</p>
               ) : (
                 <div className="divide-y" style={{ borderColor: 'var(--m3-outline-variant)' }}>
-                  {[...expenses].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 8).map((e) => (
+                  {[...expenses].sort((a, b) => tsOf(b.date) - tsOf(a.date)).slice(0, 8).map((e) => (
                     <div key={e.id} className="flex items-center gap-3 p-4">
                       <span className="w-10 h-10 rounded-lg m3-bg-surface-high flex items-center justify-center shrink-0"><span className="material-symbols-outlined m3-text-on-surface-variant" style={{ fontSize: 20 }}>receipt</span></span>
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold m3-text-on-surface truncate">{e.description}</p>
-                        <p className="text-[11px] m3-text-on-surface-variant">{new Date(e.date).toLocaleDateString()}</p>
+                        <p className="text-[11px] m3-text-on-surface-variant">{fmtLocalDate(e.date)}</p>
                       </div>
                       <div className="flex items-center gap-2">
                         {e.category && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full m3-bg-tertiary-fixed m3-text-tertiary">{e.category}</span>}
@@ -406,7 +416,7 @@ const LedgerCard: React.FC<{ title: string; entries: JournalEntry[]; fmt: (n: nu
           <div key={e.id} className="flex items-center gap-3 py-3">
             <div className="min-w-0 flex-1">
               <p className="text-sm font-medium m3-text-on-surface truncate">{e.description}</p>
-              <p className="text-[11px] m3-text-on-surface-variant">{new Date(e.date).toLocaleDateString()} · {e.reference || e.source?.type}</p>
+              <p className="text-[11px] m3-text-on-surface-variant">{fmtLocalDate(e.date)} · {e.reference || e.source?.type}</p>
             </div>
             {e.source?.type && <span className="text-[10px] font-medium px-2 py-0.5 rounded-full m3-bg-tertiary-fixed m3-text-tertiary capitalize">{e.source.type}</span>}
             <span className="text-sm font-bold m3-text-on-surface">{fmt(entryAmount(e))}</span>
@@ -438,7 +448,7 @@ const LedgerTable: React.FC<{ entries: JournalEntry[]; fmt: (n: number) => strin
               <tbody>
                 {slice.map((e) => (
                   <tr key={e.id} className="border-t m3-border-outline-variant hover:m3-bg-surface-low transition-colors">
-                    <td className="px-4 py-3 m3-text-on-surface-variant whitespace-nowrap">{new Date(e.date).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 m3-text-on-surface-variant whitespace-nowrap">{fmtLocalDate(e.date)}</td>
                     <td className="px-4 py-3 m3-text-on-surface"><span className="font-medium">{e.description}</span>{e.reference && <span className="block text-[11px] m3-text-on-surface-variant">{e.reference}</span>}</td>
                     <td className="px-4 py-3 text-right m3-text-error">{debit(e) ? fmt(debit(e)) : '—'}</td>
                     <td className="px-4 py-3 text-right m3-text-primary">{credit(e) ? fmt(credit(e)) : '—'}</td>
@@ -508,7 +518,7 @@ function exportLedgerCSV(entries: JournalEntry[]) {
   entries.forEach((e) => {
     const d = e.lines.filter((l) => l.type === 'debit').reduce((a, l) => a + l.amount, 0);
     const c = e.lines.filter((l) => l.type === 'credit').reduce((a, l) => a + l.amount, 0);
-    rows.push([new Date(e.date).toLocaleDateString(), e.description, e.reference || '', e.source?.type || '', String(d), String(c)]);
+    rows.push([fmtLocalDate(e.date), e.description, e.reference || '', e.source?.type || '', String(d), String(c)]);
   });
   const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
   const blob = new Blob([csv], { type: 'text/csv' });

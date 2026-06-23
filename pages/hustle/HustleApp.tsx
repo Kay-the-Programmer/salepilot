@@ -1,11 +1,15 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import type { Sale, StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
+import { parseApiDate } from '../../components/crm/crmModel';
 import '../assistant/assistant.css';
 import './hustle.css';
+
+/** Parse a backend timestamp as UTC (naive strings are server-local = UTC on Render). */
+const tsOf = (v?: string): number => parseApiDate(v ?? null)?.getTime() ?? 0;
 
 const SKU = { sale: 'HUSTLE-QUICK', service: 'HUSTLE-SVC' } as const;
 const isHustleSku = (sku?: string) => !!sku && sku.startsWith('HUSTLE');
@@ -56,19 +60,23 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
         type: (i.sku === SKU.service ? 'service' : 'sale') as HType,
       })),
     );
-    return [...localEntries, ...fromSales].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return [...localEntries, ...fromSales].sort((a, b) => tsOf(b.date) - tsOf(a.date));
   }, [sales, localEntries]);
+
+  // Clear optimistic entries once the refreshed `sales` prop reflects them,
+  // so a completed hustle sale isn't counted twice (local + server copy).
+  useEffect(() => { setLocalEntries([]); }, [sales]);
 
   const metrics = useMemo(() => {
     const today = startOfDay().getTime();
     const weekAgo = today - 6 * DAY;
     const monthStart = new Date(); monthStart.setDate(1); monthStart.setHours(0, 0, 0, 0);
     const sum = (arr: Entry[]) => arr.reduce((a, e) => a + e.amount, 0);
-    const todayE = entries.filter((e) => new Date(e.date).getTime() >= today);
+    const todayE = entries.filter((e) => tsOf(e.date) >= today);
     return {
       today: sum(todayE), todayCount: todayE.length,
-      week: sum(entries.filter((e) => new Date(e.date).getTime() >= weekAgo)),
-      month: sum(entries.filter((e) => new Date(e.date).getTime() >= monthStart.getTime())),
+      week: sum(entries.filter((e) => tsOf(e.date) >= weekAgo)),
+      month: sum(entries.filter((e) => tsOf(e.date) >= monthStart.getTime())),
       all: sum(entries), allCount: entries.length,
       sales: sum(entries.filter((e) => e.type === 'sale')),
       services: sum(entries.filter((e) => e.type === 'service')),
@@ -80,7 +88,7 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     for (let i = 6; i >= 0; i--) {
       const d = startOfDay(new Date(Date.now() - i * DAY));
-      const total = entries.filter((e) => startOfDay(new Date(e.date)).getTime() === d.getTime()).reduce((a, e) => a + e.amount, 0);
+      const total = entries.filter((e) => { const pd = parseApiDate(e.date); return !!pd && startOfDay(pd).getTime() === d.getTime(); }).reduce((a, e) => a + e.amount, 0);
       out.push({ label: days[d.getDay()], total });
     }
     return out;
@@ -240,7 +248,7 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
                       {entries.slice(0, 10).map((e, i) => (
                         <div key={i} className="flex items-center gap-3 p-4">
                           <span className="w-9 h-9 rounded-lg m3-bg-surface-high flex items-center justify-center shrink-0"><span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 18 }}>{e.type === 'service' ? 'settings_accessibility' : 'shopping_bag'}</span></span>
-                          <div className="min-w-0 flex-1"><p className="text-sm font-medium m3-text-on-surface truncate">{e.name}</p><p className="text-[11px] m3-text-on-surface-variant">{new Date(e.date).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</p></div>
+                          <div className="min-w-0 flex-1"><p className="text-sm font-medium m3-text-on-surface truncate">{e.name}</p><p className="text-[11px] m3-text-on-surface-variant">{parseApiDate(e.date)?.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' }) ?? ''}</p></div>
                           <span className="text-sm font-bold m3-text-on-surface">{fmt(e.amount)}</span>
                         </div>
                       ))}

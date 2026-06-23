@@ -14,7 +14,7 @@ interface InventoryDashboardProps {
     onNotify: (msg: string) => void;
 }
 
-export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview, storeSettings, onAddItem, onViewItems, onViewAlerts, onGeneratePO, onNotify }) => {
+export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview, storeSettings, onAddItem, onViewItems, onViewAlerts, onGeneratePO }) => {
     const { totalValue, totalSkus, totalUnits, lowStockCount, criticalCount, activity, categories, topMover } = overview;
 
     return (
@@ -129,8 +129,8 @@ export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview
                                 ? `"${topMover.name}" is moving fast (${topMover.units} sold recently). Consider increasing stock levels.`
                                 : 'Record some sales to unlock stock recommendations.'}
                         </p>
-                        <button className="inv-insight__btn" type="button" onClick={() => (topMover ? onViewItems() : onNotify('No movement data yet.'))}>
-                            {topMover ? 'Review item' : 'Apply Strategy'}
+                        <button className="inv-insight__btn" type="button" onClick={onViewItems}>
+                            {topMover ? 'Review item' : 'View items'}
                         </button>
                     </div>
 
