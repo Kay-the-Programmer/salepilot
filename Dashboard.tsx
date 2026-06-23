@@ -1497,9 +1497,10 @@ export default function Dashboard() {
             return <Navigate to="/" replace />;
         }
         const crmSection = crmParts[2] === 'customers' ? 'customers'
-            : crmParts[2] === 'loyalty' ? 'loyalty'
-                : crmParts[2] === 'insights' ? 'insights'
-                    : 'dashboard';
+            : crmParts[2] === 'whatsapp' ? 'whatsapp'
+                : crmParts[2] === 'loyalty' ? 'loyalty'
+                    : crmParts[2] === 'insights' ? 'insights'
+                        : 'dashboard';
         return (
             <OnboardingProvider user={currentUser}>
                 <NotificationProvider user={currentUser}>

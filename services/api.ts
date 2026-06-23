@@ -33,6 +33,10 @@ if (!rawBase.endsWith('/api')) {
 }
 const BASE_URL = rawBase;
 
+/** The resolved API base (…/api). Exposed for building absolute backend URLs
+ *  such as the WhatsApp webhook callback shown in the connection settings. */
+export const API_BASE_URL = BASE_URL;
+
 
 // Storage key used by authService
 const CURRENT_USER_KEY = 'salePilotUser';

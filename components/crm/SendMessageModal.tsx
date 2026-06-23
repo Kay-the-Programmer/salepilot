@@ -9,11 +9,20 @@ interface SendMessageModalProps {
     storeName?: string;
     smsConfigured?: boolean;
     smsSandbox?: boolean;
+    smsEntitled?: boolean;
+    /** Server has Meta Cloud API credentials. */
+    whatsappConfigured?: boolean;
+    /** Store owner switched the WhatsApp integration on. */
+    whatsappEnabled?: boolean;
+    /** Store has the premium WhatsApp module unlocked. */
+    whatsappEntitled?: boolean;
+    /** Business number shown to customers, if known. */
+    whatsappNumber?: string | null;
     onClose: () => void;
-    onSent: (channel: 'sms' | 'email', body: string) => void;
+    onSent: (channel: Channel, body: string) => void;
 }
 
-type Channel = 'sms' | 'email';
+export type Channel = 'whatsapp' | 'sms' | 'email';
 
 const TEMPLATES: { id: string; label: string; body: (name: string, store: string) => string }[] = [
     { id: 'loyalty', label: 'Loyalty Reward', body: (n, s) => `Hi ${n}, as a valued member we've just added 500 bonus loyalty points to your account! Visit us soon to redeem. - ${s}` },
@@ -22,9 +31,27 @@ const TEMPLATES: { id: string; label: string; body: (name: string, store: string
     { id: 'birthday', label: 'Birthday Gift', body: (n, s) => `Happy Birthday ${n}! 🎂 Stop by today for a free gift with any purchase. Wishing you the best! - ${s}` },
 ];
 
-export const SendMessageModal: React.FC<SendMessageModalProps> = ({ customer, metrics, storeName = 'SalePilot Shop', smsConfigured = true, smsSandbox = false, onClose, onSent }) => {
+const CHANNELS: { id: Channel; label: string; icon: string }[] = [
+    { id: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
+    { id: 'sms', label: 'SMS', icon: 'sms' },
+    { id: 'email', label: 'Email', icon: 'mail' },
+];
+
+const SMS_LIMIT = 160;
+
+export const SendMessageModal: React.FC<SendMessageModalProps> = ({
+    customer, metrics, storeName = 'SalePilot Shop',
+    smsConfigured = true, smsSandbox = false, smsEntitled = true,
+    whatsappConfigured = false, whatsappEnabled = false, whatsappEntitled = false, whatsappNumber,
+    onClose, onSent,
+}) => {
     const firstName = useMemo(() => customer.name.trim().split(/\s+/)[0] || customer.name, [customer.name]);
-    const initialChannel: Channel = customer.phone ? 'sms' : 'email';
+
+    const waReady = !!customer.phone && whatsappConfigured && whatsappEnabled && whatsappEntitled;
+    const smsReadyChannel = !!customer.phone && smsConfigured && smsEntitled;
+    // Prefer the richest channel the customer can actually receive on.
+    const initialChannel: Channel = waReady ? 'whatsapp' : smsReadyChannel ? 'sms' : customer.phone ? 'whatsapp' : 'email';
+
     const [channel, setChannel] = useState<Channel>(initialChannel);
     const [body, setBody] = useState('');
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -44,19 +71,33 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({ customer, me
     };
 
     const personalized = body.replace(/\[Name\]/g, firstName);
-    const over = channel === 'sms' && personalized.length > 160;
-    const smsReady = channel === 'sms' && !!customer.phone && smsConfigured;
-    const canSend = personalized.trim().length > 0 && (channel === 'sms' ? smsReady : !!customer.email);
+    const over = channel === 'sms' && personalized.length > SMS_LIMIT;
 
-    const destination = channel === 'sms' ? customer.phone : customer.email;
+    const isReady = channel === 'whatsapp' ? waReady
+        : channel === 'sms' ? smsReadyChannel
+            : !!customer.email;
+    const canSend = personalized.trim().length > 0 && isReady;
+
+    const destination = channel === 'email' ? customer.email : customer.phone;
 
     // Contextual note under the channel selector.
-    const channelNote: { tone: 'info' | 'warn'; text: string } | null = channel === 'sms'
-        ? (!customer.phone ? { tone: 'warn', text: 'No phone number on file for this customer.' }
-            : !smsConfigured ? { tone: 'warn', text: 'SMS isn\'t configured on the server yet. Ask your admin to add Africa\'s Talking credentials.' }
-                : smsSandbox ? { tone: 'info', text: 'Sandbox mode — messages reach the Africa\'s Talking simulator, not real phones.' }
-                    : { tone: 'info', text: 'Sent over SMS via your business line.' })
-        : { tone: 'info', text: 'Email delivery isn\'t enabled yet — this composes the message only.' };
+    const channelNote: { tone: 'info' | 'warn'; text: string } | null = (() => {
+        if (channel === 'whatsapp') {
+            if (!customer.phone) return { tone: 'warn', text: 'No phone number on file for this customer.' };
+            if (!whatsappEntitled) return { tone: 'warn', text: 'WhatsApp messaging is a premium add-on. Unlock it from Subscription to message customers here.' };
+            if (!whatsappConfigured) return { tone: 'warn', text: 'WhatsApp isn\'t connected yet. Ask your admin to add Meta Cloud API credentials in WhatsApp Settings.' };
+            if (!whatsappEnabled) return { tone: 'warn', text: 'WhatsApp is connected but switched off. Turn it on in WhatsApp Settings.' };
+            return { tone: 'info', text: `Sent over WhatsApp Business${whatsappNumber ? ` from ${whatsappNumber}` : ''}. Free-form replies reach customers within 24h of their last message; outside that, only approved templates send.` };
+        }
+        if (channel === 'sms') {
+            if (!customer.phone) return { tone: 'warn', text: 'No phone number on file for this customer.' };
+            if (!smsEntitled) return { tone: 'warn', text: 'SMS messaging is a premium add-on. Unlock it from Subscription.' };
+            if (!smsConfigured) return { tone: 'warn', text: 'SMS isn\'t configured on the server yet. Ask your admin to add Africa\'s Talking credentials.' };
+            if (smsSandbox) return { tone: 'info', text: 'Sandbox mode — messages reach the Africa\'s Talking simulator, not real phones.' };
+            return { tone: 'info', text: 'Sent over SMS via your business line.' };
+        }
+        return { tone: 'info', text: 'Email delivery isn\'t enabled yet — this composes the message only.' };
+    })();
 
     return (
         <div className="crm-modal-backdrop" onClick={onClose}>
@@ -75,7 +116,7 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({ customer, me
                                 <Avatar name={customer.name} size={48} />
                                 <div>
                                     <p className="crm-recip__name">{customer.name}</p>
-                                    <p className="crm-recip__meta">{destination || (channel === 'sms' ? 'No phone on file' : 'No email on file')}</p>
+                                    <p className="crm-recip__meta">{destination || (channel === 'email' ? 'No email on file' : 'No phone on file')}</p>
                                 </div>
                             </div>
                             {metrics && (metrics.tier.id === 'gold' || metrics.tier.id === 'platinum') && (
@@ -87,13 +128,17 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({ customer, me
                     {/* Channel */}
                     <div className="crm-field">
                         <span className="crm-field__label">Channel</span>
-                        <div className="crm-channel">
-                            <button type="button" className={channel === 'sms' ? 'is-active' : ''} onClick={() => setChannel('sms')}>
-                                <Icon name="sms" size={20} fill={channel === 'sms' ? 1 : 0} /> SMS
-                            </button>
-                            <button type="button" className={channel === 'email' ? 'is-active' : ''} onClick={() => setChannel('email')}>
-                                <Icon name="mail" size={20} fill={channel === 'email' ? 1 : 0} /> Email
-                            </button>
+                        <div className="crm-channel crm-channel--3">
+                            {CHANNELS.map(ch => (
+                                <button
+                                    key={ch.id}
+                                    type="button"
+                                    className={`${channel === ch.id ? 'is-active' : ''}${ch.id === 'whatsapp' ? ' crm-channel--wa' : ''}`}
+                                    onClick={() => setChannel(ch.id)}
+                                >
+                                    <Icon name={ch.icon} size={20} fill={channel === ch.id ? 1 : 0} /> {ch.label}
+                                </button>
+                            ))}
                         </div>
                         {channelNote && (
                             <div className={`crm-channel-note crm-channel-note--${channelNote.tone}`}>
@@ -129,9 +174,13 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({ customer, me
                                 placeholder="Type your message here..."
                             />
                             <div className="crm-composer__foot">
-                                <span className="crm-composer__cap">{channel === 'sms' ? 'Sent from your business line' : 'Sent from your store email'}</span>
+                                <span className="crm-composer__cap">
+                                    {channel === 'whatsapp' ? 'Sent from your WhatsApp Business line'
+                                        : channel === 'sms' ? 'Sent from your business line'
+                                            : 'Sent from your store email'}
+                                </span>
                                 {channel === 'sms' && (
-                                    <span className={`crm-composer__count${over ? ' is-over' : ''}`}>{personalized.length} / 160</span>
+                                    <span className={`crm-composer__count${over ? ' is-over' : ''}`}>{personalized.length} / {SMS_LIMIT}</span>
                                 )}
                             </div>
                         </div>
@@ -146,7 +195,7 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({ customer, me
                         style={{ opacity: canSend ? 1 : 0.5, cursor: canSend ? 'pointer' : 'not-allowed', padding: 14 }}
                         onClick={() => canSend && onSent(channel, personalized)}
                     >
-                        Send Message <Icon name="send" size={20} />
+                        Send {channel === 'whatsapp' ? 'on WhatsApp' : channel === 'sms' ? 'SMS' : 'Email'} <Icon name="send" size={20} />
                     </button>
                 </div>
             </div>

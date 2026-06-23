@@ -516,6 +516,8 @@ export interface WhatsAppConfig {
     away_message?: string;
     display_phone_number?: string;
     greeting_message?: string;
+    /** Write-only Meta Cloud API token; the backend never echoes it back. */
+    access_token?: string;
 }
 
 export interface WhatsAppConversation {

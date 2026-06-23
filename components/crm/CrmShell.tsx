@@ -3,7 +3,7 @@ import { User } from '../../types';
 import { Icon, Avatar } from './CrmBits';
 import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
 
-export type CrmSection = 'dashboard' | 'customers' | 'loyalty' | 'insights';
+export type CrmSection = 'dashboard' | 'customers' | 'whatsapp' | 'loyalty' | 'insights';
 
 interface CrmShellProps {
     active: CrmSection;
@@ -19,6 +19,7 @@ interface CrmShellProps {
 const NAV: { id: CrmSection; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'customers', label: 'Customers', icon: 'group' },
+    { id: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
     { id: 'loyalty', label: 'Loyalty', icon: 'card_membership' },
     { id: 'insights', label: 'Insights', icon: 'analytics' },
 ];

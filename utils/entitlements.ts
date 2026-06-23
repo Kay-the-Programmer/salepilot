@@ -7,6 +7,7 @@ import { StoreSettings } from '../types';
  */
 export const MODULES = {
     SMS_MESSAGING: 'sms_messaging',
+    WHATSAPP_MESSAGING: 'whatsapp_messaging',
     TEAM_MEMBERS: 'team_members',
     AUTO_REORDER: 'auto_reorder',
     AI_ASSISTANT: 'ai_assistant',
@@ -17,6 +18,14 @@ export const MODULES = {
 } as const;
 
 export type ModuleId = typeof MODULES[keyof typeof MODULES];
+
+/**
+ * DEV OVERRIDE: WhatsApp messaging is free while the team builds/tests the CRM
+ * integration, so it never shows as a locked premium add-on. Defaults to FREE;
+ * set `VITE_WHATSAPP_FREE=false` (and `WHATSAPP_FREE=false` on the backend) to
+ * re-enable the paid add-on before charging for it.
+ */
+export const WHATSAPP_FREE = (import.meta.env?.VITE_WHATSAPP_FREE ?? 'true') !== 'false';
 
 /** User seats included for free (the owner). Extra seats need TEAM_MEMBERS. */
 export const FREE_SEATS = 1;

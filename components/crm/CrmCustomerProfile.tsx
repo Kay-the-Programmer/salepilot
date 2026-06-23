@@ -9,7 +9,8 @@ interface CrmCustomerProfileProps {
     storeSettings?: StoreSettings | null;
     config: LoyaltyConfig;
     canManage?: boolean;
-    smsEntitled?: boolean;
+    /** True when SMS or WhatsApp is unlocked — enables the "Send Message" action. */
+    messagingEntitled?: boolean;
     onBack: () => void;
     onEdit: () => void;
     onMessage: () => void;
@@ -24,7 +25,7 @@ const statusPill = (s: Sale) => {
     return <span className="crm-pill-status crm-pill-status--due">UNPAID</span>;
 };
 
-export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics, sales, storeSettings, config, canManage, smsEntitled = false, onBack, onEdit, onMessage, onUpgrade, onRedeem, onDelete }) => {
+export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics, sales, storeSettings, config, canManage, messagingEntitled = false, onBack, onEdit, onMessage, onUpgrade, onRedeem, onDelete }) => {
     const c = metrics.customer;
 
     const ownSales = useMemo(
@@ -78,12 +79,12 @@ export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics,
                                 <button className="crm-btn crm-btn--filled" type="button" onClick={onEdit}>
                                     <Icon name="edit" size={20} /> Edit Profile
                                 </button>
-                                {smsEntitled ? (
+                                {messagingEntitled ? (
                                     <button className="crm-btn crm-btn--outline" type="button" onClick={onMessage}>
                                         <Icon name="send" size={20} /> Send Message
                                     </button>
                                 ) : (
-                                    <button className="crm-btn crm-btn--outline" type="button" onClick={onUpgrade} title="SMS messaging is a premium add-on — tap to unlock">
+                                    <button className="crm-btn crm-btn--outline" type="button" onClick={onUpgrade} title="Messaging (SMS / WhatsApp) is a premium add-on — tap to unlock">
                                         <Icon name="lock" size={20} /> Send Message
                                         <span className="crm-badge crm-badge--gold" style={{ marginLeft: 4, padding: '2px 8px' }}>Premium</span>
                                     </button>

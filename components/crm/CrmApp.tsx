@@ -7,14 +7,16 @@ import CrmCustomers from './CrmCustomers';
 import CrmCustomerProfile from './CrmCustomerProfile';
 import CrmLoyalty from './CrmLoyalty';
 import CrmInsights from './CrmInsights';
+import CrmWhatsApp from './CrmWhatsApp';
 import CrmRewardsSettings from './CrmRewardsSettings';
-import SendMessageModal from './SendMessageModal';
+import SendMessageModal, { Channel } from './SendMessageModal';
 import { Icon } from './CrmBits';
 import { useConfirm } from '../ui/useConfirm';
 import { buildOverview, LoyaltyConfig, RedemptionEntry, formatMoney, num } from './crmModel';
 import loyaltyService from './loyaltyService';
 import { smsService, SmsConfig } from '../../services/smsService';
-import { hasModule, MODULES } from '../../utils/entitlements';
+import { whatsappService, WhatsAppStatus } from '../../services/whatsappService';
+import { hasModule, MODULES, WHATSAPP_FREE } from '../../utils/entitlements';
 import './crm.css';
 
 interface CrmAppProps {
@@ -44,6 +46,10 @@ export const CrmApp: React.FC<CrmAppProps> = ({
 }) => {
     const storeId = user?.currentStoreId;
     const smsEntitled = hasModule(storeSettings, MODULES.SMS_MESSAGING);
+    // WHATSAPP_FREE: dev override so the add-on is unlocked while we build/test.
+    const whatsappEntitled = WHATSAPP_FREE || hasModule(storeSettings, MODULES.WHATSAPP_MESSAGING);
+    // Either channel unlocked means the customer "Send Message" action is usable.
+    const messagingEntitled = smsEntitled || whatsappEntitled;
 
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
@@ -56,6 +62,8 @@ export const CrmApp: React.FC<CrmAppProps> = ({
     const [config, setConfig] = useState<LoyaltyConfig>(() => loyaltyService.getConfig(storeId));
     const [ledger, setLedger] = useState<RedemptionEntry[]>(() => loyaltyService.getLedger(storeId));
     const [smsInfo, setSmsInfo] = useState<SmsConfig | null>(null);
+    const [waInfo, setWaInfo] = useState<WhatsAppStatus | null>(null);
+    const [waLoading, setWaLoading] = useState(true);
     const { confirm, confirmDialog } = useConfirm();
 
     // Discover whether the server can send SMS (best-effort; non-blocking).
@@ -64,6 +72,18 @@ export const CrmApp: React.FC<CrmAppProps> = ({
         smsService.getConfig().then(c => { if (active) setSmsInfo(c); }).catch(() => { if (active) setSmsInfo(null); });
         return () => { active = false; };
     }, []);
+
+    // Discover the store's WhatsApp connection state (best-effort; non-blocking).
+    // Fold the live entitlement into the status so a stale/absent backend flag
+    // never overrides what the store actually owns.
+    useEffect(() => {
+        let active = true;
+        whatsappService.getStatus()
+            .then(s => { if (active) setWaInfo({ ...s, entitled: s?.entitled ?? whatsappEntitled }); })
+            .catch(() => { if (active) setWaInfo({ configured: false, enabled: false, entitled: whatsappEntitled }); })
+            .finally(() => { if (active) setWaLoading(false); });
+        return () => { active = false; };
+    }, [whatsappEntitled]);
 
     // Reload loyalty state when the active store changes.
     useEffect(() => {
@@ -148,7 +168,7 @@ export const CrmApp: React.FC<CrmAppProps> = ({
         notify(`Redeemed ${points.toLocaleString()} pts → ${formatMoney(value, storeSettings)} store credit.`);
     };
 
-    const handleSent = async (channel: 'sms' | 'email', body: string) => {
+    const handleSent = async (channel: Channel, body: string) => {
         const target = messageTarget;
         setMessageTarget(null);
         if (!target) return;
@@ -158,8 +178,23 @@ export const CrmApp: React.FC<CrmAppProps> = ({
             return;
         }
 
-        // SMS via Africa's Talking (backend).
         if (!target.phone) { notify(`No phone number on file for ${target.name}.`); return; }
+
+        if (channel === 'whatsapp') {
+            // WhatsApp Business via the Meta Cloud API (backend).
+            notify(`Sending WhatsApp to ${target.name}…`);
+            try {
+                const res = await whatsappService.send({ to: target.phone, message: body, customerId: target.id });
+                notify(res.success
+                    ? `WhatsApp message sent to ${target.name}.`
+                    : `WhatsApp not delivered: ${res.status || res.message || 'failed'}.`);
+            } catch (err: any) {
+                notify(err?.message || 'Failed to send WhatsApp message.');
+            }
+            return;
+        }
+
+        // SMS via Africa's Talking (backend).
         notify(`Sending SMS to ${target.name}…`);
         try {
             const res = await smsService.send({ to: target.phone, message: body, customerId: target.id });
@@ -191,7 +226,7 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                 storeSettings={storeSettings}
                 config={config}
                 canManage={canManage}
-                smsEntitled={smsEntitled}
+                messagingEntitled={messagingEntitled}
                 onBack={() => setSelectedId(null)}
                 onEdit={() => openEdit(selected.customer)}
                 onMessage={() => setMessageTarget(selected.customer)}
@@ -209,6 +244,19 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                 onSearch={setSearch}
                 onOpenCustomer={openCustomer}
                 onAddCustomer={openAdd}
+            />
+        );
+    } else if (section === 'whatsapp') {
+        content = (
+            <CrmWhatsApp
+                status={waInfo}
+                statusLoading={waLoading}
+                customers={customers}
+                storeSettings={storeSettings}
+                storeName={storeSettings?.name}
+                storeId={storeId}
+                onUpgrade={onUpgrade}
+                onNotify={notify}
             />
         );
     } else if (section === 'loyalty') {
@@ -273,6 +321,11 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                     storeName={storeSettings?.name}
                     smsConfigured={smsInfo?.configured ?? true}
                     smsSandbox={smsInfo?.sandbox ?? false}
+                    smsEntitled={smsEntitled}
+                    whatsappConfigured={waInfo?.configured ?? false}
+                    whatsappEnabled={waInfo?.enabled ?? false}
+                    whatsappEntitled={whatsappEntitled}
+                    whatsappNumber={waInfo?.displayPhoneNumber}
                     onClose={() => setMessageTarget(null)}
                     onSent={handleSent}
                 />
