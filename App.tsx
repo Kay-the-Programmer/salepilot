@@ -17,6 +17,7 @@ const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
+const TermsOfServicePage = lazy(() => import('@/pages/TermsOfServicePage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -49,6 +50,7 @@ export default function App() {
                             <Routes>
                                 {/* Default route starts at Login/Dashboard */}
                                 <Route path="/privacy" element={<PrivacyPolicyPage />} />
+                                <Route path="/terms" element={<TermsOfServicePage />} />
                                 <Route
                                     path="/"
                                     element={<Dashboard />}

@@ -126,12 +126,20 @@ const PrivacyPolicyPage: React.FC = () => {
                                     <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-wider mb-1">Still have questions?</h4>
                                     <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">Our support team is here to help.</p>
                                 </div>
-                                <button 
-                                    onClick={() => navigate('/support')}
-                                    className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:translate-y-[-2px] transition-all shadow-xl active:scale-95"
-                                >
-                                    Contact Support
-                                </button>
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => navigate('/terms')}
+                                        className="px-8 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl font-black uppercase tracking-widest text-xs hover:translate-y-[-2px] transition-all shadow-xl active:scale-95"
+                                    >
+                                        Terms of Service
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/support')}
+                                        className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:translate-y-[-2px] transition-all shadow-xl active:scale-95"
+                                    >
+                                        Contact Support
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
