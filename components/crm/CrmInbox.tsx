@@ -12,6 +12,8 @@ interface CrmInboxProps {
     onNotify: (msg: string) => void;
     /** Rendered inside the WhatsApp hub — drop the page <main> wrapper + header. */
     embedded?: boolean;
+    /** When provided (store admins), the "not connected" card offers a Connect shortcut. */
+    onConnect?: () => void;
 }
 
 const clock = (iso?: string) => {
@@ -26,7 +28,7 @@ const clock = (iso?: string) => {
  * open thread every 4s, so inbound replies (delivered by the backend webhook)
  * surface without a manual refresh.
  */
-export const CrmInbox: React.FC<CrmInboxProps> = ({ status, statusLoading, onUpgrade, onNotify, embedded }) => {
+export const CrmInbox: React.FC<CrmInboxProps> = ({ status, statusLoading, onUpgrade, onNotify, embedded, onConnect }) => {
     const ready = !!status?.entitled && !!status?.configured && !!status?.enabled;
 
     const [conversations, setConversations] = useState<WhatsAppConversation[]>([]);
@@ -149,7 +151,16 @@ export const CrmInbox: React.FC<CrmInboxProps> = ({ status, statusLoading, onUpg
                 <div className="crm-empty" style={{ padding: '48px 16px' }}>
                     <Icon name="link_off" size={40} />
                     <p className="crm-empty__title">WhatsApp isn't connected yet</p>
-                    <p className="crm-empty__text">Ask your admin to add the Meta Cloud API credentials in WhatsApp Settings, then your conversations will appear here.</p>
+                    <p className="crm-empty__text">
+                        {onConnect
+                            ? 'Add your Meta Cloud API credentials to start receiving and replying to customer chats here.'
+                            : 'Ask a store admin to add the Meta Cloud API credentials, then your conversations will appear here.'}
+                    </p>
+                    {onConnect && (
+                        <button type="button" className="crm-btn crm-btn--primary" onClick={onConnect} style={{ marginTop: 8 }}>
+                            <Icon name="link" size={18} /> Connect WhatsApp
+                        </button>
+                    )}
                 </div>
             </div>
         );

@@ -20,7 +20,8 @@ implemented — the frontend in this repo and the backend in `s-back` (see
 | Service wrapper | `services/whatsappService.ts` |
 | Entitlement module `whatsapp_messaging` | `utils/entitlements.ts` |
 | WhatsApp send channel (alongside SMS / Email) | `components/crm/SendMessageModal.tsx` |
-| **WhatsApp** nav tab → hub with **Chats / New Message / Broadcast / Templates** | `components/crm/CrmWhatsApp.tsx` (+ `CrmInbox.tsx` embedded as Chats, `whatsappTemplates.ts`) |
+| **WhatsApp** nav tab → hub with **Chats / New Message / Broadcast / Templates / Connect** | `components/crm/CrmWhatsApp.tsx` (+ `CrmInbox.tsx` embedded as Chats, `whatsappTemplates.ts`, `CrmWhatsAppConnect.tsx`) |
+| In-CRM Cloud API connection (store admins) | `components/crm/CrmWhatsAppConnect.tsx` → `PUT /whatsapp/config` |
 | Wiring (status fetch, send, route) | `components/crm/CrmApp.tsx`, `Dashboard.tsx` |
 | Channel-agnostic "Send Message" gate | `components/crm/CrmCustomerProfile.tsx` |
 
@@ -141,6 +142,7 @@ Full plan bundles it.
 | `/status` + `/messages` routes | `src/api/whatsapp.routes.ts` |
 | `updateMessageStatus` (delivery ticks) | `src/services/whatsapp.service.ts` |
 | Webhook `statuses[]` handling (sent→delivered→read) | `src/controllers/whatsapp.controller.ts` |
+| Webhook **X-Hub-Signature-256** validation (`WHATSAPP_APP_SECRET`) + raw-body capture | `src/controllers/whatsapp.controller.ts`, `src/index.ts` |
 | `display_phone_number` column + idempotent migration | `src/init_db.ts` |
 
 Reused as-is from the existing super-admin support desk: the signed inbound

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Customer, Sale, StoreSettings, User } from '../../types';
 import CrmCustomerForm from './CrmCustomerForm';
 import { CrmShell, CrmSection } from './CrmShell';
@@ -75,15 +75,17 @@ export const CrmApp: React.FC<CrmAppProps> = ({
 
     // Discover the store's WhatsApp connection state (best-effort; non-blocking).
     // Fold the live entitlement into the status so a stale/absent backend flag
-    // never overrides what the store actually owns.
-    useEffect(() => {
-        let active = true;
+    // never overrides what the store actually owns. Exposed as a callback so the
+    // Connect screen can refresh the badge right after saving credentials.
+    const loadWaStatus = useCallback(() => {
+        setWaLoading(true);
         whatsappService.getStatus()
-            .then(s => { if (active) setWaInfo({ ...s, entitled: s?.entitled ?? whatsappEntitled }); })
-            .catch(() => { if (active) setWaInfo({ configured: false, enabled: false, entitled: whatsappEntitled }); })
-            .finally(() => { if (active) setWaLoading(false); });
-        return () => { active = false; };
+            .then(s => setWaInfo({ ...s, entitled: s?.entitled ?? whatsappEntitled }))
+            .catch(() => setWaInfo({ configured: false, enabled: false, entitled: whatsappEntitled }))
+            .finally(() => setWaLoading(false));
     }, [whatsappEntitled]);
+
+    useEffect(() => { loadWaStatus(); }, [loadWaStatus]);
 
     // Reload loyalty state when the active store changes.
     useEffect(() => {
@@ -255,8 +257,10 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                 storeSettings={storeSettings}
                 storeName={storeSettings?.name}
                 storeId={storeId}
+                canManage={canManage}
                 onUpgrade={onUpgrade}
                 onNotify={notify}
+                onRefreshStatus={loadWaStatus}
             />
         );
     } else if (section === 'loyalty') {

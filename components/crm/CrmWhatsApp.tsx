@@ -3,6 +3,7 @@ import { Customer, StoreSettings } from '../../types';
 import { Icon, Avatar } from './CrmBits';
 import { useConfirm } from '../ui/useConfirm';
 import CrmInbox from './CrmInbox';
+import CrmWhatsAppConnect from './CrmWhatsAppConnect';
 import { whatsappService, WhatsAppStatus } from '../../services/whatsappService';
 import whatsappTemplates, { WaTemplate, applyTemplate } from './whatsappTemplates';
 
@@ -13,17 +14,21 @@ interface CrmWhatsAppProps {
     storeSettings?: StoreSettings | null;
     storeName?: string;
     storeId?: string | null;
+    canManage?: boolean;
     onUpgrade: () => void;
     onNotify: (msg: string) => void;
+    /** Re-fetch the connection status (called after saving credentials). */
+    onRefreshStatus?: () => void;
 }
 
-type WaTool = 'chats' | 'compose' | 'broadcast' | 'templates';
+type WaTool = 'chats' | 'compose' | 'broadcast' | 'templates' | 'connect';
 
 const TOOLS: { id: WaTool; label: string; icon: string }[] = [
     { id: 'chats', label: 'Chats', icon: 'forum' },
     { id: 'compose', label: 'New Message', icon: 'edit_note' },
     { id: 'broadcast', label: 'Broadcast', icon: 'campaign' },
     { id: 'templates', label: 'Templates', icon: 'description' },
+    { id: 'connect', label: 'Connect', icon: 'settings' },
 ];
 
 const firstName = (n: string) => n.trim().split(/\s+/)[0] || n;
@@ -35,7 +40,7 @@ const firstName = (n: string) => n.trim().split(/\s+/)[0] || n;
  * gating + the 24h-window rules are enforced by the backend).
  */
 export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
-    status, statusLoading, customers, storeName, storeId, onUpgrade, onNotify,
+    status, statusLoading, customers, storeName, storeId, canManage = false, onUpgrade, onNotify, onRefreshStatus,
 }) => {
     const [tool, setTool] = useState<WaTool>('chats');
     // Carries a template body from the Templates tool into the Compose tool.
@@ -48,12 +53,18 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
         [customers],
     );
 
+    const goConnect = () => setTool('connect');
+
     // ── Why a tool can't send right now (null = good to go) ───────────────────
     const blockReason: { tone: 'info' | 'warn'; text: string; cta?: () => void; ctaLabel?: string } | null = (() => {
         if (statusLoading && !status) return { tone: 'info', text: 'Checking your WhatsApp connection…' };
         if (status && !status.entitled) return { tone: 'warn', text: 'WhatsApp messaging is a premium add-on. Unlock it to message customers.', cta: onUpgrade, ctaLabel: 'Unlock' };
-        if (status?.entitled && !status?.configured) return { tone: 'warn', text: 'WhatsApp isn\'t connected yet. Ask your admin to add Meta Cloud API credentials in WhatsApp Settings.' };
-        if (status?.configured && !status?.enabled) return { tone: 'warn', text: 'WhatsApp is connected but switched off. Turn it on in WhatsApp Settings.' };
+        if (status?.entitled && !status?.configured) return canManage
+            ? { tone: 'warn', text: 'WhatsApp isn\'t connected yet. Add your Meta Cloud API credentials to start messaging.', cta: goConnect, ctaLabel: 'Connect' }
+            : { tone: 'warn', text: 'WhatsApp isn\'t connected yet. Ask a store admin to connect it.' };
+        if (status?.configured && !status?.enabled) return canManage
+            ? { tone: 'warn', text: 'WhatsApp is connected but switched off. Turn it on to start messaging.', cta: goConnect, ctaLabel: 'Settings' }
+            : { tone: 'warn', text: 'WhatsApp is connected but switched off. Ask a store admin to turn it on.' };
         return null;
     })();
 
@@ -87,8 +98,8 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
                 ))}
             </div>
 
-            {/* Block banner (compose/broadcast only — Chats shows its own state) */}
-            {blockReason && tool !== 'chats' && (
+            {/* Block banner (hidden on Chats — it shows its own state — and on Connect, which is where you fix it) */}
+            {blockReason && tool !== 'chats' && tool !== 'connect' && (
                 <div className={`crm-channel-note crm-channel-note--${blockReason.tone} crm-wa-banner`}>
                     <Icon name={blockReason.tone === 'warn' ? 'warning' : 'info'} size={16} fill={1} />
                     <span>{blockReason.text}</span>
@@ -97,7 +108,14 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
             )}
 
             {tool === 'chats' && (
-                <CrmInbox status={status} statusLoading={statusLoading} onUpgrade={onUpgrade} onNotify={onNotify} embedded />
+                <CrmInbox
+                    status={status}
+                    statusLoading={statusLoading}
+                    onUpgrade={onUpgrade}
+                    onNotify={onNotify}
+                    onConnect={canManage ? goConnect : undefined}
+                    embedded
+                />
             )}
 
             {tool === 'compose' && (
@@ -128,6 +146,15 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
                     confirm={confirm}
                     onUse={(t) => { setPrefill(p => ({ body: t.body, n: (p?.n || 0) + 1 })); setTool('compose'); }}
                     onNotify={onNotify}
+                />
+            )}
+
+            {tool === 'connect' && (
+                <CrmWhatsAppConnect
+                    status={status}
+                    canManage={canManage}
+                    onNotify={onNotify}
+                    onSaved={onRefreshStatus}
                 />
             )}
 
