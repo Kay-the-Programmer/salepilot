@@ -899,20 +899,60 @@ textarea.crm-input { height: auto; min-height: 120px; padding: 14px 16px; line-h
 .dark .crm .crm-channel button.crm-channel--wa.is-active { background: #128c4b; }
 
 /* ============================================================
-   WhatsApp hub (Chats / New Message / Broadcast / Templates)
+   WhatsApp hub (Chats / Compose / Broadcast / Templates / Connect)
    ============================================================ */
-.crm-wa-head { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.crm-wa-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--c-radius-pill); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.crm-wa-head { flex-direction: row; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+.crm-wa-head__text { min-width: 0; }
+.crm-wa-status { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: var(--c-radius-pill); font-size: 12px; font-weight: 700; white-space: nowrap; flex-shrink: 0; }
 .crm-wa-status--on { background: rgba(18,140,75,0.12); color: #128c4b; }
 .crm-wa-status--off { background: var(--c-secondary-fixed); color: var(--c-on-secondary-fixed-variant); }
 .crm-wa-status--lock { background: var(--c-surface-variant); color: var(--c-on-surface-variant); }
 
-/* Tool switcher */
-.crm-wa-tabs { display: flex; max-width: 100%; overflow-x: auto; margin-bottom: 20px; scrollbar-width: none; }
-.crm-wa-tabs::-webkit-scrollbar { display: none; }
-.crm-wa-tabs button { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+/* Tool switcher — iOS-style segmented control: equal segments, no scroll. */
+.crm-wa-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+  padding: 4px;
+  margin-bottom: 20px;
+  background: var(--c-surface-container);
+  border-radius: 16px;
+}
+@media (min-width: 768px) { .crm-wa-tabs { max-width: 580px; } }
+.crm-wa-tab {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  min-width: 0; border: none; background: none; cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 600; letter-spacing: -0.01em; color: var(--c-on-surface-variant);
+  padding: 9px 6px; border-radius: 12px;
+  transition: background-color 0.2s var(--c-ease), color 0.2s var(--c-ease), box-shadow 0.2s var(--c-ease), transform 0.1s var(--c-ease);
+}
+.crm-wa-tab:active { transform: scale(0.96); }
+.crm-wa-tab.is-active { background: var(--c-surface-lowest); color: var(--c-primary); box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 0 0 0.5px rgba(0,0,0,0.04); }
+.crm-wa-tab__label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 .crm-wa-banner { margin: 0 0 16px; align-items: center; }
 .crm-wa-banner .crm-link { margin-left: auto; white-space: nowrap; }
+
+/* ── Mobile polish for the whole hub ─────────────────────────── */
+@media (max-width: 600px) {
+  /* Tighter page header so tools sit higher on small screens. */
+  .crm-wa .crm-pagehead { margin-bottom: 14px; }
+  .crm-wa .crm-pagehead__title { font-size: 22px; }
+  .crm-wa .crm-pagehead__sub { font-size: 13px; }
+  /* Segments stack icon over a compact label — 5 fit cleanly, no scroll. */
+  .crm-wa-tabs { gap: 2px; padding: 3px; border-radius: 14px; margin-bottom: 16px; }
+  .crm-wa-tab { flex-direction: column; gap: 3px; padding: 7px 2px; font-size: 10.5px; border-radius: 10px; }
+  /* Status chip → icon only, to keep the header on one tidy line. */
+  .crm-wa-status { padding: 6px; }
+  .crm-wa-status__label { display: none; }
+  /* Chats: size the inbox to the viewport minus the hub chrome (no double scroll). */
+  .crm-wa .crm-inbox { height: calc(100dvh - 252px); min-height: 320px; }
+  /* Compose/Broadcast: shorter customer list so the composer stays reachable. */
+  .crm-wa .crm-wa-picker { max-height: 40vh; }
+}
+
+/* Dark-mode active segment. */
+.dark .crm .crm-wa-tab.is-active { background: var(--c-surface-high); color: var(--c-primary-fixed); box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
 
 /* Compose / broadcast two-column layout */
 .crm-wa-compose { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }

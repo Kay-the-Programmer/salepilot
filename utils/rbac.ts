@@ -108,6 +108,9 @@ export const PAGE_ACCESS: Record<string, Role[]> = {
     // CRM
     'customers':                ['admin', 'staff'],
 
+    // Marketing (Facebook Pages suite)
+    'marketing':                ['admin'],
+
     // Finance & billing
     'accounting':               ['admin'],
     'subscription':             ['admin'],

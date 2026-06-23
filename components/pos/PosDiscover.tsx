@@ -31,6 +31,7 @@ const TINTS: Record<string, Tint> = {
     hustle: ['#f0a93c', '#d4820a'],
     assistant: ['#7b7bf0', '#4b4bc9'],
     crm: ['#e0728f', '#b83a66'],
+    marketing: ['#3b82f6', '#1e40af'],
     inv: ['#1fb0a0', '#0c6f66'],
     team: ['#5aa0f2', '#2f6fd0'],
     procure: ['#f0894b', '#d4630a'],
@@ -55,6 +56,7 @@ const TAGS: Record<string, 'New' | 'Popular'> = {
     assistant: 'Popular',
     crm: 'Popular',
     inv: 'New',
+    marketing: 'New',
 };
 
 const DESCRIPTIONS: Record<string, string> = {
@@ -73,6 +75,7 @@ const STANDALONE_APPS: AppDef[] = [
     { name: 'Hustle POS', page: 'hustle', route: 'hustle', desc: 'Fast amount-entry sales', iconName: 'bolt', requires: 'sales' },
     { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
     { name: 'CRM', page: 'crm', route: 'crm', desc: 'Customers, loyalty & insights', iconName: 'diversity_3', requires: 'customers' },
+    { name: 'Marketing Suite', page: 'marketing', route: 'marketing', desc: 'Facebook posts, comments & insights', iconName: 'campaign', requires: 'marketing' },
     { name: 'Inventory Manager', page: 'inv', route: 'inv', desc: 'Stock value, alerts & items', iconName: 'inventory_2', requires: 'inventory' },
     { name: 'User Manager', page: 'team', route: 'team', desc: 'Team members, roles & access', iconName: 'manage_accounts', requires: 'users' },
     { name: 'Procurement Hub', page: 'procure', route: 'procure', desc: 'Suppliers & purchase orders', iconName: 'local_shipping', requires: 'suppliers' },

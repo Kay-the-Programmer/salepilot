@@ -25,7 +25,7 @@ type WaTool = 'chats' | 'compose' | 'broadcast' | 'templates' | 'connect';
 
 const TOOLS: { id: WaTool; label: string; icon: string }[] = [
     { id: 'chats', label: 'Chats', icon: 'forum' },
-    { id: 'compose', label: 'New Message', icon: 'edit_note' },
+    { id: 'compose', label: 'Compose', icon: 'edit_note' },
     { id: 'broadcast', label: 'Broadcast', icon: 'campaign' },
     { id: 'templates', label: 'Templates', icon: 'description' },
     { id: 'connect', label: 'Connect', icon: 'settings' },
@@ -69,31 +69,32 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
     })();
 
     return (
-        <main className="crm-main crm-section-fade">
+        <main className="crm-main crm-section-fade crm-wa">
             <div className="crm-pagehead crm-wa-head">
-                <div>
+                <div className="crm-wa-head__text">
                     <p className="crm-pagehead__eyebrow">WhatsApp Business</p>
                     <h1 className="crm-pagehead__title">Messaging</h1>
                     <p className="crm-pagehead__sub">Chat, send and broadcast to your customers on WhatsApp{status?.displayPhoneNumber ? ` · ${status.displayPhoneNumber}` : ''}.</p>
                 </div>
                 <span className={`crm-wa-status crm-wa-status--${ready ? 'on' : status?.entitled === false ? 'lock' : 'off'}`}>
                     <Icon name={ready ? 'check_circle' : status?.entitled === false ? 'lock' : 'error'} size={16} fill={1} />
-                    {ready ? 'Connected' : status?.entitled === false ? 'Premium' : 'Not connected'}
+                    <span className="crm-wa-status__label">{ready ? 'Connected' : status?.entitled === false ? 'Premium' : 'Not connected'}</span>
                 </span>
             </div>
 
-            {/* Tool switcher */}
-            <div className="crm-seg-toggle crm-wa-tabs" role="tablist" aria-label="WhatsApp tools">
+            {/* Tool switcher — iOS-style segmented control */}
+            <div className="crm-wa-tabs" role="tablist" aria-label="WhatsApp tools">
                 {TOOLS.map(t => (
                     <button
                         key={t.id}
                         type="button"
                         role="tab"
                         aria-selected={tool === t.id}
-                        className={tool === t.id ? 'is-active' : ''}
+                        className={`crm-wa-tab${tool === t.id ? ' is-active' : ''}`}
                         onClick={() => setTool(t.id)}
                     >
-                        <Icon name={t.icon} size={18} fill={tool === t.id ? 1 : 0} /> {t.label}
+                        <Icon name={t.icon} size={20} fill={tool === t.id ? 1 : 0} />
+                        <span className="crm-wa-tab__label">{t.label}</span>
                     </button>
                 ))}
             </div>

@@ -8,6 +8,7 @@ import { StoreSettings } from '../types';
 export const MODULES = {
     SMS_MESSAGING: 'sms_messaging',
     WHATSAPP_MESSAGING: 'whatsapp_messaging',
+    SOCIAL_MARKETING: 'social_marketing',
     TEAM_MEMBERS: 'team_members',
     AUTO_REORDER: 'auto_reorder',
     AI_ASSISTANT: 'ai_assistant',
@@ -26,6 +27,13 @@ export type ModuleId = typeof MODULES[keyof typeof MODULES];
  * re-enable the paid add-on before charging for it.
  */
 export const WHATSAPP_FREE = (import.meta.env?.VITE_WHATSAPP_FREE ?? 'true') !== 'false';
+
+/**
+ * DEV OVERRIDE: Social Marketing (Facebook Pages) is free while the team builds/
+ * tests. Defaults to FREE; set `VITE_SOCIAL_FREE=false` (and `SOCIAL_FREE=false`
+ * on the backend) to re-enable the paid add-on.
+ */
+export const SOCIAL_FREE = (import.meta.env?.VITE_SOCIAL_FREE ?? 'true') !== 'false';
 
 /** User seats included for free (the owner). Extra seats need TEAM_MEMBERS. */
 export const FREE_SEATS = 1;

@@ -17,6 +17,7 @@ const PosShell = lazy(() => import('@/components/pos/PosShell'));
 const PosDashboard = lazy(() => import('@/components/pos/PosDashboard'));
 const PosDiscover = lazy(() => import('@/components/pos/PosDiscover'));
 const CrmApp = lazy(() => import('@/components/crm/CrmApp'));
+const MarketingApp = lazy(() => import('@/components/marketing/MarketingApp'));
 const DashboardApp = lazy(() => import('@/components/dash-app/DashboardApp'));
 const InventoryApp = lazy(() => import('@/components/inventory-app/InventoryApp'));
 const TeamApp = lazy(() => import('@/components/team-app/TeamApp'));
@@ -1519,6 +1520,32 @@ export default function Dashboard() {
                             onDeleteCustomer={handleDeleteCustomer}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Marketing Suite (/marketing) — Facebook Pages management ──
+    const marketingParts = location.pathname.split('/');
+    if (marketingParts[1] === 'marketing' && currentUser) {
+        const mktAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!mktAllowedPages.includes('marketing')) {
+            return <Navigate to="/" replace />;
+        }
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <MarketingApp
+                            user={currentUser}
+                            storeSettings={storeSettings}
+                            onUpgrade={() => navigate('/subscription')}
+                            onDiscover={() => navigate('/pos/discover')}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                            showSnackbar={showSnackbar}
                         />
                     </Suspense>
                 </NotificationProvider>
