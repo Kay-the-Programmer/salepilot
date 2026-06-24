@@ -7,6 +7,7 @@ import { api } from '../../services/api';
 import { formatLongDate as formatDate } from '../../utils/date';
 import type { BackendPlan, SubscriptionHistoryItem } from '../../types/subscription';
 import { logEvent } from '../../src/utils/analytics';
+import { upsellService } from '../../services/upsellService';
 import '../assistant/assistant.css';
 import './subscription.css';
 
@@ -157,6 +158,9 @@ const SubscriptionApp: React.FC = () => {
         const wasAddon = !!addonCheckout;
         showToast(wasAddon ? 'Payment successful! Your add-on is now active.' : 'Payment successful! Your subscription is now active.', 'success');
         logEvent('Subscription', wasAddon ? 'BuyAddon' : 'Subscribe', wasAddon ? addonCheckout?.label : planToPay?.name);
+        // Attribute an upsell conversion if any purchased module was clicked from
+        // an upsell earlier this session (emits upsell_convert).
+        if (wasAddon) upsellService.notePurchaseCompleted(addonCheckout?.moduleIds);
         setLoading(false);
         setIsPaymentModalOpen(false);
         setSelectedAddons(new Set());
