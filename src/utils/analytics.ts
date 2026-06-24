@@ -21,6 +21,17 @@ export const logEvent = (category: string, action: string, label?: string) => {
     }
 };
 
+/**
+ * GA4 custom event with structured params (the upsell engine needs
+ * `{ momentId, module, surface }`, which `logEvent`'s category/action/label
+ * shape can't carry). Safe no-op when GA is not configured.
+ */
+export const trackEvent = (name: string, params: Record<string, string | number | boolean>) => {
+    if (GOOGLE_ANALYTICS_ID) {
+        ReactGA.event(name, params);
+    }
+};
+
 export const logPageView = (path: string) => {
     if (GOOGLE_ANALYTICS_ID) {
         ReactGA.send({ hitType: "pageview", page: path });

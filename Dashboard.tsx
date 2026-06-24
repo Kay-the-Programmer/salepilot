@@ -85,6 +85,8 @@ import TourGuide from './components/TourGuide';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { logEvent } from './src/utils/analytics';
+import { useUpsellSync } from './contexts/UpsellContext';
+import { upsellService } from './services/upsellService';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -232,6 +234,26 @@ export default function Dashboard() {
 
     // Determine current "page" from URL
     const currentPage = location.pathname.substring(1) || 'reports';
+
+    // Suppress all proactive upsell while a sale is in progress (POS sale flow).
+    const isMidSale = (() => {
+        const seg = location.pathname.split('/')[1] || '';
+        return seg === 'sales' || seg === 'hustle' || location.pathname === '/pos';
+    })();
+
+    // Keep the contextual upsell engine's data snapshot in sync with the store.
+    // (A hook — runs before this component's many early returns, so every app
+    //  branch can read it via useUpsell.)
+    useUpsellSync({
+        currentUser,
+        storeSettings,
+        products,
+        customers,
+        sales,
+        users,
+        isMidSale,
+        storeCount: systemStores.length || 1,
+    });
 
     // Close mobile sidebar after navigation
     useEffect(() => {
@@ -534,6 +556,7 @@ export default function Dashboard() {
                 const exists = products.some(p => p.id === incoming.id);
                 if (!exists) {
                     setProducts(prev => [incoming, ...prev]);
+                    upsellService.recordManualAdd();
                     showSnackbar('Product added successfully!', 'success');
                     return incoming;
                 }
@@ -574,6 +597,7 @@ export default function Dashboard() {
                     setProducts(prev => prev.map(p => p.id === tempId ? tempProduct : p));
                 } else {
                     setProducts(prev => [tempProduct, ...prev]);
+                    upsellService.recordManualAdd();
                 }
                 // Persist to IndexedDB so details remain available after reload while offline
                 try { await dbService.put('products', tempProduct); } catch (_) { }
@@ -587,6 +611,7 @@ export default function Dashboard() {
                 } else {
                     // Add the new product to the top of the list
                     setProducts(prev => [savedProduct as Product, ...prev]);
+                    upsellService.recordManualAdd();
                 }
                 return savedProduct as Product;
             }
