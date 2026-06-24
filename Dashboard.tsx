@@ -18,6 +18,7 @@ const PosDashboard = lazy(() => import('@/components/pos/PosDashboard'));
 const PosDiscover = lazy(() => import('@/components/pos/PosDiscover'));
 const CrmApp = lazy(() => import('@/components/crm/CrmApp'));
 const MarketingApp = lazy(() => import('@/components/marketing/MarketingApp'));
+const OnlineStoreApp = lazy(() => import('@/components/shop/OnlineStoreApp'));
 const DashboardApp = lazy(() => import('@/components/dash-app/DashboardApp'));
 const InventoryApp = lazy(() => import('@/components/inventory-app/InventoryApp'));
 const TeamApp = lazy(() => import('@/components/team-app/TeamApp'));
@@ -1544,6 +1545,30 @@ export default function Dashboard() {
                             onUpgrade={() => navigate('/subscription')}
                             onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                            showSnackbar={showSnackbar}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Standalone Online Store app (/store) — storefront link, QR & catalog sharing ──
+    const storeParts = location.pathname.split('/');
+    if (storeParts[1] === 'store' && currentUser) {
+        const storeAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!storeAllowedPages.includes('online-store')) {
+            return <Navigate to="/" replace />;
+        }
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <OnlineStoreApp
+                            user={currentUser}
+                            storeSettings={storeSettings}
+                            onDiscover={() => navigate('/pos/discover')}
                             onLogout={handleLogout}
                             showSnackbar={showSnackbar}
                         />

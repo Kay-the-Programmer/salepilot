@@ -57,48 +57,48 @@ const ShopLayout: React.FC = () => {
     }
 
     if (!shopInfo) {
-        return <div className="min-h-screen flex items-center justify-center bg-mesh-light font-google">Store not found</div>;
+        return <div className="min-h-screen flex items-center justify-center bg-background text-brand-text">Store not found</div>;
     }
 
     // Check if store is enabled
     if (shopInfo.settings.isOnlineStoreEnabled === false) { // Explicit check as undefined should default to true or be handled safely
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-mesh-light p-4 text-center font-google">
-                <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-6">
-                    <HiOutlineShoppingBag className="w-8 h-8 text-gray-400" />
+            <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4 text-center">
+                <div className="w-16 h-16 bg-surface-variant rounded-full flex items-center justify-center mb-6">
+                    <HiOutlineShoppingBag className="w-8 h-8 text-brand-text-muted" />
                 </div>
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">{shopInfo.settings.name || shopInfo.name} is currently offline</h1>
-                <p className="text-gray-500 max-w-md">The store is currently undergoing maintenance or is temporarily closed. Please check back later.</p>
+                <h1 className="text-2xl font-extrabold tracking-tight text-brand-text mb-2">{shopInfo.settings.name || shopInfo.name} is currently offline</h1>
+                <p className="text-brand-text-muted max-w-md">The store is currently undergoing maintenance or is temporarily closed. Please check back later.</p>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen flex flex-col font-google bg-mesh-light text-slate-900">
+        <div className="min-h-screen flex flex-col bg-background text-brand-text">
             {/* Header */}
-            <header className="liquid-glass-header sticky top-0 z-50">
+            <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-sm border-b border-brand-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <Link to={`/shop/${storeId}`} className="flex items-center gap-2">
                         {/* Placeholder for Logo */}
-                        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
+                        <div className="w-8 h-8 bg-sp-green rounded-lg flex items-center justify-center text-white font-bold text-xl">
                             {shopInfo.settings.name ? shopInfo.settings.name.charAt(0) : 'S'}
                         </div>
-                        <h1 className="text-xl font-bold text-gray-900 truncate max-w-[200px] sm:max-w-md">
+                        <h1 className="text-xl font-extrabold tracking-tight text-brand-text truncate max-w-[200px] sm:max-w-md">
                             {shopInfo.settings.name || shopInfo.name}
                         </h1>
                     </Link>
 
                     <nav className="flex items-center gap-6">
-                        <Link to={`/shop/${storeId}`} className="text-gray-600 hover:text-indigo-600 hidden sm:block">Home</Link>
-                        <Link to={`/shop/${storeId}/products`} className="text-gray-600 hover:text-indigo-600 hidden sm:block">Catalog</Link>
+                        <Link to={`/shop/${storeId}`} className="text-brand-text-muted hover:text-sp-green font-medium hidden sm:block">Home</Link>
+                        <Link to={`/shop/${storeId}/products`} className="text-brand-text-muted hover:text-sp-green font-medium hidden sm:block">Catalog</Link>
 
                         <button
                             onClick={() => navigate(`/shop/${storeId}/cart`)}
-                            className="relative p-2 text-gray-600 hover:text-indigo-600 transition-colors"
+                            className="relative p-2 text-brand-text-muted hover:text-sp-green transition-colors"
                         >
                             <HiOutlineShoppingBag className="w-6 h-6" />
                             {cartCount > 0 && (
-                                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-600 rounded-full">
+                                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-sp-amber rounded-full">
                                     {cartCount}
                                 </span>
                             )}
@@ -116,10 +116,10 @@ const ShopLayout: React.FC = () => {
             <button
                 onClick={() => navigate(`/shop/${storeId}/cart`)}
                 className={`
-                    md:hidden fixed bottom-6 right-6 z-50 
-                    w-14 h-14 bg-indigo-600 text-white rounded-full 
-                    shadow-lg shadow-indigo-500/30 
-                    flex items-center justify-center 
+                    md:hidden fixed bottom-6 right-6 z-50
+                    w-14 h-14 bg-sp-green text-white rounded-full
+                    shadow-lg shadow-sp-green/30
+                    flex items-center justify-center
                     transition-all duration-300 transform active:scale-95
                     ${cartCount > 0 ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}
                 `}
@@ -128,7 +128,7 @@ const ShopLayout: React.FC = () => {
                 <div className="relative">
                     <HiOutlineShoppingBag className="w-6 h-6" />
                     {cartCount > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-indigo-600">
+                        <span className="absolute -top-2 -right-2 bg-sp-amber text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center border-2 border-sp-green">
                             {cartCount}
                         </span>
                     )}
@@ -136,30 +136,30 @@ const ShopLayout: React.FC = () => {
             </button>
 
             {/* Footer */}
-            <footer className="bg-gray-900 text-white mt-auto">
+            <footer className="bg-warm-900 text-white mt-auto">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div>
                         <h3 className="text-lg font-bold mb-4">{shopInfo.settings.name || shopInfo.name}</h3>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-white/60 text-sm">
                             {shopInfo.settings.address || 'Location not specified'}
                         </p>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-white/60 text-sm">
                             {shopInfo.settings.email}
                         </p>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-white/60 text-sm">
                             {shopInfo.settings.phone}
                         </p>
                     </div>
                     <div>
                         <h3 className="text-lg font-bold mb-4">Quick Links</h3>
-                        <ul className="space-y-2 text-sm text-gray-400">
+                        <ul className="space-y-2 text-sm text-white/60">
                             <li><Link to={`/shop/${storeId}`} className="hover:text-white">Home</Link></li>
                             <li><Link to={`/shop/${storeId}/products`} className="hover:text-white">All Products</Link></li>
                         </ul>
                     </div>
                     <div>
                         <h3 className="text-lg font-bold mb-4">Powered by SalePilot</h3>
-                        <p className="text-gray-400 text-sm">
+                        <p className="text-white/60 text-sm">
                             Simple, powerful POS & Inventory Management.
                         </p>
                     </div>

@@ -69,11 +69,11 @@ const ShopProductDetail: React.FC = () => {
     };
 
     return (
-        <div className="liquid-glass-card rounded-[2rem] border border-gray-100 overflow-hidden">
+        <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] border border-brand-border overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-6 md:p-8">
                 {/* Image Gallery */}
                 <div className="space-y-4">
-                    <div className="aspect-w-1 aspect-h-1 bg-gray-100 rounded-lg overflow-hidden relative h-96">
+                    <div className="aspect-w-1 aspect-h-1 bg-surface-variant rounded-lg overflow-hidden relative h-96">
                         {product.imageUrls && product.imageUrls.length > 0 ? (
                             <img
                                 src={buildAssetUrl(product.imageUrls[0])}
@@ -82,7 +82,7 @@ const ShopProductDetail: React.FC = () => {
                                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/600?text=No+Image' }}
                             />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <div className="w-full h-full flex items-center justify-center text-brand-text-muted">
                                 No Image
                             </div>
                         )}
@@ -91,8 +91,8 @@ const ShopProductDetail: React.FC = () => {
 
                 {/* Product Info */}
                 <div className="flex flex-col">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{product.name}</h1>
-                    <div className="flex items-center space-x-2 text-sm text-gray-500 mb-6">
+                    <h1 className="text-3xl font-bold text-brand-text mb-2">{product.name}</h1>
+                    <div className="flex items-center space-x-2 text-sm text-brand-text-muted mb-6">
                         <span>{product.brand}</span>
                         {product.sku && (
                             <>
@@ -103,15 +103,15 @@ const ShopProductDetail: React.FC = () => {
                     </div>
 
                     <div className="mb-6">
-                        <p className="text-4xl font-bold text-indigo-600">{formatPrice(product.price)}</p>
+                        <p className="text-4xl font-bold text-sp-green">{formatPrice(product.price)}</p>
                     </div>
 
-                    <div className="prose prose-sm text-gray-500 mb-8">
+                    <div className="prose prose-sm text-brand-text-muted mb-8">
                         <p>{product.description || 'No description available for this product.'}</p>
                     </div>
 
                     {/* Stock & Add to Cart */}
-                    <div className="mt-auto border-t border-gray-100 pt-6">
+                    <div className="mt-auto border-t border-brand-border pt-6">
                         {product.stock > 0 ? (
                             <div className="space-y-4">
                                 <div className="flex items-center space-x-2 text-green-600 font-medium">
@@ -120,10 +120,10 @@ const ShopProductDetail: React.FC = () => {
                                 </div>
 
                                 <div className="flex items-center gap-4">
-                                    <div className="flex items-center border border-gray-300 rounded-md">
+                                    <div className="flex items-center border border-brand-border rounded-md">
                                         <button
                                             onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                                            className="p-2 text-gray-500 hover:bg-gray-50 active:scale-95 transition-all duration-300"
+                                            className="p-2 text-brand-text-muted hover:bg-surface-variant active:scale-95 transition-all duration-300"
                                         >
                                             <HiOutlineMinus className="w-4 h-4" />
                                         </button>
@@ -137,7 +137,7 @@ const ShopProductDetail: React.FC = () => {
                                         />
                                         <button
                                             onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
-                                            className="p-2 text-gray-500 hover:bg-gray-50 active:scale-95 transition-all duration-300"
+                                            className="p-2 text-brand-text-muted hover:bg-surface-variant active:scale-95 transition-all duration-300"
                                         >
                                             <HiOutlinePlus className="w-4 h-4" />
                                         </button>
@@ -148,7 +148,7 @@ const ShopProductDetail: React.FC = () => {
                                         disabled={addedToCart}
                                         className={`flex-1 flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${addedToCart
                                             ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                                            : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
+                                            : 'bg-sp-green hover:bg-sp-green-dark focus:ring-sp-green'
                                             }`}
                                     >
                                         {addedToCart ? 'Added to Cart!' : 'Add to Cart'}

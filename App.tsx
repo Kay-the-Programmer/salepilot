@@ -18,6 +18,12 @@ const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
 const VerifyEmailPage = lazy(() => import('@/pages/VerifyEmailPage'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 const TermsOfServicePage = lazy(() => import('@/pages/TermsOfServicePage'));
+// Public customer-facing storefront (the "Online Store").
+const ShopLayout = lazy(() => import('@/pages/shop/ShopLayout'));
+const ShopHomePage = lazy(() => import('@/pages/shop/ShopHomePage'));
+const ShopProductList = lazy(() => import('@/pages/shop/ShopProductList'));
+const ShopProductDetail = lazy(() => import('@/pages/shop/ShopProductDetail'));
+const CartPage = lazy(() => import('@/pages/shop/CartPage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -166,6 +172,14 @@ export default function App() {
                                 <Route path="/supplier/orders" element={<Dashboard />} />
 
                                 {/* Fallback */}
+                                {/* Public Online Store (customer-facing storefront) */}
+                                <Route path="/shop/:storeId" element={<ShopLayout />}>
+                                    <Route index element={<ShopHomePage />} />
+                                    <Route path="products" element={<ShopProductList />} />
+                                    <Route path="product/:productId" element={<ShopProductDetail />} />
+                                    <Route path="cart" element={<CartPage />} />
+                                </Route>
+
                                 <Route path="*" element={<Dashboard />} />
                             </Routes>
                         </Suspense>

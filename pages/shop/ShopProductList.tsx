@@ -44,10 +44,10 @@ const ShopProductList: React.FC = () => {
     return (
         <div className="flex flex-col md:flex-row gap-8">
             <aside className={`md:w-64 flex-shrink-0 ${mobileFiltersOpen ? 'block' : 'hidden md:block'}`}>
-                <div className="liquid-glass-card rounded-[2rem] p-6 border border-gray-100 sticky top-24">
+                <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] p-6 border border-brand-border sticky top-24">
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-bold text-gray-900">Categories</h3>
-                        <button onClick={() => setMobileFiltersOpen(false)} className="md:hidden text-gray-500">
+                        <h3 className="font-bold text-brand-text">Categories</h3>
+                        <button onClick={() => setMobileFiltersOpen(false)} className="md:hidden text-brand-text-muted">
                             ✕
                         </button>
                     </div>
@@ -55,7 +55,7 @@ const ShopProductList: React.FC = () => {
                         <li>
                             <button
                                 onClick={() => setSelectedCategory('')}
-                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedCategory === '' ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedCategory === '' ? 'bg-sp-green-soft text-sp-green-dark font-medium' : 'text-brand-text-muted hover:bg-surface-variant'}`}
                             >
                                 All Products
                             </button>
@@ -64,7 +64,7 @@ const ShopProductList: React.FC = () => {
                             <li key={cat.id}>
                                 <button
                                     onClick={() => setSelectedCategory(cat.id)}
-                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedCategory === cat.id ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-600 hover:bg-gray-50'}`}
+                                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${selectedCategory === cat.id ? 'bg-sp-green-soft text-sp-green-dark font-medium' : 'text-brand-text-muted hover:bg-surface-variant'}`}
                                 >
                                     {cat.name}
                                 </button>
@@ -78,18 +78,18 @@ const ShopProductList: React.FC = () => {
                 <div className="mb-6 flex gap-4">
                     <button
                         onClick={() => setMobileFiltersOpen(!mobileFiltersOpen)}
-                        className="md:hidden p-2 bg-white border border-gray-200 rounded-md text-gray-600"
+                        className="md:hidden p-2 bg-white border border-brand-border rounded-md text-brand-text-muted"
                     >
                         <HiOutlineFunnel className="w-5 h-5" />
                     </button>
                     <div className="relative flex-1 max-w-lg">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <HiOutlineMagnifyingGlass className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                            <HiOutlineMagnifyingGlass className="h-5 w-5 text-brand-text-muted" aria-hidden="true" />
                         </div>
                         <input
                             type="text"
                             placeholder="Search products..."
-                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                            className="block w-full pl-10 pr-3 py-2 border border-brand-border rounded-md leading-5 bg-surface-container-lowest placeholder-brand-text-muted focus:outline-none focus:border-sp-green focus:ring-1 focus:ring-sp-green sm:text-sm"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -99,18 +99,18 @@ const ShopProductList: React.FC = () => {
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {[1, 2, 3, 4, 5, 6].map(i => (
-                            <div key={i} className="liquid-glass-card rounded-[2rem] border border-gray-100 h-80 animate-pulse"></div>
+                            <div key={i} className="bg-surface border border-brand-border shadow-sm rounded-[2rem] border border-brand-border h-80 animate-pulse"></div>
                         ))}
                     </div>
                 ) : products.length === 0 ? (
-                    <div className="liquid-glass-card rounded-[2rem] text-center py-12 border border-gray-100">
-                        <p className="text-gray-500">No products found.</p>
+                    <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] text-center py-12 border border-brand-border">
+                        <p className="text-brand-text-muted">No products found.</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {products.map(product => (
-                            <Link key={product.id} to={`/shop/${storeId}/product/${product.id}`} className="liquid-glass-card rounded-[2rem] group block border border-gray-100 overflow-hidden hover: transition-">
-                                <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-gray-200 xl:aspect-w-7 xl:aspect-h-8 relative h-48">
+                            <Link key={product.id} to={`/shop/${storeId}/product/${product.id}`} className="bg-surface border border-brand-border shadow-sm rounded-[2rem] group block border border-brand-border overflow-hidden hover: transition-">
+                                <div className="aspect-w-1 aspect-h-1 w-full overflow-hidden bg-surface-variant xl:aspect-w-7 xl:aspect-h-8 relative h-48">
                                     {product.imageUrls && product.imageUrls.length > 0 ? (
                                         <img
                                             src={buildAssetUrl(product.imageUrls[0])}
@@ -119,7 +119,7 @@ const ShopProductList: React.FC = () => {
                                             onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/400?text=No+Image' }}
                                         />
                                     ) : (
-                                        <div className="h-full w-full flex items-center justify-center text-gray-400 bg-gray-100">
+                                        <div className="h-full w-full flex items-center justify-center text-brand-text-muted bg-surface-variant">
                                             No Image
                                         </div>
                                     )}
@@ -130,9 +130,9 @@ const ShopProductList: React.FC = () => {
                                     )}
                                 </div>
                                 <div className="p-4">
-                                    <h3 className="text-sm font-medium text-gray-900 truncate">{product.name}</h3>
-                                    <p className="mt-1 text-lg font-medium text-gray-900">{formatPrice(product.price)}</p>
-                                    <p className="mt-1 text-xs text-gray-500">{product.brand}</p>
+                                    <h3 className="text-sm font-medium text-brand-text truncate">{product.name}</h3>
+                                    <p className="mt-1 text-lg font-medium text-brand-text">{formatPrice(product.price)}</p>
+                                    <p className="mt-1 text-xs text-brand-text-muted">{product.brand}</p>
                                 </div>
                             </Link>
                         ))}

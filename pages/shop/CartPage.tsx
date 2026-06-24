@@ -143,7 +143,7 @@ const CartPage: React.FC = () => {
     if (orderComplete) {
         return (
             <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-                <div className="liquid-glass-card rounded-[2rem] max-w-2xl w-full rounded-[40px] -indigo-100 border border-slate-100 p-8 sm:p-16 text-center animate-in zoom-in-95 duration-500">
+                <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] max-w-2xl w-full rounded-[40px] -sp-green-soft border border-brand-border p-8 sm:p-16 text-center animate-in zoom-in-95 duration-500">
                     <div className="w-24 h-24 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-8">
                         <div className="w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center">
                             <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -152,33 +152,33 @@ const CartPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4">Order Confirmed!</h1>
-                    <p className="text-slate-500 font-medium text-lg leading-relaxed mb-8">
-                        Thank you for shopping with <span className="text-indigo-600 font-bold">{shopInfo.settings.name || shopInfo.name}</span>.
+                    <h1 className="text-4xl font-black text-brand-text tracking-tight mb-4">Order Confirmed!</h1>
+                    <p className="text-brand-text-muted font-medium text-lg leading-relaxed mb-8">
+                        Thank you for shopping with <span className="text-sp-green font-bold">{shopInfo.settings.name || shopInfo.name}</span>.
                         Your order has been placed successfully.
                     </p>
 
                     {orderData?.orderId && (
-                        <div className="bg-slate-50 rounded-2xl p-4 mb-8 inline-block px-8">
-                            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Order Reference</p>
-                            <p className="text-xl font-mono font-bold text-slate-900">{orderData.orderId}</p>
+                        <div className="bg-surface-variant rounded-2xl p-4 mb-8 inline-block px-8">
+                            <p className="text-xs font-black text-brand-text-muted uppercase tracking-widest mb-1">Order Reference</p>
+                            <p className="text-xl font-mono font-bold text-brand-text">{orderData.orderId}</p>
                         </div>
                     )}
 
                     {shopInfo.settings.receiptMessage && (
-                        <div className="mb-10 p-6 bg-indigo-50/50 rounded-[32px] text-indigo-700 text-sm font-medium leading-relaxed italic border border-indigo-100">
+                        <div className="mb-10 p-6 bg-sp-green-soft/50 rounded-[32px] text-sp-green-dark text-sm font-medium leading-relaxed italic border border-sp-green-soft">
                             "{shopInfo.settings.receiptMessage}"
                         </div>
                     )}
 
                     <button
                         onClick={() => navigate(`/shop/${storeId}/products`)}
-                        className="w-full sm:w-auto px-12 py-5 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-slate-800 transition-all active:scale-95 shadow-xl shadow-slate-200"
+                        className="w-full sm:w-auto px-12 py-5 bg-warm-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-warm-900 transition-all active:scale-95 shadow-xl shadow-md"
                     >
                         Continue Shopping
                     </button>
 
-                    <p className="mt-8 text-xs text-slate-400 font-bold uppercase tracking-[0.2em]">
+                    <p className="mt-8 text-xs text-brand-text-muted font-bold uppercase tracking-[0.2em]">
                         Confirmation sent to {customerDetails.email}
                     </p>
                 </div>
@@ -189,19 +189,19 @@ const CartPage: React.FC = () => {
     if (cartItems.length === 0) {
         return (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-                <div className="w-32 h-32 bg-slate-100 rounded-[40px] flex items-center justify-center mx-auto mb-8 relative">
-                    <HiOutlineShoppingBag className="w-16 h-16 text-slate-300" />
-                    <div className="liquid-glass-card rounded-[2rem] absolute top-0 right-0 w-8 h-8 flex items-center justify-center">
-                        <span className="text-xs font-black text-slate-400">0</span>
+                <div className="w-32 h-32 bg-surface-variant rounded-[40px] flex items-center justify-center mx-auto mb-8 relative">
+                    <HiOutlineShoppingBag className="w-16 h-16 text-brand-text-muted" />
+                    <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] absolute top-0 right-0 w-8 h-8 flex items-center justify-center">
+                        <span className="text-xs font-black text-brand-text-muted">0</span>
                     </div>
                 </div>
-                <h2 className="text-3xl font-black text-slate-900 tracking-tight mb-4">Your cart is empty</h2>
-                <p className="text-slate-500 font-medium mb-12 max-w-sm mx-auto text-lg leading-relaxed">
+                <h2 className="text-3xl font-black text-brand-text tracking-tight mb-4">Your cart is empty</h2>
+                <p className="text-brand-text-muted font-medium mb-12 max-w-sm mx-auto text-lg leading-relaxed">
                     Looks like you haven't added anything to your cart yet. Let's find some amazing products!
                 </p>
                 <Link
                     to={`/shop/${storeId}/products`}
-                    className="inline-flex items-center px-10 py-5 bg-[#0A2E5C] text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-indigo-900 transition-all active:scale-95 shadow-xl shadow-indigo-100"
+                    className="inline-flex items-center px-10 py-5 bg-warm-900 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-sp-green-dark transition-all active:scale-95 shadow-xl shadow-sp-green-soft"
                 >
                     Explore Products
                 </Link>
@@ -215,20 +215,20 @@ const CartPage: React.FC = () => {
                 <div>
                     <button
                         onClick={() => navigate(-1)}
-                        className="flex items-center gap-2 text-slate-400 hover:text-slate-600 transition-colors font-bold text-xs uppercase tracking-widest mb-4"
+                        className="flex items-center gap-2 text-brand-text-muted hover:text-brand-text-muted transition-colors font-bold text-xs uppercase tracking-widest mb-4"
                     >
                         <HiOutlineArrowLeft className="w-4 h-4" />
                         Back to Store
                     </button>
-                    <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-slate-900">Checkout</h1>
+                    <h1 className="text-4xl sm:text-5xl font-black tracking-tight text-brand-text">Checkout</h1>
                 </div>
-                <div className="liquid-glass-card rounded-[2rem] px-6 py-4 rounded-[24px] border border-slate-100 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center">
-                        <HiOutlineShoppingBag className="w-6 h-6 text-indigo-600" />
+                <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] px-6 py-4 rounded-[24px] border border-brand-border flex items-center gap-4">
+                    <div className="w-12 h-12 bg-sp-green-soft rounded-xl flex items-center justify-center">
+                        <HiOutlineShoppingBag className="w-6 h-6 text-sp-green" />
                     </div>
                     <div>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Items in Cart</p>
-                        <p className="text-xl font-black text-slate-900 leading-none">{cartItems.reduce((a, b) => a + b.quantity, 0)}</p>
+                        <p className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest leading-none mb-1">Items in Cart</p>
+                        <p className="text-xl font-black text-brand-text leading-none">{cartItems.reduce((a, b) => a + b.quantity, 0)}</p>
                     </div>
                 </div>
             </div>
@@ -236,9 +236,9 @@ const CartPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
                 {/* Cart Items Section */}
                 <div className="lg:col-span-7 space-y-6">
-                    <div className="liquid-glass-card rounded-[2rem] rounded-[40px] border border-slate-100 overflow-hidden">
-                        <div className="flex items-center justify-between px-8 py-6 border-b border-slate-50">
-                            <h2 className="text-lg font-black text-slate-900">Review Items</h2>
+                    <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] rounded-[40px] border border-brand-border overflow-hidden">
+                        <div className="flex items-center justify-between px-8 py-6 border-b border-brand-border">
+                            <h2 className="text-lg font-black text-brand-text">Review Items</h2>
                             <button
                                 onClick={() => {
                                     if (window.confirm('Are you sure you want to clear your cart?')) {
@@ -251,10 +251,10 @@ const CartPage: React.FC = () => {
                                 Clear All
                             </button>
                         </div>
-                        <ul className="divide-y divide-slate-50">
+                        <ul className="divide-y divide-brand-border">
                             {cartItems.map((item, index) => (
-                                <li key={`${item.id}-${index}`} className="flex flex-col sm:flex-row py-8 px-6 sm:px-8 hover:bg-slate-50/30 transition-colors gap-6 group active:scale-95 transition-all duration-300">
-                                    <div className="h-32 w-full sm:w-32 flex-shrink-0 overflow-hidden rounded-[24px] bg-slate-100 border border-slate-200/50">
+                                <li key={`${item.id}-${index}`} className="flex flex-col sm:flex-row py-8 px-6 sm:px-8 hover:bg-surface-variant/30 transition-colors gap-6 group active:scale-95 transition-all duration-300">
+                                    <div className="h-32 w-full sm:w-32 flex-shrink-0 overflow-hidden rounded-[24px] bg-surface-variant border border-brand-border/50">
                                         {item.image ? (
                                             <img
                                                 src={buildAssetUrl(item.image)}
@@ -263,7 +263,7 @@ const CartPage: React.FC = () => {
                                                 onError={(e) => { (e.target as HTMLImageElement).src = 'https://placehold.co/100?text=No+Image' }}
                                             />
                                         ) : (
-                                            <div className="h-full w-full flex items-center justify-center text-slate-300">
+                                            <div className="h-full w-full flex items-center justify-center text-brand-text-muted">
                                                 <HiOutlineShoppingBag className="w-10 h-10" />
                                             </div>
                                         )}
@@ -272,30 +272,30 @@ const CartPage: React.FC = () => {
                                     <div className="flex-1 flex flex-col justify-between">
                                         <div className="flex justify-between items-start gap-4">
                                             <div>
-                                                <h3 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                <h3 className="text-xl font-black text-brand-text group-hover:text-sp-green transition-colors">
                                                     {item.name}
                                                 </h3>
-                                                <p className="mt-1 text-sm font-bold text-slate-400">
+                                                <p className="mt-1 text-sm font-bold text-brand-text-muted">
                                                     {formatPrice(item.price)} each
                                                 </p>
                                             </div>
-                                            <p className="text-xl font-black text-slate-900 whitespace-nowrap">
+                                            <p className="text-xl font-black text-brand-text whitespace-nowrap">
                                                 {formatPrice(item.price * item.quantity)}
                                             </p>
                                         </div>
 
                                         <div className="flex flex-wrap items-center justify-between gap-4 mt-8">
-                                            <div className="flex items-center bg-slate-100 p-1 rounded-2xl border border-slate-200/50">
+                                            <div className="flex items-center bg-surface-variant p-1 rounded-2xl border border-brand-border/50">
                                                 <button
                                                     onClick={() => updateQuantity(index, item.quantity - 1)}
-                                                    className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all active:scale-95 transition-all duration-300"
+                                                    className="w-10 h-10 flex items-center justify-center text-brand-text-muted hover:text-brand-text hover:bg-white rounded-xl transition-all active:scale-95 transition-all duration-300"
                                                 >
                                                     <HiOutlineMinus className="w-4 h-4" />
                                                 </button>
-                                                <div className="px-4 font-black text-slate-900 min-w-[3rem] text-center">{item.quantity}</div>
+                                                <div className="px-4 font-black text-brand-text min-w-[3rem] text-center">{item.quantity}</div>
                                                 <button
                                                     onClick={() => updateQuantity(index, item.quantity + 1)}
-                                                    className="w-10 h-10 flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-white rounded-xl transition-all active:scale-95 transition-all duration-300"
+                                                    className="w-10 h-10 flex items-center justify-center text-brand-text-muted hover:text-brand-text hover:bg-white rounded-xl transition-all active:scale-95 transition-all duration-300"
                                                 >
                                                     <HiOutlinePlus className="w-4 h-4" />
                                                 </button>
@@ -304,7 +304,7 @@ const CartPage: React.FC = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => removeItem(index)}
-                                                className="flex items-center gap-2 text-xs font-black text-slate-400 hover:text-rose-500 transition-colors uppercase tracking-widest bg-slate-100 hover:bg-rose-50 px-4 py-3 rounded-2xl active:scale-95 transition-all duration-300"
+                                                className="flex items-center gap-2 text-xs font-black text-brand-text-muted hover:text-rose-500 transition-colors uppercase tracking-widest bg-surface-variant hover:bg-rose-50 px-4 py-3 rounded-2xl active:scale-95 transition-all duration-300"
                                             >
                                                 <HiOutlineTrash className="w-4 h-4" />
                                                 Remove
@@ -318,50 +318,50 @@ const CartPage: React.FC = () => {
 
                     {/* Features/Trust Badges */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div className="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center gap-4">
+                        <div className="bg-white p-6 rounded-[32px] border border-brand-border flex items-center gap-4">
                             <div className="w-10 h-10 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0 text-emerald-600">
                                 <HiOutlineShieldCheck className="w-6 h-6" />
                             </div>
-                            <span className="text-xs font-bold text-slate-500">Secure <br /> Payment</span>
+                            <span className="text-xs font-bold text-brand-text-muted">Secure <br /> Payment</span>
                         </div>
-                        <div className="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center gap-4">
-                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0 text-blue-600">
+                        <div className="bg-white p-6 rounded-[32px] border border-brand-border flex items-center gap-4">
+                            <div className="w-10 h-10 bg-sp-green-soft rounded-xl flex items-center justify-center shrink-0 text-sp-green">
                                 <HiOutlineTruck className="w-6 h-6" />
                             </div>
-                            <span className="text-xs font-bold text-slate-500">Fast <br /> Delivery</span>
+                            <span className="text-xs font-bold text-brand-text-muted">Fast <br /> Delivery</span>
                         </div>
-                        <div className="bg-white p-6 rounded-[32px] border border-slate-100 flex items-center gap-4">
+                        <div className="bg-white p-6 rounded-[32px] border border-brand-border flex items-center gap-4">
                             <div className="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center shrink-0 text-purple-600">
                                 <HiOutlineCreditCard className="w-6 h-6" />
                             </div>
-                            <span className="text-xs font-bold text-slate-500">Genuine <br /> Products</span>
+                            <span className="text-xs font-bold text-brand-text-muted">Genuine <br /> Products</span>
                         </div>
                     </div>
                 </div>
 
                 {/* Checkout Column */}
                 <div className="lg:col-span-5 sticky top-28 space-y-6">
-                    <div className="liquid-glass-card rounded-[2rem] rounded-[40px] -slate-200 border border-slate-100 overflow-hidden">
+                    <div className="bg-surface border border-brand-border shadow-sm rounded-[2rem] rounded-[40px] -brand-border border border-brand-border overflow-hidden">
                         <div className="p-8 sm:p-10">
-                            <h2 className="text-2xl font-black text-slate-900 mb-8">Order Summary</h2>
+                            <h2 className="text-2xl font-black text-brand-text mb-8">Order Summary</h2>
 
                             <div className="space-y-6 mb-10">
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-500 font-bold">Subtotal</span>
-                                    <span className="text-slate-900 font-black text-lg">{formatPrice(subtotal)}</span>
+                                    <span className="text-brand-text-muted font-bold">Subtotal</span>
+                                    <span className="text-brand-text font-black text-lg">{formatPrice(subtotal)}</span>
                                 </div>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-slate-500 font-bold">Estimated Tax (10%)</span>
-                                    <span className="text-slate-900 font-black text-lg">{formatPrice(tax)}</span>
+                                    <span className="text-brand-text-muted font-bold">Estimated Tax (10%)</span>
+                                    <span className="text-brand-text font-black text-lg">{formatPrice(tax)}</span>
                                 </div>
-                                <div className="pt-6 border-t border-slate-50 flex items-center justify-between">
-                                    <span className="text-xl font-black text-slate-900">Total</span>
-                                    <span className="text-3xl font-black text-indigo-600">{formatPrice(total)}</span>
+                                <div className="pt-6 border-t border-brand-border flex items-center justify-between">
+                                    <span className="text-xl font-black text-brand-text">Total</span>
+                                    <span className="text-3xl font-black text-sp-green">{formatPrice(total)}</span>
                                 </div>
                             </div>
 
-                            <div className="pt-8 border-t border-slate-50">
-                                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-6">Delivery Details</h3>
+                            <div className="pt-8 border-t border-brand-border">
+                                <h3 className="text-xs font-black text-brand-text-muted uppercase tracking-widest mb-6">Delivery Details</h3>
                                 <form onSubmit={handleCheckout} className="space-y-5">
                                     {error && (
                                         <div className="bg-rose-50 border border-rose-100 p-4 rounded-2xl flex items-center gap-3 animate-pulse">
@@ -372,7 +372,7 @@ const CartPage: React.FC = () => {
 
                                     <div className="space-y-4">
                                         <div className="relative group">
-                                            <label htmlFor="name" className="text-[10px] font-black text-slate-400 uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-indigo-600 group-focus-within:top-2.5">Full Name</label>
+                                            <label htmlFor="name" className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-sp-green group-focus-within:top-2.5">Full Name</label>
                                             <input
                                                 type="text"
                                                 id="name"
@@ -380,14 +380,14 @@ const CartPage: React.FC = () => {
                                                 required
                                                 value={customerDetails.name}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-5 pr-5 pt-8 pb-3 bg-slate-50 border border-slate-100 rounded-[20px] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-900"
+                                                className="w-full pl-5 pr-5 pt-8 pb-3 bg-surface-variant border border-brand-border rounded-[20px] focus:outline-none focus:ring-4 focus:ring-sp-green/10 focus:bg-white focus:border-sp-green transition-all font-bold text-brand-text"
                                                 placeholder="John Doe"
                                             />
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="relative group">
-                                                <label htmlFor="email" className="text-[10px] font-black text-slate-400 uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-indigo-600 group-focus-within:top-2.5">Email</label>
+                                                <label htmlFor="email" className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-sp-green group-focus-within:top-2.5">Email</label>
                                                 <input
                                                     type="email"
                                                     id="email"
@@ -395,33 +395,33 @@ const CartPage: React.FC = () => {
                                                     required
                                                     value={customerDetails.email}
                                                     onChange={handleInputChange}
-                                                    className="w-full pl-5 pr-5 pt-8 pb-3 bg-slate-50 border border-slate-100 rounded-[20px] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-900"
+                                                    className="w-full pl-5 pr-5 pt-8 pb-3 bg-surface-variant border border-brand-border rounded-[20px] focus:outline-none focus:ring-4 focus:ring-sp-green/10 focus:bg-white focus:border-sp-green transition-all font-bold text-brand-text"
                                                     placeholder="john@example.com"
                                                 />
                                             </div>
                                             <div className="relative group">
-                                                <label htmlFor="phone" className="text-[10px] font-black text-slate-400 uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-indigo-600 group-focus-within:top-2.5">Phone</label>
+                                                <label htmlFor="phone" className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-sp-green group-focus-within:top-2.5">Phone</label>
                                                 <input
                                                     type="tel"
                                                     id="phone"
                                                     name="phone"
                                                     value={customerDetails.phone}
                                                     onChange={handleInputChange}
-                                                    className="w-full pl-5 pr-5 pt-8 pb-3 bg-slate-50 border border-slate-100 rounded-[20px] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-900"
+                                                    className="w-full pl-5 pr-5 pt-8 pb-3 bg-surface-variant border border-brand-border rounded-[20px] focus:outline-none focus:ring-4 focus:ring-sp-green/10 focus:bg-white focus:border-sp-green transition-all font-bold text-brand-text"
                                                     placeholder="+1 (555) 000-0000"
                                                 />
                                             </div>
                                         </div>
 
                                         <div className="relative group">
-                                            <label htmlFor="address" className="text-[10px] font-black text-slate-400 uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-indigo-600 group-focus-within:top-2.5">Delivery Address</label>
+                                            <label htmlFor="address" className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest absolute left-5 top-3.5 z-10 transition-all group-focus-within:text-sp-green group-focus-within:top-2.5">Delivery Address</label>
                                             <textarea
                                                 id="address"
                                                 name="address"
                                                 rows={3}
                                                 value={customerDetails.address}
                                                 onChange={handleInputChange}
-                                                className="w-full pl-5 pr-5 pt-8 pb-3 bg-slate-50 border border-slate-100 rounded-[20px] focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:bg-white focus:border-indigo-500 transition-all font-bold text-slate-900 resize-none"
+                                                className="w-full pl-5 pr-5 pt-8 pb-3 bg-surface-variant border border-brand-border rounded-[20px] focus:outline-none focus:ring-4 focus:ring-sp-green/10 focus:bg-white focus:border-sp-green transition-all font-bold text-brand-text resize-none"
                                                 placeholder="Street, City, Zip Code"
                                             />
                                         </div>
@@ -430,7 +430,7 @@ const CartPage: React.FC = () => {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className={`w-full flex justify-center py-6 px-4 bg-[#FF7F27] text-white rounded-[24px] shadow-xl shadow-orange-100 text-sm font-black uppercase tracking-[0.2em] hover:bg-orange-600 focus:outline-none focus:ring-4 focus:ring-orange-200 transition-all active:scale-95 disabled:opacity-75 disabled:active:scale-100 disabled:cursor-not-allowed mt-4`}
+                                        className={`w-full flex justify-center py-6 px-4 bg-sp-green text-white rounded-[24px] shadow-xl shadow-sp-green/20 text-sm font-black uppercase tracking-[0.2em] hover:bg-sp-green-dark focus:outline-none focus:ring-4 focus:ring-sp-green/30 transition-all active:scale-95 disabled:opacity-75 disabled:active:scale-100 disabled:cursor-not-allowed mt-4`}
                                     >
                                         {isSubmitting ? (
                                             <div className="flex items-center gap-3">
@@ -440,7 +440,7 @@ const CartPage: React.FC = () => {
                                         ) : 'Complete Purchase'}
                                     </button>
 
-                                    <p className="text-[10px] text-slate-400 font-bold text-center uppercase tracking-widest mt-6">
+                                    <p className="text-[10px] text-brand-text-muted font-bold text-center uppercase tracking-widest mt-6">
                                         Safe and encrypted transaction
                                     </p>
                                 </form>
@@ -451,17 +451,17 @@ const CartPage: React.FC = () => {
             </div>
 
             {/* Mobile Bottom Bar for Price (Only on mobile) */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 p-6 z-50 lg:hidden flex items-center justify-between gap-4">
+            <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-brand-border p-6 z-50 lg:hidden flex items-center justify-between gap-4">
                 <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Total Amount</p>
-                    <p className="text-2xl font-black text-indigo-600 leading-none">{formatPrice(total)}</p>
+                    <p className="text-[10px] font-black text-brand-text-muted uppercase tracking-widest">Total Amount</p>
+                    <p className="text-2xl font-black text-sp-green leading-none">{formatPrice(total)}</p>
                 </div>
                 <button
                     onClick={() => {
                         const form = document.querySelector('form');
                         if (form) form.requestSubmit();
                     }}
-                    className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all"
+                    className="bg-warm-900 text-white px-8 py-4 rounded-2xl font-black uppercase tracking-widest text-xs shadow-lg active:scale-95 transition-all"
                 >
                     Place Order
                 </button>

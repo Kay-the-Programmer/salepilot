@@ -35,6 +35,13 @@ export const WHATSAPP_FREE = (import.meta.env?.VITE_WHATSAPP_FREE ?? 'true') !==
  */
 export const SOCIAL_FREE = (import.meta.env?.VITE_SOCIAL_FREE ?? 'true') !== 'false';
 
+/**
+ * Product gate for the Marketing Suite (Facebook Pages). Now **launched** — the
+ * Discover tile opens the live app. Set `VITE_MARKETING_COMING_SOON=true` to put
+ * it back behind the "Coming Soon" lock (tile locked + teaser screen).
+ */
+export const MARKETING_COMING_SOON = (import.meta.env?.VITE_MARKETING_COMING_SOON ?? 'false') !== 'false';
+
 /** User seats included for free (the owner). Extra seats need TEAM_MEMBERS. */
 export const FREE_SEATS = 1;
 

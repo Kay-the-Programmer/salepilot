@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Facebook, Send, MessageCircle, BarChart3, Sparkles, Image as ImageIcon, Link2,
-    Trash2, EyeOff, Eye, RefreshCw, CheckCircle2, Lock, LogOut, LayoutGrid, Plug, X,
+    Trash2, EyeOff, Eye, RefreshCw, CheckCircle2, Lock, LogOut, LayoutGrid, Plug, X, Clock,
 } from 'lucide-react';
 import { StoreSettings, User } from '../../types';
 import { facebookService, FacebookStatus, FacebookPageRef, FacebookPost, FacebookComment, loadFacebookSdk, facebookLogin } from '../../services/facebookService';
-import { SOCIAL_FREE } from '../../utils/entitlements';
+import { SOCIAL_FREE, MARKETING_COMING_SOON } from '../../utils/entitlements';
 import MarketingPage from '../../pages/MarketingPage';
 import LoadingSpinner from '../LoadingSpinner';
 
@@ -49,9 +49,39 @@ export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onDiscove
             .finally(() => setLoading(false));
     }, [entitledFallback]);
 
-    useEffect(() => { loadStatus(); }, [loadStatus]);
+    useEffect(() => { if (!MARKETING_COMING_SOON) loadStatus(); }, [loadStatus]);
 
     const connected = !!status?.connected && !!status?.enabled;
+
+    // Product gate: ship as "Coming Soon" until launched (flip MARKETING_COMING_SOON).
+    if (MARKETING_COMING_SOON) {
+        return (
+            <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
+                <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="p-2 bg-blue-600 rounded-lg text-white shrink-0"><Facebook className="w-5 h-5" /></div>
+                        <div className="min-w-0">
+                            <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">Marketing Suite</h1>
+                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate">Manage your Facebook Page</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button className={btnGhost} onClick={onDiscover} title="Discover apps"><LayoutGrid className="w-4 h-4" /></button>
+                        <button className={btnGhost} onClick={onLogout} title="Logout"><LogOut className="w-4 h-4" /></button>
+                    </div>
+                </header>
+                <main className="flex-1 flex items-center justify-center p-6">
+                    <div className={`${card} p-8 max-w-md text-center`}>
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400"><Clock className="w-8 h-8" /></div>
+                        <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Coming Soon</span>
+                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Marketing Suite is on the way</h2>
+                        <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">Soon you'll publish posts to your Facebook Page, reply to and moderate comments, and track engagement insights — all from here. We'll let you know the moment it's ready.</p>
+                        <button className={btnPrimary} onClick={onDiscover}><LayoutGrid className="w-4 h-4" /> Back to Discover</button>
+                    </div>
+                </main>
+            </div>
+        );
+    }
 
     return (
         <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">

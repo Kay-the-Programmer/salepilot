@@ -4,6 +4,7 @@ import { Icon, Avatar } from './CrmBits';
 import { useConfirm } from '../ui/useConfirm';
 import CrmInbox from './CrmInbox';
 import CrmWhatsAppConnect from './CrmWhatsAppConnect';
+import CrmWhatsAppCampaigns from './CrmWhatsAppCampaigns';
 import { whatsappService, WhatsAppStatus } from '../../services/whatsappService';
 import whatsappTemplates, { WaTemplate, applyTemplate } from './whatsappTemplates';
 
@@ -21,12 +22,13 @@ interface CrmWhatsAppProps {
     onRefreshStatus?: () => void;
 }
 
-type WaTool = 'chats' | 'compose' | 'broadcast' | 'templates' | 'connect';
+type WaTool = 'chats' | 'compose' | 'broadcast' | 'campaigns' | 'templates' | 'connect';
 
 const TOOLS: { id: WaTool; label: string; icon: string }[] = [
     { id: 'chats', label: 'Chats', icon: 'forum' },
     { id: 'compose', label: 'Compose', icon: 'edit_note' },
     { id: 'broadcast', label: 'Broadcast', icon: 'campaign' },
+    { id: 'campaigns', label: 'Campaigns', icon: 'rocket_launch' },
     { id: 'templates', label: 'Templates', icon: 'description' },
     { id: 'connect', label: 'Connect', icon: 'settings' },
 ];
@@ -136,6 +138,15 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
                     storeId={storeId}
                     storeName={storeName}
                     canSend={ready}
+                    confirm={confirm}
+                    onNotify={onNotify}
+                />
+            )}
+
+            {tool === 'campaigns' && (
+                <CrmWhatsAppCampaigns
+                    status={status}
+                    canManage={canManage}
                     confirm={confirm}
                     onNotify={onNotify}
                 />

@@ -258,6 +258,14 @@
 }
 .dapptile__tag--new { background: linear-gradient(135deg, #12a37d, #00654b); }
 .dapptile__tag--popular { background: linear-gradient(135deg, #f0a93c, #d4820a); }
+.dapptile__tag--soon { background: linear-gradient(135deg, #8a93a6, #5b6478); }
+
+/* Coming-soon apps: muted icon + a non-actionable "Coming Soon" CTA. */
+.dapptile--soon .dapptile__icon { filter: grayscale(0.4); opacity: 0.9; }
+.dapptile__cta--soon,
+.dapptile:hover .dapptile__cta--soon { background: var(--v2-color-accent-soft); color: var(--v2-color-accent-hover); }
+.dark .ddisc .dapptile__cta--soon,
+.dark .ddisc .dapptile:hover .dapptile__cta--soon { background: rgba(138, 147, 166, 0.18); color: #c2c8d4; }
 
 /* ---------- Promo / upgrade banner ---------- */
 .dpromo {

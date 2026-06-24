@@ -4,7 +4,7 @@ import { User, StoreSettings } from '../../types';
 import { getAccessibleNavItems } from '../Sidebar';
 import PosIcon from '../sales/PosIcon';
 import AssistantCharacter from './AssistantCharacter';
-import { hasModule, MODULES, isPageEntitled } from '../../utils/entitlements';
+import { hasModule, MODULES, isPageEntitled, MARKETING_COMING_SOON } from '../../utils/entitlements';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
 import './discover.css';
@@ -32,6 +32,7 @@ const TINTS: Record<string, Tint> = {
     assistant: ['#7b7bf0', '#4b4bc9'],
     crm: ['#e0728f', '#b83a66'],
     marketing: ['#3b82f6', '#1e40af'],
+    store: ['#0e9c78', '#00654b'],
     inv: ['#1fb0a0', '#0c6f66'],
     team: ['#5aa0f2', '#2f6fd0'],
     procure: ['#f0894b', '#d4630a'],
@@ -57,6 +58,7 @@ const TAGS: Record<string, 'New' | 'Popular'> = {
     crm: 'Popular',
     inv: 'New',
     marketing: 'New',
+    store: 'New',
 };
 
 const DESCRIPTIONS: Record<string, string> = {
@@ -66,7 +68,7 @@ const DESCRIPTIONS: Record<string, string> = {
     'user-guide': 'Help & documentation',
 };
 
-type AppDef = { name: string; page: string; route: string; desc: string; iconName: string; requires: string; module?: string };
+type AppDef = { name: string; page: string; route: string; desc: string; iconName: string; requires: string; module?: string; comingSoon?: boolean };
 
 // Standalone apps that open in their own focused shell.
 const STANDALONE_APPS: AppDef[] = [
@@ -75,7 +77,8 @@ const STANDALONE_APPS: AppDef[] = [
     { name: 'Hustle POS', page: 'hustle', route: 'hustle', desc: 'Fast amount-entry sales', iconName: 'bolt', requires: 'sales' },
     { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
     { name: 'CRM', page: 'crm', route: 'crm', desc: 'Customers, loyalty & insights', iconName: 'diversity_3', requires: 'customers' },
-    { name: 'Marketing Suite', page: 'marketing', route: 'marketing', desc: 'Facebook posts, comments & insights', iconName: 'campaign', requires: 'marketing' },
+    { name: 'Marketing Suite', page: 'marketing', route: 'marketing', desc: 'Facebook posts, comments & insights', iconName: 'campaign', requires: 'marketing', comingSoon: MARKETING_COMING_SOON },
+    { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Storefront link, QR & catalog sharing', iconName: 'storefront', requires: 'online-store' },
     { name: 'Inventory Manager', page: 'inv', route: 'inv', desc: 'Stock value, alerts & items', iconName: 'inventory_2', requires: 'inventory' },
     { name: 'User Manager', page: 'team', route: 'team', desc: 'Team members, roles & access', iconName: 'manage_accounts', requires: 'users' },
     { name: 'Procurement Hub', page: 'procure', route: 'procure', desc: 'Suppliers & purchase orders', iconName: 'local_shipping', requires: 'suppliers' },
@@ -113,7 +116,7 @@ const TIPS: Tip[] = [
 
 interface Tile {
     key: string; name: string; desc: string; icon: React.ReactNode;
-    tint: Tint; tag?: 'New' | 'Popular'; locked: boolean; onClick: () => void;
+    tint: Tint; tag?: 'New' | 'Popular'; locked: boolean; comingSoon?: boolean; onClick: () => void;
 }
 
 export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, storeSettings, onLaunch, onOpenSidebar }) => {
@@ -193,6 +196,7 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                 tint: TINTS[app.route] || DEFAULT_TINT,
                 tag: TAGS[app.route],
                 locked,
+                comingSoon: app.comingSoon,
                 onClick: () => onLaunch(locked ? 'subscription' : app.route),
             };
         }), [allowedPages, storeSettings, onLaunch]);
@@ -219,7 +223,13 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
     const noResults = q && standaloneFiltered.length === 0 && moreFiltered.length === 0;
 
     const renderTile = (t: Tile) => (
-        <button key={t.key} type="button" className="dapptile" onClick={t.onClick} title={t.locked ? 'Premium add-on — tap to unlock' : t.name}>
+        <button
+            key={t.key}
+            type="button"
+            className={`dapptile${t.comingSoon ? ' dapptile--soon' : ''}`}
+            onClick={t.onClick}
+            title={t.comingSoon ? 'Coming soon' : t.locked ? 'Premium add-on — tap to unlock' : t.name}
+        >
             <span className="dapptile__icon" style={{ backgroundImage: `linear-gradient(135deg, ${t.tint[0]}, ${t.tint[1]})` }}>
                 {t.icon}
                 <span className="dapptile__gloss" aria-hidden="true" />
@@ -228,10 +238,12 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                 <span className="dapptile__name">{t.name}</span>
                 <span className="dapptile__desc">{t.desc}</span>
             </span>
-            <span className={`dapptile__cta${t.locked ? ' dapptile__cta--locked' : ''}`}>
-                {t.locked ? <><PosIcon name="lock" size={13} /> Unlock</> : 'Open'}
+            <span className={`dapptile__cta${t.comingSoon ? ' dapptile__cta--soon' : t.locked ? ' dapptile__cta--locked' : ''}`}>
+                {t.comingSoon ? <><PosIcon name="schedule" size={13} /> Coming Soon</> : t.locked ? <><PosIcon name="lock" size={13} /> Unlock</> : 'Open'}
             </span>
-            {t.tag && <span className={`dapptile__tag dapptile__tag--${t.tag.toLowerCase()}`}>{t.tag}</span>}
+            {t.comingSoon
+                ? <span className="dapptile__tag dapptile__tag--soon">Soon</span>
+                : t.tag && <span className={`dapptile__tag dapptile__tag--${t.tag.toLowerCase()}`}>{t.tag}</span>}
         </button>
     );
 
