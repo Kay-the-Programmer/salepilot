@@ -7,7 +7,6 @@ import LocationPicker from '../components/ui/LocationPicker';
 import {
     HiOutlineBuildingStorefront,
     HiOutlinePhone,
-    HiOutlineMapPin,
     HiOutlineEnvelope,
     HiOutlineShieldCheck,
     HiOutlineArrowLeft,

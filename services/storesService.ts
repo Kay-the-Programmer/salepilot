@@ -32,8 +32,33 @@ export async function registerStoreAndRefreshUser(name: string, businessTypes: s
  */
 export async function checkStoreNameAvailability(name: string): Promise<boolean> {
   if (!name || name.trim().length < 2) return true;
-  const resp = await api.get<{ exists: boolean }>(`/stores/check-name?name=${encodeURIComponent(name.trim())}`, { skipQueue: true });
+  const resp = await api.get<{ exists: boolean }>(`/stores/check-name?name=${encodeURIComponent(name.trim())}`);
   return !(resp as any)?.exists;
+}
+
+/** A business owned by the current user (Multi-Store Manager). */
+export interface MyStore {
+  id: string;
+  name: string;
+  status: string;
+  subscriptionStatus?: string;
+  subscriptionPlan?: string;
+  subscriptionEndsAt?: string | null;
+  isVerified?: boolean;
+  createdAt: string;
+  isCurrent: boolean;
+}
+
+/** Every business the signed-in user owns. */
+export async function getMyStores(): Promise<MyStore[]> {
+  const resp = await api.get<MyStore[]>('/stores/mine');
+  return Array.isArray(resp) ? resp : [];
+}
+
+/** Switch the active business (only among owned stores); returns the refreshed user. */
+export async function switchStore(storeId: string): Promise<User> {
+  await api.post('/stores/switch', { storeId }, { skipQueue: true });
+  return api.get<User>('/auth/me');
 }
 
 /**

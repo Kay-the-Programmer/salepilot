@@ -114,6 +114,9 @@ export const PAGE_ACCESS: Record<string, Role[]> = {
     // Online Store (storefront management)
     'online-store':             ['admin'],
 
+    // Multi-Store Manager (manage multiple businesses)
+    'businesses':               ['admin'],
+
     // Finance & billing
     'accounting':               ['admin'],
     'subscription':             ['admin'],

@@ -15,8 +15,7 @@ export const useProductForm = ({
     productToEdit,
     initialValues,
     categories,
-    storeSettings,
-    onSaveSuccess
+    storeSettings
 }: UseProductFormProps) => {
     const getInitialProductState = useCallback((): Omit<Product, 'id'> => ({
         name: '',
@@ -364,7 +363,6 @@ export const useProductForm = ({
             formData.append('cartons_received', '');
         }
 
-        const _dataUrlImages = images.filter(url => url.startsWith('data:'));
         const imagesToKeep = productToEdit
             ? productToEdit.imageUrls.filter(url => !imagesToDelete.includes(url))
             : [];

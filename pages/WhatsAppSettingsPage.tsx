@@ -3,14 +3,13 @@ import { useState, useEffect } from 'react';
 import { StoreSettings, WhatsAppConfig } from '../types';
 import { api } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { RefreshIcon, CheckCircleIcon } from '../components/icons';
 
 interface WhatsAppSettingsPageProps {
     storeSettings: StoreSettings | null;
     showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
 }
 
-export default function WhatsAppSettingsPage({ storeSettings, showSnackbar }: WhatsAppSettingsPageProps) {
+export default function WhatsAppSettingsPage({ showSnackbar }: WhatsAppSettingsPageProps) {
     const [config, setConfig] = useState<WhatsAppConfig | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);

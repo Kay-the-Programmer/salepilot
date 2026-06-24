@@ -33,6 +33,7 @@ const TINTS: Record<string, Tint> = {
     crm: ['#e0728f', '#b83a66'],
     marketing: ['#3b82f6', '#1e40af'],
     store: ['#0e9c78', '#00654b'],
+    businesses: ['#7d8aa0', '#3e4944'],
     inv: ['#1fb0a0', '#0c6f66'],
     team: ['#5aa0f2', '#2f6fd0'],
     procure: ['#f0894b', '#d4630a'],
@@ -59,6 +60,7 @@ const TAGS: Record<string, 'New' | 'Popular'> = {
     inv: 'New',
     marketing: 'New',
     store: 'New',
+    businesses: 'New',
 };
 
 const DESCRIPTIONS: Record<string, string> = {
@@ -79,6 +81,7 @@ const STANDALONE_APPS: AppDef[] = [
     { name: 'CRM', page: 'crm', route: 'crm', desc: 'Customers, loyalty & insights', iconName: 'diversity_3', requires: 'customers' },
     { name: 'Marketing Suite', page: 'marketing', route: 'marketing', desc: 'Facebook posts, comments & insights', iconName: 'campaign', requires: 'marketing', comingSoon: MARKETING_COMING_SOON },
     { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Storefront link, QR & catalog sharing', iconName: 'storefront', requires: 'online-store' },
+    { name: 'My Businesses', page: 'businesses', route: 'businesses', desc: 'Run multiple shops from one account', iconName: 'domain', requires: 'businesses' },
     { name: 'Inventory Manager', page: 'inv', route: 'inv', desc: 'Stock value, alerts & items', iconName: 'inventory_2', requires: 'inventory' },
     { name: 'User Manager', page: 'team', route: 'team', desc: 'Team members, roles & access', iconName: 'manage_accounts', requires: 'users' },
     { name: 'Procurement Hub', page: 'procure', route: 'procure', desc: 'Suppliers & purchase orders', iconName: 'local_shipping', requires: 'suppliers' },

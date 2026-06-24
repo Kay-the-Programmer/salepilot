@@ -31,7 +31,6 @@ interface AllSalesPageProps {
 export default function AllSalesPage({ customers, storeSettings }: AllSalesPageProps) {
     const [isFilterSheetOpen, setIsFilterSheetOpen] = useState(false);
 
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [mobileView, setMobileView] = useState<'summary' | 'history'>('history');
     const [sortBy, setSortBy] = useState('date');
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');

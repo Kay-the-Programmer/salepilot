@@ -59,6 +59,9 @@ const updateStoredUser = (updatedFields: Partial<User>): User | null => {
     return null;
 };
 
+/** Persist the active business on the stored session (keeps the JWT intact). */
+export const setStoredCurrentStore = (storeId: string): User | null => updateStoredUser({ currentStoreId: storeId });
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 /** Email / password login → backend JWT */

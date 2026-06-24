@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { api } from '../../services/api';
 import { WhatsAppMessage } from '../../types';
 import LoadingSpinner from '../LoadingSpinner';
-import { ArrowLeftIcon, ArrowUpTrayIcon } from '../icons'; // Adjust imports
+import { ArrowLeftIcon } from '../icons';
 
 interface ChatWindowProps {
     conversationId: string;

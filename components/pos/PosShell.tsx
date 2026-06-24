@@ -36,7 +36,6 @@ export const PosShell: React.FC<PosShellProps> = ({
     drawerOpen,
     onCloseDrawer,
     onNavigate,
-    onExit,
     onLogout,
     children,
 }) => {

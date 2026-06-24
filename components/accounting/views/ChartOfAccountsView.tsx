@@ -4,7 +4,6 @@ import { formatCurrency } from '../../../utils/currency';
 import PlusIcon from '../../icons/PlusIcon';
 import PencilIcon from '../../icons/PencilIcon';
 import TrashIcon from '../../icons/TrashIcon';
-import CalculatorIcon from '../../icons/CalculatorIcon';
 import ChevronDownIcon from '../../icons/ChevronDownIcon';
 import EllipsisVerticalIcon from '../../icons/EllipsisVerticalIcon';
 import CalendarDaysIcon from '../../icons/CalendarDaysIcon';

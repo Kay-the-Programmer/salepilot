@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import FilterIcon from '../../icons/FilterIcon';
 import XMarkIcon from '../../icons/XMarkIcon';
 import CalendarIcon from '../../icons/CalendarIcon';

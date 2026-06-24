@@ -45,10 +45,6 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({
         onSaveCategory(category);
         handleCloseModal();
     };
-    
-    const filteredCategories = categories.filter(category => 
-        category.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
 
     return (
         <>
