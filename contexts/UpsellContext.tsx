@@ -9,7 +9,7 @@ import {
     SOCIAL_FREE,
 } from '../utils/entitlements';
 import { UpsellContextData, UpsellMoment, UpsellSurface } from '../utils/upsell';
-import { upsellService } from '../services/upsellService';
+import { upsellService, ModulePrice } from '../services/upsellService';
 
 /**
  * React binding for the upsell engine.
@@ -121,6 +121,7 @@ export interface UseUpsell {
     recordShown: (m: UpsellMoment) => void;
     recordClick: (m: UpsellMoment) => void;
     recordDismissed: (m: UpsellMoment, opts?: { permanent?: boolean }) => void;
+    getPrice: (module: string) => ModulePrice | null;
 }
 
 /** Reactive read hook for upsell surfaces. */
@@ -132,5 +133,6 @@ export function useUpsell(): UseUpsell {
         recordShown: m => upsellService.recordShown(m),
         recordClick: m => upsellService.recordClick(m),
         recordDismissed: (m, opts) => upsellService.recordDismissed(m, opts),
+        getPrice: module => upsellService.getPrice(module),
     };
 }

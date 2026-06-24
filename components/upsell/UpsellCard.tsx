@@ -11,9 +11,17 @@ import { useUpsell } from '../../contexts/UpsellContext';
  * - CTA records a click and deep-links into the add-on checkout.
  * - X dismisses for the moment's cooldown; "Don't show again" opts out for good.
  */
+/** "From K110/mo" style price label from the live catalogue, or '' if unknown. */
+const priceLabel = (price: number, currency: string): string => {
+    const sym = currency === 'USD' ? '$' : currency === 'ZMW' ? 'K' : currency === 'GBP' ? '£' : currency === 'EUR' ? '€' : '';
+    const v = (Number.isFinite(price) ? price : 0).toLocaleString();
+    return `From ${sym ? `${sym}${v}` : `${currency} ${v}`}/mo`;
+};
+
 export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> = ({ moment, className = '' }) => {
     const navigate = useNavigate();
-    const { recordShown, recordClick, recordDismissed } = useUpsell();
+    const { recordShown, recordClick, recordDismissed, getPrice } = useUpsell();
+    const price = getPrice(moment.module);
 
     useEffect(() => {
         recordShown(moment);
@@ -45,6 +53,7 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
                         {moment.ctaLabel}
                         <span className="material-symbols-rounded text-[18px]">arrow_forward</span>
                     </button>
+                    {price && <span className="text-xs font-semibold text-sp-green">{priceLabel(price.price, price.currency)}</span>}
                     <button
                         type="button"
                         onClick={() => recordDismissed(moment, { permanent: true })}

@@ -25,8 +25,24 @@ import { trackEvent } from '../src/utils/analytics';
 
 const PERSIST_PREFIX = 'salePilot.upsell.';
 const FIRST_SEEN_PREFIX = 'salePilot.upsell.firstSeen.';
+const PRICING_KEY = 'salePilot.upsell.pricing';
 
 type Attribution = { momentId: string; surface: UpsellSurface };
+
+/** Per-module price for copy ("From K110/mo"). Sourced from the live catalogue. */
+export interface ModulePrice { price: number; currency: string }
+type PricingMap = Record<string, ModulePrice>;
+
+function loadPricing(): PricingMap {
+    if (typeof localStorage === 'undefined') return {};
+    try {
+        const raw = localStorage.getItem(PRICING_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        return parsed && typeof parsed === 'object' ? parsed : {};
+    } catch {
+        return {};
+    }
+}
 
 function loadPersist(userId?: string): UpsellPersistMap {
     if (typeof localStorage === 'undefined') return {};
@@ -49,6 +65,9 @@ class UpsellService {
     private impressions = new Set<string>();                 // momentIds already counted this session
     private attribution: Record<string, Attribution> = {};  // module -> click attribution
     private manualAdds = 0;
+
+    // Live catalogue pricing (offline fallback = last-cached). Never hardcoded.
+    private pricing: PricingMap = loadPricing();
 
     private listeners = new Set<() => void>();
     private version = 0;
@@ -99,6 +118,27 @@ class UpsellService {
 
     getManualAdds(): number {
         return this.manualAdds;
+    }
+
+    /** Install live catalogue prices (called from the React layer after fetching
+     *  /subscriptions/addons). Cached for offline use. */
+    setPricing(addons: Array<{ id: string; price: number; currency: string }> | null | undefined): void {
+        if (!Array.isArray(addons) || addons.length === 0) return;
+        const map: PricingMap = {};
+        for (const a of addons) {
+            if (a && a.id && Number.isFinite(a.price)) map[a.id] = { price: a.price, currency: a.currency || 'ZMW' };
+        }
+        if (Object.keys(map).length === 0) return;
+        this.pricing = map;
+        if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem(PRICING_KEY, JSON.stringify(map)); } catch { /* ignore */ }
+        }
+        this.emit();
+    }
+
+    /** Last-known price for a module, or null if the catalogue hasn't loaded. */
+    getPrice(module: string): ModulePrice | null {
+        return this.pricing[module] ?? null;
     }
 
     /** Called by the product-create path; counts toward bulk_manual_adds. */

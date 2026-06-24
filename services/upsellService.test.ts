@@ -123,6 +123,19 @@ describe('manual-add counting', () => {
     });
 });
 
+describe('config-driven pricing', () => {
+    it('returns null before the catalogue loads, then the live price', () => {
+        expect(svc.getPrice('whatsapp_messaging')).toBeNull();
+        svc.setPricing([{ id: 'whatsapp_messaging', price: 110, currency: 'ZMW' }]);
+        expect(svc.getPrice('whatsapp_messaging')).toEqual({ price: 110, currency: 'ZMW' });
+    });
+    it('ignores an empty catalogue (keeps last-known pricing)', () => {
+        svc.setPricing([{ id: 'ai_assistant', price: 200, currency: 'ZMW' }]);
+        svc.setPricing([]); // e.g. a failed/empty fetch must not wipe prices
+        expect(svc.getPrice('ai_assistant')).toEqual({ price: 200, currency: 'ZMW' });
+    });
+});
+
 describe('no context = no upsell', () => {
     it('returns null before a snapshot is set', async () => {
         const bare = await freshService();

@@ -256,6 +256,15 @@ export default function Dashboard() {
         storeCount: systemStores.length || 1,
     });
 
+    // Load live add-on prices once authenticated, so upsell copy can show real
+    // Kwacha prices (cached for offline by the service). Prices are never hardcoded.
+    useEffect(() => {
+        if (!currentUser) return;
+        api.get<Array<{ id: string; price: number; currency: string }>>('/subscriptions/addons')
+            .then(list => upsellService.setPricing(list))
+            .catch(() => { /* keep last-cached pricing */ });
+    }, [currentUser]);
+
     // High-value data moment delivered as a single local push (dormant_customers
     // only). Fires at most once per session, never prompts for permission, and
     // honours cooldown/budget via the engine.

@@ -85,15 +85,22 @@ store slices down as props. In-memory state (all `useState`):
   `dapptile__cta--locked` lock state and `dapptile__tag` badges (see `renderTile`).
   It already receives `storeSettings` + `onLaunch(page)`. We add a contextual
   `discover_card` tile reading `getEligible('discover_card')`.
-- **AI day-summary** — the closest real surface is the **Business Assistant**
-  (`pages/assistant/AssistantApp.tsx`) greeting + insight bento grid; it receives
-  `user/products/sales/customers/storeSettings`. The `daily_summary` nudge slot
-  goes there. (`components/reports/AiSummaryCard.tsx` is only a floating chat
-  launcher, not a summary surface.)
+- **AI day-summary** — placed on the **Business Dashboard** overview
+  (`components/dash-app/DashboardApp.tsx` → BizOverview), the free daily landing
+  for admins (`DEFAULT_PAGES.admin = 'dash'`). The Business **Assistant** greeting
+  (`pages/assistant/AssistantApp.tsx`) is the literal "AI day-summary card", but it
+  is module-gated — a non-owner only ever sees its full upgrade gate, so the AI
+  nudge there would be dead (owned-module gate). The day-summary surface must be
+  free-visible, hence the Business Dashboard.
 - **Inline cards** — placed at the top of Inventory / Customers / Logistics
   screens via a `<UpsellInline ids={[...]} />` helper that asks the engine for the
   top eligible `inline_card` moment **restricted to that screen's ids** (so each
   screen shows its own card and the one-per-session budget still holds).
+  Two moments are deliberately NOT inline-placed because a richer dedicated
+  surface already exists: `product_cap_near` is served by Inventory's existing
+  `ProductCapBanner` meter (placing a second cap card would stack), and Logistics
+  already has a persistent "Public tracking page" button — the proactive
+  `tracking_requested` card complements it rather than replacing it.
 - **Push** — `services/notificationService.ts` only handles FCM *subscription*
   (no local-notify method). We add `showLocalNotification(title, opts)` that uses
   the ready service-worker registration when `Notification.permission === 'granted'`,
@@ -119,6 +126,19 @@ store slices down as props. In-memory state (all `useState`):
   singleton** (`services/upsellService.ts`), not in React context. The React hook
   (`contexts/UpsellContext.tsx` → `useUpsell()`) is a thin reactive wrapper; the
   Dashboard pushes the live `UpsellContextData` snapshot into the singleton.
+
+### Phase 5 — config-driven pricing
+
+- Prices are **never hardcoded** in `upsell.ts`. Real Kwacha prices come from the
+  live add-on catalogue **`/subscriptions/addons`** (`{ id, price, currency }`) —
+  the same endpoint `PaywallHost` already uses (the brief named
+  `/subscriptions/page-modules`, but that endpoint is the page→module *map*, not
+  pricing). Dashboard fetches it once authenticated and calls
+  `upsellService.setPricing(...)`. The service caches the map to
+  `localStorage['salePilot.upsell.pricing']`, so prices survive **offline** as
+  last-known values; absent any cache, cards simply omit the price. To keep the
+  engine/service free of `api`/Capacitor imports (so the node tests need no
+  jsdom), pricing is *pushed in* rather than fetched inside the service.
 
 ## Tooling
 

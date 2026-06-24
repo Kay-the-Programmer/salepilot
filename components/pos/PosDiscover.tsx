@@ -134,8 +134,9 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
     const [query, setQuery] = useState('');
 
     // ── Contextual upsell tile (discover_card surface) ────────────────────────
-    const { getEligible, recordShown, recordClick } = useUpsell();
+    const { getEligible, recordShown, recordClick, getPrice } = useUpsell();
     const discoverMoment = getEligible('discover_card');
+    const discoverPrice = discoverMoment ? getPrice(discoverMoment.module) : null;
     useEffect(() => {
         if (discoverMoment) recordShown(discoverMoment);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -383,7 +384,10 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                                 <span className="dpromo__icon"><PosIcon name="workspace_premium" size={26} fill={1} /></span>
                                 <span className="dpromo__body">
                                     <span className="dpromo__title">{discoverMoment.headline}</span>
-                                    <span className="dpromo__text">{discoverMoment.body}</span>
+                                    <span className="dpromo__text">
+                                        {discoverMoment.body}
+                                        {discoverPrice ? ` From ${discoverPrice.currency === 'ZMW' ? 'K' : `${discoverPrice.currency} `}${discoverPrice.price.toLocaleString()}/mo.` : ''}
+                                    </span>
                                 </span>
                                 <span className="dpromo__cta">{discoverMoment.ctaLabel} <PosIcon name="arrow_forward" size={18} /></span>
                             </button>
