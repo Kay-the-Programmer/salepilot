@@ -22,6 +22,7 @@ import DailySalesSummary from '../components/sales/all_sales/DailySalesSummary';
 import SaleDetailContent from '../components/sales/SaleDetailContent';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import PrinterIcon from '../components/icons/PrinterIcon';
+import { UpsellInline } from '../components/upsell/UpsellCard';
 
 interface AllSalesPageProps {
     customers: Customer[];
@@ -302,6 +303,8 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                             hasActiveFilters={hasActiveFilters}
                             onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
                         />
+                        {/* Nudge cash-heavy merchants to accept mobile money */}
+                        <UpsellInline ids={['accept_mobile_money']} className="mt-4" />
                     </div>
 
                     {/* Loading State */}

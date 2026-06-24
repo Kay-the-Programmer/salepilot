@@ -34,6 +34,7 @@ const FALLBACK_NAMES: Record<string, string> = {
   quick_import: 'Quick Import',
   advanced_reports: 'Advanced Reports',
   public_tracking: 'Public Shipment Tracking',
+  payment_gateway: 'Accept Mobile Money',
 };
 
 const PaywallHost: React.FC = () => {

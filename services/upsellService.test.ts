@@ -29,6 +29,8 @@ function makeCtx(overrides: Partial<UpsellContextData> = {}): UpsellContextData 
         recentStockoutCount: 0,
         userCount: 1,
         storeCount: 1,
+        salesCount: 0,
+        cashSaleCount: 0,
         ...overrides,
     };
 }

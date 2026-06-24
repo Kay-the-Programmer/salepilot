@@ -28,6 +28,8 @@ function ctx(overrides: Partial<UpsellContextData> = {}): UpsellContextData {
         recentStockoutCount: 0,
         userCount: 1,
         storeCount: 1,
+        salesCount: 0,
+        cashSaleCount: 0,
         ...overrides,
     };
 }
@@ -104,6 +106,13 @@ describe('data triggers', () => {
         expect(at(80)).toBe(true);
         expect(at(99)).toBe(true);
         expect(at(100)).toBe(false);
+    });
+    it('accept_mobile_money fires on ≥8 cash sales and not when Lenco is connected', () => {
+        const moment = UPSELL_MOMENTS.find(m => m.id === 'accept_mobile_money')!;
+        expect(isEligible(moment, ctx({ cashSaleCount: 7 }), state())).toBe(false);
+        expect(isEligible(moment, ctx({ cashSaleCount: 8 }), state())).toBe(true);
+        // a merchant who already accepts mobile money (owns the module) is excluded
+        expect(isEligible(moment, ctx({ cashSaleCount: 20, hasModule: (m) => m === 'payment_gateway' }), state())).toBe(false);
     });
     it('bulk_manual_adds needs ≥5 manual adds', () => {
         const moment = UPSELL_MOMENTS.find(m => m.id === 'bulk_manual_adds')!;
@@ -202,9 +211,10 @@ describe('offline — eligibility makes no network calls', () => {
 });
 
 describe('catalogue shape (Definition of Done)', () => {
-    it('defines the nine brief moments (+1 discover_card)', () => {
+    it('defines the nine brief moments (+1 discover_card, +1 payments)', () => {
         const ids = UPSELL_MOMENTS.map(m => m.id).sort();
         expect(ids).toEqual([
+            'accept_mobile_money',
             'bulk_manual_adds',
             'daily_summary_ai',
             'discover_advanced_reports',

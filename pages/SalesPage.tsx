@@ -418,12 +418,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 setLencoReference(localRef);
                                 setCartView('confirm');
                             } else {
-                                // Standard flow: Fetch reference from backend
-                                const refResponse = await api.post<any>('/payments/lenco/initiate', { prefix: 'SP_SALE' });
-                                if (refResponse.status && refResponse.data.reference) {
-                                    setLencoReference(refResponse.data.reference);
-                                    setCartView('confirm');
-                                }
+                                // No merchant Lenco account connected. The Accept Mobile Money
+                                // add-on enables this option, but funds must settle to the
+                                // MERCHANT — we never route a sale to the platform account.
+                                // Guide them to connect their own Lenco account first.
+                                showSnackbar('Connect your Lenco account in Settings → Financial to receive mobile-money payments.', 'warning');
                             }
                         } catch (err) {
                             console.error('Failed to initiate Lenco reference:', err);

@@ -55,6 +55,9 @@ export interface UpsellContextData {
     recentStockoutCount: number;  // products currently out of stock (approximation — see UPSELL_NOTES)
     userCount: number;            // team members on the store
     storeCount: number;
+
+    salesCount: number;           // total recorded sales
+    cashSaleCount: number;        // sales taken in cash (no electronic payment captured)
 }
 
 export interface UpsellMoment {
@@ -139,6 +142,18 @@ export const UPSELL_MOMENTS: UpsellMoment[] = [
         headline: 'Turn your numbers into decisions',
         body: 'Advanced reports give you P&L, cashflow and tax-ready exports from data you already have.',
         ctaLabel: 'Unlock advanced reports',
+    },
+    {
+        id: 'accept_mobile_money',
+        module: MODULES.PAYMENT_GATEWAY,
+        surface: 'inline_card',
+        stage: 'activation',
+        priority: 65,
+        cooldownDays: 14,
+        trigger: c => c.cashSaleCount >= 8,
+        headline: "You're taking a lot of cash sales",
+        body: 'Let customers pay by Airtel or MTN at checkout — money lands straight in your account.',
+        ctaLabel: 'Accept mobile money',
     },
     {
         id: 'stockout_repeat',

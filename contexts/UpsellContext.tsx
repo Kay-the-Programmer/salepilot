@@ -43,8 +43,18 @@ function makeHasModule(storeSettings: StoreSettings | null): (m: ModuleId) => bo
     return (m: ModuleId) => {
         if (m === MODULES.WHATSAPP_MESSAGING && WHATSAPP_FREE) return true;
         if (m === MODULES.SOCIAL_MARKETING && SOCIAL_FREE) return true;
+        // A merchant who has connected their own Lenco account already accepts
+        // mobile money — don't upsell the gateway to them.
+        if (m === MODULES.PAYMENT_GATEWAY && !!storeSettings?.lencoPublicKey) return true;
         return hasModule(storeSettings, m);
     };
+}
+
+/** A sale counts as cash when no electronic payment was captured. */
+function isCashSale(s: Sale): boolean {
+    const method = (s.paymentMethod || '').toLowerCase();
+    if (method) return method.includes('cash');
+    return s.cashReceived != null; // no method recorded but cash was tendered
 }
 
 function buildSnapshot(input: UpsellSyncInput): UpsellContextData {
@@ -77,6 +87,8 @@ function buildSnapshot(input: UpsellSyncInput): UpsellContextData {
     // No historical stock-out signal exists; approximate with current out-of-stock.
     const recentStockoutCount = products.filter(p => p.status === 'active' && (p.stock ?? 0) <= 0).length;
 
+    const cashSaleCount = sales.reduce((n, s) => n + (isCashSale(s) ? 1 : 0), 0);
+
     return {
         role: currentUser?.role ?? '',
         isMidSale,
@@ -90,6 +102,8 @@ function buildSnapshot(input: UpsellSyncInput): UpsellContextData {
         recentStockoutCount,
         userCount: users.length,
         storeCount,
+        salesCount: sales.length,
+        cashSaleCount,
     };
 }
 
