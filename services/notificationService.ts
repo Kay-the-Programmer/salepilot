@@ -82,6 +82,25 @@ class NotificationService {
         }
     }
 
+    /**
+     * Show a single LOCAL notification (no server / FCM round-trip) via the ready
+     * service worker. Used by the upsell engine for high-value data moments. Safe
+     * no-op unless the user has already granted notification permission — we never
+     * prompt here.
+     */
+    async showLocalNotification(title: string, options: NotificationOptions = {}): Promise<boolean> {
+        try {
+            if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return false;
+            if (!('serviceWorker' in navigator)) return false;
+            const registration = await navigator.serviceWorker.ready;
+            await registration.showNotification(title, { badge: '/favicon.ico', icon: '/favicon.ico', ...options });
+            return true;
+        } catch (error) {
+            console.warn('showLocalNotification failed:', error);
+            return false;
+        }
+    }
+
     async getSubscriptionStatus() {
         if (!('serviceWorker' in navigator) || !('PushManager' in window) || !messagingPromise) {
             return false;

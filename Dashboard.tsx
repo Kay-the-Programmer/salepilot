@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import SocketService from './services/socketService';
 import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Expense, RecurringExpense } from './types';
@@ -87,6 +87,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { logEvent } from './src/utils/analytics';
 import { useUpsellSync } from './contexts/UpsellContext';
 import { upsellService } from './services/upsellService';
+import { notificationService } from './services/notificationService';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -254,6 +255,21 @@ export default function Dashboard() {
         isMidSale,
         storeCount: systemStores.length || 1,
     });
+
+    // High-value data moment delivered as a single local push (dormant_customers
+    // only). Fires at most once per session, never prompts for permission, and
+    // honours cooldown/budget via the engine.
+    const pushFiredRef = useRef(false);
+    useEffect(() => {
+        if (pushFiredRef.current) return;
+        const m = upsellService.getEligible('push');
+        if (!m) return;
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        pushFiredRef.current = true;
+        notificationService
+            .showLocalNotification(m.headline, { body: m.body, data: { url: '/crm', momentId: m.id, module: m.module } })
+            .then(ok => { if (ok) upsellService.recordShown(m); });
+    }, [products, customers, sales, currentUser, isMidSale]);
 
     // Close mobile sidebar after navigation
     useEffect(() => {

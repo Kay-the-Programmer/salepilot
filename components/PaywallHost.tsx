@@ -1,6 +1,8 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
+import { getPaywallMoment } from '../utils/upsell';
+import { upsellService } from '../services/upsellService';
 
 /**
  * Global soft-paywall host. Listens for the `salepilot:paywall` event the API
@@ -42,6 +44,15 @@ const PaywallHost: React.FC = () => {
   const [message, setMessage] = useState('');
   const [addon, setAddon] = useState<AddonInfo | null>(null);
 
+  // Matching upsell moment for this locked module (outcome-framed copy + bundle).
+  // The 402 itself is the trigger, so this lookup ignores ctx/session gates.
+  const moment = useMemo(() => (moduleId ? getPaywallMoment(moduleId) : null), [moduleId]);
+
+  // Count an impression once the enriched prompt is on screen.
+  useEffect(() => {
+    if (open && moment) upsellService.recordShown(moment);
+  }, [open, moment]);
+
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail || {};
@@ -67,17 +78,26 @@ const PaywallHost: React.FC = () => {
   }, [open, moduleId]);
 
   const close = useCallback(() => {
+    if (moment) upsellService.recordDismissed(moment); // analytics + cooldown (no effect on the hard 402 gate)
     openRef.current = false;
     setOpen(false);
     setModuleId(null);
     setAddon(null);
-  }, []);
+  }, [moment]);
 
   const goUnlock = useCallback(() => {
     const id = moduleId;
+    if (moment) upsellService.recordClick(moment);
     close();
     navigate(`/subscription?view=addons${id ? `&module=${encodeURIComponent(id)}` : ''}`);
-  }, [moduleId, navigate, close]);
+  }, [moduleId, moment, navigate, close]);
+
+  // Secondary "recommended bundle" path — opens the full plans view.
+  const goPlans = useCallback(() => {
+    if (moment) upsellService.recordClick(moment);
+    close();
+    navigate('/subscription?view=plans');
+  }, [moment, navigate, close]);
 
   if (!open) return null;
 
@@ -100,8 +120,8 @@ const PaywallHost: React.FC = () => {
           <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-sp-amber-soft flex items-center justify-center">
             <span className="material-symbols-rounded text-sp-amber text-[30px]">lock</span>
           </div>
-          <h3 className="text-lg font-extrabold tracking-tight text-brand-text mb-1.5">Unlock {name}</h3>
-          <p className="text-sm text-brand-text-muted">{message}</p>
+          <h3 className="text-lg font-extrabold tracking-tight text-brand-text mb-1.5">{moment ? moment.headline : `Unlock ${name}`}</h3>
+          <p className="text-sm text-brand-text-muted">{moment?.body || message}</p>
           {priceLabel && !alreadyOwned && (
             <p className="text-2xl font-extrabold text-sp-green mt-3">{priceLabel}</p>
           )}
@@ -111,8 +131,24 @@ const PaywallHost: React.FC = () => {
             onClick={goUnlock}
             className="w-full py-3 rounded-xl text-sm font-bold bg-sp-green text-white hover:bg-sp-green-dark transition active:scale-95"
           >
-            {alreadyOwned ? 'Manage add-on' : priceLabel ? `Unlock for ${priceLabel}` : 'See add-ons'}
+            {alreadyOwned
+              ? 'Manage add-on'
+              : moment && !priceLabel
+                ? moment.ctaLabel
+                : moment && priceLabel
+                  ? `${moment.ctaLabel} · ${priceLabel}`
+                  : priceLabel
+                    ? `Unlock for ${priceLabel}`
+                    : 'See add-ons'}
           </button>
+          {moment && !alreadyOwned && (
+            <button
+              onClick={goPlans}
+              className="w-full py-2.5 rounded-xl text-sm font-bold text-sp-green hover:bg-sp-green-soft transition active:scale-95"
+            >
+              See all plans
+            </button>
+          )}
           <button
             onClick={close}
             className="w-full py-2.5 rounded-xl text-sm font-bold text-brand-text-muted hover:bg-surface-variant transition"

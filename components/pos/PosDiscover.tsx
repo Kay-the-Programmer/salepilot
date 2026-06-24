@@ -5,6 +5,7 @@ import { getAccessibleNavItems } from '../Sidebar';
 import PosIcon from '../sales/PosIcon';
 import AssistantCharacter from './AssistantCharacter';
 import { hasModule, MODULES, isPageEntitled, MARKETING_COMING_SOON } from '../../utils/entitlements';
+import { useUpsell } from '../../contexts/UpsellContext';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
 import './discover.css';
@@ -131,6 +132,20 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
     );
 
     const [query, setQuery] = useState('');
+
+    // ── Contextual upsell tile (discover_card surface) ────────────────────────
+    const { getEligible, recordShown, recordClick } = useUpsell();
+    const discoverMoment = getEligible('discover_card');
+    useEffect(() => {
+        if (discoverMoment) recordShown(discoverMoment);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [discoverMoment?.id]);
+    const openUpsell = () => {
+        if (!discoverMoment) return;
+        recordClick(discoverMoment);
+        onLaunch(`subscription?view=addons&module=${encodeURIComponent(discoverMoment.module)}`);
+    };
+
     const greeting = (() => {
         const h = new Date().getHours();
         if (h < 12) return 'Good morning';
@@ -361,8 +376,18 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                             </section>
                         )}
 
-                        {/* Upgrade / cross-sell banner */}
-                        {!q && (
+                        {/* Upgrade / cross-sell banner — contextual when the engine has a
+                            discover_card moment, otherwise the generic promo. */}
+                        {!q && (discoverMoment ? (
+                            <button type="button" className="dpromo" onClick={openUpsell}>
+                                <span className="dpromo__icon"><PosIcon name="workspace_premium" size={26} fill={1} /></span>
+                                <span className="dpromo__body">
+                                    <span className="dpromo__title">{discoverMoment.headline}</span>
+                                    <span className="dpromo__text">{discoverMoment.body}</span>
+                                </span>
+                                <span className="dpromo__cta">{discoverMoment.ctaLabel} <PosIcon name="arrow_forward" size={18} /></span>
+                            </button>
+                        ) : (
                             <button type="button" className="dpromo" onClick={() => onLaunch('subscription')}>
                                 <span className="dpromo__icon"><PosIcon name="rocket_launch" size={26} fill={1} /></span>
                                 <span className="dpromo__body">
@@ -371,7 +396,7 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                                 </span>
                                 <span className="dpromo__cta">Explore plans <PosIcon name="arrow_forward" size={18} /></span>
                             </button>
-                        )}
+                        ))}
 
                         {moreFiltered.length > 0 && (
                             <section className="ddisc__section">

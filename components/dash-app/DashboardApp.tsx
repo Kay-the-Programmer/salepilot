@@ -5,6 +5,7 @@ import BizOverview from './BizOverview';
 import BizSales from './BizSales';
 import BizProducts from './BizProducts';
 import { buildDashboard, DashPeriod } from './dashboardModel';
+import { UpsellInline } from '../upsell/UpsellCard';
 import '../crm/crm.css';
 import './dash.css';
 
@@ -66,8 +67,11 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
         );
     } else {
         content = (
-            <BizOverview
-                overview={overview}
+            <>
+                {/* Daily-summary nudge slot (one max), shown on the day-summary card. */}
+                <UpsellInline ids={['daily_summary_ai']} surface="daily_summary" className="mx-4 md:mx-6 mt-4" />
+                <BizOverview
+                    overview={overview}
                 storeSettings={storeSettings}
                 user={user}
                 period={period}
@@ -78,7 +82,8 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
                 onInventory={onInventory}
                 onOrders={onOrders}
                 onCustomers={onCustomers}
-            />
+                />
+            </>
         );
     }
 

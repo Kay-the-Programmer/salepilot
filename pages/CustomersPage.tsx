@@ -11,6 +11,7 @@ import { Customer, Sale, StoreSettings, User } from '../types';
 import ConfirmationModal from '../components/ConfirmationModal';
 import Pagination from '../components/ui/Pagination';
 import ListGridToggle from '../components/ui/ListGridToggle';
+import { UpsellInline } from '../components/upsell/UpsellCard';
 
 
 
@@ -308,6 +309,9 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                         />
                     </div>
                 </header>
+
+                {/* Win-back nudge for dormant regulars */}
+                <UpsellInline ids={['dormant_customers']} className="mx-4 mt-3" />
 
                 {/* Split View */}
                 <main className="flex flex-1 overflow-hidden">
@@ -695,6 +699,7 @@ const CustomersPage: React.FC<CustomersPageProps> = ({
                 className="flex-1 overflow-y-auto bg-background smooth-scroll safe-area-padding safe-area-bottom"
             >
                 <div className="p-4">
+                    <UpsellInline ids={['dormant_customers']} className="mb-4" />
                     {!isLoading && filteredCustomers.length > 0 && searchTerm && (
                         <div className="mb-4 text-sm text-brand-text-muted">
                             Found {filteredCustomers.length} customer{filteredCustomers.length !== 1 ? 's' : ''} for "{searchTerm}"
