@@ -41,9 +41,9 @@ const CATEGORIES = [
     'Other',
 ];
 const ASIDE_FEATURES = [
-    'Cloud-synced inventory across all devices',
-    'Instant hardware integration (Printers & Scanners)',
-    '24/7 dedicated support for shop owners',
+    'Take MTN & Airtel Money at the till',
+    'Easy setup no hardware needed',
+    'Manage staff and control access',
 ];
 
 export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
@@ -807,10 +807,10 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             {/* Bottom content */}
                             <div className="absolute inset-0 flex flex-col justify-end p-7">
                                 <span className="self-start bg-primary/70 backdrop-blur-sm text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4">
-                                    Trusted by serious stores
+                                    Trusted by smart stores
                                 </span>
                                 <h3 className="text-white text-2xl font-extrabold tracking-tight leading-tight mb-5">
-                                    Your retail journey<br />starts here.
+                                    Your business journey<br />starts here.
                                 </h3>
                                 <ul className="space-y-3">
                                     {ASIDE_FEATURES.map(f => (

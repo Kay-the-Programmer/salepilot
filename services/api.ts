@@ -365,7 +365,12 @@ export const api = {
     };
 
     const isAuth = endpoint.includes('/auth/');
-    const clientRequestId = genClientRequestId();
+    // The idempotency key is only attached when a mutation is REPLAYED from the
+    // offline queue (see syncOfflineMutations) — never on the live request. That
+    // keeps normal online traffic free of a custom header, so it can't trip a
+    // CORS preflight against a backend that hasn't allow-listed
+    // x-idempotency-key. Auth requests are never queued, so they carry no key.
+    const clientRequestId = isAuth ? undefined : genClientRequestId();
 
     if (!getOnlineStatus()) {
       if (options.skipQueue || isAuth) {
@@ -376,7 +381,7 @@ export const api = {
     }
 
     try {
-      return await request<T>(endpoint, reqOptions, clientRequestId);
+      return await request<T>(endpoint, reqOptions);
     } catch (err: any) {
       // Network errors -> queue; server errors should bubble up
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
@@ -402,7 +407,7 @@ export const api = {
     }
 
     try {
-      return await request<T>(endpoint, options, clientRequestId);
+      return await request<T>(endpoint, options);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
         const optimistic = await applyOptimisticUpdate(endpoint, 'PUT', body);
@@ -426,7 +431,7 @@ export const api = {
     }
 
     try {
-      return await request<T>(endpoint, options, clientRequestId);
+      return await request<T>(endpoint, options);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
         const optimistic = await applyOptimisticUpdate(endpoint, 'PATCH', body);
@@ -446,7 +451,7 @@ export const api = {
     }
 
     try {
-      return await request<T>(endpoint, options, clientRequestId);
+      return await request<T>(endpoint, options);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
         const optimistic = await applyOptimisticUpdate(endpoint, 'DELETE', {});
@@ -470,7 +475,7 @@ export const api = {
       return queueAndReturn<T>(endpoint, options, formData, { clientRequestId, optimistic });
     }
     try {
-      return await request<T>(endpoint, options, clientRequestId);
+      return await request<T>(endpoint, options);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
         const obj: any = {};
@@ -496,7 +501,7 @@ export const api = {
       return queueAndReturn<T>(endpoint, options, formData, { clientRequestId, optimistic });
     }
     try {
-      return await request<T>(endpoint, options, clientRequestId);
+      return await request<T>(endpoint, options);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
         const obj: any = {};

@@ -1,16 +1,14 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import type { PurchaseOrder, Product, StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
+import { getOrderLists, saveOrderList, deleteOrderList, type QuickItem, type QuickList } from '../../services/orderListsService';
 import '../accounting/accounting.css';
 
 const PremiumUpgradeModal = React.lazy(() => import('../../components/ui/PremiumUpgradeModal'));
 
 type Tab = 'lists' | 'orders';
-
-interface QuickItem { id: string; name: string; quantity: number; price: number; checked: boolean }
-interface QuickList { id: string; title: string; items: QuickItem[]; createdAt: number; importedAt?: number }
 
 interface PurchaseOrdersAppProps {
   purchaseOrders: PurchaseOrder[];
@@ -55,16 +53,68 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ purchaseOrders, s
   const [itemPrice, setItemPrice] = useState('');
 
   const persist = (next: QuickList[]) => { setLists(next); saveLists(storeId, next); };
+
+  // Debounced per-list upserts so rapid edits (typing a title, ticking items)
+  // collapse into one DB write; deletes fire immediately. Offline writes are
+  // transparently queued and replayed by the api layer.
+  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const scheduleSave = (list: QuickList) => {
+    const timers = saveTimers.current;
+    if (timers[list.id]) clearTimeout(timers[list.id]);
+    timers[list.id] = setTimeout(() => {
+      delete timers[list.id];
+      saveOrderList(list).catch(() => { /* offline → already queued */ });
+    }, 600);
+  };
+  const removeRemote = (id: string) => {
+    const timers = saveTimers.current;
+    if (timers[id]) { clearTimeout(timers[id]); delete timers[id]; }
+    deleteOrderList(id).catch(() => { /* offline → already queued */ });
+  };
+
+  // Load lists from the database on mount, reconciling with the local cache and
+  // migrating any pre-existing local-only lists up to the server.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const server = await getOrderLists();
+        if (cancelled || !Array.isArray(server)) return;
+        const serverIds = new Set(server.map((l) => l.id));
+        const localOnly = loadLists(storeId).filter((l) => !serverIds.has(l.id));
+        localOnly.forEach((l) => { saveOrderList(l).catch(() => { /* queued if offline */ }); });
+        const merged = [...localOnly, ...server].sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+        if (!cancelled) { setLists(merged); saveLists(storeId, merged); }
+      } catch { /* offline / fetch failed → keep the cached lists already in state */ }
+    })();
+    return () => { cancelled = true; };
+  }, [storeId]);
+
   const selected = lists.find((l) => l.id === selectedId) || null;
   const listTotal = (l: QuickList) => l.items.reduce((a, i) => a + i.price * i.quantity, 0);
 
   const addList = () => {
     const l: QuickList = { id: `ql_${Date.now()}`, title: `Order list ${lists.length + 1}`, items: [], createdAt: Date.now() };
     persist([l, ...lists]); setSelectedId(l.id);
+    saveOrderList(l).catch(() => { /* offline → queued */ });
   };
-  const deleteList = (id: string) => { persist(lists.filter((l) => l.id !== id)); if (selectedId === id) setSelectedId(null); };
-  const renameList = (id: string, title: string) => persist(lists.map((l) => (l.id === id ? { ...l, title } : l)));
-  const updateList = (id: string, fn: (l: QuickList) => QuickList) => persist(lists.map((l) => (l.id === id ? fn(l) : l)));
+  const deleteList = (id: string) => {
+    persist(lists.filter((l) => l.id !== id));
+    if (selectedId === id) setSelectedId(null);
+    removeRemote(id);
+  };
+  const renameList = (id: string, title: string) => {
+    let updated: QuickList | undefined;
+    const next = lists.map((l) => { if (l.id !== id) return l; updated = { ...l, title }; return updated; });
+    persist(next);
+    if (updated) scheduleSave(updated);
+  };
+  const updateList = (id: string, fn: (l: QuickList) => QuickList) => {
+    let updated: QuickList | undefined;
+    const next = lists.map((l) => { if (l.id !== id) return l; updated = fn(l); return updated; });
+    persist(next);
+    if (updated) scheduleSave(updated);
+  };
 
   const addItem = (e: React.FormEvent) => {
     e.preventDefault();

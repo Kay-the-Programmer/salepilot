@@ -37,7 +37,6 @@ const SalesPage = lazy(() => import('@/pages/SalesPage'));
 const CategoriesPage = lazy(() => import('@/pages/CategoriesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
 const ReturnsPage = lazy(() => import('@/pages/ReturnsPage'));
-const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
@@ -1303,7 +1302,8 @@ export default function Dashboard() {
                 case 'returns':
                     return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
                 case 'customers':
-                    return <CustomersPage customers={customers} sales={sales} onSaveCustomer={handleSaveCustomer} onDeleteCustomer={handleDeleteCustomer} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
+                    // The standalone admin customers page was removed; customers live in the CRM app now.
+                    return <Navigate to="/crm/customers" replace />;
                 case 'suppliers':
                     return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
                 case 'purchase-orders':
@@ -1603,7 +1603,6 @@ export default function Dashboard() {
                             onNewSale={() => navigate('/sales')}
                             onInventory={() => navigate('/inventory')}
                             onOrders={() => navigate('/orders')}
-                            onCustomers={() => navigate('/customers')}
                         />
                     </Suspense>
                 </NotificationProvider>

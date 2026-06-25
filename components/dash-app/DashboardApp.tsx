@@ -24,7 +24,6 @@ interface DashboardAppProps {
     onNewSale: () => void;
     onInventory: () => void;
     onOrders: () => void;
-    onCustomers: () => void;
 }
 
 /**
@@ -35,7 +34,7 @@ interface DashboardAppProps {
 export const DashboardApp: React.FC<DashboardAppProps> = ({
     section, user, sales, products, customers, storeSettings,
     onNavigate, onReports, onDiscover, onExit, onLogout,
-    onNewSale, onInventory, onOrders, onCustomers,
+    onNewSale, onInventory, onOrders,
 }) => {
     const [period, setPeriod] = useState<DashPeriod>('week');
 
@@ -81,7 +80,6 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
                 onNewSale={onNewSale}
                 onInventory={onInventory}
                 onOrders={onOrders}
-                onCustomers={onCustomers}
                 />
             </>
         );

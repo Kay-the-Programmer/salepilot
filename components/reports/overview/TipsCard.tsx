@@ -85,7 +85,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
             description: "Build client relationships and track loyalty.",
             icon: <UsersIcon className="w-5 h-5" />,
             actionLabel: "Add Customer",
-            path: "/customers",
+            path: "/crm/customers",
             color: "amber",
             show: !hasCustomers
         },

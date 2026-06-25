@@ -1,7 +1,7 @@
 export type SnackbarType = 'success' | 'error' | 'info' | 'warning' | 'sync';
 import { lazy, Suspense, useEffect } from 'react';
 import { ToastProvider } from './contexts/ToastContext';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
 import ThemeToggle from './components/ThemeToggle';
@@ -129,7 +129,8 @@ export default function App() {
                                 <Route path="/sales-history" element={<Dashboard />} />
 
                                 <Route path="/returns" element={<Dashboard />} />
-                                <Route path="/customers" element={<Dashboard />} />
+                                {/* The admin /customers page was removed — customers now live in the CRM app. */}
+                                <Route path="/customers" element={<Navigate to="/crm/customers" replace />} />
                                 <Route path="/suppliers" element={<Dashboard />} />
                                 <Route path="/purchase-orders" element={<Dashboard />} />
                                 <Route path="/categories" element={<Dashboard />} />
