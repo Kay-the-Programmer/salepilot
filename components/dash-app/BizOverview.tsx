@@ -64,15 +64,10 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                 </div>
             </div>
 
-            {/* Performance pulse */}
-            <div className="dash-section-head">
-                <span className="dash-eyebrow">Performance Pulse · {PERIOD_LABEL[period]}</span>
-                <button className="crm-link" type="button" onClick={onViewSales}>Detailed stats</button>
-            </div>
+
             <div className="dash-pulse">
                 <MetricCard icon="payments" tone="p" label="Total Revenue" value={formatMoney(overview.revenue, storeSettings)} delta={overview.revenueDelta} />
                 <MetricCard icon="shopping_cart" tone="s" label="Total Orders" value={overview.orders.toLocaleString()} delta={overview.ordersDelta} />
-                <MetricCard icon="analytics" tone="t" label="Avg. Order Value" value={formatMoney(overview.aov, storeSettings)} delta={overview.aovDelta} />
             </div>
 
             {/* Bento: trend + top performers */}
