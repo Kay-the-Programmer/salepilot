@@ -72,23 +72,9 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
 
             {/* Bento: trend + top performers */}
             <div className="dash-bento">
-                <section className="dash-card dash-card--chart">
-                    <div className="dash-card__head">
-                        <div>
-                            <h3 className="dash-card__title">Sales Trend</h3>
-                            <p className="dash-card__sub">Last 7 days revenue</p>
-                        </div>
-                        <button className="crm-link" type="button" onClick={onViewSales}>View report</button>
-                    </div>
-                    <TrendChart points={overview.trend} max={overview.trendMax} storeSettings={storeSettings} />
-                </section>
-
                 <section className="dash-card dash-card--performers">
                     <div className="dash-card__head">
                         <h3 className="dash-card__title">Top Performers</h3>
-                        <button className="crm-iconbtn" type="button" aria-label="More" onClick={onViewProducts}>
-                            <Icon name="more_horiz" size={22} />
-                        </button>
                     </div>
                     {overview.topProducts.length === 0 ? (
                         <div className="dash-empty">
@@ -165,9 +151,6 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                 ))}
             </div>
 
-            <button className="crm-fab" type="button" aria-label="New sale" onClick={onNewSale}>
-                <Icon name="add" size={26} />
-            </button>
         </main>
     );
 };
