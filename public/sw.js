@@ -1,5 +1,5 @@
 // sw.js (improved)
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v9';
 const CACHE_NAME = `salepilot-cache-${CACHE_VERSION}`;
 const ASSET_CACHE = `salepilot-assets-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `salepilot-image-cache-${CACHE_VERSION}`;
@@ -51,6 +51,10 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
+    // Speed up subsequent navigations while offline-first caching settles.
+    if (self.registration.navigationPreload) {
+      try { await self.registration.navigationPreload.enable(); } catch (_) { }
+    }
     // Claim control immediately so new SW works without reload
     await self.clients.claim();
     const keep = new Set([CACHE_NAME, ASSET_CACHE, IMAGE_CACHE_NAME]);
@@ -58,6 +62,41 @@ self.addEventListener('activate', (event) => {
     await Promise.all(names.map(name => keep.has(name) ? undefined : caches.delete(name)));
   })());
 });
+
+// Allow the page to activate a freshly installed worker on demand.
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Background Sync: when the platform regains connectivity it fires this even if
+// the tab is backgrounded. The queue + auth token live in the page, so the SW
+// just nudges every open client to flush its offline queue.
+async function notifyClientsToSync() {
+  const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+  for (const client of clients) {
+    client.postMessage({ type: 'flush-sync' });
+  }
+}
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'salepilot-sync-mutations') {
+    event.waitUntil(notifyClientsToSync());
+  }
+});
+
+// Keep the runtime asset cache from growing without bound.
+async function trimCache(cacheName, maxEntries) {
+  try {
+    const cache = await caches.open(cacheName);
+    const keys = await cache.keys();
+    if (keys.length <= maxEntries) return;
+    for (let i = 0; i < keys.length - maxEntries; i++) {
+      await cache.delete(keys[i]);
+    }
+  } catch (_) { /* best-effort */ }
+}
 
 function isNavigationRequest(request) {
   return request.mode === 'navigate' || (request.destination === '' && request.headers.get('accept')?.includes('text/html'));
@@ -83,7 +122,7 @@ self.addEventListener('fetch', (event) => {
   if (isNavigationRequest(request)) {
     event.respondWith((async () => {
       try {
-        const network = await fetch(request);
+        const network = (await event.preloadResponse) || await fetch(request);
         // Fresh copy of index.html to cache for offline
         if ((url.pathname === '/' || url.pathname.endsWith('.html')) && request.url.startsWith('http')) {
           const copy = network.clone();
@@ -108,7 +147,9 @@ self.addEventListener('fetch', (event) => {
       const cache = await caches.open(ASSET_CACHE);
       const cached = await cache.match(request);
       const fetchPromise = fetch(request).then(response => {
-        if (response && response.ok && request.url.startsWith('http')) cache.put(request, response.clone());
+        if (response && response.ok && request.url.startsWith('http')) {
+          cache.put(request, response.clone()).then(() => trimCache(ASSET_CACHE, 120));
+        }
         return response;
       }).catch(() => undefined);
       return cached || fetchPromise || fetch(request);

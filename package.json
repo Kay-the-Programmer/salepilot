@@ -12,10 +12,6 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "@capacitor-community/electron": "^5.0.1",
-    "@capacitor/android": "^8.0.1",
-    "@capacitor/cli": "^8.0.1",
-    "@capacitor/core": "^8.0.1",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",

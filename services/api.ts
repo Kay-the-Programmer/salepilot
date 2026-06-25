@@ -1,5 +1,4 @@
-import { Capacitor } from '@capacitor/core';
-import { dbService } from './dbService';
+import { dbService, genClientRequestId, STORE_KEY_PATHS } from './dbService';
 
 // Determine API base URL
 // Priority:
@@ -7,7 +6,6 @@ import { dbService } from './dbService';
 // 2. Build-time environment variable (VITE_API_URL) - standard for Vercel/CI
 // 3. Dev fallback (localhost)
 const LOCAL_BACKEND = 'http://localhost:5000/api';
-const RENDER_BACKEND = 'https://s-back-q0gg.onrender.com/api';
 const ENV_BASE = import.meta.env.VITE_API_URL;
 
 
@@ -16,12 +14,6 @@ const RUNTIME_BASE = (typeof window !== 'undefined' && (window as any).__API_URL
   (typeof document !== 'undefined' ? document.querySelector('meta[name="app:apiUrl"]')?.getAttribute('content') || undefined : undefined);
 
 const getDevFallback = () => {
-  if (Capacitor.isNativePlatform()) {
-    // If we are on a real device, we definitely want the deployed backend.
-    // If we are on an emulator, 10.0.2.2 usually maps to localhost.
-    // However, since the user is testing on a phone, we prioritize the RENDER_BACKEND.
-    return RENDER_BACKEND;
-  }
   return LOCAL_BACKEND;
 };
 
@@ -81,14 +73,18 @@ export class HttpError extends Error {
 }
 
 // Generic fetch wrapper
-async function request<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
+async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyKey?: string): Promise<T> {
   const url = `${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
   const isFormData = typeof FormData !== 'undefined' && (init.body as any) instanceof FormData;
   const headers: Record<string, string> = {
     ...getAuthHeaders(),
     ...(init.headers as Record<string, string> | undefined),
   };
-  console.log('[api] Request to', url, 'with headers', headers);
+  // Idempotency key lets the server dedupe a mutation that is retried after an
+  // offline queue replay (or a lost response), preventing duplicate sales.
+  if (idempotencyKey) headers['X-Idempotency-Key'] = idempotencyKey;
+  // Avoid logging the bearer token to the console.
+  console.log('[api] Request to', url, '(auth:', headers.Authorization ? 'yes' : 'no', ')');
   if (!isFormData && !('Content-Type' in headers) && !('content-type' in headers)) {
     headers['Content-Type'] = 'application/json';
   }
@@ -153,11 +149,49 @@ function serializeOptionsForQueue(options: RequestInit): any {
   return out;
 }
 
-async function queueAndReturn<T>(endpoint: string, options: RequestInit, bodyEcho?: any): Promise<T & { offline: true }> {
+function entityFromEndpoint(endpoint: string): string | undefined {
+  const store = ENDPOINT_TO_STORE[endpoint.split('?')[0]];
+  return store ? store.replace(/s$/, '') : undefined; // 'sales' -> 'sale'
+}
+
+/**
+ * Ask the service worker to replay the queue once connectivity returns — this
+ * fires even if the tab is backgrounded or was closed and reopened. The in-app
+ * retry timer is the fallback where Background Sync is unsupported (e.g. Safari).
+ */
+async function requestBackgroundSync(): Promise<void> {
+  try {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator &&
+        typeof window !== 'undefined' && 'SyncManager' in window) {
+      const reg = await navigator.serviceWorker.ready;
+      await (reg as any).sync.register('salepilot-sync-mutations');
+    }
+  } catch { /* unsupported — covered by the in-app retry timer */ }
+}
+
+async function queueAndReturn<T>(
+  endpoint: string,
+  options: RequestInit,
+  bodyEcho?: any,
+  meta: { clientRequestId?: string; optimistic?: { store: string; key: any } } = {}
+): Promise<T & { offline: true }> {
+  const clientRequestId = meta.clientRequestId || genClientRequestId();
   const serialized = serializeOptionsForQueue(options);
-  await dbService.addMutationToQueue(endpoint, serialized);
-  const echo: any = bodyEcho && typeof bodyEcho === 'object' ? { ...bodyEcho } : {};
+  // Persist where the optimistic placeholder lives so a successful replay can
+  // remove it precisely (sales are keyed by transactionId, others by id).
+  if (meta.optimistic) {
+    serialized._optimisticStore = meta.optimistic.store;
+    serialized._optimisticKey = meta.optimistic.key;
+  }
+  await dbService.addMutationToQueue(endpoint, serialized, {
+    clientRequestId,
+    entity: entityFromEndpoint(endpoint),
+  });
+  requestBackgroundSync();
+  const isForm = typeof FormData !== 'undefined' && bodyEcho instanceof FormData;
+  const echo: any = bodyEcho && typeof bodyEcho === 'object' && !isForm ? { ...bodyEcho } : {};
   echo.offline = true;
+  echo.clientRequestId = clientRequestId;
   return echo as T & { offline: true };
 }
 export function buildAssetUrl(url: string): string {
@@ -172,18 +206,21 @@ export function buildAssetUrl(url: string): string {
  * Optimistically apply a mutation to the local IndexedDB cache.
  * This ensures the UI is updated immediately even when offline.
  */
-async function applyOptimisticUpdate(endpoint: string, method: string, body: any): Promise<string | undefined> {
+async function applyOptimisticUpdate(endpoint: string, method: string, body: any): Promise<{ store: string; key: any } | undefined> {
   const storeName = ENDPOINT_TO_STORE[endpoint.split('?')[0]];
   if (!storeName) return;
 
+  // Honour each store's real key path (sales use transactionId) so the optimistic
+  // record can be matched and cleaned up after a successful replay.
+  const keyPath = STORE_KEY_PATHS[storeName] || 'id';
+
   try {
+    const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
+    const currentStoreId = currentUser?.currentStoreId;
+
     if (method === 'POST') {
-      const tempId = body.id || `offline-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-
-      const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
-      const currentStoreId = currentUser?.currentStoreId;
-
-      const item: any = { ...body, id: tempId, _pending: true };
+      const key = body?.[keyPath] || `offline-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+      const item: any = { ...body, [keyPath]: key, _pending: true };
 
       // Inject storeId for store-scoped data
       if (currentStoreId && !GLOBAL_IDB_STORES.includes(storeName)) {
@@ -191,28 +228,30 @@ async function applyOptimisticUpdate(endpoint: string, method: string, body: any
       }
 
       await dbService.put(storeName, item);
-      return tempId;
+      return { store: storeName, key };
     } else if (method === 'PUT' || method === 'PATCH') {
-      if (body.id) {
-        const existing = await dbService.get<any>(storeName, body.id);
+      const key = body?.[keyPath] ?? body?.id;
+      if (key != null) {
+        const existing = await dbService.get<any>(storeName, key);
         await dbService.put(storeName, { ...existing, ...body, _pending: true });
+        return { store: storeName, key };
       }
     } else if (method === 'DELETE') {
-      // For delete, we might want to hide it rather than actually delete if it's pending sync
-      // but for now, let's just delete it from cache
+      // Tombstone rather than hard-delete so the row can be restored if the
+      // replay is permanently rejected.
       const entityId = endpoint.split('/').pop();
       if (entityId) {
-        // We can't easily "undo" this if sync fails, but better than nothing.
-        // Actually, maybe add _deleted flag?
         const existing = await dbService.get<any>(storeName, entityId);
         if (existing) {
           await dbService.put(storeName, { ...existing, _deleted: true, _pending: true });
         }
+        return { store: storeName, key: entityId };
       }
     }
   } catch (err) {
     console.warn('Optimistic update failed:', err);
   }
+  return;
 }
 
 // Stores that should not be filtered by storeId (global data)
@@ -326,23 +365,24 @@ export const api = {
     };
 
     const isAuth = endpoint.includes('/auth/');
+    const clientRequestId = genClientRequestId();
 
     if (!getOnlineStatus()) {
       if (options.skipQueue || isAuth) {
         throw new Error('No internet connection');
       }
-      const tempId = await applyOptimisticUpdate(endpoint, 'POST', body);
-      if (tempId) (reqOptions as any)._tempId = tempId;
-      return queueAndReturn<T>(endpoint, reqOptions, body);
+      const optimistic = await applyOptimisticUpdate(endpoint, 'POST', body);
+      return queueAndReturn<T>(endpoint, reqOptions, body, { clientRequestId, optimistic });
     }
 
     try {
-      return await request<T>(endpoint, reqOptions);
+      return await request<T>(endpoint, reqOptions, clientRequestId);
     } catch (err: any) {
       // Network errors -> queue; server errors should bubble up
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
         if (options.skipQueue || isAuth) throw err;
-        return queueAndReturn<T>(endpoint, reqOptions, body);
+        const optimistic = await applyOptimisticUpdate(endpoint, 'POST', body);
+        return queueAndReturn<T>(endpoint, reqOptions, body, { clientRequestId, optimistic });
       }
       throw err;
     }
@@ -354,17 +394,19 @@ export const api = {
       body: body instanceof FormData ? body : JSON.stringify(body ?? {}),
       headers: body instanceof FormData ? getAuthHeaders() : undefined,
     };
+    const clientRequestId = genClientRequestId();
 
     if (!getOnlineStatus()) {
-      await applyOptimisticUpdate(endpoint, 'PUT', body);
-      return queueAndReturn<T>(endpoint, options, body);
+      const optimistic = await applyOptimisticUpdate(endpoint, 'PUT', body);
+      return queueAndReturn<T>(endpoint, options, body, { clientRequestId, optimistic });
     }
 
     try {
-      return await request<T>(endpoint, options);
+      return await request<T>(endpoint, options, clientRequestId);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
-        return queueAndReturn<T>(endpoint, options, body);
+        const optimistic = await applyOptimisticUpdate(endpoint, 'PUT', body);
+        return queueAndReturn<T>(endpoint, options, body, { clientRequestId, optimistic });
       }
       throw err;
     }
@@ -376,17 +418,19 @@ export const api = {
       body: body instanceof FormData ? body : JSON.stringify(body ?? {}),
       headers: body instanceof FormData ? getAuthHeaders() : undefined,
     };
+    const clientRequestId = genClientRequestId();
 
     if (!getOnlineStatus()) {
-      await applyOptimisticUpdate(endpoint, 'PATCH', body);
-      return queueAndReturn<T>(endpoint, options, body);
+      const optimistic = await applyOptimisticUpdate(endpoint, 'PATCH', body);
+      return queueAndReturn<T>(endpoint, options, body, { clientRequestId, optimistic });
     }
 
     try {
-      return await request<T>(endpoint, options);
+      return await request<T>(endpoint, options, clientRequestId);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
-        return queueAndReturn<T>(endpoint, options, body);
+        const optimistic = await applyOptimisticUpdate(endpoint, 'PATCH', body);
+        return queueAndReturn<T>(endpoint, options, body, { clientRequestId, optimistic });
       }
       throw err;
     }
@@ -394,17 +438,19 @@ export const api = {
 
   async delete<T>(endpoint: string): Promise<T | (T & { offline: true })> {
     const options: RequestInit = { method: 'DELETE' };
+    const clientRequestId = genClientRequestId();
 
     if (!getOnlineStatus()) {
-      await applyOptimisticUpdate(endpoint, 'DELETE', {});
-      return queueAndReturn<T>(endpoint, options, {});
+      const optimistic = await applyOptimisticUpdate(endpoint, 'DELETE', {});
+      return queueAndReturn<T>(endpoint, options, {}, { clientRequestId, optimistic });
     }
 
     try {
-      return await request<T>(endpoint, options);
+      return await request<T>(endpoint, options, clientRequestId);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
-        return queueAndReturn<T>(endpoint, options, {});
+        const optimistic = await applyOptimisticUpdate(endpoint, 'DELETE', {});
+        return queueAndReturn<T>(endpoint, options, {}, { clientRequestId, optimistic });
       }
       throw err;
     }
@@ -416,17 +462,21 @@ export const api = {
       body: formData,
       headers: getAuthHeaders(),
     };
+    const clientRequestId = genClientRequestId();
     if (!getOnlineStatus()) {
       const obj: any = {};
       formData.forEach((v, k) => { if (!(v instanceof Blob)) obj[k] = v; });
-      await applyOptimisticUpdate(endpoint, options.method || 'POST', obj);
-      return queueAndReturn<T>(endpoint, options, formData);
+      const optimistic = await applyOptimisticUpdate(endpoint, 'POST', obj);
+      return queueAndReturn<T>(endpoint, options, formData, { clientRequestId, optimistic });
     }
     try {
-      return await request<T>(endpoint, options);
+      return await request<T>(endpoint, options, clientRequestId);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
-        return queueAndReturn<T>(endpoint, options, formData);
+        const obj: any = {};
+        formData.forEach((v, k) => { if (!(v instanceof Blob)) obj[k] = v; });
+        const optimistic = await applyOptimisticUpdate(endpoint, 'POST', obj);
+        return queueAndReturn<T>(endpoint, options, formData, { clientRequestId, optimistic });
       }
       throw err;
     }
@@ -438,17 +488,21 @@ export const api = {
       body: formData,
       headers: getAuthHeaders(),
     };
+    const clientRequestId = genClientRequestId();
     if (!getOnlineStatus()) {
       const obj: any = {};
       formData.forEach((v, k) => { if (!(v instanceof Blob)) obj[k] = v; });
-      await applyOptimisticUpdate(endpoint, options.method || 'POST', obj);
-      return queueAndReturn<T>(endpoint, options, formData);
+      const optimistic = await applyOptimisticUpdate(endpoint, 'PUT', obj);
+      return queueAndReturn<T>(endpoint, options, formData, { clientRequestId, optimistic });
     }
     try {
-      return await request<T>(endpoint, options);
+      return await request<T>(endpoint, options, clientRequestId);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
-        return queueAndReturn<T>(endpoint, options, formData);
+        const obj: any = {};
+        formData.forEach((v, k) => { if (!(v instanceof Blob)) obj[k] = v; });
+        const optimistic = await applyOptimisticUpdate(endpoint, 'PUT', obj);
+        return queueAndReturn<T>(endpoint, options, formData, { clientRequestId, optimistic });
       }
       throw err;
     }
@@ -489,47 +543,129 @@ function reconstructOptions(options: any): RequestInit {
   return init;
 }
 
-export async function syncOfflineMutations(): Promise<{ succeeded: number; failed: number }> {
-  const queued = await dbService.getQueuedMutations();
-  const sorted = queued.sort((a, b) => a.timestamp - b.timestamp);
+export interface SyncResult {
+  /** Mutations confirmed by the server and removed from the queue. */
+  succeeded: number;
+  /** Transient failures that will be retried later (still queued). */
+  failed: number;
+  /** Permanently rejected (4xx) or retry-exhausted mutations needing attention. */
+  deadLettered: number;
+  /** Items still queued and awaiting sync after this run. */
+  remaining: number;
+}
 
-  let succeeded = 0;
-  let failed = 0;
+const BACKOFF_BASE_MS = 5_000;
+const BACKOFF_MAX_MS = 5 * 60_000;
 
-  for (const item of sorted) {
-    if (item.id == null || item.status === 'syncing') continue;
+// Module-level guard: a reconnect event and the startup/timer paths can fire at
+// once — without this they would replay the same items twice.
+let _syncInFlight = false;
 
-    try {
-      await dbService.markMutationSyncing(item.id);
-      const init = reconstructOptions(item.options);
-      await request(item.endpoint, init);
+function isNetworkError(e: any): boolean {
+  return typeof e?.message === 'string' && e.message.toLowerCase().includes('failed to fetch');
+}
 
-      // Cleanup optimistic record if needed
-      const tempId = item.options._tempId;
-      const storeName = ENDPOINT_TO_STORE[item.endpoint.split('?')[0]];
-      if (tempId && storeName) {
-        try {
-          // Accessing private method getStore for cleanup (internal service use)
-          const store = await (dbService as any).getStore(storeName, 'readwrite');
-          await store.delete(tempId);
-        } catch (err) {
-          console.warn('Failed to cleanup optimistic record:', err);
+/** A 4xx (except 408 timeout / 429 rate-limit) won't succeed on retry — dead-letter it. */
+function isPermanentError(e: any): boolean {
+  if (e instanceof HttpError) {
+    if (e.status === 408 || e.status === 429) return false;
+    return e.status >= 400 && e.status < 500;
+  }
+  return false;
+}
+
+async function safeActiveCount(): Promise<number> {
+  try { return await dbService.getActiveMutationCount(); } catch { return 0; }
+}
+
+/**
+ * Replay queued offline mutations in FIFO order. Idempotency keys make replays
+ * safe against duplicates; transient failures back off exponentially while
+ * permanent (4xx) failures are dead-lettered so they stop blocking the queue.
+ */
+export async function syncOfflineMutations(): Promise<SyncResult> {
+  if (_syncInFlight) {
+    return { succeeded: 0, failed: 0, deadLettered: 0, remaining: await safeActiveCount() };
+  }
+  _syncInFlight = true;
+  try {
+    // Recover anything left 'syncing' by a previous crash/reload.
+    await dbService.requeueStaleSyncing();
+
+    const now = Date.now();
+    const queued = (await dbService.getQueuedMutations())
+      .filter(i => i.status !== 'failed' && (i.nextAttemptAt || 0) <= now)
+      .sort((a, b) => a.timestamp - b.timestamp);
+
+    let succeeded = 0;
+    let failed = 0;
+    let deadLettered = 0;
+
+    for (const item of queued) {
+      if (item.id == null) continue;
+
+      try {
+        await dbService.markMutationSyncing(item.id);
+        const init = reconstructOptions(item.options);
+        await request(item.endpoint, init, item.clientRequestId);
+
+        // Replay confirmed — drop the optimistic placeholder so the server's
+        // canonical record (fetched afterwards) doesn't appear twice.
+        const store = item.options?._optimisticStore;
+        const key = item.options?._optimisticKey;
+        if (store && key != null) {
+          try { await dbService.deleteFromStore(store, key); }
+          catch (err) { console.warn('Failed to clean optimistic record:', err); }
         }
-      }
 
-      await dbService.deleteQueuedMutation(item.id);
-      succeeded++;
-    } catch (e: any) {
-      console.error(`Sync failed for ${item.endpoint}:`, e);
-      await dbService.markMutationFailed(item.id, e.message || 'Unknown error');
-      failed++;
+        await dbService.deleteQueuedMutation(item.id);
+        succeeded++;
+      } catch (e: any) {
+        if (isPermanentError(e)) {
+          console.error(`Sync permanently rejected for ${item.endpoint}:`, e);
+          await dbService.deadLetterMutation(item.id, e.message || 'Rejected by server');
+          deadLettered++;
+          continue; // a bad item must not block the rest of the queue
+        }
 
-      // If it's a network error, stop syncing for now to avoid multiple errors
-      if (e.message?.toLowerCase?.().includes('failed to fetch')) {
-        break;
+        // Transient (5xx / 408 / 429 / network): retry with exponential backoff.
+        const retries = (item.retries || 0) + 1;
+        if (retries >= item.maxRetries) {
+          await dbService.deadLetterMutation(item.id, e.message || 'Max retries exceeded');
+          deadLettered++;
+        } else {
+          const delay = Math.min(BACKOFF_BASE_MS * 2 ** (retries - 1), BACKOFF_MAX_MS);
+          await dbService.backoffMutation(item.id, retries, Date.now() + delay, e.message || 'Temporary failure');
+          failed++;
+        }
+
+        // The server is unreachable — stop now; the rest stay pending for the
+        // next trigger rather than piling up identical network errors.
+        if (isNetworkError(e)) break;
       }
     }
-  }
 
-  return { succeeded, failed };
+    if (succeeded > 0) {
+      try { await dbService.updateLastSync(); } catch { /* non-fatal */ }
+    }
+
+    return { succeeded, failed, deadLettered, remaining: await safeActiveCount() };
+  } finally {
+    _syncInFlight = false;
+  }
+}
+
+/** Number of mutations still queued for sync (excludes dead-lettered items). */
+export async function getPendingMutationCount(): Promise<number> {
+  return safeActiveCount();
+}
+
+/** Number of mutations that permanently failed and need user attention. */
+export async function getDeadLetterCount(): Promise<number> {
+  try { return await dbService.getDeadLetterCount(); } catch { return 0; }
+}
+
+/** Reset dead-lettered mutations to pending so the next sync retries them. */
+export async function retryFailedMutations(): Promise<number> {
+  try { return await dbService.retryDeadLetters(); } catch { return 0; }
 }

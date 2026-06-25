@@ -7,6 +7,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import ThemeToggle from './components/ThemeToggle';
 import ErrorBoundary from './components/ErrorBoundary';
 import PaywallHost from './components/PaywallHost';
+import { LogoutModalProvider } from './contexts/LogoutModalContext';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
@@ -51,6 +52,7 @@ export default function App() {
                 <div className="flex flex-col h-screen overflow-hidden dark:bg-slate-950 transition-colors duration-200">
                     <TitleBar />
                     <div className="flex-1 overflow-auto">
+                      <LogoutModalProvider>
                       <ErrorBoundary name="routes">
                         <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
                             <Routes>
@@ -184,6 +186,7 @@ export default function App() {
                             </Routes>
                         </Suspense>
                       </ErrorBoundary>
+                      </LogoutModalProvider>
 
                     </div>
 

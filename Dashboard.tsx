@@ -67,10 +67,10 @@ const SupportPage = lazy(() => import('@/pages/SupportPage'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 
 import Snackbar from './components/Snackbar';
-import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 import VerifyEmailOtpModal from './components/VerifyEmailOtpModal';
+import { useLogoutModal } from './contexts/LogoutModalContext';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
-import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
+import { api, getOnlineStatus, syncOfflineMutations, getPendingMutationCount } from './services/api';
 import { dbService } from './services/dbService';
 import {
     Bars3Icon,
@@ -161,8 +161,10 @@ export default function Dashboard() {
     const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
     const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
     const [isAuthLoading, setIsAuthLoading] = useState(true);
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [showOtpModal, setShowOtpModal] = useState(false);
+    // Logout confirmation is mounted by LogoutModalProvider (a parent of every
+    // Dashboard branch) so it shows from the standalone app shells too.
+    const { requestLogout } = useLogoutModal();
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Mobile sidebar state
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -183,6 +185,8 @@ export default function Dashboard() {
     const [isOnline, setIsOnline] = useState(getOnlineStatus());
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSync, setLastSync] = useState<number | null>(null);
+    // Number of offline changes still queued for sync (drives the retry timer).
+    const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
     // Priority notifications are now handled within NotificationContext or dedicated components
 
@@ -370,23 +374,43 @@ export default function Dashboard() {
         }
     }, [currentUser?.currentStoreId]);
 
-    const handleSync = useCallback(async () => {
-        if (isSyncing || !getOnlineStatus()) return;
+    // Replay the offline queue. `silent` suppresses the "Syncing…" toast for
+    // automatic background runs (startup, retry timer) so only user-meaningful
+    // outcomes surface. Reentrancy is guarded inside syncOfflineMutations.
+    const handleSync = useCallback(async (opts?: { silent?: boolean }) => {
+        if (!getOnlineStatus()) return;
+
+        const pending = await getPendingMutationCount();
+        if (pending === 0) { setPendingSyncCount(0); return; }
+
         setIsSyncing(true);
-        showSnackbar('Syncing offline changes...', 'sync');
-        const { succeeded, failed } = await syncOfflineMutations();
+        if (!opts?.silent) showSnackbar('Syncing offline changes…', 'sync');
+
+        const { succeeded, failed, deadLettered, remaining } = await syncOfflineMutations();
+
         setIsSyncing(false);
-
-        if (succeeded > 0 || failed > 0) {
-            if (failed > 0) {
-                showSnackbar(`Sync complete. ${succeeded} succeeded, ${failed} failed.`, 'error');
-            } else {
-                showSnackbar(`Successfully synced ${succeeded} offline changes.`, 'success');
-            }
-            fetchData(); // Refetch all data to get the latest state from the server
+        setPendingSyncCount(remaining);
+        if (succeeded > 0) {
+            const ts = Date.now();
+            setLastSync(ts);
         }
-    }, [isSyncing, showSnackbar, fetchData]);
 
+        if (succeeded > 0 || deadLettered > 0) {
+            if (deadLettered > 0) {
+                showSnackbar(
+                    `Synced ${succeeded} change${succeeded === 1 ? '' : 's'}. ${deadLettered} couldn't be saved and need attention.`,
+                    'error'
+                );
+            } else {
+                showSnackbar(`Synced ${succeeded} offline change${succeeded === 1 ? '' : 's'}.`, 'success');
+            }
+            fetchData(); // Refetch to reconcile with the server's canonical state.
+        } else if (failed > 0 && !opts?.silent) {
+            showSnackbar(`Still offline — ${remaining} change${remaining === 1 ? '' : 's'} will retry automatically.`, 'info');
+        }
+    }, [showSnackbar, fetchData]);
+
+    // React to connectivity changes (custom event bridged from online/offline).
     useEffect(() => {
         const handleStatusChange = () => {
             const onlineStatus = getOnlineStatus();
@@ -398,6 +422,40 @@ export default function Dashboard() {
         window.addEventListener('onlineStatusChange', handleStatusChange);
         return () => window.removeEventListener('onlineStatusChange', handleStatusChange);
     }, [handleSync]);
+
+    // On startup, flush anything left queued from a previous session and seed the badge.
+    useEffect(() => {
+        getPendingMutationCount()
+            .then(count => {
+                setPendingSyncCount(count);
+                if (count > 0 && getOnlineStatus()) handleSync({ silent: true });
+            })
+            .catch(() => { /* ignore */ });
+    }, [handleSync]);
+
+    // The service worker pings us (via Background Sync) when connectivity returns
+    // even if the tab was backgrounded — flush the queue when it does.
+    useEffect(() => {
+        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+        const onMessage = (event: MessageEvent) => {
+            if (event.data?.type === 'flush-sync' && getOnlineStatus()) {
+                handleSync({ silent: true });
+            }
+        };
+        navigator.serviceWorker.addEventListener('message', onMessage);
+        return () => navigator.serviceWorker.removeEventListener('message', onMessage);
+    }, [handleSync]);
+
+    // Fallback retry loop: while changes remain queued and we're online, keep
+    // retrying on an interval (covers backoff windows and platforms without
+    // Background Sync). Stops as soon as the queue drains.
+    useEffect(() => {
+        if (pendingSyncCount <= 0) return;
+        const id = setInterval(() => {
+            if (getOnlineStatus()) handleSync({ silent: true });
+        }, 30_000);
+        return () => clearInterval(id);
+    }, [pendingSyncCount, handleSync]);
 
     useEffect(() => {
         const initSyncStatus = async () => {
@@ -541,17 +599,16 @@ export default function Dashboard() {
         showSnackbar(`Welcome back, ${user.name}!`, 'success');
     };
 
-    const handleLogout = () => {
-        setIsSidebarOpen(false);
-        setIsLogoutModalOpen(true);
-    };
-
     const handleConfirmLogout = () => {
         logout();
         setCurrentUser(null);
-        setIsLogoutModalOpen(false);
         logEvent('Auth', 'Logout');
         showSnackbar('You have been logged out.', 'info');
+    };
+
+    const handleLogout = () => {
+        setIsSidebarOpen(false);
+        requestLogout(handleConfirmLogout);
     };
 
     const handleSaveSettings = async (settings: StoreSettings) => {
@@ -711,45 +768,59 @@ export default function Dashboard() {
 
     const handleProcessSale = async (sale: Sale): Promise<Sale | null> => {
         try {
-            // Ensure sale has a transactionId before sending to API
+            // Ensure sale has a transactionId before sending to API. The random
+            // suffix avoids collisions when two sales land in the same millisecond.
             const saleWithId: Sale = {
                 ...sale,
-                transactionId: sale.transactionId || `temp_${Date.now()}`,
+                transactionId: sale.transactionId || `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
                 timestamp: sale.timestamp || new Date().toISOString()
             };
 
             const result = await api.post<Sale>('/sales', saleWithId);
             if ((result as any).offline) {
-                showSnackbar('Offline: Sale queued for sync.', 'info');
+                showSnackbar('Offline: sale saved on this device and queued for sync.', 'info');
 
-                const tempSale: Sale = {
-                    ...saleWithId,
-                    transactionId: `offline_${Date.now()}`,
-                    timestamp: new Date().toISOString()
-                };
+                const currentStoreId = currentUser?.currentStoreId;
 
-                setSales(prev => [tempSale, ...prev]);
+                // Keep the UI row, the IndexedDB cache, and the queued mutation all
+                // keyed by the SAME transactionId, so the optimistic record is
+                // cleaned up — not duplicated — once it replays online.
+                const pendingSale = { ...saleWithId, _pending: true } as Sale;
+                setSales(prev => [pendingSale, ...prev]);
 
-                tempSale.cart.forEach(item => {
-                    setProducts(prevProducts => prevProducts.map(p =>
-                        p.id === item.productId ? { ...p, stock: p.stock - item.quantity } : p
-                    ));
-                });
-
-                if (tempSale.customerId) {
-                    setCustomers(prevCustomers => prevCustomers.map(c => {
-                        if (c.id === tempSale.customerId) {
-                            return {
-                                ...c,
-                                storeCredit: c.storeCredit - (tempSale.storeCreditUsed || 0),
-                                accountBalance: c.accountBalance + (tempSale.paymentStatus !== 'paid' ? tempSale.total : 0)
-                            };
-                        }
-                        return c;
-                    }));
+                // Optimistic stock decrement, mirrored to IndexedDB (with storeId
+                // preserved) so a reload while still offline shows the same figures.
+                const changedProducts: Product[] = [];
+                setProducts(prev => prev.map(p => {
+                    const line = pendingSale.cart.find(i => i.productId === p.id);
+                    if (!line) return p;
+                    const updated = { ...p, stock: p.stock - line.quantity };
+                    changedProducts.push({ ...updated, storeId: currentStoreId ?? (p as any).storeId } as Product);
+                    return updated;
+                }));
+                if (changedProducts.length) {
+                    try { await dbService.bulkPut('products', changedProducts); } catch { /* cache best-effort */ }
                 }
 
-                return tempSale;
+                if (pendingSale.customerId) {
+                    let changedCustomer: Customer | undefined;
+                    setCustomers(prev => prev.map(c => {
+                        if (c.id !== pendingSale.customerId) return c;
+                        const updated: Customer = {
+                            ...c,
+                            storeCredit: c.storeCredit - (pendingSale.storeCreditUsed || 0),
+                            accountBalance: c.accountBalance + (pendingSale.paymentStatus !== 'paid' ? pendingSale.total : 0)
+                        };
+                        changedCustomer = { ...updated, storeId: currentStoreId ?? (c as any).storeId } as Customer;
+                        return updated;
+                    }));
+                    if (changedCustomer) {
+                        try { await dbService.bulkPut('customers', [changedCustomer]); } catch { /* best-effort */ }
+                    }
+                }
+
+                setPendingSyncCount(c => c + 1);
+                return pendingSale;
             } else {
                 showSnackbar('Sale completed successfully!', 'success');
                 logEvent('Sales', 'Process Sale', `Total: ${sale.total}`);
@@ -2028,7 +2099,6 @@ export default function Dashboard() {
                     </div>
 
                     {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
-                    <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
                     <VerifyEmailOtpModal
                         isOpen={showOtpModal}
                         email={currentUser?.email || ''}

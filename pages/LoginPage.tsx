@@ -479,7 +479,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                         />
                     </div>
                     {/* Step dots */}
-                    <div className="flex gap-2 mt-3">
+                    {/* <div className="flex gap-2 mt-3">
                         {WIZARD_STEPS.map((s, i) => (
                             <div
                                 key={s}
@@ -491,7 +491,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                 )}
                             </div>
                         ))}
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Two-column grid */}
@@ -588,7 +588,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             <div className="space-y-4 animate-fade-in">
                                 {/* Email */}
                                 <div>
-                                    <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-2">Work Email</label>
+                                    <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-2">Your Email</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <HiOutlineEnvelope className="h-5 w-5 text-brand-text-muted group-focus-within:text-primary transition-colors" />
@@ -596,7 +596,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                         <input
                                             type="email" required autoFocus
                                             className="block w-full pl-11 pr-4 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-sm font-semibold outline-none"
-                                            placeholder="name@company.com"
+                                            placeholder="example@gmail.com"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             autoComplete="email"
@@ -794,20 +794,20 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             <div className="absolute top-8 left-6 right-6 grid grid-cols-2 gap-3">
                                 <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-3.5">
                                     <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Revenue</p>
-                                    <p className="text-white text-xl font-extrabold tracking-tight">₦2.4M</p>
-                                    <p className="text-sp-amber-light text-[10px] font-bold mt-1">↑ 18% this month</p>
+                                    <p className="text-white text-xl font-extrabold tracking-tight">ZMW 400,600</p>
+                                    <p className="text-sp-amber-light text-[10px] font-bold mt-1">↑ 18% first month</p>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-3.5">
                                     <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Products</p>
-                                    <p className="text-white text-xl font-extrabold tracking-tight">1,240</p>
-                                    <p className="text-white/50 text-[10px] font-bold mt-1">Across 8 categories</p>
+                                    <p className="text-white text-xl font-extrabold tracking-tight">124</p>
+                                    <p className="text-white/50 text-[10px] font-bold mt-1">100 stock items</p>
                                 </div>
                             </div>
 
                             {/* Bottom content */}
                             <div className="absolute inset-0 flex flex-col justify-end p-7">
                                 <span className="self-start bg-primary/70 backdrop-blur-sm text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4">
-                                    Trusted by 5k+ stores
+                                    Trusted by serious stores
                                 </span>
                                 <h3 className="text-white text-2xl font-extrabold tracking-tight leading-tight mb-5">
                                     Your retail journey<br />starts here.
@@ -830,7 +830,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             </div>
                             <div>
                                 <p className="text-sm text-brand-text-muted italic leading-relaxed">
-                                    "Setting up my boutique took less than 5 minutes with SalePilot."
+                                    "Setting up my boutique took less than 2 minutes with SalePilot."
                                 </p>
                                 <p className="text-xs font-bold text-brand-text mt-1.5">Meryem A. — Store Owner</p>
                             </div>
