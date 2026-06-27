@@ -5,6 +5,7 @@ import { Icon, Avatar } from '../crm/CrmBits';
 import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
+import RailThemeButton from '../standalone/RailThemeButton';
 import SuperAdminDashboard from '../../pages/superadmin/SuperAdminDashboard';
 import SuperAdminStores from '../../pages/superadmin/SuperAdminStores';
 import SuperAdminStoreDetails from '../../pages/superadmin/SuperAdminStoreDetails';
@@ -115,6 +116,7 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
                     <button type="button" className="crm-rail__item" onClick={onExit}>
                         <Icon name="grid_view" size={22} /> Full App
                     </button>
+                    <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout
                     </button>

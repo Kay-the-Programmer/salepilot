@@ -4,7 +4,6 @@ import { ToastProvider } from './contexts/ToastContext';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
-import ThemeToggle from './components/ThemeToggle';
 import ErrorBoundary from './components/ErrorBoundary';
 import PaywallHost from './components/PaywallHost';
 import { LogoutModalProvider } from './contexts/LogoutModalContext';
@@ -191,8 +190,7 @@ export default function App() {
 
                     </div>
 
-                    {/* Global, always-visible light/dark switch */}
-                    <ThemeToggle />
+                    {/* Theme control now lives in each app's top bar / nav rail (no floating switch). */}
 
                     {/* Global soft paywall — pops an upgrade prompt on a 402 (locked add-on) */}
                     <PaywallHost />

@@ -5,6 +5,7 @@ import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
 import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
+import RailThemeButton from '../standalone/RailThemeButton';
 
 export type TeamSection = 'members' | 'roles';
 
@@ -55,6 +56,7 @@ export const TeamShell: React.FC<TeamShellProps> = ({ active, user, onNavigate, 
                     <button type="button" className="crm-rail__item" onClick={onDiscover}>
                         <Icon name="apps" size={22} /> Discover Apps
                     </button>
+                    <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout
                     </button>

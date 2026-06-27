@@ -5,6 +5,7 @@ import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
 import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
+import RailThemeButton from '../standalone/RailThemeButton';
 
 export type CrmSection = 'dashboard' | 'customers' | 'whatsapp' | 'loyalty' | 'insights';
 
@@ -32,7 +33,7 @@ const NAV: { id: CrmSection; label: string; icon: string }[] = [
  * standalone POS shell); mobile = a top bar + bottom navigation. Discover is
  * exposed on both so users can hop back to the SalePilot app launcher.
  */
-export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, onDiscover, onExit, onLogout, onSearch, children }) => {
+export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, onDiscover, onExit, onLogout, children }) => {
     // On the Insights page the section tabs are hidden — only Insights remains,
     // so the user picks an app to view (Discover stays available).
     const navItems = active === 'insights' ? NAV.filter(n => n.id === 'insights') : NAV;
@@ -68,6 +69,7 @@ export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, on
                     <button type="button" className="crm-rail__item" onClick={onDiscover}>
                         <Icon name="apps" size={22} /> Discover Apps
                     </button>
+                    <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout
                     </button>
@@ -87,11 +89,6 @@ export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, on
                     <AppSwitcher user={user} currentRoute="crm" triggerClassName="crm-iconbtn" />
                     <img src={Logo} alt="SalePilot" className="crm-bar__brandlogo" />
                     <div className="crm-bar__actions">
-                        {onSearch && (
-                            <button type="button" className="crm-iconbtn" aria-label="Search" onClick={onSearch}>
-                                <Icon name="search" />
-                            </button>
-                        )}
                         <AppNavMenu
                             items={navItems.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => onNavigate(n.id) }))}
                             onExit={onExit}

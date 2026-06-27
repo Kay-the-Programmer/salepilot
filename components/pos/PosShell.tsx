@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User } from '../../types';
 import PosIcon from '../sales/PosIcon';
 import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
 import AppSwitcherOverlay from '../standalone/AppSwitcherOverlay';
+import { recordAppUse } from '../standalone/appUsage';
 import { useTheme } from '../../contexts/ThemeContext';
 import Logo from '../../assets/logo.png';
 import '../../pages/sale-v2.css';
@@ -42,6 +43,7 @@ export const PosShell: React.FC<PosShellProps> = ({
 }) => {
     const [appsOpen, setAppsOpen] = useState(false);
     const { theme, toggleTheme } = useTheme();
+    useEffect(() => { recordAppUse('pos'); }, []);
     const renderNav = (inDrawer: boolean) => (
         <>
             <div className="posshell__brand">

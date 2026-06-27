@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import type { StoreSettings, User } from '../../types';
 import type { SnackbarType } from '../../App';
 import { api } from '../../services/api';
@@ -129,10 +130,11 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Mobile master list (Apple Settings style) */}
         <div className={`md:hidden flex-1 min-h-0 overflow-y-auto sp-scroll m3-bg-surface-low ${mobileDetail ? 'hidden' : 'block'}`}>
-          <div className="flex items-center justify-between px-4 pt-5 pb-3">
-            <h1 className="text-[32px] font-bold m3-text-on-surface tracking-tight">Settings</h1>
-            <button onClick={() => navigate('/pos/discover')} className="w-9 h-9 flex items-center justify-center rounded-full m3-bg-surface-high m3-text-on-surface-variant active:scale-90 transition"><span className="material-symbols-outlined" style={{ fontSize: 20 }}>close</span></button>
-          </div>
+          <StandaloneTopBar
+            className="relative flex-shrink-0 flex items-center justify-between border-b border-brand-border bg-surface px-3 h-16 z-20"
+            currentRoute="config"
+            onExit={() => navigate('/')}
+          />
 
           {/* Store banner row */}
           <div className="px-4 mb-4">
@@ -160,14 +162,6 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
             </div>
           ))}
 
-          <div className="px-4 mb-8">
-            <div className="rounded-2xl m3-bg-surface-lowest shadow-sm overflow-hidden">
-              <button onClick={toggleTheme} className="w-full flex items-center gap-3 pl-3 active:m3-bg-surface-high transition">
-                <span className="w-8 h-8 rounded-lg m3-bg-surface-high m3-text-on-surface-variant flex items-center justify-center shrink-0"><span className="material-symbols-outlined" style={{ fontSize: 20 }}>{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span></span>
-                <span className="flex-1 flex items-center justify-between py-3.5 pr-3"><span className="text-[15px] font-medium m3-text-on-surface">{theme === 'dark' ? 'Light mode' : 'Dark mode'}</span></span>
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Mobile detail back bar */}

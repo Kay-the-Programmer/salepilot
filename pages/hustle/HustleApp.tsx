@@ -5,6 +5,7 @@ import type { Sale, StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
 import { parseApiDate } from '../../components/crm/crmModel';
+import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import '../assistant/assistant.css';
 import './hustle.css';
 
@@ -166,10 +167,11 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
       {/* Main column */}
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Mobile top bar */}
-        <header className="md:hidden flex-shrink-0 h-16 m3-bg-surface shadow-sm flex items-center justify-between px-4 z-20">
-          <div className="flex items-center gap-2"><span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 26 }}>bolt</span><h1 className="text-xl font-bold m3-text-primary">Hustle POS</h1></div>
-          <button onClick={() => navigate('/pos/discover')} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90"><span className="material-symbols-outlined" style={{ fontSize: 22 }}>close</span></button>
-        </header>
+        <StandaloneTopBar
+          currentRoute="hustle"
+          navItems={NAV.map(n => ({ icon: n.icon, label: n.label, active: view === n.id, onClick: () => setView(n.id) }))}
+          onExit={() => navigate('/')}
+        />
 
         {/* Body */}
         <div className="flex-1 min-h-0 flex flex-col">
@@ -306,15 +308,6 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
           )}
         </div>
 
-        {/* Mobile bottom nav */}
-        <nav className="md:hidden flex-shrink-0 m3-bg-surface-container shadow-[0_-4px_10px_rgba(0,0,0,0.05)] rounded-t-xl h-[68px] flex justify-around items-center z-20">
-          {NAV.map((n) => (
-            <button key={n.id} onClick={() => setView(n.id)} className={`flex flex-col items-center justify-center px-5 py-1 rounded-2xl transition active:scale-90 ${view === n.id ? 'm3-bg-primary-fixed m3-text-primary' : 'm3-text-on-surface-variant'}`}>
-              <span className="material-symbols-outlined" style={{ fontSize: 24, fontVariationSettings: view === n.id ? "'FILL' 1" : undefined }}>{n.icon}</span>
-              <span className="text-[11px] font-medium mt-0.5">{n.label}</span>
-            </button>
-          ))}
-        </nav>
       </div>
 
       {/* Cart / checkout sheet */}

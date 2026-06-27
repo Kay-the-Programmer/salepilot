@@ -11,6 +11,7 @@ import {
   type InsightCard,
 } from './insights';
 import AssistantChat from './AssistantChat';
+import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import './assistant.css';
 
 type View = 'dashboard' | 'chat';
@@ -204,46 +205,28 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
       {/* Main column */}
       <div className="flex-1 min-h-0 flex flex-col">
         {/* Mobile top app bar */}
-        <header className="md:hidden flex-shrink-0 h-16 m3-bg-surface shadow-sm flex items-center justify-between px-4 z-20">
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={handleExit}
-            className="w-9 h-9 -ml-1 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90"
-            title="Back to full app"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
-          </button>
-          <span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 26 }}>auto_awesome</span>
-          <h1 className="text-lg md:text-xl font-bold m3-text-primary tracking-tight">Business Assistant</h1>
-        </div>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={handleDiscover}
-            className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90"
-            title="Discover apps"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>apps</span>
-          </button>
-          <button
-            onClick={toggleTheme}
-            className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90"
-            title="Toggle theme"
-          >
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
-          </button>
-          <button
-            onClick={() => navigate('/profile')}
-            className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold"
-            title="Profile"
-          >
-            {user.profilePicture ? (
-              <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
-            ) : (
-              <span>{initial}</span>
-            )}
-          </button>
-        </div>
-      </header>
+        <StandaloneTopBar
+          currentRoute="assistant"
+          navItems={[
+            { icon: 'dashboard', label: 'Home', active: view === 'dashboard', onClick: goHome },
+            { icon: 'forum', label: 'Assistant', active: view === 'chat', onClick: () => openChat() },
+            { icon: 'insights', label: 'Insights', active: false, onClick: goInsights },
+          ]}
+          onExit={handleExit}
+          rightExtra={
+            <button
+              onClick={() => navigate('/profile')}
+              className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold"
+              title="Profile"
+            >
+              {user.profilePicture ? (
+                <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <span>{initial}</span>
+              )}
+            </button>
+          }
+        />
 
       {/* Body */}
       <div className="flex-1 min-h-0 flex flex-col">
@@ -347,13 +330,6 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
         )}
       </div>
 
-        {/* Mobile bottom navigation */}
-        <nav className="md:hidden flex-shrink-0 m3-bg-surface-container shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] rounded-t-xl h-[72px] flex justify-around items-center z-20">
-          <NavItem icon="dashboard" label="Home" active={view === 'dashboard'} onClick={goHome} />
-          <NavItem icon="forum" label="Assistant" active={view === 'chat'} onClick={() => openChat()} />
-          <NavItem icon="insights" label="Insights" active={false} onClick={goInsights} />
-          <NavItem icon="apps" label="Apps" active={false} onClick={handleDiscover} />
-        </nav>
       </div>
     </div>
   );
@@ -373,23 +349,6 @@ const RailItem: React.FC<{ icon: string; label: string; active?: boolean; onClic
   >
     <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{icon}</span>
     {label}
-  </button>
-);
-
-const NavItem: React.FC<{ icon: string; label: string; active: boolean; onClick: () => void }> = ({
-  icon,
-  label,
-  active,
-  onClick,
-}) => (
-  <button
-    onClick={onClick}
-    className={`flex flex-col items-center justify-center px-4 py-1 rounded-2xl transition active:scale-90 ${
-      active ? 'm3-bg-primary-fixed m3-text-primary' : 'm3-text-on-surface-variant hover:m3-text-primary'
-    }`}
-  >
-    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>{icon}</span>
-    <span className="text-[11px] font-medium mt-0.5">{label}</span>
   </button>
 );
 

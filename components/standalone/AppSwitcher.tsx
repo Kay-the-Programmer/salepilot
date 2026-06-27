@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { User } from '../../types';
 import AppSwitcherOverlay from './AppSwitcherOverlay';
+import { recordAppUse } from './appUsage';
 
 interface AppSwitcherProps {
     user: User | null;
@@ -17,6 +18,9 @@ interface AppSwitcherProps {
  */
 export const AppSwitcher: React.FC<AppSwitcherProps> = ({ user, triggerClassName, currentRoute }) => {
     const [open, setOpen] = useState(false);
+
+    // Visiting an app (its top bar mounts) counts toward "most used" suggestions.
+    useEffect(() => { recordAppUse(currentRoute); }, [currentRoute]);
 
     const btnClass = triggerClassName
         || 'inline-flex items-center justify-center w-10 h-10 rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition';

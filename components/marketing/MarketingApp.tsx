@@ -1,13 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     Facebook, Send, MessageCircle, BarChart3, Sparkles, Image as ImageIcon, Link2,
-    Trash2, EyeOff, Eye, RefreshCw, CheckCircle2, Lock, LogOut, LayoutGrid, Plug, X, Clock,
+    Trash2, EyeOff, Eye, RefreshCw, CheckCircle2, Lock, LayoutGrid, Plug, X, Clock,
 } from 'lucide-react';
 import { StoreSettings, User } from '../../types';
 import { facebookService, FacebookStatus, FacebookPageRef, FacebookPost, FacebookComment, loadFacebookSdk, facebookLogin } from '../../services/facebookService';
 import { SOCIAL_FREE, MARKETING_COMING_SOON } from '../../utils/entitlements';
 import MarketingPage from '../../pages/MarketingPage';
 import LoadingSpinner from '../LoadingSpinner';
+import StandaloneTopBar from '../standalone/StandaloneTopBar';
 
 interface MarketingAppProps {
     user: User;
@@ -57,19 +58,11 @@ export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onDiscove
     if (MARKETING_COMING_SOON) {
         return (
             <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
-                <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
-                    <div className="flex items-center gap-3 min-w-0">
-                        <div className="p-2 bg-blue-600 rounded-lg text-white shrink-0"><Facebook className="w-5 h-5" /></div>
-                        <div className="min-w-0">
-                            <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">Marketing Suite</h1>
-                            <p className="text-xs text-gray-500 dark:text-slate-400 truncate">Manage your Facebook Page</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button className={btnGhost} onClick={onDiscover} title="Discover apps"><LayoutGrid className="w-4 h-4" /></button>
-                        <button className={btnGhost} onClick={onLogout} title="Logout"><LogOut className="w-4 h-4" /></button>
-                    </div>
-                </header>
+                <StandaloneTopBar
+                    className="relative flex-shrink-0 flex items-center justify-between border-b border-brand-border bg-surface px-3 h-16 z-20"
+                    currentRoute="marketing"
+                    onLogout={onLogout}
+                />
                 <main className="flex-1 flex items-center justify-center p-6">
                     <div className={`${card} p-8 max-w-md text-center`}>
                         <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400"><Clock className="w-8 h-8" /></div>
@@ -86,24 +79,16 @@ export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onDiscove
     return (
         <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-950 overflow-hidden">
             {/* Header */}
-            <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 shrink-0">
-                <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2 bg-blue-600 rounded-lg text-white shrink-0"><Facebook className="w-5 h-5" /></div>
-                    <div className="min-w-0">
-                        <h1 className="text-lg font-bold text-gray-900 dark:text-white leading-tight">Marketing Suite</h1>
-                        <p className="text-xs text-gray-500 dark:text-slate-400 truncate">
-                            {status?.connected ? `Connected · ${status.pageName}` : 'Manage your Facebook Page'}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
+            <StandaloneTopBar
+                className="relative flex-shrink-0 flex items-center justify-between border-b border-brand-border bg-surface px-3 h-16 z-20"
+                currentRoute="marketing"
+                onLogout={onLogout}
+                rightExtra={
                     <span className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${connected ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 text-gray-500 dark:bg-slate-800 dark:text-slate-400'}`}>
                         <span className={`w-2 h-2 rounded-full ${connected ? 'bg-green-500' : 'bg-gray-400'}`} /> {connected ? 'Connected' : 'Not connected'}
                     </span>
-                    <button className={btnGhost} onClick={onDiscover} title="Discover apps"><LayoutGrid className="w-4 h-4" /></button>
-                    <button className={btnGhost} onClick={onLogout} title="Logout"><LogOut className="w-4 h-4" /></button>
-                </div>
-            </header>
+                }
+            />
 
             {/* Tabs */}
             <nav className="px-2 sm:px-4 flex gap-1 border-b border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-x-auto shrink-0">

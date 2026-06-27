@@ -5,6 +5,7 @@ import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
 import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
+import RailThemeButton from '../standalone/RailThemeButton';
 
 export type ProcSection = 'dashboard' | 'suppliers' | 'orders';
 
@@ -56,6 +57,7 @@ export const ProcureShell: React.FC<ProcureShellProps> = ({ active, user, onNavi
                     <button type="button" className="crm-rail__item" onClick={onDiscover}>
                         <Icon name="apps" size={22} /> Discover Apps
                     </button>
+                    <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout
                     </button>
