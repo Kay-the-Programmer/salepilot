@@ -266,7 +266,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                             )}
                             <div className="flex justify-between items-end pt-3">
                                 <span className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total</span>
-                                <span className="text-3xl font-extrabold tracking-tight" style={{ color: '#008060' }}>
+                                <span className="text-3xl font-extrabold tracking-tight" style={{ color: '#002b6b' }}>
                                     {formatCurrency(total, storeSettings)}
                                 </span>
                             </div>

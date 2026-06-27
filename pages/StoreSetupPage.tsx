@@ -482,7 +482,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                     <aside className="hidden lg:flex flex-col gap-5 lg:sticky lg:top-[104px]">
                         {/* Bento card */}
                         <div className="relative rounded-3xl overflow-hidden min-h-[420px] shadow-2xl shadow-sp-green/20">
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#004D3A] via-[#006B50] to-[#008060]" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#001944] via-[#1a428a] to-[#002b6b]" />
                             {/* Decorative orbs */}
                             <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" />
                             <div className="absolute top-8 right-8 w-24 h-24 rounded-full bg-sp-amber/20 blur-sm" />

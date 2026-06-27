@@ -9,43 +9,43 @@
    ============================================================ */
 
 :root {
-  /* brand */
-  --v2-color-primary: #008060;
-  --v2-color-primary-hover: #006e52;
-  --v2-color-primary-active: #005c45;
-  --v2-color-primary-soft: #e0f0ea;
-  --v2-color-primary-border: #b9ddd0;
+  /* brand — Velocity Deep Navy */
+  --v2-color-primary: #002b6b;
+  --v2-color-primary-hover: #1a428a;
+  --v2-color-primary-active: #001944;
+  --v2-color-primary-soft: #d9e2ff;
+  --v2-color-primary-border: #b0c6ff;
   --v2-color-on-primary: #ffffff;
 
-  /* accent */
-  --v2-color-accent: #d4820a;
-  --v2-color-accent-hover: #b86f06;
-  --v2-color-accent-soft: #fbeed6;
+  /* accent — Velocity Vibrant Orange */
+  --v2-color-accent: #ff7f27;
+  --v2-color-accent-hover: #e86d12;
+  --v2-color-accent-soft: #ffdbc9;
 
-  /* warm neutrals */
-  --v2-color-bg: #f9f7f4;
+  /* cool neutrals */
+  --v2-color-bg: #f7fafc;
   --v2-color-surface: #ffffff;
-  --v2-color-surface-2: #f2efe9;
-  --v2-color-surface-3: #ebe7df;
+  --v2-color-surface-2: #f1f4f6;
+  --v2-color-surface-3: #ebeef0;
 
   /* ink */
-  --v2-color-ink: #1a1a2e;
-  --v2-color-text: #2b2b3a;
-  --v2-color-text-muted: #6b6b78;
-  --v2-color-text-subtle: #9a9aa6;
+  --v2-color-ink: #181c1e;
+  --v2-color-text: #2d3133;
+  --v2-color-text-muted: #434651;
+  --v2-color-text-subtle: #747782;
 
   /* lines */
-  --v2-color-border: #e4e0d8;
-  --v2-color-border-strong: #d3cdc1;
-  --v2-color-divider: #efece5;
+  --v2-color-border: #e2e8f0;
+  --v2-color-border-strong: #c4c6d2;
+  --v2-color-divider: #eef1f3;
 
   /* status */
-  --v2-color-success: #008060;
-  --v2-color-success-soft: #e0f0ea;
-  --v2-color-warning: #d4820a;
-  --v2-color-warning-soft: #fbeed6;
-  --v2-color-danger: #c0392b;
-  --v2-color-danger-soft: #fae3e0;
+  --v2-color-success: #16a34a;
+  --v2-color-success-soft: #dcfce7;
+  --v2-color-warning: #f59e0b;
+  --v2-color-warning-soft: #fef3c7;
+  --v2-color-danger: #ba1a1a;
+  --v2-color-danger-soft: #ffdad6;
 
   /* weights */
   --v2-weight-medium: 500;
@@ -87,7 +87,7 @@
   --v2-shadow-sm: 0 1px 3px rgba(26, 26, 46, 0.08), 0 1px 2px rgba(26, 26, 46, 0.04);
   --v2-shadow-md: 0 4px 12px rgba(26, 26, 46, 0.08);
   --v2-shadow-lg: 0 12px 28px rgba(26, 26, 46, 0.12);
-  --v2-shadow-focus: 0 0 0 3px rgba(0, 128, 96, 0.22);
+  --v2-shadow-focus: 0 0 0 3px rgba(0, 43, 107, 0.22);
 
   /* motion */
   --v2-ease: cubic-bezier(0.22, 0.61, 0.36, 1);

@@ -369,7 +369,7 @@ export const initials = (name?: string): string => {
 };
 
 export const avatarColor = (seed: string): string => {
-    const palette = ['#00654b', '#008060', '#895100', '#56566d', '#6f6e86', '#683d00'];
+    const palette = ['#002b6b', '#1a428a', '#9b4500', '#1f2f4e', '#364566', '#763300'];
     let hash = 0;
     for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
     return palette[hash % palette.length];

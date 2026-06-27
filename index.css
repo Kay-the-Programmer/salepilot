@@ -18,62 +18,62 @@ body,
 }
 
 /* ============================================================
-   CONFIDENT CLARITY — Design Token System
-   Primary: SalePilot Green #008060
-   Accent:  Amber/Gold    #D4820A
-   Ink:     Deep Charcoal #1A1A2E
-   BG:      Warm Off-White #F9F7F4
+   VELOCITY POS SYSTEM — Design Token System
+   Primary:   Deep Navy      #002B6B
+   Secondary: Vibrant Orange #FF7F27  (conversion / "Pay" actions)
+   Ink:       Midnight       #181C1E
+   BG:        Cool Off-White #F7FAFC
    ============================================================ */
 :root {
   /* Brand identity */
-  --sp-green:        #008060;
-  --sp-green-light:  #00A07A;
-  --sp-amber:        #D4820A;
-  --sp-ink:          #1A1A2E;
-  --sp-warm-white:   #F9F7F4;
-  --sp-warm-gray:    #F2EFE9;
+  --sp-navy:         #002b6b;
+  --sp-navy-light:   #1a428a;
+  --sp-orange:       #ff7f27;
+  --sp-ink:          #181c1e;
+  --sp-cool-white:   #f7fafc;
+  --sp-cool-gray:    #ebeef0;
 
   /* Semantic color tokens — space-separated RGB for Tailwind alpha support */
-  --color-primary:        0 128 96;    /* #008060 SalePilot Green */
-  --color-primary-dark:   0 100 75;    /* #00644B */
-  --color-secondary:      212 130 10;  /* #D4820A Amber (used where secondary matters) */
-  --color-accent:         212 130 10;  /* #D4820A Amber/Gold */
-  --color-background:     249 247 244; /* #F9F7F4 warm off-white */
-  --color-surface:        255 255 255; /* white */
-  --color-text:           26 26 46;    /* #1A1A2E deep charcoal */
-  --color-text-muted:     107 106 128; /* muted charcoal */
-  --color-border:         229 225 218; /* warm border */
-  --color-success:        0 128 96;    /* same as primary */
-  --color-success-muted:  212 242 233; /* light green tint */
-  --color-warning:        212 130 10;  /* amber */
-  --color-warning-muted:  254 243 199; /* amber-100 */
-  --color-danger:         220 38 38;   /* red-600 */
-  --color-danger-muted:   254 226 226; /* red-100 */
-  --color-info:           0 128 96;    /* green for info */
-  --color-info-muted:     212 242 233;
-  --color-surface-variant: 242 239 233; /* #F2EFE9 warm gray */
+  --color-primary:        0 43 107;     /* #002B6B Deep Navy */
+  --color-primary-dark:   0 25 68;      /* #001944 darker navy (hover/pressed) */
+  --color-secondary:      255 127 39;   /* #FF7F27 Vibrant Orange */
+  --color-accent:         255 127 39;   /* #FF7F27 Vibrant Orange */
+  --color-background:     247 250 252;  /* #F7FAFC cool off-white canvas */
+  --color-surface:        255 255 255;  /* white card surface */
+  --color-text:           24 28 30;     /* #181C1E midnight ink */
+  --color-text-muted:     67 70 81;     /* #434651 on-surface-variant */
+  --color-border:         226 232 240;  /* #E2E8F0 cool subtle border */
+  --color-success:        22 163 74;    /* #16A34A high-sat green */
+  --color-success-muted:  220 252 231;  /* green-100 tint */
+  --color-warning:        245 158 11;   /* #F59E0B amber */
+  --color-warning-muted:  254 243 199;  /* amber-100 */
+  --color-danger:         186 26 26;    /* #BA1A1A error */
+  --color-danger-muted:   255 218 214;  /* #FFDAD6 error-container */
+  --color-info:           57 92 165;    /* #395CA5 surface-tint blue */
+  --color-info-muted:     217 226 255;  /* #D9E2FF primary-fixed */
+  --color-surface-variant: 235 238 240; /* #EBEEF0 cool gray panel */
 }
 
 .dark {
-  /* Semantic color tokens — dark mode */
-  --color-primary:        0 175 133;   /* lighter green */
-  --color-primary-dark:   0 128 96;    /* base green */
-  --color-secondary:      244 166 39;  /* lighter amber */
-  --color-accent:         244 166 39;  /* lighter amber */
-  --color-background:     26 26 46;    /* #1A1A2E deep charcoal */
-  --color-surface:        36 36 58;    /* slightly lifted charcoal */
-  --color-text:           249 247 244; /* warm near-white */
-  --color-text-muted:     156 155 180; /* muted */
-  --color-border:         55 55 80;    /* dark warm border */
-  --color-success:        0 175 133;
-  --color-success-muted:  0 50 38;
-  --color-warning:        244 166 39;
-  --color-warning-muted:  80 50 5;
-  --color-danger:         239 68 68;
-  --color-danger-muted:   127 29 29;
-  --color-info:           0 175 133;
-  --color-info-muted:     0 50 38;
-  --color-surface-variant: 44 44 68;
+  /* Semantic color tokens — dark mode (derived from Velocity dark scheme) */
+  --color-primary:        176 198 255;  /* #B0C6FF inverse-primary */
+  --color-primary-dark:   145 177 255;  /* #91B1FF */
+  --color-secondary:      255 148 77;   /* #FF944D brightened orange */
+  --color-accent:         255 148 77;   /* #FF944D */
+  --color-background:     17 20 24;      /* #111418 deep cool charcoal */
+  --color-surface:        28 32 36;      /* #1C2024 lifted surface */
+  --color-text:           238 241 243;  /* #EEF1F3 cool near-white */
+  --color-text-muted:     196 198 210;  /* #C4C6D2 outline-variant */
+  --color-border:         67 70 81;     /* #434651 dark border */
+  --color-success:        74 222 128;
+  --color-success-muted:  5 46 22;
+  --color-warning:        251 191 36;
+  --color-warning-muted:  66 32 6;
+  --color-danger:         255 84 73;     /* #FF5449 */
+  --color-danger-muted:   147 0 10;      /* #93000A */
+  --color-info:           176 198 255;
+  --color-info-muted:     28 68 140;     /* #1C448C */
+  --color-surface-variant: 45 49 51;     /* #2D3133 inverse-surface */
 }
 
 body {
@@ -710,11 +710,11 @@ textarea {
 
 @keyframes pulse-glow {
   0%, 100% {
-    filter: drop-shadow(0 0 8px rgba(0, 128, 96, 0.35));
+    filter: drop-shadow(0 0 8px rgba(0, 43, 107, 0.35));
     transform: scale(1);
   }
   50% {
-    filter: drop-shadow(0 0 16px rgba(0, 128, 96, 0.65));
+    filter: drop-shadow(0 0 16px rgba(0, 43, 107, 0.65));
     transform: scale(1.05);
   }
 }
@@ -951,7 +951,7 @@ textarea {
 
 .dashboard-card-glow {
   @apply absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[32px] z-0;
-  background: radial-gradient(ellipse at top right, rgba(0, 128, 96, 0.06), transparent 60%);
+  background: radial-gradient(ellipse at top right, rgba(0, 43, 107, 0.06), transparent 60%);
 }
 
 @keyframes snackbarBounceLeft {
@@ -1310,7 +1310,7 @@ textarea {
 }
 
 .shimmer-border {
-  background: linear-gradient(135deg, #008060, #00AF85, #D4820A, #008060);
+  background: linear-gradient(135deg, #002b6b, #1a428a, #ff7f27, #002b6b);
   background-size: 300% 300%;
   animation: shimmerBorder 4s ease infinite;
   padding: 2px;
@@ -1318,7 +1318,7 @@ textarea {
 }
 
 .dark .shimmer-border {
-  background: linear-gradient(135deg, #00AF85, #F4A627, #00AF85, #D4820A);
+  background: linear-gradient(135deg, #b0c6ff, #ff944d, #b0c6ff, #ff7f27);
   background-size: 300% 300%;
 }
 
@@ -1540,19 +1540,19 @@ textarea {
 }
 
 .liquid-glass-pill.active {
-  background: #008060;
+  background: #002b6b;
   color: white;
-  border-color: #00644B;
+  border-color: #001944;
   box-shadow:
-    0 4px 12px rgba(0, 128, 96, 0.35),
+    0 4px 12px rgba(0, 43, 107, 0.35),
     inset 0 1px 1px rgba(255, 255, 255, 0.2);
 }
 
 .dark .liquid-glass-pill.active {
-  background: #00AF85;
-  border-color: #008060;
+  background: #1a428a;
+  border-color: #002b6b;
   box-shadow:
-    0 4px 16px rgba(0, 175, 133, 0.4),
+    0 4px 16px rgba(26, 66, 138, 0.5),
     inset 0 1px 1px rgba(255, 255, 255, 0.1);
 }
 
@@ -1602,20 +1602,20 @@ textarea {
 
 /* Dashboard Background Gradient — Confident Clarity warm mesh */
 .bg-mesh-light {
-  background-color: #F9F7F4;
+  background-color: #F7FAFC;
   background-image:
-    radial-gradient(at 0% 0%,   hsla(160, 100%, 93%, 0.55) 0px, transparent 50%),
-    radial-gradient(at 100% 0%,  hsla(38,  100%, 95%, 0.55) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(160, 80%,  92%, 0.4) 0px, transparent 50%),
-    radial-gradient(at 0% 100%,   hsla(38,  80%,  94%, 0.4) 0px, transparent 50%);
+    radial-gradient(at 0% 0%,   hsla(218, 100%, 94%, 0.55) 0px, transparent 50%),
+    radial-gradient(at 100% 0%,  hsla(25,  100%, 95%, 0.55) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(218, 80%,  93%, 0.4) 0px, transparent 50%),
+    radial-gradient(at 0% 100%,   hsla(25,  80%,  94%, 0.4) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
 .dark .bg-mesh-light {
-  background-color: #1A1A2E;
+  background-color: #111418;
   background-image:
-    radial-gradient(at 0% 0%,    hsla(160, 60%, 10%, 0.8) 0px, transparent 50%),
-    radial-gradient(at 100% 0%,  hsla(38,  50%, 10%, 0.7) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, hsla(160, 40%, 8%,  0.6) 0px, transparent 50%),
-    radial-gradient(at 0% 100%,   hsla(240, 30%, 12%, 0.8) 0px, transparent 50%);
+    radial-gradient(at 0% 0%,    hsla(218, 60%, 14%, 0.8) 0px, transparent 50%),
+    radial-gradient(at 100% 0%,  hsla(25,  50%, 12%, 0.7) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(218, 40%, 10%, 0.6) 0px, transparent 50%),
+    radial-gradient(at 0% 100%,   hsla(218, 30%, 12%, 0.8) 0px, transparent 50%);
 }

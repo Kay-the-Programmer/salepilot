@@ -17,25 +17,25 @@ const LandingPageHeader: React.FC<LandingPageHeaderProps> = ({ onLogin, onStartF
             </div>
 
             {/* <nav className="hidden md:flex items-center space-x-6">
-              <a href="#product" className="text-sm font-medium text-gray-700 hover:text-[#008060] transition-colors">Product</a>
-              <a href="#how-it-works" className="text-sm font-medium text-gray-700 hover:text-[#008060] transition-colors">How It Works</a>
-              <a href="#pricing" className="text-sm font-medium text-gray-700 hover:text-[#008060] transition-colors">Pricing</a>
-              <a href="#retailers" className="text-sm font-medium text-gray-700 hover:text-[#008060] transition-colors">For Retailers</a>
-              <a href="#wholesalers" className="text-sm font-medium text-gray-700 hover:text-[#008060] transition-colors">For Wholesalers</a>
-              <a href="#support" className="text-sm font-medium text-gray-700 hover:text-[#008060] transition-colors">Support</a>
+              <a href="#product" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">Product</a>
+              <a href="#how-it-works" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">How It Works</a>
+              <a href="#pricing" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">Pricing</a>
+              <a href="#retailers" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">For Retailers</a>
+              <a href="#wholesalers" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">For Wholesalers</a>
+              <a href="#support" className="text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors">Support</a>
             </nav> */}
           </div>
 
           <div className="flex items-center space-x-4">
             <button
               onClick={onLogin}
-              className="hidden md:block text-sm font-medium text-gray-700 hover:text-[#008060] transition-colors px-3 py-2"
+              className="hidden md:block text-sm font-medium text-gray-700 hover:text-[#002b6b] transition-colors px-3 py-2"
             >
               Log in
             </button>
             <button
               onClick={onStartFree}
-              className="bg-gradient-to-r from-[#008060] to-[#00a080] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg hover:scale-105 transform transition-all duration-300"
+              className="bg-gradient-to-r from-[#002b6b] to-[#1a428a] text-white px-6 py-2.5 rounded-lg text-sm font-semibold hover:shadow-lg hover:scale-105 transform transition-all duration-300"
             >
               Start Free
             </button>

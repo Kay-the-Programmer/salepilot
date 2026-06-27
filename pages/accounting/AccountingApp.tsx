@@ -27,7 +27,7 @@ interface AccountingAppProps {
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-const DONUT_COLORS = ['#008060', '#ffa535', '#56566d', '#ba1a1a', '#75d9b3', '#895100'];
+const DONUT_COLORS = ['#002b6b', '#ff7f27', '#1f2f4e', '#ba1a1a', '#b0c6ff', '#9b4500'];
 
 const sameMonth = (d: Date, y: number, m: number) => d.getFullYear() === y && d.getMonth() === m;
 
@@ -190,7 +190,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold m3-text-on-surface">Cash Flow</h3>
                 <div className="flex items-center gap-3 text-xs">
-                  <span className="flex items-center gap-1 m3-text-on-surface-variant"><span className="w-2.5 h-2.5 rounded-full" style={{ background: '#008060' }} />Income</span>
+                  <span className="flex items-center gap-1 m3-text-on-surface-variant"><span className="w-2.5 h-2.5 rounded-full" style={{ background: '#002b6b' }} />Income</span>
                   <span className="flex items-center gap-1 m3-text-on-surface-variant"><span className="w-2.5 h-2.5 rounded-full" style={{ background: '#ba1a1a' }} />Expense</span>
                 </div>
               </div>
@@ -198,7 +198,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
                 {cashFlow.map((c, i) => (
                   <div key={i} className="flex-1 flex flex-col items-center gap-1">
                     <div className="flex items-end gap-1 w-full justify-center" style={{ height: 130 }}>
-                      <div className="bar w-3 md:w-4" style={{ height: `${Math.max(4, (c.income / cashFlowMax) * 130)}px`, background: '#008060' }} title={fmt(c.income)} />
+                      <div className="bar w-3 md:w-4" style={{ height: `${Math.max(4, (c.income / cashFlowMax) * 130)}px`, background: '#002b6b' }} title={fmt(c.income)} />
                       <div className="bar w-3 md:w-4" style={{ height: `${Math.max(4, (c.expense / cashFlowMax) * 130)}px`, background: '#f3b0b0' }} title={fmt(c.expense)} />
                     </div>
                     <span className="text-[11px] m3-text-on-surface-variant">{c.label}</span>

@@ -22,18 +22,18 @@ interface PosDiscoverProps {
 }
 
 type Tint = [string, string];
-const DEFAULT_TINT: Tint = ['#0c8f6e', '#00654b'];
+const DEFAULT_TINT: Tint = ['#1a428a', '#002b6b'];
 
 /** Per-app brand colours — a curated, premium palette for the icon tiles so the
  *  whole launcher reads as one consistent product family. */
 const TINTS: Record<string, Tint> = {
-    superadmin: ['#10a37d', '#00513c'],
-    dash: ['#12a37d', '#00654b'],
-    hustle: ['#f0a93c', '#d4820a'],
+    superadmin: ['#3b5aa0', '#002b6b'],
+    dash: ['#1a428a', '#002b6b'],
+    hustle: ['#ff9a52', '#ff7f27'],
     assistant: ['#7b7bf0', '#4b4bc9'],
     crm: ['#e0728f', '#b83a66'],
     marketing: ['#3b82f6', '#1e40af'],
-    store: ['#0e9c78', '#00654b'],
+    store: ['#1a428a', '#002b6b'],
     businesses: ['#7d8aa0', '#3e4944'],
     inv: ['#1fb0a0', '#0c6f66'],
     team: ['#5aa0f2', '#2f6fd0'],
@@ -47,7 +47,7 @@ const TINTS: Record<string, Tint> = {
     notify: ['#ef7070', '#d64545'],
     account: ['#5ab0f2', '#2f8fd0'],
     // raw pages
-    reports: ['#12a37d', '#00513c'],
+    reports: ['#3b5aa0', '#002b6b'],
     pos: ['#34b27b', '#0c8f6e'],
     directory: ['#b07ce0', '#8a4fd0'],
     'user-guide': ['#5aa0f2', '#2f6fd0'],

@@ -9,9 +9,9 @@ interface TourGuideProps {
     onTourEnd?: () => void;
 }
 
-// Confident Clarity palette
-const SP_GREEN = '#008060';
-const SP_INK = '#1a1a2e';
+// Velocity POS palette
+const SP_GREEN = '#002b6b';
+const SP_INK = '#181c1e';
 const SP_MUTED = '#6b6b78';
 const SP_SUBTLE = '#9a9aa6';
 
