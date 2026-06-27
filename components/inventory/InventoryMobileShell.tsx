@@ -21,6 +21,9 @@ interface InventoryMobileShellProps {
     onScan: () => void;
     canManage: boolean;
     isLoading: boolean;
+    /** When rendered inside the standalone Inventory app (which already has a top
+     *  bar), hide this shell's brand row so there's only one mobile header. */
+    embedded?: boolean;
 }
 
 const asNumber = (val: any) => {
@@ -109,6 +112,7 @@ export const InventoryMobileShell: React.FC<InventoryMobileShellProps> = ({
     onScan,
     canManage,
     isLoading,
+    embedded = false,
 }) => {
     const navigate = useNavigate();
 
@@ -122,21 +126,23 @@ export const InventoryMobileShell: React.FC<InventoryMobileShellProps> = ({
         <div className="md:hidden flex flex-col flex-1 min-h-0 bg-surface">
             {/* Header */}
             <header className="sticky top-0 z-40 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-white/5 px-4 py-3 flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                    <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
-                    <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => navigate('/notifications')}
-                            className="relative p-2 text-slate-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90 transition-transform"
-                            aria-label="Notifications"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
-                        </button>
-                        <div className="w-8 h-8 rounded-full bg-success-muted text-primary flex items-center justify-center text-xs font-bold border border-primary/15">
-                            {initials}
+                {!embedded && (
+                    <div className="flex items-center justify-between">
+                        <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => navigate('/notifications')}
+                                className="relative p-2 text-slate-500 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-90 transition-transform"
+                                aria-label="Notifications"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" /><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" /></svg>
+                            </button>
+                            <div className="w-8 h-8 rounded-full bg-success-muted text-primary flex items-center justify-center text-xs font-bold border border-primary/15">
+                                {initials}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )}
                 {/* Search */}
                 <div className="relative">
                     <span className="absolute inset-y-0 left-3 flex items-center text-slate-400">

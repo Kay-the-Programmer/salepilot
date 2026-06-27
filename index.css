@@ -587,6 +587,32 @@ textarea {
   }
 }
 
+/* ============================================================
+   Mobile button text scaling (global)
+   On phones (<640px) every button-like control reads one step
+   smaller for a denser, app-like feel. Applies to native buttons,
+   input buttons and role/anchor buttons. The `…​.text-*` rules
+   outrank the matching Tailwind utility (higher specificity), so
+   explicitly sized labels shrink too. `text-xs` (12px) is the floor
+   and icon glyphs (which carry their own font-size) are untouched.
+   ============================================================ */
+@media (max-width: 639px) {
+  /* Catch-all for native/input buttons — explicit text-* utilities
+     still win for small labels (text-xs/sm) thanks to specificity. */
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] { font-size: 0.875rem; }   /* unsized buttons: ~16 → 14 */
+
+  /* Shrink explicitly-sized labels one step across all button-like elements. */
+  button.text-sm,   [role="button"].text-sm,   a[role="button"].text-sm   { font-size: 0.8125rem; } /* 14 → 13 */
+  button.text-base, [role="button"].text-base, a[role="button"].text-base { font-size: 0.875rem; }  /* 16 → 14 */
+  button.text-lg,   [role="button"].text-lg,   a[role="button"].text-lg   { font-size: 1rem; }       /* 18 → 16 */
+  button.text-xl,   [role="button"].text-xl,   a[role="button"].text-xl   { font-size: 1.125rem; }   /* 20 → 18 */
+  button.text-2xl,  [role="button"].text-2xl,  a[role="button"].text-2xl  { font-size: 1.25rem; }    /* 24 → 20 */
+  button.text-3xl,  [role="button"].text-3xl,  a[role="button"].text-3xl  { font-size: 1.5rem; }     /* 30 → 24 */
+}
+
 /* Better transitions for mobile */
 @media (prefers-reduced-motion: no-preference) {
   .mobile-transition {

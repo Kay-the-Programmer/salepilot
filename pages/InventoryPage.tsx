@@ -49,6 +49,8 @@ interface InventoryPageProps {
     onOpenSidebar?: () => void;
     storeSettings: StoreSettings;
     currentUser: User;
+    /** True when hosted inside the standalone Inventory app (hides the duplicate mobile header). */
+    embedded?: boolean;
 }
 
 const InventoryPage: React.FC<InventoryPageProps> = ({
@@ -70,7 +72,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     error,
     onOpenSidebar,
     storeSettings,
-    currentUser
+    currentUser,
+    embedded = false,
 }) => {
     const { showToast } = useToast();
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
@@ -684,6 +687,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     onScan={() => setIsScanModalOpen(true)}
                     canManage={canManageProducts}
                     isLoading={isLoading}
+                    embedded={embedded}
                 />
             )}
 

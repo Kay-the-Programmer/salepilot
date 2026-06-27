@@ -1815,7 +1815,7 @@ export default function Dashboard() {
                             storeSettings={storeSettings}
                             renderItems={() => (
                                 <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} />
+                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} embedded />
                                 </Suspense>
                             )}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/inv' : `/inv/${s}`)}
@@ -1851,7 +1851,7 @@ export default function Dashboard() {
         } else if (posSection === 'discover') {
             posContent = <PosDiscover user={currentUser} allowedPages={posAllowedPages} storeSettings={storeSettings} onLaunch={(page) => navigate(`/${page}`)} onOpenSidebar={openPosDrawer} />;
         } else {
-            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
+            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} />;
         }
 
         return (
