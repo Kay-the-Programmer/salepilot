@@ -1043,7 +1043,7 @@ textarea {
 /* Snackbar container base styles */
 .snackbar-container {
   will-change: transform, opacity;
-  transform-origin: left center;
+  transform-origin: top center;
 }
 
 /* Progress bar styling — a subtle hairline that depletes as the toast ages */
@@ -1177,51 +1177,27 @@ textarea {
 
 
 /* Responsive Snackbar Animation helpers */
-/* Mobile: Bouncy slide down from top */
-@media (max-width: 767px) {
-  .snackbar-responsive-anim {
-    animation: snackbarBounceDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  }
-}
-
-/* Desktop: Bouncy slide in from left */
-@media (min-width: 768px) {
-  .snackbar-responsive-anim {
-    animation: snackbarBounceLeft 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  }
+/* All breakpoints: top-centred toasts bounce down from the top */
+.snackbar-responsive-anim {
+  animation: snackbarBounceDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 /* Responsive Snackbar EXIT Animation helpers */
-/* Mobile: Smooth exit up */
-@media (max-width: 767px) {
-  .snackbar-exit-anim {
-    animation: snackbarExitUp 0.35s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-  }
-}
-
-/* Desktop: Smooth exit left */
-@media (min-width: 768px) {
-  .snackbar-exit-anim {
-    animation: snackbarExitLeft 0.35s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-  }
+/* All breakpoints: smooth exit upward */
+.snackbar-exit-anim {
+  animation: snackbarExitUp 0.35s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
 
 /* ====================================
    SNACKBAR STACKING STYLES
    ==================================== */
 
-/* Stack container */
+/* Stack container — top-centred, newest toast on top, stack grows downward */
 .snackbar-stack {
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 0.75rem;
   pointer-events: none;
-}
-
-@media (min-width: 768px) {
-  .snackbar-stack {
-    flex-direction: column;
-  }
 }
 
 /* Stacked items (older toasts) subtle visual treatment */

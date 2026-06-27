@@ -50,7 +50,7 @@ export default function OnboardingHelper({
     const primaryAction = actionButton && (
         <button
             onClick={actionButton.onClick}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-sm transition-all active:scale-95"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-white bg-secondary hover:bg-[#e86d12] rounded-lg shadow-sm transition-all active:scale-95"
         >
             {actionButton.label}
             <ArrowRightIcon className="h-4 w-4" />
@@ -69,7 +69,7 @@ export default function OnboardingHelper({
                         {actionButton && (
                             <button
                                 onClick={actionButton.onClick}
-                                className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-sm transition-all active:scale-95"
+                                className="mt-3 inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-bold text-white bg-secondary hover:bg-[#e86d12] rounded-lg shadow-sm transition-all active:scale-95"
                             >
                                 {actionButton.label}
                                 <ArrowRightIcon className="h-4 w-4" />
@@ -95,7 +95,7 @@ export default function OnboardingHelper({
                     {actionButton && (
                         <button
                             onClick={actionButton.onClick}
-                            className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-primary hover:bg-primary-dark rounded-lg shadow-sm transition-all active:scale-95"
+                            className="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-secondary hover:bg-[#e86d12] rounded-lg shadow-sm transition-all active:scale-95"
                         >
                             {actionButton.label}
                             <ArrowRightIcon className="h-3.5 w-3.5" />

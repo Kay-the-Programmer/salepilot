@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { User } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
+import AppSwitcher from '../standalone/AppSwitcher';
+import AppNavMenu from '../standalone/AppNavMenu';
+import Logo from '../../assets/logo.png';
 
 export type DashSection = 'overview' | 'sales' | 'products';
 
@@ -30,8 +33,6 @@ const NAV: { id: DashSection; label: string; icon: string }[] = [
 export const DashboardShell: React.FC<DashboardShellProps> = ({
     active, user, onNavigate, onReports, onDiscover, onExit, onLogout, children,
 }) => {
-    const [menuOpen, setMenuOpen] = useState(false);
-
     return (
         <div className="crm">
             {/* Desktop rail */}
@@ -82,99 +83,28 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
             {/* Content column */}
             <div className="crm-body">
                 <header className="crm-bar crm-bar--mobile">
-                    <div className="crm-bar__brand">
-                        <span className="crm-bar__logo"><Icon name="monitoring" size={22} fill={1} /></span>
-                        <span className="crm-bar__title">Dashboard</span>
-                    </div>
+                    <AppSwitcher user={user} currentRoute="dash" triggerClassName="crm-iconbtn" />
+                    <img src={Logo} alt="SalePilot" className="crm-bar__brandlogo" />
                     <div className="crm-bar__actions">
-                        <button type="button" className="crm-iconbtn" aria-label="Full reports" onClick={onReports}>
-                            <Icon name="analytics" size={22} />
-                        </button>
-                        <div style={{ position: 'relative' }}>
-                            <button
-                                type="button"
-                                className="crm-bar__avatar"
-                                aria-label="Account menu"
-                                aria-haspopup="menu"
-                                aria-expanded={menuOpen}
-                                onClick={() => setMenuOpen(o => !o)}
-                            >
-                                {user?.profilePicture ? <img src={user.profilePicture} alt={user.name} /> : (user?.name?.[0]?.toUpperCase() || 'U')}
-                            </button>
-                            {menuOpen && (
-                                <>
-                                    <div style={{ position: 'fixed', inset: 0, zIndex: 60 }} onClick={() => setMenuOpen(false)} aria-hidden="true" />
-                                    <div role="menu" style={menuPanelStyle}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px' }}>
-                                            <Avatar name={user?.name} src={user?.profilePicture} size={36} />
-                                            <div style={{ minWidth: 0 }}>
-                                                <div style={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name}</div>
-                                                <div style={{ fontSize: 12, color: 'var(--c-on-surface-variant)', textTransform: 'capitalize' }}>{user?.role}</div>
-                                            </div>
-                                        </div>
-                                        <div style={{ height: 1, background: 'var(--c-outline-variant)', opacity: 0.5, margin: '4px 0' }} />
-                                        <button type="button" role="menuitem" className="crm-menu-item" onClick={() => { setMenuOpen(false); onReports(); }} style={menuItemStyle}>
-                                            <Icon name="analytics" size={20} /> Full Reports
-                                        </button>
-                                        <button type="button" role="menuitem" className="crm-menu-item" onClick={() => { setMenuOpen(false); onExit(); }} style={menuItemStyle}>
-                                            <Icon name="grid_view" size={20} /> Full SalePilot App
-                                        </button>
-                                        <button type="button" role="menuitem" className="crm-menu-item" onClick={() => { setMenuOpen(false); onLogout(); }} style={{ ...menuItemStyle, color: 'var(--c-error)' }}>
-                                            <Icon name="logout" size={20} /> Logout
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <AppNavMenu
+                            items={[
+                                ...NAV.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => onNavigate(n.id) })),
+                                { icon: 'analytics', label: 'Full Reports', onClick: onReports },
+                            ]}
+                            onExit={onExit}
+                            onLogout={onLogout}
+                            triggerClassName="crm-iconbtn"
+                        />
                     </div>
                 </header>
 
                 {children}
-
-                <nav className="crm-bottomnav" aria-label="Dashboard navigation">
-                    {NAV.map(item => {
-                        const isActive = active === item.id;
-                        return (
-                            <button
-                                key={item.id}
-                                type="button"
-                                className={`crm-bottomnav__item${isActive ? ' is-active' : ''}`}
-                                aria-current={isActive ? 'page' : undefined}
-                                onClick={() => onNavigate(item.id)}
-                            >
-                                <Icon name={item.icon} size={24} fill={isActive ? 1 : 0} />
-                                <span>{item.label}</span>
-                            </button>
-                        );
-                    })}
-                    <button type="button" className="crm-bottomnav__item" onClick={onReports}>
-                        <Icon name="analytics" size={24} />
-                        <span>Reports</span>
-                    </button>
-                    <button type="button" className="crm-bottomnav__item" onClick={onDiscover}>
-                        <Icon name="menu" size={24} />
-                        <span>Discover</span>
-                    </button>
-                </nav>
             </div>
 
             {/* Embedded AI assistant — available from inside the Dashboard app */}
             <AssistantLauncher userName={user?.name} />
         </div>
     );
-};
-
-const menuItemStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px',
-    border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14,
-    fontWeight: 600, color: 'var(--c-on-bg)', textAlign: 'left', borderRadius: 'var(--c-radius)',
-};
-
-const menuPanelStyle: React.CSSProperties = {
-    position: 'absolute', right: 0, top: 'calc(100% + 8px)', zIndex: 61, minWidth: 220,
-    background: 'var(--c-surface-lowest)', borderRadius: 'var(--c-radius-lg)',
-    boxShadow: '0 12px 32px rgba(0,0,0,0.18)', border: '1px solid var(--c-outline-variant)',
-    overflow: 'hidden', padding: 6,
 };
 
 export default DashboardShell;

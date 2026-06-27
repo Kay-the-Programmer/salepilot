@@ -48,7 +48,7 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
                     <button
                         type="button"
                         onClick={goCheckout}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-bold bg-sp-green text-white hover:bg-sp-green-dark transition active:scale-95"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-bold bg-sp-amber text-white hover:bg-sp-green-dark transition active:scale-95"
                     >
                         {moment.ctaLabel}
                         <span className="material-symbols-rounded text-[18px]">arrow_forward</span>

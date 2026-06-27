@@ -130,7 +130,7 @@ const PaywallHost: React.FC = () => {
         <div className="p-4 pt-0 flex flex-col gap-2">
           <button
             onClick={goUnlock}
-            className="w-full py-3 rounded-xl text-sm font-bold bg-sp-green text-white hover:bg-sp-green-dark transition active:scale-95"
+            className="w-full py-3 rounded-xl text-sm font-bold bg-sp-amber text-white hover:bg-sp-green-dark transition active:scale-95"
           >
             {alreadyOwned
               ? 'Manage add-on'

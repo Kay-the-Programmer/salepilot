@@ -288,7 +288,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                     <button
                                         type="submit"
                                         disabled={anyLoading}
-                                        className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+                                        className="w-full py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
                                     >
                                         {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Verify & Continue'}
                                     </button>
@@ -391,7 +391,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                         <button
                                             type="submit"
                                             disabled={anyLoading}
-                                            className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 mt-2"
+                                            className="w-full py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 mt-2"
                                         >
                                             {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Log in to Dashboard'}
                                         </button>
@@ -757,7 +757,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                 type="button"
                                 onClick={wizardNext}
                                 disabled={anyLoading}
-                                className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+                                className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
                             >
                                 {isLoading
                                     ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

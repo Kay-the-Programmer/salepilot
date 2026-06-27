@@ -148,7 +148,7 @@ const ShopProductDetail: React.FC = () => {
                                         disabled={addedToCart}
                                         className={`flex-1 flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white focus:outline-none focus:ring-2 focus:ring-offset-2 ${addedToCart
                                             ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                                            : 'bg-sp-green hover:bg-sp-green-dark focus:ring-sp-green'
+                                            : 'bg-sp-amber hover:bg-[#e86d12] focus:ring-sp-green'
                                             }`}
                                     >
                                         {addedToCart ? 'Added to Cart!' : 'Add to Cart'}

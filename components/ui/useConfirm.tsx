@@ -66,7 +66,7 @@ export function useConfirm() {
                     <button
                         type="button"
                         onClick={() => settle(true)}
-                        className={`px-5 py-2.5 rounded-xl text-sm font-bold text-white transition active:scale-95 ${state.danger ? 'bg-danger hover:opacity-90' : 'bg-sp-green hover:bg-sp-green-dark'}`}
+                        className={`px-5 py-2.5 rounded-xl text-sm font-bold text-white transition active:scale-95 ${state.danger ? 'bg-danger hover:opacity-90' : 'bg-sp-amber hover:bg-[#e86d12]'}`}
                     >
                         {state.confirmLabel || 'Confirm'}
                     </button>

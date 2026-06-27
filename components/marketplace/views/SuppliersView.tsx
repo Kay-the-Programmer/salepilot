@@ -111,7 +111,7 @@ export default function SuppliersView() {
                                 </button>
                                 <button
                                     onClick={() => handleBuyFromSupplier(supplier)}
-                                    className="flex-1 py-2 bg-sp-green text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-sp-green-dark transition-colors flex items-center justify-center gap-2 active:scale-95"
+                                    className="flex-1 py-2 bg-sp-amber text-white rounded-lg text-xs font-bold uppercase tracking-widest hover:bg-sp-green-dark transition-colors flex items-center justify-center gap-2 active:scale-95"
                                 >
                                     <HiShoppingCart className="w-4 h-4" />
                                     Order Now

@@ -40,7 +40,7 @@ const PremiumUpgradeModal: React.FC<PremiumUpgradeModalProps> = ({
 
                 {/* Hero */}
                 <div className="px-6 pt-8 pb-6 bg-gradient-to-br from-sp-green/10 to-sp-amber/10 text-center">
-                    <div className="w-16 h-16 mx-auto rounded-2xl bg-sp-green text-white flex items-center justify-center shadow-lg mb-4">
+                    <div className="w-16 h-16 mx-auto rounded-2xl bg-sp-amber text-white flex items-center justify-center shadow-lg mb-4">
                         <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 3v-3z" /></svg>
                     </div>
                     <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sp-amber/20 text-sp-amber text-[11px] font-bold uppercase tracking-wide mb-2">

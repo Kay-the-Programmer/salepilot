@@ -217,7 +217,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                                     <button
                                         type="submit"
                                         disabled={sending}
-                                        className="bg-sp-green text-white px-4 py-2.5 rounded-xl font-bold hover:bg-sp-green-dark transition-all disabled:opacity-70 flex items-center gap-2 shadow-sm active:scale-95"
+                                        className="bg-sp-amber text-white px-4 py-2.5 rounded-xl font-bold hover:bg-sp-green-dark transition-all disabled:opacity-70 flex items-center gap-2 shadow-sm active:scale-95"
                                     >
                                         <EnvelopeIcon className="w-4 h-4" />
                                         {sending ? 'Sending...' : 'Send Notification'}

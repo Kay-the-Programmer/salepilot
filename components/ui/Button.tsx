@@ -23,7 +23,7 @@ export function Button({
     const sizeClasses = "px-4 py-2.5";
 
     const variantClasses = {
-        primary: "bg-gray-900 text-white hover:bg-gray-800 active:bg-gray-900 active:scale-95 focus:ring-gray-900 dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-white dark:focus:ring-white",
+        primary: "bg-secondary text-white hover:bg-[#e86d12] active:bg-[#d4620a] active:scale-95 focus:ring-secondary dark:bg-secondary dark:text-white dark:hover:bg-[#ff944d] dark:focus:ring-secondary",
         secondary: "bg-white text-gray-700 hover:bg-gray-50 active:bg-gray-100 border border-transparent hover:border-gray-200 focus:ring-gray-200 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700 dark:hover:bg-slate-700 dark:focus:ring-slate-700",
         danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 active:scale-95 focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-400 dark:focus:ring-red-400",
         ghost: "text-gray-600 hover:bg-gray-100 active:bg-gray-200 focus:ring-gray-200 dark:text-slate-400 dark:hover:bg-slate-800 dark:focus:ring-slate-800",

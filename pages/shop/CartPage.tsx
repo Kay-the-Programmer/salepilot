@@ -430,7 +430,7 @@ const CartPage: React.FC = () => {
                                     <button
                                         type="submit"
                                         disabled={isSubmitting}
-                                        className={`w-full flex justify-center py-6 px-4 bg-sp-green text-white rounded-[24px] shadow-xl shadow-sp-green/20 text-sm font-black uppercase tracking-[0.2em] hover:bg-sp-green-dark focus:outline-none focus:ring-4 focus:ring-sp-green/30 transition-all active:scale-95 disabled:opacity-75 disabled:active:scale-100 disabled:cursor-not-allowed mt-4`}
+                                        className={`w-full flex justify-center py-6 px-4 bg-sp-amber text-white rounded-[24px] shadow-xl shadow-sp-green/20 text-sm font-black uppercase tracking-[0.2em] hover:bg-sp-green-dark focus:outline-none focus:ring-4 focus:ring-sp-green/30 transition-all active:scale-95 disabled:opacity-75 disabled:active:scale-100 disabled:cursor-not-allowed mt-4`}
                                     >
                                         {isSubmitting ? (
                                             <div className="flex items-center gap-3">

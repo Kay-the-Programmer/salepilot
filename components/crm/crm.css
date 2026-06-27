@@ -148,6 +148,11 @@
 .crm-bar__navlink:hover { background: var(--c-surface-low); color: var(--c-on-bg); }
 .crm-bar__navlink.is-active { color: var(--c-primary); font-weight: 700; background: rgba(0, 128, 96, 0.1); }
 .crm-bar__actions { display: flex; align-items: center; gap: 6px; }
+/* Centred SalePilot brand logo, sat between the left/right control clusters. */
+.crm-bar__brandlogo {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  height: 26px; width: auto; pointer-events: none;
+}
 .crm-iconbtn {
   width: 40px; height: 40px; border-radius: var(--c-radius-pill);
   display: inline-flex; align-items: center; justify-content: center;
@@ -172,7 +177,7 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px calc(96px + env(safe-area-inset-bottom));
+  padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
 }
 .crm-section-fade { animation: crm-fade 0.5s var(--c-ease) both; }
 @keyframes crm-fade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

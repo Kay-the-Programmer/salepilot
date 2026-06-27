@@ -111,7 +111,7 @@ export default function RequestsView() {
                                     </div>
                                     <button
                                         onClick={() => navigate(`/marketplace/request/${request.id}`)}
-                                        className="px-6 py-3 bg-sp-green text-white rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-sp-green-dark transition-colors flex items-center gap-2 active:scale-95"
+                                        className="px-6 py-3 bg-sp-amber text-white rounded-xl font-bold text-sm uppercase tracking-wider hover:bg-sp-green-dark transition-colors flex items-center gap-2 active:scale-95"
                                     >
                                         Post Offer
                                         <HiOutlineArrowRight className="w-4 h-4" />

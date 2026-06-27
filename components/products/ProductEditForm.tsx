@@ -589,7 +589,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                             <button type="button" onClick={onCancel} disabled={isSaving} className="flex-1 py-3.5 rounded-xl border border-brand-border text-brand-text font-bold text-sm hover:bg-warm-100 dark:hover:bg-slate-800 active:scale-95 transition-all disabled:opacity-50">
                                 Cancel
                             </button>
-                            <button type="submit" disabled={isSaving} className="flex-[2] py-3.5 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
+                            <button type="submit" disabled={isSaving} className="flex-[2] py-3.5 rounded-xl bg-secondary hover:bg-[#e86d12] text-white font-bold text-sm shadow-lg shadow-primary/20 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2">
                                 {isSaving ? 'Saving…' : (productToEdit.id ? 'Save Changes' : 'Save Product')}
                             </button>
                         </div>

@@ -151,7 +151,7 @@ const ProductDetailView: React.FC<{
                 <div className="flex flex-wrap gap-3 mt-auto">
                   <button
                     onClick={() => onAdjustStock(product)}
-                    className="bg-primary hover:bg-primary-dark text-white active:scale-95 transition-all px-6 py-3.5 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20"
+                    className="bg-secondary hover:bg-[#e86d12] text-white active:scale-95 transition-all px-6 py-3.5 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-primary/20"
                   >
                     <AdjustmentsHorizontalIcon className="w-5 h-5" />
                     Adjust Stock

@@ -198,7 +198,7 @@ const SuperAdminSettings: React.FC = () => {
                             <button
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="px-5 py-2.5 bg-sp-green text-white text-sm font-bold rounded-xl shadow-sm hover:bg-sp-green-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sp-green disabled:opacity-50 transition-all active:scale-95"
+                                className="px-5 py-2.5 bg-sp-amber text-white text-sm font-bold rounded-xl shadow-sm hover:bg-sp-green-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-sp-green disabled:opacity-50 transition-all active:scale-95"
                             >
                                 {isSaving ? 'Saving...' : 'Save Changes'}
                             </button>

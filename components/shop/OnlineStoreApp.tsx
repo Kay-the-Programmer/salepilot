@@ -17,7 +17,7 @@ interface OnlineStoreAppProps {
 
 const card = 'bg-surface border border-brand-border rounded-2xl shadow-sm';
 const btn = 'inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
-const btnPrimary = `${btn} bg-sp-green text-white hover:bg-sp-green-dark`;
+const btnPrimary = `${btn} bg-sp-amber text-white hover:bg-sp-green-dark`;
 const btnGhost = `${btn} bg-surface-variant text-brand-text hover:brightness-95`;
 const input = 'w-full px-4 py-2.5 rounded-xl border border-brand-border bg-surface-container-lowest text-brand-text focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none';
 

@@ -62,7 +62,7 @@ const NotificationDetailsModal: React.FC<NotificationDetailsModalProps> = ({
                     {notification.link && (
                         <button
                             type="button"
-                            className="px-4 py-2 rounded-xl bg-sp-green text-white font-bold hover:bg-sp-green-dark transition-all active:scale-95"
+                            className="px-4 py-2 rounded-xl bg-sp-amber text-white font-bold hover:bg-sp-green-dark transition-all active:scale-95"
                             onClick={handleAction}
                         >
                             Take Action

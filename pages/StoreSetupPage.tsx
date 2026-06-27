@@ -445,7 +445,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                                     type="button"
                                     onClick={handleNextStep}
                                     disabled={!isCurrentStepValid || anyLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary hover:bg-primary-dark disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
+                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
                                 >
                                     {isLoading
                                         ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -460,7 +460,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                                     type="button"
                                     onClick={handleVerifyOtp as any}
                                     disabled={!isStep4Valid || anyLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary hover:bg-primary-dark disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
+                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
                                 >
                                     {isVerifying
                                         ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

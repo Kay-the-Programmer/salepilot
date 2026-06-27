@@ -53,7 +53,7 @@ const SystemNotificationModal: React.FC<SystemNotificationModalProps> = ({
             <div className="mt-8 flex justify-end">
                 <button
                     type="button"
-                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-sp-green text-white text-sm font-bold hover:bg-sp-green-dark transition-all active:scale-95"
+                    className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-sp-amber text-white text-sm font-bold hover:bg-sp-green-dark transition-all active:scale-95"
                     onClick={onAcknowledge}
                 >
                     Acknowledge & Dismiss
