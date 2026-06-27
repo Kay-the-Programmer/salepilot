@@ -95,7 +95,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
             description: "Ready to make a sale? Use our intuitive POS interface.",
             icon: <ShoppingCartIcon className="w-5 h-5" />,
             actionLabel: "Go to POS",
-            path: "/sales",
+            path: "/pos",
             color: "violet",
             show: !hasSales
         },

@@ -38,7 +38,7 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
         <main className="crm-main crm-section-fade">
             <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <div>
-                    <p className="crm-pagehead__eyebrow">Management Console</p>
+                    <p className="crm-pagehead__eyebrow">CRM</p>
                     <h2 className="crm-pagehead__title">Store Overview</h2>
                 </div>
                 <div className="crm-pagehead__actions">

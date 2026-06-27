@@ -62,7 +62,6 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
         <main className="crm-main crm-section-fade">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 24 }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-                    <h2 className="crm-pagehead__title" style={{ margin: 0 }}>Customer Directory</h2>
                     <div className="crm-search" style={{ maxWidth: 420 }}>
                         <Icon name="search" size={22} />
                         <input
@@ -137,9 +136,6 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
                 </div>
             )}
 
-            <button className="crm-fab" type="button" aria-label="Add customer" onClick={onAddCustomer}>
-                <Icon name="person_add" size={26} />
-            </button>
         </main>
     );
 };

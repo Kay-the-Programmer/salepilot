@@ -1281,20 +1281,8 @@ export default function Dashboard() {
                         />
                     );
                 case 'sales':
-                    return <SalesPage
-                        user={currentUser}
-                        products={products}
-                        customers={customers}
-                        categories={categories}
-                        suppliers={suppliers}
-                        onProcessSale={handleProcessSale}
-                        onSaveProduct={handleSaveProduct}
-                        onProcessReturn={handleProcessReturn}
-                        isLoading={isLoading}
-                        showSnackbar={showSnackbar}
-                        storeSettings={storeSettings!}
-                        onOpenSidebar={() => navigate('/pos/discover')}
-                    />;
+                    // The point of sale lives only at /pos now; /sales presents sales data.
+                    return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
                 case 'sales-history':
                     return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
                 case 'orders':
@@ -1600,7 +1588,7 @@ export default function Dashboard() {
                             onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
-                            onNewSale={() => navigate('/sales')}
+                            onNewSale={() => navigate('/pos')}
                             onInventory={() => navigate('/inventory')}
                             onOrders={() => navigate('/orders')}
                         />
@@ -2006,7 +1994,7 @@ export default function Dashboard() {
                             which is now the navigation surface that replaced the sidebar.
                             Carries the global actions the sidebar used to own. Pages that
                             ship their own full chrome (POS Sale, Reports) opt out. */}
-                        {location.pathname !== '/sales' && location.pathname !== '/reports' && (
+                        {location.pathname !== '/reports' && (
                             <header className="sticky top-0 z-40 h-14 bg-surface border-b border-brand-border flex items-center gap-2 px-3 md:px-4 transition-all duration-200">
                                 <button
                                     onClick={() => navigate('/pos/discover')}

@@ -25,7 +25,7 @@ These routes are managed by the `Dashboard` component and require a valid user s
 | # | Route Path | Component | Description |
 |---|------------|-----------|-------------|
 | 6 | `/reports` | `ReportsPage` | Main dashboard with analytics and summaries. |
-| 7 | `/sales` | `SalesPage` | POS (Point of Sale) terminal for creating new sales. |
+| 7 | `/sales` | `AllSalesPage` | Sales data presentation (transactions list). The POS terminal lives only at `/pos`. |
 | 8 | `/sales-history` | `AllSalesPage` | List and filter all historical sales. |
 | 9 | `/orders` | `OrdersPage` | Online order management and processing. |
 | 10 | `/inventory` | `InventoryPage` | Product management, stock levels, and variants. |
