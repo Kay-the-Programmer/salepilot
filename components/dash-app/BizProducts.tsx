@@ -2,18 +2,19 @@ import React from 'react';
 import { StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { formatMoney } from '../crm/crmModel';
-import { DashboardOverview, DashPeriod, PERIOD_LABEL } from './dashboardModel';
+import { DashboardOverview, DashRange } from './dashboardModel';
 import { DeltaChip } from './DashBits';
+import PeriodPicker from './PeriodPicker';
 
 interface BizProductsProps {
     overview: DashboardOverview;
     storeSettings?: StoreSettings | null;
-    period: DashPeriod;
-    onPeriod: (p: DashPeriod) => void;
+    range: DashRange;
+    onRange: (r: DashRange) => void;
     onInventory: () => void;
 }
 
-export const BizProducts: React.FC<BizProductsProps> = ({ overview, storeSettings, period, onPeriod, onInventory }) => {
+export const BizProducts: React.FC<BizProductsProps> = ({ overview, storeSettings, range, onRange, onInventory }) => {
     const maxRev = overview.topProducts[0]?.revenue || 1;
     const alerts = overview.lowStockCount + overview.outOfStockCount;
 
@@ -21,18 +22,11 @@ export const BizProducts: React.FC<BizProductsProps> = ({ overview, storeSetting
         <main className="crm-main crm-section-fade">
             <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <div>
-                    <p className="crm-pagehead__eyebrow">Products · {PERIOD_LABEL[period]}</p>
+                    <p className="crm-pagehead__eyebrow">Products · {overview.rangeLabel}</p>
                     <h2 className="crm-pagehead__title">Product Insights</h2>
                     <p className="crm-pagehead__sub">Best sellers and stock health at a glance.</p>
                 </div>
-                <div className="dash-segment" role="tablist" aria-label="Reporting period">
-                    {(['today', 'week', 'month'] as DashPeriod[]).map(p => (
-                        <button key={p} type="button" role="tab" aria-selected={period === p}
-                            className={`dash-segment__btn${period === p ? ' is-active' : ''}`} onClick={() => onPeriod(p)}>
-                            {p === 'today' ? 'Day' : p === 'week' ? 'Week' : 'Month'}
-                        </button>
-                    ))}
-                </div>
+                <PeriodPicker range={range} onRange={onRange} />
             </div>
 
             {/* Stock health strip */}

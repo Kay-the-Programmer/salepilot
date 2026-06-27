@@ -2,15 +2,16 @@ import React from 'react';
 import { StoreSettings, User } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { formatMoney, parseApiDate } from '../crm/crmModel';
-import { DashboardOverview, DashPeriod, PERIOD_LABEL } from './dashboardModel';
+import { DashboardOverview, DashRange } from './dashboardModel';
 import { TrendChart, DeltaChip } from './DashBits';
+import PeriodPicker from './PeriodPicker';
 
 interface BizOverviewProps {
     overview: DashboardOverview;
     storeSettings?: StoreSettings | null;
     user: User;
-    period: DashPeriod;
-    onPeriod: (p: DashPeriod) => void;
+    range: DashRange;
+    onRange: (r: DashRange) => void;
     onViewSales: () => void;
     onViewProducts: () => void;
     onNewSale: () => void;
@@ -31,7 +32,7 @@ const fmtTime = (ts: string) => {
 };
 
 export const BizOverview: React.FC<BizOverviewProps> = ({
-    overview, storeSettings, user, period, onPeriod,
+    overview, storeSettings, user, range, onRange,
     onViewSales, onViewProducts, onNewSale, onInventory, onOrders,
 }) => {
     const firstName = user?.name?.split(' ')[0] || 'there';
@@ -45,20 +46,7 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                     <h2 className="dash-welcome__title">{greeting()}, {firstName}</h2>
                     <p className="dash-welcome__sub">Here's what's happening in your shop today.</p>
                 </div>
-                <div className="dash-segment" role="tablist" aria-label="Reporting period">
-                    {(['today', 'week', 'month'] as DashPeriod[]).map(p => (
-                        <button
-                            key={p}
-                            type="button"
-                            role="tab"
-                            aria-selected={period === p}
-                            className={`dash-segment__btn${period === p ? ' is-active' : ''}`}
-                            onClick={() => onPeriod(p)}
-                        >
-                            {p === 'today' ? 'Day' : p === 'week' ? 'Week' : 'Month'}
-                        </button>
-                    ))}
-                </div>
+                <PeriodPicker range={range} onRange={onRange} />
             </div>
 
             {/* Top bento: sales highlights + quick actions panel */}
@@ -67,7 +55,7 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                     {/* Revenue */}
                     <div className="dash-stat dash-stat--feature">
                         <div className="dash-stat__head">
-                            <span className="dash-stat__label">{PERIOD_LABEL[period]}'s Sales</span>
+                            <span className="dash-stat__label">{overview.rangeLabel}'s Sales</span>
                             <DeltaChip delta={overview.revenueDelta} small />
                         </div>
                         <div>
@@ -76,27 +64,27 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                         </div>
                     </div>
 
-                    {/* Average ticket */}
+                    {/* Average sale */}
                     <div className="dash-stat">
                         <div className="dash-stat__head">
-                            <span className="dash-stat__label">Avg. Ticket</span>
+                            <span className="dash-stat__label">Avg. Sale</span>
                             <DeltaChip delta={overview.aovDelta} small />
                         </div>
                         <div>
                             <span className="dash-stat__value dash-stat__value--sm">{formatMoney(overview.aov, storeSettings)}</span>
-                            <p className="dash-stat__sub">per transaction</p>
+                            <p className="dash-stat__sub">Per transaction</p>
                         </div>
                     </div>
 
                     {/* New customers */}
                     <div className="dash-stat">
                         <div className="dash-stat__head">
-                            <span className="dash-stat__label">New Customers</span>
+                            <span className="dash-stat__label">Customers</span>
                             <span className="dash-stat__chip"><Icon name="group" size={18} /></span>
                         </div>
                         <div>
                             <span className="dash-stat__value dash-stat__value--sm">{overview.newCustomers.toLocaleString()}</span>
-                            <p className="dash-stat__sub">{PERIOD_LABEL[period].toLowerCase()}</p>
+                            <p className="dash-stat__sub">{overview.rangeLabel.toLowerCase()}</p>
                         </div>
                     </div>
                 </div>
@@ -105,7 +93,6 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                 <div className="dash-quick">
                     <div className="dash-quick__head">
                         <h2 className="dash-quick__title">Quick Actions</h2>
-                        <p className="dash-quick__sub">Streamline your workflow</p>
                     </div>
                     <div className="dash-quick__group">
                         <button type="button" className="dash-quick__primary" onClick={onNewSale}>
@@ -167,21 +154,11 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                             })
                         )}
                     </div>
-                    <div className="dash-activity__foot">
-                        <Icon name="sync" size={16} /> Live from your sales
-                    </div>
                 </section>
             </div>
 
             {/* Secondary metrics row */}
             <div className="dash-metrics">
-                <div className="dash-mini">
-                    <span className="dash-mini__icon dash-mini__icon--p"><Icon name="percent" size={22} /></span>
-                    <div>
-                        <p className="dash-mini__label">Gross Margin</p>
-                        <p className="dash-mini__value">{overview.grossMargin > 0 ? `${Math.round(overview.grossMargin * 100)}%` : '—'}</p>
-                    </div>
-                </div>
                 <button type="button" className="dash-mini dash-mini--btn" onClick={onViewProducts}>
                     <span className={`dash-mini__icon ${overview.lowStockCount > 0 ? 'dash-mini__icon--s' : 'dash-mini__icon--p'}`}><Icon name="inventory" size={22} /></span>
                     <div>

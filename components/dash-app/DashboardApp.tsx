@@ -4,7 +4,7 @@ import { DashboardShell, DashSection } from './DashboardShell';
 import BizOverview from './BizOverview';
 import BizSales from './BizSales';
 import BizProducts from './BizProducts';
-import { buildDashboard, DashPeriod } from './dashboardModel';
+import { buildDashboard, DashRange } from './dashboardModel';
 import { UpsellInline } from '../upsell/UpsellCard';
 import '../crm/crm.css';
 import './dash.css';
@@ -36,11 +36,11 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
     onNavigate, onReports, onDiscover, onExit, onLogout,
     onNewSale, onInventory, onOrders,
 }) => {
-    const [period, setPeriod] = useState<DashPeriod>('week');
+    const [range, setRange] = useState<DashRange>({ kind: 'preset', preset: 'week' });
 
     const overview = useMemo(
-        () => buildDashboard(sales, products, customers, storeSettings, period),
-        [sales, products, customers, storeSettings, period],
+        () => buildDashboard(sales, products, customers, storeSettings, range),
+        [sales, products, customers, storeSettings, range],
     );
 
     let content: React.ReactNode;
@@ -49,8 +49,8 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
             <BizSales
                 overview={overview}
                 storeSettings={storeSettings}
-                period={period}
-                onPeriod={setPeriod}
+                range={range}
+                onRange={setRange}
                 onReports={onReports}
             />
         );
@@ -59,8 +59,8 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
             <BizProducts
                 overview={overview}
                 storeSettings={storeSettings}
-                period={period}
-                onPeriod={setPeriod}
+                range={range}
+                onRange={setRange}
                 onInventory={onInventory}
             />
         );
@@ -73,8 +73,8 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
                     overview={overview}
                 storeSettings={storeSettings}
                 user={user}
-                period={period}
-                onPeriod={setPeriod}
+                range={range}
+                onRange={setRange}
                 onViewSales={() => onNavigate('sales')}
                 onViewProducts={() => onNavigate('products')}
                 onNewSale={onNewSale}
