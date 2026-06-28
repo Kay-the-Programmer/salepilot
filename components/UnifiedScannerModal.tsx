@@ -407,11 +407,11 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
 
                             {!isInitializing && (
                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/50 shadow-[0_0_15px_rgba(0,43,107,0.8)] animate-scan-line"></div>
                                     <div className={`absolute inset-0 bg-white transition-opacity duration-150 ${isFlashing ? 'opacity-40' : 'opacity-0'}`}></div>
 
                                     {/* Simplified Box for embedded view */}
-                                    <div className="absolute border-2 border-primary/80 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.3)]" style={{
+                                    <div className="absolute border-2 border-primary/80 rounded-xl shadow-[0_0_20px_rgba(0,43,107,0.3)]" style={{
                                         width: '80%',
                                         height: '60%',
                                     }}>
@@ -464,107 +464,104 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
     }
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-xl p-4 animate-fade-in">
-            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-[2rem] sm:rounded-[2.5rem] w-full max-w-lg overflow-hidden animate-slide-up shadow-2xl border border-white/20 dark:border-white/10">
+        <div
+            className="fixed inset-0 z-[100] bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in"
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            onClick={onClose}
+        >
+            <div
+                className="relative w-full max-w-xs bg-surface border border-brand-border rounded-2xl overflow-hidden shadow-xl"
+                onClick={e => e.stopPropagation()}
+            >
                 {/* Header */}
-                <div className="p-5 border-b border-gray-100/50 flex items-center justify-between bg-white/50 backdrop-blur-sm">
-                    <div>
-                        <h3 className="font-bold text-gray-900 text-lg leading-tight">{title}</h3>
+                <div className="flex items-center justify-between pl-4 pr-2 h-12 border-b border-brand-border">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <h3 className="text-sm font-bold text-brand-text truncate">{title}</h3>
                         {continuous && (
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Continuous Mode</span>
-                            </div>
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-success uppercase tracking-wider flex-shrink-0">
+                                <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />Live
+                            </span>
                         )}
                     </div>
                     <button
+                        type="button"
                         onClick={onClose}
-                        className="p-2.5 rounded-2xl hover:bg-gray-100 text-gray-400 hover:text-gray-900 transition-all active:scale-95"
+                        aria-label="Close"
+                        className="w-9 h-9 flex items-center justify-center rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition"
                     >
-                        <XMarkIcon className="w-6 h-6" />
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
 
-                {/* Scanner Area */}
+                {/* Scanner area */}
                 <div className="relative bg-black aspect-square overflow-hidden">
                     {isInitializing && !error && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-black">
-                            <div className="w-10 h-10 border-4 border-white/20 border-t-white rounded-full animate-spin mb-4"></div>
-                            <p className="text-white/60 text-sm font-medium">Initializing camera...</p>
+                            <div className="w-9 h-9 border-4 border-white/20 border-t-white rounded-full animate-spin mb-3"></div>
+                            <p className="text-white/60 text-xs font-medium">Starting camera…</p>
                         </div>
                     )}
 
                     {error ? (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center z-10 bg-gray-50">
-                            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
-                                <FiX className="w-8 h-8" />
+                        <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center z-10 bg-surface">
+                            <div className="w-12 h-12 bg-danger-muted text-danger rounded-full flex items-center justify-center mb-3">
+                                <FiX className="w-6 h-6" />
                             </div>
-                            <h4 className="font-bold text-gray-900 mb-2">Camera Error</h4>
-                            <p className="text-gray-500 text-sm leading-relaxed mb-6">{error}</p>
+                            <h4 className="font-bold text-brand-text text-sm mb-1">Camera error</h4>
+                            <p className="text-brand-text-muted text-xs leading-relaxed mb-4">{error}</p>
                             <button
+                                type="button"
                                 onClick={onClose}
-                                className="px-6 py-2.5 bg-gray-900 text-white rounded-xl font-semibold text-sm shadow-lg active:scale-95 transition-all"
+                                className="px-4 py-2 bg-primary text-white rounded-lg font-semibold text-xs active:scale-95 transition"
                             >
                                 Dismiss
                             </button>
                         </div>
                     ) : (
                         <>
-                            {/* Video Element */}
-                            <video
-                                ref={videoRef}
-                                className="w-full h-full object-cover"
-                                playsInline
-                                muted
-                            />
+                            <video ref={videoRef} className="w-full h-full object-cover" playsInline muted />
 
-                            {/* Scanning Overlay UI */}
                             {!isInitializing && (
                                 <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                                    {/* Scan Line Animation */}
-                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/50 shadow-[0_0_15px_rgba(59,130,246,0.8)] animate-scan-line"></div>
+                                    {/* Scan line */}
+                                    <div className="absolute top-0 left-0 w-full h-[2px] bg-primary/60 shadow-[0_0_15px_rgba(0,43,107,0.8)] animate-scan-line"></div>
 
-                                    {/* Visual Haptic Flash */}
+                                    {/* Capture flash */}
                                     <div className={`absolute inset-0 bg-white transition-opacity duration-150 ${isFlashing ? 'opacity-40' : 'opacity-0'}`}></div>
 
-                                    {/* Scanning Box */}
-                                    <div className="absolute border-4 border-primary rounded-2xl shadow-[0_0_30px_rgba(59,130,246,0.5)]" style={{
-                                        width: '90%',
-                                        height: '40%',
-                                        maxWidth: '500px',
-                                        maxHeight: '250px'
-                                    }}>
-                                        {/* Corner indicators */}
-                                        <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-white rounded-tl-xl"></div>
-                                        <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-white rounded-tr-xl"></div>
-                                        <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-white rounded-bl-xl"></div>
-                                        <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-white rounded-br-xl"></div>
+                                    {/* Scan box */}
+                                    <div className="absolute border-2 border-primary rounded-xl shadow-[0_0_20px_rgba(0,43,107,0.4)]" style={{ width: '82%', height: '46%' }}>
+                                        <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-white rounded-tl-lg"></div>
+                                        <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-white rounded-tr-lg"></div>
+                                        <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-white rounded-bl-lg"></div>
+                                        <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-white rounded-br-lg"></div>
                                     </div>
 
-                                    {/* Vignette effect */}
+                                    {/* Vignette */}
                                     <div className="absolute inset-0 bg-black/20"></div>
 
-                                    {/* Camera Switch Button */}
                                     {hasMultipleCameras && (
                                         <button
+                                            type="button"
                                             onClick={handleCameraSwitch}
                                             disabled={isInitializing}
-                                            className="absolute bottom-6 left-6 pointer-events-auto p-4 rounded-full backdrop-blur-xl bg-white/10 text-white border border-white/20 transition-all active:scale-90 disabled:opacity-50 active:scale-95 transition-all duration-300"
+                                            aria-label="Switch camera"
+                                            className="absolute bottom-3 left-3 pointer-events-auto w-10 h-10 flex items-center justify-center rounded-full bg-black/40 text-white border border-white/20 active:scale-90 transition disabled:opacity-50"
                                         >
-                                            <FiRefreshCw className={`w-6 h-6 transition-transform duration-500 ${isInitializing ? 'animate-spin' : ''}`} />
+                                            <FiRefreshCw className={`w-5 h-5 ${isInitializing ? 'animate-spin' : ''}`} />
                                         </button>
                                     )}
 
-                                    {/* Torch Control Button */}
                                     {hasTorch && (
                                         <button
+                                            type="button"
                                             onClick={handleTorchToggle}
-                                            className={`absolute bottom-6 right-6 pointer-events-auto p-4 rounded-full backdrop-blur-xl transition-all active:scale-90 ${isTorchOn
-                                                ? 'bg-yellow-400 text-white shadow-xl shadow-yellow-400/20'
-                                                : 'bg-white/10 text-white border border-white/20'
-                                                }`}
+                                            aria-label="Toggle flashlight"
+                                            className={`absolute bottom-3 right-3 pointer-events-auto w-10 h-10 flex items-center justify-center rounded-full active:scale-90 transition ${isTorchOn ? 'bg-secondary text-white' : 'bg-black/40 text-white border border-white/20'}`}
                                         >
-                                            {isTorchOn ? <FiZapOff className="w-6 h-6" /> : <FiZap className="w-6 h-6" />}
+                                            {isTorchOn ? <FiZapOff className="w-5 h-5" /> : <FiZap className="w-5 h-5" />}
                                         </button>
                                     )}
                                 </div>
@@ -573,27 +570,17 @@ const UnifiedScannerModal: React.FC<UnifiedScannerModalProps> = ({
                     )}
                 </div>
 
-                {/* Footer Info */}
-                <div className="p-6 bg-slate-50/80 dark:bg-slate-800/80 border-t border-slate-200/50 dark:border-white/10 backdrop-blur-xl">
-                    <div className="bg-white/50 dark:bg-slate-900/50 rounded-2xl p-4 border border-slate-200/50 dark:border-white/5 backdrop-blur-md">
-                        <p className="text-center text-slate-600 dark:text-slate-300 text-[13px] font-medium tracking-wide">
-                            {continuous
-                                ? "Items will be added automatically as you scan."
-                                : "Position code within the box to scan."
-                            }
-                        </p>
-                    </div>
+                {/* Footer hint */}
+                <div className="px-4 py-2.5 bg-surface border-t border-brand-border">
+                    <p className="text-center text-brand-text-muted text-xs font-medium">
+                        {continuous ? 'Items are added automatically as you scan.' : 'Position the code within the frame.'}
+                    </p>
                 </div>
             </div>
 
             <style>{`
-                @keyframes scan-line {
-                    0% { top: 0; }
-                    100% { top: 100%; }
-                }
-                .animate-scan-line {
-                    animation: scan-line 3s linear infinite;
-                }
+                @keyframes scan-line { 0% { top: 0; } 100% { top: 100%; } }
+                .animate-scan-line { animation: scan-line 3s linear infinite; }
             `}</style>
         </div>
     );

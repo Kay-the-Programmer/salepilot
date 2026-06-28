@@ -12,6 +12,10 @@
   transform: scale(0.93);
   background: var(--m3-surface-high);
 }
+/* Let keys shrink so the whole pad + Add button fit one screen (overrides the
+   global 44px mobile tap-target minimum). The flex grid keeps them comfortably
+   tap-sized on normal phones. */
+.sp-hustle .keypad-btn { min-height: 0; }
 
 .sp-hustle .tactile {
   border: 2px solid var(--m3-outline-variant);
