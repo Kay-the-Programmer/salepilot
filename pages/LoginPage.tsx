@@ -383,9 +383,6 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                             >
                                                 Forgot password?
                                             </button>
-                                            <button type="button" onClick={() => switchView('register')} className="text-xs font-bold text-primary hover:text-primary-dark uppercase tracking-wider transition-colors">
-                                                Create account
-                                            </button>
                                         </div>
 
                                         <button

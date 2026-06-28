@@ -76,9 +76,6 @@ const StandaloneShell: React.FC<StandaloneShellProps> = ({
               <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
             </button>
           )}
-          <button onClick={() => navigate('/account')} className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold" title="Account">
-            {user?.profilePicture ? <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" /> : <span>{initial}</span>}
-          </button>
         </div>
       </header>
 

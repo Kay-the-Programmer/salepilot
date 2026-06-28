@@ -672,7 +672,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         )}
                     </div>
 
-                    <span className="sale__avatar" title={user?.name || user?.email || ''}>{avatarInitials}</span>
                 </div>
 
                 {posView === 'sell' && (
@@ -722,34 +721,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 <div className="sale__body">
                     {/* ── Browse ── */}
                     <main className="sale__browse">
-                        <div className="sale__browse-head">
-                            <h2>Browse Inventory</h2>
-                            <div className="sale__chips" role="tablist" aria-label="Categories">
-                                {categoryChips.map(c => (
-                                    <button
-                                        key={c}
-                                        type="button"
-                                        className={`sale__chip${activeCategory === c ? ' sale__chip--active' : ''}`}
-                                        aria-selected={activeCategory === c}
-                                        onClick={() => setActiveCategory(c)}
-                                    >
-                                        {c}
-                                    </button>
-                                ))}
-                                <button
-                                    type="button"
-                                    className="sale__chip sale__chip--scan"
-                                    onClick={() => {
-                                        searchInputRef.current?.focus();
-                                        showSnackbar('Scan a barcode or type to search', 'info');
-                                    }}
-                                >
-                                    <PosIcon name="barcode_scanner" size={18} />
-                                    Scan
-                                </button>
-                            </div>
-                        </div>
-
                         <div className="sale__grid" id="pos-product-list" role="region" aria-label="Product catalog">
                             {isLoading ? (
                                 Array.from({ length: 10 }).map((_, i) => (

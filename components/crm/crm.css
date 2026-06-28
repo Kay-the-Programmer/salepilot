@@ -321,7 +321,18 @@
   outline: none; transition: border-color 0.15s var(--c-ease), box-shadow 0.15s var(--c-ease);
 }
 .crm-search input::placeholder { color: var(--c-on-surface-variant); opacity: 0.7; }
-.crm-search input:focus { border-color: var(--c-primary-container); box-shadow: 0 0 0 3px rgba(0, 128, 96, 0.15); }
+.crm-search input:focus { border-color: var(--c-primary-container); box-shadow: 0 0 0 3px rgba(0, 43, 107, 0.15); }
+/* Scan button living inside the search bar (right side). */
+.crm-search--scan input { padding-right: 50px; }
+.crm-search__scan {
+  position: absolute; right: 5px; top: 50%; transform: translateY(-50%);
+  width: 40px; height: 40px; min-width: 0; min-height: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: var(--c-primary); cursor: pointer;
+  border-radius: var(--c-radius); transition: background-color 0.15s var(--c-ease);
+}
+.crm-search__scan:hover { background: var(--c-surface-container); }
+.crm-search__scan:active { transform: translateY(-50%) scale(0.92); }
 
 .crm-chips { display: flex; align-items: center; gap: 10px; overflow-x: auto; padding-bottom: 6px; scrollbar-width: none; }
 .crm-chips::-webkit-scrollbar { display: none; }

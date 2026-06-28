@@ -111,11 +111,10 @@ export const PosShell: React.FC<PosShellProps> = ({
                 </>
             )}
 
-            <div className="posshell__content">
-                {/* avatar / user is surfaced inside each page's own header */}
-                <span hidden>{user?.name}</span>
+            {/* POS page content (SalesPage / Inventory / Dashboard / Discover) */}
+            <main className="posshell__content">
                 {children}
-            </div>
+            </main>
 
             {/* Embedded AI assistant — available from inside the POS app */}
             <AssistantLauncher userName={user?.name} />

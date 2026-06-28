@@ -36,7 +36,7 @@ const NAV: { id: CrmSection; label: string; icon: string }[] = [
 export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, onDiscover, onExit, onLogout, children }) => {
     // On the Insights page the section tabs are hidden — only Insights remains,
     // so the user picks an app to view (Discover stays available).
-    const navItems = active === 'insights' ? NAV.filter(n => n.id === 'insights') : NAV;
+    const navItems = NAV;
 
     return (
         <div className="crm">

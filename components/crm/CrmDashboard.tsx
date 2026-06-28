@@ -189,10 +189,6 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
                     </div>
                 </div>
             </div>
-
-            <button className="crm-fab" type="button" aria-label="Add customer" onClick={onAddCustomer}>
-                <Icon name="add" size={26} />
-            </button>
         </main>
     );
 };

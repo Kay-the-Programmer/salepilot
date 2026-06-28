@@ -20,7 +20,6 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
     <main className="crm-main crm-section-fade">
         <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <div>
-                <p className="crm-pagehead__eyebrow">Sales · {overview.rangeLabel}</p>
                 <h2 className="crm-pagehead__title">Sales Performance</h2>
                 <p className="crm-pagehead__sub">Revenue, orders and recent transactions.</p>
             </div>

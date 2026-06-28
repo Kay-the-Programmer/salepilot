@@ -70,16 +70,13 @@ const AuditApp: React.FC<AuditAppProps> = ({ logs }) => {
   }, [logs, filter, search]);
 
   const navItems = [
-    { icon: 'home', label: 'Home', onClick: () => navigate('/') },
-    { icon: 'manage_search', label: 'Audit', active: true, onClick: () => {} },
-    { icon: 'tune', label: 'Filters', onClick: () => setShowSearch((s) => !s) },
-    { icon: 'person', label: 'Account', onClick: () => navigate('/account') },
+    { icon: 'manage_search', label: 'Audit', active: true, onClick: () => { } },
   ];
 
   const headerActions = (
     <button
       onClick={() => setShowSearch((s) => !s)}
-      className={`w-10 h-10 flex items-center justify-center rounded-full transition active:scale-90 ${showSearch ? 'm3-bg-surface-high m3-text-primary' : 'm3-text-on-surface-variant hover:m3-bg-surface-high'}`}
+      className={`w-10 h-10 flex opacity-0 items-center justify-center rounded-full transition active:scale-90 ${showSearch ? 'm3-bg-surface-high m3-text-primary' : 'm3-text-on-surface-variant hover:m3-bg-surface-high'}`}
       title="Search"
     >
       <span className="material-symbols-outlined" style={{ fontSize: 22 }}>search</span>
@@ -89,8 +86,9 @@ const AuditApp: React.FC<AuditAppProps> = ({ logs }) => {
   return (
     <StandaloneShell icon="manage_search" title="Audit Trail" scopeClass="sp-audit" headerActions={headerActions} navItems={navItems}>
       <div className="px-4 md:px-8 py-5 max-w-2xl mx-auto w-full pb-24 md:pb-8">
+
         {/* Search */}
-        {showSearch && (
+        {!showSearch && (
           <div className="mb-4 sp-fade-in">
             <div className="flex items-center gap-2 m3-bg-surface-container rounded-xl px-3 h-12">
               <span className="material-symbols-outlined m3-text-on-surface-variant" style={{ fontSize: 20 }}>search</span>
