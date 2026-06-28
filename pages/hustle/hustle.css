@@ -1,5 +1,18 @@
 /* Hustle Mode — scoped tactile POS styling. Tokens come from assistant.css
    (root carries `sp-assistant sp-hustle`). */
+
+/* Anchor the standalone app to the *dynamic* viewport height. `h-full` (100%)
+   resolves against iOS Safari's layout viewport (the area behind the collapsing
+   toolbar), so the screen renders taller than what's visible and the page
+   scrolls; `100dvh` tracks the actually-visible area instead. Matches the
+   pos-shell / crm shells. The double class beats Tailwind's `.h-full`. */
+.sp-assistant.sp-hustle {
+  height: 100vh; /* fallback for browsers without dvh support */
+  height: 100dvh;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .sp-hustle .keypad-btn {
   background: var(--m3-surface-lowest);
   border: 1px solid var(--m3-outline-variant);
