@@ -93,9 +93,14 @@ try {
 }
 
 // ─── Analytics (best-effort – may be blocked by ad-blockers) ──────────────────
+// Skip on localhost so local development never fires GA hits — those pollute
+// production metrics and show up as blocked-request console errors behind
+// tracking blockers. In production it initialises as before.
 let analytics: Analytics | undefined;
 try {
-    if (typeof window !== 'undefined') {
+    const isLocalhost = typeof window !== 'undefined' &&
+        /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+    if (typeof window !== 'undefined' && !isLocalhost) {
         analytics = getAnalytics(app);
     }
 } catch (e) {
