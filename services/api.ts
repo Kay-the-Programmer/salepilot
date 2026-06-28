@@ -29,6 +29,25 @@ const BASE_URL = rawBase;
  *  such as the WhatsApp webhook callback shown in the connection settings. */
 export const API_BASE_URL = BASE_URL;
 
+/**
+ * Diagnostic logger for request URLs / endpoints. OFF by default in every
+ * environment so the console isn't flooded (and request URLs never leak to end
+ * users in production). Opt in while debugging with either:
+ *   • `window.__API_DEBUG = true`, or
+ *   • `localStorage.setItem('sp_api_debug', '1')`
+ * then reload.
+ */
+const API_DEBUG: boolean = (() => {
+  try {
+    if (typeof window !== 'undefined' && (window as any).__API_DEBUG) return true;
+    if (typeof localStorage !== 'undefined' && localStorage.getItem('sp_api_debug') === '1') return true;
+  } catch { /* ignore */ }
+  return false;
+})();
+const devLog = (...args: unknown[]): void => {
+  if (API_DEBUG) console.log(...args);
+};
+
 
 // Storage key used by authService
 const CURRENT_USER_KEY = 'salePilotUser';
@@ -83,8 +102,8 @@ async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyK
   // Idempotency key lets the server dedupe a mutation that is retried after an
   // offline queue replay (or a lost response), preventing duplicate sales.
   if (idempotencyKey) headers['X-Idempotency-Key'] = idempotencyKey;
-  // Avoid logging the bearer token to the console.
-  console.log('[api] Request to', url, '(auth:', headers.Authorization ? 'yes' : 'no', ')');
+  // Dev-only: never logged in production, and never includes the bearer token.
+  devLog('[api] Request to', url, '(auth:', headers.Authorization ? 'yes' : 'no', ')');
   if (!isFormData && !('Content-Type' in headers) && !('content-type' in headers)) {
     headers['Content-Type'] = 'application/json';
   }
@@ -285,7 +304,7 @@ export const api = {
     const cacheStore = options.store || ENDPOINT_TO_STORE[endpoint.split('?')[0]];
 
     if (!isOnline && cacheStore) {
-      console.log(`Offline: loading ${endpoint} from cache store ${cacheStore}`);
+      devLog(`Offline: loading ${endpoint} from cache store ${cacheStore}`);
       if (cacheStore === 'settings') {
         const currentUser = JSON.parse(localStorage.getItem(CURRENT_USER_KEY) || '{}');
         const settings = await dbService.get<T>('settings', currentUser?.currentStoreId || 'default');
