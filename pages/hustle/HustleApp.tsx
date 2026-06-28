@@ -180,7 +180,7 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
         {/* Body */}
         <div className={`flex-1 min-h-0 flex flex-col${view === 'hustle' ? ' md:items-center md:justify-center md:overflow-y-auto md:py-8' : ''}`}>
           {view === 'hustle' && (
-            <div className="flex-1 min-h-0 flex flex-col w-full max-w-md mx-auto px-4 pb-3 md:flex-none md:max-w-sm md:px-6 md:pt-6 md:pb-6 md:m3-bg-surface-lowest md:border md:m3-border-outline-variant md:rounded-3xl md:shadow-lg">
+            <div className="flex-1 min-h-0 flex flex-col justify-center w-full max-w-md mx-auto px-4 pb-3 md:flex-none md:max-w-sm md:px-6 md:pt-6 md:pb-6 md:m3-bg-surface-lowest md:border md:m3-border-outline-variant md:rounded-3xl md:shadow-lg">
               {/* Show / hide the top bar to maximise space (mobile only) */}
               <button
                 type="button"
@@ -214,8 +214,10 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
                 ))}
               </div>
 
-              {/* Keypad — flexes to fill the remaining height so nothing scrolls */}
-              <div className="grid grid-cols-3 grid-rows-4 gap-2 flex-1 min-h-0 my-2 md:flex-none md:my-3">
+              {/* Keypad — grows to fill remaining height (so nothing scrolls) but
+                  is capped so the keys don't become elongated on tall screens.
+                  The column's justify-center keeps the stack balanced once capped. */}
+              <div className="grid grid-cols-3 grid-rows-4 gap-2 flex-1 min-h-0 max-h-[22rem] my-2 md:flex-none md:max-h-none md:my-3">
                 {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => <button key={n} onClick={() => append(n)} className="keypad-btn flex items-center justify-center text-2xl font-semibold m3-text-on-surface md:h-16">{n}</button>)}
                 <button onClick={clearPad} className="keypad-btn flex items-center justify-center text-xl font-semibold m3-text-error md:h-16" style={{ background: 'var(--m3-surface-low)' }}>C</button>
                 <button onClick={() => append('0')} className="keypad-btn flex items-center justify-center text-2xl font-semibold m3-text-on-surface md:h-16">0</button>
