@@ -1,7 +1,6 @@
 import React from 'react';
 import { User } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
-import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
 import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
@@ -38,7 +37,6 @@ export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, on
                 <div className="crm-rail__brand">
                     <span className="crm-bar__logo"><Icon name="inventory_2" size={22} fill={1} /></span>
                     <div className="crm-rail__brand-text">
-                        <span className="crm-rail__brand-title">SalePilot Inventory</span>
                         <span className="crm-rail__brand-sub">Stock Manager</span>
                     </div>
                 </div>
@@ -99,9 +97,6 @@ export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, on
 
                 {children}
             </div>
-
-            {/* Embedded AI assistant — available from inside the Inventory app */}
-            <AssistantLauncher userName={user?.name} />
         </div>
     );
 };

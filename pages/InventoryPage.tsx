@@ -16,7 +16,6 @@ import InventoryHeader from '../components/inventory/InventoryHeader';
 import InventoryMobileShell from '../components/inventory/InventoryMobileShell';
 import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
-import Header from "@/components/Header.tsx";
 
 
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
@@ -70,7 +69,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     onDeleteCategory,
     isLoading,
     error,
-    onOpenSidebar,
+    // onOpenSidebar is accepted for API compatibility but no longer used: the
+    // desktop toolbar has no menu button and mobile uses InventoryMobileShell.
     storeSettings,
     currentUser,
     embedded = false,
@@ -116,6 +116,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return saved ? parseFloat(saved) : 60;
     });
     const [isResizing, setIsResizing] = useState(false);
+    // Mirror the live width in a ref so the resize listeners can persist it on
+    // mouse-up without the effect depending on (and re-subscribing for) every
+    // width change during a drag.
+    const leftPanelWidthRef = useRef(leftPanelWidth);
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
@@ -133,37 +137,39 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     const canManageProducts = currentUser.role === 'admin' || currentUser.role === 'inventory_manager';
 
-    // Handle resizing
+    // Handle resizing. Depends only on `isResizing` so listeners are attached
+    // once per drag session, not re-bound on every pixel of movement.
     useEffect(() => {
+        if (!isResizing) {
+            document.body.style.cursor = '';
+            document.body.style.userSelect = '';
+            return;
+        }
+
         const handleMouseMove = (e: MouseEvent) => {
-            if (!isResizing) return;
             const newWidth = (e.clientX / window.innerWidth) * 100;
             // Constrain between 40% and 75%
             if (newWidth >= 40 && newWidth <= 75) {
+                leftPanelWidthRef.current = newWidth;
                 setLeftPanelWidth(newWidth);
             }
         };
 
         const handleMouseUp = () => {
             setIsResizing(false);
-            localStorage.setItem('inventory-panel-width', leftPanelWidth.toString());
+            localStorage.setItem('inventory-panel-width', leftPanelWidthRef.current.toString());
         };
 
-        if (isResizing) {
-            document.addEventListener('mousemove', handleMouseMove);
-            document.addEventListener('mouseup', handleMouseUp);
-            document.body.style.cursor = 'col-resize';
-            document.body.style.userSelect = 'none';
-        } else {
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-        }
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
 
         return () => {
             document.removeEventListener('mousemove', handleMouseMove);
             document.removeEventListener('mouseup', handleMouseUp);
         };
-    }, [isResizing, leftPanelWidth]);
+    }, [isResizing]);
 
     // Search Debouncing
     useEffect(() => {
@@ -608,10 +614,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     return (
         <div className="h-[100dvh] w-full bg-background flex flex-col overflow-hidden relative selection:bg-primary/30">
-            {/* Background elements */}
-            <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl pointer-events-none -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-1/4 w-[500px] h-[500px] bg-secondary/5 rounded-full blur-3xl pointer-events-none translate-y-1/2"></div>
-
             {/* Skip to content link for accessibility */}
             <a
                 href="#inventory-content"
@@ -619,54 +621,103 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             >
                 Skip to inventory content
             </a>
-            {/* Header — hidden on mobile when in detail view */}
-            <Header
-                title={
-                    <div className="flex items-center gap-6 md:gap-8 pt-2">
+            {/* Desktop toolbar — flat Velocity structural header.
+                Arrangement: section tabs · flexible search · action cluster.
+                (Mobile uses InventoryMobileShell, so this is desktop-only.) */}
+            <header className="hidden md:flex items-center gap-4 h-16 px-4 lg:px-6 border-b border-brand-border bg-surface shrink-0 z-50">
+                {/* Section tabs — segmented control (navy = active) */}
+                <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-variant shrink-0" role="tablist" aria-label="Inventory section">
+                    {(['products', 'categories'] as const).map((tab) => (
                         <button
-                            onClick={() => setActiveTab('products')}
-                            className={`text-[17px] md:text-2xl pb-1 transition-all duration-200 rounded-t-lg 
-                                ${activeTab === 'products' ? 'font-bold text-brand-text' : 'font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                            key={tab}
+                            role="tab"
+                            aria-selected={activeTab === tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-4 h-9 rounded-md text-sm font-bold capitalize transition-colors ${activeTab === tab ? 'bg-surface text-primary shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}
                         >
-                            Products
+                            {tab}
                         </button>
+                    ))}
+                </div>
+
+                {/* Search (with inline scan) + primary "New" action.
+                    Scan-in-search mirrors CrmCustomers; orange 2px focus accent per DESIGN.md. */}
+                <div className="flex-1 flex items-center gap-3 min-w-0">
+                    <div className="flex-1 max-w-md flex items-center h-11 px-3 rounded-lg bg-surface-variant border-2 border-transparent transition-colors focus-within:bg-surface focus-within:border-secondary">
+                        <svg className="w-4 h-4 text-brand-text-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder={activeTab === 'products' ? 'Search products, SKU, barcode…' : 'Search categories…'}
+                            aria-label="Search inventory"
+                            className="w-full bg-transparent border-none outline-none focus:ring-0 text-sm mx-2 text-brand-text placeholder:text-brand-text-muted"
+                        />
+                        {searchTerm && (
+                            <button
+                                onClick={() => setSearchTerm('')}
+                                className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-brand-text-muted hover:text-brand-text active:scale-90 transition"
+                                aria-label="Clear search"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.4} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        )}
+                        {activeTab === 'products' && (
+                            <>
+                                <span className="shrink-0 w-px h-5 bg-brand-border mx-1" />
+                                <button
+                                    type="button"
+                                    onClick={() => setIsScanModalOpen(true)}
+                                    className="shrink-0 -mr-1 w-7 h-7 flex items-center justify-center rounded-md text-brand-text-muted hover:text-primary hover:bg-surface active:scale-90 transition"
+                                    aria-label="Scan barcode"
+                                    title="Scan a barcode to find a product"
+                                >
+                                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M3 8V6a2 2 0 0 1 2-2h2M17 4h2a2 2 0 0 1 2 2v2M21 16v2a2 2 0 0 1-2 2h-2M7 20H5a2 2 0 0 1-2-2v-2M7 12h10" />
+                                    </svg>
+                                </button>
+                            </>
+                        )}
+                    </div>
+
+                    {canManageProducts && (
                         <button
-                            onClick={() => setActiveTab('categories')}
-                            className={`text-[17px] md:text-2xl pb-1 transition-all duration-200 rounded-t-lg ${activeTab === 'categories' ? 'font-bold text-brand-text' : 'font-semibold text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                            type="button"
+                            onClick={() => (activeTab === 'products' ? handleOpenAddModal() : handleOpenAddCategoryModal())}
+                            className="shrink-0 flex items-center gap-1.5 h-11 pl-3 pr-4 rounded-lg bg-primary hover:bg-primary/90 text-white text-sm font-bold transition active:scale-95"
+                            title={activeTab === 'products' ? 'New product' : 'New category'}
                         >
-                            Categories
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            <span className="hidden lg:inline">{activeTab === 'products' ? 'New Product' : 'New Category'}</span>
                         </button>
+                    )}
+                </div>
+
+                {/* Utility actions (barcode lookup · archived · view mode · export) — products tab only */}
+                {activeTab === 'products' && (
+                    <div className="shrink-0">
+                        <InventoryHeader
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            viewMode={viewMode}
+                            setViewMode={setViewMode}
+                            showFilters={showFilters}
+                            setShowFilters={setShowFilters}
+                            showArchived={showArchived}
+                            setShowArchived={setShowArchived}
+                            setIsManualLookupOpen={setIsManualLookupOpen}
+                            canManageProducts={canManageProducts}
+                            onOpenAddProduct={handleOpenAddModal}
+                            onOpenAddCategory={handleOpenAddCategoryModal}
+                            onExportLowStock={handleExportLowStock}
+                        />
                     </div>
-                }
-                onMenuClick={onOpenSidebar}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                hideSearchOnMobile={false}
-                showSearch={true}
-                className={`z-50 hidden md:block`} // Always hidden on mobile now as we use custom header/tabs
-                rightContent={
-                    <div className="flex items-center gap-2">
-                        {/* Desktop-only full InventoryHeader */}
-                        <div className="hidden md:flex">
-                            <InventoryHeader
-                                activeTab={activeTab}
-                                setActiveTab={setActiveTab}
-                                viewMode={viewMode}
-                                setViewMode={setViewMode}
-                                showFilters={showFilters}
-                                setShowFilters={setShowFilters}
-                                showArchived={showArchived}
-                                setShowArchived={setShowArchived}
-                                setIsManualLookupOpen={setIsManualLookupOpen}
-                                canManageProducts={canManageProducts}
-                                onOpenAddProduct={handleOpenAddModal}
-                                onOpenAddCategory={handleOpenAddCategoryModal}
-                                onExportLowStock={handleExportLowStock}
-                            />
-                        </div>
-                    </div>
-                }
-            />
+                )}
+            </header>
 
             {/* Mobile inventory — exact v2 mobile layout (logic preserved) */}
             {!selectedItem && (
@@ -712,7 +763,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             <div className="h-full flex flex-col">
                                 <div className="flex-1 overflow-y-auto scroll-smooth p-2 md:p-4 pb-[100px] md:pb-24">
                                     <ProductList
-                                        products={typeof window !== 'undefined' && window.innerWidth < 768 ? sortedProducts : paginatedProducts}
+                                        products={paginatedProducts}
                                         categories={categories}
                                         onSelectProduct={handleSelectProduct}
                                         onStockChange={onStockChange}
@@ -734,7 +785,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                         onPageChange={setPage}
                                         onPageSizeChange={setPageSize}
                                         label="products"
-                                        className="border-t border-brand-border bg-surface/50 backdrop-blur-xl sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4 px-4"
+                                        className="border-t border-brand-border bg-surface sticky bottom-0 z-10 pb-[100px] md:pb-4 pt-4 px-4"
                                         compact={true}
                                     />
                                 </div>
@@ -769,7 +820,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
                 {/* Right Panel: Detail View */}
                 <div
-                    className={`flex-1 flex flex-col bg-surface/80 backdrop-blur-3xl md:border-l md:border-brand-border md:shadow-[-20px_0_40px_rgb(0,0,0,0.04)] dark:shadow-none h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-surface/30 md:border-transparent md:shadow-none' : 'flex w-full'}`}
+                    className={`flex-1 flex flex-col bg-surface md:border-l md:border-brand-border h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-background md:border-transparent' : 'flex w-full'}`}
                     style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
                 >
                     {selectedItem ? (
@@ -790,9 +841,9 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     ) : detailIsLoading ? (
                                         <LoadingSpinner fullScreen={false} text="Loading product details..." className="py-20" />
                                     ) : detailError ? (
-                                        <div className="text-center p-10 bg-red-50 dark:bg-red-500/10 rounded-xl border border-red-200 dark:border-red-500/20 m-6">
-                                            <p className="text-red-600 dark:text-red-400 font-medium">Error loading product</p>
-                                            <p className="text-red-500 dark:text-red-400/80 text-sm mt-1">{detailError}</p>
+                                        <div className="text-center p-10 bg-danger-muted rounded-xl border border-danger/20 m-6">
+                                            <p className="text-danger font-medium">Error loading product</p>
+                                            <p className="text-danger/80 text-sm mt-1">{detailError}</p>
                                         </div>
                                     ) : detailedProduct ? (
                                         <ProductDetailView
@@ -827,7 +878,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             onBack={handleBackToList}
                                         />
                                     ) : (
-                                        <div className="flex items-center justify-center h-full text-slate-400 dark:text-slate-500 font-medium">
+                                        <div className="flex items-center justify-center h-full text-brand-text-muted font-medium">
                                             Category not found
                                         </div>
                                     )}
@@ -849,7 +900,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 message="Are you sure you want to discard this new product? Any unsaved changes will be lost."
                 confirmText="Discard and View Details"
                 cancelText="Cancel"
-                confirmButtonClass="bg-red-600 hover:bg-red-500"
+                confirmButtonClass="bg-danger hover:bg-danger/90"
             />
 
             {canManageProducts && isStockModalOpen && (

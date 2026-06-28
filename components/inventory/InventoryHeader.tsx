@@ -24,15 +24,12 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
     showArchived,
     setShowArchived,
     setIsManualLookupOpen,
-    canManageProducts,
-    onOpenAddProduct,
-    onOpenAddCategory,
     onExportLowStock
 }) => {
     return (
         <div className="flex items-center gap-3 shrink-0">
-            {/* Right side icon actions */}
-            <div className="flex items-center gap-1 bg-surface-variant p-1 rounded-full shadow-inner">
+            {/* Utility actions — flat tonal pill (Add lives next to the search now) */}
+            <div className="flex items-center gap-1 bg-surface-variant border border-brand-border p-1 rounded-lg">
                 {activeTab === 'products' && (
                     <>
                         {/* Barcode Lookup */}
@@ -91,23 +88,9 @@ const InventoryHeader: React.FC<InventoryHeaderProps> = React.memo(({
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                 </button>
-                                <div className="h-4 w-px bg-brand-border mx-0.5" />
                             </>
                         )}
                     </>
-                )}
-
-                {canManageProducts && (
-                    <button
-                        onClick={activeTab === 'products' ? onOpenAddProduct : onOpenAddCategory}
-                        className="flex items-center gap-1.5 pl-3 pr-4 h-9 rounded-full bg-secondary hover:bg-[#e86d12] text-white text-sm font-bold shadow-sm shadow-primary/25 transition-all duration-200 active:scale-95"
-                        title={activeTab === 'products' ? 'Add Product' : 'Add Category'}
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                        </svg>
-                        <span className="hidden lg:inline">{activeTab === 'products' ? 'New Product' : 'New Category'}</span>
-                    </button>
                 )}
             </div>
         </div>
