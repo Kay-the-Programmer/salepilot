@@ -39,7 +39,7 @@ html.dark .sp-subscription {
 }
 .sp-subscription .pricing-card--active {
   border: 2px solid var(--m3-primary);
-  box-shadow: 0 20px 25px -5px rgba(0, 128, 96, 0.14), 0 10px 10px -5px rgba(0, 128, 96, 0.05);
+  box-shadow: 0 20px 25px -5px rgba(0, 43, 107, 0.14), 0 10px 10px -5px rgba(0, 43, 107, 0.05);
 }
 
 /* Usage / progress bars */

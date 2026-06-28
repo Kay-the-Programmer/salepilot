@@ -116,8 +116,9 @@ export const PosShell: React.FC<PosShellProps> = ({
                 {children}
             </main>
 
-            {/* Embedded AI assistant — available from inside the POS app */}
-            <AssistantLauncher userName={user?.name} />
+            {/* Embedded AI assistant — hidden on the sale terminal so it doesn't
+                distract during checkout; still available on dashboard / discover. */}
+            {active !== 'pos' && <AssistantLauncher userName={user?.name} />}
 
             <AppSwitcherOverlay open={appsOpen} onClose={() => setAppsOpen(false)} user={user} currentRoute="pos" />
         </div>

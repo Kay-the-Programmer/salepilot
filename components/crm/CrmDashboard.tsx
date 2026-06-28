@@ -97,7 +97,7 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
                             </div>
                         </div>
                         <div className="crm-reward-metric">
-                            <span className="crm-reward-metric__icon" style={{ background: 'rgba(0,128,96,0.12)', color: 'var(--c-primary)' }}><Icon name="local_activity" size={26} fill={1} /></span>
+                            <span className="crm-reward-metric__icon" style={{ background: 'rgba(0, 43, 107,0.12)', color: 'var(--c-primary)' }}><Icon name="local_activity" size={26} fill={1} /></span>
                             <div>
                                 <p className="crm-reward-metric__value">{redemptionsThisMonth.count.toLocaleString()}</p>
                                 <p className="crm-reward-metric__label">

@@ -25,11 +25,11 @@
 .inv-metric--alert { background: rgba(255, 218, 214, 0.35); border-color: rgba(186, 26, 26, 0.12); }
 .inv-metric__top { display: flex; align-items: flex-start; justify-content: space-between; }
 .inv-metric__icon { width: 48px; height: 48px; border-radius: var(--c-radius-lg); display: inline-flex; align-items: center; justify-content: center; }
-.inv-metric__icon--p { background: rgba(0, 128, 96, 0.1); color: var(--c-primary); }
+.inv-metric__icon--p { background: rgba(0, 43, 107, 0.1); color: var(--c-primary); }
 .inv-metric__icon--s { background: rgba(255, 165, 53, 0.14); color: var(--c-secondary); }
 .inv-metric__icon--e { background: var(--c-error-container); color: var(--c-error); }
 .inv-metric__chip { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: var(--c-radius-pill); }
-.inv-metric__chip--p { color: var(--c-primary); background: rgba(0, 128, 96, 0.18); }
+.inv-metric__chip--p { color: var(--c-primary); background: rgba(0, 43, 107, 0.18); }
 .inv-metric__chip--e { color: var(--c-error); background: transparent; border: 1px solid rgba(186, 26, 26, 0.25); }
 .inv-metric__label { font-size: 14px; font-weight: 600; color: var(--c-outline); margin: 0 0 4px; }
 .inv-metric--alert .inv-metric__label { color: rgba(147, 0, 10, 0.7); }

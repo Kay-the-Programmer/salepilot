@@ -97,7 +97,7 @@ export default function TourGuide({ user, run: propsRun, page = 'dashboard', onT
                 <div>
                     <h3 className="font-extrabold text-lg mb-2">Inventory Management</h3>
                     <p>Track your stock levels, manage suppliers, and organize categories.</p>
-                    <p className="mt-2 text-sm p-2 rounded-lg italic" style={{ color: SP_GREEN, background: 'rgba(0,128,96,0.08)', border: '1px solid rgba(0,128,96,0.18)' }}>
+                    <p className="mt-2 text-sm p-2 rounded-lg italic" style={{ color: SP_GREEN, background: 'rgba(0, 43, 107,0.08)', border: '1px solid rgba(0, 43, 107,0.18)' }}>
                         💡 Tip: Click here to view your products. On the Inventory page, click <strong>"Add Product"</strong> in the top right to create new items.
                     </p>
                 </div>

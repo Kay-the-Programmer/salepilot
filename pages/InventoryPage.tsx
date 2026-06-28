@@ -624,7 +624,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             {/* Desktop toolbar — flat Velocity structural header.
                 Arrangement: section tabs · flexible search · action cluster.
                 (Mobile uses InventoryMobileShell, so this is desktop-only.) */}
-            <header className="hidden md:flex items-center gap-4 h-16 px-4 lg:px-6 border-b border-brand-border bg-surface shrink-0 z-50">
+            <header className={`${isEditingProduct ? 'hidden' : 'hidden md:flex'} items-center gap-4 h-16 px-4 lg:px-6 border-b border-brand-border bg-surface shrink-0 z-50`}>
                 {/* Section tabs — segmented control (navy = active) */}
                 <div className="flex items-center gap-1 p-1 rounded-lg bg-surface-variant shrink-0" role="tablist" aria-label="Inventory section">
                     {(['products', 'categories'] as const).map((tab) => (
@@ -755,7 +755,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             <div className={`flex-1 ${selectedItem ? 'flex' : 'hidden'} md:flex overflow-hidden w-full relative z-10`} id="inventory-content">
                 {/* Left Panel: List View */}
                 <div
-                    className={`flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent hidden md:flex ${selectedItem ? '' : 'md:w-full'}`}
+                    className={`flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent hidden md:flex ${isEditingProduct ? '!hidden' : ''} ${selectedItem ? '' : 'md:w-full'}`}
                     style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '420px' : 'none' }}
                 >
                     <div className="flex-1 overflow-hidden relative">
@@ -807,8 +807,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     </div>
                 </div>
 
-                {/* Resize Handle (Desktop Only) */}
-                {selectedItem && (
+                {/* Resize Handle (Desktop Only) — hidden while editing (form is full-width) */}
+                {selectedItem && !isEditingProduct && (
                     <div
                         onMouseDown={(e) => {
                             e.preventDefault();
@@ -821,7 +821,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 {/* Right Panel: Detail View */}
                 <div
                     className={`flex-1 flex flex-col bg-surface md:border-l md:border-brand-border h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-background md:border-transparent' : 'flex w-full'}`}
-                    style={selectedItem ? { width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100%' : `${100 - leftPanelWidth}%` } : {}}
+                    style={selectedItem ? { width: (isEditingProduct || (typeof window !== 'undefined' && window.innerWidth < 768)) ? '100%' : `${100 - leftPanelWidth}%` } : {}}
                 >
                     {selectedItem ? (
                         <div className="h-full overflow-y-auto scroll-smooth">

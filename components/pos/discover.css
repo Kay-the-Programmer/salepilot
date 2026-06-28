@@ -10,7 +10,7 @@
   min-height: 100%;
   flex: 1;
   background:
-    radial-gradient(1200px 420px at 100% -10%, rgba(0, 128, 96, 0.06), transparent 60%),
+    radial-gradient(1200px 420px at 100% -10%, rgba(0, 43, 107, 0.06), transparent 60%),
     radial-gradient(900px 380px at -10% 0%, rgba(212, 130, 10, 0.05), transparent 55%),
     var(--v2-color-bg);
 }
@@ -178,7 +178,7 @@
   width: 50px; height: 50px;
   background: var(--v2-color-primary); color: var(--v2-color-on-primary);
   border-color: transparent;
-  box-shadow: 0 6px 16px -4px rgba(0, 128, 96, 0.5);
+  box-shadow: 0 6px 16px -4px rgba(0, 43, 107, 0.5);
 }
 .dfeat__pause:hover { background: var(--v2-color-primary-hover); }
 

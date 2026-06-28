@@ -1828,13 +1828,19 @@ export default function Dashboard() {
                 : posParts[2] === 'discover' ? 'discover'
                     : 'pos';
 
+        // Inventory is the standalone Inventory app — render it at /inv/items so it
+        // has the same chrome/header everywhere (the embedded InventoryShell header,
+        // not a POS-shell-only mobile header). Keeps inventory a single, consistent
+        // experience and lands on the items list rather than the dashboard.
+        if (posSection === 'inventory') {
+            return <Navigate to="/inv/items" replace />;
+        }
+
         const openPosDrawer = () => setPosDrawerOpen(true);
         // Superadmins see every admin app PLUS the Super Admin platform app.
         const posAllowedPages = currentUser.role === 'superadmin' ? [...PERMISSIONS['admin'], 'superadmin'] : PERMISSIONS[currentUser.role];
         let posContent: ReactNode;
-        if (posSection === 'inventory') {
-            posContent = <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={openPosDrawer} />;
-        } else if (posSection === 'dashboard') {
+        if (posSection === 'dashboard') {
             posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
         } else if (posSection === 'discover') {
             posContent = <PosDiscover user={currentUser} allowedPages={posAllowedPages} storeSettings={storeSettings} onLaunch={(page) => navigate(`/${page}`)} onOpenSidebar={openPosDrawer} />;
@@ -1851,7 +1857,7 @@ export default function Dashboard() {
                             user={currentUser}
                             drawerOpen={posDrawerOpen}
                             onCloseDrawer={() => setPosDrawerOpen(false)}
-                            onNavigate={(s) => navigate(s === 'pos' ? '/pos' : `/pos/${s}`)}
+                            onNavigate={(s) => navigate(s === 'pos' ? '/pos' : s === 'inventory' ? '/inv/items' : `/pos/${s}`)}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         >

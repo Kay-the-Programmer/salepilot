@@ -75,18 +75,19 @@
   --v2-space-12: 3rem;
   --v2-space-16: 4rem;
 
-  /* radius */
-  --v2-radius-sm: 6px;
-  --v2-radius-md: 10px;
-  --v2-radius-lg: 14px;
-  --v2-radius-xl: 20px;
+  /* radius — Velocity "soft" shape language (flatter, more minimal) */
+  --v2-radius-sm: 4px;
+  --v2-radius-md: 8px;
+  --v2-radius-lg: 10px;
+  --v2-radius-xl: 14px;
   --v2-radius-pill: 999px;
 
-  /* shadows */
-  --v2-shadow-xs: 0 1px 2px rgba(26, 26, 46, 0.06);
-  --v2-shadow-sm: 0 1px 3px rgba(26, 26, 46, 0.08), 0 1px 2px rgba(26, 26, 46, 0.04);
-  --v2-shadow-md: 0 4px 12px rgba(26, 26, 46, 0.08);
-  --v2-shadow-lg: 0 12px 28px rgba(26, 26, 46, 0.12);
+  /* shadows — tonal layers, not heavy drop shadows (DESIGN.md). Borders do the
+     work of defining surfaces; shadows stay barely-there except for overlays. */
+  --v2-shadow-xs: 0 1px 1px rgba(26, 26, 46, 0.03);
+  --v2-shadow-sm: 0 1px 2px rgba(26, 26, 46, 0.04);
+  --v2-shadow-md: 0 2px 6px rgba(26, 26, 46, 0.05);
+  --v2-shadow-lg: 0 8px 24px rgba(26, 26, 46, 0.10);
   --v2-shadow-focus: 0 0 0 3px rgba(0, 43, 107, 0.22);
 
   /* motion */
@@ -110,8 +111,8 @@
   --v2-color-border-strong: #3c3c58;
   --v2-color-divider: #262640;
 
-  --v2-color-primary-soft: #103c30;
-  --v2-color-primary-border: #1d5544;
+  --v2-color-primary-soft: #10213f;
+  --v2-color-primary-border: #1c448c;
   --v2-color-accent-soft: #3a2a0d;
   --v2-color-success-soft: #103c30;
   --v2-color-danger-soft: #3a1714;
@@ -494,18 +495,17 @@
 }
 
 .prodcard:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--v2-shadow-md);
   border-color: var(--v2-color-primary-border);
 }
 
 .prodcard:active {
-  transform: translateY(0);
+  background: var(--v2-color-surface-2);
 }
 
+/* Level-2 active: a crisp 2px navy border, no shadow (DESIGN.md). */
 .prodcard--incart {
   border-color: var(--v2-color-primary);
-  box-shadow: 0 0 0 2px var(--v2-color-primary-soft);
+  box-shadow: 0 0 0 1px var(--v2-color-primary);
 }
 
 .prodcard--soldout {
@@ -997,8 +997,10 @@
   height: 64px;
   border: none;
   border-radius: var(--v2-radius-lg);
-  background: var(--v2-color-primary);
-  color: var(--v2-color-on-primary);
+  /* Conversion action → Velocity orange (DESIGN.md reserves orange for
+     Checkout / Pay; navy is for standard flow actions). */
+  background: var(--v2-color-accent);
+  color: #ffffff;
   cursor: pointer;
   font-family: inherit;
   box-shadow: var(--v2-shadow-sm);
@@ -1007,7 +1009,7 @@
 }
 
 .cart__charge:hover:not(:disabled) {
-  background: var(--v2-color-primary-hover);
+  background: var(--v2-color-accent-hover);
 }
 
 .cart__charge:active:not(:disabled) {
