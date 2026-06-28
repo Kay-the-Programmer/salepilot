@@ -23,6 +23,7 @@ export type AppDef = {
 
 export const STANDALONE_APPS: AppDef[] = [
     { name: 'Super Admin', page: 'superadmin', route: 'superadmin', desc: 'Platform control center', iconName: 'admin_panel_settings', requires: 'superadmin' },
+    { name: 'POS Terminal', page: 'pos', route: 'pos', desc: 'Ring up sales & checkout', iconName: 'point_of_sale', requires: 'sales' },
     { name: 'Business Dashboard', page: 'dash', route: 'dash', desc: 'Sales, trends & insights', iconName: 'monitoring', requires: 'reports' },
     { name: 'Hustle POS', page: 'hustle', route: 'hustle', desc: 'Fast amount-entry sales', iconName: 'bolt', requires: 'sales' },
     { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
