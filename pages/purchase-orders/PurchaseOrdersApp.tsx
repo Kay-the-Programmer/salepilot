@@ -160,7 +160,7 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ purchaseOrders, s
   ];
 
   return (
-    <StandaloneShell icon="shopping_cart_checkout" title="Purchase Orders" scopeClass="sp-books" navItems={navItems}>
+    <StandaloneShell title="Purchase Orders" scopeClass="sp-books">
       <div className="px-4 md:px-8 py-5 max-w-3xl mx-auto w-full pb-28 md:pb-10">
         {/* Desktop tabs */}
         <div className="hidden md:flex justify-center mb-6">

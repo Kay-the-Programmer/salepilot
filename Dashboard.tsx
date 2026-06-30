@@ -15,7 +15,6 @@ const QuickView = lazy(() => import('@/pages/QuickView'));
 const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
 const PosShell = lazy(() => import('@/components/pos/PosShell'));
 const PosDashboard = lazy(() => import('@/components/pos/PosDashboard'));
-const PosDiscover = lazy(() => import('@/components/pos/PosDiscover'));
 const CrmApp = lazy(() => import('@/components/crm/CrmApp'));
 const MarketingApp = lazy(() => import('@/components/marketing/MarketingApp'));
 const OnlineStoreApp = lazy(() => import('@/components/shop/OnlineStoreApp'));
@@ -51,7 +50,7 @@ const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
 const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 // The Super Admin platform pages now live inside a single standalone app shell
-// (its own navigation + brand chrome), opened from Discover like the other apps.
+// (its own navigation + brand chrome), opened from the app switcher like the other apps.
 const SuperAdminApp = lazy(() => import('@/components/superadmin-app/SuperAdminApp'));
 const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
 const MarketplaceDashboard = lazy(() => import('@/pages/shop/CustomerDashboard')); // The Marketplace Portal
@@ -68,6 +67,7 @@ const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 import Snackbar from './components/Snackbar';
 import VerifyEmailOtpModal from './components/VerifyEmailOtpModal';
 import { useLogoutModal } from './contexts/LogoutModalContext';
+import { useAppSwitcher } from './contexts/AppSwitcherContext';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
 import { api, getOnlineStatus, syncOfflineMutations, getPendingMutationCount } from './services/api';
 import { dbService } from './services/dbService';
@@ -100,7 +100,7 @@ type SnackbarState = {
 };
 
 // Role → page access. Sourced from the single canonical RBAC map in
-// utils/rbac.ts so the route guard here and the app launcher (PosDiscover)
+// utils/rbac.ts so the route guard here and the app switcher
 // can never disagree about who may open what.
 const PERMISSIONS: Record<User['role'], string[]> = ROLE_PAGES;
 
@@ -113,9 +113,9 @@ const DEFAULT_PAGES: Record<User['role'], string> = {
     supplier: 'supplier/dashboard'
 };
 
-// Standalone app shells launched from Discover. Each opens in its own focused
-// frame and is gated by an underlying sidebar entitlement page key — keep this
-// in sync with PosDiscover's STANDALONE_APPS so deep-links/refreshes resolve.
+// Standalone app shells launched from the app switcher. Each opens in its own
+// focused frame and is gated by an underlying sidebar entitlement page key — keep
+// this in sync with standaloneApps' STANDALONE_APPS so deep-links/refreshes resolve.
 const STANDALONE_APP_REQUIRES: Record<string, string> = {
     pos: 'pos',
     assistant: 'quick-view',
@@ -235,6 +235,7 @@ export default function Dashboard() {
 
     const navigate = useNavigate();
     const location = useLocation();
+    const { openAppSwitcher } = useAppSwitcher();
 
     // Determine current "page" from URL
     const currentPage = location.pathname.substring(1) || 'reports';
@@ -1286,7 +1287,7 @@ export default function Dashboard() {
                 case 'sales-history':
                     return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
                 case 'orders':
-                    return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={() => navigate('/pos/discover')} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
+                    return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={openAppSwitcher} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
                 case 'returns':
                     return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
                 case 'customers':
@@ -1377,7 +1378,7 @@ export default function Dashboard() {
     };
 
     // ── Standalone Business Assistant app (/assistant, /assistant/chat) ──
-    // Opens from the Discover launcher as its own focused app (AI Suite). Runs on
+    // Opens from the app switcher as its own focused app (AI Suite). Runs on
     // the same in-memory data the dashboard already loaded, and the conversational
     // view streams from the existing /ai/chat backend. Gated by the `quick-view`
     // entitlement that every role with AI access already holds.
@@ -1401,7 +1402,6 @@ export default function Dashboard() {
                             customers={customers}
                             storeSettings={storeSettings}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/assistant' : `/assistant/${s}`)}
-                            onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         />
@@ -1562,7 +1562,7 @@ export default function Dashboard() {
     }
 
     // ── Standalone Business Dashboard app (/dash, /dash/sales, /dash/products) ──
-    // A modern reskin of the /reports overview that opens from Discover as its
+    // A modern reskin of the /reports overview that opens from the app switcher as its
     // own focused app; every figure is derived from the live sales / products /
     // customers already loaded above (no extra endpoints).
     const dashParts = location.pathname.split('/');
@@ -1585,7 +1585,6 @@ export default function Dashboard() {
                             storeSettings={storeSettings}
                             onNavigate={(s) => navigate(s === 'overview' ? '/dash' : `/dash/${s}`)}
                             onReports={() => navigate('/reports')}
-                            onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                             onNewSale={() => navigate('/pos')}
@@ -1599,7 +1598,7 @@ export default function Dashboard() {
     }
 
     // ── Standalone CRM app (/crm, /crm/customers, /crm/loyalty, /crm/insights) ──
-    // Opens from the Discover launcher as its own focused app; runs entirely on
+    // Opens from the app switcher as its own focused app; runs entirely on
     // the existing backend data (customers + sales) already loaded above.
     const crmParts = location.pathname.split('/');
     if (crmParts[1] === 'crm' && currentUser) {
@@ -1624,7 +1623,6 @@ export default function Dashboard() {
                             storeSettings={storeSettings}
                             canManage={currentUser.role === 'admin' || currentUser.role === 'superadmin'}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/crm' : `/crm/${s}`)}
-                            onDiscover={() => navigate('/pos/discover')}
                             onUpgrade={() => navigate('/subscription')}
                             onSaveCustomer={handleSaveCustomer}
                             onDeleteCustomer={handleDeleteCustomer}
@@ -1652,7 +1650,6 @@ export default function Dashboard() {
                             user={currentUser}
                             storeSettings={storeSettings}
                             onUpgrade={() => navigate('/subscription')}
-                            onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                             showSnackbar={showSnackbar}
@@ -1677,7 +1674,6 @@ export default function Dashboard() {
                         <MultiStoreApp
                             user={currentUser}
                             storeSettings={storeSettings}
-                            onDiscover={() => navigate('/pos/discover')}
                             onLogout={handleLogout}
                             showSnackbar={showSnackbar}
                         />
@@ -1701,7 +1697,6 @@ export default function Dashboard() {
                         <OnlineStoreApp
                             user={currentUser}
                             storeSettings={storeSettings}
-                            onDiscover={() => navigate('/pos/discover')}
                             onLogout={handleLogout}
                             showSnackbar={showSnackbar}
                         />
@@ -1738,7 +1733,6 @@ export default function Dashboard() {
                             onReceivePOItems={handleReceivePOItems}
                             showSnackbar={showSnackbar}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/procure' : `/procure/${s}`)}
-                            onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         />
@@ -1767,7 +1761,6 @@ export default function Dashboard() {
                             users={users}
                             storeSettings={storeSettings}
                             onNavigate={(s) => navigate(s === 'members' ? '/team' : `/team/${s}`)}
-                            onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                             onSaveUser={async (data, id) => { await saveUser(data, id); setUsers(await getUsers()); }}
@@ -1780,7 +1773,7 @@ export default function Dashboard() {
     }
 
     // ── Standalone Inventory Manager app (/inv, /inv/items, /inv/alerts) ──
-    // Opens from Discover as its own app; the dashboard derives from live data
+    // Opens from the app switcher as its own app; the dashboard derives from live data
     // and the "Inventory" tab reuses the existing InventoryPage management UI.
     const invParts = location.pathname.split('/');
     if (invParts[1] === 'inv' && currentUser) {
@@ -1808,7 +1801,6 @@ export default function Dashboard() {
                             )}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/inv' : `/inv/${s}`)}
                             onPos={() => navigate('/pos')}
-                            onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                             onGeneratePO={() => navigate('/purchase-orders')}
@@ -1825,8 +1817,7 @@ export default function Dashboard() {
     if (posParts[1] === 'pos' && currentUser) {
         const posSection = posParts[2] === 'inventory' ? 'inventory'
             : posParts[2] === 'dashboard' ? 'dashboard'
-                : posParts[2] === 'discover' ? 'discover'
-                    : 'pos';
+                : 'pos';
 
         // Inventory is the standalone Inventory app — render it at /inv/items so it
         // has the same chrome/header everywhere (the embedded InventoryShell header,
@@ -1837,13 +1828,9 @@ export default function Dashboard() {
         }
 
         const openPosDrawer = () => setPosDrawerOpen(true);
-        // Superadmins see every admin app PLUS the Super Admin platform app.
-        const posAllowedPages = currentUser.role === 'superadmin' ? [...PERMISSIONS['admin'], 'superadmin'] : PERMISSIONS[currentUser.role];
         let posContent: ReactNode;
         if (posSection === 'dashboard') {
             posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
-        } else if (posSection === 'discover') {
-            posContent = <PosDiscover user={currentUser} allowedPages={posAllowedPages} storeSettings={storeSettings} onLaunch={(page) => navigate(`/${page}`)} onOpenSidebar={openPosDrawer} />;
         } else {
             posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} />;
         }
@@ -1872,7 +1859,7 @@ export default function Dashboard() {
     }
 
     // ── Standalone Super Admin app (/superadmin, /superadmin/stores, …) ──
-    // The platform control center opens from Discover as its own focused app
+    // The platform control center opens from the app switcher as its own focused app
     // with its own navigation. Strictly superadmin-only.
     const superParts = location.pathname.split('/');
     if (superParts[1] === 'superadmin' && currentUser) {
@@ -1885,7 +1872,6 @@ export default function Dashboard() {
                             user={currentUser}
                             subPath={superParts[2]}
                             storeId={superParts[2] === 'stores' ? superParts[3] : undefined}
-                            onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         />
@@ -1996,14 +1982,15 @@ export default function Dashboard() {
 
                     {/* Main content */}
                     <div id="main-content" className="flex-1 flex flex-col overflow-y-auto bg-background">
-                        {/* Universal top bar — the "Apps" button opens the Discover page,
-                            which is now the navigation surface that replaced the sidebar.
-                            Carries the global actions the sidebar used to own. Pages that
-                            ship their own full chrome (POS Sale, Reports) opt out. */}
+                        {/* Universal top bar — the "Apps" button opens the SalePilot
+                            apps switcher, which is now the navigation surface that
+                            replaced the sidebar. Carries the global actions the sidebar
+                            used to own. Pages that ship their own full chrome (POS Sale,
+                            Reports) opt out. */}
                         {location.pathname !== '/reports' && (
                             <header className="sticky top-0 z-40 h-14 bg-surface border-b border-brand-border flex items-center gap-2 px-3 md:px-4 transition-all duration-200">
                                 <button
-                                    onClick={() => navigate('/pos/discover')}
+                                    onClick={openAppSwitcher}
                                     id="apps-launcher"
                                     className="flex items-center gap-2 p-2 rounded-lg text-brand-text hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-primary transition-colors active:scale-95"
                                     aria-label="Open apps"

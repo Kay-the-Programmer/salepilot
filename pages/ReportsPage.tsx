@@ -7,6 +7,7 @@ import { api } from '../services/api';
 import { formatCurrency } from '../utils/currency';
 import { hasModule, MODULES } from '../utils/entitlements';
 import { useNavigate } from 'react-router-dom';
+import { useAppSwitcher } from '../contexts/AppSwitcherContext';
 
 // Shared boutique-green M3 chrome (the SalePilot standalone-app design system)
 import { Icon, Avatar } from '../components/crm/CrmBits';
@@ -75,6 +76,7 @@ const DATE_PRESETS: { id: '7d' | '30d' | 'month'; label: string }[] = [
 const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
     const navigate = useNavigate();
+    const { openAppSwitcher } = useAppSwitcher();
 
     // Advanced Reports is a premium add-on module — locked unless the store has
     // unlocked it (granted by the platform after payment).
@@ -310,8 +312,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                         <button type="button" className="crm-rail__item" onClick={() => navigate('/dash')}>
                             <Icon name="dashboard" size={22} /> Dashboard
                         </button>
-                        <button type="button" className="crm-rail__item" onClick={() => navigate('/pos/discover')}>
-                            <Icon name="menu" size={22} /> Discover Apps
+                        <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                            <Icon name="apps" size={22} /> SalePilot Apps
                         </button>
                         <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
                             <Icon name="grid_view" size={22} /> Full App
@@ -421,8 +423,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                     <button type="button" className="crm-rail__item" onClick={() => navigate('/dash')}>
                         <Icon name="dashboard" size={22} /> Dashboard
                     </button>
-                    <button type="button" className="crm-rail__item" onClick={() => navigate('/pos/discover')}>
-                        <Icon name="menu" size={22} /> Discover Apps
+                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                        <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
                     <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
                         <Icon name="grid_view" size={22} /> Full App
@@ -468,8 +470,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                                         <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/dash'); }}>
                                             <Icon name="dashboard" size={20} /> Dashboard
                                         </button>
-                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/pos/discover'); }}>
-                                            <Icon name="menu" size={20} /> Discover Apps
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); openAppSwitcher(); }}>
+                                            <Icon name="apps" size={20} /> SalePilot Apps
                                         </button>
                                         <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/profile'); }}>
                                             <Icon name="account_circle" size={20} /> Account

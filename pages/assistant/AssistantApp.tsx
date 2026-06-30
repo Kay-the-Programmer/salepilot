@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../services/authService';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import type { User, Product, Sale, Customer, StoreSettings } from '../../types';
 import {
   computeInsights,
@@ -29,7 +30,6 @@ interface AssistantAppProps {
   customers?: Customer[];
   storeSettings?: StoreSettings | null;
   onNavigate?: (section: View) => void;
-  onDiscover?: () => void;
   onExit?: () => void;
   onLogout?: () => void;
 }
@@ -55,11 +55,11 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
   customers,
   storeSettings,
   onNavigate,
-  onDiscover,
   onExit,
 }) => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { openAppSwitcher } = useAppSwitcher();
 
   // When embedded by Dashboard, `user` is provided; otherwise resolve the session.
   const [user, setUser] = useState<User | null>(userProp ?? getCurrentUser());
@@ -130,7 +130,6 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
   };
 
   const handleExit = () => (onExit ? onExit() : navigate('/'));
-  const handleDiscover = () => (onDiscover ? onDiscover() : navigate('/pos/discover'));
 
   if (!user) return null;
 
@@ -183,7 +182,7 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
           <RailItem icon="insights" label="Insights" onClick={goInsights} />
         </nav>
         <div className="px-3 py-3 space-y-1 border-t m3-border-outline-variant flex-shrink-0">
-          <RailItem icon="apps" label="Discover apps" onClick={handleDiscover} />
+          <RailItem icon="apps" label="SalePilot Apps" onClick={openAppSwitcher} />
           <RailItem icon={theme === 'dark' ? 'light_mode' : 'dark_mode'} label={theme === 'dark' ? 'Light mode' : 'Dark mode'} onClick={toggleTheme} />
           <RailItem icon="grid_view" label="Full app" onClick={handleExit} />
           <button

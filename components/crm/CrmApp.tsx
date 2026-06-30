@@ -27,7 +27,6 @@ interface CrmAppProps {
     storeSettings: StoreSettings | null;
     canManage: boolean;
     onNavigate: (section: CrmSection) => void;
-    onDiscover: () => void;
     onUpgrade: () => void;
     onSaveCustomer: (customer: Customer) => void;
     onDeleteCustomer: (id: string) => void;
@@ -42,7 +41,7 @@ interface CrmAppProps {
  */
 export const CrmApp: React.FC<CrmAppProps> = ({
     section, user, customers, sales, storeSettings, canManage,
-    onNavigate, onDiscover, onUpgrade, onSaveCustomer, onDeleteCustomer, onExit, onLogout,
+    onNavigate, onUpgrade, onSaveCustomer, onDeleteCustomer, onExit, onLogout,
 }) => {
     const storeId = user?.currentStoreId;
     const smsEntitled = hasModule(storeSettings, MODULES.SMS_MESSAGING);
@@ -301,7 +300,6 @@ export const CrmApp: React.FC<CrmAppProps> = ({
             active={section}
             user={user}
             onNavigate={goSection}
-            onDiscover={onDiscover}
             onExit={onExit}
             onLogout={onLogout}
             onSearch={() => goSection('customers')}

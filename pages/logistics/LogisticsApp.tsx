@@ -128,7 +128,7 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
   const addLabel = tab === 'shipments' ? 'New Shipment' : tab === 'couriers' ? 'Add Courier' : 'Add Bus';
 
   return (
-    <StandaloneShell icon="local_shipping" title="Logistics" scopeClass="sp-books" navItems={navItems}>
+    <StandaloneShell title="Logistics" scopeClass="sp-books">
       <div className="px-4 md:px-8 py-5 max-w-3xl mx-auto w-full pb-28 md:pb-10">
         {/* Desktop tab switcher */}
         <div className="hidden md:flex justify-center mb-6">

@@ -18,7 +18,6 @@ interface DashboardAppProps {
     storeSettings: StoreSettings | null;
     onNavigate: (section: DashSection) => void;
     onReports: () => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     onNewSale: () => void;
@@ -28,12 +27,12 @@ interface DashboardAppProps {
 
 /**
  * Standalone Business Dashboard. A modern reskin of the /reports overview that
- * opens from Discover as its own focused app — every figure is derived live
+ * opens from the app switcher as its own focused app — every figure is derived live
  * from the sales / products / customers the host already loaded.
  */
 export const DashboardApp: React.FC<DashboardAppProps> = ({
     section, user, sales, products, customers, storeSettings,
-    onNavigate, onReports, onDiscover, onExit, onLogout,
+    onNavigate, onReports, onExit, onLogout,
     onNewSale, onInventory, onOrders,
 }) => {
     const [range, setRange] = useState<DashRange>({ kind: 'preset', preset: 'week' });
@@ -91,7 +90,6 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
             user={user}
             onNavigate={onNavigate}
             onReports={onReports}
-            onDiscover={onDiscover}
             onExit={onExit}
             onLogout={onLogout}
         >

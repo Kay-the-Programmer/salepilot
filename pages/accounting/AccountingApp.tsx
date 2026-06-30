@@ -146,7 +146,7 @@ const AccountingApp: React.FC<AccountingAppProps> = ({ accounts, journalEntries,
   ];
 
   return (
-    <StandaloneShell icon="account_balance" title="Accounting Hub" scopeClass="sp-books" navItems={navItems}>
+    <StandaloneShell title="Accounting Hub" scopeClass="sp-books">
       <div className="px-4 md:px-8 py-5 max-w-3xl mx-auto w-full pb-28 md:pb-10">
         {/* Desktop tab switcher */}
         <div className="hidden md:flex justify-center mb-6">

@@ -7,6 +7,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import PaywallHost from './components/PaywallHost';
 import { LogoutModalProvider } from './contexts/LogoutModalContext';
+import { AppSwitcherProvider } from './contexts/AppSwitcherContext';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
@@ -52,6 +53,7 @@ export default function App() {
                     <TitleBar />
                     <div className="flex-1 overflow-auto">
                       <LogoutModalProvider>
+                      <AppSwitcherProvider>
                       <ErrorBoundary name="routes">
                         <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
                             <Routes>
@@ -80,7 +82,6 @@ export default function App() {
                                 <Route path="/pos" element={<Dashboard />} />
                                 <Route path="/pos/inventory" element={<Dashboard />} />
                                 <Route path="/pos/dashboard" element={<Dashboard />} />
-                                <Route path="/pos/discover" element={<Dashboard />} />
 
                                 {/* Standalone Business Dashboard app (own shell: Dashboard / Sales / Products) */}
                                 <Route path="/dash" element={<Dashboard />} />
@@ -186,6 +187,7 @@ export default function App() {
                             </Routes>
                         </Suspense>
                       </ErrorBoundary>
+                      </AppSwitcherProvider>
                       </LogoutModalProvider>
 
                     </div>

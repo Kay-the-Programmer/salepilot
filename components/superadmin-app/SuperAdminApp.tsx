@@ -6,6 +6,7 @@ import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import SuperAdminDashboard from '../../pages/superadmin/SuperAdminDashboard';
 import SuperAdminStores from '../../pages/superadmin/SuperAdminStores';
 import SuperAdminStoreDetails from '../../pages/superadmin/SuperAdminStoreDetails';
@@ -23,7 +24,6 @@ interface SuperAdminAppProps {
     subPath?: string;
     /** Store id when viewing /superadmin/stores/:id. */
     storeId?: string;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
 }
@@ -50,15 +50,16 @@ const sectionForSub = (subPath?: string): SuperSection => {
 
 /**
  * Super Admin — the platform control center, packaged as a standalone app that
- * opens from Discover. Reuses the shared "boutique green" chrome (`.crm` rail,
+ * opens from the app switcher. Reuses the shared "boutique green" chrome (`.crm` rail,
  * top bar, bottom nav) so it matches the CRM, Dashboard and Inventory apps, and
  * hosts the platform pages (overview, stores, broadcasts, billing, settings)
  * with its own navigation.
  */
 export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
-    user, subPath, storeId, onDiscover, onExit, onLogout,
+    user, subPath, storeId, onExit, onLogout,
 }) => {
     const navigate = useNavigate();
+    const { openAppSwitcher } = useAppSwitcher();
     const active = sectionForSub(subPath);
 
     let content: React.ReactNode;
@@ -110,8 +111,8 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
                 </nav>
 
                 <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="apps" size={22} /> Discover Apps
+                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                        <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
                     <button type="button" className="crm-rail__item" onClick={onExit}>
                         <Icon name="grid_view" size={22} /> Full App

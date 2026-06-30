@@ -8,7 +8,6 @@ import StandaloneTopBar from './StandaloneTopBar';
 interface MultiStoreAppProps {
     user: User;
     storeSettings: StoreSettings | null;
-    onDiscover: () => void;
     onLogout: () => void;
     showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
 }

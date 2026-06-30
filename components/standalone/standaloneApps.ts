@@ -4,11 +4,10 @@ import { MODULES, MARKETING_COMING_SOON } from '../../utils/entitlements';
 
 /**
  * Canonical registry of the standalone "apps" that open from the SalePilot
- * launcher (Discover). Shared by `PosDiscover` (the Discover grid) and the
- * in-app `AppSwitcher` overlay so the two never drift. Each app launches by
- * navigating to `/<route>`; access is gated by `requires` against the role's
- * page permissions (`ROLE_PAGES`), with premium add-ons gated further by the
- * destination app's own paywall.
+ * launcher. Consumed by the in-app `AppSwitcher` / `AppSwitcherOverlay`. Each
+ * app launches by navigating to `/<route>`; access is gated by `requires`
+ * against the role's page permissions (`ROLE_PAGES`), with premium add-ons
+ * gated further by the destination app's own paywall.
  */
 export type AppDef = {
     name: string;

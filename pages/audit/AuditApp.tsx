@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import type { AuditLog, User } from '../../types';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
 import './audit.css';
@@ -53,7 +52,6 @@ const FILTERS: { id: 'all' | Category; label: string }[] = [
 ];
 
 const AuditApp: React.FC<AuditAppProps> = ({ logs }) => {
-  const navigate = useNavigate();
   const [filter, setFilter] = useState<'all' | Category>('all');
   const [search, setSearch] = useState('');
   const [showSearch, setShowSearch] = useState(false);
@@ -69,10 +67,6 @@ const AuditApp: React.FC<AuditAppProps> = ({ logs }) => {
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
   }, [logs, filter, search]);
 
-  const navItems = [
-    { icon: 'manage_search', label: 'Audit', active: true, onClick: () => { } },
-  ];
-
   const headerActions = (
     <button
       onClick={() => setShowSearch((s) => !s)}
@@ -84,7 +78,7 @@ const AuditApp: React.FC<AuditAppProps> = ({ logs }) => {
   );
 
   return (
-    <StandaloneShell icon="manage_search" title="Audit Trail" scopeClass="sp-audit" headerActions={headerActions} navItems={navItems}>
+    <StandaloneShell title="Audit Trail" scopeClass="sp-audit" headerActions={headerActions}>
       <div className="px-4 md:px-8 py-5 max-w-2xl mx-auto w-full pb-24 md:pb-8">
 
         {/* Search */}

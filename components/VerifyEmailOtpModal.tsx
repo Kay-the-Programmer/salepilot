@@ -144,7 +144,7 @@ const VerifyEmailOtpModal: React.FC<VerifyEmailOtpModalProps> = ({ isOpen, email
                                 <input
                                     key={i}
                                     id={`otp-digit-${i}`}
-                                    ref={(el) => (inputRefs.current[i] = el)}
+                                    ref={(el) => { inputRefs.current[i] = el; }}
                                     type="text"
                                     inputMode="numeric"
                                     maxLength={6}

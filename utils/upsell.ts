@@ -16,7 +16,7 @@ import { ModuleId, MODULES } from './entitlements';
 
 export type UpsellSurface =
     | 'paywall'        // reuse PaywallHost (hard 402 gate, outcome-framed copy + bundle)
-    | 'discover_card'  // contextual premium tile in PosDiscover
+    | 'discover_card'  // contextual premium tile on an app-launcher surface
     | 'daily_summary'  // single nudge slot in the AI day-summary card
     | 'inline_card'    // contextual card inside a feature screen
     | 'push';          // notificationService (highest-value data-driven moments only)

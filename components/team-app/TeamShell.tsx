@@ -6,6 +6,7 @@ import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
 export type TeamSection = 'members' | 'roles';
 
@@ -13,7 +14,6 @@ interface TeamShellProps {
     active: TeamSection;
     user: User;
     onNavigate: (section: TeamSection) => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     children: React.ReactNode;
@@ -25,7 +25,8 @@ const NAV: { id: TeamSection; label: string; icon: string }[] = [
 ];
 
 /** Standalone User Manager frame — reuses the shared M3 chrome. */
-export const TeamShell: React.FC<TeamShellProps> = ({ active, user, onNavigate, onDiscover, onExit, onLogout, children }) => {
+export const TeamShell: React.FC<TeamShellProps> = ({ active, user, onNavigate, onExit, onLogout, children }) => {
+    const { openAppSwitcher } = useAppSwitcher();
     return (
         <div className="crm">
             <aside className="crm-rail" aria-label="User manager navigation">
@@ -53,8 +54,8 @@ export const TeamShell: React.FC<TeamShellProps> = ({ active, user, onNavigate, 
                 </nav>
 
                 <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="apps" size={22} /> Discover Apps
+                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                        <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>

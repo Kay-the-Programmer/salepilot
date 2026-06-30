@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import { getCurrentUser } from '../../services/authService';
 import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import { useToast } from '../../contexts/ToastContext';
@@ -52,6 +53,7 @@ const tierLabel = (index: number, total: number) =>
 
 const SubscriptionApp: React.FC = () => {
   const navigate = useNavigate();
+  const { openAppSwitcher } = useAppSwitcher();
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
 
@@ -342,9 +344,9 @@ const SubscriptionApp: React.FC = () => {
             ))}
           </nav>
           <div className="px-3 py-3 space-y-1 border-t m3-border-outline-variant">
-            <button onClick={() => navigate('/pos/discover')} className="sub-navitem">
-              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>menu</span>
-              Discover Apps
+            <button onClick={openAppSwitcher} className="sub-navitem">
+              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>apps</span>
+              SalePilot Apps
             </button>
             <button onClick={() => navigate('/')} className="sub-navitem">
               <span className="material-symbols-outlined" style={{ fontSize: 22 }}>grid_view</span>

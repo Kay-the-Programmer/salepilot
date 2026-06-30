@@ -14,7 +14,7 @@ interface AppSwitcherProps {
 /**
  * Top-left "all SalePilot apps" launcher: a trigger button that opens the
  * shared full-screen {@link AppSwitcherOverlay}. Used by every standalone app
- * shell to replace routing out to the Discover page on mobile.
+ * shell as the SalePilot apps launcher.
  */
 export const AppSwitcher: React.FC<AppSwitcherProps> = ({ user, triggerClassName, currentRoute }) => {
     const [open, setOpen] = useState(false);

@@ -18,7 +18,6 @@ interface TeamAppProps {
     users: User[];
     storeSettings: StoreSettings | null;
     onNavigate: (section: TeamSection) => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     onSaveUser: (userData: Omit<User, 'id'>, id?: string) => Promise<void> | void;
@@ -31,7 +30,7 @@ interface TeamAppProps {
  * enforced both here (UX) and on the backend (402).
  */
 export const TeamApp: React.FC<TeamAppProps> = ({
-    section, user, users, storeSettings, onNavigate, onDiscover, onExit, onLogout, onSaveUser, onDeleteUser,
+    section, user, users, storeSettings, onNavigate, onExit, onLogout, onSaveUser, onDeleteUser,
 }) => {
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<User | null>(null);
@@ -104,7 +103,6 @@ export const TeamApp: React.FC<TeamAppProps> = ({
             active={section}
             user={user}
             onNavigate={onNavigate}
-            onDiscover={onDiscover}
             onExit={onExit}
             onLogout={onLogout}
         >

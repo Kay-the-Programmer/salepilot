@@ -59,7 +59,6 @@ interface InventoryAppProps {
     renderItems: () => React.ReactNode;
     onNavigate: (section: InvSection) => void;
     onPos: () => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     onGeneratePO: () => void;
@@ -72,7 +71,7 @@ interface InventoryAppProps {
  */
 export const InventoryApp: React.FC<InventoryAppProps> = ({
     section, user, products, categories, sales, purchaseOrders, storeSettings,
-    renderItems, onNavigate, onPos, onDiscover, onExit, onLogout, onGeneratePO,
+    renderItems, onNavigate, onPos, onExit, onLogout, onGeneratePO,
 }) => {
     const [toast, setToast] = useState<string | null>(null);
     const notify = (msg: string) => setToast(msg);
@@ -120,7 +119,6 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
             user={user}
             onNavigate={onNavigate}
             onPos={onPos}
-            onDiscover={onDiscover}
             onExit={onExit}
             onLogout={onLogout}
         >

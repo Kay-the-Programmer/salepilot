@@ -9,7 +9,7 @@ import Logo from '../../assets/logo.png';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
 
-export type PosSection = 'pos' | 'inventory' | 'dashboard' | 'discover';
+export type PosSection = 'pos' | 'inventory' | 'dashboard';
 
 interface PosShellProps {
     active: PosSection;
@@ -56,24 +56,20 @@ export const PosShell: React.FC<PosShellProps> = ({
                 <span className="posshell__brand-sub">POS Terminal</span>
             </div>
 
-            {/* On the Discover screen the primary tabs are hidden so the user
-                focuses on picking an app from the launcher grid. */}
-            {active !== 'discover' && (
-                <nav className="posshell__nav">
-                    {NAV.map(item => (
-                        <button
-                            key={item.id}
-                            type="button"
-                            className={`posshell__navitem${active === item.id ? ' posshell__navitem--active' : ''}`}
-                            aria-current={active === item.id ? 'page' : undefined}
-                            onClick={() => { onNavigate(item.id); onCloseDrawer(); }}
-                        >
-                            <PosIcon name={item.icon} size={22} fill={active === item.id ? 1 : 0} />
-                            {item.label}
-                        </button>
-                    ))}
-                </nav>
-            )}
+            <nav className="posshell__nav">
+                {NAV.map(item => (
+                    <button
+                        key={item.id}
+                        type="button"
+                        className={`posshell__navitem${active === item.id ? ' posshell__navitem--active' : ''}`}
+                        aria-current={active === item.id ? 'page' : undefined}
+                        onClick={() => { onNavigate(item.id); onCloseDrawer(); }}
+                    >
+                        <PosIcon name={item.icon} size={22} fill={active === item.id ? 1 : 0} />
+                        {item.label}
+                    </button>
+                ))}
+            </nav>
 
             <div className="posshell__foot">
                 <button

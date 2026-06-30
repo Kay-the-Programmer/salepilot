@@ -6,6 +6,7 @@ import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
 export type ProcSection = 'dashboard' | 'suppliers' | 'orders';
 
@@ -13,7 +14,6 @@ interface ProcureShellProps {
     active: ProcSection;
     user: User;
     onNavigate: (section: ProcSection) => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     children: React.ReactNode;
@@ -26,7 +26,8 @@ const NAV: { id: ProcSection; label: string; icon: string }[] = [
 ];
 
 /** Standalone Supplier & Procurement Hub frame — reuses the shared M3 chrome. */
-export const ProcureShell: React.FC<ProcureShellProps> = ({ active, user, onNavigate, onDiscover, onExit, onLogout, children }) => {
+export const ProcureShell: React.FC<ProcureShellProps> = ({ active, user, onNavigate, onExit, onLogout, children }) => {
+    const { openAppSwitcher } = useAppSwitcher();
     return (
         <div className="crm">
             <aside className="crm-rail" aria-label="Procurement navigation">
@@ -54,8 +55,8 @@ export const ProcureShell: React.FC<ProcureShellProps> = ({ active, user, onNavi
                 </nav>
 
                 <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="apps" size={22} /> Discover Apps
+                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                        <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>

@@ -6,6 +6,7 @@ import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
 export type DashSection = 'overview' | 'sales' | 'products';
 
@@ -14,7 +15,6 @@ interface DashboardShellProps {
     user: User;
     onNavigate: (section: DashSection) => void;
     onReports: () => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     children: React.ReactNode;
@@ -32,8 +32,9 @@ const NAV: { id: DashSection; label: string; icon: string }[] = [
  * Inventory and POS standalone apps exactly.
  */
 export const DashboardShell: React.FC<DashboardShellProps> = ({
-    active, user, onNavigate, onReports, onDiscover, onExit, onLogout, children,
+    active, user, onNavigate, onReports, onExit, onLogout, children,
 }) => {
+    const { openAppSwitcher } = useAppSwitcher();
     return (
         <div className="crm">
             {/* Desktop rail */}
@@ -65,8 +66,8 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                     <button type="button" className="crm-rail__item" onClick={onReports}>
                         <Icon name="analytics" size={22} /> Full Reports
                     </button>
-                    <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="apps" size={22} /> Discover Apps
+                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                        <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>

@@ -35,11 +35,6 @@ const NotificationsApp: React.FC = () => {
     if (link) navigate(link);
   };
 
-  const navItems = [
-    { icon: 'notifications', label: 'Alerts', active: true, onClick: () => {} },
-    { icon: 'apps', label: 'Apps', onClick: () => navigate('/pos/discover') },
-  ];
-
   const headerActions = unreadCount > 0 ? (
     <button
       onClick={async () => { setBusy(true); try { await markAllAsRead(); } finally { setBusy(false); } }}
@@ -53,7 +48,7 @@ const NotificationsApp: React.FC = () => {
   ) : undefined;
 
   return (
-    <StandaloneShell icon="notifications" title="Notifications" navItems={navItems} headerActions={headerActions}>
+    <StandaloneShell title="Notifications" headerActions={headerActions}>
       <div className="px-4 md:px-8 py-5 max-w-2xl mx-auto w-full pb-24 md:pb-8">
         {/* Summary */}
         <div className="flex items-center justify-between mb-5">

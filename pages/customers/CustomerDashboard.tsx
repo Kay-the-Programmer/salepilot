@@ -91,7 +91,7 @@ export default function CustomerDashboard() {
       ));
 
       // Update selected order
-      setSelectedOrder(prevSelected =>
+      setSelectedOrder((prevSelected: any) =>
         prevSelected ? { ...prevSelected, fulfillmentStatus: 'cancelled' } : prevSelected
       );
 

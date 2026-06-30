@@ -61,7 +61,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const { theme, toggleTheme } = useTheme();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeCategory, setActiveCategory] = useState('All Items');
+    const [activeCategory] = useState('All Items');
     const [discount, setDiscount] = useState<string>('0');
     const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
     const [heldSales, setHeldSales] = useState<CartItem[][]>([]);
@@ -534,19 +534,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
             // Even if the API call fails, we've already stopped UI polling
         }
     };
-
-    const categoryChips = useMemo(
-        () => ['All Items', ...categories.map(c => c.name)],
-        [categories]
-    );
-
-    const avatarInitials = (user?.name || user?.email || 'SP')
-        .replace(/[^a-zA-Z ]/g, '')
-        .trim()
-        .split(' ')
-        .map(p => p[0])
-        .slice(0, 2)
-        .join('') || 'SP';
 
     return (
         <div className="sale">

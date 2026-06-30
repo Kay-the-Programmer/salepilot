@@ -46,15 +46,8 @@ const ProfileApp: React.FC<ProfileAppProps> = ({ user, storeSettings, onUpdatePr
     ? user.subscriptionPlan.replace(/^plan_/, '').replace(/\b\w/g, (c) => c.toUpperCase())
     : 'Free / Trial';
 
-  const navItems = [
-    { icon: 'home', label: 'Home', onClick: () => navigate('/') },
-    { icon: 'apps', label: 'Apps', onClick: () => navigate('/pos/discover') },
-    { icon: 'notifications', label: 'Alerts', onClick: () => navigate('/notify') },
-    { icon: 'person', label: 'Account', active: true, onClick: () => {} },
-  ];
-
   return (
-    <StandaloneShell icon="account_circle" title="Account" navItems={navItems}>
+    <StandaloneShell title="Account">
       <div className="px-4 md:px-8 py-5 max-w-2xl mx-auto w-full pb-24 md:pb-8">
         {/* Profile header */}
         <div className="flex flex-col items-center text-center mb-6 sp-fade-in">

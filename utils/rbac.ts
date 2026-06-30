@@ -10,7 +10,7 @@
  *
  *  2. PAGE ACCESS (`PAGE_ACCESS` + `canAccessPage` / `ROLE_PAGES`) — which app
  *     "pages" a role may open. Both the route guard (Dashboard) and the app
- *     launcher (PosDiscover via Sidebar) consume this, so navigation and
+ *     switcher (AppSwitcherOverlay) consume this, so navigation and
  *     routing can never disagree.
  *
  * DENY BY DEFAULT: a role only gets what is listed here.

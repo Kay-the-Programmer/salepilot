@@ -5,6 +5,7 @@ import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
 export type InvSection = 'dashboard' | 'items' | 'alerts';
 
@@ -13,7 +14,6 @@ interface InventoryShellProps {
     user: User;
     onNavigate: (section: InvSection) => void;
     onPos: () => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     children: React.ReactNode;
@@ -29,7 +29,8 @@ const NAV: { id: InvSection; label: string; icon: string }[] = [
  * Standalone Inventory Manager frame. Reuses the shared M3 chrome (`.crm`
  * tokens, rail, top bar, bottom nav) with inventory-specific navigation.
  */
-export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, onNavigate, onPos, onDiscover, onExit, onLogout, children }) => {
+export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, onNavigate, onPos, onExit, onLogout, children }) => {
+    const { openAppSwitcher } = useAppSwitcher();
     return (
         <div className="crm">
             {/* Desktop rail */}
@@ -60,8 +61,8 @@ export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, on
                     <button type="button" className="crm-rail__item" onClick={onPos}>
                         <Icon name="point_of_sale" size={22} /> Point of Sale
                     </button>
-                    <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="apps" size={22} /> Discover Apps
+                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                        <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>

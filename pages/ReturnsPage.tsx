@@ -162,6 +162,8 @@ const ReturnsPage: React.FC<ReturnsPageProps> = ({ sales, returns, onProcessRetu
                 addToStock: item.addToStock || false
             })),
             refundAmount: refundTotal,
+            subtotalAmount: refundSubtotal,
+            taxAmount: refundTax,
             refundMethod: refundMethod,
         };
         onProcessReturn(returnInfo);

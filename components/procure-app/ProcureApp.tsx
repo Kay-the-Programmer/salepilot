@@ -25,7 +25,6 @@ interface ProcureAppProps {
     onReceivePOItems: (poId: string, items: { productId: string; quantity: number }[]) => void;
     showSnackbar: (message: string, type?: any) => void;
     onNavigate: (section: ProcSection) => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
 }
@@ -38,7 +37,7 @@ interface ProcureAppProps {
 export const ProcureApp: React.FC<ProcureAppProps> = ({
     section, user, suppliers, products, purchaseOrders, supplierInvoices, storeSettings,
     onSaveSupplier, onDeleteSupplier, onSavePurchaseOrder, onDeletePurchaseOrder, onReceivePOItems, showSnackbar,
-    onNavigate, onDiscover, onExit, onLogout,
+    onNavigate, onExit, onLogout,
 }) => {
     const [draftSupplierId, setDraftSupplierId] = useState<string | null>(null);
     const [autoSignal, setAutoSignal] = useState(false);
@@ -115,7 +114,6 @@ export const ProcureApp: React.FC<ProcureAppProps> = ({
             active={section}
             user={user}
             onNavigate={onNavigate}
-            onDiscover={onDiscover}
             onExit={onExit}
             onLogout={onLogout}
         >

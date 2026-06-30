@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import type { Sale, StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
@@ -33,6 +34,7 @@ const DAY = 86400000;
 const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackbar }) => {
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { openAppSwitcher } = useAppSwitcher();
   const symbol = storeSettings?.currency?.symbol || '$';
   const fmt = (n: number) => formatCurrency(n, storeSettings);
 
@@ -160,7 +162,7 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
           ))}
         </nav>
         <div className="px-3 py-3 space-y-1 border-t m3-border-outline-variant">
-          <button onClick={() => navigate('/pos/discover')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold m3-text-on-surface-variant hover:m3-bg-surface-high transition"><span className="material-symbols-outlined" style={{ fontSize: 22 }}>menu</span>Discover Apps</button>
+          <button onClick={openAppSwitcher} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold m3-text-on-surface-variant hover:m3-bg-surface-high transition"><span className="material-symbols-outlined" style={{ fontSize: 22 }}>apps</span>SalePilot Apps</button>
           <button onClick={toggleTheme} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold m3-text-on-surface-variant hover:m3-bg-surface-high transition"><span className="material-symbols-outlined" style={{ fontSize: 22 }}>{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>{theme === 'dark' ? 'Light mode' : 'Dark mode'}</button>
           <button onClick={() => navigate('/')} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold m3-text-on-surface-variant hover:m3-bg-surface-high transition"><span className="material-symbols-outlined" style={{ fontSize: 22 }}>grid_view</span>Full App</button>
         </div>

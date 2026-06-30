@@ -27,11 +27,11 @@ import {
  * SalePilot navigation registry + role-based access control.
  *
  * The Sidebar's *design layer* has been retired — navigation now lives in the
- * Discover apps page (`components/pos/PosDiscover.tsx`), which is the visual
- * launcher. This module is the shared *logic* layer: the canonical list of
- * pages with their role gates, consumed by Discover (and anywhere else that
- * needs to know what a user may open). The default export renders nothing and
- * exists only so legacy imports keep compiling.
+ * SalePilot app switcher (`components/standalone/AppSwitcherOverlay.tsx`),
+ * which is the visual launcher. This module is the shared *logic* layer: the
+ * canonical list of pages with their role gates, consumed by the app switcher
+ * (and anywhere else that needs to know what a user may open). The default
+ * export renders nothing and exists only so legacy imports keep compiling.
  */
 
 export interface NavItem {
@@ -302,8 +302,8 @@ export interface SidebarProps {
 }
 
 /**
- * The Sidebar design layer has been removed in favour of the Discover apps
- * launcher. This stub keeps legacy `import Sidebar from './Sidebar'` call sites
+ * The Sidebar design layer has been removed in favour of the SalePilot app
+ * switcher. This stub keeps legacy `import Sidebar from './Sidebar'` call sites
  * compiling and renders nothing.
  */
 export default function Sidebar(_props: SidebarProps) {

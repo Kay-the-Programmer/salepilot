@@ -6,6 +6,7 @@ import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
 export type CrmSection = 'dashboard' | 'customers' | 'whatsapp' | 'loyalty' | 'insights';
 
@@ -13,7 +14,6 @@ interface CrmShellProps {
     active: CrmSection;
     user: User;
     onNavigate: (section: CrmSection) => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     onSearch?: () => void;
@@ -23,7 +23,7 @@ interface CrmShellProps {
 const NAV: { id: CrmSection; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'customers', label: 'Customers', icon: 'group' },
-    { id: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
+    // { id: 'whatsapp', label: 'WhatsApp', icon: 'chat' },
     { id: 'loyalty', label: 'Loyalty', icon: 'card_membership' },
     { id: 'insights', label: 'Insights', icon: 'analytics' },
 ];
@@ -33,9 +33,8 @@ const NAV: { id: CrmSection; label: string; icon: string }[] = [
  * standalone POS shell); mobile = a top bar + bottom navigation. Discover is
  * exposed on both so users can hop back to the SalePilot app launcher.
  */
-export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, onDiscover, onExit, onLogout, children }) => {
-    // On the Insights page the section tabs are hidden — only Insights remains,
-    // so the user picks an app to view (Discover stays available).
+export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, onExit, onLogout, children }) => {
+    const { openAppSwitcher } = useAppSwitcher();
     const navItems = NAV;
 
     return (
@@ -66,8 +65,8 @@ export const CrmShell: React.FC<CrmShellProps> = ({ active, user, onNavigate, on
                 </nav>
 
                 <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={onDiscover}>
-                        <Icon name="apps" size={22} /> Discover Apps
+                    <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
+                        <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>

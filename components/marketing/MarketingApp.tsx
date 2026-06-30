@@ -9,12 +9,12 @@ import { SOCIAL_FREE, MARKETING_COMING_SOON } from '../../utils/entitlements';
 import MarketingPage from '../../pages/MarketingPage';
 import LoadingSpinner from '../LoadingSpinner';
 import StandaloneTopBar from '../standalone/StandaloneTopBar';
+import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
 interface MarketingAppProps {
     user: User;
     storeSettings: StoreSettings | null;
     onUpgrade: () => void;
-    onDiscover: () => void;
     onExit: () => void;
     onLogout: () => void;
     showSnackbar: (msg: string, type: 'success' | 'error' | 'info') => void;
@@ -36,7 +36,8 @@ const btnPrimary = `${btn} bg-blue-600 text-white hover:bg-blue-700`;
 const btnGhost = `${btn} bg-gray-100 dark:bg-slate-800 text-gray-700 dark:text-slate-200 hover:bg-gray-200 dark:hover:bg-slate-700`;
 const input = 'w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none';
 
-export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onDiscover, onLogout, showSnackbar }) => {
+export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onLogout, showSnackbar }) => {
+    const { openAppSwitcher } = useAppSwitcher();
     const [tab, setTab] = useState<Tab>('compose');
     const [status, setStatus] = useState<FacebookStatus | null>(null);
     const [loading, setLoading] = useState(true);
@@ -69,7 +70,7 @@ export const MarketingApp: React.FC<MarketingAppProps> = ({ onUpgrade, onDiscove
                         <span className="inline-block mb-3 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">Coming Soon</span>
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Marketing Suite is on the way</h2>
                         <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">Soon you'll publish posts to your Facebook Page, reply to and moderate comments, and track engagement insights — all from here. We'll let you know the moment it's ready.</p>
-                        <button className={btnPrimary} onClick={onDiscover}><LayoutGrid className="w-4 h-4" /> Back to Discover</button>
+                        <button className={btnPrimary} onClick={openAppSwitcher}><LayoutGrid className="w-4 h-4" /> Back to Apps</button>
                     </div>
                 </main>
             </div>
