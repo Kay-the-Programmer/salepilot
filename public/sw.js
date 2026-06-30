@@ -1,5 +1,5 @@
 // sw.js (improved)
-const CACHE_VERSION = 'v8';
+const CACHE_VERSION = 'v11';
 const CACHE_NAME = `salepilot-cache-${CACHE_VERSION}`;
 const ASSET_CACHE = `salepilot-assets-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `salepilot-image-cache-${CACHE_VERSION}`;
@@ -78,6 +78,12 @@ self.addEventListener('fetch', (event) => {
 
   // Do not interfere with API calls or non-GET
   if (request.method !== 'GET' || url.pathname.startsWith('/api/')) return;
+
+  // Local development (Vite dev server): never serve from cache. Let every
+  // request hit the network so freshly-built modules load after a `git checkout`
+  // or restart. The SW stays registered (push notifications still work here) — it
+  // just doesn't cache or serve a stale build in dev.
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') return;
 
   // 1) SPA navigation: network-first with offline fallback to cached index.html
   if (isNavigationRequest(request)) {

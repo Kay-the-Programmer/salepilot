@@ -1,4 +1,3 @@
-import { Capacitor } from '@capacitor/core';
 import { dbService } from './dbService';
 
 // Determine API base URL
@@ -7,7 +6,6 @@ import { dbService } from './dbService';
 // 2. Build-time environment variable (VITE_API_URL) - standard for Vercel/CI
 // 3. Dev fallback (localhost)
 const LOCAL_BACKEND = 'http://localhost:5000/api';
-const RENDER_BACKEND = 'https://s-back-q0gg.onrender.com/api';
 const ENV_BASE = import.meta.env.VITE_API_URL;
 
 
@@ -16,12 +14,7 @@ const RUNTIME_BASE = (typeof window !== 'undefined' && (window as any).__API_URL
   (typeof document !== 'undefined' ? document.querySelector('meta[name="app:apiUrl"]')?.getAttribute('content') || undefined : undefined);
 
 const getDevFallback = () => {
-  if (Capacitor.isNativePlatform()) {
-    // If we are on a real device, we definitely want the deployed backend.
-    // If we are on an emulator, 10.0.2.2 usually maps to localhost.
-    // However, since the user is testing on a phone, we prioritize the RENDER_BACKEND.
-    return RENDER_BACKEND;
-  }
+
   return LOCAL_BACKEND;
 };
 
