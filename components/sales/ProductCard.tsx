@@ -88,7 +88,7 @@ const ListCard: React.FC<ProductCardProps> = ({ product, cartItem, storeSettings
                 hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:hover:shadow-[0_8px_30px_rgb(0,0,0,0.15)] active:scale-[0.98] hover:-translate-y-0.5
                 ${isSoldOut ? 'opacity-50 grayscale pointer-events-none' : ''}
                 ${cartItem
-                    ? 'bg-success-muted/80 dark:bg-primary/10 border-primary dark:border-primary/50 shadow-[0_0_0_1px_rgba(0,128,96,0.2)]'
+                    ? 'bg-success-muted/80 dark:bg-primary/10 border-primary dark:border-primary/50 shadow-[0_0_0_1px_rgba(0, 43, 107,0.2)]'
                     : 'bg-white/80 dark:bg-slate-900/60 backdrop-blur-xl border-slate-200/50 dark:border-white/5 hover:border-slate-300/80 dark:hover:border-white/10'}
             `}
         >

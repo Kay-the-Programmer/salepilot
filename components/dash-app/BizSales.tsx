@@ -2,35 +2,28 @@ import React from 'react';
 import { StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { formatMoney, timeAgo } from '../crm/crmModel';
-import { DashboardOverview, DashPeriod, PERIOD_LABEL } from './dashboardModel';
+import { DashboardOverview, DashRange } from './dashboardModel';
 import { MetricCard, TrendChart } from './DashBits';
+import PeriodPicker from './PeriodPicker';
 
 interface BizSalesProps {
     overview: DashboardOverview;
     storeSettings?: StoreSettings | null;
-    period: DashPeriod;
-    onPeriod: (p: DashPeriod) => void;
+    range: DashRange;
+    onRange: (r: DashRange) => void;
     onReports: () => void;
 }
 
 const STATUS_LABEL: Record<string, string> = { paid: 'Paid', unpaid: 'Unpaid', partially_paid: 'Part-paid' };
 
-export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, period, onPeriod, onReports }) => (
+export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, onReports }) => (
     <main className="crm-main crm-section-fade">
         <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <div>
-                <p className="crm-pagehead__eyebrow">Sales · {PERIOD_LABEL[period]}</p>
                 <h2 className="crm-pagehead__title">Sales Performance</h2>
                 <p className="crm-pagehead__sub">Revenue, orders and recent transactions.</p>
             </div>
-            <div className="dash-segment" role="tablist" aria-label="Reporting period">
-                {(['today', 'week', 'month'] as DashPeriod[]).map(p => (
-                    <button key={p} type="button" role="tab" aria-selected={period === p}
-                        className={`dash-segment__btn${period === p ? ' is-active' : ''}`} onClick={() => onPeriod(p)}>
-                        {p === 'today' ? 'Day' : p === 'week' ? 'Week' : 'Month'}
-                    </button>
-                ))}
-            </div>
+            <PeriodPicker range={range} onRange={onRange} />
         </div>
 
         <div className="dash-pulse">

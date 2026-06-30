@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
+import AppSwitcher from '../standalone/AppSwitcher';
+import AppNavMenu from '../standalone/AppNavMenu';
+import Logo from '../../assets/logo.png';
+import RailThemeButton from '../standalone/RailThemeButton';
 import SuperAdminDashboard from '../../pages/superadmin/SuperAdminDashboard';
 import SuperAdminStores from '../../pages/superadmin/SuperAdminStores';
 import SuperAdminStoreDetails from '../../pages/superadmin/SuperAdminStoreDetails';
@@ -55,7 +59,6 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
     user, subPath, storeId, onDiscover, onExit, onLogout,
 }) => {
     const navigate = useNavigate();
-    const [menuOpen, setMenuOpen] = useState(false);
     const active = sectionForSub(subPath);
 
     let content: React.ReactNode;
@@ -78,8 +81,6 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
         default:
             content = <SuperAdminDashboard currentUser={user} />;
     }
-
-    const activeLabel = NAV.find(n => n.id === active)?.label ?? 'Super Admin';
 
     return (
         <div className="crm">
@@ -115,6 +116,7 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
                     <button type="button" className="crm-rail__item" onClick={onExit}>
                         <Icon name="grid_view" size={22} /> Full App
                     </button>
+                    <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout
                     </button>
@@ -131,85 +133,22 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
             {/* Content column */}
             <div className="crm-body">
                 <header className="crm-bar crm-bar--mobile">
-                    <div className="crm-bar__brand">
-                        <span className="crm-bar__logo"><Icon name="admin_panel_settings" size={22} fill={1} /></span>
-                        <span className="crm-bar__title">{activeLabel}</span>
-                    </div>
+                    <AppSwitcher user={user} currentRoute="superadmin" triggerClassName="crm-iconbtn" />
+                    <img src={Logo} alt="SalePilot" className="crm-bar__brandlogo" />
                     <div className="crm-bar__actions">
-                        <button type="button" className="crm-iconbtn" aria-label="Discover apps" onClick={onDiscover}>
-                            <Icon name="apps" size={22} />
-                        </button>
-                        <div style={{ position: 'relative' }}>
-                            <button
-                                type="button"
-                                className="crm-bar__avatar"
-                                aria-label="Account menu"
-                                aria-haspopup="menu"
-                                aria-expanded={menuOpen}
-                                onClick={() => setMenuOpen(o => !o)}
-                            >
-                                {(user as any)?.profilePicture ? <img src={(user as any).profilePicture} alt={user.name} /> : (user?.name?.[0]?.toUpperCase() || 'S')}
-                            </button>
-                            {menuOpen && (
-                                <>
-                                    <div style={{ position: 'fixed', inset: 0, zIndex: 60 }} onClick={() => setMenuOpen(false)} aria-hidden="true" />
-                                    <div role="menu" style={menuPanelStyle}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px' }}>
-                                            <Avatar name={user?.name} src={(user as any)?.profilePicture} size={36} />
-                                            <div style={{ minWidth: 0 }}>
-                                                <div style={{ fontWeight: 700, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{user?.name}</div>
-                                                <div style={{ fontSize: 12, color: 'var(--c-on-surface-variant)' }}>Super Admin</div>
-                                            </div>
-                                        </div>
-                                        <div style={{ height: 1, background: 'var(--c-outline-variant)', opacity: 0.5, margin: '4px 0' }} />
-                                        <button type="button" role="menuitem" className="crm-menu-item" onClick={() => { setMenuOpen(false); onExit(); }} style={menuItemStyle}>
-                                            <Icon name="grid_view" size={20} /> Full SalePilot App
-                                        </button>
-                                        <button type="button" role="menuitem" className="crm-menu-item" onClick={() => { setMenuOpen(false); onLogout(); }} style={{ ...menuItemStyle, color: 'var(--c-error)' }}>
-                                            <Icon name="logout" size={20} /> Logout
-                                        </button>
-                                    </div>
-                                </>
-                            )}
-                        </div>
+                        <AppNavMenu
+                            items={NAV.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => navigate(n.route) }))}
+                            onExit={onExit}
+                            onLogout={onLogout}
+                            triggerClassName="crm-iconbtn"
+                        />
                     </div>
                 </header>
 
                 {content}
-
-                <nav className="crm-bottomnav" aria-label="Super Admin navigation">
-                    {NAV.map(item => {
-                        const isActive = active === item.id;
-                        return (
-                            <button
-                                key={item.id}
-                                type="button"
-                                className={`crm-bottomnav__item${isActive ? ' is-active' : ''}`}
-                                aria-current={isActive ? 'page' : undefined}
-                                onClick={() => navigate(item.route)}
-                            >
-                                <Icon name={item.icon} size={24} fill={isActive ? 1 : 0} />
-                                <span>{item.label}</span>
-                            </button>
-                        );
-                    })}
-                </nav>
             </div>
         </div>
     );
-};
-
-const menuItemStyle: React.CSSProperties = {
-    display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 12px',
-    border: 'none', background: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: 14,
-    fontWeight: 600, color: 'var(--c-on-bg)', textAlign: 'left', borderRadius: 'var(--c-radius)',
-};
-
-const menuPanelStyle: React.CSSProperties = {
-    position: 'absolute', right: 0, top: 'calc(100% + 8px)', zIndex: 61, minWidth: 220,
-    background: 'var(--c-surface-lowest)', borderRadius: 'var(--c-radius-lg)',
-    boxShadow: '0 12px 32px rgba(0,0,0,0.18)', border: '1px solid var(--c-outline-variant)',
-    overflow: 'hidden', padding: 6,
 };
 
 export default SuperAdminApp;

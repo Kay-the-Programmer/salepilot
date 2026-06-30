@@ -38,7 +38,7 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
         <main className="crm-main crm-section-fade">
             <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                 <div>
-                    <p className="crm-pagehead__eyebrow">Management Console</p>
+                    <p className="crm-pagehead__eyebrow">CRM</p>
                     <h2 className="crm-pagehead__title">Store Overview</h2>
                 </div>
                 <div className="crm-pagehead__actions">
@@ -97,7 +97,7 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
                             </div>
                         </div>
                         <div className="crm-reward-metric">
-                            <span className="crm-reward-metric__icon" style={{ background: 'rgba(0,128,96,0.12)', color: 'var(--c-primary)' }}><Icon name="local_activity" size={26} fill={1} /></span>
+                            <span className="crm-reward-metric__icon" style={{ background: 'rgba(0, 43, 107,0.12)', color: 'var(--c-primary)' }}><Icon name="local_activity" size={26} fill={1} /></span>
                             <div>
                                 <p className="crm-reward-metric__value">{redemptionsThisMonth.count.toLocaleString()}</p>
                                 <p className="crm-reward-metric__label">
@@ -189,10 +189,6 @@ export const CrmDashboard: React.FC<CrmDashboardProps> = ({ overview, storeSetti
                     </div>
                 </div>
             </div>
-
-            <button className="crm-fab" type="button" aria-label="Add customer" onClick={onAddCustomer}>
-                <Icon name="add" size={26} />
-            </button>
         </main>
     );
 };

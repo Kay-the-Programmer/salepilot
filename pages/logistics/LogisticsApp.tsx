@@ -7,6 +7,7 @@ import { formatCurrency } from '../../utils/currency';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
 import PremiumUpgradeModal from '../../components/ui/PremiumUpgradeModal';
+import { UpsellInline } from '../../components/upsell/UpsellCard';
 import '../accounting/accounting.css';
 
 type Tab = 'shipments' | 'couriers' | 'buses';
@@ -153,6 +154,9 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
         {/* SHIPMENTS */}
         {tab === 'shipments' && (
           <div className="sp-fade-in">
+            {/* Proactive, dismissible tracking nudge (engine-gated). The button
+                below remains the always-on discovery affordance. */}
+            <UpsellInline ids={['tracking_requested']} className="mb-4" />
             <button
               onClick={() => (trackingUnlocked ? navigate('/track') : setShowTrackingUpsell(true))}
               title={trackingUnlocked ? undefined : 'Premium add-on — tap to unlock'}

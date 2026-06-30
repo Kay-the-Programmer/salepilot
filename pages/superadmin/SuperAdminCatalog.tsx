@@ -105,7 +105,7 @@ const SuperAdminCatalog: React.FC = () => {
                     </div>
                     <button
                         onClick={() => (tab === 'modules' ? setEditModule(blankModule()) : setEditPlan(blankPlan()))}
-                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold bg-sp-green text-white hover:bg-sp-green-dark transition active:scale-95 shadow-sm"
+                        className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold bg-sp-amber text-white hover:bg-sp-green-dark transition active:scale-95 shadow-sm"
                     >
                         <span className="material-symbols-rounded text-[20px]">add</span>
                         {tab === 'modules' ? 'New add-on' : 'New plan'}
@@ -118,7 +118,7 @@ const SuperAdminCatalog: React.FC = () => {
                         <button
                             key={t}
                             onClick={() => setTab(t)}
-                            className={`px-4 py-2 rounded-lg text-sm font-bold transition ${tab === t ? 'bg-sp-green text-white shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}
+                            className={`px-4 py-2 rounded-lg text-sm font-bold transition ${tab === t ? 'bg-sp-amber text-white shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}
                         >
                             {t === 'modules' ? 'Add-on Modules' : 'Subscription Plans'}
                         </button>
@@ -300,7 +300,7 @@ const ModuleEditor: React.FC<{ initial: CatalogModule; onClose: () => void; onSa
                             const on = f.pages.includes(opt.key);
                             return (
                                 <button key={opt.key} type="button" onClick={() => togglePage(opt.key)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${on ? 'bg-sp-green text-white border-sp-green' : 'bg-surface text-brand-text-muted border-brand-border hover:border-sp-green'}`}>
+                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${on ? 'bg-sp-amber text-white border-sp-green' : 'bg-surface text-brand-text-muted border-brand-border hover:border-sp-green'}`}>
                                     {opt.label}
                                 </button>
                             );
@@ -327,7 +327,7 @@ const ModuleEditor: React.FC<{ initial: CatalogModule; onClose: () => void; onSa
                 {!isNew ? <button onClick={remove} disabled={saving} className="px-4 py-2.5 rounded-xl text-sm font-bold text-danger hover:bg-danger-muted transition disabled:opacity-50">Delete</button> : <span />}
                 <div className="flex gap-2">
                     <button onClick={onClose} disabled={saving} className="px-4 py-2.5 rounded-xl text-sm font-bold text-brand-text-muted hover:bg-surface-variant transition">Cancel</button>
-                    <button onClick={save} disabled={saving} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-sp-green text-white hover:bg-sp-green-dark transition active:scale-95 disabled:opacity-50">{saving ? 'Saving…' : 'Save add-on'}</button>
+                    <button onClick={save} disabled={saving} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-sp-amber text-white hover:bg-sp-green-dark transition active:scale-95 disabled:opacity-50">{saving ? 'Saving…' : 'Save add-on'}</button>
                 </div>
             </div>
         </Modal>
@@ -393,7 +393,7 @@ const PlanEditor: React.FC<{ initial: CatalogPlan; modules: CatalogModule[]; onC
                             const on = f.moduleIds.includes(m.id);
                             return (
                                 <button key={m.id} type="button" onClick={() => toggleModule(m.id)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${on ? 'bg-sp-green text-white border-sp-green' : 'bg-surface text-brand-text-muted border-brand-border hover:border-sp-green'}`}>
+                                    className={`px-3 py-1.5 rounded-full text-xs font-bold border transition ${on ? 'bg-sp-amber text-white border-sp-green' : 'bg-surface text-brand-text-muted border-brand-border hover:border-sp-green'}`}>
                                     {m.name} · {money(m.price, m.currency)}
                                 </button>
                             );
@@ -427,7 +427,7 @@ const PlanEditor: React.FC<{ initial: CatalogPlan; modules: CatalogModule[]; onC
                 {!isNew ? <button onClick={remove} disabled={saving} className="px-4 py-2.5 rounded-xl text-sm font-bold text-danger hover:bg-danger-muted transition disabled:opacity-50">Delete</button> : <span />}
                 <div className="flex gap-2">
                     <button onClick={onClose} disabled={saving} className="px-4 py-2.5 rounded-xl text-sm font-bold text-brand-text-muted hover:bg-surface-variant transition">Cancel</button>
-                    <button onClick={save} disabled={saving} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-sp-green text-white hover:bg-sp-green-dark transition active:scale-95 disabled:opacity-50">{saving ? 'Saving…' : 'Save plan'}</button>
+                    <button onClick={save} disabled={saving} className="px-5 py-2.5 rounded-xl text-sm font-bold bg-sp-amber text-white hover:bg-sp-green-dark transition active:scale-95 disabled:opacity-50">{saving ? 'Saving…' : 'Save plan'}</button>
                 </div>
             </div>
         </Modal>

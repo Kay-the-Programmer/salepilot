@@ -188,7 +188,7 @@ const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
                     <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl rounded-2xl p-2.5 border border-white/20 dark:border-white/10 shadow-2xl flex items-center gap-3">
                         <button
                             onClick={() => onEdit(category)}
-                            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-primary hover:bg-primary-dark text-white rounded-xl font-semibold tracking-wide text-[13px] active:scale-95 transition-all duration-300 shadow-lg shadow-primary/20"
+                            className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-xl font-semibold tracking-wide text-[13px] active:scale-95 transition-all duration-300 shadow-lg shadow-primary/20"
                         >
                             <PencilIcon className="w-5 h-5" />
                             Edit Class

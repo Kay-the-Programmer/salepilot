@@ -445,7 +445,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                                     type="button"
                                     onClick={handleNextStep}
                                     disabled={!isCurrentStepValid || anyLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary hover:bg-primary-dark disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
+                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
                                 >
                                     {isLoading
                                         ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -460,7 +460,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                                     type="button"
                                     onClick={handleVerifyOtp as any}
                                     disabled={!isStep4Valid || anyLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary hover:bg-primary-dark disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
+                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
                                 >
                                     {isVerifying
                                         ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -482,7 +482,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                     <aside className="hidden lg:flex flex-col gap-5 lg:sticky lg:top-[104px]">
                         {/* Bento card */}
                         <div className="relative rounded-3xl overflow-hidden min-h-[420px] shadow-2xl shadow-sp-green/20">
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#004D3A] via-[#006B50] to-[#008060]" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-[#001944] via-[#1a428a] to-[#002b6b]" />
                             {/* Decorative orbs */}
                             <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" />
                             <div className="absolute top-8 right-8 w-24 h-24 rounded-full bg-sp-amber/20 blur-sm" />

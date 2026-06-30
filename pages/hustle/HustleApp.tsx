@@ -5,6 +5,7 @@ import type { Sale, StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
 import { parseApiDate } from '../../components/crm/crmModel';
+import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import '../assistant/assistant.css';
 import './hustle.css';
 
@@ -44,6 +45,8 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
   const [method, setMethod] = useState('Cash');
   const [processing, setProcessing] = useState(false);
   const [pulse, setPulse] = useState(false);
+  // Hide the mobile top bar in the Hustle view to maximise keypad space.
+  const [barHidden, setBarHidden] = useState(false);
   // Just-completed sales, merged into the dashboard/reports until the next data refresh.
   const [localEntries, setLocalEntries] = useState<Entry[]>([]);
 
@@ -165,56 +168,73 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
 
       {/* Main column */}
       <div className="flex-1 min-h-0 flex flex-col">
-        {/* Mobile top bar */}
-        <header className="md:hidden flex-shrink-0 h-16 m3-bg-surface shadow-sm flex items-center justify-between px-4 z-20">
-          <div className="flex items-center gap-2"><span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 26 }}>bolt</span><h1 className="text-xl font-bold m3-text-primary">Hustle POS</h1></div>
-          <button onClick={() => navigate('/pos/discover')} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90"><span className="material-symbols-outlined" style={{ fontSize: 22 }}>close</span></button>
-        </header>
+        {/* Mobile top bar — collapsible in the Hustle view to free up space */}
+        {(view !== 'hustle' || !barHidden) && (
+          <StandaloneTopBar
+            currentRoute="hustle"
+            navItems={NAV.map(n => ({ icon: n.icon, label: n.label, active: view === n.id, onClick: () => setView(n.id) }))}
+            onExit={() => navigate('/')}
+          />
+        )}
 
         {/* Body */}
-        <div className="flex-1 min-h-0 flex flex-col">
+        <div className={`flex-1 min-h-0 flex flex-col${view === 'hustle' ? ' md:items-center md:justify-center md:overflow-y-auto md:py-8' : ''}`}>
           {view === 'hustle' && (
-            <>
-              <div className="flex-1 min-h-0 overflow-y-auto sp-scroll">
-                <div className="max-w-md mx-auto w-full px-4 pt-2 pb-4">
-                  <div className="py-5 flex flex-col items-center text-center">
-                    <label className="text-xs font-semibold uppercase tracking-wider m3-text-on-surface-variant mb-2">Current entry</label>
-                    <div className={`flex items-baseline m3-text-primary amount-pulse ${pulse ? 'scale-105' : ''}`}>
-                      <span className="text-2xl mr-1 font-semibold opacity-50">{symbol}</span>
-                      <span className="font-bold text-[52px] md:text-[60px]" style={{ lineHeight: 1 }}>{value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                    </div>
-                  </div>
-                  <div className="mb-4">
-                    <label className="text-sm font-semibold m3-text-on-surface-variant" htmlFor="purpose">Transaction purpose (optional)</label>
-                    <input id="purpose" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="e.g. Custom bouquet, Express setup" className="mt-1.5 w-full m3-bg-surface-lowest border m3-border-outline-variant rounded-xl px-4 py-3.5 outline-none focus:ring-0 focus:m3-border-primary text-base m3-text-on-surface m3-placeholder shadow-sm" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-3 mb-5">
-                    {(['sale', 'service'] as HType[]).map((t) => (
-                      <button key={t} onClick={() => { setType(t); buzz(10); }} className={`tactile rounded-2xl p-5 flex flex-col items-center justify-center gap-2 ${type === t ? 'selected' : ''}`}>
-                        <span className="material-symbols-outlined tactile-icon m3-text-on-surface-variant" style={{ fontSize: 30, fontVariationSettings: type === t ? "'FILL' 1" : undefined }}>{t === 'service' ? 'settings_accessibility' : 'shopping_bag'}</span>
-                        <span className="tactile-label text-sm font-semibold m3-text-on-surface">{t === 'service' ? 'Service' : 'Sold something'}</span>
-                      </button>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => <button key={n} onClick={() => append(n)} className="keypad-btn h-16 md:h-[68px] flex items-center justify-center text-2xl font-semibold m3-text-on-surface">{n}</button>)}
-                    <button onClick={clearPad} className="keypad-btn h-16 md:h-[68px] flex items-center justify-center text-xl font-semibold m3-text-error" style={{ background: 'var(--m3-surface-low)' }}>C</button>
-                    <button onClick={() => append('0')} className="keypad-btn h-16 md:h-[68px] flex items-center justify-center text-2xl font-semibold m3-text-on-surface">0</button>
-                    <button onClick={backspace} className="keypad-btn h-16 md:h-[68px] flex items-center justify-center m3-text-on-surface-variant" style={{ background: 'var(--m3-surface-low)' }}><span className="material-symbols-outlined">backspace</span></button>
-                  </div>
+            <div className="flex-1 min-h-0 flex flex-col justify-center w-full max-w-md mx-auto px-4 pb-3 md:flex-none md:max-w-sm md:px-6 md:pt-6 md:pb-6 md:m3-bg-surface-lowest md:border md:m3-border-outline-variant md:rounded-3xl md:shadow-lg">
+              {/* Show / hide the top bar to maximise space (mobile only) */}
+              <button
+                type="button"
+                onClick={() => setBarHidden((h) => !h)}
+                className="md:hidden min-h-0 flex-shrink-0 self-center mt-1 mb-1 inline-flex items-center gap-1 h-6 px-3 rounded-full m3-bg-surface-container m3-text-on-surface-variant text-[11px] font-semibold active:scale-95 transition"
+                aria-label={barHidden ? 'Show menu bar' : 'Hide menu bar to free up space'}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{barHidden ? 'expand_more' : 'expand_less'}</span>
+                {barHidden ? 'Show menu' : 'More space'}
+              </button>
+
+              {/* Current entry */}
+              <div className="flex-shrink-0 flex flex-col items-center text-center">
+                <label className="text-[10px] font-semibold uppercase tracking-wider m3-text-on-surface-variant">Current entry</label>
+                <div className={`flex items-baseline m3-text-primary amount-pulse ${pulse ? 'scale-105' : ''}`}>
+                  <span className="text-xl mr-1 font-semibold opacity-50">{symbol}</span>
+                  <span className="font-bold text-[clamp(34px,11vw,48px)]" style={{ lineHeight: 1.05 }}>{value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                 </div>
               </div>
-              {/* Action bar */}
-              <div className="flex-shrink-0 px-4 pt-3 pb-4 max-w-md mx-auto w-full" style={{ background: 'var(--m3-surface)' }}>
+
+              {/* Purpose */}
+              <input id="purpose" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="Purpose (optional) — e.g. Custom bouquet" className="flex-shrink-0 mt-2 w-full m3-bg-surface-lowest border m3-border-outline-variant rounded-xl px-4 py-2.5 outline-none focus:ring-0 focus:m3-border-primary text-sm m3-text-on-surface m3-placeholder shadow-sm" />
+
+              {/* Sale / service toggle */}
+              <div className="flex-shrink-0 grid grid-cols-2 gap-2 mt-2">
+                {(['sale', 'service'] as HType[]).map((t) => (
+                  <button key={t} onClick={() => { setType(t); buzz(10); }} className={`tactile rounded-xl px-3 py-2.5 flex items-center justify-center gap-2 ${type === t ? 'selected' : ''}`}>
+                    <span className="material-symbols-outlined tactile-icon m3-text-on-surface-variant" style={{ fontSize: 22, fontVariationSettings: type === t ? "'FILL' 1" : undefined }}>{t === 'service' ? 'settings_accessibility' : 'shopping_bag'}</span>
+                    <span className="tactile-label text-sm font-semibold m3-text-on-surface">{t === 'service' ? 'Service' : 'Sold something'}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Keypad — grows to fill remaining height (so nothing scrolls) but
+                  is capped so the keys don't become elongated on tall screens.
+                  The column's justify-center keeps the stack balanced once capped. */}
+              <div className="grid grid-cols-3 grid-rows-4 gap-2 flex-1 min-h-0 max-h-[22rem] my-2 md:flex-none md:max-h-none md:my-3">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => <button key={n} onClick={() => append(n)} className="keypad-btn flex items-center justify-center text-2xl font-semibold m3-text-on-surface md:h-16">{n}</button>)}
+                <button onClick={clearPad} className="keypad-btn flex items-center justify-center text-xl font-semibold m3-text-error md:h-16" style={{ background: 'var(--m3-surface-low)' }}>C</button>
+                <button onClick={() => append('0')} className="keypad-btn flex items-center justify-center text-2xl font-semibold m3-text-on-surface md:h-16">0</button>
+                <button onClick={backspace} className="keypad-btn flex items-center justify-center m3-text-on-surface-variant md:h-16" style={{ background: 'var(--m3-surface-low)' }}><span className="material-symbols-outlined">backspace</span></button>
+              </div>
+
+              {/* Action bar — always visible, no scroll needed */}
+              <div className="flex-shrink-0">
                 {cart.length > 0 && (
-                  <button onClick={() => setShowCart(true)} className="w-full mb-2 flex items-center justify-between px-4 py-2.5 rounded-2xl m3-bg-surface-container active:scale-[0.99] transition">
+                  <button onClick={() => setShowCart(true)} className="w-full mb-2 flex items-center justify-between px-4 py-2 rounded-xl m3-bg-surface-container active:scale-[0.99] transition">
                     <span className="flex items-center gap-2 text-sm font-semibold m3-text-on-surface"><span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 20 }}>receipt_long</span>{cart.length} item{cart.length === 1 ? '' : 's'}</span>
                     <span className="text-sm font-bold m3-text-primary">{fmt(cartTotal)} · Review</span>
                   </button>
                 )}
-                <button onClick={addToSale} className="big-green-button w-full h-15 py-4 m3-bg-primary m3-text-on-primary rounded-full text-lg font-bold flex items-center justify-center gap-3 shadow-lg hover:opacity-90 transition"><span className="material-symbols-outlined">add_circle</span>Add to sale</button>
+                <button onClick={addToSale} className="big-green-button w-full py-3 m3-bg-primary m3-text-on-primary rounded-full text-base font-bold flex items-center justify-center gap-2 shadow-lg hover:opacity-90 transition"><span className="material-symbols-outlined">add_circle</span>Add to sale</button>
               </div>
-            </>
+            </div>
           )}
 
           {view === 'dashboard' && (
@@ -306,15 +326,6 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
           )}
         </div>
 
-        {/* Mobile bottom nav */}
-        <nav className="md:hidden flex-shrink-0 m3-bg-surface-container shadow-[0_-4px_10px_rgba(0,0,0,0.05)] rounded-t-xl h-[68px] flex justify-around items-center z-20">
-          {NAV.map((n) => (
-            <button key={n.id} onClick={() => setView(n.id)} className={`flex flex-col items-center justify-center px-5 py-1 rounded-2xl transition active:scale-90 ${view === n.id ? 'm3-bg-primary-fixed m3-text-primary' : 'm3-text-on-surface-variant'}`}>
-              <span className="material-symbols-outlined" style={{ fontSize: 24, fontVariationSettings: view === n.id ? "'FILL' 1" : undefined }}>{n.icon}</span>
-              <span className="text-[11px] font-medium mt-0.5">{n.label}</span>
-            </button>
-          ))}
-        </nav>
       </div>
 
       {/* Cart / checkout sheet */}

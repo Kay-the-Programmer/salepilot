@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo, Suspense } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { getCurrentUser } from '../../services/authService';
-import { useTheme } from '../../contexts/ThemeContext';
+import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import { useToast } from '../../contexts/ToastContext';
 import { api } from '../../services/api';
 import { formatLongDate as formatDate } from '../../utils/date';
 import type { BackendPlan, SubscriptionHistoryItem } from '../../types/subscription';
 import { logEvent } from '../../src/utils/analytics';
+import { upsellService } from '../../services/upsellService';
 import '../assistant/assistant.css';
 import './subscription.css';
 
@@ -52,7 +53,6 @@ const tierLabel = (index: number, total: number) =>
 const SubscriptionApp: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { theme, toggleTheme } = useTheme();
   const { showToast } = useToast();
 
   const [user, setUser] = useState<any>(null);
@@ -157,6 +157,9 @@ const SubscriptionApp: React.FC = () => {
         const wasAddon = !!addonCheckout;
         showToast(wasAddon ? 'Payment successful! Your add-on is now active.' : 'Payment successful! Your subscription is now active.', 'success');
         logEvent('Subscription', wasAddon ? 'BuyAddon' : 'Subscribe', wasAddon ? addonCheckout?.label : planToPay?.name);
+        // Attribute an upsell conversion if any purchased module was clicked from
+        // an upsell earlier this session (emits upsell_convert).
+        if (wasAddon) upsellService.notePurchaseCompleted(addonCheckout?.moduleIds);
         setLoading(false);
         setIsPaymentModalOpen(false);
         setSelectedAddons(new Set());
@@ -299,26 +302,22 @@ const SubscriptionApp: React.FC = () => {
   return (
     <div className="sp-assistant sp-subscription h-full flex flex-col overflow-hidden">
       {/* Top app bar */}
-      <header className="flex-shrink-0 h-16 m3-bg-surface shadow-sm flex items-center justify-between px-4 md:px-8 z-20">
-        <div className="flex items-center gap-1.5">
-          <button onClick={() => navigate(-1)} className="w-9 h-9 -ml-1 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title="Back">
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
-          </button>
-          <span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 26 }}>card_membership</span>
-          <h1 className="text-lg md:text-xl font-bold m3-text-primary tracking-tight">Subscription</h1>
-        </div>
-        <div className="flex items-center gap-1 md:gap-2">
-          <button onClick={() => navigate('/pos/discover')} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title="Discover apps">
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>menu</span>
-          </button>
-          <button onClick={toggleTheme} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title="Toggle theme">
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
-          </button>
+      <StandaloneTopBar
+        className="relative flex-shrink-0 h-16 bg-surface border-b border-brand-border shadow-sm flex items-center justify-between px-4 md:px-8 z-20"
+        currentRoute="subscription"
+        navItems={[
+          { icon: 'card_membership', label: 'Plan', active: view === 'manage', onClick: goManage },
+          { icon: 'upgrade', label: 'Plans', active: view === 'plans', onClick: goPlans },
+          { icon: 'extension', label: 'Add-ons', active: view === 'addons', onClick: goAddons },
+          { icon: 'receipt_long', label: 'Billing', active: false, onClick: goBilling },
+        ]}
+        onExit={() => navigate('/')}
+        rightExtra={
           <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold" title="Profile">
             {user.profilePicture ? <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" /> : <span>{initial}</span>}
           </button>
-        </div>
-      </header>
+        }
+      />
 
       <div className="flex-1 min-h-0 flex">
         {/* Desktop sidebar */}
@@ -382,13 +381,6 @@ const SubscriptionApp: React.FC = () => {
         </main>
       </div>
 
-      {/* Mobile bottom navigation */}
-      <nav className="lg:hidden flex-shrink-0 m3-bg-surface shadow-[0_-4px_12px_rgba(0,0,0,0.05)] rounded-t-xl h-[68px] flex justify-around items-center z-20">
-        <BottomItem icon="card_membership" label="Plan" active={view === 'manage'} onClick={goManage} />
-        <BottomItem icon="upgrade" label="Plans" active={view === 'plans'} onClick={goPlans} />
-        <BottomItem icon="extension" label="Add-ons" active={view === 'addons'} onClick={goAddons} />
-        <BottomItem icon="receipt_long" label="Billing" active={false} onClick={goBilling} />
-      </nav>
 
       {isPaymentModalOpen && (
         <Suspense fallback={null}>
@@ -766,12 +758,5 @@ const AddonsView: React.FC<{
     </div>
   );
 };
-
-const BottomItem: React.FC<{ icon: string; label: string; active: boolean; onClick: () => void }> = ({ icon, label, active, onClick }) => (
-  <button onClick={onClick} className={`flex flex-col items-center justify-center px-4 py-1 rounded-2xl transition active:scale-90 ${active ? 'm3-bg-primary-fixed m3-text-primary' : 'm3-text-on-surface-variant hover:m3-text-primary'}`}>
-    <span className="material-symbols-outlined" style={{ fontSize: 24 }}>{icon}</span>
-    <span className="text-[11px] font-medium mt-0.5">{label}</span>
-  </button>
-);
 
 export default SubscriptionApp;

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { User } from '../../types';
 import PosIcon from '../sales/PosIcon';
-import PosBottomNav from './PosBottomNav';
 import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
+import AppSwitcherOverlay from '../standalone/AppSwitcherOverlay';
+import { recordAppUse } from '../standalone/appUsage';
+import { useTheme } from '../../contexts/ThemeContext';
 import Logo from '../../assets/logo.png';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
@@ -39,6 +41,9 @@ export const PosShell: React.FC<PosShellProps> = ({
     onLogout,
     children,
 }) => {
+    const [appsOpen, setAppsOpen] = useState(false);
+    const { theme, toggleTheme } = useTheme();
+    useEffect(() => { recordAppUse('pos'); }, []);
     const renderNav = (inDrawer: boolean) => (
         <>
             <div className="posshell__brand">
@@ -73,12 +78,15 @@ export const PosShell: React.FC<PosShellProps> = ({
             <div className="posshell__foot">
                 <button
                     type="button"
-                    className={`posshell__navitem${active === 'discover' ? ' posshell__navitem--active' : ''}`}
-                    aria-current={active === 'discover' ? 'page' : undefined}
-                    onClick={() => { onNavigate('discover'); onCloseDrawer(); }}
+                    className="posshell__navitem"
+                    onClick={() => { setAppsOpen(true); onCloseDrawer(); }}
                 >
-                    <PosIcon name="apps" size={22} fill={active === 'discover' ? 1 : 0} />
-                    Discover Apps
+                    <PosIcon name="apps" size={22} />
+                    SalePilot Apps
+                </button>
+                <button type="button" className="posshell__navitem" onClick={toggleTheme}>
+                    <PosIcon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} size={22} />
+                    {theme === 'dark' ? 'Light mode' : 'Dark mode'}
                 </button>
                 <button type="button" className="posshell__navitem posshell__navitem--logout" onClick={() => { onLogout(); onCloseDrawer(); }}>
                     <PosIcon name="logout" size={22} />
@@ -103,17 +111,16 @@ export const PosShell: React.FC<PosShellProps> = ({
                 </>
             )}
 
-            <div className="posshell__content">
-                {/* avatar / user is surfaced inside each page's own header */}
-                <span hidden>{user?.name}</span>
+            {/* POS page content (SalesPage / Inventory / Dashboard / Discover) */}
+            <main className="posshell__content">
                 {children}
-            </div>
+            </main>
 
-            {/* Shared mobile bottom navigation */}
-            <PosBottomNav active={active} onNavigate={onNavigate} />
+            {/* Embedded AI assistant — hidden on the sale terminal so it doesn't
+                distract during checkout; still available on dashboard / discover. */}
+            {active !== 'pos' && <AssistantLauncher userName={user?.name} />}
 
-            {/* Embedded AI assistant — available from inside the POS app */}
-            <AssistantLauncher userName={user?.name} />
+            <AppSwitcherOverlay open={appsOpen} onClose={() => setAppsOpen(false)} user={user} currentRoute="pos" />
         </div>
     );
 };

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import SocketService from './services/socketService';
 import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Expense, RecurringExpense } from './types';
@@ -37,7 +37,6 @@ const SalesPage = lazy(() => import('@/pages/SalesPage'));
 const CategoriesPage = lazy(() => import('@/pages/CategoriesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
 const ReturnsPage = lazy(() => import('@/pages/ReturnsPage'));
-const CustomersPage = lazy(() => import('@/pages/CustomersPage'));
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
@@ -67,10 +66,10 @@ const SupportPage = lazy(() => import('@/pages/SupportPage'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 
 import Snackbar from './components/Snackbar';
-import LogoutConfirmationModal from './components/LogoutConfirmationModal';
 import VerifyEmailOtpModal from './components/VerifyEmailOtpModal';
+import { useLogoutModal } from './contexts/LogoutModalContext';
 import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, changePassword } from './services/authService';
-import { api, getOnlineStatus, syncOfflineMutations } from './services/api';
+import { api, getOnlineStatus, syncOfflineMutations, getPendingMutationCount } from './services/api';
 import { dbService } from './services/dbService';
 import {
     Bars3Icon,
@@ -85,6 +84,9 @@ import TourGuide from './components/TourGuide';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { logEvent } from './src/utils/analytics';
+import { useUpsellSync } from './contexts/UpsellContext';
+import { upsellService } from './services/upsellService';
+import { notificationService } from './services/notificationService';
 
 // Key helper for persisting the last visited page per user
 const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userId}` : 'salePilot.lastPage';
@@ -158,8 +160,10 @@ export default function Dashboard() {
     const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
     const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
     const [isAuthLoading, setIsAuthLoading] = useState(true);
-    const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
     const [showOtpModal, setShowOtpModal] = useState(false);
+    // Logout confirmation is mounted by LogoutModalProvider (a parent of every
+    // Dashboard branch) so it shows from the standalone app shells too.
+    const { requestLogout } = useLogoutModal();
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Mobile sidebar state
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -180,6 +184,8 @@ export default function Dashboard() {
     const [isOnline, setIsOnline] = useState(getOnlineStatus());
     const [isSyncing, setIsSyncing] = useState(false);
     const [lastSync, setLastSync] = useState<number | null>(null);
+    // Number of offline changes still queued for sync (drives the retry timer).
+    const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
     // Priority notifications are now handled within NotificationContext or dedicated components
 
@@ -232,6 +238,50 @@ export default function Dashboard() {
 
     // Determine current "page" from URL
     const currentPage = location.pathname.substring(1) || 'reports';
+
+    // Suppress all proactive upsell while a sale is in progress (POS sale flow).
+    const isMidSale = (() => {
+        const seg = location.pathname.split('/')[1] || '';
+        return seg === 'sales' || seg === 'hustle' || location.pathname === '/pos';
+    })();
+
+    // Keep the contextual upsell engine's data snapshot in sync with the store.
+    // (A hook — runs before this component's many early returns, so every app
+    //  branch can read it via useUpsell.)
+    useUpsellSync({
+        currentUser,
+        storeSettings,
+        products,
+        customers,
+        sales,
+        users,
+        isMidSale,
+        storeCount: systemStores.length || 1,
+    });
+
+    // Load live add-on prices once authenticated, so upsell copy can show real
+    // Kwacha prices (cached for offline by the service). Prices are never hardcoded.
+    useEffect(() => {
+        if (!currentUser) return;
+        api.get<Array<{ id: string; price: number; currency: string }>>('/subscriptions/addons')
+            .then(list => upsellService.setPricing(list))
+            .catch(() => { /* keep last-cached pricing */ });
+    }, [currentUser]);
+
+    // High-value data moment delivered as a single local push (dormant_customers
+    // only). Fires at most once per session, never prompts for permission, and
+    // honours cooldown/budget via the engine.
+    const pushFiredRef = useRef(false);
+    useEffect(() => {
+        if (pushFiredRef.current) return;
+        const m = upsellService.getEligible('push');
+        if (!m) return;
+        if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
+        pushFiredRef.current = true;
+        notificationService
+            .showLocalNotification(m.headline, { body: m.body, data: { url: '/crm', momentId: m.id, module: m.module } })
+            .then(ok => { if (ok) upsellService.recordShown(m); });
+    }, [products, customers, sales, currentUser, isMidSale]);
 
     // Close mobile sidebar after navigation
     useEffect(() => {
@@ -323,23 +373,43 @@ export default function Dashboard() {
         }
     }, [currentUser?.currentStoreId]);
 
-    const handleSync = useCallback(async () => {
-        if (isSyncing || !getOnlineStatus()) return;
+    // Replay the offline queue. `silent` suppresses the "Syncing…" toast for
+    // automatic background runs (startup, retry timer) so only user-meaningful
+    // outcomes surface. Reentrancy is guarded inside syncOfflineMutations.
+    const handleSync = useCallback(async (opts?: { silent?: boolean }) => {
+        if (!getOnlineStatus()) return;
+
+        const pending = await getPendingMutationCount();
+        if (pending === 0) { setPendingSyncCount(0); return; }
+
         setIsSyncing(true);
-        showSnackbar('Syncing offline changes...', 'sync');
-        const { succeeded, failed } = await syncOfflineMutations();
+        if (!opts?.silent) showSnackbar('Syncing offline changes…', 'sync');
+
+        const { succeeded, failed, deadLettered, remaining } = await syncOfflineMutations();
+
         setIsSyncing(false);
-
-        if (succeeded > 0 || failed > 0) {
-            if (failed > 0) {
-                showSnackbar(`Sync complete. ${succeeded} succeeded, ${failed} failed.`, 'error');
-            } else {
-                showSnackbar(`Successfully synced ${succeeded} offline changes.`, 'success');
-            }
-            fetchData(); // Refetch all data to get the latest state from the server
+        setPendingSyncCount(remaining);
+        if (succeeded > 0) {
+            const ts = Date.now();
+            setLastSync(ts);
         }
-    }, [isSyncing, showSnackbar, fetchData]);
 
+        if (succeeded > 0 || deadLettered > 0) {
+            if (deadLettered > 0) {
+                showSnackbar(
+                    `Synced ${succeeded} change${succeeded === 1 ? '' : 's'}. ${deadLettered} couldn't be saved and need attention.`,
+                    'error'
+                );
+            } else {
+                showSnackbar(`Synced ${succeeded} offline change${succeeded === 1 ? '' : 's'}.`, 'success');
+            }
+            fetchData(); // Refetch to reconcile with the server's canonical state.
+        } else if (failed > 0 && !opts?.silent) {
+            showSnackbar(`Still offline — ${remaining} change${remaining === 1 ? '' : 's'} will retry automatically.`, 'info');
+        }
+    }, [showSnackbar, fetchData]);
+
+    // React to connectivity changes (custom event bridged from online/offline).
     useEffect(() => {
         const handleStatusChange = () => {
             const onlineStatus = getOnlineStatus();
@@ -351,6 +421,40 @@ export default function Dashboard() {
         window.addEventListener('onlineStatusChange', handleStatusChange);
         return () => window.removeEventListener('onlineStatusChange', handleStatusChange);
     }, [handleSync]);
+
+    // On startup, flush anything left queued from a previous session and seed the badge.
+    useEffect(() => {
+        getPendingMutationCount()
+            .then(count => {
+                setPendingSyncCount(count);
+                if (count > 0 && getOnlineStatus()) handleSync({ silent: true });
+            })
+            .catch(() => { /* ignore */ });
+    }, [handleSync]);
+
+    // The service worker pings us (via Background Sync) when connectivity returns
+    // even if the tab was backgrounded — flush the queue when it does.
+    useEffect(() => {
+        if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return;
+        const onMessage = (event: MessageEvent) => {
+            if (event.data?.type === 'flush-sync' && getOnlineStatus()) {
+                handleSync({ silent: true });
+            }
+        };
+        navigator.serviceWorker.addEventListener('message', onMessage);
+        return () => navigator.serviceWorker.removeEventListener('message', onMessage);
+    }, [handleSync]);
+
+    // Fallback retry loop: while changes remain queued and we're online, keep
+    // retrying on an interval (covers backoff windows and platforms without
+    // Background Sync). Stops as soon as the queue drains.
+    useEffect(() => {
+        if (pendingSyncCount <= 0) return;
+        const id = setInterval(() => {
+            if (getOnlineStatus()) handleSync({ silent: true });
+        }, 30_000);
+        return () => clearInterval(id);
+    }, [pendingSyncCount, handleSync]);
 
     useEffect(() => {
         const initSyncStatus = async () => {
@@ -494,17 +598,16 @@ export default function Dashboard() {
         showSnackbar(`Welcome back, ${user.name}!`, 'success');
     };
 
-    const handleLogout = () => {
-        setIsSidebarOpen(false);
-        setIsLogoutModalOpen(true);
-    };
-
     const handleConfirmLogout = () => {
         logout();
         setCurrentUser(null);
-        setIsLogoutModalOpen(false);
         logEvent('Auth', 'Logout');
         showSnackbar('You have been logged out.', 'info');
+    };
+
+    const handleLogout = () => {
+        setIsSidebarOpen(false);
+        requestLogout(handleConfirmLogout);
     };
 
     const handleSaveSettings = async (settings: StoreSettings) => {
@@ -534,6 +637,7 @@ export default function Dashboard() {
                 const exists = products.some(p => p.id === incoming.id);
                 if (!exists) {
                     setProducts(prev => [incoming, ...prev]);
+                    upsellService.recordManualAdd();
                     showSnackbar('Product added successfully!', 'success');
                     return incoming;
                 }
@@ -574,6 +678,7 @@ export default function Dashboard() {
                     setProducts(prev => prev.map(p => p.id === tempId ? tempProduct : p));
                 } else {
                     setProducts(prev => [tempProduct, ...prev]);
+                    upsellService.recordManualAdd();
                 }
                 // Persist to IndexedDB so details remain available after reload while offline
                 try { await dbService.put('products', tempProduct); } catch (_) { }
@@ -587,6 +692,7 @@ export default function Dashboard() {
                 } else {
                     // Add the new product to the top of the list
                     setProducts(prev => [savedProduct as Product, ...prev]);
+                    upsellService.recordManualAdd();
                 }
                 return savedProduct as Product;
             }
@@ -661,45 +767,59 @@ export default function Dashboard() {
 
     const handleProcessSale = async (sale: Sale): Promise<Sale | null> => {
         try {
-            // Ensure sale has a transactionId before sending to API
+            // Ensure sale has a transactionId before sending to API. The random
+            // suffix avoids collisions when two sales land in the same millisecond.
             const saleWithId: Sale = {
                 ...sale,
-                transactionId: sale.transactionId || `temp_${Date.now()}`,
+                transactionId: sale.transactionId || `temp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
                 timestamp: sale.timestamp || new Date().toISOString()
             };
 
             const result = await api.post<Sale>('/sales', saleWithId);
             if ((result as any).offline) {
-                showSnackbar('Offline: Sale queued for sync.', 'info');
+                showSnackbar('Offline: sale saved on this device and queued for sync.', 'info');
 
-                const tempSale: Sale = {
-                    ...saleWithId,
-                    transactionId: `offline_${Date.now()}`,
-                    timestamp: new Date().toISOString()
-                };
+                const currentStoreId = currentUser?.currentStoreId;
 
-                setSales(prev => [tempSale, ...prev]);
+                // Keep the UI row, the IndexedDB cache, and the queued mutation all
+                // keyed by the SAME transactionId, so the optimistic record is
+                // cleaned up — not duplicated — once it replays online.
+                const pendingSale = { ...saleWithId, _pending: true } as Sale;
+                setSales(prev => [pendingSale, ...prev]);
 
-                tempSale.cart.forEach(item => {
-                    setProducts(prevProducts => prevProducts.map(p =>
-                        p.id === item.productId ? { ...p, stock: p.stock - item.quantity } : p
-                    ));
-                });
-
-                if (tempSale.customerId) {
-                    setCustomers(prevCustomers => prevCustomers.map(c => {
-                        if (c.id === tempSale.customerId) {
-                            return {
-                                ...c,
-                                storeCredit: c.storeCredit - (tempSale.storeCreditUsed || 0),
-                                accountBalance: c.accountBalance + (tempSale.paymentStatus !== 'paid' ? tempSale.total : 0)
-                            };
-                        }
-                        return c;
-                    }));
+                // Optimistic stock decrement, mirrored to IndexedDB (with storeId
+                // preserved) so a reload while still offline shows the same figures.
+                const changedProducts: Product[] = [];
+                setProducts(prev => prev.map(p => {
+                    const line = pendingSale.cart.find(i => i.productId === p.id);
+                    if (!line) return p;
+                    const updated = { ...p, stock: p.stock - line.quantity };
+                    changedProducts.push({ ...updated, storeId: currentStoreId ?? (p as any).storeId } as Product);
+                    return updated;
+                }));
+                if (changedProducts.length) {
+                    try { await dbService.bulkPut('products', changedProducts); } catch { /* cache best-effort */ }
                 }
 
-                return tempSale;
+                if (pendingSale.customerId) {
+                    let changedCustomer: Customer | undefined;
+                    setCustomers(prev => prev.map(c => {
+                        if (c.id !== pendingSale.customerId) return c;
+                        const updated: Customer = {
+                            ...c,
+                            storeCredit: c.storeCredit - (pendingSale.storeCreditUsed || 0),
+                            accountBalance: c.accountBalance + (pendingSale.paymentStatus !== 'paid' ? pendingSale.total : 0)
+                        };
+                        changedCustomer = { ...updated, storeId: currentStoreId ?? (c as any).storeId } as Customer;
+                        return updated;
+                    }));
+                    if (changedCustomer) {
+                        try { await dbService.bulkPut('customers', [changedCustomer]); } catch { /* best-effort */ }
+                    }
+                }
+
+                setPendingSyncCount(c => c + 1);
+                return pendingSale;
             } else {
                 showSnackbar('Sale completed successfully!', 'success');
                 logEvent('Sales', 'Process Sale', `Total: ${sale.total}`);
@@ -1161,20 +1281,8 @@ export default function Dashboard() {
                         />
                     );
                 case 'sales':
-                    return <SalesPage
-                        user={currentUser}
-                        products={products}
-                        customers={customers}
-                        categories={categories}
-                        suppliers={suppliers}
-                        onProcessSale={handleProcessSale}
-                        onSaveProduct={handleSaveProduct}
-                        onProcessReturn={handleProcessReturn}
-                        isLoading={isLoading}
-                        showSnackbar={showSnackbar}
-                        storeSettings={storeSettings!}
-                        onOpenSidebar={() => navigate('/pos/discover')}
-                    />;
+                    // The point of sale lives only at /pos now; /sales presents sales data.
+                    return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
                 case 'sales-history':
                     return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
                 case 'orders':
@@ -1182,7 +1290,8 @@ export default function Dashboard() {
                 case 'returns':
                     return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
                 case 'customers':
-                    return <CustomersPage customers={customers} sales={sales} onSaveCustomer={handleSaveCustomer} onDeleteCustomer={handleDeleteCustomer} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
+                    // The standalone admin customers page was removed; customers live in the CRM app now.
+                    return <Navigate to="/crm/customers" replace />;
                 case 'suppliers':
                     return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
                 case 'purchase-orders':
@@ -1479,10 +1588,9 @@ export default function Dashboard() {
                             onDiscover={() => navigate('/pos/discover')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
-                            onNewSale={() => navigate('/sales')}
+                            onNewSale={() => navigate('/pos')}
                             onInventory={() => navigate('/inventory')}
                             onOrders={() => navigate('/orders')}
-                            onCustomers={() => navigate('/customers')}
                         />
                     </Suspense>
                 </NotificationProvider>
@@ -1695,7 +1803,7 @@ export default function Dashboard() {
                             storeSettings={storeSettings}
                             renderItems={() => (
                                 <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} />
+                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} embedded />
                                 </Suspense>
                             )}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/inv' : `/inv/${s}`)}
@@ -1720,18 +1828,24 @@ export default function Dashboard() {
                 : posParts[2] === 'discover' ? 'discover'
                     : 'pos';
 
+        // Inventory is the standalone Inventory app — render it at /inv/items so it
+        // has the same chrome/header everywhere (the embedded InventoryShell header,
+        // not a POS-shell-only mobile header). Keeps inventory a single, consistent
+        // experience and lands on the items list rather than the dashboard.
+        if (posSection === 'inventory') {
+            return <Navigate to="/inv/items" replace />;
+        }
+
         const openPosDrawer = () => setPosDrawerOpen(true);
         // Superadmins see every admin app PLUS the Super Admin platform app.
         const posAllowedPages = currentUser.role === 'superadmin' ? [...PERMISSIONS['admin'], 'superadmin'] : PERMISSIONS[currentUser.role];
         let posContent: ReactNode;
-        if (posSection === 'inventory') {
-            posContent = <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={openPosDrawer} />;
-        } else if (posSection === 'dashboard') {
+        if (posSection === 'dashboard') {
             posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
         } else if (posSection === 'discover') {
             posContent = <PosDiscover user={currentUser} allowedPages={posAllowedPages} storeSettings={storeSettings} onLaunch={(page) => navigate(`/${page}`)} onOpenSidebar={openPosDrawer} />;
         } else {
-            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
+            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} />;
         }
 
         return (
@@ -1743,7 +1857,7 @@ export default function Dashboard() {
                             user={currentUser}
                             drawerOpen={posDrawerOpen}
                             onCloseDrawer={() => setPosDrawerOpen(false)}
-                            onNavigate={(s) => navigate(s === 'pos' ? '/pos' : `/pos/${s}`)}
+                            onNavigate={(s) => navigate(s === 'pos' ? '/pos' : s === 'inventory' ? '/inv/items' : `/pos/${s}`)}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         >
@@ -1886,7 +2000,7 @@ export default function Dashboard() {
                             which is now the navigation surface that replaced the sidebar.
                             Carries the global actions the sidebar used to own. Pages that
                             ship their own full chrome (POS Sale, Reports) opt out. */}
-                        {location.pathname !== '/sales' && location.pathname !== '/reports' && (
+                        {location.pathname !== '/reports' && (
                             <header className="sticky top-0 z-40 h-14 bg-surface border-b border-brand-border flex items-center gap-2 px-3 md:px-4 transition-all duration-200">
                                 <button
                                     onClick={() => navigate('/pos/discover')}
@@ -1978,7 +2092,6 @@ export default function Dashboard() {
                     </div>
 
                     {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
-                    <LogoutConfirmationModal isOpen={isLogoutModalOpen} onClose={() => setIsLogoutModalOpen(false)} onConfirm={handleConfirmLogout} />
                     <VerifyEmailOtpModal
                         isOpen={showOtpModal}
                         email={currentUser?.email || ''}

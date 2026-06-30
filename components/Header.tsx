@@ -240,7 +240,7 @@ export default function Header({
                                 <button
                                     id="header-action-button"
                                     onClick={onButtonClick}
-                                    className="ml-1 flex items-center gap-2 px-5 py-2.5 bg-primary hover:bg-primary-dark text-white rounded-full text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 whitespace-nowrap"
+                                    className="ml-1 flex items-center gap-2 px-5 py-2.5 bg-secondary hover:bg-[#e86d12] text-white rounded-full text-sm font-bold shadow-lg shadow-primary/20 transition-all hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 active:scale-95 whitespace-nowrap"
                                 >
                                     <PlusIcon className="w-4 h-4" />
                                     <span className="hidden sm:inline">{buttonText}</span>

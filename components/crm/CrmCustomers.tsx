@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { StoreSettings } from '../../types';
 import { Icon, Avatar, TierBadge } from './CrmBits';
 import { CrmOverview, CustomerMetrics, formatMoney, formatMonthYear } from './crmModel';
+import UnifiedScannerModal from '../UnifiedScannerModal';
 
 interface CrmCustomersProps {
     overview: CrmOverview;
@@ -32,6 +33,7 @@ const matchesFilter = (m: CustomerMetrics, f: FilterId): boolean => {
 
 export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSettings, search, onSearch, onOpenCustomer, onAddCustomer }) => {
     const [filter, setFilter] = useState<FilterId>('all');
+    const [scanOpen, setScanOpen] = useState(false);
 
     const counts = useMemo(() => {
         const c: Record<FilterId, number> = { all: 0, new: 0, vip: 0, inactive: 0 };
@@ -53,7 +55,8 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
                 const c = m.customer;
                 return c.name.toLowerCase().includes(term)
                     || (c.email?.toLowerCase().includes(term) ?? false)
-                    || (c.phone?.includes(term) ?? false);
+                    || (c.phone?.includes(term) ?? false)
+                    || (c.id?.toLowerCase().includes(term) ?? false);
             })
             .sort((a, b) => b.totalSpend - a.totalSpend);
     }, [overview.metrics, filter, search]);
@@ -62,8 +65,7 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
         <main className="crm-main crm-section-fade">
             <div style={{ display: 'flex', flexDirection: 'column', gap: 20, marginBottom: 24 }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 16 }}>
-                    <h2 className="crm-pagehead__title" style={{ margin: 0 }}>Customer Directory</h2>
-                    <div className="crm-search" style={{ maxWidth: 420 }}>
+                    <div className="crm-search crm-search--scan" style={{ maxWidth: 420 }}>
                         <Icon name="search" size={22} />
                         <input
                             type="text"
@@ -71,6 +73,15 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
                             onChange={e => onSearch(e.target.value)}
                             placeholder="Search by name, email, or phone..."
                         />
+                        <button
+                            type="button"
+                            className="crm-search__scan"
+                            aria-label="Scan customer barcode"
+                            title="Scan a barcode to find a customer"
+                            onClick={() => setScanOpen(true)}
+                        >
+                            <Icon name="barcode_scanner" size={22} />
+                        </button>
                     </div>
                 </div>
 
@@ -137,9 +148,12 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
                 </div>
             )}
 
-            <button className="crm-fab" type="button" aria-label="Add customer" onClick={onAddCustomer}>
-                <Icon name="person_add" size={26} />
-            </button>
+            <UnifiedScannerModal
+                isOpen={scanOpen}
+                onClose={() => setScanOpen(false)}
+                onScanSuccess={(text) => { onSearch(text.trim()); setScanOpen(false); }}
+                title="Scan customer barcode"
+            />
         </main>
     );
 };

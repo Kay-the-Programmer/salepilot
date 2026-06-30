@@ -1,44 +1,42 @@
 import React from 'react';
 import { StoreSettings, User } from '../../types';
 import { Icon } from '../crm/CrmBits';
-import { formatMoney } from '../crm/crmModel';
-import { DashboardOverview, DashPeriod, PERIOD_LABEL } from './dashboardModel';
-import { MetricCard, TrendChart, DeltaChip } from './DashBits';
+import { formatMoney, parseApiDate } from '../crm/crmModel';
+import { DashboardOverview, DashRange } from './dashboardModel';
+import { TrendChart, DeltaChip } from './DashBits';
+import PeriodPicker from './PeriodPicker';
 
 interface BizOverviewProps {
     overview: DashboardOverview;
     storeSettings?: StoreSettings | null;
     user: User;
-    period: DashPeriod;
-    onPeriod: (p: DashPeriod) => void;
+    range: DashRange;
+    onRange: (r: DashRange) => void;
     onViewSales: () => void;
     onViewProducts: () => void;
     onNewSale: () => void;
     onInventory: () => void;
     onOrders: () => void;
-    onCustomers: () => void;
 }
 
 const greeting = () => {
     const h = new Date().getHours();
     if (h >= 5 && h < 12) return 'Good morning';
     if (h >= 12 && h < 17) return 'Good afternoon';
-    if (h >= 17 && h < 22) return 'Good evening';
     return 'Good evening';
 };
 
+const fmtTime = (ts: string) => {
+    const d = parseApiDate(ts);
+    return d ? d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' }) : '';
+};
+
 export const BizOverview: React.FC<BizOverviewProps> = ({
-    overview, storeSettings, user, period, onPeriod,
-    onViewSales, onViewProducts, onNewSale, onInventory, onOrders, onCustomers,
+    overview, storeSettings, user, range, onRange,
+    onViewSales, onViewProducts, onNewSale, onInventory, onOrders,
 }) => {
     const firstName = user?.name?.split(' ')[0] || 'there';
-
-    const quickActions = [
-        { icon: 'add_shopping_cart', label: 'New Sale', primary: true, onClick: onNewSale },
-        { icon: 'inventory_2', label: 'Update Stock', onClick: onInventory },
-        { icon: 'receipt_long', label: 'Review Orders', onClick: onOrders },
-        { icon: 'group', label: 'Customers', onClick: onCustomers },
-    ];
+    const stockAlerts = overview.lowStockCount + overview.outOfStockCount;
 
     return (
         <main className="crm-main crm-section-fade">
@@ -48,131 +46,142 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                     <h2 className="dash-welcome__title">{greeting()}, {firstName}</h2>
                     <p className="dash-welcome__sub">Here's what's happening in your shop today.</p>
                 </div>
-                <div className="dash-segment" role="tablist" aria-label="Reporting period">
-                    {(['today', 'week', 'month'] as DashPeriod[]).map(p => (
-                        <button
-                            key={p}
-                            type="button"
-                            role="tab"
-                            aria-selected={period === p}
-                            className={`dash-segment__btn${period === p ? ' is-active' : ''}`}
-                            onClick={() => onPeriod(p)}
-                        >
-                            {p === 'today' ? 'Day' : p === 'week' ? 'Week' : 'Month'}
-                        </button>
-                    ))}
-                </div>
+                <PeriodPicker range={range} onRange={onRange} />
             </div>
 
-            {/* Performance pulse */}
-            <div className="dash-section-head">
-                <span className="dash-eyebrow">Performance Pulse · {PERIOD_LABEL[period]}</span>
-                <button className="crm-link" type="button" onClick={onViewSales}>Detailed stats</button>
-            </div>
-            <div className="dash-pulse">
-                <MetricCard icon="payments" tone="p" label="Total Revenue" value={formatMoney(overview.revenue, storeSettings)} delta={overview.revenueDelta} />
-                <MetricCard icon="shopping_cart" tone="s" label="Total Orders" value={overview.orders.toLocaleString()} delta={overview.ordersDelta} />
-                <MetricCard icon="analytics" tone="t" label="Avg. Order Value" value={formatMoney(overview.aov, storeSettings)} delta={overview.aovDelta} />
-            </div>
-
-            {/* Bento: trend + top performers */}
-            <div className="dash-bento">
-                <section className="dash-card dash-card--chart">
-                    <div className="dash-card__head">
+            {/* Top bento: sales highlights + quick actions panel */}
+            <div className="dash-bento-top">
+                <div className="dash-highlights">
+                    {/* Revenue */}
+                    <div className="dash-stat dash-stat--feature">
+                        <div className="dash-stat__head">
+                            <span className="dash-stat__label">{overview.rangeLabel}'s Sales</span>
+                            <DeltaChip delta={overview.revenueDelta} small />
+                        </div>
                         <div>
-                            <h3 className="dash-card__title">Sales Trend</h3>
-                            <p className="dash-card__sub">Last 7 days revenue</p>
+                            <span className="dash-stat__value">{formatMoney(overview.revenue, storeSettings)}</span>
+                            <p className="dash-stat__sub">{overview.orders.toLocaleString()} transactions</p>
                         </div>
-                        <button className="crm-link" type="button" onClick={onViewSales}>View report</button>
                     </div>
-                    <TrendChart points={overview.trend} max={overview.trendMax} storeSettings={storeSettings} />
+
+                    {/* Average sale */}
+                    <div className="dash-stat">
+                        <div className="dash-stat__head">
+                            <span className="dash-stat__label">Avg. Sale</span>
+                            <DeltaChip delta={overview.aovDelta} small />
+                        </div>
+                        <div>
+                            <span className="dash-stat__value dash-stat__value--sm">{formatMoney(overview.aov, storeSettings)}</span>
+                            <p className="dash-stat__sub">Per transaction</p>
+                        </div>
+                    </div>
+
+                    {/* New customers */}
+                    <div className="dash-stat">
+                        <div className="dash-stat__head">
+                            <span className="dash-stat__label">Customers</span>
+                            <span className="dash-stat__chip"><Icon name="group" size={18} /></span>
+                        </div>
+                        <div>
+                            <span className="dash-stat__value dash-stat__value--sm">{overview.newCustomers.toLocaleString()}</span>
+                            <p className="dash-stat__sub">{overview.rangeLabel.toLowerCase()}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Quick actions — navy panel with orange primary CTA */}
+                <div className="dash-quick">
+                    <div className="dash-quick__head">
+                        <h2 className="dash-quick__title">Quick Actions</h2>
+                    </div>
+                    <div className="dash-quick__group">
+                        <button type="button" className="dash-quick__primary" onClick={onNewSale}>
+                            <Icon name="add_shopping_cart" size={22} />
+                            New Sale
+                        </button>
+                        <div className="dash-quick__row">
+                            <button type="button" className="dash-quick__btn" onClick={onInventory}>
+                                <Icon name="inventory_2" size={20} />
+                                Inventory
+                            </button>
+                            <button type="button" className="dash-quick__btn" onClick={onViewSales}>
+                                <Icon name="assessment" size={20} />
+                                Reports
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Lower bento: sales trend + recent activity */}
+            <div className="dash-lower">
+                <section className="dash-card dash-trend-card">
+                    <div className="dash-card__head">
+                        <h3 className="dash-card__title">Sales Trend</h3>
+                        <span className="dash-trend__hint">Last 7 days</span>
+                    </div>
+                    <TrendChart points={overview.trend} max={overview.trendMax} storeSettings={storeSettings} height={260} />
                 </section>
 
-                <section className="dash-card dash-card--performers">
-                    <div className="dash-card__head">
-                        <h3 className="dash-card__title">Top Performers</h3>
-                        <button className="crm-iconbtn" type="button" aria-label="More" onClick={onViewProducts}>
-                            <Icon name="more_horiz" size={22} />
-                        </button>
+                <section className="dash-card dash-activity">
+                    <div className="dash-activity__head">
+                        <h3 className="dash-card__title">Recent Activity</h3>
+                        <button type="button" className="dash-activity__viewall" onClick={onViewSales}>View All</button>
                     </div>
-                    {overview.topProducts.length === 0 ? (
-                        <div className="dash-empty">
-                            <Icon name="emoji_events" size={32} />
-                            <p>No product sales yet in this period.</p>
-                        </div>
-                    ) : (
-                        <div className="dash-performers">
-                            {overview.topProducts.map(p => (
-                                <div className="dash-product" key={p.id}>
-                                    <span className="dash-product__art">
-                                        {p.image ? <img src={p.image} alt={p.name} /> : <Icon name="inventory_2" size={22} />}
-                                    </span>
-                                    <div className="dash-product__info">
-                                        <p className="dash-product__name">{p.name}</p>
-                                        <p className="dash-product__meta">{p.units.toLocaleString()} sold</p>
+                    <div className="dash-activity__list">
+                        {overview.activity.length === 0 ? (
+                            <div className="dash-empty">
+                                <Icon name="receipt_long" size={32} />
+                                <p>No sales yet — completed transactions appear here.</p>
+                            </div>
+                        ) : (
+                            overview.activity.map(row => {
+                                const unpaid = row.status !== 'paid';
+                                return (
+                                    <div className="dash-activity__row" key={row.id}>
+                                        <span className={`dash-activity__icon${unpaid ? ' dash-activity__icon--warn' : ''}`}>
+                                            <Icon name={unpaid ? 'pending_actions' : 'receipt_long'} size={20} />
+                                        </span>
+                                        <div className="dash-activity__main">
+                                            <p className="dash-activity__name">{row.customer}</p>
+                                            <p className="dash-activity__meta">
+                                                {fmtTime(row.ts)} • {row.channel === 'online' ? 'Online' : 'POS'} • {row.itemCount} {row.itemCount === 1 ? 'item' : 'items'}
+                                            </p>
+                                        </div>
+                                        <span className="dash-activity__amount">{formatMoney(row.total, storeSettings)}</span>
                                     </div>
-                                    <div className="dash-product__right">
-                                        <p className="dash-product__rev">{formatMoney(p.revenue, storeSettings)}</p>
-                                        <DeltaChip delta={p.delta} small />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                    <button className="dash-card__cta" type="button" onClick={onViewProducts}>
-                        View product report <Icon name="arrow_forward" size={18} />
-                    </button>
+                                );
+                            })
+                        )}
+                    </div>
                 </section>
             </div>
 
-            {/* Secondary insight strip */}
-            <div className="dash-strip">
-                <div className="dash-strip__item">
-                    <span className="dash-strip__icon dash-strip__icon--p"><Icon name="group_add" size={22} /></span>
+            {/* Secondary metrics row */}
+            <div className="dash-metrics">
+                <button type="button" className="dash-mini dash-mini--btn" onClick={onViewProducts}>
+                    <span className={`dash-mini__icon ${overview.lowStockCount > 0 ? 'dash-mini__icon--s' : 'dash-mini__icon--p'}`}><Icon name="inventory" size={22} /></span>
                     <div>
-                        <p className="dash-strip__value">{overview.newCustomers.toLocaleString()}</p>
-                        <p className="dash-strip__label">New customers</p>
-                    </div>
-                </div>
-                <div className="dash-strip__item">
-                    <span className="dash-strip__icon dash-strip__icon--s"><Icon name="percent" size={22} /></span>
-                    <div>
-                        <p className="dash-strip__value">{overview.grossMargin > 0 ? `${Math.round(overview.grossMargin * 100)}%` : '—'}</p>
-                        <p className="dash-strip__label">Gross margin</p>
-                    </div>
-                </div>
-                <button type="button" className="dash-strip__item dash-strip__item--btn" onClick={onViewProducts}>
-                    <span className={`dash-strip__icon ${overview.lowStockCount + overview.outOfStockCount > 0 ? 'dash-strip__icon--e' : 'dash-strip__icon--p'}`}>
-                        <Icon name="warning" size={22} fill={1} />
-                    </span>
-                    <div>
-                        <p className="dash-strip__value">{(overview.lowStockCount + overview.outOfStockCount).toLocaleString()}</p>
-                        <p className="dash-strip__label">Stock alerts</p>
+                        <p className="dash-mini__label">Low Stock</p>
+                        <p className="dash-mini__value">{overview.lowStockCount.toLocaleString()} {overview.lowStockCount === 1 ? 'item' : 'items'}</p>
                     </div>
                 </button>
+                <button type="button" className="dash-mini dash-mini--btn" onClick={onViewProducts}>
+                    <span className={`dash-mini__icon ${overview.outOfStockCount > 0 ? 'dash-mini__icon--e' : 'dash-mini__icon--p'}`}><Icon name="production_quantity_limits" size={22} /></span>
+                    <div>
+                        <p className="dash-mini__label">Out of Stock</p>
+                        <p className="dash-mini__value">{overview.outOfStockCount.toLocaleString()} {overview.outOfStockCount === 1 ? 'item' : 'items'}</p>
+                    </div>
+                </button>
+                <button type="button" className="dash-mini dash-mini--btn" onClick={onOrders}>
+                    <span className="dash-mini__icon dash-mini__icon--t"><Icon name="shopping_cart" size={22} /></span>
+                    <div>
+                        <p className="dash-mini__label">Total Orders</p>
+                        <p className="dash-mini__value">{overview.orders.toLocaleString()}</p>
+                    </div>
+                </button>
+                {stockAlerts > 0 && <span className="sr-only">{stockAlerts} stock alerts</span>}
             </div>
-
-            {/* Quick actions */}
-            <div className="dash-section-head" style={{ marginTop: 8 }}>
-                <span className="dash-eyebrow">Quick Actions</span>
-            </div>
-            <div className="dash-actions">
-                {quickActions.map(a => (
-                    <button
-                        key={a.label}
-                        type="button"
-                        className={`dash-action${a.primary ? ' dash-action--primary' : ''}`}
-                        onClick={a.onClick}
-                    >
-                        <Icon name={a.icon} size={30} />
-                        <span>{a.label}</span>
-                    </button>
-                ))}
-            </div>
-
-            <button className="crm-fab" type="button" aria-label="New sale" onClick={onNewSale}>
-                <Icon name="add" size={26} />
-            </button>
         </main>
     );
 };

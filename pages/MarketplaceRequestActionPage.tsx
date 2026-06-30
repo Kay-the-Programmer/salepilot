@@ -74,7 +74,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
         <div className="min-h-screen bg-mesh-light flex flex-col items-center justify-center p-8">
             <HiOutlineShoppingBag className="w-16 h-16 text-brand-border mb-6" />
             <h2 className="text-2xl font-black text-brand-text">Request not found</h2>
-            <button onClick={onBack} className="mt-6 px-8 py-3 bg-sp-green text-white rounded-2xl font-bold hover:bg-sp-green-dark active:scale-95 transition-all">Go Back</button>
+            <button onClick={onBack} className="mt-6 px-8 py-3 bg-sp-amber text-white rounded-2xl font-bold hover:bg-sp-green-dark active:scale-95 transition-all">Go Back</button>
         </div>
     );
 
@@ -184,7 +184,7 @@ const MarketplaceRequestActionPage: React.FC<MarketplaceRequestActionPageProps> 
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="flex-1 py-5 bg-sp-green text-white rounded-[28px] font-black text-lg hover:bg-sp-green-dark transition-all shadow-sm flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
+                                    className="flex-1 py-5 bg-sp-amber text-white rounded-[28px] font-black text-lg hover:bg-sp-green-dark transition-all shadow-sm flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50"
                                 >
                                     {submitting ? 'Broadcasting Offer...' : (
                                         <>

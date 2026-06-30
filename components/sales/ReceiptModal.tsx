@@ -266,7 +266,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                             )}
                             <div className="flex justify-between items-end pt-3">
                                 <span className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total</span>
-                                <span className="text-3xl font-extrabold tracking-tight" style={{ color: '#008060' }}>
+                                <span className="text-3xl font-extrabold tracking-tight" style={{ color: '#002b6b' }}>
                                     {formatCurrency(total, storeSettings)}
                                 </span>
                             </div>
@@ -299,7 +299,7 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                     </button>
                     <button
                         onClick={handlePrint}
-                        className="flex-1 py-3.5 bg-primary hover:bg-primary-dark text-white rounded-2xl text-[15px] font-bold tracking-wide shadow-lg shadow-primary/25 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                        className="flex-1 py-3.5 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl text-[15px] font-bold tracking-wide shadow-lg shadow-primary/25 flex items-center justify-center gap-2 active:scale-95 transition-all"
                     >
                         <PosIcon name="print" size={20} />
                         Print Receipt

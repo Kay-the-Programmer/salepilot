@@ -157,7 +157,7 @@ export default function MarketplacePage() {
                         </div>
                         <button
                             onClick={() => setIsShippingModalOpen(false)}
-                            className="w-full mt-8 py-3 bg-sp-green text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-sp-green-dark transition-colors active:scale-95"
+                            className="w-full mt-8 py-3 bg-sp-amber text-white rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-sp-green-dark transition-colors active:scale-95"
                         >
                             Got it
                         </button>

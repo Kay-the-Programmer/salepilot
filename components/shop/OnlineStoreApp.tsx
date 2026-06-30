@@ -1,11 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
 import {
-    Store, Link2, Copy, ExternalLink, Send, CalendarClock, LayoutGrid, LogOut, Check, Megaphone,
+    Link2, Copy, ExternalLink, Send, CalendarClock, Check, Megaphone,
 } from 'lucide-react';
 import { StoreSettings, User } from '../../types';
 import { whatsappService, WhatsAppStatus } from '../../services/whatsappService';
 import { whatsappCampaignService } from '../../services/whatsappCampaignService';
+import StandaloneTopBar from '../standalone/StandaloneTopBar';
 
 interface OnlineStoreAppProps {
     user: User;
@@ -17,7 +18,7 @@ interface OnlineStoreAppProps {
 
 const card = 'bg-surface border border-brand-border rounded-2xl shadow-sm';
 const btn = 'inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed';
-const btnPrimary = `${btn} bg-sp-green text-white hover:bg-sp-green-dark`;
+const btnPrimary = `${btn} bg-sp-amber text-white hover:bg-sp-green-dark`;
 const btnGhost = `${btn} bg-surface-variant text-brand-text hover:brightness-95`;
 const input = 'w-full px-4 py-2.5 rounded-xl border border-brand-border bg-surface-container-lowest text-brand-text focus:ring-2 focus:ring-sp-green/30 focus:border-sp-green outline-none';
 
@@ -28,7 +29,7 @@ const SEGMENTS = [
     { id: 'vip', label: 'VIP spenders' },
 ];
 
-export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSettings, onDiscover, onLogout, showSnackbar }) => {
+export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSettings, onLogout, showSnackbar }) => {
     const storeId = user?.currentStoreId || '';
     const storeName = storeSettings?.name || 'Your store';
     const enabled = (storeSettings as any)?.isOnlineStoreEnabled !== false;
@@ -87,22 +88,16 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
 
     return (
         <div className="h-full flex flex-col bg-background overflow-hidden">
-            <header className="px-4 sm:px-6 py-3 flex items-center justify-between border-b border-brand-border bg-surface shrink-0">
-                <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2 bg-sp-green rounded-lg text-white shrink-0"><Store className="w-5 h-5" /></div>
-                    <div className="min-w-0">
-                        <h1 className="text-lg font-extrabold tracking-tight text-brand-text leading-tight">Online Store</h1>
-                        <p className="text-xs text-brand-text-muted truncate">{storeName}</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-2">
+            <StandaloneTopBar
+                className="relative flex-shrink-0 flex items-center justify-between border-b border-brand-border bg-surface px-3 h-16 z-20"
+                currentRoute="store"
+                onLogout={onLogout}
+                rightExtra={
                     <span className={`hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${enabled ? 'bg-success-muted text-success' : 'bg-surface-variant text-brand-text-muted'}`}>
                         <span className={`w-2 h-2 rounded-full ${enabled ? 'bg-sp-green' : 'bg-brand-text-muted'}`} /> {enabled ? 'Live' : 'Offline'}
                     </span>
-                    <button className={btnGhost} onClick={onDiscover} title="Discover apps"><LayoutGrid className="w-4 h-4" /></button>
-                    <button className={btnGhost} onClick={onLogout} title="Logout"><LogOut className="w-4 h-4" /></button>
-                </div>
-            </header>
+                }
+            />
 
             <main className="flex-1 overflow-y-auto p-4 sm:p-6">
                 <div className="max-w-3xl mx-auto grid grid-cols-1 gap-5">

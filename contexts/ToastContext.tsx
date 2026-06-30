@@ -42,7 +42,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
             {children}
             {/* Stacked Snackbar Container */}
             {toasts.length > 0 && (
-                <div className="snackbar-stack fixed left-4 right-4 top-4 md:top-auto md:right-auto md:bottom-6 md:left-6 z-[200] md:max-w-md flex flex-col-reverse md:flex-col gap-3 pointer-events-none">
+                <div className="snackbar-stack fixed top-4 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] max-w-sm flex flex-col gap-3 pointer-events-none">
                     {toasts.map((toast, index) => (
                         <div
                             key={toast.id}

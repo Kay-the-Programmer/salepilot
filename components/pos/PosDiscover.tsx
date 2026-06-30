@@ -4,7 +4,9 @@ import { User, StoreSettings } from '../../types';
 import { getAccessibleNavItems } from '../Sidebar';
 import PosIcon from '../sales/PosIcon';
 import AssistantCharacter from './AssistantCharacter';
-import { hasModule, MODULES, isPageEntitled, MARKETING_COMING_SOON } from '../../utils/entitlements';
+import { hasModule, MODULES, isPageEntitled } from '../../utils/entitlements';
+import { STANDALONE_APPS } from '../standalone/standaloneApps';
+import { useUpsell } from '../../contexts/UpsellContext';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
 import './discover.css';
@@ -21,18 +23,18 @@ interface PosDiscoverProps {
 }
 
 type Tint = [string, string];
-const DEFAULT_TINT: Tint = ['#0c8f6e', '#00654b'];
+const DEFAULT_TINT: Tint = ['#1a428a', '#002b6b'];
 
 /** Per-app brand colours — a curated, premium palette for the icon tiles so the
  *  whole launcher reads as one consistent product family. */
 const TINTS: Record<string, Tint> = {
-    superadmin: ['#10a37d', '#00513c'],
-    dash: ['#12a37d', '#00654b'],
-    hustle: ['#f0a93c', '#d4820a'],
+    superadmin: ['#3b5aa0', '#002b6b'],
+    dash: ['#1a428a', '#002b6b'],
+    hustle: ['#ff9a52', '#ff7f27'],
     assistant: ['#7b7bf0', '#4b4bc9'],
     crm: ['#e0728f', '#b83a66'],
     marketing: ['#3b82f6', '#1e40af'],
-    store: ['#0e9c78', '#00654b'],
+    store: ['#1a428a', '#002b6b'],
     businesses: ['#7d8aa0', '#3e4944'],
     inv: ['#1fb0a0', '#0c6f66'],
     team: ['#5aa0f2', '#2f6fd0'],
@@ -46,7 +48,7 @@ const TINTS: Record<string, Tint> = {
     notify: ['#ef7070', '#d64545'],
     account: ['#5ab0f2', '#2f8fd0'],
     // raw pages
-    reports: ['#12a37d', '#00513c'],
+    reports: ['#3b5aa0', '#002b6b'],
     pos: ['#34b27b', '#0c8f6e'],
     directory: ['#b07ce0', '#8a4fd0'],
     'user-guide': ['#5aa0f2', '#2f6fd0'],
@@ -69,31 +71,6 @@ const DESCRIPTIONS: Record<string, string> = {
     'directory': 'Marketplace & requests',
     'user-guide': 'Help & documentation',
 };
-
-type AppDef = { name: string; page: string; route: string; desc: string; iconName: string; requires: string; module?: string; comingSoon?: boolean };
-
-// Standalone apps that open in their own focused shell.
-const STANDALONE_APPS: AppDef[] = [
-    { name: 'Super Admin', page: 'superadmin', route: 'superadmin', desc: 'Platform control center', iconName: 'admin_panel_settings', requires: 'superadmin' },
-    { name: 'Business Dashboard', page: 'dash', route: 'dash', desc: 'Sales, trends & insights', iconName: 'monitoring', requires: 'reports' },
-    { name: 'Hustle POS', page: 'hustle', route: 'hustle', desc: 'Fast amount-entry sales', iconName: 'bolt', requires: 'sales' },
-    { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
-    { name: 'CRM', page: 'crm', route: 'crm', desc: 'Customers, loyalty & insights', iconName: 'diversity_3', requires: 'customers' },
-    { name: 'Marketing Suite', page: 'marketing', route: 'marketing', desc: 'Facebook posts, comments & insights', iconName: 'campaign', requires: 'marketing', comingSoon: MARKETING_COMING_SOON },
-    { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Storefront link, QR & catalog sharing', iconName: 'storefront', requires: 'online-store' },
-    { name: 'My Businesses', page: 'businesses', route: 'businesses', desc: 'Run multiple shops from one account', iconName: 'domain', requires: 'businesses' },
-    { name: 'Inventory Manager', page: 'inv', route: 'inv', desc: 'Stock value, alerts & items', iconName: 'inventory_2', requires: 'inventory' },
-    { name: 'User Manager', page: 'team', route: 'team', desc: 'Team members, roles & access', iconName: 'manage_accounts', requires: 'users' },
-    { name: 'Procurement Hub', page: 'procure', route: 'procure', desc: 'Suppliers & purchase orders', iconName: 'local_shipping', requires: 'suppliers' },
-    { name: 'Accounting Hub', page: 'books', route: 'books', desc: 'Ledger, expenses & reports', iconName: 'account_balance', requires: 'accounting' },
-    { name: 'Logistics', page: 'fleet', route: 'fleet', desc: 'Shipments, couriers & fleet', iconName: 'local_shipping', requires: 'logistics' },
-    { name: 'Purchase Orders', page: 'po', route: 'po', desc: 'Order lists & supplier POs', iconName: 'shopping_cart_checkout', requires: 'purchase-orders' },
-    { name: 'Subscription', page: 'subscription', route: 'subscription', desc: 'Plan, billing & modules', iconName: 'card_membership', requires: 'subscription' },
-    { name: 'Settings', page: 'config', route: 'config', desc: 'Store, POS & system config', iconName: 'settings', requires: 'settings' },
-    { name: 'Audit Trail', page: 'audit', route: 'audit', desc: 'Activity log & alerts', iconName: 'manage_search', requires: 'audit-trail' },
-    { name: 'Notifications', page: 'notify', route: 'notify', desc: 'Alerts & messages', iconName: 'notifications', requires: 'notifications' },
-    { name: 'Account', page: 'account', route: 'account', desc: 'Profile & preferences', iconName: 'account_circle', requires: 'profile' },
-];
 
 type Feature = {
     requires: string; route: string; module?: string; premium?: boolean;
@@ -131,6 +108,21 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
     );
 
     const [query, setQuery] = useState('');
+
+    // ── Contextual upsell tile (discover_card surface) ────────────────────────
+    const { getEligible, recordShown, recordClick, getPrice } = useUpsell();
+    const discoverMoment = getEligible('discover_card');
+    const discoverPrice = discoverMoment ? getPrice(discoverMoment.module) : null;
+    useEffect(() => {
+        if (discoverMoment) recordShown(discoverMoment);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [discoverMoment?.id]);
+    const openUpsell = () => {
+        if (!discoverMoment) return;
+        recordClick(discoverMoment);
+        onLaunch(`subscription?view=addons&module=${encodeURIComponent(discoverMoment.module)}`);
+    };
+
     const greeting = (() => {
         const h = new Date().getHours();
         if (h < 12) return 'Good morning';
@@ -361,8 +353,21 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                             </section>
                         )}
 
-                        {/* Upgrade / cross-sell banner */}
-                        {!q && (
+                        {/* Upgrade / cross-sell banner — contextual when the engine has a
+                            discover_card moment, otherwise the generic promo. */}
+                        {!q && (discoverMoment ? (
+                            <button type="button" className="dpromo" onClick={openUpsell}>
+                                <span className="dpromo__icon"><PosIcon name="workspace_premium" size={26} fill={1} /></span>
+                                <span className="dpromo__body">
+                                    <span className="dpromo__title">{discoverMoment.headline}</span>
+                                    <span className="dpromo__text">
+                                        {discoverMoment.body}
+                                        {discoverPrice ? ` From ${discoverPrice.currency === 'ZMW' ? 'K' : `${discoverPrice.currency} `}${discoverPrice.price.toLocaleString()}/mo.` : ''}
+                                    </span>
+                                </span>
+                                <span className="dpromo__cta">{discoverMoment.ctaLabel} <PosIcon name="arrow_forward" size={18} /></span>
+                            </button>
+                        ) : (
                             <button type="button" className="dpromo" onClick={() => onLaunch('subscription')}>
                                 <span className="dpromo__icon"><PosIcon name="rocket_launch" size={26} fill={1} /></span>
                                 <span className="dpromo__body">
@@ -371,7 +376,7 @@ export const PosDiscover: React.FC<PosDiscoverProps> = ({ user, allowedPages, st
                                 </span>
                                 <span className="dpromo__cta">Explore plans <PosIcon name="arrow_forward" size={18} /></span>
                             </button>
-                        )}
+                        ))}
 
                         {moreFiltered.length > 0 && (
                             <section className="ddisc__section">

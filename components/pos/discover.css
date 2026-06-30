@@ -10,7 +10,7 @@
   min-height: 100%;
   flex: 1;
   background:
-    radial-gradient(1200px 420px at 100% -10%, rgba(0, 128, 96, 0.06), transparent 60%),
+    radial-gradient(1200px 420px at 100% -10%, rgba(0, 43, 107, 0.06), transparent 60%),
     radial-gradient(900px 380px at -10% 0%, rgba(212, 130, 10, 0.05), transparent 55%),
     var(--v2-color-bg);
 }
@@ -178,7 +178,7 @@
   width: 50px; height: 50px;
   background: var(--v2-color-primary); color: var(--v2-color-on-primary);
   border-color: transparent;
-  box-shadow: 0 6px 16px -4px rgba(0, 128, 96, 0.5);
+  box-shadow: 0 6px 16px -4px rgba(0, 43, 107, 0.5);
 }
 .dfeat__pause:hover { background: var(--v2-color-primary-hover); }
 
@@ -256,8 +256,8 @@
   padding: 3px 8px; border-radius: var(--v2-radius-pill); color: #fff;
   box-shadow: 0 2px 6px rgba(26, 26, 46, 0.2);
 }
-.dapptile__tag--new { background: linear-gradient(135deg, #12a37d, #00654b); }
-.dapptile__tag--popular { background: linear-gradient(135deg, #f0a93c, #d4820a); }
+.dapptile__tag--new { background: linear-gradient(135deg, #1a428a, #002b6b); }
+.dapptile__tag--popular { background: linear-gradient(135deg, #ff9a52, #ff7f27); }
 .dapptile__tag--soon { background: linear-gradient(135deg, #8a93a6, #5b6478); }
 
 /* Coming-soon apps: muted icon + a non-actionable "Coming Soon" CTA. */
@@ -278,8 +278,8 @@
   border: none; cursor: pointer; text-align: left; font-family: inherit;
   border-radius: var(--v2-radius-lg);
   color: #fff;
-  background: linear-gradient(120deg, #006e52, #00654b 55%, #014634);
-  box-shadow: 0 14px 30px -12px rgba(0, 101, 75, 0.6);
+  background: linear-gradient(120deg, #1a428a, #002b6b 55%, #001331);
+  box-shadow: 0 14px 30px -12px rgba(0, 43, 107, 0.6);
   overflow: hidden;
   transition: transform var(--v2-duration) var(--v2-ease), box-shadow var(--v2-duration) var(--v2-ease);
 }
@@ -327,7 +327,7 @@
 .dtip__icon {
   width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--v2-radius-md);
   display: inline-flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #12a37d, #00654b); color: #fff;
+  background: linear-gradient(135deg, #1a428a, #002b6b); color: #fff;
 }
 .dtip__body { flex: 1; min-width: 0; }
 .dtip__title { display: flex; align-items: center; gap: 8px; font-size: var(--v2-text-sm); font-weight: var(--v2-weight-heavy); color: var(--v2-color-ink); margin: 0 0 2px; }

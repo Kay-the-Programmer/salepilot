@@ -10,12 +10,23 @@ import { num, parseApiDate } from '../crm/crmModel';
 
 export type DashPeriod = 'today' | 'week' | 'month';
 
+/** A reporting range: one of the quick presets, or a custom calendar range. */
+export type DashRange =
+    | { kind: 'preset'; preset: DashPeriod }
+    | { kind: 'custom'; start: number; end: number }; // [start, end) epoch ms
+
+export const presetRange = (preset: DashPeriod): DashRange => ({ kind: 'preset', preset });
+
 const DAY = 86400000;
 
-/** Inclusive-start, exclusive-end window for a period, plus the matching prior window. */
-const windowFor = (period: DashPeriod, now: number): { start: number; prevStart: number } => {
-    const span = period === 'today' ? DAY : period === 'week' ? 7 * DAY : 30 * DAY;
-    return { start: now - span, prevStart: now - 2 * span };
+/** Inclusive-start, exclusive-end window for a range, plus the matching prior window. */
+const rangeWindow = (range: DashRange, now: number): { start: number; end: number; prevStart: number; prevEnd: number } => {
+    if (range.kind === 'custom') {
+        const span = Math.max(DAY, range.end - range.start);
+        return { start: range.start, end: range.end, prevStart: range.start - span, prevEnd: range.start };
+    }
+    const span = range.preset === 'today' ? DAY : range.preset === 'week' ? 7 * DAY : 30 * DAY;
+    return { start: now - span, end: now, prevStart: now - 2 * span, prevEnd: now - span };
 };
 
 /** Net value of a sale (total less anything refunded). */
@@ -55,6 +66,8 @@ export interface ActivityRow {
 
 export interface DashboardOverview {
     period: DashPeriod;
+    /** Human label for the active range (preset name or formatted custom dates). */
+    rangeLabel: string;
     revenue: number;
     orders: number;
     aov: number;
@@ -89,13 +102,13 @@ export const buildDashboard = (
     products: Product[],
     customers: Customer[],
     _storeSettings: StoreSettings | null,
-    period: DashPeriod = 'week',
+    range: DashRange = { kind: 'preset', preset: 'week' },
     now = Date.now(),
 ): DashboardOverview => {
-    const { start, prevStart } = windowFor(period, now);
+    const { start, end, prevStart, prevEnd } = rangeWindow(range, now);
 
-    const current = sales.filter(s => inRange(s, start, now));
-    const prior = sales.filter(s => inRange(s, prevStart, start));
+    const current = sales.filter(s => inRange(s, start, end));
+    const prior = sales.filter(s => inRange(s, prevStart, prevEnd));
 
     const revenue = current.reduce((sum, s) => sum + saleNet(s), 0);
     const prevRevenue = prior.reduce((sum, s) => sum + saleNet(s), 0);
@@ -125,7 +138,7 @@ export const buildDashboard = (
     // New customers in the current window.
     const newCustomers = customers.filter(c => {
         const d = parseApiDate(c.createdAt);
-        return d && d.getTime() >= start && d.getTime() < now;
+        return d && d.getTime() >= start && d.getTime() < end;
     }).length;
 
     // 7-day trend (always a weekday sparkline regardless of headline period).
@@ -201,7 +214,8 @@ export const buildDashboard = (
     }
 
     return {
-        period,
+        period: range.kind === 'preset' ? range.preset : 'today',
+        rangeLabel: rangeLabel(range),
         revenue,
         orders,
         aov,
@@ -223,4 +237,13 @@ export const PERIOD_LABEL: Record<DashPeriod, string> = {
     today: 'Today',
     week: 'This Week',
     month: 'This Month',
+};
+
+/** Short human label for a range — preset name, or formatted custom date(s). */
+export const rangeLabel = (range: DashRange): string => {
+    if (range.kind === 'preset') return PERIOD_LABEL[range.preset];
+    const fmt = (t: number) => new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    // `end` is exclusive — show the inclusive last day.
+    if (range.end - range.start <= DAY) return fmt(range.start);
+    return `${fmt(range.start)} – ${fmt(range.end - DAY)}`;
 };

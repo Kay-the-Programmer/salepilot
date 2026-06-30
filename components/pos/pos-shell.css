@@ -347,10 +347,6 @@
   .posdash__body { padding-bottom: calc(var(--pos-nav-h) + var(--v2-space-8)); }
 }
 
-/* Inside the POS shell, the shared bottom nav replaces the drawer hamburger on
-   mobile, so hide the per-page menu buttons (POS / Dashboard / Discover).
-   (Admin context — e.g. /sales — is not inside .posshell, so it keeps its hamburger.) */
-.posshell .sale__menu,
-.posshell .posdash__menu {
-  display: none;
-}
+/* The per-page top-left buttons stay visible inside the POS shell: SalesPage's
+   app switcher and the Dashboard/Discover drawer hamburger are the mobile nav
+   now that the bottom bar is gone (the desktop rail takes over above 860px). */

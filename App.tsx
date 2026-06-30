@@ -1,12 +1,12 @@
 export type SnackbarType = 'success' | 'error' | 'info' | 'warning' | 'sync';
 import { lazy, Suspense, useEffect } from 'react';
 import { ToastProvider } from './contexts/ToastContext';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
-import ThemeToggle from './components/ThemeToggle';
 import ErrorBoundary from './components/ErrorBoundary';
 import PaywallHost from './components/PaywallHost';
+import { LogoutModalProvider } from './contexts/LogoutModalContext';
 
 // Lazy load route components
 const Dashboard = lazy(() => import('@/Dashboard'));
@@ -51,6 +51,7 @@ export default function App() {
                 <div className="flex flex-col h-screen overflow-hidden dark:bg-slate-950 transition-colors duration-200">
                     <TitleBar />
                     <div className="flex-1 overflow-auto">
+                      <LogoutModalProvider>
                       <ErrorBoundary name="routes">
                         <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
                             <Routes>
@@ -127,7 +128,8 @@ export default function App() {
                                 <Route path="/sales-history" element={<Dashboard />} />
 
                                 <Route path="/returns" element={<Dashboard />} />
-                                <Route path="/customers" element={<Dashboard />} />
+                                {/* The admin /customers page was removed — customers now live in the CRM app. */}
+                                <Route path="/customers" element={<Navigate to="/crm/customers" replace />} />
                                 <Route path="/suppliers" element={<Dashboard />} />
                                 <Route path="/purchase-orders" element={<Dashboard />} />
                                 <Route path="/categories" element={<Dashboard />} />
@@ -184,11 +186,11 @@ export default function App() {
                             </Routes>
                         </Suspense>
                       </ErrorBoundary>
+                      </LogoutModalProvider>
 
                     </div>
 
-                    {/* Global, always-visible light/dark switch */}
-                    <ThemeToggle />
+                    {/* Theme control now lives in each app's top bar / nav rail (no floating switch). */}
 
                     {/* Global soft paywall — pops an upgrade prompt on a 402 (locked add-on) */}
                     <PaywallHost />

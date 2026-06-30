@@ -80,7 +80,7 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, stackIndex 
             className={`
                 snackbar-container
                 ${isStandalone
-                    ? 'fixed left-4 right-4 top-4 md:top-auto md:right-auto md:bottom-6 md:left-6 z-[200] md:max-w-sm'
+                    ? 'fixed top-4 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] max-w-sm'
                     : 'relative w-full'
                 }
                 bg-surface

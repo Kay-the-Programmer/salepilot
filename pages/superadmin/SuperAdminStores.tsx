@@ -533,7 +533,7 @@ const SuperAdminStores: React.FC = () => {
                                                 key={pageNum}
                                                 onClick={() => setCurrentPage(pageNum)}
                                                 className={`w-8 h-8 flex items-center justify-center text-sm font-semibold rounded-lg transition-colors ${currentPage === pageNum
-                                                    ? 'bg-sp-green text-white shadow-sm'
+                                                    ? 'bg-sp-amber text-white shadow-sm'
                                                     : 'text-brand-text hover:bg-surface-variant'
                                                     }`}
                                             >

@@ -46,31 +46,45 @@ export default {
                     muted:   'rgb(var(--color-info-muted) / <alpha-value>)',
                 },
 
-                /* ── Warm neutral palette (Confident Clarity) ── */
+                /* ── Cool neutral palette (Velocity POS) ── */
                 warm: {
-                    50:  '#FDFCFA',
-                    100: '#F9F7F4',
-                    200: '#F2EFE9',
-                    300: '#E5E0D8',
-                    400: '#C9C4BA',
-                    500: '#9A9488',
-                    600: '#706A60',
-                    700: '#4A4640',
-                    800: '#2E2B27',
-                    900: '#1A1A2E',
+                    50:  '#F7FAFC', /* surface / background */
+                    100: '#F1F4F6', /* surface-container-low */
+                    200: '#EBEEF0', /* surface-container */
+                    300: '#E0E3E5', /* surface-container-highest */
+                    400: '#C4C6D2', /* outline-variant */
+                    500: '#747782', /* outline */
+                    600: '#434651', /* on-surface-variant */
+                    700: '#2D3133', /* inverse-surface */
+                    800: '#181C1E', /* on-surface ink */
+                    900: '#0F1214',
                 },
 
-                /* ── SalePilot brand statics ── */
+                /* ── Velocity brand statics ──
+                   Names kept (sp-green / sp-amber) so existing usages follow:
+                   sp-green now = Deep Navy primary, sp-amber now = Vibrant Orange. */
                 'sp-green': {
-                    DEFAULT: '#008060',
-                    light:   '#00AF85',
-                    dark:    '#00644B',
-                    soft:    '#E6F5F0',
+                    DEFAULT: '#002B6B', /* Deep Navy */
+                    light:   '#1A428A',
+                    dark:    '#001944',
+                    soft:    '#D9E2FF',
                 },
                 'sp-amber': {
-                    DEFAULT: '#D4820A',
-                    light:   '#F4A627',
-                    soft:    '#FEF3C7',
+                    DEFAULT: '#FF7F27', /* Vibrant Orange */
+                    light:   '#FFB68E',
+                    soft:    '#FFDBC9',
+                },
+                /* Forward-looking semantic aliases for the Velocity brand */
+                'sp-navy': {
+                    DEFAULT: '#002B6B',
+                    light:   '#1A428A',
+                    dark:    '#001944',
+                    soft:    '#D9E2FF',
+                },
+                'sp-orange': {
+                    DEFAULT: '#FF7F27',
+                    light:   '#FFB68E',
+                    soft:    '#FFDBC9',
                 },
             },
         },

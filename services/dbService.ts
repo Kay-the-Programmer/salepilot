@@ -4,19 +4,37 @@ const DB_NAME = 'SalePilotDB';
 const DB_VERSION = 11;
 const STORES = ['products', 'categories', 'customers', 'suppliers', 'sales', 'returns', 'purchaseOrders', 'supplierInvoices', 'users', 'accounts', 'journalEntries', 'auditLogs', 'settings', 'syncQueue', 'accounting', 'reports', 'announcements', 'marketStores', 'marketProducts', 'marketRequests', 'couriers', 'buses', 'shipments', 'aiHistory'];
 
-const STORE_KEY_PATHS: { [key: string]: string } = {
+export const STORE_KEY_PATHS: { [key: string]: string } = {
     sales: 'transactionId',
 };
 
+/** Generate a stable idempotency key reused across every retry of a mutation. */
+export function genClientRequestId(): string {
+    try {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+    } catch { /* fall through */ }
+    return `cid-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+}
 
 export interface SyncQueueItem {
     id?: number;
+    /** Idempotency key, reused across every retry so the server can dedupe replays. */
+    clientRequestId: string;
     endpoint: string;
-    options: any; // Serialized options
+    options: any; // Serialized RequestInit (+ optimistic-cleanup hints)
     timestamp: number;
-    retries?: number;
+    retries: number;
+    /** After this many failed attempts the item is dead-lettered (status 'failed'). */
+    maxRetries: number;
+    /** Epoch ms before which this item must not be retried (exponential backoff gate). */
+    nextAttemptAt: number;
     lastError?: string;
+    /** 'pending' = eligible, 'syncing' = in flight, 'failed' = dead-lettered (needs attention). */
     status: 'pending' | 'syncing' | 'failed';
+    /** Friendly label for UI/logging, e.g. 'sale', 'product'. */
+    entity?: string;
 }
 
 class DBService {
@@ -183,26 +201,24 @@ class DBService {
         });
     }
 
-    // Sync Queue methods
-    async addMutationToQueue(endpoint: string, options: any): Promise<void> {
+    // ── Sync Queue ───────────────────────────────────────────────────────────
+    async addMutationToQueue(
+        endpoint: string,
+        options: any,
+        meta: { clientRequestId?: string; maxRetries?: number; entity?: string } = {}
+    ): Promise<void> {
         const item: Omit<SyncQueueItem, 'id'> = {
+            clientRequestId: meta.clientRequestId || genClientRequestId(),
             endpoint,
             options,
             timestamp: Date.now(),
             retries: 0,
-            status: 'pending'
+            maxRetries: meta.maxRetries ?? 8,
+            nextAttemptAt: 0,
+            status: 'pending',
+            entity: meta.entity,
         };
         await this.put('syncQueue', item);
-    }
-
-    async markMutationFailed(id: number, error: string): Promise<void> {
-        const item = await this.get<SyncQueueItem>('syncQueue', id);
-        if (item) {
-            item.status = 'failed';
-            item.lastError = error;
-            item.retries = (item.retries || 0) + 1;
-            await this.put('syncQueue', item);
-        }
     }
 
     async markMutationSyncing(id: number): Promise<void> {
@@ -213,13 +229,83 @@ class DBService {
         }
     }
 
+    /** Transient failure: keep the item pending and gate the next retry behind a backoff. */
+    async backoffMutation(id: number, retries: number, nextAttemptAt: number, error: string): Promise<void> {
+        const item = await this.get<SyncQueueItem>('syncQueue', id);
+        if (item) {
+            item.status = 'pending';
+            item.retries = retries;
+            item.nextAttemptAt = nextAttemptAt;
+            item.lastError = error;
+            await this.put('syncQueue', item);
+        }
+    }
+
+    /** Permanent failure (4xx or retries exhausted): dead-letter so it stops retrying and surfaces to the user. */
+    async deadLetterMutation(id: number, error: string): Promise<void> {
+        const item = await this.get<SyncQueueItem>('syncQueue', id);
+        if (item) {
+            item.status = 'failed';
+            item.lastError = error;
+            item.retries = (item.retries || 0) + 1;
+            await this.put('syncQueue', item);
+        }
+    }
+
+    /** Recover items left mid-flight by a crash/reload so they aren't skipped forever. */
+    async requeueStaleSyncing(): Promise<number> {
+        const all = await this.getQueuedMutations();
+        let n = 0;
+        for (const it of all) {
+            if (it.status === 'syncing' && it.id != null) {
+                it.status = 'pending';
+                await this.put('syncQueue', it);
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** Reset every dead-lettered item to pending — backs a "retry failed changes" action. */
+    async retryDeadLetters(): Promise<number> {
+        const all = await this.getQueuedMutations();
+        let n = 0;
+        for (const it of all) {
+            if (it.status === 'failed' && it.id != null) {
+                it.status = 'pending';
+                it.retries = 0;
+                it.nextAttemptAt = 0;
+                it.lastError = undefined;
+                await this.put('syncQueue', it);
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** Count of items still trying to sync (pending or in-flight, excludes dead-lettered). */
+    async getActiveMutationCount(): Promise<number> {
+        const all = await this.getQueuedMutations();
+        return all.filter(i => i.status !== 'failed').length;
+    }
+
+    async getDeadLetterCount(): Promise<number> {
+        const all = await this.getQueuedMutations();
+        return all.filter(i => i.status === 'failed').length;
+    }
+
     async getQueuedMutations(): Promise<SyncQueueItem[]> {
         return this.getAll<SyncQueueItem>('syncQueue');
     }
 
     async deleteQueuedMutation(id: number): Promise<void> {
-        const store = await this.getStore('syncQueue', 'readwrite');
-        const request = store.delete(id);
+        await this.deleteFromStore('syncQueue', id);
+    }
+
+    /** Remove a single record from any store by key (used to clear optimistic placeholders). */
+    async deleteFromStore(storeName: string, key: any): Promise<void> {
+        const store = await this.getStore(storeName, 'readwrite');
+        const request = store.delete(key);
         return new Promise((resolve, reject) => {
             request.onsuccess = () => resolve();
             request.onerror = () => reject(request.error);

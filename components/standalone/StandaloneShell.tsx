@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../contexts/ThemeContext';
 import { getCurrentUser } from '../../services/authService';
 import '../../pages/assistant/assistant.css';
+import AppSwitcher from './AppSwitcher';
+import AppNavMenu from './AppNavMenu';
+import Logo from '../../assets/logo.png';
 
 export interface ShellNavItem {
   icon: string;
@@ -33,7 +36,6 @@ interface StandaloneShellProps {
  * with the POS / Assistant theme.
  */
 const StandaloneShell: React.FC<StandaloneShellProps> = ({
-  icon,
   title,
   scopeClass,
   headerActions,
@@ -49,18 +51,19 @@ const StandaloneShell: React.FC<StandaloneShellProps> = ({
   return (
     <div className={`sp-assistant ${scopeClass || ''} h-full flex flex-col overflow-hidden`}>
       {/* Top app bar */}
-      <header className="flex-shrink-0 h-16 m3-bg-surface shadow-sm flex items-center justify-between px-4 md:px-8 z-20 sticky top-0">
-        <div className="flex items-center gap-1.5 min-w-0">
+      <header className="relative flex-shrink-0 h-16 m3-bg-surface shadow-sm flex items-center justify-between px-4 md:px-8 z-20 sticky top-0">
+        <h1 className="sr-only">{title}</h1>
+        <div className="flex items-center gap-1 min-w-0">
+          <AppSwitcher user={user} triggerClassName="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" />
           <button
             onClick={() => (onBack ? onBack() : navigate(-1))}
-            className="w-9 h-9 -ml-1 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90"
+            className="w-9 h-9 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90"
             title="Back"
           >
             <span className="material-symbols-outlined" style={{ fontSize: 22 }}>arrow_back</span>
           </button>
-          <span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 26 }}>{icon}</span>
-          <h1 className="text-lg md:text-xl font-bold m3-text-primary tracking-tight truncate">{title}</h1>
         </div>
+        <img src={Logo} alt="SalePilot" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-auto pointer-events-none" />
         <div className="flex items-center gap-1">
           {headerActions}
           <button onClick={() => navigate('/pos/discover')} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title="Discover apps">
@@ -77,21 +80,6 @@ const StandaloneShell: React.FC<StandaloneShellProps> = ({
         {children}
       </main>
 
-      {/* Mobile bottom navigation */}
-      {navItems && navItems.length > 0 && (
-        <nav className="md:hidden flex-shrink-0 m3-bg-surface shadow-[0_-4px_10px_rgba(0,0,0,0.05)] rounded-t-xl h-[68px] flex justify-around items-center z-20">
-          {navItems.map((n) => (
-            <button
-              key={n.label}
-              onClick={n.onClick}
-              className={`flex flex-col items-center justify-center px-4 py-1 rounded-2xl transition active:scale-90 ${n.active ? 'm3-bg-primary-fixed m3-text-primary' : 'm3-text-on-surface-variant hover:m3-text-primary'}`}
-            >
-              <span className="material-symbols-outlined" style={{ fontSize: 24, fontVariationSettings: n.active ? "'FILL' 1" : undefined }}>{n.icon}</span>
-              <span className="text-[11px] font-medium mt-0.5">{n.label}</span>
-            </button>
-          ))}
-        </nav>
-      )}
     </div>
   );
 };

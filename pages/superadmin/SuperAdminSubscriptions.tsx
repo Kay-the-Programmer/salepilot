@@ -226,7 +226,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                         </button>
                         <button
                             onClick={() => openPaymentModal()}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-sp-green text-white font-bold rounded-xl hover:bg-sp-green-dark transition-all shadow-sm active:scale-95"
+                            className="flex items-center gap-2 px-4 py-2.5 bg-sp-amber text-white font-bold rounded-xl hover:bg-sp-green-dark transition-all shadow-sm active:scale-95"
                         >
                             <PlusIcon className="w-4 h-4" />
                             Record Payment
@@ -661,7 +661,7 @@ const SuperAdminSubscriptions: React.FC = () => {
                                             <button
                                                 type="submit"
                                                 disabled={processing || !selectedStore || !paymentForm.amount}
-                                                className="flex-1 py-3 bg-sp-green text-white font-bold rounded-xl hover:bg-sp-green-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
+                                                className="flex-1 py-3 bg-sp-amber text-white font-bold rounded-xl hover:bg-sp-green-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95"
                                             >
                                                 {processing ? (
                                                     <>

@@ -336,7 +336,7 @@ const SuperAdminNotifications: React.FC = () => {
                                 <button
                                     type="submit"
                                     disabled={sending || !title.trim() || !message.trim()}
-                                    className="w-full flex items-center justify-center gap-2 h-12 bg-sp-green text-white font-bold rounded-xl shadow-sm transition-all hover:bg-sp-green-dark active:scale-95 disabled:opacity-50"
+                                    className="w-full flex items-center justify-center gap-2 h-12 bg-sp-amber text-white font-bold rounded-xl shadow-sm transition-all hover:bg-sp-green-dark active:scale-95 disabled:opacity-50"
                                 >
                                     {sending ? (
                                         <>
@@ -389,7 +389,7 @@ const SuperAdminNotifications: React.FC = () => {
                                         <button
                                             onClick={() => setShowFilters(!showFilters)}
                                             className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border transition-all active:scale-95 ${showFilters
-                                                ? 'bg-sp-green text-white border-sp-green shadow-sm'
+                                                ? 'bg-sp-amber text-white border-sp-green shadow-sm'
                                                 : 'bg-surface text-brand-text-muted border-brand-border hover:bg-surface-variant'}`}
                                         >
                                             <FilterIcon className="w-4 h-4" />
@@ -685,7 +685,7 @@ const SuperAdminNotifications: React.FC = () => {
                                 </div>
                                 <button
                                     onClick={() => setIsModalOpen(false)}
-                                    className="w-full sm:w-auto px-6 py-2.5 bg-sp-green text-white font-bold text-sm rounded-xl hover:bg-sp-green-dark transition-all shadow-sm active:scale-95"
+                                    className="w-full sm:w-auto px-6 py-2.5 bg-sp-amber text-white font-bold text-sm rounded-xl hover:bg-sp-green-dark transition-all shadow-sm active:scale-95"
                                 >
                                     Close
                                 </button>

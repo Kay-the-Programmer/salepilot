@@ -31,7 +31,7 @@ export default function QuickOffersView() {
                         </h2>
                         <button
                             onClick={() => setIsRequestModalOpen(true)}
-                            className="px-8 py-4 bg-sp-green text-white rounded-full font-bold uppercase text-xs tracking-widest hover:bg-sp-green-dark transition-colors active:scale-95"
+                            className="px-8 py-4 bg-sp-amber text-white rounded-full font-bold uppercase text-xs tracking-widest hover:bg-sp-green-dark transition-colors active:scale-95"
                         >
                             Post a Request
                         </button>
@@ -111,7 +111,7 @@ export default function QuickOffersView() {
                                     This is a limited time offer. Grab this deal before it expires. High quality product from a verified supplier.
                                 </p>
 
-                                <button className="w-full py-4 bg-sp-green text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-sp-green-dark transition-colors shadow-sm active:scale-95">
+                                <button className="w-full py-4 bg-sp-amber text-white rounded-2xl font-bold uppercase tracking-widest text-xs hover:bg-sp-green-dark transition-colors shadow-sm active:scale-95">
                                     Add to Cart
                                 </button>
                             </div>

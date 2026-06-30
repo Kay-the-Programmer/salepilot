@@ -117,7 +117,7 @@ const ShopLayout: React.FC = () => {
                 onClick={() => navigate(`/shop/${storeId}/cart`)}
                 className={`
                     md:hidden fixed bottom-6 right-6 z-50
-                    w-14 h-14 bg-sp-green text-white rounded-full
+                    w-14 h-14 bg-sp-amber text-white rounded-full
                     shadow-lg shadow-sp-green/30
                     flex items-center justify-center
                     transition-all duration-300 transform active:scale-95

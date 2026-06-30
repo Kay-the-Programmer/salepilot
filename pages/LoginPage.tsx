@@ -12,7 +12,6 @@ import {
     HiOutlineEyeSlash,
     HiOutlineArrowLeft,
     HiOutlineArrowRight,
-    HiCheckCircle,
     HiOutlineCheckCircle,
     HiOutlineMapPin,
     HiOutlineBuildingStorefront,
@@ -21,6 +20,7 @@ import {
 } from 'react-icons/hi2';
 import { FcGoogle } from 'react-icons/fc';
 import Logo from '../assets/logo.png';
+import AsideArt from '../assets/hkj.png';
 import GoogleRoleSelectionModal from '../components/GoogleRoleSelectionModal';
 
 interface LoginPageProps {
@@ -39,11 +39,6 @@ const CATEGORIES = [
     'Professional Services',
     'General Store',
     'Other',
-];
-const ASIDE_FEATURES = [
-    'Cloud-synced inventory across all devices',
-    'Instant hardware integration (Printers & Scanners)',
-    '24/7 dedicated support for shop owners',
 ];
 
 export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
@@ -288,7 +283,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                     <button
                                         type="submit"
                                         disabled={anyLoading}
-                                        className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+                                        className="w-full py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
                                     >
                                         {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Verify & Continue'}
                                     </button>
@@ -383,15 +378,12 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                             >
                                                 Forgot password?
                                             </button>
-                                            <button type="button" onClick={() => switchView('register')} className="text-xs font-bold text-primary hover:text-primary-dark uppercase tracking-wider transition-colors">
-                                                Create account
-                                            </button>
                                         </div>
 
                                         <button
                                             type="submit"
                                             disabled={anyLoading}
-                                            className="w-full py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 mt-2"
+                                            className="w-full py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 mt-2"
                                         >
                                             {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Log in to Dashboard'}
                                         </button>
@@ -434,7 +426,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
             </div>
 
             {/* Header */}
-            <header className="relative z-10 sticky top-0 bg-background/80 dark:bg-background/90 backdrop-blur-md border-b border-brand-border/50 flex items-center justify-between h-20 px-6 md:px-10">
+            <header className="relative z-30 sticky top-0 bg-background/80 dark:bg-background/90 backdrop-blur-md border-b border-brand-border/50 flex items-center justify-between h-20 px-6 md:px-10">
                 <img src={Logo} alt="SalePilot" className="h-8 object-contain" />
                 <div className="flex items-center gap-5">
                     <span className="hidden md:flex items-center gap-1.5 text-sm font-semibold text-brand-text-muted">
@@ -479,7 +471,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                         />
                     </div>
                     {/* Step dots */}
-                    <div className="flex gap-2 mt-3">
+                    {/* <div className="flex gap-2 mt-3">
                         {WIZARD_STEPS.map((s, i) => (
                             <div
                                 key={s}
@@ -491,7 +483,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                 )}
                             </div>
                         ))}
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* Two-column grid */}
@@ -588,7 +580,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             <div className="space-y-4 animate-fade-in">
                                 {/* Email */}
                                 <div>
-                                    <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-2">Work Email</label>
+                                    <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-2">Your Email</label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                             <HiOutlineEnvelope className="h-5 w-5 text-brand-text-muted group-focus-within:text-primary transition-colors" />
@@ -596,7 +588,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                         <input
                                             type="email" required autoFocus
                                             className="block w-full pl-11 pr-4 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-sm font-semibold outline-none"
-                                            placeholder="name@company.com"
+                                            placeholder="example@gmail.com"
                                             value={email}
                                             onChange={(e) => setEmail(e.target.value)}
                                             autoComplete="email"
@@ -757,7 +749,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                 type="button"
                                 onClick={wizardNext}
                                 disabled={anyLoading}
-                                className="flex-1 flex items-center justify-center gap-2 py-4 bg-primary hover:bg-primary-dark text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
+                                className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0"
                             >
                                 {isLoading
                                     ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -776,52 +768,8 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
 
                     {/* ── Visual aside ── */}
                     <aside className="hidden lg:flex flex-col gap-5 lg:sticky lg:top-[104px]">
-                        {/* Bento card */}
-                        <div className="relative rounded-3xl overflow-hidden min-h-[420px] shadow-2xl shadow-sp-green/20">
-                            {/* Background gradient */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#004D3A] via-[#006B50] to-[#008060]" />
-                            {/* Decorative orbs */}
-                            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-white/5" />
-                            <div className="absolute top-8 right-8 w-24 h-24 rounded-full bg-sp-amber/20 blur-sm" />
-                            <div className="absolute bottom-24 left-4 w-16 h-16 rounded-full bg-white/5" />
-                            {/* Grid pattern overlay */}
-                            <div
-                                className="absolute inset-0 opacity-[0.04]"
-                                style={{ backgroundImage: 'radial-gradient(circle, white 1px, transparent 1px)', backgroundSize: '28px 28px' }}
-                            />
-
-                            {/* Mock stat cards */}
-                            <div className="absolute top-8 left-6 right-6 grid grid-cols-2 gap-3">
-                                <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-3.5">
-                                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Revenue</p>
-                                    <p className="text-white text-xl font-extrabold tracking-tight">₦2.4M</p>
-                                    <p className="text-sp-amber-light text-[10px] font-bold mt-1">↑ 18% this month</p>
-                                </div>
-                                <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-3.5">
-                                    <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Products</p>
-                                    <p className="text-white text-xl font-extrabold tracking-tight">1,240</p>
-                                    <p className="text-white/50 text-[10px] font-bold mt-1">Across 8 categories</p>
-                                </div>
-                            </div>
-
-                            {/* Bottom content */}
-                            <div className="absolute inset-0 flex flex-col justify-end p-7">
-                                <span className="self-start bg-primary/70 backdrop-blur-sm text-white text-[10px] font-extrabold uppercase tracking-widest px-3 py-1.5 rounded-full mb-4">
-                                    Trusted by 5k+ stores
-                                </span>
-                                <h3 className="text-white text-2xl font-extrabold tracking-tight leading-tight mb-5">
-                                    Your retail journey<br />starts here.
-                                </h3>
-                                <ul className="space-y-3">
-                                    {ASIDE_FEATURES.map(f => (
-                                        <li key={f} className="flex items-start gap-3 text-sm text-white/90">
-                                            <HiCheckCircle className="w-5 h-5 text-sp-amber flex-shrink-0 mt-0.5" />
-                                            {f}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
+                        {/* Visual — image only, no copy */}
+                        <img src={AsideArt} alt="" className="w-full h-auto rounded-3xl shadow-2xl shadow-primary/20" />
 
                         {/* Testimonial */}
                         <div className="flex items-center gap-4 p-5 bg-white/90 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-warm-200 dark:border-white/8 shadow-sm">
@@ -830,7 +778,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             </div>
                             <div>
                                 <p className="text-sm text-brand-text-muted italic leading-relaxed">
-                                    "Setting up my boutique took less than 5 minutes with SalePilot."
+                                    "Setting up my boutique took less than 2 minutes with SalePilot."
                                 </p>
                                 <p className="text-xs font-bold text-brand-text mt-1.5">Meryem A. — Store Owner</p>
                             </div>

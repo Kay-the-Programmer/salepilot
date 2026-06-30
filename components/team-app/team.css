@@ -9,7 +9,7 @@
 .team-seats--locked { background: var(--c-secondary-fixed); }
 .team-seats__left { display: flex; align-items: center; gap: 14px; }
 .team-seats__icon { width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--c-radius-lg); display: inline-flex; align-items: center; justify-content: center; }
-.team-seats--ok .team-seats__icon { background: rgba(0, 128, 96, 0.12); color: var(--c-primary); }
+.team-seats--ok .team-seats__icon { background: rgba(0, 43, 107, 0.12); color: var(--c-primary); }
 .team-seats--locked .team-seats__icon { background: rgba(255, 255, 255, 0.5); color: var(--c-secondary); }
 .team-seats__title { font-size: 15px; font-weight: 700; margin: 0; color: var(--c-on-bg); }
 .team-seats--locked .team-seats__title { color: var(--c-on-secondary-fixed); }
@@ -37,7 +37,7 @@
 @media (min-width: 768px) { .team-roles { grid-template-columns: repeat(3, 1fr); } }
 .team-rolecard { background: var(--c-surface-lowest); border: 1px solid rgba(26, 26, 46, 0.05); border-radius: var(--c-radius-lg); box-shadow: var(--c-elev-1); padding: 22px; }
 .team-rolecard__icon { width: 48px; height: 48px; border-radius: var(--c-radius-lg); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 14px; }
-.team-rolecard__icon--p { background: rgba(0, 128, 96, 0.1); color: var(--c-primary); }
+.team-rolecard__icon--p { background: rgba(0, 43, 107, 0.1); color: var(--c-primary); }
 .team-rolecard__icon--s { background: rgba(255, 165, 53, 0.14); color: var(--c-secondary); }
 .team-rolecard__icon--t { background: rgba(111, 110, 134, 0.12); color: var(--c-tertiary); }
 .team-rolecard__name { font-size: 18px; font-weight: 700; color: var(--c-on-bg); margin: 0 0 2px; }
@@ -51,7 +51,7 @@
 .team-rolepick { display: flex; flex-direction: column; gap: 10px; }
 .team-roleopt { display: flex; align-items: center; gap: 14px; padding: 14px; border: 2px solid var(--c-outline-variant); border-radius: var(--c-radius-lg); background: var(--c-surface-lowest); cursor: pointer; text-align: left; font-family: inherit; transition: border-color 0.15s var(--c-ease), background-color 0.15s var(--c-ease); }
 .team-roleopt:hover { border-color: var(--c-outline); }
-.team-roleopt.is-active { border-color: var(--c-primary); background: rgba(0, 128, 96, 0.06); }
+.team-roleopt.is-active { border-color: var(--c-primary); background: rgba(0, 43, 107, 0.06); }
 .team-roleopt__icon { width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--c-radius); display: inline-flex; align-items: center; justify-content: center; background: var(--c-surface-high); color: var(--c-on-surface-variant); }
 .team-roleopt.is-active .team-roleopt__icon { background: var(--c-primary); color: #fff; }
 .team-roleopt__name { font-size: 15px; font-weight: 700; color: var(--c-on-bg); margin: 0; }
