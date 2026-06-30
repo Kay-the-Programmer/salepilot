@@ -13,10 +13,11 @@ import SuperAdminStoreDetails from '../../pages/superadmin/SuperAdminStoreDetail
 import SuperAdminNotifications from '../../pages/superadmin/SuperAdminNotifications';
 import SuperAdminSubscriptions from '../../pages/superadmin/SuperAdminSubscriptions';
 import SuperAdminCatalog from '../../pages/superadmin/SuperAdminCatalog';
+import SuperAdminCampaigns from '../../pages/superadmin/SuperAdminCampaigns';
 import SuperAdminSettings from '../../pages/superadmin/SuperAdminSettings';
 import '../crm/crm.css';
 
-export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'settings';
+export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'settings';
 
 interface SuperAdminAppProps {
     user: User;
@@ -34,6 +35,7 @@ const NAV: { id: SuperSection; label: string; icon: string; route: string }[] = 
     { id: 'broadcasts', label: 'Broadcasts', icon: 'campaign',        route: '/superadmin/notifications' },
     { id: 'billing',    label: 'Billing',    icon: 'payments',        route: '/superadmin/subscriptions' },
     { id: 'catalog',    label: 'Plans & Pricing', icon: 'sell',       route: '/superadmin/catalog' },
+    { id: 'campaigns',  label: 'Campaigns',  icon: 'ads_click',       route: '/superadmin/campaigns' },
     { id: 'settings',   label: 'Settings',   icon: 'settings',        route: '/superadmin/settings' },
 ];
 
@@ -43,6 +45,7 @@ const sectionForSub = (subPath?: string): SuperSection => {
         case 'notifications': return 'broadcasts';
         case 'subscriptions': return 'billing';
         case 'catalog': return 'catalog';
+        case 'campaigns': return 'campaigns';
         case 'settings': return 'settings';
         default: return 'overview';
     }
@@ -75,6 +78,9 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
             break;
         case 'catalog':
             content = <SuperAdminCatalog />;
+            break;
+        case 'campaigns':
+            content = <SuperAdminCampaigns />;
             break;
         case 'settings':
             content = <SuperAdminSettings />;

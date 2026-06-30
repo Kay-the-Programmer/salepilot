@@ -8,6 +8,14 @@ import {
     UpsellContextData,
     EligibilityState,
     cooldownUntil,
+    withinSchedule,
+    compileTrigger,
+    resolveCampaigns,
+    pickVariant,
+    resolveCreative,
+    offerLive,
+    Campaign,
+    CampaignDTO,
 } from './upsell';
 
 const NOW = Date.UTC(2026, 5, 24); // fixed clock for deterministic cooldown maths
@@ -230,5 +238,160 @@ describe('catalogue shape (Definition of Done)', () => {
     it('covers all five surfaces', () => {
         const surfaces = new Set(UPSELL_MOMENTS.map(m => m.surface));
         expect([...surfaces].sort()).toEqual(['daily_summary', 'discover_card', 'inline_card', 'paywall', 'push']);
+    });
+});
+
+// ── Marketing layer ──────────────────────────────────────────────────────────
+
+describe('marketing: campaign status + schedule', () => {
+    const dormant = UPSELL_MOMENTS.find(m => m.id === 'dormant_customers')!;
+    const c = ctx({ dormantCustomerCount: 9 });
+
+    it('a paused campaign is never eligible', () => {
+        expect(isEligible({ ...dormant, status: 'paused' }, c, state())).toBe(false);
+    });
+    it('withinSchedule respects start/end bounds (absent = always live)', () => {
+        expect(withinSchedule(dormant, NOW)).toBe(true);
+        expect(withinSchedule({ ...dormant, schedule: { startAt: NOW - DAY, endAt: NOW + DAY } }, NOW)).toBe(true);
+        expect(withinSchedule({ ...dormant, schedule: { startAt: NOW + DAY } }, NOW)).toBe(false);
+        expect(withinSchedule({ ...dormant, schedule: { endAt: NOW - DAY } }, NOW)).toBe(false);
+    });
+    it('isEligible gates on the live window', () => {
+        expect(isEligible({ ...dormant, schedule: { startAt: NOW + DAY } }, c, state())).toBe(false);
+        expect(isEligible({ ...dormant, schedule: { startAt: NOW - DAY, endAt: NOW + DAY } }, c, state())).toBe(true);
+    });
+});
+
+describe('marketing: declarative trigger rules', () => {
+    it('compiles comparison ops over the data snapshot', () => {
+        const t = compileTrigger({ field: 'dormantCustomerCount', op: '>=', value: 3 });
+        expect(t(ctx({ dormantCustomerCount: 2 }))).toBe(false);
+        expect(t(ctx({ dormantCustomerCount: 3 }))).toBe(true);
+    });
+    it('chains an AND clause for a band', () => {
+        const t = compileTrigger({
+            field: 'productCount', op: '>=', value: 80,
+            and: { field: 'productCount', op: '<', value: 100 },
+        });
+        expect(t(ctx({ productCount: 79 }))).toBe(false);
+        expect(t(ctx({ productCount: 80 }))).toBe(true);
+        expect(t(ctx({ productCount: 100 }))).toBe(false);
+    });
+    it('an absent rule is always-true', () => {
+        expect(compileTrigger(undefined)(ctx())).toBe(true);
+    });
+});
+
+describe('marketing: resolveCampaigns (remote over built-in)', () => {
+    it('returns built-ins unchanged when there is no remote config', () => {
+        const resolved = resolveCampaigns(UPSELL_MOMENTS, null);
+        expect(resolved).toHaveLength(UPSELL_MOMENTS.length);
+        expect(resolved.every(m => m.source === 'builtin')).toBe(true);
+    });
+    it('replaces a built-in of the same id and compiles its rule', () => {
+        const dto: CampaignDTO = {
+            id: 'dormant_customers', module: 'whatsapp_messaging', surface: 'inline_card',
+            stage: 'engagement', priority: 99, cooldownDays: 14,
+            triggerRule: { field: 'dormantCustomerCount', op: '>=', value: 1 },
+            headline: 'NEW', body: 'b', ctaLabel: 'cta',
+        };
+        const resolved = resolveCampaigns(UPSELL_MOMENTS, [dto]);
+        const m = resolved.find(x => x.id === 'dormant_customers')!;
+        expect(m.headline).toBe('NEW');
+        expect(m.priority).toBe(99);
+        expect(m.source).toBe('remote');
+        expect(m.trigger(ctx({ dormantCustomerCount: 1 }))).toBe(true);
+        expect(resolved).toHaveLength(UPSELL_MOMENTS.length); // replace, not append
+    });
+    it('overriding a built-in without a rule keeps the built-in trigger', () => {
+        // Retune copy/priority but supply NO triggerRule → dormant's ≥3 data
+        // trigger must still apply (not become always-true).
+        const dto: CampaignDTO = {
+            id: 'dormant_customers', module: 'whatsapp_messaging', surface: 'inline_card',
+            stage: 'engagement', priority: 99, cooldownDays: 14,
+            headline: 'Retuned', body: 'b', ctaLabel: 'cta',
+        };
+        const m = resolveCampaigns(UPSELL_MOMENTS, [dto]).find(x => x.id === 'dormant_customers')!;
+        expect(m.headline).toBe('Retuned');
+        expect(m.trigger(ctx({ dormantCustomerCount: 2 }))).toBe(false); // still gated
+        expect(m.trigger(ctx({ dormantCustomerCount: 3 }))).toBe(true);
+    });
+    it('appends a brand-new remote id', () => {
+        const dto: CampaignDTO = {
+            id: 'flash_sale', module: 'advanced_reports', surface: 'inline_card',
+            stage: 'activation', priority: 10, cooldownDays: 7,
+            triggerRule: { field: 'salesCount', op: '>=', value: 1 },
+            headline: 'h', body: 'b', ctaLabel: 'cta',
+        };
+        const resolved = resolveCampaigns(UPSELL_MOMENTS, [dto]);
+        expect(resolved).toHaveLength(UPSELL_MOMENTS.length + 1);
+        expect(resolved.find(x => x.id === 'flash_sale')?.source).toBe('remote');
+    });
+    it('a paywall DTO always-fires regardless of rule', () => {
+        const dto: CampaignDTO = {
+            id: 'report_locked', module: 'advanced_reports', surface: 'paywall',
+            stage: 'activation', priority: 60, cooldownDays: 30,
+            headline: 'h', body: 'b', ctaLabel: 'cta',
+        };
+        const m = resolveCampaigns(UPSELL_MOMENTS, [dto]).find(x => x.id === 'report_locked')!;
+        expect(m.trigger(ctx())).toBe(true);
+    });
+});
+
+describe('marketing: A/B variant selection', () => {
+    const base = UPSELL_MOMENTS.find(m => m.id === 'dormant_customers')!;
+    const withVariants: Campaign = {
+        ...base,
+        variants: [
+            { id: 'a', headline: 'A', body: 'ab', ctaLabel: 'ac' },
+            { id: 'b', headline: 'B', body: 'bb', ctaLabel: 'bc' },
+        ],
+    };
+
+    it('returns null with no variants (control copy)', () => {
+        expect(pickVariant(base, 'user-1')).toBeNull();
+        expect(resolveCreative(base, 'user-1').variantId).toBeNull();
+        expect(resolveCreative(base, 'user-1').headline).toBe(base.headline);
+    });
+    it('is deterministic for a given (seed, campaign)', () => {
+        expect(pickVariant(withVariants, 'user-1')?.id).toBe(pickVariant(withVariants, 'user-1')?.id);
+    });
+    it('resolveCreative applies the chosen variant copy', () => {
+        const r = resolveCreative(withVariants, 'user-1');
+        expect(['A', 'B']).toContain(r.headline);
+        expect(['a', 'b']).toContain(r.variantId);
+    });
+    it('spreads users across variants', () => {
+        const seen = new Set<string>();
+        for (let i = 0; i < 50; i++) seen.add(pickVariant(withVariants, `user-${i}`)!.id);
+        expect(seen.size).toBe(2);
+    });
+    it('never picks a zero-weight variant', () => {
+        const weighted: Campaign = {
+            ...base, variants: [
+                { id: 'a', headline: 'A', body: '', ctaLabel: '', weight: 1 },
+                { id: 'z', headline: 'Z', body: '', ctaLabel: '', weight: 0 },
+            ],
+        };
+        const seen = new Set<string>();
+        for (let i = 0; i < 50; i++) seen.add(pickVariant(weighted, `u${i}`)!.id);
+        expect(seen.has('z')).toBe(false);
+        expect(seen.has('a')).toBe(true);
+    });
+});
+
+describe('marketing: offers', () => {
+    const base = UPSELL_MOMENTS.find(m => m.id === 'dormant_customers')!;
+    it('returns null when there is no offer', () => {
+        expect(offerLive(base, NOW)).toBeNull();
+    });
+    it('returns the offer while live and null once expired', () => {
+        const m: Campaign = { ...base, offer: { discountPct: 20, endsAt: NOW + DAY } };
+        expect(offerLive(m, NOW)?.discountPct).toBe(20);
+        expect(offerLive(m, NOW + 2 * DAY)).toBeNull();
+    });
+    it('an offer with no expiry is always live', () => {
+        const m: Campaign = { ...base, offer: { discountPct: 10 } };
+        expect(offerLive(m, NOW + 3650 * DAY)?.discountPct).toBe(10);
     });
 });

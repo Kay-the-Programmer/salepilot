@@ -31,6 +31,83 @@ export const STAGE_RANK: Record<LifecycleStage, number> = {
     expansion: 3,
 };
 
+// ── Marketing layer ──────────────────────────────────────────────────────────
+// Everything below turns a "moment" into a configurable marketing *campaign*:
+// a manual on/off, a live window, a promotional offer, and A/B creative — all
+// optional, so a campaign with none of them behaves exactly like the original
+// fixed nudge. Super-Admin-authored campaigns arrive as a serialisable
+// {@link CampaignDTO} (declarative trigger rule, no code) and are compiled into
+// runtime moments by {@link compileCampaign} / {@link resolveCampaigns}.
+
+export type CampaignStatus = 'active' | 'paused';
+export type CampaignSource = 'builtin' | 'remote';
+
+/** A/B creative variant. The campaign's base copy is the implicit control. */
+export interface CampaignVariant {
+    id: string;            // stable, short id used in analytics (e.g. 'a', 'b')
+    headline: string;
+    body: string;
+    ctaLabel: string;
+    weight?: number;       // relative bucketing weight (default 1)
+}
+
+/** Promotional offer attached to a campaign. */
+export interface CampaignOffer {
+    /** Percent off the module's catalogue price (1–100). */
+    discountPct?: number;
+    /** Coupon code carried into the subscription checkout deep-link. */
+    couponCode?: string;
+    /** Offer expiry (ms epoch) — drives the countdown and auto-expiry. */
+    endsAt?: number;
+    /** Extra modules bundled into the same offer. */
+    bundleModules?: ModuleId[];
+}
+
+/** Live window for a campaign. Absent fields mean "no bound on that side". */
+export interface CampaignSchedule {
+    startAt?: number;      // ms epoch; before this the campaign is not live
+    endAt?: number;        // ms epoch; after this the campaign is not live
+}
+
+/** Numeric fields of the data snapshot a declarative trigger rule may test. */
+export type TriggerField =
+    | 'daysActive' | 'productCount' | 'productCap' | 'manualAddsThisSession'
+    | 'customerCount' | 'dormantCustomerCount' | 'recentStockoutCount'
+    | 'userCount' | 'storeCount' | 'salesCount' | 'cashSaleCount';
+
+export type TriggerOp = '>=' | '<=' | '>' | '<' | '==';
+
+/** Serialisable trigger predicate (authored via dropdowns in Super Admin).
+ *  `and` chains a second clause so bands like "80%–<100% of cap" are expressible
+ *  without code. Compiled to a pure function by {@link compileTrigger}. */
+export interface TriggerRule {
+    field: TriggerField;
+    op: TriggerOp;
+    value: number;
+    and?: TriggerRule;
+}
+
+/** A campaign exactly as authored in Super Admin / persisted in the backend:
+ *  identical to {@link UpsellMoment} but with a declarative `triggerRule`
+ *  instead of a compiled `trigger` function. */
+export interface CampaignDTO {
+    id: string;
+    module: ModuleId;
+    surface: UpsellSurface;
+    stage: LifecycleStage;
+    priority: number;
+    cooldownDays: number;
+    /** Absent = always-true (paywall moments fire on the 402 itself). */
+    triggerRule?: TriggerRule;
+    headline: string;
+    body: string;
+    ctaLabel: string;
+    status?: CampaignStatus;
+    schedule?: CampaignSchedule;
+    offer?: CampaignOffer;
+    variants?: CampaignVariant[];
+}
+
 /**
  * Read-only snapshot derived from the Dashboard store + auth/session. Local data
  * only — never fetched. Built by `contexts/UpsellContext.tsx` and pushed into the
@@ -72,7 +149,23 @@ export interface UpsellMoment {
     headline: string;             // outcome-framed, sentence case
     body: string;
     ctaLabel: string;
+
+    // ── Marketing layer (all optional; absent = today's fixed-nudge behaviour) ─
+    /** Manual on/off for the campaign. Absent = 'active'. */
+    status?: CampaignStatus;
+    /** Live window. Absent = always live. */
+    schedule?: CampaignSchedule;
+    /** Promotional offer (discount / coupon / countdown / bundle). */
+    offer?: CampaignOffer;
+    /** A/B creative variants; the base copy above is the implicit control. */
+    variants?: CampaignVariant[];
+    /** Provenance: built-in default vs Super-Admin-authored remote campaign. */
+    source?: CampaignSource;
 }
+
+/** A runtime campaign is just an {@link UpsellMoment} with the marketing layer
+ *  populated. Alias kept so new code can use the clearer name. */
+export type Campaign = UpsellMoment;
 
 const PAYWALL_ALWAYS = () => true; // a 402 firing IS the trigger for paywall moments
 
@@ -253,6 +346,9 @@ export function currentStage(ctx: UpsellContextData): LifecycleStage {
  * (The session budget is a cross-moment concern handled in {@link selectEligible}.)
  */
 export function isEligible(moment: UpsellMoment, ctx: UpsellContextData, state: EligibilityState): boolean {
+    // 0. campaign on/off + live window (defaults keep today's behaviour exactly)
+    if (moment.status === 'paused') return false;
+    if (!withinSchedule(moment, state.now)) return false;
     // 1. role — only owners/admins may buy
     if (ctx.role !== 'admin' && ctx.role !== 'superadmin') return false;
     // 2. never during the sale flow
@@ -311,4 +407,124 @@ export function getPaywallMoment(module: string): UpsellMoment | null {
 /** Compute the timestamp a dismissal cooldown expires at. */
 export function cooldownUntil(moment: UpsellMoment, now: number): number {
     return now + moment.cooldownDays * DAY_MS;
+}
+
+// ── Marketing layer: scheduling, trigger rules, A/B, offers ───────────────────
+
+/** Is the campaign within its live window? Absent schedule = always live. */
+export function withinSchedule(moment: UpsellMoment, now: number): boolean {
+    const s = moment.schedule;
+    if (!s) return true;
+    if (s.startAt != null && now < s.startAt) return false;
+    if (s.endAt != null && now > s.endAt) return false;
+    return true;
+}
+
+/** Compile a declarative {@link TriggerRule} into a pure predicate. Absent rule
+ *  = always-true (used by paywall campaigns, whose trigger is the 402 itself). */
+export function compileTrigger(rule: TriggerRule | undefined): (ctx: UpsellContextData) => boolean {
+    if (!rule) return () => true;
+    const test = (r: TriggerRule, ctx: UpsellContextData): boolean => {
+        const v = ctx[r.field];
+        switch (r.op) {
+            case '>=': return v >= r.value;
+            case '<=': return v <= r.value;
+            case '>': return v > r.value;
+            case '<': return v < r.value;
+            case '==': return v === r.value;
+            default: return false;
+        }
+    };
+    return (ctx) => test(rule, ctx) && (!rule.and || compileTrigger(rule.and)(ctx));
+}
+
+/**
+ * Turn a serialisable {@link CampaignDTO} (authored in Super Admin) into a
+ * runtime {@link Campaign} by compiling its declarative trigger. Trigger
+ * precedence: a paywall campaign always-fires (the 402 is its trigger); an
+ * explicit `triggerRule` wins; otherwise, when this DTO *overrides a built-in*
+ * (`base` given) we KEEP the built-in's original compiled trigger — so an admin
+ * can retune copy/offer/schedule without having to re-author a complex data
+ * trigger. A brand-new campaign with no rule defaults to always-eligible (still
+ * gated by stage / role / cooldown / schedule).
+ */
+export function compileCampaign(dto: CampaignDTO, base?: Campaign): Campaign {
+    const { triggerRule, ...rest } = dto;
+    const trigger = dto.surface === 'paywall'
+        ? PAYWALL_ALWAYS
+        : triggerRule
+            ? compileTrigger(triggerRule)
+            : (base?.trigger ?? PAYWALL_ALWAYS);
+    return { ...rest, trigger, source: 'remote' };
+}
+
+/**
+ * Merge Super-Admin remote campaigns over the built-in defaults, keyed by id:
+ * a remote campaign with a built-in's id REPLACES it (preserving the built-in's
+ * trigger unless the override supplies its own rule — see {@link compileCampaign});
+ * a brand-new id is appended. Built-ins are tagged `source: 'builtin'`. With no
+ * remote config the defaults are returned unchanged, so the engine always has a
+ * safe, offline fallback.
+ */
+export function resolveCampaigns(builtin: Campaign[], remote: CampaignDTO[] | null | undefined): Campaign[] {
+    const byId = new Map<string, Campaign>(builtin.map(m => [m.id, { ...m, source: 'builtin' as const }]));
+    if (Array.isArray(remote)) {
+        for (const dto of remote) byId.set(dto.id, compileCampaign(dto, byId.get(dto.id)));
+    }
+    return [...byId.values()];
+}
+
+/** Small, stable string hash (FNV-1a). Used only for deterministic A/B buckets. */
+function hashString(s: string): number {
+    let h = 0x811c9dc5;
+    for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 0x01000193);
+    }
+    return h >>> 0; // unsigned
+}
+
+/**
+ * Deterministic, weighted A/B pick: a given (seed, campaign) always resolves to
+ * the same variant, so a user's experience is stable and analytics are clean.
+ * Returns null when the campaign defines no variants (use the base copy).
+ */
+export function pickVariant(moment: UpsellMoment, seed: string): CampaignVariant | null {
+    const variants = moment.variants;
+    if (!variants || variants.length === 0) return null;
+    const total = variants.reduce((n, v) => n + Math.max(0, v.weight ?? 1), 0);
+    if (total <= 0) return variants[0];
+    let bucket = hashString(`${seed}:${moment.id}`) % total;
+    for (const v of variants) {
+        bucket -= Math.max(0, v.weight ?? 1);
+        if (bucket < 0) return v;
+    }
+    return variants[variants.length - 1];
+}
+
+export interface ResolvedCreative {
+    headline: string;
+    body: string;
+    ctaLabel: string;
+    /** The chosen A/B variant id, or null when the base copy (control) is used. */
+    variantId: string | null;
+}
+
+/** The copy actually shown: the chosen A/B variant applied over the base copy. */
+export function resolveCreative(moment: UpsellMoment, seed: string): ResolvedCreative {
+    const v = pickVariant(moment, seed);
+    return {
+        headline: v?.headline ?? moment.headline,
+        body: v?.body ?? moment.body,
+        ctaLabel: v?.ctaLabel ?? moment.ctaLabel,
+        variantId: v?.id ?? null,
+    };
+}
+
+/** The live offer for a campaign right now, or null if absent/expired. */
+export function offerLive(moment: UpsellMoment, now: number): CampaignOffer | null {
+    const o = moment.offer;
+    if (!o) return null;
+    if (o.endsAt != null && now > o.endsAt) return null;
+    return o;
 }

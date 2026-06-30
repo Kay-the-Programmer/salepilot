@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
-import { getPaywallMoment } from '../utils/upsell';
 import { upsellService } from '../services/upsellService';
+import { useCountdown, discounted, offerQuery } from './upsell/offer';
 
 /**
  * Global soft-paywall host. Listens for the `salepilot:paywall` event the API
@@ -45,9 +45,12 @@ const PaywallHost: React.FC = () => {
   const [message, setMessage] = useState('');
   const [addon, setAddon] = useState<AddonInfo | null>(null);
 
-  // Matching upsell moment for this locked module (outcome-framed copy + bundle).
+  // Matching upsell campaign for this locked module — resolved over the Super
+  // Admin config (so console copy / A-B / offers apply) with the user's variant.
   // The 402 itself is the trigger, so this lookup ignores ctx/session gates.
-  const moment = useMemo(() => (moduleId ? getPaywallMoment(moduleId) : null), [moduleId]);
+  const moment = useMemo(() => (moduleId ? upsellService.getPaywallMoment(moduleId) : null), [moduleId]);
+  const offer = useMemo(() => (moment ? upsellService.getOffer(moment) : null), [moment]);
+  const countdown = useCountdown(offer?.endsAt);
 
   // Count an impression once the enriched prompt is on screen.
   useEffect(() => {
@@ -90,7 +93,7 @@ const PaywallHost: React.FC = () => {
     const id = moduleId;
     if (moment) upsellService.recordClick(moment);
     close();
-    navigate(`/subscription?view=addons${id ? `&module=${encodeURIComponent(id)}` : ''}`);
+    navigate(`/subscription?view=addons${id ? `&module=${encodeURIComponent(id)}` : ''}${offerQuery(offer)}`);
   }, [moduleId, moment, navigate, close]);
 
   // Secondary "recommended bundle" path — opens the full plans view.
@@ -103,7 +106,8 @@ const PaywallHost: React.FC = () => {
   if (!open) return null;
 
   const name = addon?.name || (moduleId ? FALLBACK_NAMES[moduleId] : '') || 'this feature';
-  const priceLabel = addon ? `${money(addon.price, addon.currency)}/mo` : null;
+  const pct = offer?.discountPct;
+  const priceLabel = addon ? `${money(discounted(addon.price, pct), addon.currency)}/mo` : null;
   const alreadyOwned = !!addon?.owned;
 
   return (
@@ -123,8 +127,18 @@ const PaywallHost: React.FC = () => {
           </div>
           <h3 className="text-lg font-extrabold tracking-tight text-brand-text mb-1.5">{moment ? moment.headline : `Unlock ${name}`}</h3>
           <p className="text-sm text-brand-text-muted">{moment?.body || message}</p>
-          {priceLabel && !alreadyOwned && (
-            <p className="text-2xl font-extrabold text-sp-green mt-3">{priceLabel}</p>
+          {addon && !alreadyOwned && (
+            <p className="text-2xl font-extrabold text-sp-green mt-3">
+              {pct ? <span className="text-base text-brand-text-muted line-through mr-2 font-bold">{money(addon.price, addon.currency)}</span> : null}
+              {money(discounted(addon.price, pct), addon.currency)}<span className="text-sm">/mo</span>
+            </p>
+          )}
+          {offer && (offer.discountPct || offer.couponCode || countdown) && (
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              {offer.discountPct ? <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-sp-amber text-white">{offer.discountPct}% OFF</span> : null}
+              {offer.couponCode ? <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sp-amber-soft text-sp-amber">Code {offer.couponCode}</span> : null}
+              {countdown ? <span className="inline-flex items-center gap-1 text-[11px] font-bold text-danger"><span className="material-symbols-rounded text-[14px]">timer</span>{countdown}</span> : null}
+            </div>
           )}
         </div>
         <div className="p-4 pt-0 flex flex-col gap-2">

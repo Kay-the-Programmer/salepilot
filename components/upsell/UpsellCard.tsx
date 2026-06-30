@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UpsellMoment, UpsellSurface } from '../../utils/upsell';
 import { useUpsell } from '../../contexts/UpsellContext';
+import { useCountdown, discounted, money, offerQuery } from './offer';
 
 /**
  * Dismissible contextual upsell card, shown at the top of a feature screen.
@@ -20,8 +21,10 @@ const priceLabel = (price: number, currency: string): string => {
 
 export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> = ({ moment, className = '' }) => {
     const navigate = useNavigate();
-    const { recordShown, recordClick, recordDismissed, getPrice } = useUpsell();
+    const { recordShown, recordClick, recordDismissed, getPrice, getOffer } = useUpsell();
     const price = getPrice(moment.module);
+    const offer = getOffer(moment);
+    const countdown = useCountdown(offer?.endsAt);
 
     useEffect(() => {
         recordShown(moment);
@@ -30,7 +33,7 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
 
     const goCheckout = () => {
         recordClick(moment);
-        navigate(`/subscription?view=addons&module=${encodeURIComponent(moment.module)}`);
+        navigate(`/subscription?view=addons&module=${encodeURIComponent(moment.module)}${offerQuery(offer)}`);
     };
 
     return (
@@ -44,6 +47,13 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
             <div className="flex-1 min-w-0 pr-6">
                 <p className="text-sm font-bold text-brand-text">{moment.headline}</p>
                 <p className="text-sm text-brand-text-muted mt-0.5">{moment.body}</p>
+                {offer && (offer.discountPct || offer.couponCode || countdown) && (
+                    <div className="flex flex-wrap items-center gap-2 mt-2.5">
+                        {offer.discountPct ? <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-sp-amber text-white">{offer.discountPct}% OFF</span> : null}
+                        {offer.couponCode ? <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sp-amber-soft text-sp-amber">Code {offer.couponCode}</span> : null}
+                        {countdown ? <span className="inline-flex items-center gap-1 text-[11px] font-bold text-danger"><span className="material-symbols-rounded text-[14px]">timer</span>{countdown}</span> : null}
+                    </div>
+                )}
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-3">
                     <button
                         type="button"
@@ -53,7 +63,14 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
                         {moment.ctaLabel}
                         <span className="material-symbols-rounded text-[18px]">arrow_forward</span>
                     </button>
-                    {price && <span className="text-xs font-semibold text-sp-green">{priceLabel(price.price, price.currency)}</span>}
+                    {price && (offer?.discountPct ? (
+                        <span className="text-xs font-semibold">
+                            <span className="text-brand-text-muted line-through mr-1">{money(price.price, price.currency)}</span>
+                            <span className="text-sp-green">{money(discounted(price.price, offer.discountPct), price.currency)}/mo</span>
+                        </span>
+                    ) : (
+                        <span className="text-xs font-semibold text-sp-green">{priceLabel(price.price, price.currency)}</span>
+                    ))}
                     <button
                         type="button"
                         onClick={() => recordDismissed(moment, { permanent: true })}

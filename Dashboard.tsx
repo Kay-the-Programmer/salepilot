@@ -9,6 +9,7 @@ import { lazy, Suspense } from 'react';
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
 import { hasModule, MODULES } from './utils/entitlements';
+import type { CampaignDTO } from './utils/upsell';
 import { ROLE_PAGES } from './utils/rbac';
 
 const QuickView = lazy(() => import('@/pages/QuickView'));
@@ -267,7 +268,22 @@ export default function Dashboard() {
         api.get<Array<{ id: string; price: number; currency: string }>>('/subscriptions/addons')
             .then(list => upsellService.setPricing(list))
             .catch(() => { /* keep last-cached pricing */ });
+        // Load Super-Admin-authored upsell campaigns (offers / A-B / scheduling).
+        // The engine merges these over its built-in defaults; on failure it keeps
+        // the last-cached set, and absent any cache falls back to the defaults.
+        api.get<{ campaigns: CampaignDTO[] }>('/subscriptions/upsell-campaigns')
+            .then(res => upsellService.setCampaigns(res?.campaigns))
+            .catch(() => { /* keep last-cached campaigns / built-in defaults */ });
     }, [currentUser]);
+
+    // Record upsell funnel events server-side (in addition to GA4) so the Super
+    // Admin marketing analytics has data. Fire-and-forget — telemetry never blocks UI.
+    useEffect(() => {
+        upsellService.setEventSink((name, params) => {
+            api.post('/subscriptions/upsell-events', { name, ...params }).catch(() => { /* ignore */ });
+        });
+        return () => upsellService.setEventSink(null);
+    }, []);
 
     // High-value data moment delivered as a single local push (dormant_customers
     // only). Fires at most once per session, never prompts for permission, and

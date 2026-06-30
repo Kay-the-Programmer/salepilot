@@ -8,7 +8,7 @@ import {
     WHATSAPP_FREE,
     SOCIAL_FREE,
 } from '../utils/entitlements';
-import { UpsellContextData, UpsellMoment, UpsellSurface } from '../utils/upsell';
+import { UpsellContextData, UpsellMoment, UpsellSurface, CampaignOffer } from '../utils/upsell';
 import { upsellService, ModulePrice } from '../services/upsellService';
 
 /**
@@ -136,6 +136,8 @@ export interface UseUpsell {
     recordClick: (m: UpsellMoment) => void;
     recordDismissed: (m: UpsellMoment, opts?: { permanent?: boolean }) => void;
     getPrice: (module: string) => ModulePrice | null;
+    /** Live promotional offer for a campaign (discount / coupon / countdown), or null. */
+    getOffer: (m: UpsellMoment) => CampaignOffer | null;
 }
 
 /** Reactive read hook for upsell surfaces. */
@@ -148,5 +150,6 @@ export function useUpsell(): UseUpsell {
         recordClick: m => upsellService.recordClick(m),
         recordDismissed: (m, opts) => upsellService.recordDismissed(m, opts),
         getPrice: module => upsellService.getPrice(module),
+        getOffer: m => upsellService.getOffer(m),
     };
 }

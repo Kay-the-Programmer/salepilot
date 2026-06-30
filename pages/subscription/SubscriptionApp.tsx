@@ -9,8 +9,14 @@ import { formatLongDate as formatDate } from '../../utils/date';
 import type { BackendPlan, SubscriptionHistoryItem } from '../../types/subscription';
 import { logEvent } from '../../src/utils/analytics';
 import { upsellService } from '../../services/upsellService';
+import { discounted } from '../../components/upsell/offer';
 import '../assistant/assistant.css';
 import './subscription.css';
+
+/** Net add-on price after any live campaign offer — the checkout charges the
+ *  same (the server independently applies the discount; this only mirrors it). */
+const netAddonPrice = (a: { id: string; price: number }): number =>
+  discounted(a.price, upsellService.getModuleOffer(a.id)?.discountPct);
 
 const CustomPaymentModal = React.lazy(() => import('../../components/subscription/CustomPaymentModal'));
 
@@ -255,7 +261,7 @@ const SubscriptionApp: React.FC = () => {
   const handleBuyAddons = useCallback(() => {
     const chosen = addons.filter((a) => selectedAddons.has(a.id) && !a.owned);
     if (chosen.length === 0) { showToast('Select at least one add-on to continue.', 'info'); return; }
-    const amount = chosen.reduce((s, a) => s + a.price, 0);
+    const amount = chosen.reduce((s, a) => s + netAddonPrice(a), 0);
     const currency = chosen[0].currency || 'ZMW';
     setPlanToPay(null);
     setAddonCheckout({ amount, currency, moduleIds: chosen.map((a) => a.id), label: chosen.length === 1 ? chosen[0].name : `${chosen.length} add-ons` });
@@ -673,7 +679,7 @@ const AddonsView: React.FC<{
   onToggleAutoRenew: (id: string, v: boolean) => void;
 }> = ({ addons, fetching, selected, onToggle, onBuy, loading, onToggleAutoRenew }) => {
   const chosen = addons.filter((a) => !a.owned && selected.has(a.id));
-  const total = chosen.reduce((s, a) => s + a.price, 0);
+  const total = chosen.reduce((s, a) => s + netAddonPrice(a), 0);
   const cur = chosen[0]?.currency || addons[0]?.currency || 'ZMW';
 
   return (
@@ -693,6 +699,7 @@ const AddonsView: React.FC<{
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {addons.map((a) => {
             const isSel = selected.has(a.id);
+            const offer = upsellService.getModuleOffer(a.id);
             if (a.owned) {
               // Owned add-ons are not selectable; they show status + an auto-renew switch.
               return (
@@ -730,8 +737,14 @@ const AddonsView: React.FC<{
                 className={`text-left bento-card rounded-2xl p-5 transition relative ${isSel ? 'ring-2 ring-[var(--c-primary)]' : 'hover:shadow-md'}`}
               >
                 <div className="flex items-start justify-between gap-3 mb-1.5">
-                  <h3 className="font-bold m3-text-on-surface">{a.name}</h3>
-                  <span className="text-lg font-bold m3-text-primary whitespace-nowrap">{money(a.price, a.currency)}<span className="text-xs m3-text-on-surface-variant font-medium">/mo</span></span>
+                  <div className="min-w-0">
+                    <h3 className="font-bold m3-text-on-surface">{a.name}</h3>
+                    {offer?.discountPct ? <span className="inline-block mt-1 text-[11px] font-extrabold px-2 py-0.5 rounded-full bg-sp-amber text-white">{offer.discountPct}% OFF</span> : null}
+                  </div>
+                  <span className="text-lg font-bold m3-text-primary whitespace-nowrap text-right">
+                    {offer?.discountPct ? <span className="block text-xs m3-text-on-surface-variant line-through font-medium">{money(a.price, a.currency)}</span> : null}
+                    {money(netAddonPrice(a), a.currency)}<span className="text-xs m3-text-on-surface-variant font-medium">/mo</span>
+                  </span>
                 </div>
                 <p className="text-sm m3-text-on-surface-variant mb-3">{a.description}</p>
                 <span className={`inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${isSel ? 'm3-bg-primary m3-text-on-primary' : 'm3-bg-surface-high m3-text-on-surface-variant'}`}>

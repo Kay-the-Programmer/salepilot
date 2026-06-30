@@ -151,6 +151,7 @@ export default function App() {
                                 <Route path="/superadmin/notifications" element={<Dashboard />} />
                                 <Route path="/superadmin/subscriptions" element={<Dashboard />} />
                                 <Route path="/superadmin/catalog" element={<Dashboard />} />
+                                <Route path="/superadmin/campaigns" element={<Dashboard />} />
 
 
                                 {/* <Route path="/directory" element={<MarketplacePage />} />
