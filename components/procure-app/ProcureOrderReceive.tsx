@@ -11,7 +11,7 @@ interface ProcureOrderReceiveProps {
     storeSettings?: StoreSettings | null;
 }
 
-/** Receive stock against a PO — M3 styling, logic preserved from ReceiveStockModal. */
+/** Receive stock against a PO — M3 styling. */
 export const ProcureOrderReceive: React.FC<ProcureOrderReceiveProps> = ({ isOpen, onClose, po, onReceive }) => {
     const [received, setReceived] = useState<{ [key: string]: string }>({});
 

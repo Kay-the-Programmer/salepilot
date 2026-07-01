@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { PurchaseOrder, StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { num, formatMoney, formatDate } from '../crm/crmModel';
-import { poStatus, OPEN_STATUSES } from './procureModel';
+import { OPEN_STATUSES } from './procureModel';
+import PoStatusChip from '../purchase-orders/PoStatusChip';
 import { useConfirm } from '../ui/useConfirm';
 
 interface ProcureOrderDetailProps {
@@ -23,7 +24,6 @@ const STEPS: { id: PurchaseOrder['status']; label: string }[] = [
 ];
 
 export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, storeSettings, onBack, onEdit, onReceive, onUpdateStatus, onDelete }) => {
-    const st = poStatus(po.status);
     const { confirm, confirmDialog } = useConfirm();
 
     const m = useMemo(() => {
@@ -64,7 +64,7 @@ export const ProcureOrderDetail: React.FC<ProcureOrderDetailProps> = ({ po, stor
                     </div>
                     <div style={{ minWidth: 0 }}>
                         <div className="proc-prof-badges">
-                            <span className={`proc-status proc-status--${st.tone}`}>{st.label}</span>
+                            <PoStatusChip status={po.status} />
                             {po.isMarketplaceOrder && <span className="crm-badge crm-badge--platinum"><Icon name="storefront" size={14} fill={1} /> Marketplace</span>}
                         </div>
                         <h2 className="proc-prof-name">{po.poNumber}</h2>

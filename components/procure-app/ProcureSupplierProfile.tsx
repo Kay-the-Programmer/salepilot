@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { Supplier, Product, PurchaseOrder, SupplierInvoice, StoreSettings } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import { num, formatMoney, formatDate, parseApiDate } from '../crm/crmModel';
-import { OPEN_STATUSES, poStatus } from './procureModel';
+import { OPEN_STATUSES } from './procureModel';
+import PoStatusChip from '../purchase-orders/PoStatusChip';
 
 interface ProcureSupplierProfileProps {
     supplier: Supplier;
@@ -140,14 +141,13 @@ export const ProcureSupplierProfile: React.FC<ProcureSupplierProfileProps> = ({
                             <p className="crm-empty__text">No purchase orders with this supplier yet.</p>
                         </div>
                     ) : m.currentOrders.map(po => {
-                        const st = poStatus(po.status);
                         const first = po.items?.[0];
                         const count = (po.items || []).reduce((n, it) => n + num(it.quantity), 0);
                         return (
                             <div key={po.id} className="proc-order">
                                 <div className="proc-order__top">
                                     <span className="proc-order__no">{po.poNumber || `PO ${po.id.slice(-5)}`}</span>
-                                    <span className={`proc-status proc-status--${st.tone}`}>{st.label}</span>
+                                    <PoStatusChip status={po.status} />
                                 </div>
                                 <p className="proc-order__items">{count} item{count === 1 ? '' : 's'}{first ? ` · ${first.productName}` : ''}</p>
                                 <div className="proc-order__foot">

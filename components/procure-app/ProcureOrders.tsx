@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Supplier, Product, PurchaseOrder, POItem, StoreSettings } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import { num, formatMoney, formatDate, parseApiDate } from '../crm/crmModel';
-import { poStatus, OPEN_STATUSES, generateReorderDrafts, ReorderDraft } from './procureModel';
+import { OPEN_STATUSES, generateReorderDrafts, ReorderDraft } from './procureModel';
+import PoStatusChip from '../purchase-orders/PoStatusChip';
 import ProcureOrderForm from './ProcureOrderForm';
 import ProcureOrderReceive from './ProcureOrderReceive';
 import ProcureOrderDetail from './ProcureOrderDetail';
@@ -203,7 +204,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                                 </div>
                                 <div className="proc-po__right">
                                     <p className="proc-po__total">{formatMoney(d.total, storeSettings)}</p>
-                                    <span className="proc-status proc-status--s">Draft</span>
+                                    <PoStatusChip status="draft" />
                                 </div>
                                 <button type="button" className="crm-btn crm-btn--primary" style={{ padding: '10px 16px' }} onClick={() => openDraft(d)}>
                                     <Icon name="rate_review" size={18} /> Review &amp; place
@@ -258,7 +259,6 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                 ) : (
                     <div className="proc-list">
                         {visible.map(po => {
-                            const st = poStatus(po.status);
                             const itemCount = (po.items || []).reduce((n, it) => n + num(it.quantity), 0);
                             const canReceive = OPEN_STATUSES.includes(po.status) && po.status !== 'draft';
                             return (
@@ -272,7 +272,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
                                     </button>
                                     <div className="proc-po__right">
                                         <p className="proc-po__total">{formatMoney(po.total, storeSettings)}</p>
-                                        <span className={`proc-status proc-status--${st.tone}`}>{st.label}</span>
+                                        <PoStatusChip status={po.status} />
                                     </div>
                                     <div className="proc-card-actions">
                                         {canReceive && (

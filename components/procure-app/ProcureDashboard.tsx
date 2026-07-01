@@ -2,7 +2,8 @@ import React from 'react';
 import { StoreSettings } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import { formatMoney, formatDate } from '../crm/crmModel';
-import { ProcureOverview, poStatus } from './procureModel';
+import { ProcureOverview } from './procureModel';
+import PoStatusChip from '../purchase-orders/PoStatusChip';
 
 interface ProcureDashboardProps {
     overview: ProcureOverview;
@@ -87,7 +88,6 @@ export const ProcureDashboard: React.FC<ProcureDashboardProps> = ({ overview, st
                         ) : (
                             <div className="proc-list">
                                 {recentOrders.map(po => {
-                                    const st = poStatus(po.status);
                                     const itemCount = (po.items || []).length;
                                     return (
                                         <div key={po.id} className="proc-po">
@@ -98,7 +98,7 @@ export const ProcureDashboard: React.FC<ProcureDashboardProps> = ({ overview, st
                                             </div>
                                             <div className="proc-po__right">
                                                 <p className="proc-po__total">{formatMoney(po.total, storeSettings)}</p>
-                                                <span className={`proc-status proc-status--${st.tone}`}>{st.label}</span>
+                                                <PoStatusChip status={po.status} />
                                             </div>
                                         </div>
                                     );

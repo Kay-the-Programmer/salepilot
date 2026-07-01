@@ -1,26 +1,21 @@
-import { Supplier, Product, PurchaseOrder, POItem, SupplierInvoice, StoreSettings } from '../../types';
+import { Supplier, PurchaseOrder, SupplierInvoice } from '../../types';
 import { num, parseApiDate } from '../crm/crmModel';
+import {
+    OPEN_STATUSES, AWAITING_STATUSES, outstandingItems, generateReorderDrafts, ReorderDraft,
+} from '../purchase-orders/poModel';
 
 /**
  * Procurement metrics — derived from the live suppliers / purchase orders /
  * supplier invoices the host Dashboard already loads. Money columns are Postgres
  * DECIMAL (returned as strings) so everything goes through num().
+ *
+ * PO domain logic (status, totals, reorder drafts) lives in the single source of
+ * truth `components/purchase-orders/poModel`; re-exported here for existing
+ * procure-app imports.
  */
 
-export const OPEN_STATUSES: PurchaseOrder['status'][] = ['draft', 'ordered', 'partially_received'];
-const AWAITING_STATUSES: PurchaseOrder['status'][] = ['ordered', 'partially_received'];
-
-export interface PoStatusMeta { label: string; tone: 'p' | 's' | 't' | 'e' | 'n'; }
-
-export const poStatus = (status: PurchaseOrder['status']): PoStatusMeta => {
-    switch (status) {
-        case 'received': return { label: 'Received', tone: 'p' };
-        case 'partially_received': return { label: 'Partial', tone: 's' };
-        case 'ordered': return { label: 'Ordered', tone: 't' };
-        case 'canceled': return { label: 'Canceled', tone: 'e' };
-        default: return { label: 'Draft', tone: 'n' };
-    }
-};
+export { OPEN_STATUSES, generateReorderDrafts };
+export type { ReorderDraft };
 
 export interface SupplierStat {
     supplier?: Supplier;
@@ -43,62 +38,6 @@ export interface ProcureOverview {
     topSuppliers: SupplierStat[];
 }
 
-/** An auto-generated reorder draft for a single supplier. */
-export interface ReorderDraft {
-    supplierId: string;
-    supplierName: string;
-    items: POItem[];
-    units: number;
-    subtotal: number;
-    tax: number;
-    total: number;
-}
-
-/**
- * Build draft purchase orders (one per supplier) for every product that has a
- * supplier and has fallen at/below its reorder point. Suggested quantity tops
- * stock back up to reorderPoint + safetyStock. The user reviews & places these.
- */
-export const generateReorderDrafts = (
-    products: Product[],
-    suppliers: Supplier[],
-    storeSettings?: StoreSettings | null,
-): ReorderDraft[] => {
-    const supById = new Map(suppliers.map(s => [s.id, s]));
-    const bySupplier = new Map<string, POItem[]>();
-
-    for (const p of products) {
-        if (p.status === 'archived' || !p.supplierId) continue;
-        if (typeof p.reorderPoint === 'undefined') continue;
-        const reorder = num(p.reorderPoint);
-        if (reorder <= 0) continue;
-        const stock = num(p.stock);
-        if (stock > reorder) continue; // not low (≤ reorder point triggers)
-        const target = reorder + num(p.safetyStock);
-        const qty = Math.max(1, target - stock);
-        const item: POItem = {
-            productId: p.id, productName: p.name, sku: p.sku,
-            quantity: qty, costPrice: num(p.costPrice), receivedQuantity: 0,
-        };
-        const arr = bySupplier.get(p.supplierId) || [];
-        arr.push(item);
-        bySupplier.set(p.supplierId, arr);
-    }
-
-    const taxRate = num(storeSettings?.taxRate) / 100;
-    const drafts: ReorderDraft[] = [];
-    for (const [supplierId, items] of bySupplier) {
-        const subtotal = items.reduce((s, it) => s + num(it.quantity) * num(it.costPrice), 0);
-        const tax = subtotal * taxRate;
-        const units = items.reduce((s, it) => s + num(it.quantity), 0);
-        drafts.push({ supplierId, supplierName: supById.get(supplierId)?.name || 'Supplier', items, units, subtotal, tax, total: subtotal + tax });
-    }
-    return drafts.sort((a, b) => b.total - a.total);
-};
-
-const poItemsOutstanding = (po: PurchaseOrder): number =>
-    (po.items || []).reduce((sum, it) => sum + Math.max(0, num(it.quantity) - num(it.receivedQuantity)), 0);
-
 export const buildProcureOverview = (
     suppliers: Supplier[],
     purchaseOrders: PurchaseOrder[],
@@ -109,7 +48,7 @@ export const buildProcureOverview = (
     const awaiting = purchaseOrders.filter(po => AWAITING_STATUSES.includes(po.status));
 
     const openOrdersValue = open.reduce((s, po) => s + num(po.total), 0);
-    const awaitingReceiptItems = awaiting.reduce((s, po) => s + poItemsOutstanding(po), 0);
+    const awaitingReceiptItems = awaiting.reduce((s, po) => s + outstandingItems(po), 0);
 
     // Accounts payable from supplier invoices.
     let payable = 0;

@@ -45,8 +45,8 @@ interface UnifiedListGridProps<T> {
  * UnifiedListGrid - A shared component for rendering items in list or grid view
  * with consistent animations and styling patterns.
  * 
- * Uses the animation pattern from PurchaseOrdersPage (staggered fade-in-up)
- * and the design approach from ProductList/InventoryPage.
+ * Uses a staggered fade-in-up animation and the design approach from
+ * ProductList/InventoryPage.
  */
 function UnifiedListGrid<T>({
     items,

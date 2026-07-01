@@ -39,13 +39,7 @@
 .proc-po__right { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
 .proc-po__total { font-size: 15px; font-weight: 700; color: var(--c-on-bg); margin: 0; }
 
-/* Status badge */
-.proc-status { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: var(--c-radius-pill); font-size: 11px; font-weight: 700; white-space: nowrap; text-transform: uppercase; letter-spacing: 0.03em; }
-.proc-status--p { background: var(--c-primary-fixed); color: var(--c-on-primary-fixed); }
-.proc-status--s { background: var(--c-secondary-container); color: var(--c-on-secondary-container); }
-.proc-status--t { background: var(--c-tertiary-fixed); color: var(--c-on-tertiary-fixed); }
-.proc-status--e { background: var(--c-error-container); color: var(--c-on-error-container); }
-.proc-status--n { background: var(--c-surface-high); color: var(--c-on-surface-variant); }
+/* PO status is rendered by the shared <PoStatusChip> (semantic, per DESIGN.md). */
 
 /* Top suppliers */
 .proc-sup { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid rgba(189, 201, 194, 0.18); }

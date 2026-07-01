@@ -3,6 +3,7 @@ import type { PurchaseOrder, Product, StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
+import PoStatusChip from '../../components/purchase-orders/PoStatusChip';
 import { getOrderLists, saveOrderList, deleteOrderList, type QuickItem, type QuickList } from '../../services/orderListsService';
 import '../accounting/accounting.css';
 
@@ -25,14 +26,6 @@ const loadLists = (storeId?: string): QuickList[] => {
 };
 const saveLists = (storeId: string | undefined, lists: QuickList[]) => {
   try { localStorage.setItem(lsKey(storeId), JSON.stringify(lists)); } catch { /* ignore */ }
-};
-
-const PO_STATUS_TONE: Record<PurchaseOrder['status'], string> = {
-  draft: 'm3-bg-surface-high m3-text-on-surface-variant',
-  ordered: 'm3-bg-secondary-fixed m3-text-secondary',
-  partially_received: 'm3-bg-tertiary-fixed m3-text-tertiary',
-  received: 'm3-bg-primary-container m3-text-on-primary-container',
-  canceled: 'm3-bg-error-container m3-text-error',
 };
 
 const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ purchaseOrders, storeSettings, onSaveProduct, showSnackbar }) => {
@@ -296,7 +289,7 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ purchaseOrders, s
                   <button key={po.id} onClick={() => setDetailPO(po)} className="w-full text-left m3-bg-surface-lowest rounded-xl border m3-border-outline-variant shadow-sm p-4 active:scale-[0.99] transition">
                     <div className="flex items-center justify-between gap-2 mb-1">
                       <p className="text-sm font-bold m3-text-on-surface truncate">{po.poNumber}</p>
-                      <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full shrink-0 ${PO_STATUS_TONE[po.status]}`}>{po.status.replace('_', ' ')}</span>
+                      <PoStatusChip status={po.status} className="shrink-0" />
                     </div>
                     <p className="text-[12px] m3-text-on-surface-variant">{po.supplierName || 'No supplier'} · {po.items.length} item{po.items.length === 1 ? '' : 's'}</p>
                     <div className="flex items-center justify-between mt-2">

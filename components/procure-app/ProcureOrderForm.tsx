@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Supplier, Product, PurchaseOrder, POItem, StoreSettings } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import { num, formatMoney } from '../crm/crmModel';
+import { computePoTotals, suggestReorder, productToPoItem, newPoIdentifiers, applyPlaceOrder } from '../purchase-orders/poModel';
 
 type Step = 'build' | 'review';
 
@@ -19,9 +20,9 @@ interface ProcureOrderFormProps {
 }
 
 /**
- * New / edit purchase order — redesigned to the M3 wizard (Supplier → Add Items
- * → Review). The logic is preserved from PurchaseOrdersPage.PurchaseOrderForm:
- * same po state, item add/update/remove, totals recompute and save payload.
+ * New / edit purchase order — the M3 wizard (Supplier → Add Items → Review).
+ * PO domain logic (totals, reorder suggestions, place-order transition, id/number)
+ * comes from the single source of truth `components/purchase-orders/poModel`.
  */
 export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     poToEdit, suppliers, products, storeSettings, initialSupplierId, initialItems, onSave, onCancel, showSnackbar,
@@ -48,8 +49,7 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     const addProductToPO = (product: Product, quantity = 1) => {
         setPo(prev => {
             if (prev.items.some(i => i.productId === product.id)) { showSnackbar('Product is already in this PO.', 'info'); return prev; }
-            const newItem: POItem = { productId: product.id, productName: product.name, sku: product.sku, quantity, costPrice: num(product.costPrice), receivedQuantity: 0 };
-            return { ...prev, items: [...prev.items, newItem] };
+            return { ...prev, items: [...prev.items, productToPoItem(product, quantity)] };
         });
     };
 
@@ -58,11 +58,9 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     };
     const removeItem = (productId: string) => setPo(prev => ({ ...prev, items: prev.items.filter(i => i.productId !== productId) }));
 
-    // Recompute totals (identical logic to the original form).
+    // Recompute totals via the shared PO money model.
     useEffect(() => {
-        const subtotal = po.items.reduce((acc, it) => acc + (num(it.quantity) * num(it.costPrice)), 0);
-        const tax = subtotal * (num(storeSettings.taxRate) / 100);
-        const total = subtotal + num(po.shippingCost) + tax;
+        const { subtotal, tax, total } = computePoTotals(po.items, po.shippingCost, storeSettings.taxRate);
         setPo(prev => ({ ...prev, subtotal, tax, total }));
     }, [po.items, po.shippingCost, storeSettings.taxRate]);
 
@@ -76,20 +74,16 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
             && (!term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)));
     }, [po.supplierId, po.items, products, productSearch]);
 
-    const suggested = useMemo(() => {
-        if (!po.supplierId) return [] as (Product & { suggestedQty: number })[];
-        const inPo = new Set(po.items.map(i => i.productId));
-        return products
-            .filter(p => p.supplierId === po.supplierId && p.status === 'active' && !inPo.has(p.id)
-                && typeof p.reorderPoint !== 'undefined' && num(p.stock) < num(p.reorderPoint))
-            .map(p => ({ ...p, suggestedQty: Math.max(1, (num(p.reorderPoint) + num(p.safetyStock)) - num(p.stock)) }));
-    }, [po.supplierId, po.items, products]);
+    const suggested = useMemo(
+        () => suggestReorder(products, po.supplierId, new Set(po.items.map(i => i.productId))),
+        [po.supplierId, po.items, products],
+    );
 
     const addAllSuggested = () => {
         if (suggested.length === 0) { showSnackbar('Nothing to reorder for this supplier.', 'info'); return; }
         setPo(prev => ({
             ...prev,
-            items: [...prev.items, ...suggested.map(p => ({ productId: p.id, productName: p.name, sku: p.sku, quantity: p.suggestedQty, costPrice: num(p.costPrice), receivedQuantity: 0 }))],
+            items: [...prev.items, ...suggested.map(p => productToPoItem(p, p.suggestedQty))],
         }));
         showSnackbar(`Added ${suggested.length} suggested product${suggested.length === 1 ? '' : 's'}.`, 'success');
     };
@@ -97,15 +91,11 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     const totalUnits = po.items.reduce((n, it) => n + num(it.quantity), 0);
 
     const save = (placeOrder: boolean) => {
-        const built: PurchaseOrder = {
-            ...po,
-            status: placeOrder ? 'ordered' : (poToEdit ? po.status : 'draft'),
-            orderedAt: placeOrder ? (po.orderedAt || new Date().toISOString()) : po.orderedAt,
-            id: poToEdit?.id || `po_${Date.now()}`,
-            poNumber: poToEdit?.poNumber || `PO-${Date.now().toString().slice(-6)}`,
-            createdAt: poToEdit?.createdAt || new Date().toISOString(),
-        };
-        onSave(built, placeOrder);
+        const ids = poToEdit
+            ? { id: poToEdit.id, poNumber: poToEdit.poNumber, createdAt: poToEdit.createdAt }
+            : newPoIdentifiers();
+        const base: PurchaseOrder = { ...po, ...ids, status: poToEdit ? po.status : 'draft' };
+        onSave(applyPlaceOrder(base, placeOrder), placeOrder);
     };
 
     const canContinue = !!po.supplierId && po.items.length > 0;

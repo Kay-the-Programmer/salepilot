@@ -38,7 +38,6 @@ const CategoriesPage = lazy(() => import('@/pages/CategoriesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
 const ReturnsPage = lazy(() => import('@/pages/ReturnsPage'));
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
-const PurchaseOrdersPage = lazy(() => import('@/pages/PurchaseOrdersPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const StoreSetupPage = lazy(() => import('@/pages/StoreSetupPage'));
@@ -1315,7 +1314,8 @@ export default function Dashboard() {
                 case 'suppliers':
                     return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
                 case 'purchase-orders':
-                    return <PurchaseOrdersPage purchaseOrders={purchaseOrders} suppliers={suppliers} products={products} onSave={handleSavePurchaseOrder} onDelete={handleDeletePurchaseOrder} onReceiveItems={handleReceivePOItems} showSnackbar={showSnackbar} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
+                    // Consolidated into the Procurement Hub — the single PO manager.
+                    return <Navigate to="/procure/orders" replace />;
                 case 'categories':
                     return <CategoriesPage categories={categories} accounts={accounts} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} />;
                 case 'stock-takes':
@@ -1822,7 +1822,7 @@ export default function Dashboard() {
                             onPos={() => navigate('/pos')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
-                            onGeneratePO={() => navigate('/purchase-orders')}
+                            onGeneratePO={() => navigate('/procure/orders')}
                         />
                     </Suspense>
                 </NotificationProvider>
