@@ -175,10 +175,6 @@ export const ProcureSuppliers: React.FC<ProcureSuppliersProps> = ({
                 </div>
             )}
 
-            <button className="crm-fab" type="button" aria-label="Add supplier" onClick={openAdd}>
-                <Icon name="add_business" size={26} />
-            </button>
-
             <ProcureSupplierForm
                 isOpen={formOpen}
                 onClose={() => { setFormOpen(false); setEditing(null); }}

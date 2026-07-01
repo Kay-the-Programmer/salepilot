@@ -14,7 +14,7 @@ interface InventoryDashboardProps {
     onNotify: (msg: string) => void;
 }
 
-export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview, storeSettings, onAddItem, onViewItems, onViewAlerts, onGeneratePO }) => {
+export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview, storeSettings, onAddItem, onViewItems, onViewAlerts }) => {
     const { totalValue, totalSkus, totalUnits, lowStockCount, criticalCount, activity, categories, topMover } = overview;
 
     return (
@@ -113,11 +113,6 @@ export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview
                                     ? `${criticalCount} item${criticalCount === 1 ? '' : 's'} reaching critical levels.`
                                     : 'Nothing needs restocking right now.'}
                             </p>
-                            {criticalCount > 0 && (
-                                <button className="crm-btn" type="button" onClick={onGeneratePO} style={{ background: 'var(--c-secondary-container)', color: 'var(--c-on-secondary-container)', padding: '8px 16px', fontSize: 13 }}>
-                                    Generate PO
-                                </button>
-                            )}
                         </div>
                     </div>
 
