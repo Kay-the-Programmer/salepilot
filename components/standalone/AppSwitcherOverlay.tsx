@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { User } from '../../types';
 import { getLaunchableApps, AppDef } from './standaloneApps';
 import { recordAppUse, getSuggestedRoutes } from './appUsage';
+import { UpsellInline } from '../upsell/UpsellCard';
 
 interface AppSwitcherOverlayProps {
     open: boolean;
@@ -64,6 +65,8 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
 
             <div className="flex-1 overflow-y-auto p-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
                 <div className="max-w-2xl mx-auto space-y-6">
+                    {/* Contextual cross-sell slot (revives the discover_card surface). */}
+                    <UpsellInline surface="discover_card" ids={['discover_advanced_reports']} placement="app-switcher" />
                     {/* Suggested — recency-weighted most-used apps */}
                     {suggested.length > 0 && (
                         <section>

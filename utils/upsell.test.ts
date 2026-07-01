@@ -378,6 +378,22 @@ describe('marketing: A/B variant selection', () => {
         expect(seen.has('z')).toBe(false);
         expect(seen.has('a')).toBe(true);
     });
+    it('is stable when a variant is added (no cross-reassignment)', () => {
+        const two: Campaign = { ...base, variants: [
+            { id: 'a', headline: 'A', body: '', ctaLabel: '' },
+            { id: 'b', headline: 'B', body: '', ctaLabel: '' },
+        ] };
+        const three: Campaign = { ...base, variants: [...two.variants!, { id: 'c', headline: 'C', body: '', ctaLabel: '' }] };
+        let moved = 0;
+        for (let i = 0; i < 200; i++) {
+            const seed = `u${i}`;
+            const before = pickVariant(two, seed)!.id;
+            const after = pickVariant(three, seed)!.id;
+            if (after === 'c') { moved++; continue; } // reassigned to the new variant — allowed
+            expect(after).toBe(before);               // otherwise unchanged (no a<->b churn)
+        }
+        expect(moved).toBeGreaterThan(0);             // some users did move to the new variant
+    });
 });
 
 describe('marketing: offers', () => {
@@ -393,5 +409,26 @@ describe('marketing: offers', () => {
     it('an offer with no expiry is always live', () => {
         const m: Campaign = { ...base, offer: { discountPct: 10 } };
         expect(offerLive(m, NOW + 3650 * DAY)?.discountPct).toBe(10);
+    });
+});
+
+describe('marketing: placement-based selection', () => {
+    const custom: Campaign = {
+        id: 'flash_inventory', module: 'advanced_reports', surface: 'inline_card',
+        stage: 'activation', priority: 100, cooldownDays: 7, trigger: () => true,
+        headline: 'h', body: 'b', ctaLabel: 'c', placement: 'inventory',
+    };
+    const pool = [...UPSELL_MOMENTS, custom];
+
+    it('shows a placement-matched new campaign in its slot', () => {
+        expect(selectEligible(pool, 'inline_card', ctx(), state(), undefined, 'inventory')?.id).toBe('flash_inventory');
+    });
+    it('hides it in a different placement, honouring that slot\'s built-in ids', () => {
+        const m = selectEligible(pool, 'inline_card', ctx({ cashSaleCount: 9 }), state(), ['accept_mobile_money'], 'sales');
+        expect(m?.id).toBe('accept_mobile_money');
+    });
+    it('lets a placed campaign compete with the slot\'s built-ins by priority', () => {
+        const m = selectEligible(pool, 'inline_card', ctx({ recentStockoutCount: 9 }), state(), ['stockout_repeat', 'bulk_manual_adds'], 'inventory');
+        expect(m?.id).toBe('flash_inventory'); // priority 100 > stockout 70
     });
 });

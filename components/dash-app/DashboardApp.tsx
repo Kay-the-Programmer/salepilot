@@ -67,7 +67,7 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
         content = (
             <>
                 {/* Daily-summary nudge slot (one max), shown on the day-summary card. */}
-                <UpsellInline ids={['daily_summary_ai']} surface="daily_summary" className="mx-4 md:mx-6 mt-4" />
+                <UpsellInline ids={['daily_summary_ai']} surface="daily_summary" placement="dashboard" className="mx-4 md:mx-6 mt-4" />
                 <BizOverview
                     overview={overview}
                 storeSettings={storeSettings}

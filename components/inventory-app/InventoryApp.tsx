@@ -125,7 +125,7 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
             <ProductCapBanner count={products.length} storeSettings={storeSettings} />
             {/* Contextual inline upsell — stockouts / heavy manual entry. The product
                 cap is handled by the richer ProductCapBanner meter above. */}
-            <UpsellInline ids={['stockout_repeat', 'bulk_manual_adds']} className="mx-4 mb-3" />
+            <UpsellInline ids={['stockout_repeat', 'bulk_manual_adds']} placement="inventory" className="mx-4 mb-3" />
             {content}
 
             {toast && (

@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { CampaignOffer } from '../../utils/upsell';
 
 /**
  * Shared presentation helpers for the limited-time *offer* layer that campaigns
@@ -36,7 +35,3 @@ export const money = (n: number, currency: string): string => {
 /** Catalogue price after a percentage discount (server applies the same maths). */
 export const discounted = (price: number, pct?: number): number =>
     pct ? Math.round(price * (100 - pct)) / 100 : price;
-
-/** Checkout deep-link suffix carrying the offer's coupon, if any. */
-export const offerQuery = (offer?: CampaignOffer | null): string =>
-    offer?.couponCode ? `&coupon=${encodeURIComponent(offer.couponCode)}` : '';

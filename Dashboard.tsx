@@ -280,6 +280,9 @@ export default function Dashboard() {
     // Admin marketing analytics has data. Fire-and-forget — telemetry never blocks UI.
     useEffect(() => {
         upsellService.setEventSink((name, params) => {
+            // Conversions/revenue are derived server-side from real payments; only
+            // send the top-of-funnel signals (impression / click / dismiss).
+            if (name === 'upsell_convert') return;
             api.post('/subscriptions/upsell-events', { name, ...params }).catch(() => { /* ignore */ });
         });
         return () => upsellService.setEventSink(null);

@@ -257,9 +257,9 @@ class UpsellService {
     }
 
     // ── selection ─────────────────────────────────────────────────────────────
-    getEligible(surface: UpsellSurface, restrictIds?: readonly string[]): UpsellMoment | null {
+    getEligible(surface: UpsellSurface, restrictIds?: readonly string[], placement?: string): UpsellMoment | null {
         if (!this.ctx) return null;
-        const m = selectEligible(this.resolved(), surface, this.ctx, this.state(), restrictIds);
+        const m = selectEligible(this.resolved(), surface, this.ctx, this.state(), restrictIds, placement);
         return m ? this.withCreative(m) : null;
     }
 

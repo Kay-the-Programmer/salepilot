@@ -304,7 +304,7 @@ export default function AllSalesPage({ customers, storeSettings }: AllSalesPageP
                             onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
                         />
                         {/* Nudge cash-heavy merchants to accept mobile money */}
-                        <UpsellInline ids={['accept_mobile_money']} className="mt-4" />
+                        <UpsellInline ids={['accept_mobile_money']} placement="sales" className="mt-4" />
                     </div>
 
                     {/* Loading State */}

@@ -55,6 +55,17 @@ const FIELDS: { value: TriggerField; label: string }[] = [
 ];
 const OPS: TriggerOp[] = ['>=', '<=', '>', '<', '=='];
 
+// Surfaces that render in a specific on-screen slot; a NEW campaign on these must
+// pick a placement to appear (built-in moments are placed by id in the code).
+const PLACEMENT_SURFACES = ['inline_card', 'daily_summary', 'discover_card'];
+const PLACEMENTS: { key: string; label: string; surfaces: string[] }[] = [
+    { key: 'inventory', label: 'Inventory screen', surfaces: ['inline_card'] },
+    { key: 'sales', label: 'Sales screen', surfaces: ['inline_card'] },
+    { key: 'logistics', label: 'Logistics screen', surfaces: ['inline_card'] },
+    { key: 'dashboard', label: 'Business dashboard', surfaces: ['daily_summary'] },
+    { key: 'app-switcher', label: 'App launcher', surfaces: ['discover_card'] },
+];
+
 const surfaceLabel = (s: string) => SURFACES.find(x => x.value === s)?.label || s;
 
 // --- datetime <-> epoch helpers ---------------------------------------------
@@ -126,7 +137,7 @@ const SuperAdminCampaigns: React.FC = () => {
         priority: 50, cooldownDays: 14, headline: '', body: '', ctaLabel: '',
         triggerRule: { field: 'salesCount', op: '>=', value: 1 },
         status: 'active', schedule: undefined, offer: undefined, variants: undefined,
-        active: true, sortOrder: 0, origin: 'custom',
+        placement: 'inventory', active: true, sortOrder: 0, origin: 'custom',
     });
 
     return (
@@ -202,7 +213,7 @@ const Pill: React.FC<{ tone: 'green' | 'amber' | 'muted' | 'red'; children: Reac
 
 const CampaignCard: React.FC<{ c: Display; moduleName: string; onEdit: () => void }> = ({ c, moduleName, onEdit }) => {
     const paused = c.status === 'paused';
-    const offerOn = !!c.offer && (c.offer.discountPct || c.offer.couponCode);
+    const offerOn = !!c.offer && !!c.offer.discountPct;
     return (
         <button onClick={onEdit} className={`text-left bg-surface border rounded-2xl p-5 shadow-sm hover:shadow-md transition ${paused || !c.active ? 'opacity-70' : ''} ${c.origin === 'custom' ? 'border-sp-green/40' : 'border-brand-border'}`}>
             <div className="flex items-start justify-between gap-3 mb-2">
@@ -274,6 +285,11 @@ const CampaignEditor: React.FC<{
     // Trigger rule (paywall never uses one — it fires on the 402).
     const usesRule = f.surface !== 'paywall';
     const [customTrigger, setCustomTrigger] = useState<boolean>(!!initial.triggerRule);
+
+    // Placement — a NEW campaign on a slot-based surface must pick where it shows.
+    const usesPlacement = PLACEMENT_SURFACES.includes(f.surface);
+    const showPlacement = usesPlacement && initial.origin === 'custom';
+    const placementOptions = PLACEMENTS.filter(p => p.surfaces.includes(f.surface));
     const rule = f.triggerRule;
     const setRule = (patch: Partial<TriggerRule>) => set({ triggerRule: { ...(rule || { field: 'salesCount', op: '>=', value: 1 }), ...patch } });
     const secondClause = rule?.and;
@@ -313,6 +329,7 @@ const CampaignEditor: React.FC<{
             schedule: f.schedule || null,
             offer,
             variants: variants.length ? variants : null,
+            placement: f.placement || '',
             active: f.active,
             sortOrder: f.sortOrder,
         };
@@ -378,6 +395,14 @@ const CampaignEditor: React.FC<{
                             <input type="number" className={INPUT_CLASS} value={f.cooldownDays} onChange={e => set({ cooldownDays: parseInt(e.target.value) || 0 })} />
                         </Field>
                     </div>
+                    {showPlacement && (
+                        <Field label="Placement" hint={f.placement ? undefined : "Pick where this campaign appears, or it won't show"}>
+                            <select className={INPUT_CLASS} value={f.placement || ''} onChange={e => set({ placement: e.target.value || undefined })}>
+                                <option value="">— pick a slot —</option>
+                                {placementOptions.map(p => <option key={p.key} value={p.key}>{p.label}</option>)}
+                            </select>
+                        </Field>
+                    )}
                     {usesRule ? (
                         <>
                             <Toggle on={customTrigger} onClick={() => setCustomTrigger(v => !v)}
@@ -412,9 +437,8 @@ const CampaignEditor: React.FC<{
                 <Section title="Limited-time offer">
                     <Toggle on={offerOn} onClick={() => setOffer(offerOn ? null : { discountPct: 20 })} label="Attach an offer" hint="Discount, coupon and/or countdown" />
                     {offerOn && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <Field label="% off"><input type="number" min={0} max={100} className={INPUT_CLASS} value={f.offer?.discountPct ?? ''} onChange={e => setOffer({ discountPct: e.target.value === '' ? undefined : Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })} /></Field>
-                            <Field label="Coupon code"><input className={INPUT_CLASS} value={f.offer?.couponCode ?? ''} onChange={e => setOffer({ couponCode: e.target.value || undefined })} placeholder="GROW20" /></Field>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <Field label="% off" hint="Auto-applies to the first charge"><input type="number" min={0} max={100} className={INPUT_CLASS} value={f.offer?.discountPct ?? ''} onChange={e => setOffer({ discountPct: e.target.value === '' ? undefined : Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })} /></Field>
                             <Field label="Ends at" hint="Drives the countdown"><input type="datetime-local" className={INPUT_CLASS} value={toLocalInput(f.offer?.endsAt)} onChange={e => setOffer({ endsAt: fromLocalInput(e.target.value) })} /></Field>
                         </div>
                     )}
@@ -493,6 +517,56 @@ const Stat: React.FC<{ label: string; value: string; sub?: string }> = ({ label,
     </div>
 );
 
+// --- A/B significance (two-proportion z-test on conversion-per-impression) ----
+const normCdf = (z: number): number => {
+    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+    const d = 0.3989423 * Math.exp(-z * z / 2);
+    const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    return z > 0 ? 1 - p : p;
+};
+const twoPropP = (c1: number, n1: number, c2: number, n2: number): number => {
+    if (n1 === 0 || n2 === 0) return 1;
+    const p1 = c1 / n1, p2 = c2 / n2, pooled = (c1 + c2) / (n1 + n2);
+    const se = Math.sqrt(pooled * (1 - pooled) * (1 / n1 + 1 / n2));
+    if (!se) return 1;
+    return 2 * (1 - normCdf(Math.abs(p1 - p2) / se)); // two-sided p-value
+};
+interface Verdict { text: string; tone: 'green' | 'muted'; winnerId?: string }
+const abVerdict = (variants: VariantFunnel[]): Verdict => {
+    const usable = variants.filter(v => v.impressions > 0);
+    if (usable.length < 2) return { text: 'Add a second variant to A/B test this campaign.', tone: 'muted' };
+    const sorted = [...usable].sort((a, b) => (b.conversions / b.impressions) - (a.conversions / a.impressions));
+    const [top, runner] = sorted;
+    const totalConv = usable.reduce((s, v) => s + v.conversions, 0);
+    const minImpr = Math.min(...usable.map(v => v.impressions));
+    // Guardrail against calling a winner on thin data.
+    if (totalConv < 10 || minImpr < 30) return { text: 'Gathering data — not enough traffic for a confident result yet.', tone: 'muted' };
+    const conf = Math.round((1 - twoPropP(top.conversions, top.impressions, runner.conversions, runner.impressions)) * 100);
+    return conf >= 95
+        ? { text: `Variant ${top.variantId} is winning at ${conf}% confidence.`, tone: 'green', winnerId: top.variantId }
+        : { text: `No clear winner yet (${conf}% confidence) — keep the test running.`, tone: 'muted' };
+};
+
+const VariantBreakdown: React.FC<{ variants: VariantFunnel[] }> = ({ variants }) => {
+    const verdict = abVerdict(variants);
+    return (
+        <div className="px-4 pb-3 space-y-1">
+            <div className={`mb-1 px-3 py-2 rounded-lg text-xs font-semibold ${verdict.tone === 'green' ? 'bg-success-muted text-success' : 'bg-surface-variant text-brand-text-muted'}`}>
+                {verdict.tone === 'green' ? '🏆 ' : ''}{verdict.text}
+            </div>
+            {variants.map(v => (
+                <div key={v.variantId} className={`grid grid-cols-2 md:grid-cols-12 gap-2 px-3 py-2 rounded-lg text-xs items-center ${v.variantId === verdict.winnerId ? 'bg-success-muted' : 'bg-surface-variant'}`}>
+                    <span className="md:col-span-4 font-bold text-brand-text">Variant {v.variantId}{v.variantId === verdict.winnerId ? ' 🏆' : ''}</span>
+                    <span className="md:col-span-2 text-right">{v.impressions.toLocaleString()}</span>
+                    <span className="md:col-span-2 text-right">{v.clicks.toLocaleString()} · {pctLabel(v.clicks, v.impressions)}</span>
+                    <span className="md:col-span-2 text-right">{v.conversions.toLocaleString()} · {pctLabel(v.conversions, v.impressions)}</span>
+                    <span className="md:col-span-2 text-right font-bold text-sp-green">{kwacha(v.revenue)}</span>
+                </div>
+            ))}
+        </div>
+    );
+};
+
 const CampaignPerformance: React.FC<{ moduleName: (id: string) => string }> = ({ moduleName }) => {
     const [days, setDays] = useState(30);
     const [report, setReport] = useState<FunnelReport | null>(null);
@@ -551,21 +625,11 @@ const CampaignPerformance: React.FC<{ moduleName: (id: string) => string }> = ({
                                 </span>
                                 <span className="md:col-span-2 text-right text-sm font-semibold text-brand-text">{c.impressions.toLocaleString()}</span>
                                 <span className="md:col-span-2 text-right text-sm text-brand-text">{c.clicks.toLocaleString()} · <span className="text-brand-text-muted">{pctLabel(c.clicks, c.impressions)}</span></span>
-                                <span className="md:col-span-2 text-right text-sm text-brand-text">{c.conversions.toLocaleString()} · <span className="text-sp-green font-semibold">{pctLabel(c.conversions, c.clicks)}</span></span>
+                                <span className="md:col-span-2 text-right text-sm text-brand-text">{c.conversions.toLocaleString()} · <span className="text-sp-green font-semibold">{pctLabel(c.conversions, c.impressions)}</span></span>
                                 <span className="md:col-span-2 text-right text-sm font-bold text-sp-green">{kwacha(c.revenue)}</span>
                             </button>
                             {expanded === c.momentId && c.variants.length > 0 && (
-                                <div className="px-4 pb-3 space-y-1">
-                                    {c.variants.map(v => (
-                                        <div key={v.variantId} className="grid grid-cols-2 md:grid-cols-12 gap-2 px-3 py-2 rounded-lg bg-surface-variant text-xs items-center">
-                                            <span className="md:col-span-4 font-bold text-brand-text">Variant {v.variantId}</span>
-                                            <span className="md:col-span-2 text-right">{v.impressions.toLocaleString()}</span>
-                                            <span className="md:col-span-2 text-right">{v.clicks.toLocaleString()} · {pctLabel(v.clicks, v.impressions)}</span>
-                                            <span className="md:col-span-2 text-right">{v.conversions.toLocaleString()} · {pctLabel(v.conversions, v.clicks)}</span>
-                                            <span className="md:col-span-2 text-right font-bold text-sp-green">{kwacha(v.revenue)}</span>
-                                        </div>
-                                    ))}
-                                </div>
+                                <VariantBreakdown variants={c.variants} />
                             )}
                         </div>
                     ))}

@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UpsellMoment, UpsellSurface } from '../../utils/upsell';
 import { useUpsell } from '../../contexts/UpsellContext';
-import { useCountdown, discounted, money, offerQuery } from './offer';
+import { useCountdown, discounted, money } from './offer';
 
 /**
  * Dismissible contextual upsell card, shown at the top of a feature screen.
@@ -33,7 +33,7 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
 
     const goCheckout = () => {
         recordClick(moment);
-        navigate(`/subscription?view=addons&module=${encodeURIComponent(moment.module)}${offerQuery(offer)}`);
+        navigate(`/subscription?view=addons&module=${encodeURIComponent(moment.module)}`);
     };
 
     return (
@@ -47,10 +47,9 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
             <div className="flex-1 min-w-0 pr-6">
                 <p className="text-sm font-bold text-brand-text">{moment.headline}</p>
                 <p className="text-sm text-brand-text-muted mt-0.5">{moment.body}</p>
-                {offer && (offer.discountPct || offer.couponCode || countdown) && (
+                {offer && (offer.discountPct || countdown) && (
                     <div className="flex flex-wrap items-center gap-2 mt-2.5">
                         {offer.discountPct ? <span className="px-2 py-0.5 rounded-full text-[11px] font-extrabold bg-sp-amber text-white">{offer.discountPct}% OFF</span> : null}
-                        {offer.couponCode ? <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-sp-amber-soft text-sp-amber">Code {offer.couponCode}</span> : null}
                         {countdown ? <span className="inline-flex items-center gap-1 text-[11px] font-bold text-danger"><span className="material-symbols-rounded text-[14px]">timer</span>{countdown}</span> : null}
                     </div>
                 )}
@@ -99,12 +98,15 @@ export const UpsellCard: React.FC<{ moment: UpsellMoment; className?: string }> 
  * letting each screen show its own relevant card.
  */
 export const UpsellInline: React.FC<{
-    ids: readonly string[];
+    ids?: readonly string[];
     surface?: UpsellSurface;
+    /** Slot key so Super-Admin-authored campaigns targeting this placement render
+     *  here too (built-ins are matched by `ids`). */
+    placement?: string;
     className?: string;
-}> = ({ ids, surface = 'inline_card', className }) => {
+}> = ({ ids, surface = 'inline_card', placement, className }) => {
     const { getEligible } = useUpsell();
-    const moment = getEligible(surface, ids);
+    const moment = getEligible(surface, ids, placement);
     if (!moment) return null;
     return <UpsellCard moment={moment} className={className} />;
 };

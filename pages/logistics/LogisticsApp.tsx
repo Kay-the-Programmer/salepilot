@@ -156,7 +156,7 @@ const LogisticsApp: React.FC<LogisticsAppProps> = ({ storeSettings }) => {
           <div className="sp-fade-in">
             {/* Proactive, dismissible tracking nudge (engine-gated). The button
                 below remains the always-on discovery affordance. */}
-            <UpsellInline ids={['tracking_requested']} className="mb-4" />
+            <UpsellInline ids={['tracking_requested']} placement="logistics" className="mb-4" />
             <button
               onClick={() => (trackingUnlocked ? navigate('/track') : setShowTrackingUpsell(true))}
               title={trackingUnlocked ? undefined : 'Premium add-on — tap to unlock'}

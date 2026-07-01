@@ -51,12 +51,11 @@ export interface CampaignVariant {
     weight?: number;       // relative bucketing weight (default 1)
 }
 
-/** Promotional offer attached to a campaign. */
+/** Promotional offer attached to a campaign. The discount auto-applies by module
+ *  server-side (no code to redeem), so there is no coupon field. */
 export interface CampaignOffer {
     /** Percent off the module's catalogue price (1–100). */
     discountPct?: number;
-    /** Coupon code carried into the subscription checkout deep-link. */
-    couponCode?: string;
     /** Offer expiry (ms epoch) — drives the countdown and auto-expiry. */
     endsAt?: number;
     /** Extra modules bundled into the same offer. */
@@ -106,6 +105,7 @@ export interface CampaignDTO {
     schedule?: CampaignSchedule;
     offer?: CampaignOffer;
     variants?: CampaignVariant[];
+    placement?: string;
 }
 
 /**
@@ -159,6 +159,10 @@ export interface UpsellMoment {
     offer?: CampaignOffer;
     /** A/B creative variants; the base copy above is the implicit control. */
     variants?: CampaignVariant[];
+    /** Which on-screen slot an inline / daily / discover campaign renders in
+     *  (e.g. 'inventory'). Built-in moments are placed by id, so they don't need
+     *  this; a NEW campaign on those surfaces must set it to appear anywhere. */
+    placement?: string;
     /** Provenance: built-in default vs Super-Admin-authored remote campaign. */
     source?: CampaignSource;
 }
@@ -382,10 +386,19 @@ export function selectEligible(
     ctx: UpsellContextData,
     state: EligibilityState,
     restrictIds?: readonly string[],
+    placement?: string,
 ): UpsellMoment | null {
-    const pool = moments.filter(m =>
-        m.surface === surface && (!restrictIds || restrictIds.includes(m.id)),
-    );
+    // A slot scopes itself by the built-in ids it hosts AND/OR its placement key.
+    // A campaign shows if its id is in `restrictIds` (built-ins) OR its `placement`
+    // matches (new campaigns). With neither scope given, the whole surface is open.
+    const scoped = restrictIds !== undefined || placement !== undefined;
+    const pool = moments.filter(m => {
+        if (m.surface !== surface) return false;
+        if (!scoped) return true;
+        if (restrictIds && restrictIds.includes(m.id)) return true;
+        if (placement && m.placement === placement) return true;
+        return false;
+    });
     const eligible = pool.filter(m => isEligible(m, ctx, state));
 
     if (surface === 'paywall') return topByPriority(eligible);
@@ -485,21 +498,28 @@ function hashString(s: string): number {
 }
 
 /**
- * Deterministic, weighted A/B pick: a given (seed, campaign) always resolves to
- * the same variant, so a user's experience is stable and analytics are clean.
+ * Deterministic, weighted A/B pick via **rendezvous (HRW) hashing**: each variant
+ * gets a score from `hash(seed:campaign:variantId)` shaped by its weight, and the
+ * highest wins. A given (seed, campaign) always resolves to the same variant, and
+ * — crucially — adding or removing a variant only reassigns the users it directly
+ * affects (those who move to a new variant, or off a removed one); everyone else
+ * keeps their variant, so an experiment isn't contaminated when its set is edited.
  * Returns null when the campaign defines no variants (use the base copy).
  */
 export function pickVariant(moment: UpsellMoment, seed: string): CampaignVariant | null {
     const variants = moment.variants;
     if (!variants || variants.length === 0) return null;
-    const total = variants.reduce((n, v) => n + Math.max(0, v.weight ?? 1), 0);
-    if (total <= 0) return variants[0];
-    let bucket = hashString(`${seed}:${moment.id}`) % total;
+    let best: CampaignVariant | null = null;
+    let bestScore = -Infinity;
     for (const v of variants) {
-        bucket -= Math.max(0, v.weight ?? 1);
-        if (bucket < 0) return v;
+        const w = Math.max(0, v.weight ?? 1);
+        if (w <= 0) continue; // zero weight → never chosen
+        // key ∈ (0,1); score = ln(key)/w is highest for the weight-favoured variant.
+        const key = Math.max(hashString(`${seed}:${moment.id}:${v.id}`) / 4294967296, 1e-12);
+        const score = Math.log(key) / w;
+        if (score > bestScore) { bestScore = score; best = v; }
     }
-    return variants[variants.length - 1];
+    return best ?? variants[0]; // all zero-weight → fall back to the first
 }
 
 export interface ResolvedCreative {

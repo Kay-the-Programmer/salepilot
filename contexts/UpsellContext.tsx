@@ -131,7 +131,7 @@ export function useUpsellSync(input: UpsellSyncInput): void {
 
 export interface UseUpsell {
     ctx: UpsellContextData | null;
-    getEligible: (surface: UpsellSurface, restrictIds?: readonly string[]) => UpsellMoment | null;
+    getEligible: (surface: UpsellSurface, restrictIds?: readonly string[], placement?: string) => UpsellMoment | null;
     recordShown: (m: UpsellMoment) => void;
     recordClick: (m: UpsellMoment) => void;
     recordDismissed: (m: UpsellMoment, opts?: { permanent?: boolean }) => void;
@@ -145,7 +145,7 @@ export function useUpsell(): UseUpsell {
     useSyncExternalStore(upsellService.subscribe, upsellService.getVersion, upsellService.getVersion);
     return {
         ctx: upsellService.getContext(),
-        getEligible: (surface, restrictIds) => upsellService.getEligible(surface, restrictIds),
+        getEligible: (surface, restrictIds, placement) => upsellService.getEligible(surface, restrictIds, placement),
         recordShown: m => upsellService.recordShown(m),
         recordClick: m => upsellService.recordClick(m),
         recordDismissed: (m, opts) => upsellService.recordDismissed(m, opts),

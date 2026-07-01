@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { upsellService } from '../services/upsellService';
-import { useCountdown, discounted, offerQuery } from './upsell/offer';
+import { useCountdown, discounted } from './upsell/offer';
 
 /**
  * Global soft-paywall host. Listens for the `salepilot:paywall` event the API
@@ -93,7 +93,7 @@ const PaywallHost: React.FC = () => {
     const id = moduleId;
     if (moment) upsellService.recordClick(moment);
     close();
-    navigate(`/subscription?view=addons${id ? `&module=${encodeURIComponent(id)}` : ''}${offerQuery(offer)}`);
+    navigate(`/subscription?view=addons${id ? `&module=${encodeURIComponent(id)}` : ''}`);
   }, [moduleId, moment, navigate, close]);
 
   // Secondary "recommended bundle" path — opens the full plans view.
@@ -133,10 +133,9 @@ const PaywallHost: React.FC = () => {
               {money(discounted(addon.price, pct), addon.currency)}<span className="text-sm">/mo</span>
             </p>
           )}
-          {offer && (offer.discountPct || offer.couponCode || countdown) && (
+          {offer && (offer.discountPct || countdown) && (
             <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
               {offer.discountPct ? <span className="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-sp-amber text-white">{offer.discountPct}% OFF</span> : null}
-              {offer.couponCode ? <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-sp-amber-soft text-sp-amber">Code {offer.couponCode}</span> : null}
               {countdown ? <span className="inline-flex items-center gap-1 text-[11px] font-bold text-danger"><span className="material-symbols-rounded text-[14px]">timer</span>{countdown}</span> : null}
             </div>
           )}
