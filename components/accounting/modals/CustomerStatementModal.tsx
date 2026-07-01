@@ -28,15 +28,15 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
             date: sale.timestamp,
             description: `Invoice #${sale.transactionId}`,
             amount: sale.total,
-            type: 'invoice' as const
+            type: 'invoice' as const,
         }];
 
         (sale.payments || []).forEach(p => {
             lines.push({
                 date: p.date || '',
-                description: `Payment Received - ${p.method}`,
+                description: `Payment received — ${p.method}`,
                 amount: -p.amount,
-                type: 'payment' as const
+                type: 'payment' as const,
             });
         });
 
@@ -64,97 +64,111 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
         }
     };
 
+    const LABEL = 'text-[11px] font-bold text-brand-text-muted uppercase tracking-wider';
+
     return createPortal(
-        <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in p-4">
-            <div className="liquid-glass-card rounded-[2rem] glass-effect !/95 dark:!bg-slate-900/95 w-full max-w-4xl overflow-hidden flex flex-col animate-scale-up">
-                <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg">
-                                <DocumentChartBarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Customer Statement</h3>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={onClose}>
+            <div className="absolute inset-0 bg-warm-900/50 backdrop-blur-sm animate-fade-in" />
+
+            <div
+                className="relative bg-surface w-full max-w-3xl rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh]"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-brand-border">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <DocumentChartBarIcon className="w-5 h-5 text-primary" />
                         </div>
-                        <button type="button" onClick={onClose} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors text-slate-500 dark:text-slate-400 active:scale-95 transition-all duration-300">
-                            <XMarkIcon className="w-5 h-5" />
-                        </button>
+                        <div className="min-w-0">
+                            <h3 className="text-lg font-bold text-brand-text tracking-tight leading-tight">Customer Statement</h3>
+                            <p className="text-xs text-brand-text-muted">As of {new Date().toLocaleDateString()}</p>
+                        </div>
                     </div>
+                    <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-lg text-brand-text-muted hover:bg-surface-variant transition-colors flex-shrink-0">
+                        <XMarkIcon className="w-5 h-5" />
+                    </button>
                 </div>
 
-                <div className="p-6 max-h-[70vh] overflow-y-auto overflow-x-auto custom-scrollbar" ref={printRef}>
-                    <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900/20 dark:to-slate-800/20 rounded-xl p-6 mb-6 border border-slate-200 dark:border-slate-800">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">{customer.name}</h2>
+                {/* Body */}
+                <div className="px-6 py-6 overflow-y-auto flex-1 custom-scrollbar" ref={printRef}>
+                    {/* Party + balance */}
+                    <div className="rounded-2xl bg-surface-variant border border-brand-border p-5 mb-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div className="min-w-0">
+                                <h2 className="text-xl font-bold text-brand-text truncate">{customer.name}</h2>
                                 <div className="mt-2 space-y-1">
-                                    {customer.email && <p className="text-sm text-slate-500 dark:text-slate-400">{customer.email}</p>}
-                                    {customer.phone && <p className="text-sm text-slate-500 dark:text-slate-400">{customer.phone}</p>}
-                                    {customer.address && <p className="text-sm text-slate-500 dark:text-slate-400">{customer.address.street}, {customer.address.city}, {customer.address.state} {customer.address.zip}</p>}
+                                    {customer.email && <p className="text-sm text-brand-text-muted truncate">{customer.email}</p>}
+                                    {customer.phone && <p className="text-sm text-brand-text-muted">{customer.phone}</p>}
+                                    {customer.address && <p className="text-sm text-brand-text-muted">{customer.address.street}, {customer.address.city}, {customer.address.state} {customer.address.zip}</p>}
                                 </div>
                             </div>
-                            <div className="text-right">
-                                <div className="text-sm text-slate-500 dark:text-slate-400">Statement Date</div>
-                                <div className="text-lg font-bold text-slate-900 dark:text-slate-100">{new Date().toLocaleDateString()}</div>
-                                <div className="mt-4">
-                                    <div className="text-sm text-slate-500 dark:text-slate-400">Current Balance</div>
-                                    <div className="text-2xl font-bold text-blue-700 dark:text-blue-400">{formatCurrency(customer.accountBalance, storeSettings)}</div>
-                                </div>
+                            <div className="sm:text-right">
+                                <div className={LABEL}>Current Balance</div>
+                                <div className="text-3xl font-black text-primary tracking-tight mt-1">{formatCurrency(customer.accountBalance, storeSettings)}</div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
-                        <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                            <thead className="bg-slate-50 dark:bg-slate-900/50">
+                    {/* Ledger */}
+                    <div className="overflow-x-auto rounded-2xl border border-brand-border">
+                        <table className="min-w-full divide-y divide-brand-border">
+                            <thead className="bg-surface-variant">
                                 <tr>
-                                    <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Date</th>
-                                    <th className="px-4 py-3 text-left text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Description</th>
-                                    <th className="px-4 py-3 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Amount</th>
-                                    <th className="px-4 py-3 text-right text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Balance</th>
+                                    <th className={`px-4 py-3 text-left ${LABEL}`}>Date</th>
+                                    <th className={`px-4 py-3 text-left ${LABEL}`}>Description</th>
+                                    <th className={`px-4 py-3 text-right ${LABEL}`}>Amount</th>
+                                    <th className={`px-4 py-3 text-right ${LABEL}`}>Balance</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-slate-900/50 divide-y divide-slate-200 dark:divide-slate-800">
+                            <tbody className="bg-surface divide-y divide-brand-border">
                                 {finalLines.map((line, index) => (
-                                    <tr key={index} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors active:scale-95 transition-all duration-300">
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-slate-600 dark:text-slate-400 font-medium">
+                                    <tr key={index} className="hover:bg-surface-variant transition-colors">
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-brand-text-muted font-medium">
                                             {new Date(line.date).toLocaleDateString()}
                                         </td>
-                                        <td className="px-4 py-3 text-sm text-slate-900 dark:text-slate-100">
+                                        <td className="px-4 py-3 text-sm text-brand-text">
                                             <div className="flex items-center gap-2">
-                                                <div className={`w-2 h-2 rounded-full ${line.type === 'payment' ? 'bg-emerald-500' : 'bg-blue-500'}`}></div>
-                                                <span className="font-bold">{line.description}</span>
+                                                <span className={`w-2 h-2 rounded-full flex-shrink-0 ${line.type === 'payment' ? 'bg-success' : 'bg-primary'}`}></span>
+                                                <span className="font-semibold">{line.description}</span>
                                             </div>
                                         </td>
-                                        <td className={`px-4 py-3 whitespace-nowrap text-sm text-right font-black ${line.type === 'payment' ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                        <td className={`px-4 py-3 whitespace-nowrap text-sm text-right font-bold ${line.type === 'payment' ? 'text-success' : 'text-brand-text'}`}>
                                             {formatCurrency(line.amount, storeSettings)}
                                         </td>
-                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-black text-slate-900 dark:text-slate-100">
+                                        <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-bold text-brand-text">
                                             {formatCurrency(line.balance, storeSettings)}
                                         </td>
                                     </tr>
                                 ))}
-                                <tr className="bg-slate-50 dark:bg-slate-800/50">
-                                    <td colSpan={3} className="px-4 py-4 text-right font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest text-[10px]">Current Balance Due</td>
-                                    <td className="px-4 py-4 text-right font-black text-blue-600 dark:text-blue-400 text-lg">{formatCurrency(customer.accountBalance, storeSettings)}</td>
+                                {finalLines.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} className="px-4 py-10 text-center text-sm text-brand-text-muted">No transactions on record for this customer.</td>
+                                    </tr>
+                                )}
+                                <tr className="bg-surface-variant">
+                                    <td colSpan={3} className={`px-4 py-4 text-right ${LABEL}`}>Current Balance Due</td>
+                                    <td className="px-4 py-4 text-right font-black text-primary text-lg">{formatCurrency(customer.accountBalance, storeSettings)}</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div className="px-6 py-5 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 flex justify-end gap-3">
+                {/* Footer */}
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-brand-border bg-surface">
                     <button
                         onClick={handlePrint}
-                        className="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all duration-200 shadow-sm active:scale-95 transition-all duration-300"
+                        className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-brand-text bg-surface-variant rounded-xl hover:brightness-95 transition-all active:scale-95"
                     >
                         <PrinterIcon className="w-5 h-5" />
-                        Print Statement
+                        Print
                     </button>
                     <button
                         onClick={onClose}
-                        className="px-8 py-3 text-sm font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-lg shadow-blue-500/25 transition-all duration-200 active:scale-[0.98] active:scale-95 transition-all duration-300"
+                        className="px-6 py-3 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-xl shadow-sm transition-all active:scale-95"
                     >
-                        Close Portal
+                        Close
                     </button>
                 </div>
             </div>

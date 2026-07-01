@@ -6,6 +6,7 @@ import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import type { StoreSettings, User } from '../../types';
 import type { SnackbarType } from '../../App';
 import { api } from '../../services/api';
+import { hasModule, MODULES } from '../../utils/entitlements';
 import '../assistant/assistant.css';
 
 // Reused feature sections (logic unchanged)
@@ -57,6 +58,19 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
   const { openAppSwitcher } = useAppSwitcher();
   const [currentSettings, setCurrentSettings] = useState<StoreSettings>(settings);
   const [active, setActive] = useState<Category>('store');
+
+  // Accepting mobile money is gated behind the paid "Accept Mobile Money" add-on;
+  // stores connect their OWN Lenco account (money settles to them) but must unlock
+  // the add-on first — that's how the platform monetizes POS payment volume.
+  const hasGateway = hasModule(settings, MODULES.PAYMENT_GATEWAY);
+  const unlockGateway = () => {
+    window.dispatchEvent(new CustomEvent('salepilot:paywall', {
+      detail: {
+        module: MODULES.PAYMENT_GATEWAY,
+        message: 'Unlock Accept Mobile Money to connect your Lenco account and take MTN / Airtel Money payments at checkout.',
+      },
+    }));
+  };
   const [mobileDetail, setMobileDetail] = useState(false); // Apple-style master→detail push (mobile only)
   const [editingFeature, setEditingFeature] = useState<string | null>(null);
   const openCategory = (c: Category) => { setActive(c); setEditingFeature(null); setMobileDetail(true); };
@@ -205,11 +219,34 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                     </Field>
                   </div>
                 </Card>
-                <p className="text-xs font-bold uppercase tracking-wide m3-text-on-surface-variant mt-2 mb-2 px-1">Mobile money (Lenco)</p>
-                <Card>
-                  <Field label="Lenco public key"><input className={inputCls} name="lencoPublicKey" value={currentSettings.lencoPublicKey || ''} onChange={handleChange} placeholder="pk_live_…" /></Field>
-                  <Field label="Lenco secret key"><input className={inputCls} type="password" name="lencoSecretKey" value={currentSettings.lencoSecretKey || ''} onChange={handleChange} placeholder="sk_live_…" /></Field>
-                </Card>
+                <p className="text-xs font-bold uppercase tracking-wide m3-text-on-surface-variant mt-2 mb-2 px-1">Accept mobile money (Lenco)</p>
+                {hasGateway ? (
+                  <Card>
+                    <p className="text-[13px] m3-text-on-surface-variant mb-3 px-1">
+                      Connect your own Lenco account to take MTN / Airtel Money at checkout. Payments settle directly to you.
+                    </p>
+                    <Field label="Lenco public key"><input className={inputCls} name="lencoPublicKey" value={currentSettings.lencoPublicKey || ''} onChange={handleChange} placeholder="pk_live_…" /></Field>
+                    <Field label="Lenco secret key"><input className={inputCls} type="password" name="lencoSecretKey" value={currentSettings.lencoSecretKey || ''} onChange={handleChange} placeholder="sk_live_…" /></Field>
+                  </Card>
+                ) : (
+                  <Card>
+                    <div className="text-center py-6 px-4">
+                      <div className="mx-auto w-12 h-12 rounded-xl flex items-center justify-center" style={{ background: 'var(--m3-secondary-container, #ffe0c2)' }}>
+                        <span className="material-symbols-rounded" style={{ color: 'var(--m3-on-secondary-container, #b35300)' }}>lock</span>
+                      </div>
+                      <h4 className="mt-3 text-base font-extrabold m3-text-on-surface">Accept Mobile Money</h4>
+                      <p className="mt-1 text-[13px] m3-text-on-surface-variant max-w-sm mx-auto">
+                        Unlock this add-on to connect your own Lenco account and take MTN / Airtel Money payments at checkout. Payments settle directly to your account.
+                      </p>
+                      <button type="button" onClick={unlockGateway}
+                        className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl text-white transition-all active:scale-95"
+                        style={{ background: 'var(--m3-primary, #FF7F27)' }}>
+                        <span className="material-symbols-rounded text-[18px]">auto_awesome</span>
+                        Unlock add-on
+                      </button>
+                    </div>
+                  </Card>
+                )}
               </>
             )}
 

@@ -30,6 +30,13 @@ interface AssistantLauncherProps {
 const DEFAULT_CURRENCY: CurrencyContext = { symbol: '$', code: 'USD', position: 'before' };
 
 /**
+ * Global kill-switch for the floating "Ask AI" launcher. `true` hides the button
+ * everywhere it's mounted (POS, CRM, Inventory, Procurement, …). Flip back to
+ * `false` to restore it (it then still respects the AI_ASSISTANT add-on gate).
+ */
+const HIDE_ASSISTANT_LAUNCHER = true;
+
+/**
  * Floating "Ask AI" launcher + slide-in assistant panel. Self-contained and
  * theme-scoped (.sp-assistant), so it can be mounted inside any app without
  * pulling in that app's styling or data wiring.
@@ -69,6 +76,9 @@ const AssistantLauncher: React.FC<AssistantLauncherProps> = ({
   }, [open]);
 
   const side = position === 'bottom-left' ? 'left-4 md:left-6' : 'right-4 md:right-6';
+
+  // Globally hidden app-wide — see HIDE_ASSISTANT_LAUNCHER above.
+  if (HIDE_ASSISTANT_LAUNCHER) return null;
 
   // Premium gate: no entitlement → no floating button at all.
   if (!unlocked) return null;

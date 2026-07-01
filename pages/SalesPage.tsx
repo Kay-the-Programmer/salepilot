@@ -112,9 +112,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // External barcode scanner hook — paused while any modal overlapping the POS is open
     const isScannerModalOpen = showOutOfStockModal || showLowStockAlert || isProductFormOpen || isCamScannerOpen || cartView === 'confirm';
 
-    // Premium entitlement: the automated Payment Gateway add-on. Unlocked when the
-    // store has bought the module, or has configured its own merchant gateway key.
-    const isGatewayUnlocked = !!storeSettings.lencoPublicKey || (storeSettings.enabledModules?.includes('payment_gateway') ?? false);
+    // Premium entitlement: the paid "Accept Mobile Money" add-on. Unlocked only by
+    // owning the module — bringing your own Lenco key is NOT enough, so accepting
+    // payments through SalePilot is always monetized via the add-on. (The store's
+    // own key is still what money settles to; see the checkout flow below.)
+    const isGatewayUnlocked = storeSettings.enabledModules?.includes('payment_gateway') ?? false;
 
     // Stable ref so the scanner callback never becomes stale
     const handleContinuousScanRef = useRef<(barcode: string) => void>(() => { });

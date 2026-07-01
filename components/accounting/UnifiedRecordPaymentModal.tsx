@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { StoreSettings } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
-import CurrencyDollarIcon from '../icons/CurrencyDollarIcon';
-import CalendarIcon from '../icons/CalendarIcon';
-import BanknotesIcon from '../icons/BanknotesIcon';
-import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import CreditCardIcon from '../icons/CreditCardIcon';
+import ChevronDownIcon from '../icons/ChevronDownIcon';
 import { formatCurrency } from '../../utils/currency';
-import { InputField } from '../ui/InputField';
 
 interface UnifiedRecordPaymentModalProps {
     isOpen: boolean;
@@ -23,6 +19,10 @@ interface UnifiedRecordPaymentModalProps {
     storeSettings: StoreSettings;
 }
 
+// Shared modal field language.
+const FIELD = 'w-full px-4 py-3 rounded-xl text-sm font-semibold bg-surface-variant text-brand-text border border-brand-border focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all';
+const LABEL = 'block text-[11px] font-bold text-brand-text-muted uppercase tracking-wider mb-1.5';
+
 const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
     isOpen,
     onClose,
@@ -33,12 +33,14 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
     customerOrSupplierName,
     paymentMethods,
     onSave,
-    storeSettings
+    storeSettings,
 }) => {
     const [amount, setAmount] = useState(balanceDue.toFixed(2));
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [method, setMethod] = useState('');
     const [reference, setReference] = useState('');
+
+    const symbol = storeSettings?.currency?.symbol ?? '';
 
     useEffect(() => {
         if (isOpen) {
@@ -56,144 +58,124 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (isInvalid) {
-            alert("Invalid payment amount.");
+            alert('Invalid payment amount.');
             return;
         }
-        const paymentAmount = parseFloat(amount);
-        onSave(invoiceId, { date, amount: paymentAmount, method, reference });
+        onSave(invoiceId, { date, amount: parseFloat(amount), method, reference });
         onClose();
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-            {/* Backdrop with blur */}
-            <div
-                className="absolute inset-0 bg-slate-950/20 backdrop-blur-sm transition-opacity duration-300"
-                onClick={onClose}
-            />
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={onClose}>
+            <div className="absolute inset-0 bg-warm-900/50 backdrop-blur-sm animate-fade-in" />
 
-            <div className="liquid-glass-card rounded-[2rem] relative glass-effect !/95 dark:!bg-slate-900/95 w-full sm:max-w-lg max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950/50">
-                <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
+            <div
+                className="relative bg-surface w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh]"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
                     {/* Header */}
-                    <div className="px-6 py-6 sm:px-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-slate-900/50">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg shadow-blue-200 dark:shadow-blue-900/20">
-                                <CreditCardIcon className="w-6 h-6 text-white" />
+                    <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-brand-border">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <CreditCardIcon className="w-5 h-5 text-primary" />
                             </div>
-                            <div>
-                                <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                                    {title}
-                                </h3>
-                                <div className="flex items-center gap-2 mt-1">
-                                    <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                        Invoice {invoiceNumber || invoiceId}
-                                    </p>
-                                    <div className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-                                    <p className="text-sm font-bold text-blue-600 dark:text-blue-400">
-                                        {formatCurrency(balanceDue, storeSettings)} due
-                                    </p>
-                                </div>
+                            <div className="min-w-0">
+                                <h3 className="text-lg font-bold text-brand-text tracking-tight leading-tight">{title}</h3>
+                                <p className="text-xs text-brand-text-muted truncate">Invoice {invoiceNumber || invoiceId}</p>
                             </div>
                         </div>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-800 shadow-sm active:scale-95 transition-all duration-300"
-                        >
-                            <XMarkIcon className="h-5 w-5" />
+                        <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-lg text-brand-text-muted hover:bg-surface-variant transition-colors flex-shrink-0">
+                            <XMarkIcon className="w-5 h-5" />
                         </button>
                     </div>
-                    drum
-                    drum
-                    drum
-                    drum
 
-                    <div className="flex-1 overflow-y-auto px-6 py-8 sm:px-8 space-y-6">
-                        <div className="p-4 bg-gradient-to-r from-blue-50 to-blue-100/50 dark:from-blue-900/20 dark:to-blue-800/20 rounded-2xl border border-blue-200 dark:border-blue-800">
-                            <div className="flex justify-between items-center">
-                                <div>
-                                    <div className="text-xs font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest mb-1">Balance Due</div>
-                                    <div className="text-2xl font-black text-blue-900 dark:text-blue-100 tracking-tight">{formatCurrency(balanceDue, storeSettings)}</div>
-                                </div>
-                                <div className="text-right">
-                                    <div className="text-xs font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest mb-1">Entity</div>
-                                    <div className="font-bold text-blue-900 dark:text-blue-100 truncate max-w-[150px]">{customerOrSupplierName || 'N/A'}</div>
-                                </div>
+                    {/* Body */}
+                    <div className="px-6 py-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+                        {/* Balance summary */}
+                        <div className="rounded-2xl bg-primary/5 border border-primary/15 px-5 py-4 flex items-center justify-between gap-4">
+                            <div className="min-w-0">
+                                <div className="text-[11px] font-bold text-primary/80 uppercase tracking-wider mb-1">Balance Due</div>
+                                <div className="text-2xl font-black text-primary tracking-tight">{formatCurrency(balanceDue, storeSettings)}</div>
+                            </div>
+                            <div className="text-right min-w-0">
+                                <div className="text-[11px] font-bold text-brand-text-muted uppercase tracking-wider mb-1">Billed To</div>
+                                <div className="text-sm font-bold text-brand-text truncate max-w-[160px]">{customerOrSupplierName || 'N/A'}</div>
                             </div>
                         </div>
 
+                        {/* Amount + date */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <InputField
-                                label="Payment Amount"
-                                type="number"
-                                value={amount}
-                                onChange={(e) => setAmount(e.target.value)}
-                                max={balanceDue}
-                                step="0.01"
-                                required
-                                icon={<CurrencyDollarIcon className="w-4 h-4" />}
-                                className="!font-black text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 focus:ring-blue-500/20 shadow-sm"
-                            />
-                            <InputField
-                                label="Payment Date"
-                                type="date"
-                                value={date}
-                                onChange={(e) => setDate(e.target.value)}
-                                required
-                                icon={<CalendarIcon className="w-4 h-4" />}
-                                className="!font-black text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 focus:ring-blue-500/20 shadow-sm [color-scheme:light] dark:[color-scheme:dark]"
-                            />
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <label className="text-[11px] font-bold text-brand-text-muted uppercase tracking-wider">Amount</label>
+                                    <button type="button" onClick={() => setAmount(balanceDue.toFixed(2))} className="text-[11px] font-bold text-primary hover:underline">
+                                        Pay full
+                                    </button>
+                                </div>
+                                <div className="relative">
+                                    {symbol && <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-brand-text-muted pointer-events-none">{symbol}</span>}
+                                    <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        value={amount}
+                                        onChange={(e) => setAmount(e.target.value)}
+                                        max={balanceDue}
+                                        step="0.01"
+                                        required
+                                        className={FIELD + (symbol ? ' pl-9' : '')}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className={LABEL}>Date</label>
+                                <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className={FIELD} />
+                            </div>
                         </div>
 
+                        {/* Method */}
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">Payment Channel</label>
+                            <label className={LABEL}>Payment Method</label>
                             <div className="relative">
-                                <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
                                 <select
                                     value={method}
                                     onChange={e => setMethod(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 dark:text-slate-100 font-bold shadow-sm"
+                                    className={FIELD + ' appearance-none pr-10'}
                                 >
                                     {paymentMethods.map(pm => (
-                                        <option key={pm.id} value={pm.id} className="dark:bg-slate-900">{pm.name}</option>
+                                        <option key={pm.id} value={pm.id}>{pm.name}</option>
                                     ))}
-                                    {paymentMethods.length === 0 && (
-                                        <option value="" disabled className="dark:bg-slate-900">No payment methods configured</option>
-                                    )}
+                                    {paymentMethods.length === 0 && <option value="" disabled>No payment methods configured</option>}
                                 </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
-                                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                                </div>
+                                <ChevronDownIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted pointer-events-none" />
                             </div>
                         </div>
 
-                        <InputField
-                            label="Transaction Reference / Check #"
-                            type="text"
-                            value={reference}
-                            onChange={(e) => setReference(e.target.value)}
-                            placeholder="Optional reference details"
-                            icon={<ClipboardDocumentListIcon className="w-4 h-4" />}
-                            className="!font-black text-slate-900 dark:text-slate-100 border-slate-200 dark:border-slate-800 rounded-2xl bg-white dark:bg-slate-900/50 focus:ring-blue-500/20 shadow-sm"
-                        />
+                        {/* Reference */}
+                        <div>
+                            <label className={LABEL}>Reference <span className="text-brand-text-muted/60 normal-case font-medium">(optional)</span></label>
+                            <input
+                                type="text"
+                                value={reference}
+                                onChange={(e) => setReference(e.target.value)}
+                                placeholder="Transaction / cheque #"
+                                className={FIELD}
+                            />
+                        </div>
                     </div>
 
-                    {/* Footer */}
-                    <div className="px-6 py-6 sm:px-8 border-t border-slate-100 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 sm:flex sm:flex-row-reverse gap-4">
+                    {/* Footer — Pay is a conversion action → orange (DESIGN.md) */}
+                    <div className="flex items-center gap-3 px-6 py-4 border-t border-brand-border bg-surface">
+                        <button type="button" onClick={onClose} className="px-5 py-3 text-sm font-bold text-brand-text-muted hover:text-brand-text transition-colors">
+                            Cancel
+                        </button>
                         <button
                             type="submit"
                             disabled={isInvalid}
-                            className="w-full sm:w-auto px-8 py-4 bg-blue-600 text-white rounded-[1.5rem] font-bold text-sm hover:bg-blue-700 transition-all shadow-xl shadow-blue-600/10 dark:shadow-blue-900/20 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                            className="flex-1 flex items-center justify-center gap-2 py-3 bg-secondary hover:brightness-95 text-white text-sm font-bold rounded-xl shadow-sm active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed"
                         >
-                            <CurrencyDollarIcon className="w-5 h-5" />
-                            Finalize Payment
-                        </button>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center active:scale-95 transition-all duration-300"
-                        >
-                            Discard
+                            <CreditCardIcon className="w-5 h-5" />
+                            Record Payment
                         </button>
                     </div>
                 </form>

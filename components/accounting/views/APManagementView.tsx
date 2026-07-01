@@ -8,6 +8,8 @@ import BuildingOfficeIcon from '../../icons/BuildingOfficeIcon';
 import EllipsisVerticalIcon from '../../icons/EllipsisVerticalIcon';
 import EyeIcon from '../../icons/EyeIcon';
 import CalculatorIcon from '../../icons/CalculatorIcon';
+import BanknotesIcon from '../../icons/BanknotesIcon';
+import CalendarIcon from '../../icons/CalendarIcon';
 import UnifiedRecordPaymentModal from '../UnifiedRecordPaymentModal';
 
 interface APManagementViewProps {
@@ -20,6 +22,19 @@ interface APManagementViewProps {
     suppliers: Supplier[];
     onOpenInvoiceForm: () => void;
 }
+
+const FILTERS: { id: string; label: string }[] = [
+    { id: 'all', label: 'All Invoices' },
+    { id: 'unpaid', label: 'Unpaid' },
+    { id: 'overdue', label: 'Overdue' },
+    { id: 'paid', label: 'Paid' },
+];
+
+// Prefer the payment records when present; fall back to the stored running
+// total. Guarding on length avoids an empty array reading as 0 paid.
+const paidAmount = (inv: SupplierInvoice) => (inv.payments && inv.payments.length > 0)
+    ? inv.payments.reduce((sum, p) => sum + p.amount, 0)
+    : (inv.amountPaid || 0);
 
 const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, storeSettings, onRecordPayment, onViewInvoice, onOpenInvoiceForm }) => {
     const [invoiceToPay, setInvoiceToPay] = useState<SupplierInvoice | null>(null);
@@ -60,9 +75,11 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
         return invoicesWithStatus.filter(inv => inv.status === statusFilter);
     }, [invoicesWithStatus, statusFilter]);
 
+    // Total payables outstanding across ALL invoices (independent of the table
+    // filter), never negative — mirrors the Receivables "Total Outstanding" KPI.
     const totalOutstanding = useMemo(() =>
-        filteredInvoices.reduce((sum, inv) => sum + (inv.amount - inv.amountPaid), 0),
-        [filteredInvoices]
+        invoicesWithStatus.reduce((sum, inv) => sum + Math.max(0, inv.amount - paidAmount(inv)), 0),
+        [invoicesWithStatus]
     );
 
     const overdueCount = useMemo(() =>
@@ -75,77 +92,81 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
         [invoicesWithStatus]
     );
 
+    const KPIS = [
+        { label: 'Outstanding', value: formatCurrency(totalOutstanding, storeSettings), sub: 'Owed to suppliers', icon: BanknotesIcon, accent: 'm3-text-primary' },
+        { label: 'Overdue', value: String(overdueCount), sub: 'Past due date', icon: CalendarIcon, accent: 'm3-text-error' },
+        { label: 'Unpaid', value: String(unpaidCount), sub: 'Awaiting payment', icon: CalculatorIcon, accent: 'text-amber-600 dark:text-amber-400' },
+        { label: 'Total Invoices', value: String(invoicesWithStatus.length), sub: 'All time', icon: DocumentChartBarIcon, accent: 'm3-text-on-surface-variant' },
+    ];
+
     return (
-        <div className="space-y-6 md:space-y-8 pb-10">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="space-y-6 pb-10">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Accounts Payable</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage supplier invoices and payments</p>
+                    <h3 className="text-2xl font-bold m3-text-on-surface tracking-tight">Accounts Payable</h3>
+                    <p className="text-sm m3-text-on-surface-variant mt-1">Manage supplier invoices and payments</p>
                 </div>
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                    <div className="flex-1 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30 rounded-xl">
-                        <div className="text-xs font-medium text-amber-700 dark:text-amber-400">Total Outstanding</div>
-                        <div className="text-xl font-bold text-amber-900 dark:text-amber-100 tracking-tight">{formatCurrency(totalOutstanding, storeSettings)}</div>
-                    </div>
-                    <button
-                        onClick={onOpenInvoiceForm}
-                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition-colors active:scale-95 transition-all duration-300"
-                    >
-                        <PlusIcon className="w-4 h-4" />
-                        <span className="whitespace-nowrap">Record Invoice</span>
-                    </button>
-                </div>
+                <button
+                    onClick={onOpenInvoiceForm}
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 m3-bg-primary m3-text-on-primary font-bold text-sm rounded-lg shadow-sm active:scale-95 transition-all self-start sm:self-auto"
+                >
+                    <PlusIcon className="w-5 h-5" />
+                    Record Invoice
+                </button>
             </div>
 
-            {/* Stats and Filters */}
-            {/* Stats and Filters */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Invoices</div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{invoicesWithStatus.length}</div>
-                </div>
-                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs font-medium text-red-600 dark:text-red-400">Overdue</div>
-                    <div className="text-2xl font-bold text-red-700 dark:text-red-400 tracking-tight">{overdueCount}</div>
-                </div>
-                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                    <div className="text-xs font-medium text-amber-600 dark:text-amber-400">Unpaid</div>
-                    <div className="text-2xl font-bold text-amber-700 dark:text-amber-400 tracking-tight">{unpaidCount}</div>
-                </div>
+            {/* KPI row */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {KPIS.map(kpi => {
+                    const Icon = kpi.icon;
+                    return (
+                        <div key={kpi.label} className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className={`text-[11px] font-semibold uppercase tracking-widest ${kpi.accent}`}>{kpi.label}</span>
+                                <Icon className={`w-5 h-5 ${kpi.accent} opacity-70`} />
+                            </div>
+                            <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{kpi.value}</div>
+                            <p className="text-xs m3-text-on-surface-variant mt-1">{kpi.sub}</p>
+                        </div>
+                    );
+                })}
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-wrap items-center gap-2">
-                {['all', 'unpaid', 'overdue', 'paid'].map((status) => (
-                    <button
-                        key={status}
-                        onClick={() => setStatusFilter(status)}
-                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${statusFilter === status
-                            ? 'bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900'
-                            : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800'
-                            }`}
-                    >
-                        {status === 'all' ? 'All Invoices' : status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </button>
-                ))}
+            {/* Filter toolbar */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                    {FILTERS.map(f => (
+                        <button
+                            key={f.id}
+                            onClick={() => setStatusFilter(f.id)}
+                            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${statusFilter === f.id
+                                ? 'm3-bg-primary m3-text-on-primary'
+                                : 'm3-bg-surface-lowest m3-text-on-surface-variant hover:m3-bg-surface-container border m3-border-outline-variant'
+                                }`}
+                        >
+                            {f.label}
+                        </button>
+                    ))}
+                </div>
+                <span className="text-xs font-medium m3-text-on-surface-variant">{filteredInvoices.length} shown</span>
             </div>
 
-            {/* Mobile View: Cards */}
-            {/* Mobile View: Cards */}
+            {/* Mobile cards */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
                 {filteredInvoices.map(invoice => (
                     <div
                         key={invoice.id}
-                        className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800"
+                        className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm"
                         onClick={() => onViewInvoice(invoice)}
                     >
                         <div className="flex justify-between items-start mb-3">
                             <div>
                                 <div className="flex items-center gap-2 mb-1">
-                                    <span className="text-sm font-bold text-slate-900 dark:text-slate-100">{invoice.invoiceNumber}</span>
+                                    <span className="text-sm font-bold m3-text-on-surface">{invoice.invoiceNumber}</span>
                                     <StatusBadge status={invoice.status} />
                                 </div>
-                                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                                <div className="flex items-center gap-1.5 text-xs m3-text-on-surface-variant">
                                     <BuildingOfficeIcon className="w-3.5 h-3.5" />
                                     <span>{invoice.supplierName}</span>
                                 </div>
@@ -153,29 +174,23 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                             <div className="relative" onClick={e => e.stopPropagation()}>
                                 <button
                                     onClick={() => setActiveActionMenu(activeActionMenu === invoice.id ? null : invoice.id)}
-                                    className="p-1.5 -mr-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg transition-colors"
+                                    className="p-1.5 -mr-1.5 m3-text-on-surface-variant hover:m3-text-on-surface rounded-lg transition-colors"
                                 >
                                     <EllipsisVerticalIcon className="w-5 h-5" />
                                 </button>
                                 {activeActionMenu === invoice.id && (
-                                    <div className="liquid-glass-card rounded-[2rem] absolute right-0 top-full mt-1 w-48 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 z-20 py-1">
+                                    <div className="m3-bg-surface-lowest rounded-xl shadow-lg absolute right-0 top-full mt-1 w-48 border m3-border-outline-variant z-20 py-1">
                                         <button
-                                            onClick={() => {
-                                                onViewInvoice(invoice);
-                                                setActiveActionMenu(null);
-                                            }}
-                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors active:scale-95 transition-all duration-300"
+                                            onClick={() => { onViewInvoice(invoice); setActiveActionMenu(null); }}
+                                            className="w-full flex items-center gap-2 px-4 py-2 text-sm m3-text-on-surface hover:m3-bg-surface-container transition-colors"
                                         >
                                             <EyeIcon className="w-4 h-4" />
                                             View Details
                                         </button>
                                         {invoice.status !== 'paid' && (
                                             <button
-                                                onClick={() => {
-                                                    setInvoiceToPay(invoice);
-                                                    setActiveActionMenu(null);
-                                                }}
-                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-medium active:scale-95 transition-all duration-300"
+                                                onClick={() => { setInvoiceToPay(invoice); setActiveActionMenu(null); }}
+                                                className="w-full flex items-center gap-2 px-4 py-2 text-sm m3-text-secondary hover:m3-bg-surface-container font-medium transition-colors"
                                             >
                                                 <CalculatorIcon className="w-4 h-4" />
                                                 Record Payment
@@ -186,17 +201,17 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                        <div className="grid grid-cols-2 gap-4 pt-3 border-t m3-border-outline-variant">
                             <div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Due Date</div>
-                                <div className={`text-sm font-medium ${invoice.status === 'overdue' ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'}`}>
+                                <div className="text-xs m3-text-on-surface-variant mb-0.5">Due Date</div>
+                                <div className={`text-sm font-medium ${invoice.status === 'overdue' ? 'm3-text-error' : 'm3-text-on-surface'}`}>
                                     {new Date(invoice.dueDate).toLocaleDateString()}
                                 </div>
                             </div>
                             <div className="text-right">
-                                <div className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">Outstanding</div>
-                                <div className="text-sm font-bold text-slate-900 dark:text-slate-100">
-                                    {formatCurrency(invoice.amount - invoice.amountPaid, storeSettings)}
+                                <div className="text-xs m3-text-on-surface-variant mb-0.5">Outstanding</div>
+                                <div className="text-sm font-bold m3-text-on-surface">
+                                    {formatCurrency(invoice.amount - paidAmount(invoice), storeSettings)}
                                 </div>
                             </div>
                         </div>
@@ -204,47 +219,45 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                 ))}
             </div>
 
-            {/* Desktop View: Table */}
-            <div className="liquid-glass-card rounded-[2rem] hidden md:block dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
+            {/* Desktop table */}
+            <div className="m3-bg-surface-lowest rounded-2xl hidden md:block border m3-border-outline-variant shadow-sm overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
-                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50">
+                    <table className="min-w-full divide-y divide-[var(--m3-outline-variant)]">
+                        <thead className="m3-bg-surface-container">
                             <tr>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">Invoice #</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">Supplier</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">PO #</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 dark:text-slate-400">Due Date</th>
-                                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">Balance Due</th>
-                                <th className="px-6 py-4 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Status</th>
-                                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 dark:text-slate-400">Actions</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold m3-text-on-surface-variant">Invoice #</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold m3-text-on-surface-variant">Supplier</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold m3-text-on-surface-variant">PO #</th>
+                                <th className="px-6 py-4 text-left text-xs font-semibold m3-text-on-surface-variant">Due Date</th>
+                                <th className="px-6 py-4 text-right text-xs font-semibold m3-text-on-surface-variant">Balance Due</th>
+                                <th className="px-6 py-4 text-center text-xs font-semibold m3-text-on-surface-variant">Status</th>
+                                <th className="px-6 py-4 text-right text-xs font-semibold m3-text-on-surface-variant">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-transparent divide-y divide-slate-200 dark:divide-slate-800">
+                        <tbody className="bg-transparent divide-y divide-[var(--m3-outline-variant)]">
                             {filteredInvoices.map(invoice => (
                                 <tr
                                     key={invoice.id}
                                     onClick={() => onViewInvoice(invoice)}
-                                    className="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer transition-colors active:scale-95 transition-all duration-300"
+                                    className="hover:m3-bg-surface-container cursor-pointer transition-colors"
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500"></div>
-                                            <span className="text-sm font-medium text-slate-900 dark:text-slate-100">{invoice.invoiceNumber}</span>
+                                            <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--m3-secondary)' }}></div>
+                                            <span className="text-sm font-medium m3-text-on-surface">{invoice.invoiceNumber}</span>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-sm text-slate-900 dark:text-slate-100 font-medium">{invoice.supplierName}</span>
-                                        </div>
+                                        <span className="text-sm m3-text-on-surface font-medium">{invoice.supplierName}</span>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm m3-text-on-surface-variant">
                                         {invoice.poNumber}
                                     </td>
-                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${invoice.status === 'overdue' ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-slate-500 dark:text-slate-400'}`}>
+                                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${invoice.status === 'overdue' ? 'm3-text-error font-semibold' : 'm3-text-on-surface-variant'}`}>
                                         {new Date(invoice.dueDate).toLocaleDateString()}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right">
-                                        <div className="text-sm font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(invoice.amount - invoice.amountPaid, storeSettings)}</div>
+                                        <div className="text-sm font-bold m3-text-on-surface tracking-tight">{formatCurrency(invoice.amount - paidAmount(invoice), storeSettings)}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <StatusBadge status={invoice.status} />
@@ -253,7 +266,7 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                                         {invoice.status !== 'paid' && (
                                             <button
                                                 onClick={() => setInvoiceToPay(invoice)}
-                                                className="px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors active:scale-95 transition-all duration-300"
+                                                className="px-3 py-1.5 text-xs font-semibold m3-text-secondary m3-bg-secondary-fixed rounded-lg hover:brightness-95 transition-all active:scale-95"
                                             >
                                                 Pay
                                             </button>
@@ -263,12 +276,12 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                             ))}
                             {filteredInvoices.length === 0 && (
                                 <tr>
-                                    <td colSpan={7} className="text-center py-12">
-                                        <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-3">
-                                            <DocumentChartBarIcon className="w-6 h-6 text-slate-400" />
+                                    <td colSpan={7} className="text-center py-14">
+                                        <div className="w-12 h-12 m3-bg-surface-container rounded-xl flex items-center justify-center mx-auto mb-3">
+                                            <DocumentChartBarIcon className="w-6 h-6 m3-text-on-surface-variant" />
                                         </div>
-                                        <p className="text-slate-900 dark:text-slate-100 font-medium">No invoices found</p>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Try changing your filters</p>
+                                        <p className="m3-text-on-surface font-medium">No invoices found</p>
+                                        <p className="text-sm m3-text-on-surface-variant mt-1">Try changing your filters or record a new invoice</p>
                                     </td>
                                 </tr>
                             )}
@@ -286,7 +299,7 @@ const APManagementView: React.FC<APManagementViewProps> = ({ supplierInvoices, s
                     }}
                     invoiceId={invoiceToPay.id}
                     invoiceNumber={invoiceToPay.invoiceNumber}
-                    balanceDue={invoiceToPay.amount - invoiceToPay.amountPaid}
+                    balanceDue={invoiceToPay.amount - paidAmount(invoiceToPay)}
                     customerOrSupplierName={invoiceToPay.supplierName}
                     paymentMethods={storeSettings.supplierPaymentMethods || storeSettings.paymentMethods}
                     onSave={onRecordPayment}

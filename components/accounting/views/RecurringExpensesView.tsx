@@ -40,12 +40,12 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
         <div className="space-y-6 md:space-y-8 pb-10">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">Recurring Expenses</h2>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Manage automated business outflows</p>
+                    <h2 className="text-2xl font-bold m3-text-on-surface tracking-tight">Recurring Expenses</h2>
+                    <p className="text-sm m3-text-on-surface-variant mt-1">Manage automated business outflows</p>
                 </div>
                 <button
                     onClick={onOpenForm}
-                    className="flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-xl transition-colors active:scale-95 transition-all duration-300"
+                    className="flex items-center justify-center gap-2 px-5 py-2.5 m3-bg-primary m3-text-on-primary font-bold text-sm rounded-xl transition-all duration-300 active:scale-95 shadow-sm"
                 >
                     <PlusIcon className="w-4 h-4" />
                     Set Recurring Expense
@@ -54,20 +54,20 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
 
             {/* Summary Card */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
                     <div className="flex items-center justify-between mb-2">
-                        <div className="text-xs font-medium text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Monthly Commitment</div>
-                        <BanknotesIcon className="w-5 h-5 text-indigo-600 dark:text-indigo-400 opacity-60" />
+                        <div className="text-xs font-medium m3-text-tertiary uppercase tracking-widest">Monthly Commitment</div>
+                        <BanknotesIcon className="w-5 h-5 m3-text-tertiary opacity-70" />
                     </div>
-                    <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(totalRecurringAmount, storeSettings)}</div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">From {filteredExpenses.filter(e => e.status === 'active').length} active commitments</p>
+                    <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{formatCurrency(totalRecurringAmount, storeSettings)}</div>
+                    <p className="text-xs m3-text-on-surface-variant mt-1">From {filteredExpenses.filter(e => e.status === 'active').length} active commitments</p>
                 </div>
             </div>
 
             {/* Filters */}
             <div>
                 <div className="relative group max-w-md">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-indigo-500 transition-colors">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 m3-text-on-surface-variant">
                         <MagnifyingGlassIcon className="w-5 h-5" />
                     </div>
                     <input
@@ -75,55 +75,55 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
                         placeholder="Search description, category, reference..."
                         value={searchTerm}
                         onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-medium text-slate-900 dark:text-slate-100 placeholder-slate-400"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium m3-bg-surface-container m3-text-on-surface border m3-border-outline-variant focus:outline-none focus:ring-2 focus:ring-[color:var(--m3-primary)] focus:border-transparent transition-all"
                     />
                 </div>
             </div>
 
             {/* Recurring Table */}
-            <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden">
+            <div className="m3-bg-surface-lowest rounded-2xl border m3-border-outline-variant shadow-sm overflow-hidden">
                 <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Description</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">Amount</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Schedule</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Next Run</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Status</th>
-                                <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">Actions</th>
+                            <tr className="m3-bg-surface-container border-b m3-border-outline-variant">
+                                <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant">Description</th>
+                                <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant text-right">Amount</th>
+                                <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant">Schedule</th>
+                                <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant">Next Run</th>
+                                <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant">Status</th>
+                                <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-[var(--m3-outline-variant)]">
                             {filteredExpenses.map(exp => (
-                                <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300">
-                                    <td className="px-6 py-4 text-slate-900 dark:text-slate-100">
+                                <tr key={exp.id} className="hover:m3-bg-surface-container transition-colors group">
+                                    <td className="px-6 py-4 m3-text-on-surface">
                                         <div className="text-sm font-medium">{exp.description}</div>
                                         <div className="flex flex-wrap gap-1 mt-1">
                                             {exp.category && (
-                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30">
+                                                <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium m3-bg-primary-fixed m3-text-primary">
                                                     {exp.category}
                                                 </span>
                                             )}
-                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium m3-bg-surface-container m3-text-on-surface-variant">
                                                 {exp.expenseAccountName}
                                             </span>
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-right text-slate-900 dark:text-slate-100">
+                                    <td className="px-6 py-4 whitespace-nowrap text-right m3-text-on-surface">
                                         <div className="text-sm font-bold tracking-tight">{formatCurrency(exp.amount, storeSettings)}</div>
                                     </td>
-                                    <td className="px-6 py-4 text-slate-600 dark:text-slate-400">
+                                    <td className="px-6 py-4 m3-text-on-surface-variant">
                                         <div className="text-xs font-medium capitalize">{exp.frequency}</div>
-                                        <div className="text-[10px] opacity-60">Started: {new Date(exp.startDate).toLocaleDateString()}</div>
+                                        <div className="text-[10px] opacity-70">Started: {new Date(exp.startDate).toLocaleDateString()}</div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-slate-900 dark:text-slate-100">
+                                    <td className="px-6 py-4 whitespace-nowrap m3-text-on-surface">
                                         <div className="text-xs font-medium">{new Date(exp.nextRunDate).toLocaleDateString()}</div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${exp.status === 'active' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
-                                            exp.status === 'paused' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
-                                                'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${exp.status === 'active' ? 'bg-green-500/15 text-green-600 dark:text-green-400' :
+                                            exp.status === 'paused' ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400' :
+                                                'bg-red-500/15 text-red-600 dark:text-red-400'
                                             }`}>
                                             {exp.status}
                                         </span>
@@ -132,14 +132,14 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
                                         <div className="flex justify-end items-center gap-2">
                                             <button
                                                 onClick={() => onEdit(exp)}
-                                                className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg transition-colors"
+                                                className="p-1.5 m3-text-on-surface-variant hover:m3-text-primary rounded-lg transition-colors"
                                                 title="Edit Commitment"
                                             >
                                                 <PencilIcon className="w-4 h-4" />
                                             </button>
                                             <button
                                                 onClick={() => onDelete(exp.id)}
-                                                className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors"
+                                                className="p-1.5 m3-text-on-surface-variant hover:m3-text-error rounded-lg transition-colors"
                                                 title="Delete Commitment"
                                             >
                                                 <TrashIcon className="w-4 h-4" />
@@ -152,10 +152,10 @@ const RecurringExpensesView: React.FC<RecurringExpensesViewProps> = ({ expenses,
                     </table>
                     {filteredExpenses.length === 0 && (
                         <div className="text-center py-12">
-                            <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-3">
-                                <CalendarDaysIcon className="w-6 h-6 text-slate-400" />
+                            <div className="w-12 h-12 m3-bg-surface-container rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <CalendarDaysIcon className="w-6 h-6 m3-text-on-surface-variant" />
                             </div>
-                            <p className="text-slate-900 dark:text-slate-100 font-medium">No recurring expenses found</p>
+                            <p className="m3-text-on-surface font-medium">No recurring expenses found</p>
                         </div>
                     )}
                 </div>

@@ -1,8 +1,9 @@
 import React from 'react';
 import { StoreSettings } from '../../../types';
-import { CreditCardIcon, CurrencyDollarIcon, ChartBarIcon, ShieldCheckIcon, XCircleIcon } from '../../icons';
+import { CreditCardIcon, CurrencyDollarIcon, ChartBarIcon, ShieldCheckIcon, XCircleIcon, LockIcon, SparklesIcon } from '../../icons';
 import SettingsCard from '../SettingsCard';
 import DetailItem from '../DetailItem';
+import { hasModule, MODULES } from '../../../utils/entitlements';
 
 interface FinancialSettingsSectionProps {
     settings: StoreSettings;
@@ -25,6 +26,41 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
 }) => {
     const inputFieldClasses = "block w-full rounded-xl border-0 px-4 py-3 text-brand-text shadow-sm ring-1 ring-inset ring-brand-border placeholder:text-brand-text-muted focus:ring-2 focus:ring-inset focus:ring-primary focus:outline-none sm:text-sm sm:leading-6 transition-all duration-200 bg-surface hover:bg-surface-variant focus:bg-surface";
     const labelClasses = "block text-sm font-semibold leading-6 text-brand-text-muted mb-2";
+
+    // Accepting mobile-money payments through SalePilot is gated behind the paid
+    // "Accept Mobile Money" add-on. Stores connect their OWN Lenco account (money
+    // settles directly to them); the add-on is what unlocks the capability — that's
+    // how the platform monetizes payments flowing through the POS.
+    const hasGateway = hasModule(settings, MODULES.PAYMENT_GATEWAY);
+    const unlockGateway = () => {
+        window.dispatchEvent(new CustomEvent('salepilot:paywall', {
+            detail: {
+                module: MODULES.PAYMENT_GATEWAY,
+                message: 'Unlock Accept Mobile Money to connect your Lenco account and take MTN / Airtel Money payments at checkout.',
+            },
+        }));
+    };
+
+    const LencoLockedCard = (
+        <div className="rounded-2xl border border-dashed border-brand-border bg-surface-variant/40 p-6 text-center">
+            <div className="mx-auto w-12 h-12 rounded-xl bg-sp-amber-soft text-sp-amber flex items-center justify-center">
+                <LockIcon className="w-6 h-6" />
+            </div>
+            <h5 className="mt-3 text-base font-extrabold tracking-tight text-brand-text">Accept Mobile Money</h5>
+            <p className="mt-1 text-sm text-brand-text-muted max-w-sm mx-auto">
+                Unlock this add-on to connect your own Lenco account and take MTN / Airtel Money
+                payments right at checkout. Payments settle directly to your account.
+            </p>
+            <button
+                type="button"
+                onClick={unlockGateway}
+                className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white bg-sp-amber rounded-xl shadow-sm hover:bg-sp-green-dark transition-all active:scale-95"
+            >
+                <SparklesIcon className="w-4 h-4" />
+                Unlock add-on
+            </button>
+        </div>
+    );
 
     return (
         <SettingsCard
@@ -107,34 +143,49 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
 
                     <h4 className="text-sm font-semibold text-brand-text mb-4 flex items-center gap-2">
                         <CreditCardIcon className="w-4 h-4" />
-                        Lenco Integration
+                        Accept Mobile Money (Lenco)
+                        {hasGateway && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                                <ShieldCheckIcon className="w-3 h-3" /> Active
+                            </span>
+                        )}
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label htmlFor="lencoPublicKey" className="text-sm font-medium text-brand-text-muted">Lenco Public Key</label>
-                            <input
-                                type="text"
-                                name="lencoPublicKey"
-                                id="lencoPublicKey"
-                                value={currentSettings.lencoPublicKey || ''}
-                                onChange={handleChange}
-                                className={inputFieldClasses}
-                                placeholder="pk_live_..."
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label htmlFor="lencoSecretKey" className="text-sm font-medium text-brand-text-muted">Lenco Secret Key</label>
-                            <input
-                                type="password"
-                                name="lencoSecretKey"
-                                id="lencoSecretKey"
-                                value={currentSettings.lencoSecretKey || ''}
-                                onChange={handleChange}
-                                className={inputFieldClasses}
-                                placeholder="sk_live_..."
-                            />
-                        </div>
-                    </div>
+                    {hasGateway ? (
+                        <>
+                            <p className="text-sm text-brand-text-muted mb-4">
+                                Connect your own Lenco account to take MTN / Airtel Money at checkout.
+                                Payments settle directly to you.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label htmlFor="lencoPublicKey" className="text-sm font-medium text-brand-text-muted">Lenco Public Key</label>
+                                    <input
+                                        type="text"
+                                        name="lencoPublicKey"
+                                        id="lencoPublicKey"
+                                        value={currentSettings.lencoPublicKey || ''}
+                                        onChange={handleChange}
+                                        className={inputFieldClasses}
+                                        placeholder="pk_live_..."
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label htmlFor="lencoSecretKey" className="text-sm font-medium text-brand-text-muted">Lenco Secret Key</label>
+                                    <input
+                                        type="password"
+                                        name="lencoSecretKey"
+                                        id="lencoSecretKey"
+                                        value={currentSettings.lencoSecretKey || ''}
+                                        onChange={handleChange}
+                                        className={inputFieldClasses}
+                                        placeholder="sk_live_..."
+                                    />
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        LencoLockedCard
+                    )}
                 </div>
             ) : (
                 <div className="flex flex-col">
@@ -157,6 +208,9 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                         }
                         icon={<CurrencyDollarIcon className="w-5 h-5" />}
                     />
+                    {!hasGateway ? (
+                        <div className="py-4">{LencoLockedCard}</div>
+                    ) : (<>
                     <DetailItem
                         label="Lenco Public Key"
                         value={
@@ -205,6 +259,7 @@ const FinancialSettingsSection: React.FC<FinancialSettingsSectionProps> = ({
                         }
                         icon={<CreditCardIcon className="w-5 h-5" />}
                     />
+                    </>)}
                 </div>
             )
             }

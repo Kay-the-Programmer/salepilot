@@ -8,7 +8,7 @@ import { num, parseApiDate } from '../crm/crmModel';
  * CRM and Inventory apps (see crmModel / inventoryModel).
  */
 
-export type DashPeriod = 'today' | 'week' | 'month';
+export type DashPeriod = 'today' | 'week' | 'month' | 'last_month' | 'quarter' | 'year' | 'all';
 
 /** A reporting range: one of the quick presets, or a custom calendar range. */
 export type DashRange =
@@ -25,8 +25,25 @@ const rangeWindow = (range: DashRange, now: number): { start: number; end: numbe
         const span = Math.max(DAY, range.end - range.start);
         return { start: range.start, end: range.end, prevStart: range.start - span, prevEnd: range.start };
     }
-    const span = range.preset === 'today' ? DAY : range.preset === 'week' ? 7 * DAY : 30 * DAY;
-    return { start: now - span, end: now, prevStart: now - 2 * span, prevEnd: now - span };
+    // Today / Week stay rolling (last 24h / 7d); the rest are calendar periods.
+    const d = new Date(now);
+    const y = d.getFullYear(), m = d.getMonth();
+    let start: number;
+    let end = now;
+    switch (range.preset) {
+        case 'today': start = now - DAY; break;
+        case 'week': start = now - 7 * DAY; break;
+        case 'month': start = new Date(y, m, 1).getTime(); break;                                   // month-to-date
+        case 'last_month': start = new Date(y, m - 1, 1).getTime(); end = new Date(y, m, 1).getTime(); break;
+        case 'quarter': start = new Date(y, Math.floor(m / 3) * 3, 1).getTime(); break;             // quarter-to-date
+        case 'year': start = new Date(y, 0, 1).getTime(); break;                                    // year-to-date
+        case 'all': start = new Date(2000, 0, 1).getTime(); break;
+        default: start = now - 7 * DAY;
+    }
+    // 'All time' has no comparable prior window; everything else compares to the equal span before it.
+    if (range.preset === 'all') return { start, end, prevStart: start, prevEnd: start };
+    const span = Math.max(DAY, end - start);
+    return { start, end, prevStart: start - span, prevEnd: start };
 };
 
 /** Net value of a sale (total less anything refunded). */
@@ -237,6 +254,10 @@ export const PERIOD_LABEL: Record<DashPeriod, string> = {
     today: 'Today',
     week: 'This Week',
     month: 'This Month',
+    last_month: 'Last Month',
+    quarter: 'This Quarter',
+    year: 'This Year',
+    all: 'All Time',
 };
 
 /** Short human label for a range — preset name, or formatted custom date(s). */

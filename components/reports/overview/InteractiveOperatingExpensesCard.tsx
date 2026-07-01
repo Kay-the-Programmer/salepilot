@@ -94,7 +94,7 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
 
     const handleGetStarted = () => {
         window.location.hash = 'expenses';
-        window.location.pathname = '/accounting';
+        window.location.pathname = '/books';
     };
 
     return (

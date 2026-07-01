@@ -29,6 +29,8 @@ interface ExpensesViewProps {
     onOpenRecurringForm: () => void;
 }
 
+const FIELD = 'w-full pl-10 pr-4 py-2.5 rounded-lg text-sm font-medium m3-bg-surface-container m3-text-on-surface border m3-border-outline-variant focus:outline-none focus:ring-2 focus:ring-[color:var(--m3-primary)] focus:border-transparent transition-all';
+
 const ExpensesView: React.FC<ExpensesViewProps> = ({
     expenses: parentExpenses,
     recurringExpenses,
@@ -40,7 +42,7 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({
     onSaveRecurring,
     onDeleteRecurring,
     onEditRecurring,
-    onOpenRecurringForm
+    onOpenRecurringForm,
 }) => {
     const [activeSubTab, setActiveSubTab] = useState<'regular' | 'recurring'>('regular');
 
@@ -84,220 +86,204 @@ const ExpensesView: React.FC<ExpensesViewProps> = ({
         }
     }, [parentExpenses, searchTerm, startDate, endDate, fetchExpenses]);
 
+    const TABS: { id: 'regular' | 'recurring'; label: string; icon: React.FC<{ className?: string }> }[] = [
+        { id: 'regular', label: 'One-time', icon: BanknotesIcon },
+        { id: 'recurring', label: 'Recurring', icon: RefreshIcon },
+    ];
+
     return (
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 pb-10 items-start">
-            {/* Side Navigation */}
-            <div className="w-full lg:w-64 flex-shrink-0 liquid-glass-card rounded-[2rem] p-3 lg:sticky lg:top-[160px]">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest px-4 mb-3 mt-2">Expense Types</h3>
-                <nav className="flex flex-row lg:flex-col gap-2 overflow-x-auto lg:overflow-visible no-scrollbar">
-                    <button
-                        onClick={() => setActiveSubTab('regular')}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 active:scale-95 whitespace-nowrap lg:whitespace-normal ${activeSubTab === 'regular' ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                    >
-                        <BanknotesIcon className={`w-5 h-5 ${activeSubTab === 'regular' ? 'opacity-100' : 'opacity-60'}`} />
-                        Regular Expenses
-                    </button>
-                    <button
-                        onClick={() => setActiveSubTab('recurring')}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold transition-all duration-300 active:scale-95 whitespace-nowrap lg:whitespace-normal ${activeSubTab === 'recurring' ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                    >
-                        <RefreshIcon className={`w-5 h-5 ${activeSubTab === 'recurring' ? 'opacity-100' : 'opacity-60'}`} />
-                        Recurring Expenses
-                    </button>
-                </nav>
+        <div className="space-y-6 pb-10">
+            {/* Header + segmented switcher — uniform with the other hub sections */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold m3-text-on-surface tracking-tight">Expenses</h2>
+                    <p className="text-sm m3-text-on-surface-variant mt-1">Track and manage your business outflows</p>
+                </div>
+                <div className="flex m3-bg-surface-container p-1 rounded-xl border m3-border-outline-variant self-start sm:self-auto">
+                    {TABS.map(t => {
+                        const Icon = t.icon;
+                        const active = activeSubTab === t.id;
+                        return (
+                            <button
+                                key={t.id}
+                                onClick={() => setActiveSubTab(t.id)}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold transition-all ${active ? 'm3-bg-surface-lowest m3-text-on-surface shadow-sm' : 'm3-text-on-surface-variant hover:m3-text-on-surface'}`}
+                            >
+                                <Icon className="w-4 h-4" />
+                                {t.label}
+                            </button>
+                        );
+                    })}
+                </div>
             </div>
 
-            {/* Main Content Area */}
-            <div className="flex-1 min-w-0 w-full space-y-6 md:space-y-8">
-                {activeSubTab === 'regular' ? (
-                    <div className="animate-fade-in space-y-6 md:space-y-8">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                            <div>
-                                <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">One-time Expenses</h2>
-                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Track and manage your business outflows</p>
+            {activeSubTab === 'regular' ? (
+                <div className="sp-fade-in space-y-6">
+                    {/* Summary + primary action */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="text-[11px] font-semibold m3-text-error uppercase tracking-widest">Total Outflow</div>
+                                <BanknotesIcon className="w-5 h-5 m3-text-error opacity-70" />
                             </div>
-                            <button
-                                onClick={onOpenForm}
-                                className="flex items-center justify-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-black text-sm rounded-[1.5rem] shadow-lg shadow-red-500/20 active:scale-95 transition-all duration-300"
-                            >
-                                <PlusIcon className="w-5 h-5" />
-                                Record Expense
-                            </button>
+                            <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{formatCurrency(totalAmount, storeSettings)}</div>
+                            <p className="text-xs m3-text-on-surface-variant mt-1">Based on {totalCount} records</p>
                         </div>
-
-                        {/* Summary Cards */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="text-xs font-medium text-red-600 dark:text-red-400 uppercase tracking-widest">Total Outflow</div>
-                                    <BanknotesIcon className="w-5 h-5 text-red-600 dark:text-red-400 opacity-60" />
-                                </div>
-                                <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{formatCurrency(totalAmount, storeSettings)}</div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Based on {totalCount} records</p>
+                        <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="text-[11px] font-semibold m3-text-primary uppercase tracking-widest">Records</div>
+                                <CalculatorIcon className="w-5 h-5 m3-text-primary opacity-70" />
                             </div>
-
-                            <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-widest">Count</div>
-                                    <CalculatorIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 opacity-60" />
-                                </div>
-                                <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">{totalCount}</div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Total transactions</p>
-                            </div>
-
-                            <div className="liquid-glass-card rounded-[2rem] p-4 dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-widest">Average</div>
-                                    <CalendarIcon className="w-5 h-5 text-amber-600 dark:text-amber-400 opacity-60" />
-                                </div>
-                                <div className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-                                    {formatCurrency(totalCount > 0 ? totalAmount / totalCount : 0, storeSettings)}
-                                </div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Per transaction average</p>
-                            </div>
+                            <div className="text-2xl font-bold m3-text-on-surface tracking-tight">{totalCount}</div>
+                            <p className="text-xs m3-text-on-surface-variant mt-1">Total transactions</p>
                         </div>
+                        <div className="m3-bg-surface-lowest rounded-2xl p-4 border m3-border-outline-variant shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="text-[11px] font-semibold m3-text-secondary uppercase tracking-widest">Average</div>
+                                <CalendarIcon className="w-5 h-5 m3-text-secondary opacity-70" />
+                            </div>
+                            <div className="text-2xl font-bold m3-text-on-surface tracking-tight">
+                                {formatCurrency(totalCount > 0 ? totalAmount / totalCount : 0, storeSettings)}
+                            </div>
+                            <p className="text-xs m3-text-on-surface-variant mt-1">Per transaction</p>
+                        </div>
+                    </div>
 
-                        {/* Filters */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="relative group">
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
-                                    <MagnifyingGlassIcon className="w-5 h-5" />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Search description, category, reference..."
-                                    value={searchTerm}
-                                    onChange={e => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-900 dark:text-slate-100"
-                                />
+                    {/* Toolbar: filters + record action */}
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-3">
+                        <div className="relative flex-1 min-w-0">
+                            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 m3-text-on-surface-variant" />
+                            <input
+                                type="text"
+                                placeholder="Search description, category, reference…"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                className={FIELD}
+                            />
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <div className="relative flex-1">
+                                <CalendarDaysIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 m3-text-on-surface-variant" />
+                                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className={FIELD} />
                             </div>
-                            <div className="relative group">
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
-                                    <CalendarDaysIcon className="w-5 h-5" />
-                                </div>
-                                <input
-                                    type="date"
-                                    value={startDate}
-                                    onChange={e => setStartDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-900 dark:text-slate-100"
-                                />
-                            </div>
-                            <div className="relative group">
-                                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 group-focus-within:text-blue-500 transition-colors">
-                                    <CalendarDaysIcon className="w-5 h-5" />
-                                </div>
-                                <input
-                                    type="date"
-                                    value={endDate}
-                                    onChange={e => setEndDate(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm font-medium text-slate-900 dark:text-slate-100"
-                                />
+                            <div className="relative flex-1">
+                                <CalendarDaysIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 m3-text-on-surface-variant" />
+                                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className={FIELD} />
                             </div>
                         </div>
+                        <button
+                            onClick={onOpenForm}
+                            className="flex items-center justify-center gap-2 px-5 py-2.5 m3-bg-primary m3-text-on-primary font-bold text-sm rounded-lg shadow-sm active:scale-95 transition-all whitespace-nowrap"
+                        >
+                            <PlusIcon className="w-5 h-5" />
+                            Record Expense
+                        </button>
+                    </div>
 
-                        {/* Expenses Table */}
-                        <div className="liquid-glass-card rounded-[2rem] dark:bg-slate-900 border border-slate-200 dark:border-slate-800 overflow-hidden relative min-h-[200px]">
-                            {isLoading && (
-                                <div className="absolute inset-0 bg-white/50 dark:bg-slate-950/50 backdrop-blur-[2px] z-10 flex items-center justify-center">
-                                    <LoadingSpinner />
+                    {/* Expenses table */}
+                    <div className="m3-bg-surface-lowest rounded-2xl border m3-border-outline-variant shadow-sm overflow-hidden relative min-h-[200px]">
+                        {isLoading && (
+                            <div className="absolute inset-0 backdrop-blur-[2px] z-10 flex items-center justify-center" style={{ background: 'color-mix(in srgb, var(--m3-surface) 50%, transparent)' }}>
+                                <LoadingSpinner />
+                            </div>
+                        )}
+                        <div className="overflow-x-auto custom-scrollbar">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="m3-bg-surface-container border-b m3-border-outline-variant">
+                                        <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant">Date</th>
+                                        <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant">Description</th>
+                                        <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant text-right">Amount</th>
+                                        <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant">Accounts</th>
+                                        <th className="px-6 py-4 text-xs font-semibold m3-text-on-surface-variant text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-[var(--m3-outline-variant)]">
+                                    {items.map(exp => (
+                                        <tr key={exp.id} className="hover:m3-bg-surface-container transition-colors group">
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                <div className="text-sm font-medium m3-text-on-surface">{new Date(exp.date).toLocaleDateString()}</div>
+                                                <div className="text-xs m3-text-on-surface-variant mt-0.5">ID: {exp.id.substring(0, 8)}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="text-sm font-medium m3-text-on-surface">{exp.description}</div>
+                                                <div className="flex flex-wrap gap-1 mt-1">
+                                                    {exp.category && (
+                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium m3-bg-primary-fixed m3-text-primary">
+                                                            {exp.category}
+                                                        </span>
+                                                    )}
+                                                    {exp.reference && (
+                                                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium m3-bg-surface-container m3-text-on-surface-variant">
+                                                            Ref: {exp.reference}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right">
+                                                <div className="text-sm font-bold m3-text-error tracking-tight">{formatCurrency(exp.amount, storeSettings)}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="space-y-1">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--m3-error)' }}></div>
+                                                        <span className="text-xs m3-text-on-surface-variant truncate max-w-[150px]">{exp.expenseAccountName}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'var(--m3-primary)' }}></div>
+                                                        <span className="text-xs m3-text-on-surface-variant truncate max-w-[150px]">{exp.paymentAccountName}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                                <div className="flex justify-end items-center gap-2">
+                                                    <button
+                                                        onClick={() => onEdit(exp)}
+                                                        className="p-1.5 m3-text-on-surface-variant hover:m3-text-primary rounded-lg transition-colors"
+                                                        title="Edit Expense"
+                                                    >
+                                                        <PencilIcon className="w-4 h-4" />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => onDelete(exp.id)}
+                                                        className="p-1.5 m3-text-on-surface-variant hover:m3-text-error rounded-lg transition-colors"
+                                                        title="Delete Expense"
+                                                    >
+                                                        <TrashIcon className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            {items.length === 0 && !isLoading && (
+                                <div className="text-center py-14">
+                                    <div className="w-12 h-12 m3-bg-surface-container rounded-xl flex items-center justify-center mx-auto mb-3">
+                                        <BanknotesIcon className="w-6 h-6 m3-text-on-surface-variant" />
+                                    </div>
+                                    <p className="m3-text-on-surface font-medium">No expenses found</p>
+                                    <p className="text-sm m3-text-on-surface-variant mt-1">
+                                        {searchTerm || startDate || endDate ? 'Try adjusting your filters' : 'Record your first expense to get started'}
+                                    </p>
                                 </div>
                             )}
-                            <div className="overflow-x-auto custom-scrollbar">
-                                <table className="w-full text-left border-collapse">
-                                    <thead>
-                                        <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Date</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Description</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">Amount</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400">Accounts</th>
-                                            <th className="px-6 py-4 text-xs font-semibold text-slate-500 dark:text-slate-400 text-right">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                                        {items.map(exp => (
-                                            <tr key={exp.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors group active:scale-95 transition-all duration-300">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{new Date(exp.date).toLocaleDateString()}</div>
-                                                    <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">ID: {exp.id.substring(0, 8)}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="text-sm font-medium text-slate-900 dark:text-slate-100">{exp.description}</div>
-                                                    <div className="flex flex-wrap gap-1 mt-1">
-                                                        {exp.category && (
-                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800/30">
-                                                                {exp.category}
-                                                            </span>
-                                                        )}
-                                                        {exp.reference && (
-                                                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-                                                                Ref: {exp.reference}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right">
-                                                    <div className="text-sm font-bold text-red-600 dark:text-red-400 tracking-tight">{formatCurrency(exp.amount, storeSettings)}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-red-400"></div>
-                                                            <span className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[150px]">{exp.expenseAccountName}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1.5">
-                                                            <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
-                                                            <span className="text-xs text-slate-600 dark:text-slate-400 truncate max-w-[150px]">{exp.paymentAccountName}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                    <div className="flex justify-end items-center gap-2">
-                                                        <button
-                                                            onClick={() => onEdit(exp)}
-                                                            className="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 rounded-lg transition-colors"
-                                                            title="Edit Expense"
-                                                        >
-                                                            <PencilIcon className="w-4 h-4" />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => onDelete(exp.id)}
-                                                            className="p-1.5 text-slate-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg transition-colors"
-                                                            title="Delete Expense"
-                                                        >
-                                                            <TrashIcon className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                                {items.length === 0 && !isLoading && (
-                                    <div className="text-center py-12">
-                                        <div className="w-12 h-12 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center mx-auto mb-3">
-                                            <BanknotesIcon className="w-6 h-6 text-slate-400" />
-                                        </div>
-                                        <p className="text-slate-900 dark:text-slate-100 font-medium">No expenses found</p>
-                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Try adjusting your filters</p>
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </div>
-                ) : (
-                    <div className="animate-fade-in">
-                        <RecurringExpensesView
-                            expenses={recurringExpenses}
-                            accounts={accounts}
-                            storeSettings={storeSettings}
-                            onSave={onSaveRecurring}
-                            onDelete={onDeleteRecurring}
-                            onEdit={onEditRecurring}
-                            onOpenForm={onOpenRecurringForm}
-                        />
-                    </div>
-                )}
-            </div>
+                </div>
+            ) : (
+                <div className="sp-fade-in">
+                    <RecurringExpensesView
+                        expenses={recurringExpenses}
+                        accounts={accounts}
+                        storeSettings={storeSettings}
+                        onSave={onSaveRecurring}
+                        onDelete={onDeleteRecurring}
+                        onEdit={onEditRecurring}
+                        onOpenForm={onOpenRecurringForm}
+                    />
+                </div>
+            )}
         </div>
     );
 };

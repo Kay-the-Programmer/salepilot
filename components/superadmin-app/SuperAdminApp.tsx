@@ -14,10 +14,11 @@ import SuperAdminNotifications from '../../pages/superadmin/SuperAdminNotificati
 import SuperAdminSubscriptions from '../../pages/superadmin/SuperAdminSubscriptions';
 import SuperAdminCatalog from '../../pages/superadmin/SuperAdminCatalog';
 import SuperAdminCampaigns from '../../pages/superadmin/SuperAdminCampaigns';
+import SuperAdminFeedback from '../../pages/superadmin/SuperAdminFeedback';
 import SuperAdminSettings from '../../pages/superadmin/SuperAdminSettings';
 import '../crm/crm.css';
 
-export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'settings';
+export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'feedback' | 'settings';
 
 interface SuperAdminAppProps {
     user: User;
@@ -36,6 +37,7 @@ const NAV: { id: SuperSection; label: string; icon: string; route: string }[] = 
     { id: 'billing',    label: 'Billing',    icon: 'payments',        route: '/superadmin/subscriptions' },
     { id: 'catalog',    label: 'Plans & Pricing', icon: 'sell',       route: '/superadmin/catalog' },
     { id: 'campaigns',  label: 'Campaigns',  icon: 'ads_click',       route: '/superadmin/campaigns' },
+    { id: 'feedback',   label: 'Feedback',   icon: 'reviews',         route: '/superadmin/feedback' },
     { id: 'settings',   label: 'Settings',   icon: 'settings',        route: '/superadmin/settings' },
 ];
 
@@ -46,6 +48,7 @@ const sectionForSub = (subPath?: string): SuperSection => {
         case 'subscriptions': return 'billing';
         case 'catalog': return 'catalog';
         case 'campaigns': return 'campaigns';
+        case 'feedback': return 'feedback';
         case 'settings': return 'settings';
         default: return 'overview';
     }
@@ -81,6 +84,9 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
             break;
         case 'campaigns':
             content = <SuperAdminCampaigns />;
+            break;
+        case 'feedback':
+            content = <SuperAdminFeedback />;
             break;
         case 'settings':
             content = <SuperAdminSettings />;

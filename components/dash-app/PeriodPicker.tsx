@@ -5,7 +5,7 @@ import { DashRange, DashPeriod, PERIOD_LABEL, presetRange, rangeLabel } from './
 const DAY = 86400000;
 const startOfDay = (t: number) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
 const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
-const PRESETS: DashPeriod[] = ['today', 'week', 'month'];
+const PRESETS: DashPeriod[] = ['today', 'week', 'month', 'last_month', 'quarter', 'year', 'all'];
 
 interface PeriodPickerProps {
     range: DashRange;

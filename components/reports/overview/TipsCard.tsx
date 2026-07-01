@@ -75,7 +75,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
             description: "Keep your finances in check by recording your operating costs.",
             icon: <BanknotesIcon className="w-5 h-5" />,
             actionLabel: "Add Expense",
-            path: "/accounting#expenses",
+            path: "/books#expenses",
             color: "rose",
             show: !hasExpenses
         },

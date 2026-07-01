@@ -44,7 +44,6 @@ const StoreSetupPage = lazy(() => import('@/pages/StoreSetupPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const UsersPage = lazy(() => import('@/pages/UsersPage'));
-const AccountingPage = lazy(() => import('@/pages/AccountingPage'));
 const AllSalesPage = lazy(() => import('@/pages/AllSalesPage'));
 const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
@@ -1325,30 +1324,8 @@ export default function Dashboard() {
                 case 'logistics':
                     return <LogisticsPage />;
                 case 'accounting':
-                    return <AccountingPage
-                        accounts={accounts}
-                        journalEntries={journalEntries}
-                        sales={sales}
-                        customers={customers}
-                        suppliers={suppliers}
-                        supplierInvoices={supplierInvoices}
-                        purchaseOrders={purchaseOrders}
-                        expenses={expenses}
-                        recurringExpenses={recurringExpenses}
-                        onSaveAccount={handleSaveAccount}
-                        onDeleteAccount={handleDeleteAccount}
-                        onAddManualJournalEntry={handleAddManualJournalEntry}
-                        onRecordPayment={handleRecordPayment}
-                        onSaveSupplierInvoice={handleSaveSupplierInvoice}
-                        onRecordSupplierPayment={handleRecordSupplierPayment}
-                        onSaveExpense={handleSaveExpense as any}
-                        onDeleteExpense={handleDeleteExpense}
-                        onSaveRecurringExpense={handleSaveRecurringExpense as any}
-                        onDeleteRecurringExpense={handleDeleteRecurringExpense}
-                        isLoading={isLoading}
-                        error={error}
-                        storeSettings={storeSettings!}
-                    />;
+                    // Consolidated into the single Accounting Hub (/books).
+                    return <Navigate to="/books" replace />;
                 case 'audit-trail':
                     return <AuditLogPage logs={auditLogs} users={users} />;
                 case 'profile':
@@ -1443,10 +1420,28 @@ export default function Dashboard() {
                             accounts={accounts}
                             journalEntries={journalEntries}
                             sales={sales}
-                            expenses={expenses}
+                            customers={customers}
+                            suppliers={suppliers}
                             supplierInvoices={supplierInvoices}
+                            purchaseOrders={purchaseOrders}
+                            expenses={expenses}
+                            recurringExpenses={recurringExpenses}
                             storeSettings={storeSettings!}
+                            isLoading={isLoading}
+                            error={error}
+                            onSaveAccount={handleSaveAccount}
+                            onDeleteAccount={handleDeleteAccount}
+                            onAddManualJournalEntry={handleAddManualJournalEntry}
+                            onRecordPayment={handleRecordPayment}
+                            onSaveSupplierInvoice={handleSaveSupplierInvoice}
+                            onRecordSupplierPayment={handleRecordSupplierPayment}
                             onSaveExpense={handleSaveExpense as any}
+                            onDeleteExpense={handleDeleteExpense}
+                            onSaveRecurringExpense={handleSaveRecurringExpense as any}
+                            onDeleteRecurringExpense={handleDeleteRecurringExpense}
+                            user={currentUser}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
                         />
                     </Suspense>
                 </NotificationProvider>
@@ -1907,7 +1902,7 @@ export default function Dashboard() {
         try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
         const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
         const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin')
-            ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile']
+            ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/catalog', 'superadmin/campaigns', 'superadmin/feedback', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile']
             : PERMISSIONS[effectiveRole];
         const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
         if (!allowed.includes(page)) {

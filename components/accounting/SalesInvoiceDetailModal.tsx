@@ -2,6 +2,7 @@ import React from 'react';
 import { Sale, StoreSettings } from '../../types';
 import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
+import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import { formatCurrency } from '../../utils/currency';
 
 interface SalesInvoiceDetailModalProps {
@@ -13,13 +14,22 @@ interface SalesInvoiceDetailModalProps {
     customerName?: string;
 }
 
+const LABEL = 'text-[11px] font-bold text-brand-text-muted uppercase tracking-wider';
+
 const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpen, onClose, invoice, onRecordPayment, storeSettings, customerName }) => {
     if (!isOpen) return null;
 
-    // Calculate amount paid from payments array if available, as it might be more up-to-date than the static field
-    // especially after immediate client-side updates
-    const calculatedAmountPaid = invoice.payments?.reduce((sum, p) => sum + p.amount, 0) ?? invoice.amountPaid;
+    // Prefer payment records when present; guard against an empty array reading as 0 paid.
+    const calculatedAmountPaid = (invoice.payments && invoice.payments.length > 0)
+        ? invoice.payments.reduce((sum, p) => sum + p.amount, 0)
+        : (invoice.amountPaid || 0);
     const balanceDue = Math.max(0, invoice.total - calculatedAmountPaid);
+    const isPaid = balanceDue <= 0.001;
+    const isOverdue = !isPaid && !!invoice.dueDate && new Date(invoice.dueDate) < new Date();
+    const statusChip = isPaid
+        ? 'bg-green-500/15 text-green-700 dark:text-green-400'
+        : isOverdue ? 'bg-red-500/15 text-red-700 dark:text-red-400' : 'bg-amber-500/15 text-amber-700 dark:text-amber-400';
+    const statusLabel = isPaid ? 'Paid' : isOverdue ? 'Overdue' : 'Pending';
 
     const handlePrint = () => {
         const printWindow = window.open('', '', 'height=800,width=600');
@@ -134,61 +144,82 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
     };
 
     return (
-        <div className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm flex items-end sm:items-center justify-center animate-fade-in">
-            <div className="liquid-glass-card rounded-[2rem] glass-effect !/95 dark:!bg-slate-900/95 w-full rounded-t-3xl sm: max-h-[90vh] overflow-hidden flex flex-col animate-slide-up sm:max-w-4xl">
-                <div className="px-4 pt-5 pb-4 sm:p-6 sm:pb-4 flex justify-between items-start border-b border-slate-200 dark:border-slate-800">
-                    <div>
-                        <h3 className="text-lg font-black text-slate-900 dark:text-slate-100 tracking-tight">Invoice Details</h3>
-                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{invoice.transactionId}</p>
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={onClose}>
+            <div className="absolute inset-0 bg-warm-900/50 backdrop-blur-sm animate-fade-in" />
+
+            <div
+                className="relative bg-surface w-full max-w-3xl rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh]"
+                onClick={(e) => e.stopPropagation()}
+            >
+                {/* Header */}
+                <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-brand-border">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <ClipboardDocumentListIcon className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold text-brand-text tracking-tight leading-tight">Invoice Details</h3>
+                                <span className={`px-2 py-0.5 rounded-full text-[11px] font-semibold ${statusChip}`}>{statusLabel}</span>
+                            </div>
+                            <p className="text-xs text-brand-text-muted truncate">#{invoice.transactionId}</p>
+                        </div>
                     </div>
-                    <button type="button" onClick={onClose} className="p-2 text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors active:scale-95 transition-all duration-300">
-                        <XMarkIcon className="h-6 w-6" />
+                    <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-lg text-brand-text-muted hover:bg-surface-variant transition-colors flex-shrink-0">
+                        <XMarkIcon className="w-5 h-5" />
                     </button>
                 </div>
-                <div className="p-6 max-h-[70vh] overflow-y-auto">
-                    <div className="grid grid-cols-2 gap-8 mb-6">
+
+                {/* Body */}
+                <div className="px-6 py-6 overflow-y-auto flex-1 custom-scrollbar space-y-6">
+                    {/* Meta */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-1">Bill To:</h4>
-                            <p className="text-slate-600 dark:text-slate-300">{customerName || invoice.customerName || 'Unknown Customer'}</p>
+                            <div className={LABEL}>Bill To</div>
+                            <p className="text-sm font-bold text-brand-text mt-1">{customerName || invoice.customerName || 'Unknown Customer'}</p>
                         </div>
-                        <div className="text-right space-y-1">
-                            <p className="text-slate-600 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-slate-100">Invoice Date:</span> {new Date(invoice.timestamp).toLocaleDateString()}</p>
-                            <p className="text-slate-600 dark:text-slate-300"><span className="font-bold text-slate-900 dark:text-slate-100">Due Date:</span> {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</p>
+                        <div className="sm:text-right space-y-1">
+                            <p className="text-sm text-brand-text-muted"><span className="font-semibold text-brand-text">Invoice Date:</span> {new Date(invoice.timestamp).toLocaleDateString()}</p>
+                            <p className="text-sm text-brand-text-muted"><span className="font-semibold text-brand-text">Due Date:</span> {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</p>
                         </div>
                     </div>
 
-                    <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-800 mb-6">
-                        <thead className="bg-slate-50 dark:bg-slate-800/50">
-                            <tr>
-                                <th className="px-4 py-3 text-left text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Item</th>
-                                <th className="px-4 py-3 text-center text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Qty</th>
-                                <th className="px-4 py-3 text-right text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Price</th>
-                                <th className="px-4 py-3 text-right text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-                            {invoice.cart.map(item => (
-                                <tr key={item.productId}>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm">{item.name}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-center">{item.quantity}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-right">{formatCurrency(item.price, storeSettings)}</td>
-                                    <td className="px-4 py-2 whitespace-nowrap text-sm text-right">{formatCurrency(item.price * item.quantity, storeSettings)}</td>
+                    {/* Line items */}
+                    <div className="overflow-x-auto rounded-2xl border border-brand-border">
+                        <table className="min-w-full divide-y divide-brand-border">
+                            <thead className="bg-surface-variant">
+                                <tr>
+                                    <th className={`px-4 py-3 text-left ${LABEL}`}>Item</th>
+                                    <th className={`px-4 py-3 text-center ${LABEL}`}>Qty</th>
+                                    <th className={`px-4 py-3 text-right ${LABEL}`}>Price</th>
+                                    <th className={`px-4 py-3 text-right ${LABEL}`}>Total</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-brand-border">
+                                {invoice.cart.map(item => (
+                                    <tr key={item.productId}>
+                                        <td className="px-4 py-2.5 text-sm text-brand-text">{item.name}</td>
+                                        <td className="px-4 py-2.5 text-sm text-center text-brand-text-muted">{item.quantity}</td>
+                                        <td className="px-4 py-2.5 text-sm text-right text-brand-text-muted">{formatCurrency(item.price, storeSettings)}</td>
+                                        <td className="px-4 py-2.5 text-sm text-right font-semibold text-brand-text">{formatCurrency(item.price * item.quantity, storeSettings)}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
-                    <div className="grid grid-cols-2 gap-8">
-                        <div className="space-y-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Payment history */}
+                        <div>
                             {(invoice.payments?.length || 0) > 0 && (
                                 <>
-                                    <h4 className="font-bold text-slate-900 dark:text-slate-100 mb-2">Payment History</h4>
-                                    <div className="overflow-hidden border border-slate-200 dark:border-slate-800 rounded-xl">
-                                        <ul className="divide-y divide-slate-100 dark:divide-slate-800 text-sm">
+                                    <div className={LABEL + ' mb-2'}>Payment History</div>
+                                    <div className="overflow-hidden border border-brand-border rounded-xl">
+                                        <ul className="divide-y divide-brand-border text-sm">
                                             {invoice.payments?.map(p => (
-                                                <li key={p.id} className="px-4 py-2.5 flex justify-between hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors active:scale-95 transition-all duration-300">
-                                                    <span className="text-slate-500 dark:text-slate-400 font-medium">{new Date(p.date).toLocaleDateString()} · {p.method}</span>
-                                                    <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(p.amount, storeSettings)}</span>
+                                                <li key={p.id} className="px-4 py-2.5 flex justify-between hover:bg-surface-variant transition-colors">
+                                                    <span className="text-brand-text-muted font-medium">{new Date(p.date).toLocaleDateString()} · {p.method}</span>
+                                                    <span className="font-bold text-success">{formatCurrency(p.amount, storeSettings)}</span>
                                                 </li>
                                             ))}
                                         </ul>
@@ -196,20 +227,24 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                                 </>
                             )}
                         </div>
-                        <div className="text-right space-y-2 text-sm">
-                            <p><strong>Subtotal:</strong> {formatCurrency(invoice.subtotal, storeSettings)}</p>
-                            <p><strong>Tax:</strong> {formatCurrency(invoice.tax, storeSettings)}</p>
-                            <p className="text-lg font-bold"><strong>Total:</strong> {formatCurrency(invoice.total, storeSettings)}</p>
-                            <p className="text-green-600"><strong>Paid:</strong> {formatCurrency(calculatedAmountPaid, storeSettings)}</p>
-                            <p className="text-xl font-bold text-red-600 border-t pt-2 mt-2"><strong>Balance Due:</strong> {formatCurrency(balanceDue, storeSettings)}</p>
+
+                        {/* Totals */}
+                        <div className="rounded-2xl bg-surface-variant border border-brand-border p-4 space-y-2 text-sm">
+                            <div className="flex justify-between"><span className="text-brand-text-muted">Subtotal</span><span className="font-semibold text-brand-text">{formatCurrency(invoice.subtotal, storeSettings)}</span></div>
+                            <div className="flex justify-between"><span className="text-brand-text-muted">Tax</span><span className="font-semibold text-brand-text">{formatCurrency(invoice.tax, storeSettings)}</span></div>
+                            <div className="flex justify-between pt-2 border-t border-brand-border"><span className="font-bold text-brand-text">Total</span><span className="font-bold text-brand-text">{formatCurrency(invoice.total, storeSettings)}</span></div>
+                            <div className="flex justify-between"><span className="text-brand-text-muted">Paid</span><span className="font-semibold text-success">{formatCurrency(calculatedAmountPaid, storeSettings)}</span></div>
+                            <div className="flex justify-between pt-2 border-t border-brand-border"><span className="font-black text-brand-text">Balance Due</span><span className="font-black text-danger text-base">{formatCurrency(balanceDue, storeSettings)}</span></div>
                         </div>
                     </div>
                 </div>
-                <div className="bg-slate-50/50 dark:bg-slate-900/50 px-6 py-5 sm:px-8 flex flex-row flex-wrap gap-3 border-t border-slate-200 dark:border-slate-800 justify-end transition-colors">
+
+                {/* Footer */}
+                <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-brand-border bg-surface">
                     <button
                         type="button"
                         onClick={handlePrint}
-                        className="flex items-center gap-2 px-6 py-2.5 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 active:scale-95 transition-all duration-300"
+                        className="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-brand-text bg-surface-variant rounded-xl hover:brightness-95 transition-all active:scale-95"
                     >
                         <PrinterIcon className="w-5 h-5" />
                         Print
@@ -218,7 +253,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                         <button
                             type="button"
                             onClick={() => onRecordPayment(invoice)}
-                            className="px-6 py-2.5 text-sm font-black text-white bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all duration-200"
+                            className="px-5 py-3 text-sm font-bold text-white bg-secondary hover:brightness-95 rounded-xl shadow-sm transition-all active:scale-95"
                         >
                             Record Payment
                         </button>
@@ -226,7 +261,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                     <button
                         type="button"
                         onClick={onClose}
-                        className="px-6 py-2.5 text-sm font-black text-white bg-gradient-to-r from-slate-700 to-slate-800 dark:from-slate-800 dark:to-slate-950 rounded-xl hover:shadow-lg transition-all duration-200"
+                        className="px-5 py-3 text-sm font-bold text-white bg-primary hover:bg-primary-dark rounded-xl shadow-sm transition-all active:scale-95"
                     >
                         Close
                     </button>

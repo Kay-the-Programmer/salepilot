@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { StoreSettings } from '../../types';
-import { CpuChipIcon } from '../icons';
 import { formatCurrency } from '../../utils/currency';
 import { AiChat } from '../ai/AiChat';
 
@@ -21,19 +20,11 @@ export const AiSummaryCard: React.FC<AiSummaryCardProps> = ({ reportData, storeS
     }
 
     if (isMinimized) {
-        return (
-            <div className="fixed bottom-[72px] md:bottom-6 right-4 md:right-6 z-[45]">
-                <button
-                    onClick={() => setIsMinimized(false)}
-                    className="group relative flex items-center gap-2.5 px-4 md:px-5 py-2.5 md:py-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl text-slate-700 dark:text-white rounded-full shadow-[0_4px_16px_rgb(0,0,0,0.08)] hover:shadow-[0_8px_24px_rgb(0,0,0,0.12)] transition-all duration-300 hover:scale-105 active:scale-[0.96] border border-slate-200/50 dark:border-white/10"
-                    aria-label="Open AI Assistant"
-                >
-                    <CpuChipIcon className="w-4 h-4 md:w-5 md:h-5 text-indigo-500 dark:text-indigo-400" />
-                    <span className="font-medium text-xs md:text-sm">AI Assistant</span>
-                    <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
-                </button>
-            </div>
-        );
+        // The floating "AI Assistant" launcher is intentionally hidden — the global
+        // feedback button now occupies the bottom-right corner. The chat panel below
+        // stays available for when the assistant is opened programmatically, and the
+        // launcher can be restored by rendering the button here again.
+        return null;
     }
 
     return (

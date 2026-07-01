@@ -6,6 +6,7 @@ import TitleBar from './components/TitleBar';
 import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import PaywallHost from './components/PaywallHost';
+import FeedbackWidget from './components/feedback/FeedbackWidget';
 import { LogoutModalProvider } from './contexts/LogoutModalContext';
 import { AppSwitcherProvider } from './contexts/AppSwitcherContext';
 
@@ -152,6 +153,7 @@ export default function App() {
                                 <Route path="/superadmin/subscriptions" element={<Dashboard />} />
                                 <Route path="/superadmin/catalog" element={<Dashboard />} />
                                 <Route path="/superadmin/campaigns" element={<Dashboard />} />
+                                <Route path="/superadmin/feedback" element={<Dashboard />} />
 
 
                                 {/* <Route path="/directory" element={<MarketplacePage />} />
@@ -197,6 +199,9 @@ export default function App() {
 
                     {/* Global soft paywall — pops an upgrade prompt on a 402 (locked add-on) */}
                     <PaywallHost />
+
+                    {/* Global feedback capture — floating trigger + modal for any signed-in user */}
+                    <FeedbackWidget />
                 </div>
 
             </ToastProvider>

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Account, Expense } from '../../types';
+import { Account, Expense, RecurringExpense, StoreSettings } from '../../types';
 import {
     XMarkIcon,
-    PencilIcon,
     InformationCircleIcon,
     BuildingOfficeIcon,
     BoltIcon,
@@ -15,30 +14,54 @@ import {
     EllipsisVerticalIcon,
     ChevronDownIcon,
     BanknotesIcon,
-    CreditCardIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    RefreshIcon,
 } from '../icons';
+
+type Mode = 'one-time' | 'recurring';
 
 interface ExpenseFormModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSave: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'> & { id?: string }) => void;
-    expenseToEdit?: Expense | null;
     accounts: Account[];
+    storeSettings?: StoreSettings;
+    /** Save a one-time expense. */
+    onSave: (expense: Omit<Expense, 'id' | 'createdBy' | 'createdAt'> & { id?: string }) => void;
+    /** Save a recurring expense. */
+    onSaveRecurring: (expense: Omit<RecurringExpense, 'id' | 'createdBy' | 'createdAt' | 'updatedAt' | 'nextRunDate' | 'status'> & { id?: string; status?: string }) => void;
+    expenseToEdit?: Expense | null;
+    recurringToEdit?: RecurringExpense | null;
+    /** Which mode a brand-new entry opens in. Ignored when editing. */
+    initialMode?: Mode;
 }
 
 const QUICK_CATEGORIES = [
-    { id: 'rent', name: 'Rent', icon: BuildingOfficeIcon, color: 'text-purple-600', bg: 'bg-purple-50 dark:bg-purple-900/20' },
-    { id: 'utilities', name: 'Utilities', icon: BoltIcon, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
-    { id: 'supplies', name: 'Supplies', icon: ShoppingBagIcon, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
-    { id: 'salaries', name: 'Salaries', icon: UsersIcon, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
-    { id: 'transport', name: 'Transport', icon: TruckIcon, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
-    { id: 'marketing', name: 'Marketing', icon: SparklesIcon, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20' },
-    { id: 'taxes', name: 'Taxes', icon: CurrencyDollarIcon, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
-    { id: 'other', name: 'Other', icon: EllipsisVerticalIcon, color: 'text-slate-600', bg: 'bg-slate-50 dark:bg-slate-900/20' },
+    { id: 'rent', name: 'Rent', icon: BuildingOfficeIcon },
+    { id: 'utilities', name: 'Utilities', icon: BoltIcon },
+    { id: 'supplies', name: 'Supplies', icon: ShoppingBagIcon },
+    { id: 'salaries', name: 'Salaries', icon: UsersIcon },
+    { id: 'transport', name: 'Transport', icon: TruckIcon },
+    { id: 'marketing', name: 'Marketing', icon: SparklesIcon },
+    { id: 'taxes', name: 'Taxes', icon: CurrencyDollarIcon },
+    { id: 'other', name: 'Other', icon: EllipsisVerticalIcon },
 ];
 
-const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, onSave, expenseToEdit, accounts }) => {
+// One field language for the whole form.
+const FIELD = 'w-full px-4 py-3 rounded-xl text-sm font-semibold bg-surface-variant text-brand-text border border-brand-border focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all';
+const LABEL = 'block text-[11px] font-bold text-brand-text-muted uppercase tracking-wider mb-1.5';
+
+const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => (
+    <div className="relative">
+        <select {...props} className={FIELD + ' appearance-none pr-10'} />
+        <ChevronDownIcon className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted pointer-events-none" />
+    </div>
+);
+
+const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
+    isOpen, onClose, accounts, storeSettings, onSave, onSaveRecurring, expenseToEdit, recurringToEdit, initialMode,
+}) => {
+    const [mode, setMode] = useState<Mode>('one-time');
+    const [showOptional, setShowOptional] = useState(false);
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         description: '',
@@ -46,303 +69,321 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({ isOpen, onClose, on
         expenseAccountId: '',
         paymentAccountId: '',
         category: '',
-        reference: ''
+        reference: '',
+        frequency: 'monthly',
+        startDate: new Date().toISOString().split('T')[0],
+        status: 'active',
     });
 
-    const [showOptional, setShowOptional] = useState(false);
+    const symbol = storeSettings?.currency?.symbol ?? '';
+    const isEditing = !!(expenseToEdit || recurringToEdit);
 
-    // Filter accounts for dropdowns
     const expenseAccounts = React.useMemo(() => accounts.filter(a => a.type === 'expense'), [accounts]);
     const paymentAccounts = React.useMemo(() => accounts.filter(a =>
         a.subType === 'cash' || a.subType === 'accounts_payable'
     ), [accounts]);
 
     useEffect(() => {
-        if (isOpen) {
-            if (expenseToEdit) {
-                setFormData({
-                    date: expenseToEdit.date.split('T')[0],
-                    description: expenseToEdit.description,
-                    amount: expenseToEdit.amount.toString(),
-                    expenseAccountId: expenseToEdit.expenseAccountId,
-                    paymentAccountId: expenseToEdit.paymentAccountId,
-                    category: expenseToEdit.category || '',
-                    reference: expenseToEdit.reference || ''
-                });
-                setShowOptional(!!(expenseToEdit.category || expenseToEdit.reference));
-            } else {
-                setFormData({
-                    date: new Date().toISOString().split('T')[0],
-                    description: '',
-                    amount: '',
-                    expenseAccountId: '',
-                    paymentAccountId: paymentAccounts[0]?.id || '',
-                    category: '',
-                    reference: ''
-                });
-                setShowOptional(false);
-            }
+        if (!isOpen) return;
+        const today = new Date().toISOString().split('T')[0];
+        if (recurringToEdit) {
+            setMode('recurring');
+            setFormData({
+                date: today,
+                description: recurringToEdit.description,
+                amount: recurringToEdit.amount.toString(),
+                expenseAccountId: recurringToEdit.expenseAccountId,
+                paymentAccountId: recurringToEdit.paymentAccountId,
+                category: recurringToEdit.category || '',
+                reference: recurringToEdit.reference || '',
+                frequency: recurringToEdit.frequency,
+                startDate: recurringToEdit.startDate.split('T')[0],
+                status: recurringToEdit.status,
+            });
+            setShowOptional(!!(recurringToEdit.category || recurringToEdit.reference));
+        } else if (expenseToEdit) {
+            setMode('one-time');
+            setFormData({
+                date: expenseToEdit.date.split('T')[0],
+                description: expenseToEdit.description,
+                amount: expenseToEdit.amount.toString(),
+                expenseAccountId: expenseToEdit.expenseAccountId,
+                paymentAccountId: expenseToEdit.paymentAccountId,
+                category: expenseToEdit.category || '',
+                reference: expenseToEdit.reference || '',
+                frequency: 'monthly',
+                startDate: today,
+                status: 'active',
+            });
+            setShowOptional(!!(expenseToEdit.category || expenseToEdit.reference));
+        } else {
+            setMode(initialMode ?? 'one-time');
+            setFormData({
+                date: today, description: '', amount: '', expenseAccountId: '',
+                paymentAccountId: paymentAccounts[0]?.id || '', category: '', reference: '',
+                frequency: 'monthly', startDate: today, status: 'active',
+            });
+            setShowOptional(false);
         }
-    }, [expenseToEdit, isOpen]);
+    }, [isOpen, expenseToEdit, recurringToEdit, initialMode]);
 
     if (!isOpen) return null;
 
+    const set = (patch: Partial<typeof formData>) => setFormData(prev => ({ ...prev, ...patch }));
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        if (!formData.amount || parseFloat(formData.amount) <= 0) {
-            alert('Please enter a valid amount');
-            return;
-        }
-
-        if (!formData.expenseAccountId || !formData.paymentAccountId) {
-            alert('Please select both expense and payment accounts');
-            return;
-        }
+        if (!formData.amount || parseFloat(formData.amount) <= 0) { alert('Please enter a valid amount'); return; }
+        if (!formData.expenseAccountId || !formData.paymentAccountId) { alert('Please select both expense and payment accounts'); return; }
 
         const expenseAccount = accounts.find(a => a.id === formData.expenseAccountId);
         const paymentAccount = accounts.find(a => a.id === formData.paymentAccountId);
+        if (!expenseAccount || !paymentAccount) { alert('Invalid account selection'); return; }
 
-        if (!expenseAccount || !paymentAccount) {
-            alert('Invalid account selection');
-            return;
-        }
-
-        onSave({
-            ...(expenseToEdit?.id ? { id: expenseToEdit.id } : {}),
-            date: formData.date,
-            description: formData.description || (expenseAccount.name + ' - ' + new Date(formData.date).toLocaleDateString()),
+        const common = {
             amount: parseFloat(formData.amount),
             expenseAccountId: formData.expenseAccountId,
             expenseAccountName: expenseAccount.name,
             paymentAccountId: formData.paymentAccountId,
             paymentAccountName: paymentAccount.name,
             category: formData.category || undefined,
-            reference: formData.reference || undefined
-        });
+            reference: formData.reference || undefined,
+        };
 
+        if (mode === 'recurring') {
+            onSaveRecurring({
+                ...(recurringToEdit?.id ? { id: recurringToEdit.id } : {}),
+                ...common,
+                description: formData.description || (expenseAccount.name + ' (Recurring)'),
+                frequency: formData.frequency as any,
+                startDate: formData.startDate,
+                status: formData.status as any,
+            });
+        } else {
+            onSave({
+                ...(expenseToEdit?.id ? { id: expenseToEdit.id } : {}),
+                ...common,
+                date: formData.date,
+                description: formData.description || (expenseAccount.name + ' - ' + new Date(formData.date).toLocaleDateString()),
+            });
+        }
         onClose();
     };
 
     const handleQuickCategorySelect = (catName: string) => {
-        // Try to find a matching expense account
-        const matchingAccount = expenseAccounts.find(acc =>
-            acc.name.toLowerCase().includes(catName.toLowerCase())
-        );
-
-        if (matchingAccount) {
-            setFormData(prev => ({
-                ...prev,
-                expenseAccountId: matchingAccount.id,
-                category: catName
-            }));
-        } else {
-            // Fallback: just set the category
-            setFormData(prev => ({ ...prev, category: catName }));
-        }
+        const match = expenseAccounts.find(acc => acc.name.toLowerCase().includes(catName.toLowerCase()));
+        set(match ? { expenseAccountId: match.id, category: catName } : { category: catName });
     };
+
+    const recurring = mode === 'recurring';
+    const HeaderIcon = recurring ? RefreshIcon : BanknotesIcon;
+    const title = recurring
+        ? (recurringToEdit ? 'Edit Recurring Expense' : 'New Recurring Expense')
+        : (expenseToEdit ? 'Edit Expense' : 'Record Expense');
+    const submitLabel = recurring
+        ? (recurringToEdit ? 'Update Recurring' : 'Create Recurring')
+        : (expenseToEdit ? 'Update Expense' : 'Record Expense');
+    const expenseName = accounts.find(a => a.id === formData.expenseAccountId)?.name || 'Expense';
+    const paymentName = accounts.find(a => a.id === formData.paymentAccountId)?.name || 'Payment';
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center" onClick={onClose}>
-            <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-md transition-opacity -z-10 animate-fade-in" />
+            <div className="absolute inset-0 bg-warm-900/50 backdrop-blur-sm animate-fade-in" />
 
             <div
-                className="bg-white dark:bg-slate-950 w-full max-w-lg rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh] relative"
+                className="relative bg-surface w-full max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-slide-up sm:animate-scale-up max-h-[95vh]"
                 onClick={(e) => e.stopPropagation()}
             >
-                <form onSubmit={handleSubmit} className="flex-1 overflow-hidden flex flex-col">
+                <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1">
                     {/* Header */}
-                    <div className="px-8 pt-8 pb-4 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-2xl bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                                <BanknotesIcon className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <div className="flex items-center justify-between gap-3 px-6 py-5 border-b border-brand-border">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <HeaderIcon className="w-5 h-5 text-primary" />
                             </div>
-                            <h3 className="text-xl font-black text-slate-900 dark:text-slate-100 tracking-tight">
-                                {expenseToEdit ? 'Edit Expense' : 'Record Expense'}
-                            </h3>
+                            <div className="min-w-0">
+                                <h3 className="text-lg font-bold text-brand-text tracking-tight leading-tight">{title}</h3>
+                                <p className="text-xs text-brand-text-muted">{recurring ? 'Schedule an automatic outflow' : 'Log a business outflow'}</p>
+                            </div>
                         </div>
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="w-10 h-10 flex items-center justify-center rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-900 transition-colors"
-                        >
-                            <XMarkIcon className="w-5 h-5 text-slate-400" />
+                        <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-lg text-brand-text-muted hover:bg-surface-variant transition-colors flex-shrink-0">
+                            <XMarkIcon className="w-5 h-5" />
                         </button>
                     </div>
 
-                    <div className="px-8 pb-8 space-y-8 overflow-y-auto flex-1 custom-scrollbar">
-                        {/* Amount Section */}
-                        <div className="text-center space-y-2">
-                            <div className="relative inline-block">
-                                <span className="absolute left-0 top-1/2 -translate-y-1/2 text-3xl font-black text-slate-300 dark:text-slate-700">
-                                    $
-                                </span>
+                    {/* Body */}
+                    <div className="px-6 py-6 space-y-6 overflow-y-auto flex-1 custom-scrollbar">
+                        {/* Mode toggle (new entries only) */}
+                        {!isEditing && (
+                            <div className="grid grid-cols-2 gap-1 p-1 rounded-xl bg-surface-variant">
+                                {(['one-time', 'recurring'] as Mode[]).map(m => {
+                                    const on = mode === m;
+                                    return (
+                                        <button
+                                            key={m}
+                                            type="button"
+                                            onClick={() => setMode(m)}
+                                            className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all ${on ? 'bg-surface text-brand-text shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}
+                                        >
+                                            {m === 'one-time' ? <BanknotesIcon className="w-4 h-4" /> : <RefreshIcon className="w-4 h-4" />}
+                                            {m === 'one-time' ? 'One-time' : 'Recurring'}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Amount */}
+                        <div className="rounded-2xl bg-surface-variant border border-brand-border px-5 py-5 text-center">
+                            <label className={LABEL + ' mb-2'}>Amount</label>
+                            <div className="flex items-center justify-center gap-1.5">
+                                {symbol && <span className="text-3xl font-black text-brand-text-muted">{symbol}</span>}
                                 <input
                                     type="number"
                                     step="0.01"
+                                    inputMode="decimal"
                                     value={formData.amount}
-                                    onChange={e => setFormData({ ...formData, amount: e.target.value })}
+                                    onChange={e => set({ amount: e.target.value })}
                                     required
-                                    className="block w-full text-center text-6xl font-black bg-transparent border-none focus:ring-0 text-slate-900 dark:text-slate-100 placeholder-slate-200 dark:placeholder-slate-800 p-0"
+                                    className="w-full max-w-[220px] text-center text-5xl font-black bg-transparent border-none focus:ring-0 text-brand-text placeholder:text-brand-text-muted/40 p-0 outline-none"
                                     placeholder="0.00"
                                     autoFocus
                                 />
                             </div>
                         </div>
 
-                        {/* Quick Categories */}
-                        <div className="space-y-4">
-                            <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Quick Select Category</label>
-                            <div className="grid grid-cols-4 gap-3">
+                        {/* Category */}
+                        <div>
+                            <label className={LABEL}>Category</label>
+                            <div className="grid grid-cols-4 gap-2">
                                 {QUICK_CATEGORIES.map(cat => {
                                     const Icon = cat.icon;
-                                    const isSelected = formData.category === cat.name;
+                                    const on = formData.category === cat.name;
                                     return (
                                         <button
                                             key={cat.id}
                                             type="button"
                                             onClick={() => handleQuickCategorySelect(cat.name)}
-                                            className={`flex flex-col items-center gap-2 p-3 rounded-2xl transition-all duration-300 active:scale-90 ${isSelected ? 'ring-2 ring-red-500 ring-offset-2 dark:ring-offset-slate-950 bg-red-50 dark:bg-red-900/20' : 'bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                                            className={`flex flex-col items-center gap-1.5 py-3 px-1 rounded-xl border transition-all active:scale-95 ${on ? 'bg-primary/10 border-primary text-primary' : 'bg-surface-variant border-transparent text-brand-text-muted hover:border-brand-border'}`}
                                         >
-                                            <div className={`w-10 h-10 rounded-xl ${cat.bg} flex items-center justify-center`}>
-                                                <Icon className={`w-5 h-5 ${cat.color}`} />
-                                            </div>
-                                            <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400">{cat.name}</span>
+                                            <Icon className="w-5 h-5" />
+                                            <span className="text-[10px] font-bold leading-none">{cat.name}</span>
                                         </button>
                                     );
                                 })}
                             </div>
                         </div>
 
-                        {/* Account Selectors */}
+                        {/* Accounts */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Expense Account</label>
-                                <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-orange-50 dark:bg-orange-900/20 flex items-center justify-center pointer-events-none transition-colors group-focus-within:bg-orange-100">
-                                        <PencilIcon className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400" />
-                                    </div>
-                                    <select
-                                        value={formData.expenseAccountId}
-                                        onChange={e => setFormData({ ...formData, expenseAccountId: e.target.value })}
-                                        required
-                                        className="w-full pl-12 pr-10 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-transparent focus:border-red-500/30 focus:bg-white dark:focus:bg-slate-900 rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all appearance-none outline-none"
-                                    >
-                                        <option value="">Select Account...</option>
-                                        {expenseAccounts.map(acc => (
-                                            <option key={acc.id} value={acc.id}>{acc.name}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
+                            <div>
+                                <label className={LABEL}>Expense Account</label>
+                                <Select value={formData.expenseAccountId} onChange={e => set({ expenseAccountId: e.target.value })} required>
+                                    <option value="">Select account…</option>
+                                    {expenseAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                                </Select>
                             </div>
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Payment Method</label>
-                                <div className="relative group">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center pointer-events-none transition-colors group-focus-within:bg-blue-100">
-                                        <CreditCardIcon className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                    <select
-                                        value={formData.paymentAccountId}
-                                        onChange={e => setFormData({ ...formData, paymentAccountId: e.target.value })}
-                                        required
-                                        className="w-full pl-12 pr-10 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-transparent focus:border-red-500/30 focus:bg-white dark:focus:bg-slate-900 rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all appearance-none outline-none"
-                                    >
-                                        <option value="">Select Method...</option>
-                                        {paymentAccounts.map(acc => (
-                                            <option key={acc.id} value={acc.id}>{acc.name}</option>
-                                        ))}
-                                    </select>
-                                    <ChevronDownIcon className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                                </div>
+                            <div>
+                                <label className={LABEL}>Payment Method</label>
+                                <Select value={formData.paymentAccountId} onChange={e => set({ paymentAccountId: e.target.value })} required>
+                                    <option value="">Select method…</option>
+                                    {paymentAccounts.map(acc => <option key={acc.id} value={acc.id}>{acc.name}</option>)}
+                                </Select>
                             </div>
                         </div>
 
-                        {/* Basic Info */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Date</label>
-                                <input
-                                    type="date"
-                                    value={formData.date}
-                                    onChange={e => setFormData({ ...formData, date: e.target.value })}
-                                    required
-                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-transparent focus:border-red-500/30 focus:bg-white dark:focus:bg-slate-900 rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Description</label>
-                                <input
-                                    type="text"
-                                    value={formData.description}
-                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
-                                    placeholder="e.g., Office Supplies"
-                                    className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-transparent focus:border-red-500/30 focus:bg-white dark:focus:bg-slate-900 rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Optional Fields Toggle */}
-                        <button
-                            type="button"
-                            onClick={() => setShowOptional(!showOptional)}
-                            className="flex items-center gap-2 group"
-                        >
-                            <div className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${showOptional ? 'bg-red-50 text-red-600 rotate-90' : 'bg-slate-50 text-slate-400 group-hover:bg-slate-100'}`}>
-                                <ChevronRightIcon className="w-3.5 h-3.5" />
-                            </div>
-                            <span className="text-xs font-bold text-slate-500 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
-                                {showOptional ? 'Hide Additional Details' : 'Add More Details (Reference, Category)'}
-                            </span>
-                        </button>
-
-                        {showOptional && (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-fade-in">
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Category Override</label>
-                                    <input
-                                        type="text"
-                                        value={formData.category}
-                                        onChange={e => setFormData({ ...formData, category: e.target.value })}
-                                        placeholder="e.g., Seasonal Promo"
-                                        className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-transparent focus:border-red-500/30 focus:bg-white dark:focus:bg-slate-900 rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none"
-                                    />
+                        {/* Timing — the only part that differs by mode */}
+                        {recurring ? (
+                            <>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className={LABEL}>Frequency</label>
+                                        <Select value={formData.frequency} onChange={e => set({ frequency: e.target.value })} required>
+                                            <option value="daily">Daily</option>
+                                            <option value="weekly">Weekly</option>
+                                            <option value="monthly">Monthly</option>
+                                            <option value="quarterly">Quarterly</option>
+                                            <option value="yearly">Yearly</option>
+                                        </Select>
+                                    </div>
+                                    <div>
+                                        <label className={LABEL}>Start Date</label>
+                                        <input type="date" value={formData.startDate} onChange={e => set({ startDate: e.target.value })} required className={FIELD} />
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest px-1">Reference / Inv #</label>
-                                    <input
-                                        type="text"
-                                        value={formData.reference}
-                                        onChange={e => setFormData({ ...formData, reference: e.target.value })}
-                                        placeholder="e.g., INV-2024-001"
-                                        className="w-full px-4 py-3.5 bg-slate-50 dark:bg-slate-900/50 border border-transparent focus:border-red-500/30 focus:bg-white dark:focus:bg-slate-900 rounded-2xl text-sm font-bold text-slate-900 dark:text-slate-100 transition-all outline-none"
-                                    />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className={LABEL}>Description</label>
+                                        <input type="text" value={formData.description} onChange={e => set({ description: e.target.value })} placeholder="e.g. Monthly office rent" className={FIELD} />
+                                    </div>
+                                    {recurringToEdit && (
+                                        <div>
+                                            <label className={LABEL}>Status</label>
+                                            <Select value={formData.status} onChange={e => set({ status: e.target.value })}>
+                                                <option value="active">Active</option>
+                                                <option value="paused">Paused</option>
+                                                <option value="cancelled">Cancelled</option>
+                                            </Select>
+                                        </div>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className={LABEL}>Date</label>
+                                    <input type="date" value={formData.date} onChange={e => set({ date: e.target.value })} required className={FIELD} />
+                                </div>
+                                <div>
+                                    <label className={LABEL}>Description</label>
+                                    <input type="text" value={formData.description} onChange={e => set({ description: e.target.value })} placeholder="e.g. Office supplies" className={FIELD} />
                                 </div>
                             </div>
                         )}
 
-                        <div className="p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-[1.5rem] border border-blue-100/50 dark:border-blue-800/20 flex items-start gap-3">
-                            <InformationCircleIcon className="w-4 h-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                            <p className="text-[10px] font-bold text-blue-700/80 dark:text-blue-300/80 leading-relaxed uppercase tracking-wider">
-                                THIS WILL CREATE A JOURNAL ENTRY: DEBITING {formData.expenseAccountId ? accounts.find(a => a.id === formData.expenseAccountId)?.name || 'EXPENSE' : 'EXPENSE'} AND CREDITING {formData.paymentAccountId ? accounts.find(a => a.id === formData.paymentAccountId)?.name || 'PAYMENT' : 'PAYMENT'}.
+                        {/* Optional */}
+                        <div>
+                            <button type="button" onClick={() => setShowOptional(!showOptional)} className="flex items-center gap-2 group">
+                                <span className={`w-5 h-5 rounded-md flex items-center justify-center transition-all ${showOptional ? 'bg-primary/10 text-primary rotate-90' : 'bg-surface-variant text-brand-text-muted'}`}>
+                                    <ChevronRightIcon className="w-3.5 h-3.5" />
+                                </span>
+                                <span className="text-xs font-bold text-brand-text-muted group-hover:text-brand-text transition-colors">
+                                    {showOptional ? 'Hide additional details' : 'Add reference & category'}
+                                </span>
+                            </button>
+
+                            {showOptional && (
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 animate-fade-in">
+                                    <div>
+                                        <label className={LABEL}>Category Override</label>
+                                        <input type="text" value={formData.category} onChange={e => set({ category: e.target.value })} placeholder="e.g. Fixed cost" className={FIELD} />
+                                    </div>
+                                    <div>
+                                        <label className={LABEL}>Reference / Note</label>
+                                        <input type="text" value={formData.reference} onChange={e => set({ reference: e.target.value })} placeholder="e.g. INV-2024-001" className={FIELD} />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Journal hint */}
+                        <div className="flex items-start gap-2.5 rounded-xl bg-primary/5 border border-primary/15 px-4 py-3">
+                            <InformationCircleIcon className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                            <p className="text-xs text-brand-text-muted leading-relaxed">
+                                {recurring
+                                    ? <>Auto-posts a journal entry every <span className="font-bold text-brand-text lowercase">{formData.frequency}</span> — debit <span className="font-bold text-brand-text">{expenseName}</span>, credit <span className="font-bold text-brand-text">{paymentName}</span>.</>
+                                    : <>Posts a journal entry — debit <span className="font-bold text-brand-text">{expenseName}</span>, credit <span className="font-bold text-brand-text">{paymentName}</span>.</>}
                             </p>
                         </div>
                     </div>
 
                     {/* Footer */}
-                    <div className="px-8 py-6 bg-slate-50 dark:bg-slate-900/50 flex items-center gap-4">
-                        <button
-                            type="button"
-                            onClick={onClose}
-                            className="flex-1 px-6 py-4 text-sm font-black text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 transition-colors"
-                        >
+                    <div className="flex items-center gap-3 px-6 py-4 border-t border-brand-border bg-surface">
+                        <button type="button" onClick={onClose} className="px-5 py-3 text-sm font-bold text-brand-text-muted hover:text-brand-text transition-colors">
                             Cancel
                         </button>
-                        <button
-                            type="submit"
-                            className="flex-[2] py-4 bg-red-600 hover:bg-red-700 text-white text-sm font-black rounded-[2rem] shadow-xl shadow-red-500/20 active:scale-95 transition-all duration-300"
-                        >
-                            {expenseToEdit ? 'Update Expense' : 'Record Expense'}
+                        <button type="submit" className="flex-1 py-3 bg-primary hover:bg-primary-dark text-white text-sm font-bold rounded-xl shadow-sm active:scale-95 transition-all">
+                            {submitLabel}
                         </button>
                     </div>
                 </form>

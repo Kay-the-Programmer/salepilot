@@ -43,9 +43,9 @@ function makeHasModule(storeSettings: StoreSettings | null): (m: ModuleId) => bo
     return (m: ModuleId) => {
         if (m === MODULES.WHATSAPP_MESSAGING && WHATSAPP_FREE) return true;
         if (m === MODULES.SOCIAL_MARKETING && SOCIAL_FREE) return true;
-        // A merchant who has connected their own Lenco account already accepts
-        // mobile money — don't upsell the gateway to them.
-        if (m === MODULES.PAYMENT_GATEWAY && !!storeSettings?.lencoPublicKey) return true;
+        // NOTE: Accepting mobile money is gated by the paid "Accept Mobile Money"
+        // add-on, not by simply having connected a Lenco key — so we DO upsell the
+        // gateway to a store that has a key but hasn't purchased the add-on.
         return hasModule(storeSettings, m);
     };
 }
