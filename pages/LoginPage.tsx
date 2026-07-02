@@ -1,7 +1,8 @@
-import { useState, FormEvent, useEffect } from 'react';
+import { useState, FormEvent, useEffect, useRef } from 'react';
 import { User } from '../types';
 import { SnackbarType } from '../App';
-import { login, register, loginWithGoogle, verifyRegistration } from '../services/authService';
+import { login, register, loginWithGoogle, verifyRegistration, getCurrentUser } from '../services/authService';
+import { registerStoreAndRefreshUser, checkStoreNameAvailability } from '../services/storesService';
 import { signInWithGoogle } from '../services/firebase/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
@@ -21,7 +22,7 @@ import {
 import { FcGoogle } from 'react-icons/fc';
 import Logo from '../assets/logo.png';
 import AsideArt from '../assets/hkj.png';
-import GoogleRoleSelectionModal from '../components/GoogleRoleSelectionModal';
+import { BUSINESS_TYPES } from './StoreRegistrationPage';
 
 interface LoginPageProps {
     onLogin: (user: User) => void;
@@ -29,17 +30,6 @@ interface LoginPageProps {
 }
 
 const WIZARD_STEPS = ['Business Profile', 'Secure Account', 'Confirm & Launch'] as const;
-const CATEGORIES = [
-    'Boutique Retail',
-    'Food & Beverage',
-    'Fashion & Clothing',
-    'Pharmacy / Health',
-    'Electronics & Tech',
-    'Beauty & Salon',
-    'Professional Services',
-    'General Store',
-    'Other',
-];
 
 export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
     const navigate = useNavigate();
@@ -64,17 +54,37 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Google role modal
-    const [showGoogleRoleModal, setShowGoogleRoleModal] = useState(false);
-    const [pendingGoogleUser, setPendingGoogleUser] = useState<{ firebaseUser: any; token: string; userName: string } | null>(null);
-
     // Register wizard state
     const [wizardStep, setWizardStep] = useState(0);
+    const [ownerName, setOwnerName] = useState('');
     const [category, setCategory] = useState('');
     const [storeLocation, setStoreLocation] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [stepError, setStepError] = useState<string | null>(null);
+
+    // Live business-name availability (same behaviour as the in-app store setup)
+    const [nameTaken, setNameTaken] = useState(false);
+    const [checkingName, setCheckingName] = useState(false);
+    const nameCheckSeq = useRef(0);
+
+    useEffect(() => {
+        const trimmed = name.trim();
+        if (view !== 'register' || trimmed.length < 2) {
+            setNameTaken(false);
+            setCheckingName(false);
+            return;
+        }
+        setCheckingName(true);
+        const seq = ++nameCheckSeq.current;
+        const t = setTimeout(() => {
+            checkStoreNameAvailability(trimmed)
+                .then(available => { if (seq === nameCheckSeq.current) setNameTaken(!available); })
+                .catch(() => { /* soft check; server re-validates on submit */ })
+                .finally(() => { if (seq === nameCheckSeq.current) setCheckingName(false); });
+        }, 450);
+        return () => clearTimeout(t);
+    }, [name, view]);
 
     useEffect(() => {
         setIsPendingOTP(false);
@@ -114,6 +124,8 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
 
         if (wizardStep === 0) {
             if (!name.trim()) { setStepError('Please enter your store or business name.'); return; }
+            if (checkingName) { setStepError('Checking name availability — one moment…'); return; }
+            if (nameTaken) { setStepError('That business name is already taken. Please choose another.'); return; }
             setWizardStep(1);
             return;
         }
@@ -126,10 +138,11 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
             return;
         }
 
-        // Step 2: submit
+        // Step 2: submit — the account belongs to the person (owner name),
+        // the business name belongs to the store created after verification.
         setIsLoading(true);
         try {
-            await register(name.trim(), email.trim(), password, referralCode);
+            await register((ownerName.trim() || name.trim()), email.trim(), password, referralCode);
             setIsPendingOTP(true);
             showSnackbar('We sent a 6-digit code to your email.', 'info');
         } catch (err: any) {
@@ -158,8 +171,26 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                 }
                 await verifyRegistration(email, emailOtp);
                 const user = await login(email, password);
-                onLogin(user!);
-                showSnackbar('Account created! Welcome to SalePilot 🎉', 'success');
+                // One registration flow: the store from step 1 is created right
+                // here (email is now verified, so the store starts verified too).
+                try {
+                    const { user: withStore } = await registerStoreAndRefreshUser(
+                        name.trim(),
+                        category ? [category] : [],
+                        undefined,
+                        storeLocation.trim() || undefined,
+                    );
+                    const token = getCurrentUser()?.token;
+                    const merged = (token ? { ...withStore, token } : withStore) as User;
+                    try { localStorage.setItem('salePilotUser', JSON.stringify(merged)); } catch { /* session already valid */ }
+                    onLogin(merged);
+                    showSnackbar(`Account created and "${name.trim()}" is ready! Welcome to SalePilot 🎉`, 'success');
+                } catch (storeErr: any) {
+                    // Account exists and is verified — never strand the user here.
+                    // Dashboard routes store-less accounts to /register to finish setup.
+                    onLogin(user!);
+                    showSnackbar(storeErr?.message || 'Account created — one more step to set up your store.', 'info');
+                }
             }
         } catch (err: any) {
             const msg = err?.message ?? 'An unexpected error occurred.';
@@ -176,47 +207,20 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
         try {
             const firebaseUser = await signInWithGoogle();
             const token = await firebaseUser.getIdToken();
-            const userName = firebaseUser.displayName || firebaseUser.email || 'User';
-            await handleGoogleRoleSelection('business', { firebaseUser, token, userName });
+            // Sign-ins from this page are business accounts. A first-time Google
+            // user has no store yet — Dashboard routes them to /register (the
+            // single store-registration surface) right after login.
+            const user = await loginWithGoogle(token, 'business');
+            onLogin(user);
+            showSnackbar(`Welcome, ${user.name}! 🎉`, 'success');
         } catch (err: any) {
-            if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
-                setIsGoogleLoading(false);
-                return;
-            }
+            if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') return;
             const msg = err?.message ?? 'Google Sign-In failed. Please try again.';
             setError(msg);
             showSnackbar(msg, 'error');
         } finally {
             setIsGoogleLoading(false);
         }
-    };
-
-    const handleGoogleRoleSelection = async (
-        role: 'business' | 'customer',
-        googleUser?: { firebaseUser: any; token: string; userName: string }
-    ) => {
-        const userToProcess = googleUser || pendingGoogleUser;
-        if (!userToProcess) return;
-        setIsGoogleLoading(true);
-        setShowGoogleRoleModal(false);
-        try {
-            const user = await loginWithGoogle(userToProcess.token, role);
-            onLogin(user);
-            showSnackbar(`Welcome, ${user.name}! 🎉`, 'success');
-            if (!googleUser) setPendingGoogleUser(null);
-        } catch (err: any) {
-            const msg = err?.message ?? 'Google Sign-In failed.';
-            setError(msg);
-            showSnackbar(msg, 'error');
-        } finally {
-            setIsGoogleLoading(false);
-        }
-    };
-
-    const handleGoogleRoleCancel = () => {
-        setShowGoogleRoleModal(false);
-        setPendingGoogleUser(null);
-        setError(null);
     };
 
     const anyLoading = isLoading || isGoogleLoading;
@@ -404,12 +408,6 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                     </div>
                 </main>
 
-                <GoogleRoleSelectionModal
-                    isOpen={showGoogleRoleModal}
-                    userName={pendingGoogleUser?.userName || 'User'}
-                    onSelectRole={handleGoogleRoleSelection}
-                    onCancel={handleGoogleRoleCancel}
-                />
             </div>
         );
     }
@@ -511,13 +509,25 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                         </div>
                                         <input
                                             type="text" required autoFocus
-                                            className="block w-full pl-11 pr-4 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-sm font-semibold outline-none"
+                                            className={`block w-full pl-11 pr-10 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 transition-all text-sm font-semibold outline-none ${nameTaken ? 'ring-2 ring-danger/30 bg-danger-muted/40 dark:bg-danger/5' : 'focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09]'}`}
                                             placeholder="e.g. The Artisan Corner"
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), wizardNext())}
                                         />
+                                        <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
+                                            {checkingName ? (
+                                                <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                                            ) : nameTaken ? (
+                                                <span className="text-danger text-lg">✕</span>
+                                            ) : name.trim().length >= 2 ? (
+                                                <HiOutlineCheckCircle className="w-5 h-5 text-primary" />
+                                            ) : null}
+                                        </div>
                                     </div>
+                                    {nameTaken && (
+                                        <p className="mt-1.5 text-xs text-danger font-bold pl-1">This business name is already taken — please choose another.</p>
+                                    )}
                                 </div>
 
                                 {/* Business Category */}
@@ -533,7 +543,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                             onChange={(e) => setCategory(e.target.value)}
                                         >
                                             <option value="">Select your industry</option>
-                                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                            {BUSINESS_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
                                         </select>
                                         <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
                                             <svg className="w-4 h-4 text-brand-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -578,6 +588,27 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                         {/* ── Step 1: Secure Account ── */}
                         {wizardStep === 1 && (
                             <div className="space-y-4 animate-fade-in">
+                                {/* Owner name */}
+                                <div>
+                                    <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-2">
+                                        Your Name <span className="normal-case font-semibold text-brand-text-muted/60 tracking-normal">(optional)</span>
+                                    </label>
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                            <HiOutlineUser className="h-5 w-5 text-brand-text-muted group-focus-within:text-primary transition-colors" />
+                                        </div>
+                                        <input
+                                            type="text" autoFocus
+                                            className="block w-full pl-11 pr-4 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-sm font-semibold outline-none"
+                                            placeholder="e.g. Jane Banda"
+                                            value={ownerName}
+                                            onChange={(e) => setOwnerName(e.target.value)}
+                                            autoComplete="name"
+                                        />
+                                    </div>
+                                    <p className="mt-1.5 text-xs text-brand-text-muted pl-1">Shown on your account. Defaults to the business name if left blank.</p>
+                                </div>
+
                                 {/* Email */}
                                 <div>
                                     <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-2">Your Email</label>
@@ -586,7 +617,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                             <HiOutlineEnvelope className="h-5 w-5 text-brand-text-muted group-focus-within:text-primary transition-colors" />
                                         </div>
                                         <input
-                                            type="email" required autoFocus
+                                            type="email" required
                                             className="block w-full pl-11 pr-4 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-sm font-semibold outline-none"
                                             placeholder="example@gmail.com"
                                             value={email}
@@ -701,7 +732,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                             <HiOutlineShoppingBag className="w-5 h-5 text-primary flex-shrink-0" />
                                             <div className="min-w-0">
                                                 <p className="text-[10px] font-extrabold uppercase tracking-widest text-brand-text-muted">Category</p>
-                                                <p className="text-sm font-bold text-brand-text mt-0.5">{category}</p>
+                                                <p className="text-sm font-bold text-brand-text mt-0.5">{BUSINESS_TYPES.find(t => t.id === category)?.label || category}</p>
                                             </div>
                                         </li>
                                     )}
@@ -797,12 +828,6 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                 </div>
             </footer>
 
-            <GoogleRoleSelectionModal
-                isOpen={showGoogleRoleModal}
-                userName={pendingGoogleUser?.userName || 'User'}
-                onSelectRole={handleGoogleRoleSelection}
-                onCancel={handleGoogleRoleCancel}
-            />
         </div>
     );
 }

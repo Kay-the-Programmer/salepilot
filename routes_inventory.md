@@ -43,7 +43,7 @@ These routes are managed by the `Dashboard` component and require a valid user s
 | 22 | `/settings` | `SettingsPage` | Store-wide configuration and preferences. |
 | 23 | `/superadmin` | `SuperAdminPage` | Multi-store management (Superadmin role only). |
 | 24 | `/marketing` | `MarketingPage` | AI-powered social media poster generator. |
-| 25 | `/setup-store` | `StoreSetupPage` | Initial onboarding for new users/stores. |
+| 25 | `/setup-store` | redirect → `/register` | Legacy alias. `/register` is the single registration surface: `LoginPage` wizard (account + store) for new signups, `StoreRegistrationPage` for authenticated accounts without a store (e.g. new Google sign-ins). |
 
 ## Online Store (Public)
 Routes for the customer-facing online storefront.

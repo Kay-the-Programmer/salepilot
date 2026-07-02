@@ -94,12 +94,3 @@ export async function switchStore(storeId: string): Promise<User> {
   return api.get<User>('/auth/me');
 }
 
-/**
- * Verifies a store with the OTP sent to email.
- */
-export async function verifyStoreOTP(storeId: string, otp: string): Promise<void> {
-  if (!storeId || !otp || otp.trim().length !== 6) {
-    throw new Error('Please provide a valid 6-digit verification code.');
-  }
-  await api.post('/stores/verify', { storeId, otp: otp.trim() }, { skipQueue: true });
-}

@@ -40,7 +40,7 @@ const ReturnsPage = lazy(() => import('@/pages/ReturnsPage'));
 const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
-const StoreSetupPage = lazy(() => import('@/pages/StoreSetupPage'));
+const StoreRegistrationPage = lazy(() => import('@/pages/StoreRegistrationPage'));
 const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
 const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
 const UsersPage = lazy(() => import('@/pages/UsersPage'));
@@ -616,7 +616,12 @@ export default function Dashboard() {
         } catch { }
         setCurrentUser(user);
         logEvent('Auth', 'Login', user.role);
-        const desired = user.role === 'superadmin' ? 'superadmin' : DEFAULT_PAGES[user.role];
+        // Business accounts without a store go straight to /register (the single
+        // store-registration surface) — never to a data page they can't use yet.
+        const needsStore = !user.currentStoreId && user.role !== 'superadmin' && user.role !== 'customer' && user.role !== 'supplier';
+        const desired = user.role === 'superadmin' ? 'superadmin'
+            : needsStore ? 'register'
+            : DEFAULT_PAGES[user.role];
         // Persist last page for this user for consistency across reloads
         try {
             const key = getLastPageKey(user.id);
@@ -1267,8 +1272,14 @@ export default function Dashboard() {
         return <LoginPage onLogin={handleLogin} showSnackbar={showSnackbar} />;
     }
 
-    // If user has no current store yet, guide them to create one (except superadmin and customers, who are store-agnostic)
+    // If user has no current store yet, guide them to create one (except superadmin and customers, who are store-agnostic).
+    // /register is the ONLY registration surface — any other URL (e.g. a fresh
+    // Google user landing on their role's default page) redirects there instead
+    // of rendering a duplicate setup UI in place.
     if (currentUser && !currentUser.currentStoreId && currentUser.role !== 'superadmin' && currentUser.role !== 'customer') {
+        if (location.pathname !== '/register') {
+            return <Navigate to="/register" replace />;
+        }
         const token = getCurrentUser()?.token;
         const handleCompleted = (user: User) => {
             const merged = token ? ({ ...user, token } as User) : user;
@@ -1276,7 +1287,17 @@ export default function Dashboard() {
             setCurrentUser(merged);
             navigate(`/${DEFAULT_PAGES[merged.role]}`);
         };
-        return <StoreSetupPage onCompleted={handleCompleted} showSnackbar={showSnackbar} />;
+        return (
+            <Suspense fallback={<LoadingSpinner />}>
+                <StoreRegistrationPage onCompleted={handleCompleted} showSnackbar={showSnackbar} />
+            </Suspense>
+        );
+    }
+
+    // Authenticated users who already have a store have nothing to register —
+    // send stray /register or legacy /setup-store visits home.
+    if (location.pathname === '/register' || location.pathname === '/setup-store') {
+        return <Navigate to="/" replace />;
     }
 
     // Store settings gating applies for any store-scoped context.
@@ -1372,18 +1393,6 @@ export default function Dashboard() {
             switch (page) {
                 case 'quick-view':
                     return <QuickView user={currentUser} />;
-                case 'setup-store':
-                    return (
-                        <StoreSetupPage
-                            onCompleted={(user) => {
-                                const token = currentUser.token;
-                                const merged = token ? { ...user, token } : user;
-                                setCurrentUser(merged as User);
-                                navigate(`/${DEFAULT_PAGES[merged.role]}`);
-                            }}
-                            showSnackbar={showSnackbar}
-                        />
-                    );
                 case 'sales':
                     // The point of sale lives only at /pos now; /sales presents sales data.
                     return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;

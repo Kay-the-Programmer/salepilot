@@ -1,13 +1,12 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { SnackbarType } from '../App';
-import { registerStoreAndRefreshUser, checkStoreNameAvailability, verifyStoreOTP } from '../services/storesService';
+import { registerStoreAndRefreshUser, checkStoreNameAvailability } from '../services/storesService';
 import { User } from '../types';
 import Logo from '../assets/salepilot.png';
 import LocationPicker from '../components/ui/LocationPicker';
 import {
     HiOutlineBuildingStorefront,
     HiOutlinePhone,
-    HiOutlineEnvelope,
     HiOutlineShieldCheck,
     HiOutlineArrowLeft,
     HiOutlineArrowRight,
@@ -15,24 +14,35 @@ import {
     HiOutlineCheckCircle,
 } from 'react-icons/hi2';
 
-interface StoreSetupPageProps {
+/**
+ * Store creation for an AUTHENTICATED account that has no store yet — the
+ * single store-registration surface (rendered at /register by Dashboard).
+ * Used by new Google sign-ins and as the fallback when the combined
+ * account+store signup couldn't create the store (e.g. name race).
+ *
+ * No OTP step: the account email is already verified (registration OTP or
+ * Google), and the backend marks the store verified accordingly.
+ */
+interface StoreRegistrationPageProps {
     onCompleted: (user: User) => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
 }
 
 const MIN_LEN = 2;
 
-const BUSINESS_TYPES = [
-    { id: 'retail_grocery',    label: 'Grocery & Supermarket', icon: '🛒' },
-    { id: 'retail_fashion',    label: 'Fashion & Apparel',     icon: '👗' },
-    { id: 'retail_electronics',label: 'Electronics & Gadgets', icon: '📱' },
-    { id: 'food_beverage',     label: 'Restaurant / Cafe',     icon: '☕' },
-    { id: 'pharmacy',          label: 'Pharmacy & Health',     icon: '💊' },
-    { id: 'hardware',          label: 'Hardware & Auto',       icon: '🔧' },
-    { id: 'other',             label: 'Other',                 icon: '✨' },
+// Mirrors s-back/src/utils/initial-data.ts BUSINESS_TYPES — the ids drive
+// which category templates the backend seeds for the new store.
+export const BUSINESS_TYPES = [
+    { id: 'retail_grocery',     label: 'Grocery & Supermarket', icon: '🛒' },
+    { id: 'retail_fashion',     label: 'Fashion & Apparel',     icon: '👗' },
+    { id: 'retail_electronics', label: 'Electronics & Gadgets', icon: '📱' },
+    { id: 'food_beverage',      label: 'Restaurant / Cafe',     icon: '☕' },
+    { id: 'pharmacy',           label: 'Pharmacy & Health',     icon: '💊' },
+    { id: 'hardware',           label: 'Hardware & Auto',       icon: '🔧' },
+    { id: 'other',              label: 'Other',                 icon: '✨' },
 ];
 
-const WIZARD_STEPS = ['Store Info', 'Business Type', 'Location', 'Verification'] as const;
+const WIZARD_STEPS = ['Store Info', 'Business Type', 'Location'] as const;
 
 const ASIDE_FEATURES = [
     'Cloud-synced inventory across all devices',
@@ -40,7 +50,7 @@ const ASIDE_FEATURES = [
     '24/7 dedicated support for shop owners',
 ];
 
-const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackbar }) => {
+const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({ onCompleted, showSnackbar }) => {
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
@@ -50,17 +60,13 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
     const [nameError, setNameError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
-    const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(1);
-    const [otp, setOtp] = useState('');
-    const [isVerifying, setIsVerifying] = useState(false);
-    const [registeredInfo, setRegisteredInfo] = useState<{ store: any; user: User } | null>(null);
+    const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
 
     const trimmedName = useMemo(() => name.replace(/\s+/g, ' ').trim(), [name]);
 
     const isStep1Valid = trimmedName.length >= MIN_LEN && !nameError && !isCheckingName;
     const isStep2Valid = selectedTypes.length > 0;
     const isStep3Valid = address.trim().length > 0;
-    const isStep4Valid = otp.trim().length === 6;
 
     // Real-time store name availability
     useEffect(() => {
@@ -103,9 +109,8 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
         setError(null);
         try {
             const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes, phone, address);
-            setRegisteredInfo({ store, user });
-            setCurrentStep(4);
-            showSnackbar('Store created! Please check your email for the verification code.', 'success');
+            showSnackbar(`Store "${store.name}" created — welcome aboard! 🎉`, 'success');
+            onCompleted(user);
         } catch (err: any) {
             const msg = err?.message || 'Failed to register store';
             setError(msg);
@@ -115,50 +120,22 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
         }
     };
 
-    const handleVerifyOtp = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!registeredInfo || otp.trim().length !== 6) {
-            setError('Please enter a valid 6-digit code.');
-            return;
-        }
-        setIsVerifying(true);
-        setError(null);
-        try {
-            await verifyStoreOTP(registeredInfo.store.id, otp);
-            localStorage.setItem('salePilotUser', JSON.stringify(registeredInfo.user));
-            showSnackbar(`Store "${registeredInfo.store.name}" verified! You're now the admin.`, 'success');
-            onCompleted(registeredInfo.user);
-        } catch (err: any) {
-            const msg = err?.message || 'Verification failed';
-            setError(msg);
-            showSnackbar(msg, 'error');
-        } finally {
-            setIsVerifying(false);
-        }
-    };
-
     const handleBack = () => {
-        if (currentStep > 1 && currentStep < 4) {
-            setCurrentStep(prev => (prev - 1) as 1 | 2 | 3 | 4);
+        if (currentStep > 1) {
+            setCurrentStep(prev => (prev - 1) as 1 | 2 | 3);
             setError(null);
         }
     };
 
     const stepIndex = currentStep - 1;
     const progress = (currentStep / WIZARD_STEPS.length) * 100;
-    const anyLoading = isLoading || isVerifying;
 
-    const nextLabel = (() => {
-        if (currentStep === 3) return 'Create Store';
-        if (currentStep === 4) return 'Verify & Launch';
-        return `Next: ${WIZARD_STEPS[stepIndex + 1]}`;
-    })();
+    const nextLabel = currentStep === 3 ? 'Create Store' : `Next: ${WIZARD_STEPS[stepIndex + 1]}`;
 
     const isCurrentStepValid = (() => {
         if (currentStep === 1) return isStep1Valid;
         if (currentStep === 2) return isStep2Valid;
-        if (currentStep === 3) return isStep3Valid;
-        return isStep4Valid;
+        return isStep3Valid;
     })();
 
     return (
@@ -383,56 +360,13 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                             </div>
                         )}
 
-                        {/* ── Step 4: OTP Verification ── */}
-                        {currentStep === 4 && (
-                            <form onSubmit={handleVerifyOtp} className="space-y-5 animate-fade-in">
-                                <div className="text-center mb-2">
-                                    <div className="w-16 h-16 bg-success-muted dark:bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                                        <HiOutlineEnvelope className="w-8 h-8 text-primary" />
-                                    </div>
-                                    <h3 className="text-xl font-extrabold text-brand-text">Verify your email</h3>
-                                    <p className="text-sm text-brand-text-muted mt-2 leading-relaxed max-w-sm mx-auto">
-                                        We sent a 6-digit verification code to the email associated with your account. Enter it below to complete your store setup.
-                                    </p>
-                                </div>
-
-                                <input
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={6}
-                                    required
-                                    autoFocus
-                                    value={otp}
-                                    onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                    className="block w-full px-4 py-5 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-2xl font-extrabold text-center tracking-[0.5em] outline-none"
-                                    placeholder="──────"
-                                />
-
-                                <p className="text-center text-xs text-brand-text-muted">
-                                    Didn't receive the code? Check your spam folder.
-                                </p>
-
-                                {registeredInfo && (
-                                    <div className="flex items-center gap-3 p-4 bg-success-muted dark:bg-primary/10 border border-primary/20 rounded-2xl">
-                                        <HiOutlineCheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                                        <p className="text-sm font-bold text-primary">
-                                            Store "{registeredInfo.store.name}" created! Verify to activate it.
-                                        </p>
-                                    </div>
-                                )}
-
-                                {/* Hidden submit so form works with Enter key */}
-                                <button type="submit" className="hidden" />
-                            </form>
-                        )}
-
                         {/* ── Action buttons ── */}
                         <div className="flex items-center gap-3 mt-8">
-                            {currentStep > 1 && currentStep < 4 && (
+                            {currentStep > 1 && (
                                 <button
                                     type="button"
                                     onClick={handleBack}
-                                    disabled={anyLoading}
+                                    disabled={isLoading}
                                     className="flex items-center gap-2 px-5 py-4 bg-surface border border-brand-border rounded-2xl text-sm font-bold text-brand-text hover:bg-surface-variant transition-all duration-200 active:scale-95 disabled:opacity-50"
                                 >
                                     <HiOutlineArrowLeft className="w-4 h-4" />
@@ -440,37 +374,20 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                                 </button>
                             )}
 
-                            {currentStep < 4 ? (
-                                <button
-                                    type="button"
-                                    onClick={handleNextStep}
-                                    disabled={!isCurrentStepValid || anyLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
-                                >
-                                    {isLoading
-                                        ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        : <>
-                                            {nextLabel}
-                                            <HiOutlineArrowRight className="w-4 h-4" />
-                                        </>
-                                    }
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    onClick={handleVerifyOtp as any}
-                                    disabled={!isStep4Valid || anyLoading}
-                                    className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
-                                >
-                                    {isVerifying
-                                        ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                        : <>
-                                            Verify &amp; Launch Store
-                                            <HiCheckCircle className="w-4 h-4" />
-                                        </>
-                                    }
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                onClick={handleNextStep}
+                                disabled={!isCurrentStepValid || isLoading}
+                                className="flex-1 flex items-center justify-center gap-2 py-4 bg-secondary hover:bg-[#e86d12] disabled:bg-warm-300 dark:disabled:bg-white/10 text-white rounded-2xl font-extrabold uppercase tracking-[0.12em] text-[11px] shadow-lg shadow-primary/25 disabled:shadow-none transition-all active:scale-[0.98] hover:-translate-y-0.5 disabled:translate-y-0 disabled:cursor-not-allowed"
+                            >
+                                {isLoading
+                                    ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    : <>
+                                        {nextLabel}
+                                        <HiOutlineArrowRight className="w-4 h-4" />
+                                    </>
+                                }
+                            </button>
                         </div>
 
                         <p className="mt-4 text-center text-xs text-brand-text-muted">
@@ -497,7 +414,7 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                             <div className="absolute top-8 left-6 right-6 grid grid-cols-2 gap-3">
                                 <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-3.5">
                                     <p className="text-white/60 text-[10px] font-bold uppercase tracking-wider mb-1">Revenue</p>
-                                    <p className="text-white text-xl font-extrabold tracking-tight">₦2.4M</p>
+                                    <p className="text-white text-xl font-extrabold tracking-tight">K2.4M</p>
                                     <p className="text-sp-amber-light text-[10px] font-bold mt-1">↑ 18% this month</p>
                                 </div>
                                 <div className="bg-white/10 backdrop-blur-sm border border-white/15 rounded-2xl p-3.5">
@@ -523,19 +440,6 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
                                         </li>
                                     ))}
                                 </ul>
-                            </div>
-                        </div>
-
-                        {/* Testimonial */}
-                        <div className="flex items-center gap-4 p-5 bg-white/90 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl border border-warm-200 dark:border-white/8 shadow-sm">
-                            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-sp-green to-sp-amber flex-shrink-0 flex items-center justify-center text-white font-extrabold text-sm shadow-md">
-                                M
-                            </div>
-                            <div>
-                                <p className="text-sm text-brand-text-muted italic leading-relaxed">
-                                    "Setting up my boutique took less than 5 minutes with SalePilot."
-                                </p>
-                                <p className="text-xs font-bold text-brand-text mt-1.5">Meryem A. — Store Owner</p>
                             </div>
                         </div>
 
@@ -583,4 +487,4 @@ const StoreSetupPage: React.FC<StoreSetupPageProps> = ({ onCompleted, showSnackb
     );
 };
 
-export default StoreSetupPage;
+export default StoreRegistrationPage;
