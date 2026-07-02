@@ -1,6 +1,6 @@
 import { User } from '../../types';
 import { ROLE_PAGES } from '../../utils/rbac';
-import { MODULES, MARKETING_COMING_SOON } from '../../utils/entitlements';
+import { MODULES } from '../../utils/entitlements';
 
 /**
  * Canonical registry of the standalone "apps" that open from the SalePilot
@@ -29,7 +29,7 @@ export const STANDALONE_APPS: AppDef[] = [
     { name: 'CRM', page: 'crm', route: 'crm', desc: 'Customers, loyalty & insights', iconName: 'diversity_3', requires: 'customers' },
     // { name: 'Marketing Suite', page: 'marketing', route: 'marketing', desc: 'Facebook posts, comments & insights', iconName: 'campaign', requires: 'marketing', comingSoon: MARKETING_COMING_SOON },
     // { name: 'Online Store', page: 'online-store', route: 'store', desc: 'Storefront link, QR & catalog sharing', iconName: 'storefront', requires: 'online-store' },
-    // { name: 'My Businesses', page: 'businesses', route: 'businesses', desc: 'Run multiple shops from one account', iconName: 'domain', requires: 'businesses' },
+    { name: 'Business Manager', page: 'businesses', route: 'businesses', desc: 'Run all your businesses from one hub', iconName: 'domain', requires: 'businesses' },
     { name: 'Inventory Manager', page: 'inv', route: 'inv', desc: 'Stock value, alerts & items', iconName: 'inventory_2', requires: 'inventory' },
     { name: 'User Manager', page: 'team', route: 'team', desc: 'Team members, roles & access', iconName: 'manage_accounts', requires: 'users' },
     { name: 'Procurement Hub', page: 'procure', route: 'procure', desc: 'Suppliers & purchase orders', iconName: 'local_shipping', requires: 'suppliers' },

@@ -22,13 +22,18 @@ interface StoreRow {
     id: string;
     name: string;
     email?: string;
+    phone?: string;
+    ownerName?: string;
     status: 'active' | 'inactive' | 'suspended';
     subscriptionStatus: 'trial' | 'active' | 'past_due' | 'canceled';
     subscriptionEndsAt?: string | null;
+    subscriptionStartedAt?: string | null;
     createdAt: string;
     updatedAt: string;
     usersCount?: number;
-    plan?: string;
+    subscriptionPlan?: string | null;
+    planName?: string | null;
+    totalRevenue?: number;
 }
 
 interface StoreFilters {
@@ -93,7 +98,8 @@ const SuperAdminStores: React.FC = () => {
         setUpdatingId(id);
         try {
             const resp = await api.patch<{ store: StoreRow }>(`/superadmin/stores/${id}`, { status, reason });
-            setStores(prev => prev.map(s => s.id === id ? resp.store : s));
+            // Merge: the PATCH response has core columns only — keep enriched fields (email, revenue, plan name).
+            setStores(prev => prev.map(s => s.id === id ? { ...s, ...resp.store } : s));
         } catch (e: any) {
             alert(e.message || 'Update failed');
         } finally {
@@ -405,6 +411,11 @@ const SuperAdminStores: React.FC = () => {
                                                         <div className="text-sm text-brand-text-muted truncate max-w-[200px]">
                                                             {store.email || 'No email'}
                                                         </div>
+                                                        {store.ownerName && (
+                                                            <div className="text-xs text-brand-text-muted">
+                                                                Owner: {store.ownerName}
+                                                            </div>
+                                                        )}
                                                         <div className="text-xs font-mono text-brand-text-muted mt-1">
                                                             ID: {store.id.substring(0, 8)}...
                                                         </div>
@@ -432,9 +443,9 @@ const SuperAdminStores: React.FC = () => {
                                                                 Ends {formatDate(store.subscriptionEndsAt)}
                                                             </span>
                                                         )}
-                                                        {store.plan && (
+                                                        {store.planName && (
                                                             <span className="text-xs text-brand-text-muted">
-                                                                {store.plan} Plan
+                                                                {store.planName} Plan
                                                             </span>
                                                         )}
                                                     </div>

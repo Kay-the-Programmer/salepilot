@@ -594,6 +594,16 @@ export default function Dashboard() {
         }
     }, [currentUser?.currentStoreId, fetchData]);
 
+    // Superadmin store mode needs the store list (picker gate + top-bar select);
+    // reload it here in case the mount-time preload failed or hasn't run.
+    useEffect(() => {
+        if (currentUser?.role === 'superadmin' && superMode === 'store' && systemStores.length === 0) {
+            api.get<{ stores: { id: string; name: string }[] }>('/superadmin/stores')
+                .then(resp => setSystemStores(resp.stores || []))
+                .catch(() => { /* picker shows loading text; snackbars stay quiet */ });
+        }
+    }, [currentUser?.role, superMode, systemStores.length]);
+
     const handleLogin = (user: User) => {
         // Force superadmin mode to 'superadmin' on login to ensure the correct dashboard is shown
         try {
@@ -1215,6 +1225,40 @@ export default function Dashboard() {
         } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
 
+    // Superadmin mode switch + active-store selection — formerly housed in the
+    // Sidebar, now surfaced in the universal top bar and the store-picker gate
+    // below (defined before the early returns so both can use them).
+    const changeSuperMode = (mode: 'superadmin' | 'store') => {
+        if (!currentUser) return;
+        setSuperMode(mode);
+        try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
+        const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
+        const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin')
+            ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/catalog', 'superadmin/campaigns', 'superadmin/feedback', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile']
+            : PERMISSIONS[effectiveRole];
+        const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
+        if (!allowed.includes(page)) {
+            const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
+            navigate(`/${next}`);
+            try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
+        }
+    };
+    const selectStore = async (storeId: string) => {
+        if (!storeId) return;
+        try {
+            await api.patch('/users/me/current-store', { storeId });
+            const stored = getCurrentUser();
+            if (stored) {
+                const merged = { ...stored, currentStoreId: storeId } as User;
+                localStorage.setItem('salePilotUser', JSON.stringify(merged));
+                setCurrentUser(merged);
+                showSnackbar('Store context updated.', 'success');
+            }
+        } catch (err: any) {
+            showSnackbar(err.message || 'Failed to set current store', 'error');
+        }
+    };
+
     if (isAuthLoading) {
         return <LoadingSpinner />;
     }
@@ -1235,8 +1279,12 @@ export default function Dashboard() {
         return <StoreSetupPage onCompleted={handleCompleted} showSnackbar={showSnackbar} />;
     }
 
-    // Store settings gating applies for any store-scoped context
-    const isStoreScoped = (currentUser.role !== 'superadmin' && currentUser.role !== 'customer') || (currentUser.role === 'superadmin' && superMode === 'store');
+    // Store settings gating applies for any store-scoped context.
+    // The Business Manager (/businesses) is store-AGNOSTIC — it must stay
+    // reachable even when the active store's settings can't load (e.g. the
+    // store was suspended), so the owner can switch to a healthy business.
+    const isStoreAgnosticRoute = location.pathname.split('/')[1] === 'businesses';
+    const isStoreScoped = !isStoreAgnosticRoute && ((currentUser.role !== 'superadmin' && currentUser.role !== 'customer') || (currentUser.role === 'superadmin' && superMode === 'store'));
     if (isStoreScoped) {
         if (!storeSettings && isLoading) {
             return <LoadingSpinner text="Loading store settings..." />;
@@ -1244,11 +1292,49 @@ export default function Dashboard() {
 
         if (!storeSettings && !isLoading) {
             if (currentUser.role === 'superadmin' && !currentUser.currentStoreId) {
+                // Functional store picker — this gate renders before the app shell
+                // (no sidebar/top bar exists yet), so it must let the superadmin
+                // pick a store or return to the platform itself.
                 return (
-                    <div className="flex flex-col h-screen items-center justify-center p-8 text-center text-gray-500 space-y-4">
-                        <BuildingStorefrontIcon className="w-16 h-16 text-gray-300" />
-                        <p className="text-xl font-medium text-gray-700">No Store Selected</p>
-                        <p className="max-w-md">Please select a store from the sidebar menu to view its dashboard and data.</p>
+                    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+                        <div className="w-full max-w-md bg-surface border border-brand-border rounded-2xl shadow-sm p-6 space-y-5">
+                            <div className="text-center space-y-2">
+                                <span className="inline-flex w-14 h-14 rounded-2xl bg-sp-green-soft text-sp-green-dark items-center justify-center">
+                                    <BuildingStorefrontIcon className="w-7 h-7" />
+                                </span>
+                                <h1 className="text-xl font-extrabold tracking-tight text-brand-text">Choose a store to manage</h1>
+                                <p className="text-sm text-brand-text-muted">You're in Store mode. Pick which store's dashboard and data to work in.</p>
+                            </div>
+
+                            {systemStores.length === 0 ? (
+                                <p className="text-sm text-center text-brand-text-muted py-4">Loading stores…</p>
+                            ) : (
+                                <div className="max-h-72 overflow-y-auto border border-brand-border rounded-xl divide-y divide-brand-border">
+                                    {systemStores.map(s => (
+                                        <button
+                                            key={s.id}
+                                            type="button"
+                                            onClick={async () => {
+                                                await selectStore(s.id);
+                                                navigate(`/${DEFAULT_PAGES['admin']}`);
+                                            }}
+                                            className="w-full px-4 py-3 text-left hover:bg-surface-variant/60 flex items-center justify-between group transition-colors"
+                                        >
+                                            <span className="font-semibold text-brand-text group-hover:text-sp-green-dark">{s.name}</span>
+                                            <span className="material-symbols-rounded text-brand-text-muted group-hover:text-sp-green-dark text-[20px]">chevron_right</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            <button
+                                type="button"
+                                onClick={() => { changeSuperMode('superadmin'); navigate('/superadmin'); }}
+                                className="w-full py-2.5 rounded-xl bg-surface-variant text-brand-text font-semibold hover:bg-brand-border transition-all active:scale-95"
+                            >
+                                ← Back to Platform
+                            </button>
+                        </div>
                     </div>
                 );
             }
@@ -1690,6 +1776,14 @@ export default function Dashboard() {
                             storeSettings={storeSettings}
                             onLogout={handleLogout}
                             showSnackbar={showSnackbar}
+                            onStoreSwitched={(u) => {
+                                // Soft switch: swap the user in state (keeping the token) so the
+                                // currentStoreId effect refetches all store data — no reload/logout.
+                                const token = getCurrentUser()?.token;
+                                const merged = token ? ({ ...u, token } as User) : u;
+                                try { localStorage.setItem('salePilotUser', JSON.stringify(merged)); } catch { }
+                                setCurrentUser(merged);
+                            }}
                         />
                     </Suspense>
                 </NotificationProvider>
@@ -1894,38 +1988,6 @@ export default function Dashboard() {
             </OnboardingProvider>
         );
     }
-
-    // Superadmin mode switch + active-store selection — formerly housed in the
-    // Sidebar, now surfaced in the universal top bar below.
-    const changeSuperMode = (mode: 'superadmin' | 'store') => {
-        setSuperMode(mode);
-        try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
-        const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
-        const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin')
-            ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/catalog', 'superadmin/campaigns', 'superadmin/feedback', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile']
-            : PERMISSIONS[effectiveRole];
-        const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
-        if (!allowed.includes(page)) {
-            const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
-            navigate(`/${next}`);
-            try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
-        }
-    };
-    const selectStore = async (storeId: string) => {
-        if (!storeId) return;
-        try {
-            await api.patch('/users/me/current-store', { storeId });
-            const stored = getCurrentUser();
-            if (stored) {
-                const merged = { ...stored, currentStoreId: storeId } as User;
-                localStorage.setItem('salePilotUser', JSON.stringify(merged));
-                setCurrentUser(merged);
-                showSnackbar('Store context updated.', 'success');
-            }
-        } catch (err: any) {
-            showSnackbar(err.message || 'Failed to set current store', 'error');
-        }
-    };
 
     return (
         <OnboardingProvider user={currentUser}>

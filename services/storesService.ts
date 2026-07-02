@@ -55,6 +55,39 @@ export async function getMyStores(): Promise<MyStore[]> {
   return Array.isArray(resp) ? resp : [];
 }
 
+/** Per-business KPIs for the Business Manager portfolio dashboard. */
+export interface MyStoreSummary extends MyStore {
+  revenue: number;
+  prevRevenue: number;
+  transactions: number;
+  productsCount: number;
+  lowStockCount: number;
+  inventoryValue: number;
+  customersCount: number;
+  usersCount: number;
+  trend: { date: string; revenue: number }[];
+}
+
+export interface MyStoresSummary {
+  days: number;
+  stores: MyStoreSummary[];
+  totals: {
+    revenue: number;
+    prevRevenue: number;
+    transactions: number;
+    productsCount: number;
+    lowStockCount: number;
+    inventoryValue: number;
+    customersCount: number;
+    usersCount: number;
+  } | null;
+}
+
+/** Portfolio KPIs + daily revenue trend for every business the user owns. */
+export async function getMyStoresSummary(days: number): Promise<MyStoresSummary> {
+  return api.get<MyStoresSummary>(`/stores/mine/summary?days=${days}`);
+}
+
 /** Switch the active business (only among owned stores); returns the refreshed user. */
 export async function switchStore(storeId: string): Promise<User> {
   await api.post('/stores/switch', { storeId }, { skipQueue: true });
