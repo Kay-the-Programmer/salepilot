@@ -17,6 +17,8 @@ interface CategoryListProps {
     error: string | null;
     selectedCategoryId?: string | null;
     onSelectCategory?: (categoryId: string) => void;
+    /** First-run CTA: opens the create-category form from the empty state. */
+    onAddCategory?: () => void;
 }
 
 interface CategoryWithLevel extends Category {
@@ -31,7 +33,8 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     isLoading,
     error,
     selectedCategoryId,
-    onSelectCategory
+    onSelectCategory,
+    onAddCategory
 }) => {
     const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
     const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
@@ -136,16 +139,30 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     if (displayedCategories.length === 0) {
         return (
             <div className="px-4 py-12 sm:px-6">
-                <div className="text-center bg-white/60 dark:bg-slate-900/40 backdrop-blur-3xl p-6 rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/5">
-                    <div className="mx-auto flex items-center justify-center h-14 w-14 rounded-xl bg-slate-50 dark:bg-slate-800 rotate-3 transition-transform hover:rotate-6 shadow-sm border border-slate-100 dark:border-white/5">
-                        <FolderIcon className="h-7 w-7 text-slate-400 dark:text-slate-500" />
+                <div className="text-center bg-surface p-8 rounded-2xl shadow-sm border border-brand-border">
+                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/[0.06] dark:bg-primary/15">
+                        <FolderIcon className="h-8 w-8 text-primary/60" />
                     </div>
-                    <h3 className="mt-5 text-[18px] font-bold text-slate-900 dark:text-white tracking-tight">No categories found</h3>
-                    <p className="mt-2 text-[14px] font-medium text-slate-500 dark:text-slate-400">
+                    <h3 className="mt-5 text-base font-bold text-brand-text tracking-tight">
+                        {searchTerm ? 'No categories found' : 'No categories yet'}
+                    </h3>
+                    <p className="mt-1 text-sm text-brand-text-muted max-w-sm mx-auto leading-relaxed">
                         {searchTerm
-                            ? `No categories match "${searchTerm}"`
-                            : "Get started by creating your first category"}
+                            ? `No categories match "${searchTerm}".`
+                            : 'Categories group your products so they are faster to find at checkout and clearer in reports.'}
                     </p>
+                    {!searchTerm && onAddCategory && (
+                        <button
+                            type="button"
+                            onClick={onAddCategory}
+                            className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] bg-primary text-white text-sm font-bold rounded-lg shadow-sm hover:bg-primary-container transition-all active:scale-95"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Create your first category
+                        </button>
+                    )}
                 </div>
             </div>
         );

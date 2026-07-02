@@ -63,6 +63,7 @@ const CategoriesPage: React.FC<CategoriesPageProps> = ({
                     onDelete={onDeleteCategory}
                     isLoading={isLoading}
                     error={error}
+                    onAddCategory={handleOpenAddModal}
                 />
             </main>
             <CategoryFormModal

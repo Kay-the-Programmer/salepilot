@@ -11,15 +11,14 @@ import { api } from '../../services/api';
 import { getCurrentUser } from '../../services/authService';
 import { formatCurrency } from '../../utils/currency';
 import RequestWizard from '../../components/RequestWizard';
-import Snackbar from '../../components/Snackbar';
-import { SnackbarType } from '../../App';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function CustomerDashboard() {
     const [requests, setRequests] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<'dashboard' | 'requests'>('dashboard');
-    const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const user = getCurrentUser();
 
@@ -35,7 +34,7 @@ export default function CustomerDashboard() {
             setRequests(data);
         } catch (error: any) {
             console.error('Error fetching requests:', error);
-            setSnackbar({ message: 'Failed to load requests', type: 'error' });
+            showToast('Failed to load requests', 'error');
         } finally {
             setLoading(false);
         }
@@ -72,7 +71,7 @@ export default function CustomerDashboard() {
                 ...formData,
                 targetPrice: parseFloat(formData.targetPrice)
             });
-            setSnackbar({ message: 'Broadcasting your request...', type: 'success' });
+            showToast('Broadcasting your request...', 'success');
             setTimeout(() => {
                 if (response && response.id) {
                     navigate(`/marketplace/track/${response.id}`);
@@ -314,13 +313,6 @@ export default function CustomerDashboard() {
                 onSubmit={handleRequestSubmit}
             />
 
-            {snackbar && (
-                <Snackbar
-                    message={snackbar.message}
-                    type={snackbar.type}
-                    onClose={() => setSnackbar(null)}
-                />
-            )}
         </div>
     );
 }

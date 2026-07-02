@@ -63,7 +63,7 @@ const WhatsAppSettingsPage = lazy(() => import('@/pages/WhatsAppSettingsPage'));
 const SupportPage = lazy(() => import('@/pages/SupportPage'));
 const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 
-import Snackbar from './components/Snackbar';
+import { useToast } from './contexts/ToastContext';
 import VerifyEmailOtpModal from './components/VerifyEmailOtpModal';
 import { useLogoutModal } from './contexts/LogoutModalContext';
 import { useAppSwitcher } from './contexts/AppSwitcherContext';
@@ -79,7 +79,6 @@ import LoadingSpinner from './components/LoadingSpinner';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import NotificationBell from './components/NotificationBell';
 import PriorityNotificationModal from './components/PriorityNotificationModal';
-import TourGuide from './components/TourGuide';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { logEvent } from './src/utils/analytics';
@@ -92,11 +91,6 @@ const getLastPageKey = (userId?: string) => userId ? `salePilot.lastPage.${userI
 const getSuperModeKey = (userId?: string) => userId ? `salePilot.superMode.${userId}` : 'salePilot.superMode';
 
 // SnackbarType now imported from App.tsx
-
-type SnackbarState = {
-    message: string;
-    type: SnackbarType;
-};
 
 // Role → page access. Sourced from the single canonical RBAC map in
 // utils/rbac.ts so the route guard here and the app switcher
@@ -156,7 +150,6 @@ export default function Dashboard() {
 
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [snackbar, setSnackbar] = useState<SnackbarState | null>(null);
     const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser());
     const [isAuthLoading, setIsAuthLoading] = useState(true);
     const [showOtpModal, setShowOtpModal] = useState(false);
@@ -188,9 +181,14 @@ export default function Dashboard() {
 
     // Priority notifications are now handled within NotificationContext or dedicated components
 
+    // All feedback goes through the single global toast engine (ToastProvider in
+    // App.tsx). Dashboard used to render its own one-shot snackbar here, but that
+    // renderer only existed in the main-shell branch — every standalone app
+    // (POS, CRM, Procure, …) called showSnackbar into the void.
+    const { showToast } = useToast();
     const showSnackbar = useCallback((message: string, type: SnackbarType = 'info') => {
-        setSnackbar({ message, type });
-    }, []);
+        showToast(message, type);
+    }, [showToast]);
 
     useEffect(() => {
         const handler = (e: Event) => {
@@ -2163,7 +2161,6 @@ export default function Dashboard() {
                         )}
                     </div>
 
-                    {snackbar && <Snackbar message={snackbar.message} type={snackbar.type} onClose={() => setSnackbar(null)} />}
                     <VerifyEmailOtpModal
                         isOpen={showOtpModal}
                         email={currentUser?.email || ''}
@@ -2177,9 +2174,6 @@ export default function Dashboard() {
                             showSnackbar('Email verified successfully!', 'success');
                         }}
                     />
-                    <TourGuide user={currentUser} />
-
-
                     <PriorityNotificationModal />
                 </div>
             </NotificationProvider>

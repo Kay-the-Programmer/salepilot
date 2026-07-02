@@ -16,9 +16,11 @@ interface UserListProps {
     onDelete: (userId: string) => void;
     isLoading: boolean;
     error: string | null;
+    /** First-run CTA: opens the add-user form from the empty state. */
+    onAddUser?: () => void;
 }
 
-const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDelete, isLoading, error }) => {
+const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDelete, isLoading, error, onAddUser }) => {
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [showActionsForUser, setShowActionsForUser] = useState<string | null>(null);
 
@@ -105,12 +107,24 @@ const UserList: React.FC<UserListProps> = ({ users, onSelectUser, onEdit, onDele
     if (users.length === 0) {
         return (
             <div className="px-4 py-12">
-                <div className="text-center bg-white dark:bg-slate-900 rounded-[2rem] p-8 max-w-md mx-auto border border-slate-200/50 dark:border-white/5 shadow-sm">
-                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-[1.5rem] bg-slate-100 dark:bg-slate-800 mb-5 border border-slate-200 dark:border-white/5 shadow-inner">
-                        <UserGroupIcon className="h-8 w-8 text-slate-400 dark:text-slate-500" />
+                <div className="text-center bg-surface rounded-2xl p-8 max-w-md mx-auto border border-brand-border shadow-sm">
+                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/[0.06] dark:bg-primary/15 mb-5">
+                        <UserGroupIcon className="h-8 w-8 text-primary/60" />
                     </div>
-                    <p className="text-[17px] font-semibold text-slate-900 dark:text-white">No users found</p>
-                    <p className="text-[15px] text-slate-500 dark:text-slate-400 mt-1">Add users to get started</p>
+                    <p className="text-base font-bold text-brand-text tracking-tight">No team members yet</p>
+                    <p className="text-sm text-brand-text-muted mt-1 leading-relaxed">Add staff accounts so your team can sell and manage stock with their own logins.</p>
+                    {onAddUser && (
+                        <button
+                            type="button"
+                            onClick={onAddUser}
+                            className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] bg-primary text-white text-sm font-bold rounded-lg shadow-sm hover:bg-primary-container transition-all active:scale-95"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                            Add your first user
+                        </button>
+                    )}
                 </div>
             </div>
         );

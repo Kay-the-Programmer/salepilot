@@ -1097,6 +1097,15 @@
   cursor: not-allowed;
 }
 
+.v2-btn--primary {
+  background: var(--v2-color-primary);
+  color: #ffffff;
+}
+
+.v2-btn--primary:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+
 .v2-btn--secondary {
   background: var(--v2-color-surface);
   border-color: var(--v2-color-border-strong);

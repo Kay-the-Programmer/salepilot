@@ -1051,28 +1051,14 @@ textarea {
   }
 }
 
-/* Subtle attention pulse for the icon */
-@keyframes snackbarIconPulse {
-
-  0%,
-  100% {
-    transform: scale(1);
-    filter: drop-shadow(0 0 0 transparent);
-  }
-
-  50% {
-    transform: scale(1.1);
-    filter: drop-shadow(0 0 8px currentColor);
-  }
-}
-
 /* Snackbar container base styles */
 .snackbar-container {
   will-change: transform, opacity;
   transform-origin: top center;
 }
 
-/* Progress bar styling — a subtle hairline that depletes as the toast ages */
+/* Progress bar styling — a subtle hairline that depletes as the toast ages.
+   Duration is set inline by the component to match its auto-dismiss timer. */
 .snackbar-progress {
   position: absolute;
   bottom: 0;
@@ -1080,13 +1066,7 @@ textarea {
   height: 2px;
   opacity: 0.65;
   border-radius: 0 2px 2px 0;
-  animation: snackbarProgress 5s linear forwards;
-}
-
-/* Icon animation */
-.snackbar-icon-animated {
-  animation: snackbarIconPulse 2s ease-in-out infinite;
-  animation-delay: 0.5s;
+  animation: snackbarProgress 4s linear forwards;
 }
 
 .animate-slide-down-top {
@@ -1202,85 +1182,25 @@ textarea {
 }
 
 
-/* Responsive Snackbar Animation helpers */
-/* All breakpoints: top-centred toasts bounce down from the top */
-.snackbar-responsive-anim {
-  animation: snackbarBounceDown 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-/* Responsive Snackbar EXIT Animation helpers */
-/* All breakpoints: smooth exit upward */
-.snackbar-exit-anim {
-  animation: snackbarExitUp 0.35s cubic-bezier(0.4, 0, 0.6, 1) forwards;
-}
-
-/* ====================================
-   SNACKBAR STACKING STYLES
-   ==================================== */
-
-/* Stack container — top-centred, newest toast on top, stack grows downward */
-.snackbar-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  pointer-events: none;
-}
-
-/* Stacked items (older toasts) subtle visual treatment */
-.snackbar-stacked {
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* Hover on stacked items - bring to attention */
-.snackbar-stacked:hover {
-  transform: scale(1.02) !important;
-  opacity: 1 !important;
-  z-index: 10;
-}
-
-/* Stack cascade animation - staggered entry */
-@keyframes snackbarStackEnter {
-  0% {
+/* Snackbar enter/exit — calm, quick slide-fade (no bounce, no filters) */
+@keyframes snackbarIn {
+  from {
     opacity: 0;
-    transform: translateY(20px) scale(0.9);
+    transform: translateY(-8px);
   }
 
-  100% {
+  to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
 
-/* Apply stagger to items within the stack */
-.snackbar-stack>div {
-  transition: transform 0.3s ease, opacity 0.3s ease;
+.snackbar-enter-anim {
+  animation: snackbarIn 0.22s ease-out forwards;
 }
 
-/* When items are added/removed, smooth the reflow */
-.snackbar-stack>div:not(:last-child) {
-  margin-bottom: 0;
-}
-
-/* Subtle stack indicator for multiple toasts */
-.snackbar-stack::before {
-  content: '';
-  display: none;
-}
-
-/* Show stack count badge when 3+ items */
-.snackbar-stack:has(> div:nth-child(3))::before {
-  display: block;
-  position: absolute;
-  top: -8px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.6);
-  color: white;
-  font-size: 10px;
-  font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
-  backdrop-filter: blur(4px);
+.snackbar-exit-anim {
+  animation: snackbarExitUp 0.2s cubic-bezier(0.4, 0, 0.6, 1) forwards;
 }
 
 /* ====================================

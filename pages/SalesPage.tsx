@@ -705,6 +705,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     customers={customers}
                     onProcessReturn={onProcessReturn}
                     showSnackbar={showSnackbar}
+                    onStartSelling={() => setPosView('sell')}
                 />
             ) : (
                 <div className="sale__body">
@@ -716,14 +717,31 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     <div key={i} className="prodcard" style={{ height: 210, opacity: 0.4, pointerEvents: 'none' }} />
                                 ))
                             ) : filteredProducts.length === 0 ? (
-                                <div className="sale__empty">
-                                    <PosIcon name="search_off" size={40} />
-                                    <p>
-                                        {searchTerm
-                                            ? `No products match “${searchTerm}”.`
-                                            : 'No active products in this category yet.'}
-                                    </p>
-                                </div>
+                                products.length === 0 && !searchTerm ? (
+                                    /* First run: nothing to sell yet — guide, don't dead-end. */
+                                    <div className="sale__empty">
+                                        <PosIcon name="inventory_2" size={40} />
+                                        <p style={{ fontWeight: 700 }}>Add products to start selling</p>
+                                        <p style={{ marginTop: 4 }}>Your catalog is empty. Add your first product and it will appear here, ready to ring up.</p>
+                                        <button
+                                            type="button"
+                                            className="v2-btn v2-btn--primary"
+                                            style={{ marginTop: 16, minHeight: 48 }}
+                                            onClick={() => setIsProductFormOpen(true)}
+                                        >
+                                            <PosIcon name="add" size={20} /> Add your first product
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="sale__empty">
+                                        <PosIcon name="search_off" size={40} />
+                                        <p>
+                                            {searchTerm
+                                                ? `No products match “${searchTerm}”.`
+                                                : 'No active products in this category yet.'}
+                                        </p>
+                                    </div>
+                                )
                             ) : (
                                 filteredProducts.map(product => {
                                     const cartItem = cart.find(item => item.productId === product.id);
@@ -748,7 +766,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     </main>
 
                     {/* ── Cart / Payment (progressive disclosure) ── */}
-                    <aside className={`cart${mobileCartOpen ? ' cart--open' : ''}`} aria-label="Current sale">
+                    <aside id="pos-cart" className={`cart${mobileCartOpen ? ' cart--open' : ''}`} aria-label="Current sale">
                         {cartView === 'confirm' ? (
                             <ConfirmPaymentPanel
                                 storeSettings={storeSettings}
@@ -1016,12 +1034,14 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 title="Scan Product"
             />
 
-            <TourGuide
-                user={user}
-                page="sales"
-                run={runTour}
-                onTourEnd={() => setRunTour(false)}
-            />
+            {/* First-visit walkthrough — only while the register (its targets) is on screen */}
+            {posView === 'sell' && (
+                <TourGuide
+                    user={user}
+                    run={runTour}
+                    onTourEnd={() => setRunTour(false)}
+                />
+            )}
         </div>
     );
 };

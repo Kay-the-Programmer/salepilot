@@ -13,6 +13,8 @@ interface SalesHistoryViewProps {
     customers: Customer[];
     onProcessReturn: (returnInfo: Return) => void;
     showSnackbar: (message: string, type?: SnackbarType) => void;
+    /** First-run CTA: jump back to the register to make the first sale. */
+    onStartSelling?: () => void;
 }
 
 const REASONS = ['Defective / Damaged', 'Wrong Item', 'Changed Mind', 'Other'];
@@ -33,7 +35,7 @@ const statusBadge = (sale: Sale): { cls: string; label: string } => {
 
 type ReturnLine = { quantity: number; reason: string; addToStock: boolean; name: string; price: number };
 
-export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSettings, customers, onProcessReturn, showSnackbar }) => {
+export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSettings, customers, onProcessReturn, showSnackbar, onStartSelling }) => {
     const [sales, setSales] = useState<Sale[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -204,6 +206,16 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                     <div className="sale__empty">
                         <PosIcon name="receipt_long" size={40} />
                         <p>{search ? `No sales match “${search}”.` : 'No sales recorded yet.'}</p>
+                        {!search && onStartSelling && (
+                            <button
+                                type="button"
+                                className="v2-btn v2-btn--primary"
+                                style={{ marginTop: 12, minHeight: 48 }}
+                                onClick={onStartSelling}
+                            >
+                                <PosIcon name="point_of_sale" size={20} /> Make your first sale
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="hist__list">

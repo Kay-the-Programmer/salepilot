@@ -12,6 +12,13 @@ interface UnifiedListGridProps<T> {
     error?: string | null;
     /** Message to show when items array is empty */
     emptyMessage?: string;
+    /** Optional bold title above the empty message */
+    emptyTitle?: string;
+    /** Optional CTA rendered under the empty message — guides first-time users to the next step */
+    emptyAction?: {
+        label: string;
+        onClick: () => void;
+    };
     /** Custom component to render when empty */
     emptyStateComponent?: React.ReactNode;
     /** ID of currently selected item */
@@ -54,6 +61,8 @@ function UnifiedListGrid<T>({
     isLoading = false,
     error = null,
     emptyMessage = 'No items to display.',
+    emptyTitle,
+    emptyAction,
     emptyStateComponent,
     selectedId,
     getItemId,
@@ -93,19 +102,33 @@ function UnifiedListGrid<T>({
         );
     }
 
-    // Empty state
+    // Empty state — brand-toned, with an optional first-run CTA (Velocity: navy
+    // primary for standard flow actions, tonal surfaces instead of gray).
     if (items.length === 0) {
         if (emptyStateComponent) {
             return <>{emptyStateComponent}</>;
         }
         return (
-            <div className="text-center p-10">
-                <div className="mx-auto w-16 h-16 bg-gray-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
-                    <svg className="w-8 h-8 text-gray-400 dark:text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="text-center px-6 py-12 animate-fade-in-up">
+                <div className="mx-auto w-16 h-16 bg-primary/[0.06] dark:bg-primary/15 rounded-2xl flex items-center justify-center mb-4">
+                    <svg className="w-8 h-8 text-primary/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                     </svg>
                 </div>
-                <p className="text-gray-500 dark:text-slate-400">{emptyMessage}</p>
+                {emptyTitle && <p className="text-base font-bold text-brand-text tracking-tight">{emptyTitle}</p>}
+                <p className={`text-sm text-brand-text-muted ${emptyTitle ? 'mt-1' : ''} max-w-sm mx-auto leading-relaxed`}>{emptyMessage}</p>
+                {emptyAction && (
+                    <button
+                        type="button"
+                        onClick={emptyAction.onClick}
+                        className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] bg-primary text-white text-sm font-bold rounded-lg shadow-sm hover:bg-primary-container transition-all active:scale-95"
+                    >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                        {emptyAction.label}
+                    </button>
+                )}
             </div>
         );
     }

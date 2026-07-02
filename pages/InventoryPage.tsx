@@ -27,6 +27,8 @@ import BarcodeLookupModal from '../components/BarcodeLookupModal';
 import { logEvent } from '../src/utils/analytics';
 import { generateLowStockPDF } from '../utils/pdfExport';
 import { useToast } from '../contexts/ToastContext';
+import { useOnboarding } from '../contexts/OnboardingContext';
+import { ONBOARDING_ACTIONS } from '../services/onboardingService';
 
 interface InventoryPageProps {
     products: Product[];
@@ -136,6 +138,18 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const supplierMap = useMemo(() => new Map(suppliers.map(s => [s.id, s])), [suppliers]);
 
     const canManageProducts = currentUser.role === 'admin' || currentUser.role === 'inventory_manager';
+    const { completeAction } = useOnboarding();
+
+    // First-run CTAs (empty states own the "add your first X" guidance). Only
+    // offered when the catalog is truly empty — never on a filtered/search miss.
+    const handleAddFirstProduct = () => {
+        handleOpenAddModal();
+        completeAction(ONBOARDING_ACTIONS.ADDED_FIRST_PRODUCT);
+    };
+    const handleAddFirstCategory = () => {
+        handleOpenAddCategoryModal();
+        completeAction(ONBOARDING_ACTIONS.CREATED_FIRST_CATEGORY);
+    };
 
     // Handle resizing. Depends only on `isResizing` so listeners are attached
     // once per drag session, not re-bound on every pixel of movement.
@@ -742,14 +756,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 />
             )}
 
-            {/* Onboarding Helpers */}
+            {/* Onboarding nudges (cross-navigation only — empty states carry their own CTAs) */}
             <InventoryOnboardingHelpers
                 products={products}
-                categories={categories}
                 suppliers={suppliers}
                 activeTab={activeTab}
-                onOpenAddModal={handleOpenAddModal}
-                onOpenAddCategoryModal={handleOpenAddCategoryModal}
             />
 
             <div className={`flex-1 ${selectedItem ? 'flex' : 'hidden'} md:flex overflow-hidden w-full relative z-10`} id="inventory-content">
@@ -774,6 +785,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                         userRole={currentUser.role as any}
                                         viewMode={viewMode}
                                         selectedProductId={selectedProductId}
+                                        onAddProduct={products.length === 0 && canManageProducts ? handleAddFirstProduct : undefined}
                                     />
                                 </div>
                                 {/* Pagination hidden on mobile as per request */}
@@ -801,6 +813,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                     error={error}
                                     selectedCategoryId={selectedCategoryId}
                                     onSelectCategory={handleSelectCategory}
+                                    onAddCategory={canManageProducts ? handleAddFirstCategory : undefined}
                                 />
                             </div>
                         )}

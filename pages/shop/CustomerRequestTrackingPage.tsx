@@ -11,8 +11,7 @@ import {
 } from 'react-icons/hi2';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
-import Snackbar from '../../components/Snackbar';
-import { SnackbarType } from '../../App';
+import { useToast } from '../../contexts/ToastContext';
 import { MarketplaceRequest } from '../../types';
 
 export default function CustomerRequestTrackingPage() {
@@ -21,7 +20,7 @@ export default function CustomerRequestTrackingPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [respondingTo, setRespondingTo] = useState<string | null>(null);
-    const [snackbar, setSnackbar] = useState<{ message: string; type: SnackbarType } | null>(null);
+    const { showToast } = useToast();
     const [showCancelConfirm, setShowCancelConfirm] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
     const navigate = useNavigate();
@@ -52,13 +51,10 @@ export default function CustomerRequestTrackingPage() {
         setRespondingTo(offerId);
         try {
             await api.post(`/marketplace/offers/${offerId}/respond`, { action });
-            setSnackbar({
-                message: action === 'accept' ? 'Offer accepted!' : 'Offer declined',
-                type: 'success'
-            });
+            showToast(action === 'accept' ? 'Offer accepted!' : 'Offer declined', 'success');
             fetchRequestDetails();
         } catch (err: any) {
-            setSnackbar({ message: err.message || 'Failed to respond', type: 'error' });
+            showToast(err.message || 'Failed to respond', 'error');
         } finally {
             setRespondingTo(null);
         }
@@ -70,12 +66,12 @@ export default function CustomerRequestTrackingPage() {
         setIsCancelling(true);
         try {
             await api.put(`/marketplace/requests/${requestId}/cancel`, {});
-            setSnackbar({ message: 'Request cancelled successfully', type: 'success' });
+            showToast('Request cancelled successfully', 'success');
             setShowCancelConfirm(false);
             // Refresh request details to show updated status
             await fetchRequestDetails();
         } catch (err: any) {
-            setSnackbar({ message: err.message || 'Failed to cancel request', type: 'error' });
+            showToast(err.message || 'Failed to cancel request', 'error');
         } finally {
             setIsCancelling(false);
         }
@@ -291,14 +287,6 @@ export default function CustomerRequestTrackingPage() {
                     </div>
                 )}
             </main>
-
-            {snackbar && (
-                <Snackbar
-                    message={snackbar.message}
-                    type={snackbar.type}
-                    onClose={() => setSnackbar(null)}
-                />
-            )}
 
             {/* Cancel Confirmation Modal */}
             {showCancelConfirm && request && (

@@ -134,6 +134,7 @@ const UsersPage: React.FC<UsersPageProps> = ({ users, onSaveUser, onDeleteUser, 
                         onDelete={onDeleteUser}
                         isLoading={isLoading}
                         error={error}
+                        onAddUser={users.length === 0 ? handleOpenAddModal : undefined}
                     />
                 </div>
             </main>

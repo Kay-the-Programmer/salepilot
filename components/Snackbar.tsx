@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { SnackbarType } from '../App';
 import CheckCircleIcon from './icons/CheckCircleIcon';
 import XCircleIcon from './icons/XCircleIcon';
@@ -7,13 +6,21 @@ import InformationCircleIcon from './icons/InformationCircleIcon';
 import XMarkIcon from './icons/XMarkIcon';
 import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
 
+/**
+ * The toast card. Purely presentational — positioning and stacking belong to
+ * ToastContext's container. Minimal per DESIGN.md: a flat surface card with a
+ * single tinted accent (icon chip + hairline progress), no glows or bounces.
+ * Hovering pauses the auto-dismiss so long errors can be read.
+ */
 interface SnackbarProps {
     message: string;
     type: SnackbarType;
     onClose: () => void;
-    stackIndex?: number;
-    totalInStack?: number;
+    /** Auto-dismiss after this many ms (default 4000). */
+    duration?: number;
 }
+
+const EXIT_MS = 200;
 
 const SyncIcon = () => (
     <svg className="animate-spin h-4 w-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -22,111 +29,76 @@ const SyncIcon = () => (
     </svg>
 );
 
-const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, stackIndex = 0, totalInStack = 1 }) => {
-    const [isExiting, setIsExiting] = React.useState(false);
-    const AUTO_CLOSE_DURATION = 5000;
+const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, duration = 4000 }) => {
+    const [isExiting, setIsExiting] = useState(false);
+    const [isPaused, setIsPaused] = useState(false);
+    const remainingRef = useRef(duration);
+    const startedAtRef = useRef(Date.now());
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // Stagger auto-close timing for stacked toasts (newer ones stay longer)
-    const adjustedDuration = AUTO_CLOSE_DURATION + (stackIndex * 500);
-
-    const handleClose = React.useCallback(() => {
+    const handleClose = useCallback(() => {
         setIsExiting(true);
-        setTimeout(() => {
-            onClose();
-        }, 320); // Match exit animation duration
+        setTimeout(onClose, EXIT_MS);
     }, [onClose]);
 
+    // Auto-dismiss with hover-pause: the timer runs on the remaining time and
+    // is suspended while the pointer is over the toast.
     useEffect(() => {
-        const timer = setTimeout(() => {
-            handleClose();
-        }, adjustedDuration);
+        if (isPaused || isExiting) {
+            if (timerRef.current) clearTimeout(timerRef.current);
+            remainingRef.current -= Date.now() - startedAtRef.current;
+            return;
+        }
+        startedAtRef.current = Date.now();
+        timerRef.current = setTimeout(handleClose, Math.max(remainingRef.current, 400));
+        return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+    }, [isPaused, isExiting, handleClose]);
 
-        return () => {
-            clearTimeout(timer);
-        };
-    }, [handleClose, adjustedDuration]);
-
-    // Minimal, warm "Modern Tactile" toast — a clean white/surface card with a
-    // single tinted accent (the icon chip + a hairline progress bar). The body
-    // stays neutral so messages read clearly in both light and dark themes.
-    const typeStyles: Record<SnackbarType, { chip: string; icon: string; progress: string }> = {
+    const TYPE_STYLES: Record<SnackbarType, { chip: string; icon: string; progress: string }> = {
         success: { chip: 'bg-success-muted', icon: 'text-success', progress: 'bg-success' },
         error:   { chip: 'bg-danger-muted',  icon: 'text-danger',  progress: 'bg-danger' },
         info:    { chip: 'bg-surface-variant', icon: 'text-brand-text', progress: 'bg-brand-text-muted' },
         warning: { chip: 'bg-warning-muted', icon: 'text-warning', progress: 'bg-warning' },
         sync:    { chip: 'bg-surface-variant', icon: 'text-primary', progress: 'bg-primary' },
     };
-
-    const styles = typeStyles[type];
+    const s = TYPE_STYLES[type] ?? TYPE_STYLES.info;
 
     const Icon = {
-        success: <CheckCircleIcon className={`h-4 w-4 ${styles.icon} snackbar-icon-animated`} />,
-        error: <XCircleIcon className={`h-4 w-4 ${styles.icon} snackbar-icon-animated`} />,
-        info: <InformationCircleIcon className={`h-4 w-4 ${styles.icon} snackbar-icon-animated`} />,
-        warning: <ExclamationTriangleIcon className={`h-4 w-4 ${styles.icon} snackbar-icon-animated`} />,
+        success: <CheckCircleIcon className={`h-4 w-4 ${s.icon}`} />,
+        error: <XCircleIcon className={`h-4 w-4 ${s.icon}`} />,
+        info: <InformationCircleIcon className={`h-4 w-4 ${s.icon}`} />,
+        warning: <ExclamationTriangleIcon className={`h-4 w-4 ${s.icon}`} />,
         sync: <SyncIcon />,
     }[type];
 
-    const animationClass = isExiting ? 'snackbar-exit-anim' : 'snackbar-responsive-anim';
-
-    // Calculate visual depth for stacked appearance
-    const isOlder = stackIndex < totalInStack - 1;
-
-    // Determine if this snackbar is standalone or in a stack
-    const isStandalone = totalInStack === 1;
-
     return (
         <div
-            className={`
-                snackbar-container
-                ${isStandalone
-                    ? 'fixed top-4 left-1/2 -translate-x-1/2 z-[200] w-[calc(100%-2rem)] max-w-sm'
-                    : 'relative w-full'
-                }
-                bg-surface
-                border border-brand-border
-                rounded-2xl
-                overflow-hidden
-                ${animationClass}
-                ${isOlder ? 'snackbar-stacked' : ''}
-            `}
-            role="alert"
-            style={{
-                boxShadow: isOlder
-                    ? '0 4px 14px -6px rgba(26, 26, 46, 0.12)'
-                    : '0 8px 24px -8px rgba(26, 26, 46, 0.18)',
-            }}
+            className={`snackbar-container relative w-full bg-surface border border-brand-border rounded-xl overflow-hidden shadow-[0_8px_24px_-8px_rgba(24,28,30,0.18)] ${isExiting ? 'snackbar-exit-anim' : 'snackbar-enter-anim'}`}
+            role={type === 'error' || type === 'warning' ? 'alert' : 'status'}
+            onMouseEnter={() => setIsPaused(true)}
+            onMouseLeave={() => setIsPaused(false)}
         >
-            {/* Main content */}
             <div className="flex items-center gap-3 px-4 py-3">
-                {/* Tinted icon chip — the single splash of colour */}
-                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${styles.chip}`}>
+                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${s.chip}`}>
                     {Icon}
                 </div>
-
-                {/* Message */}
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium leading-snug text-brand-text">{message}</p>
-                </div>
-
-                {/* Close button */}
+                <p className="flex-1 min-w-0 text-sm font-medium leading-snug text-brand-text">{message}</p>
                 <button
                     type="button"
                     onClick={handleClose}
-                    className="flex-shrink-0 p-1.5 rounded-lg text-brand-text-muted transition-colors duration-200 hover:text-brand-text hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-brand-border active:scale-90"
+                    className="flex-shrink-0 p-1.5 rounded-lg text-brand-text-muted transition-colors hover:text-brand-text hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-brand-border active:scale-90"
                     aria-label="Dismiss"
                 >
-                    <span className="sr-only">Dismiss</span>
                     <XMarkIcon className="h-4 w-4" />
                 </button>
             </div>
 
-            {/* Hairline progress bar */}
+            {/* Hairline auto-dismiss indicator; pauses with the timer on hover */}
             <div
-                className={`snackbar-progress ${styles.progress}`}
+                className={`snackbar-progress ${s.progress}`}
                 style={{
-                    animationDuration: `${adjustedDuration}ms`,
-                    animationPlayState: isExiting ? 'paused' : 'running',
+                    animationDuration: `${duration}ms`,
+                    animationPlayState: isPaused || isExiting ? 'paused' : 'running',
                 }}
             />
         </div>

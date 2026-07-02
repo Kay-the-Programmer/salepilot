@@ -91,7 +91,11 @@ export const TeamMembers: React.FC<TeamMembersProps> = ({ overview, currentUser,
                 {members.length === 0 ? (
                     <div className="crm-empty" style={{ padding: '48px 16px' }}>
                         <Icon name="group_off" size={40} />
-                        <p className="crm-empty__text">No team members yet.</p>
+                        <p className="crm-empty__title">No team members yet</p>
+                        <p className="crm-empty__text">Add staff accounts so your team can sell and manage stock with their own logins.</p>
+                        <button className="crm-btn crm-btn--primary" type="button" style={{ marginTop: 8 }} onClick={canAdd ? onAdd : onUpgrade}>
+                            <Icon name={canAdd ? 'person_add' : 'lock'} size={20} /> Add your first member
+                        </button>
                     </div>
                 ) : (
                     <div className="team-list">

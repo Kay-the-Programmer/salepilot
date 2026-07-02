@@ -18,6 +18,8 @@ interface Props {
   userRole: 'admin' | 'staff' | 'inventory_manager';
   viewMode?: 'grid' | 'list';
   selectedProductId?: string | null;
+  /** First-run CTA: opens the add-product form from the empty state. */
+  onAddProduct?: () => void;
 }
 
 const ProductCard: React.FC<{
@@ -149,7 +151,8 @@ const ProductList: React.FC<Props> = React.memo(({
   error,
   storeSettings,
   viewMode = 'grid',
-  selectedProductId
+  selectedProductId,
+  onAddProduct
 }) => {
   const getCategoryName = (categoryId?: string) =>
     categoryId ? (categories.find(c => c.id === categoryId)?.name || '-') : '-';
@@ -160,7 +163,11 @@ const ProductList: React.FC<Props> = React.memo(({
       viewMode={viewMode}
       isLoading={isLoading}
       error={error}
-      emptyMessage="No products to display."
+      emptyTitle={onAddProduct ? 'No products yet' : undefined}
+      emptyMessage={onAddProduct
+        ? 'Add your first product to start tracking stock and selling at the till.'
+        : 'No products to display.'}
+      emptyAction={onAddProduct ? { label: 'Add your first product', onClick: onAddProduct } : undefined}
       selectedId={selectedProductId}
       getItemId={(product) => product.id}
       onItemClick={(product) => onSelectProduct(product)}
