@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import { api } from '../../services/api';
+import { fetchDashboardRange } from './reportsData';
 import { SalesChannelChart } from './charts/SalesChannelChart';
 import { TimeRangeFilter, TimeFilter } from './TimeRangeFilter';
 
@@ -38,7 +38,7 @@ export const FilterableSalesChannelChart: React.FC<FilterableSalesChannelChartPr
                 const startDateStr = toDateInputString(start);
                 const endDateStr = toDateInputString(end);
 
-                const response = await api.get<any>(`/reports/dashboard?startDate=${startDateStr}&endDate=${endDateStr}`);
+                const response = await fetchDashboardRange(startDateStr, endDateStr);
 
                 const sales = response.sales || {};
                 const online = sales.salesByChannel?.find((c: any) => c.channel === 'online')?.revenue || 0;

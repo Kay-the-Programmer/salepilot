@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../../../types';
-import { api } from '../../../services/api';
+import { fetchDashboardRange } from '../reportsData';
 import { RevenueChart } from '../charts/RevenueChart';
 import { TimeRangeFilter, TimeFilter } from '../TimeRangeFilter';
 
@@ -38,7 +38,7 @@ export const FilterableCashflowTrend: React.FC<FilterableCashflowTrendProps> = (
                 const startDateStr = toDateInputString(start);
                 const endDateStr = toDateInputString(end);
 
-                const response = await api.get<any>(`/reports/dashboard?startDate=${startDateStr}&endDate=${endDateStr}`);
+                const response = await fetchDashboardRange(startDateStr, endDateStr);
 
                 const cashflowTrend = response.cashflow?.cashflowTrend || {};
                 const trendPoints = [];

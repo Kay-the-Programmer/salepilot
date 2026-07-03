@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../../types';
 import { api } from '../../services/api';
+import { fetchDashboardRange } from './reportsData';
 import { formatCurrency } from '../../utils/currency';
 import { TimeRangeFilter, TimeFilter } from './TimeRangeFilter';
 import ArchiveBoxIcon from '../icons/ArchiveBoxIcon';
@@ -44,7 +45,7 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
 
                 // Fetch dashboard data, products, and categories in parallel
                 const [dashResponse, products, categories] = await Promise.all([
-                    api.get<any>(`/reports/dashboard?startDate=${startDateStr}&endDate=${endDateStr}`),
+                    fetchDashboardRange(startDateStr, endDateStr),
                     api.get<any[]>('/products'),
                     api.get<any[]>('/categories')
                 ]);

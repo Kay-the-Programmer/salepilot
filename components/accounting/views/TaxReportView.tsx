@@ -27,14 +27,17 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
 
+        // Cancelled sales are excluded (their GL postings are voided); taxable
+        // sales are net of discounts, matching the revenue definition everywhere else.
         const relevantSales = sales.filter(s => {
+            if (s.fulfillmentStatus === 'cancelled') return false;
             const saleDate = new Date(s.timestamp);
             return saleDate >= start && saleDate <= end;
         });
 
-        const totalSales = relevantSales.reduce((sum, s) => sum + s.subtotal, 0);
-        const totalTax = relevantSales.reduce((sum, s) => sum + s.tax, 0);
-        const totalTransactions = relevantSales.reduce((sum, s) => sum + s.total, 0);
+        const totalSales = relevantSales.reduce((sum, s) => sum + ((s.subtotal || 0) - (s.discount || 0)), 0);
+        const totalTax = relevantSales.reduce((sum, s) => sum + (s.tax || 0), 0);
+        const totalTransactions = relevantSales.reduce((sum, s) => sum + (s.total || 0), 0);
 
         return {
             totalSales,

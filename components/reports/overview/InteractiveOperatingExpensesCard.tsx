@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../../../types';
-import { api } from '../../../services/api';
+import { fetchDashboardRange } from '../reportsData';
 import { formatCurrency } from '../../../utils/currency';
 import { StatSparkline } from '../charts/StatSparkline';
 import { TimeRangeFilter, TimeFilter } from '../TimeRangeFilter';
@@ -49,7 +49,7 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
                 const startDateStr = toDateInputString(start);
                 const endDateStr = toDateInputString(end);
 
-                const response = await api.get<any>(`/reports/dashboard?startDate=${startDateStr}&endDate=${endDateStr}`);
+                const response = await fetchDashboardRange(startDateStr, endDateStr);
 
                 let salesTrend = response.sales?.salesTrend || {};
 

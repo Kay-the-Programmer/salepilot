@@ -46,8 +46,15 @@ const rangeWindow = (range: DashRange, now: number): { start: number; end: numbe
     return { start, end, prevStart: start - span, prevEnd: start };
 };
 
-/** Net value of a sale (total less anything refunded). */
-const saleNet = (s: Sale): number => Math.max(0, num(s.total) - num(s.totalRefunded));
+/** Net revenue of a sale: ex-tax, net of discounts (the platform-wide revenue
+ *  definition), reduced by the refunded share. Cancelled sales contribute 0. */
+const saleNet = (s: Sale): number => {
+    if ((s as any).fulfillmentStatus === 'cancelled') return 0;
+    const base = Math.max(0, num(s.subtotal) - num((s as any).discount));
+    const total = num(s.total);
+    const refundedFraction = total > 0 ? Math.min(1, num(s.totalRefunded) / total) : 0;
+    return base * (1 - refundedFraction);
+};
 
 export interface DashDelta {
     /** Percentage change vs the prior comparable window. */
@@ -124,8 +131,9 @@ export const buildDashboard = (
 ): DashboardOverview => {
     const { start, end, prevStart, prevEnd } = rangeWindow(range, now);
 
-    const current = sales.filter(s => inRange(s, start, end));
-    const prior = sales.filter(s => inRange(s, prevStart, prevEnd));
+    const notCancelled = (s: Sale) => (s as any).fulfillmentStatus !== 'cancelled';
+    const current = sales.filter(s => notCancelled(s) && inRange(s, start, end));
+    const prior = sales.filter(s => notCancelled(s) && inRange(s, prevStart, prevEnd));
 
     const revenue = current.reduce((sum, s) => sum + saleNet(s), 0);
     const prevRevenue = prior.reduce((sum, s) => sum + saleNet(s), 0);

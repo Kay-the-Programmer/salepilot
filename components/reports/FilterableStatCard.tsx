@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../../types';
 import { api } from '../../services/api';
+import { fetchDashboardRange } from './reportsData';
 import { formatCurrency } from '../../utils/currency';
 import { StatSparkline } from './charts/StatSparkline';
 import { TimeRangeFilter, TimeFilter } from './TimeRangeFilter';
@@ -51,12 +52,9 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
                 const startDateStr = toDateInputString(start);
                 const endDateStr = toDateInputString(end);
 
-                let endpoint = '/reports/dashboard';
-                if (type.startsWith('personal_')) {
-                    endpoint = '/reports/personal-use';
-                }
-
-                const response = await api.get<any>(`${endpoint}?startDate=${startDateStr}&endDate=${endDateStr}`);
+                const response = type.startsWith('personal_')
+                    ? await api.get<any>(`/reports/personal-use?startDate=${startDateStr}&endDate=${endDateStr}`)
+                    : await fetchDashboardRange(startDateStr, endDateStr);
 
                 let value: number | string = 0;
                 let trendData: any[] = [];

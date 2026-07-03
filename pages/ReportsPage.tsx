@@ -4,6 +4,7 @@ import { useNotifications } from '../contexts/NotificationContext';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { api } from '../services/api';
+import { fetchDashboardRange } from '../components/reports/reportsData';
 import { formatCurrency } from '../utils/currency';
 import { hasModule, MODULES } from '../utils/entitlements';
 import { useNavigate } from 'react-router-dom';
@@ -137,13 +138,13 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
     const fetchData = useCallback(async () => {
         try {
             const [statsRes, salesRes, personalRes] = await Promise.all([
-                api.get(`/reports/dashboard?startDate=${startDate}&endDate=${endDate}`),
+                fetchDashboardRange(startDate, endDate),
                 api.get(`/reports/daily-sales?startDate=${startDate}&endDate=${endDate}`),
                 api.get(`/reports/personal-use?startDate=${startDate}&endDate=${endDate}`)
             ]);
             setReportData(statsRes);
-            setDailySales((salesRes as any).dailySales || []);
-            setPersonalUse((personalRes as any).personalUse || []);
+            setDailySales((salesRes as any).daily || []);
+            setPersonalUse((personalRes as any).items || []);
         } catch (err) {
             console.error('Failed to fetch report data', err);
         }
@@ -170,8 +171,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
     // Export
     const handleExportCSV = () => {
         if (!dailySales) return;
-        const headers = ['Date', 'Revenue', 'Profit', 'Transactions'];
-        const rows = dailySales.map(day => [day.date, day.revenue, day.profit, day.transactions]);
+        const headers = ['Date', 'Revenue', 'Units Sold'];
+        const rows = dailySales.map(day => [day.date, day.totalRevenue, day.totalQuantity]);
         const csvContent = [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement('a');
@@ -191,12 +192,11 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
         doc.text('Sales Report', 14, 22);
         doc.setFontSize(11);
         doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
-        const tableColumn = ['Date', 'Revenue', 'Profit', 'Transactions'];
+        const tableColumn = ['Date', 'Revenue', 'Units Sold'];
         const tableRows = dailySales.map(day => [
             day.date,
-            formatCurrency(day.revenue, storeSettings),
-            formatCurrency(day.profit, storeSettings),
-            day.transactions
+            formatCurrency(day.totalRevenue, storeSettings),
+            day.totalQuantity
         ]);
         doc.autoTable({ head: [tableColumn], body: tableRows, startY: 40 });
         doc.save(`sales_report_${startDate}_to_${endDate}.pdf`);

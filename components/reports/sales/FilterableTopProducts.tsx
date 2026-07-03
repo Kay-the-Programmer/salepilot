@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StoreSettings } from '../../../types';
-import { api } from '../../../services/api';
+import { fetchDashboardRange } from '../reportsData';
 import { formatCurrency } from '../../../utils/currency';
 import ShoppingBagIcon from '../../icons/ShoppingBagIcon';
 import { TimeFilter, TimeRangeFilter } from '../TimeRangeFilter';
@@ -39,7 +39,7 @@ export const FilterableTopProducts: React.FC<FilterableTopProductsProps> = ({ st
                 const startDateStr = toDateInputString(start);
                 const endDateStr = toDateInputString(end);
 
-                const response = await api.get<any>(`/reports/dashboard?startDate=${startDateStr}&endDate=${endDateStr}`);
+                const response = await fetchDashboardRange(startDateStr, endDateStr);
 
                 setProducts(response.sales?.topProductsByRevenue || []);
             } catch (err) {

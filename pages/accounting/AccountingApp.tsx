@@ -131,8 +131,9 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
     const endMs = range.end.getTime() + 86400000; // include the whole end day
     const inRange = (v?: string) => { const t = tsOf(v); return t >= startMs && t <= endMs; };
     const periodSales = sales.filter((s) => inRange(s.timestamp) && s.fulfillmentStatus !== 'cancelled');
-    // Revenue is net of sales tax — tax collected is a liability, not income.
-    const revenue = periodSales.reduce((a, s) => a + (s.subtotal || 0), 0);
+    // Revenue is net of sales tax AND discounts — the same definition as the
+    // backend summary and reports endpoints.
+    const revenue = periodSales.reduce((a, s) => a + ((s.subtotal || 0) - (s.discount || 0)), 0);
     // Cost of goods sold = per-line cost × quantity captured at time of sale.
     const cogs = periodSales.reduce(
       (a, s) => a + (s.cart || []).reduce((c, i) => c + (i.costPrice || 0) * (i.quantity || 0), 0),
@@ -169,8 +170,8 @@ const AccountingApp: React.FC<AccountingAppProps> = ({
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
       const y = d.getFullYear(), m = d.getMonth();
-      // Income = net revenue (ex-tax), consistent with the revenue KPI above.
-      const income = sales.filter((s) => inMonth(s.timestamp, y, m) && s.fulfillmentStatus !== 'cancelled').reduce((a, s) => a + (s.subtotal || 0), 0);
+      // Income = net revenue (ex-tax, net of discounts), consistent with the KPI above.
+      const income = sales.filter((s) => inMonth(s.timestamp, y, m) && s.fulfillmentStatus !== 'cancelled').reduce((a, s) => a + ((s.subtotal || 0) - (s.discount || 0)), 0);
       const expense = expenses.filter((e) => inMonth(e.date, y, m)).reduce((a, e) => a + (e.amount || 0), 0);
       out.push({ label: MONTHS[m], income, expense });
     }
