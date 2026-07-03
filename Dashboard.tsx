@@ -628,20 +628,6 @@ export default function Dashboard() {
         try {
             const isUpdating = 'id' in productData && !!(productData as Product).id;
 
-            // Special case: some callers (e.g., ProductFormModal) already perform the API call
-            // and pass back the saved Product. If this product is not yet in our state,
-            // insert it immediately and skip making another request.
-            if (isUpdating) {
-                const incoming = productData as Product;
-                const exists = products.some(p => p.id === incoming.id);
-                if (!exists) {
-                    setProducts(prev => [incoming, ...prev]);
-                    upsellService.recordManualAdd();
-                    showSnackbar('Product added successfully!', 'success');
-                    return incoming;
-                }
-            }
-
             // Use FormData for both creating and updating to consistently handle images (kept for future compatibility)
             const formData = new FormData();
             Object.keys(productData).forEach(key => {
@@ -1821,7 +1807,7 @@ export default function Dashboard() {
         if (posSection === 'dashboard') {
             posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
         } else {
-            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} />;
+            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} />;
         }
 
         return (

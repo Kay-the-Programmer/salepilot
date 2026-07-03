@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Supplier, User, Return } from '../types';
+import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, User, Return } from '../types';
 import { SnackbarType } from '../App';
 import { api } from '@/services/api';
 import { formatCurrency } from '../utils/currency';
 import TourGuide from '../components/TourGuide';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
-import ProductFormModal from '../components/ProductFormModal';
 import OutOfStockModal from '../components/sales/OutOfStockModal';
 import LowStockAlertModal from '../components/sales/LowStockAlertModal';
 import { useBarcodeScanner } from '../hooks/useBarcodeScanner';
@@ -25,6 +24,7 @@ import Logo from '../assets/logo.png';
 import AppSwitcher from '../components/standalone/AppSwitcher';
 import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
+import { setPendingNewProduct } from '../utils/pendingProduct';
 import './sale-v2.css';
 
 interface SalesPageProps {
@@ -38,8 +38,6 @@ interface SalesPageProps {
     onOpenSidebar?: () => void;
     onLogout?: () => void;
     categories: Category[];
-    suppliers: Supplier[];
-    onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
     onProcessReturn: (returnInfo: Return) => void;
     /** Open on a specific view — /pos/history deep-links Sales History & Refunds. */
     initialView?: 'sell' | 'history';
@@ -54,8 +52,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     showSnackbar,
     storeSettings,
     categories,
-    suppliers,
-    onSaveProduct,
     onProcessReturn,
     onLogout,
     initialView,
@@ -93,10 +89,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
     const [mobileMoneyNumber, setMobileMoneyNumber] = useState('');
 
-    // External Product Lookup State
-    const [isProductFormOpen, setIsProductFormOpen] = useState(false);
-    const [initialProductValues, setInitialProductValues] = useState<Partial<Product> | undefined>(undefined);
-
     // Scan Action State
     const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
     const [verifyingMessage, setVerifyingMessage] = useState('Verifying Payment...');
@@ -116,7 +108,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [isCamScannerOpen, setIsCamScannerOpen] = useState(false);
 
     // External barcode scanner hook — paused while any modal overlapping the POS is open
-    const isScannerModalOpen = showOutOfStockModal || showLowStockAlert || isProductFormOpen || isCamScannerOpen || cartView === 'confirm';
+    const isScannerModalOpen = showOutOfStockModal || showLowStockAlert || isCamScannerOpen || cartView === 'confirm';
 
     // Premium entitlement: the paid "Accept Mobile Money" add-on. Unlocked only by
     // owning the module — bringing your own Lenco key is NOT enough, so accepting
@@ -296,15 +288,17 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 // Check if we already have this product in local state to avoid re-fetching if just added (though products prop should update)
                 const response = await api.get<any>(`/products/external-lookup/${trimmed}`);
                 if (response) {
-                    setInitialProductValues({
+                    // Hand the looked-up details to the single Add Product form
+                    // (/inv/items) instead of a POS-local duplicate form.
+                    setPendingNewProduct({
                         ...response,
                         stock: 0,
                         price: 0,
                         costPrice: 0,
                         categoryId: undefined
                     });
-                    setIsProductFormOpen(true);
-                    showSnackbar('Product found online! Please confirm details.', 'success');
+                    showSnackbar('Product found online! Confirm details to add it.', 'success');
+                    navigate('/inv/items');
                 } else {
                     showSnackbar('No product found for scanned code', 'error');
                 }
@@ -733,7 +727,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                             type="button"
                                             className="v2-btn v2-btn--primary"
                                             style={{ marginTop: 16, minHeight: 48 }}
-                                            onClick={() => setIsProductFormOpen(true)}
+                                            onClick={() => navigate('/inv/items')}
                                         >
                                             <PosIcon name="add" size={20} /> Add your first product
                                         </button>
@@ -991,29 +985,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 user={user}
                 storeSettings={storeSettings}
                 showSnackbar={showSnackbar}
-            />
-
-            <ProductFormModal
-                isOpen={isProductFormOpen}
-                onClose={() => {
-                    setIsProductFormOpen(false);
-                    setInitialProductValues(undefined);
-                }}
-                onSave={async (newProduct) => {
-                    try {
-                        const savedProduct = await onSaveProduct(newProduct);
-                        addToCart(savedProduct);
-                        setIsProductFormOpen(false);
-                        setInitialProductValues(undefined);
-                        showSnackbar('Product added to catalog and cart!', 'success');
-                    } catch (error) {
-                        console.error("Failed to save product:", error);
-                    }
-                }}
-                categories={categories}
-                suppliers={suppliers}
-                storeSettings={storeSettings}
-                initialValues={initialProductValues}
             />
 
             {/* Verification Loading Overlay */}

@@ -8,6 +8,7 @@ import StockAdjustmentModal from '../components/StockAdjustmentModal';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
 import ProductEditForm from '../components/products/ProductEditForm';
+import { takePendingNewProduct } from '../utils/pendingProduct';
 import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -238,6 +239,19 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setEditingProduct(product);
         setIsEditingProduct(true);
     };
+
+    // When another app hands off a new product (e.g. a POS barcode scan of an
+    // uncatalogued item), open the single Add Product form pre-filled on arrival.
+    useEffect(() => {
+        if (!canManageProducts) return;
+        const pending = takePendingNewProduct();
+        if (pending) {
+            setActiveTab('products');
+            handleOpenAddModal(pending);
+        }
+        // Run once on mount; handoff is consumed and cleared by takePendingNewProduct.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
 
 
