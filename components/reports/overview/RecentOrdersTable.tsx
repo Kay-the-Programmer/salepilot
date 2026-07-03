@@ -16,19 +16,18 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({
     storeSettings,
 }) => {
     return (
-        <div className="dashboard-card h-full transition-all duration-300">
-            <div className="dashboard-card-glow transition-opacity !opacity-5 group-hover:!opacity-10"></div>
-            <div className="relative z-10 flex flex-col h-full">
+        <div className="dashboard-card h-full">
+            <div className="flex flex-col h-full">
                 <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-slate-900 dark:text-white text-lg">Recent Orders</h3>
-                    <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-lg">
+                    <h3 className="font-bold text-brand-text text-lg tracking-tight">Recent Orders</h3>
+                    <div className="flex bg-surface-variant p-1 rounded-lg">
                         {(['all', 'online', 'pos'] as const).map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setRecentOrdersTab(tab)}
-                                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${recentOrdersTab === tab
-                                    ? 'bg-white dark:bg-white/20 text-slate-900 dark:text-white shadow-sm'
-                                    : 'text-slate-500 dark:text-gray-400 hover:text-slate-700 dark:hover:text-white'
+                                className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${recentOrdersTab === tab
+                                    ? 'bg-sp-navy text-white shadow-sm'
+                                    : 'text-brand-text-muted hover:text-brand-text'
                                     }`}
                             >
                                 {tab === 'all' ? 'All' : tab === 'online' ? 'Online' : 'In-Store'}
@@ -39,33 +38,35 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr>
-                                <th className="py-2 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Product ID</th>
-                                <th className="py-2 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
-                                <th className="py-2 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
-                                <th className="py-2 text-xs font-semibold text-slate-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                            <tr className="border-b border-brand-border">
+                                <th className="py-2 text-[10px] font-bold text-brand-text-muted uppercase tracking-wider">Order</th>
+                                <th className="py-2 text-[10px] font-bold text-brand-text-muted uppercase tracking-wider">Customer</th>
+                                <th className="py-2 text-[10px] font-bold text-brand-text-muted uppercase tracking-wider text-right">Amount</th>
+                                <th className="py-2 text-[10px] font-bold text-brand-text-muted uppercase tracking-wider text-right">Status</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-50 dark:divide-white/5">
+                        <tbody className="divide-y divide-brand-border">
                             {recentOrders
                                 ?.filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab)
                                 .slice(0, 5)
                                 .map((order: any, i: number) => (
-                                    <tr key={i} className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors active:scale-95 transition-all duration-300">
-                                        <td className="py-3 text-sm text-slate-600 dark:text-gray-400 font-medium truncate max-w-[100px]" title={order.transactionId}>
-                                            #{order.transactionId.substring(0, 8)}...
+                                    <tr key={i} className="hover:bg-surface-variant/40 transition-colors">
+                                        <td className="py-3 text-sm text-brand-text-muted font-medium truncate max-w-[100px]" title={order.transactionId}>
+                                            #{order.transactionId.substring(0, 8)}
                                         </td>
-                                        <td className="py-3 text-sm text-slate-900 dark:text-white flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-white/10 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-gray-400">
-                                                {(order.customerName || 'W').charAt(0)}
+                                        <td className="py-3 text-sm text-brand-text">
+                                            <div className="flex items-center gap-2">
+                                                <div className="w-6 h-6 rounded-full bg-sp-navy-soft flex items-center justify-center text-[11px] font-bold text-sp-navy flex-shrink-0">
+                                                    {(order.customerName || 'W').charAt(0).toUpperCase()}
+                                                </div>
+                                                <span className="truncate">{order.customerName || 'Walk-in Customer'}</span>
                                             </div>
-                                            {order.customerName || 'Walk-in Customer'}
                                         </td>
-                                        <td className="py-3 text-sm text-slate-900 dark:text-white font-bold">
+                                        <td className="py-3 text-sm text-brand-text font-bold text-right tnum">
                                             {formatCurrency(order.total, storeSettings)}
                                         </td>
-                                        <td className="py-3">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold ${order.paymentStatus === 'paid' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'}`}>
+                                        <td className="py-3 text-right">
+                                            <span className={`inline-flex px-2 py-0.5 rounded-full text-[11px] font-bold ${order.paymentStatus === 'paid' ? 'bg-success/15 text-success' : 'bg-sp-orange/15 text-sp-orange'}`}>
                                                 {order.paymentStatus === 'paid' ? 'Paid' : 'Pending'}
                                             </span>
                                         </td>
@@ -74,7 +75,7 @@ export const RecentOrdersTable: React.FC<RecentOrdersTableProps> = ({
                             {(!recentOrders || recentOrders
                                 .filter((order: any) => recentOrdersTab === 'all' || order.channel === recentOrdersTab).length === 0) && (
                                     <tr>
-                                        <td colSpan={4} className="py-8 text-center text-slate-400">
+                                        <td colSpan={4} className="py-8 text-center text-sm text-brand-text-muted">
                                             No recent {recentOrdersTab === 'all' ? '' : recentOrdersTab === 'online' ? 'online' : 'in-store'} orders found
                                         </td>
                                     </tr>

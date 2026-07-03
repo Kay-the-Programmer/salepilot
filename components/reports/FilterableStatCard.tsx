@@ -178,18 +178,18 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
     };
 
     return (
-        <div className={`dashboard-card flex flex-col justify-between h-full relative group transition-all duration-300 active:scale-[0.98] ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
+        <div className={`dashboard-card flex flex-col justify-between h-full relative group ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-start z-10">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 mb-3">
-                        <div className={`w-8 h-8 rounded-xl ${color} flex items-center justify-center bg-opacity-20 dark:bg-opacity-30 shadow-inner group-hover:scale-110 transition-transform duration-300`}>
+                        <div className={`w-8 h-8 rounded-lg ${color} flex items-center justify-center`}>
                             {icon && React.isValidElement(icon) ? React.cloneElement(icon as React.ReactElement<any>, { className: 'w-5 h-5' }) : null}
                         </div>
-                        <span className="text-slate-500 dark:text-slate-400 font-semibold text-xs tracking-wide">{title}</span>
+                        <span className="text-brand-text-muted font-semibold text-[11px] uppercase tracking-wider">{title}</span>
                     </div>
-                    <div className="text-[32px] font-semibold tracking-tight text-slate-900 dark:text-white mt-1 min-h-[40px] flex items-center">
+                    <div className="text-[30px] leading-none font-bold tracking-tight text-brand-text mt-1 min-h-[36px] flex items-center tnum">
                         {loading ? (
-                            <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400 animate-spin"></div>
+                            <div className="w-5 h-5 rounded-full border-2 border-brand-border border-t-sp-navy animate-spin"></div>
                         ) : (
                             formatValue(data.value)
                         )}
@@ -200,13 +200,10 @@ export const FilterableStatCard: React.FC<FilterableStatCardProps> = ({
                 </div>
             </div>
 
-            {/* Background Sparkline */}
-            <div className="absolute bottom-0 left-0 right-0 h-20 opacity-30 group-hover:opacity-50 transition-all duration-500 rounded-b-[2rem] overflow-hidden pointer-events-none">
-                {!loading && <StatSparkline data={data.trend} color={sparklineColor} height={80} />}
+            {/* Background sparkline — a subtle trend hint anchored to the base. */}
+            <div className="absolute bottom-0 left-0 right-0 h-16 opacity-40 overflow-hidden pointer-events-none">
+                {!loading && <StatSparkline data={data.trend} color={sparklineColor} height={64} />}
             </div>
-
-            {/* Subtle glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/0 to-white/20 dark:to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem]"></div>
         </div>
     );
 };

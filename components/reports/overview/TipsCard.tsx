@@ -132,34 +132,20 @@ export const TipsCard: React.FC<TipsCardProps> = ({
 
     const currentTip = tips[currentTipIndex] || tips[0];
 
-    const getColorClasses = (color: string) => {
-        switch (color) {
-            case 'blue': return 'bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-500/20';
-            case 'indigo': return 'bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-100 dark:border-indigo-500/20';
-            case 'emerald': return 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20';
-            case 'rose': return 'bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-100 dark:border-rose-500/20';
-            case 'amber': return 'bg-amber-50 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-500/20';
-            case 'violet': return 'bg-violet-50 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-100 dark:border-violet-500/20';
-            case 'fuchsia': return 'bg-fuchsia-50 dark:bg-fuchsia-500/10 text-fuchsia-600 dark:text-fuchsia-400 border-fuchsia-100 dark:border-fuchsia-500/20';
-            default: return 'bg-slate-50 dark:bg-white/5 text-slate-600 dark:text-slate-400 border-slate-100 dark:border-white/5';
-        }
-    };
-
     return (
         <div className="dashboard-card group h-full">
-            <div className="dashboard-card-glow"></div>
-            <div className="relative z-10 h-full flex flex-col pt-2">
-
+            <div className="relative z-10 h-full flex flex-col">
+                <span className="text-[10px] font-black uppercase tracking-widest text-brand-text-muted mb-4">Tips & Guidance</span>
 
                 <div className="flex-1 flex flex-col justify-center">
                     <div key={currentTipIndex} className="animate-fade-in-right">
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-6 border shadow-sm ${getColorClasses(currentTip.color)}`}>
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-4 bg-sp-navy-soft text-sp-navy">
                             {currentTip.icon}
                         </div>
-                        <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-3 tracking-tight font-outfit">
+                        <h3 className="text-lg font-bold text-brand-text mb-2 tracking-tight">
                             {currentTip.title}
                         </h3>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 max-w-[90%]">
+                        <p className="text-brand-text-muted text-sm leading-relaxed mb-6">
                             {currentTip.description}
                         </p>
                     </div>
@@ -167,24 +153,21 @@ export const TipsCard: React.FC<TipsCardProps> = ({
 
                 <button
                     onClick={() => navigate(currentTip.path)}
-                    className="flex items-center gap-2 text-blue-600 dark:text-blue-400 text-xs font-extrabold uppercase tracking-[0.15em] group/btn w-fit"
+                    className="flex items-center gap-2 text-sp-navy text-xs font-bold uppercase tracking-widest group/btn w-fit"
                 >
                     <span>{currentTip.actionLabel}</span>
                     <ArrowRightIcon className="w-3 h-3 group-hover/btn:translate-x-1 transition-transform" />
                 </button>
+
+                {/* Progress dots */}
+                {tips.length > 1 && (
+                    <div className="flex items-center gap-1.5 mt-4">
+                        {tips.map((_, i) => (
+                            <span key={i} className={`h-1 rounded-full transition-all ${i === currentTipIndex ? 'w-5 bg-sp-navy' : 'w-1 bg-surface-variant'}`} />
+                        ))}
+                    </div>
+                )}
             </div>
-
-            {/* Background decorative elements */}
-            <div className={`absolute -bottom-24 -right-24 w-64 h-64 blur-[100px] rounded-full opacity-20 transition-all duration-1000 ${currentTip.color === 'blue' ? 'bg-blue-500' :
-                currentTip.color === 'indigo' ? 'bg-indigo-500' :
-                    currentTip.color === 'emerald' ? 'bg-emerald-500' :
-                        currentTip.color === 'rose' ? 'bg-rose-500' :
-                            currentTip.color === 'amber' ? 'bg-amber-500' :
-                                currentTip.color === 'violet' ? 'bg-violet-500' :
-                                    'bg-fuchsia-500'
-                }`}></div>
-
-
         </div>
     );
 };

@@ -3,8 +3,7 @@ import { StoreSettings } from '../../types';
 import { api } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
 import { TimeRangeFilter, TimeFilter } from './TimeRangeFilter';
-import ShoppingCartIcon from '../icons/ShoppingCartIcon';
-import ArchiveBoxIcon from '../icons/ArchiveBoxIcon'; // Assuming for units/products
+import ArchiveBoxIcon from '../icons/ArchiveBoxIcon';
 
 type TopSalesType = 'products' | 'units' | 'categories';
 
@@ -130,19 +129,19 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
     }, [timeFilter, typeFilter, storeSettings]);
 
     return (
-        <div className={`dashboard-card h-[400px] flex flex-col transition-all duration-300 ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
-            <div className="flex flex-col xs:flex-row xs:justify-between xs:items-baseline sm:items-center gap-4 mb-6">
-                <h3 className="font-bold text-slate-900 dark:text-white text-lg whitespace-nowrap">Top Sales</h3>
+        <div className={`dashboard-card h-[400px] flex flex-col ${isFilterOpen ? 'z-[60] relative' : 'z-auto'}`}>
+            <div className="flex flex-col xs:flex-row xs:justify-between xs:items-baseline sm:items-center gap-3 mb-5">
+                <h3 className="font-bold text-brand-text text-lg tracking-tight whitespace-nowrap">Top Sales</h3>
                 <div className="flex flex-wrap items-center gap-2 xs:justify-end">
                     <TimeRangeFilter value={timeFilter} onChange={setTimeFilter} onOpenChange={setIsFilterOpen} />
-                    <div className="flex bg-slate-100 dark:bg-slate-700 p-1 rounded-xl shadow-inner">
+                    <div className="flex bg-surface-variant p-1 rounded-lg">
                         {(['products', 'units', 'categories'] as TopSalesType[]).map((t) => (
                             <button
                                 key={t}
                                 onClick={() => setTypeFilter(t)}
-                                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition-all ${typeFilter === t
-                                    ? 'bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm'
-                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white'
+                                className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${typeFilter === t
+                                    ? 'bg-sp-navy text-white shadow-sm'
+                                    : 'text-brand-text-muted hover:text-brand-text'
                                     }`}
                             >
                                 {t.charAt(0).toUpperCase() + t.slice(1)}
@@ -152,40 +151,40 @@ export const FilterableTopSales: React.FC<FilterableTopSalesProps> = ({ storeSet
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar -mx-1">
                 {loading ? (
                     <div className="h-full flex items-center justify-center py-10">
-                        <div className="w-8 h-8 rounded-full border-2 border-slate-200 dark:border-slate-600 border-t-indigo-600 dark:border-t-indigo-400 animate-spin"></div>
+                        <div className="w-8 h-8 rounded-full border-2 border-brand-border border-t-sp-navy animate-spin"></div>
                     </div>
                 ) : items.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-1">
                         {items.map((item, i) => (
-                            <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-xl transition-all group active:scale-95 transition-all duration-300">
-                                <div className="w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 transition-colors active:scale-95 transition-all duration-300">
+                            <div key={item.id} className="flex items-center gap-3 p-2 hover:bg-surface-variant/50 rounded-lg transition-colors group">
+                                <div className="w-10 h-10 rounded-lg bg-surface-variant flex items-center justify-center flex-shrink-0 text-sm font-bold text-brand-text-muted tnum">
                                     {typeFilter === 'categories' ? (
-                                        <div className="text-xl">🏷️</div>
+                                        <span className="text-lg">🏷️</span>
                                     ) : (
-                                        <ShoppingCartIcon className="w-6 h-6 text-slate-400 dark:text-slate-500 group-hover:text-indigo-400 dark:group-hover:text-indigo-400" />
+                                        <span>{i + 1}</span>
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h4 className="font-medium text-slate-900 dark:text-white text-sm truncate">{item.name}</h4>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{item.subtitle}</p>
+                                    <h4 className="font-semibold text-brand-text text-sm truncate">{item.name}</h4>
+                                    <p className="text-xs text-brand-text-muted truncate">{item.subtitle}</p>
                                 </div>
-                                <div className="text-right">
-                                    <div className="font-bold text-slate-900 dark:text-white text-sm">{item.valueText}</div>
-                                    <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Top #{i + 1}</div>
+                                <div className="text-right flex-shrink-0">
+                                    <div className="font-bold text-brand-text text-sm tnum">{item.valueText}</div>
+                                    <div className="text-[10px] text-brand-text-muted font-bold uppercase tracking-wider">Top #{i + 1}</div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 ) : (
                     <div className="h-full flex flex-col items-center justify-center py-10 text-center">
-                        <div className="w-16 h-16 bg-slate-50 dark:bg-slate-700 rounded-full flex items-center justify-center mb-3">
-                            <ArchiveBoxIcon className="w-8 h-8 text-slate-200 dark:text-slate-600" />
+                        <div className="w-14 h-14 bg-surface-variant rounded-full flex items-center justify-center mb-3">
+                            <ArchiveBoxIcon className="w-7 h-7 text-brand-text-muted/50" />
                         </div>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm font-medium">No sales data found</p>
-                        <p className="text-slate-400 dark:text-slate-500 text-xs">Try changing the time filter or view</p>
+                        <p className="text-brand-text text-sm font-semibold">No sales data found</p>
+                        <p className="text-brand-text-muted text-xs mt-0.5">Try changing the time filter or view</p>
                     </div>
                 )}
             </div>

@@ -99,49 +99,48 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
 
     return (
         <div className={`dashboard-card group h-full ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
-            <div className="dashboard-card-glow"></div>
-            {/* Background Sparkline */}
+            {/* Background sparkline */}
             {!isNewUser && (
-                <div className="absolute top-0 left-0 right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-all duration-500 rounded-b-[2rem] pointer-events-none z-0">
-                    {!loading && <StatSparkline data={trend} color="#ef4444" height={160} />}
+                <div className="absolute inset-0 opacity-[0.08] pointer-events-none z-0">
+                    {!loading && <StatSparkline data={trend} color="#ba1a1a" height={160} />}
                 </div>
             )}
 
             <div className="flex justify-between items-start z-10 relative">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 mb-3">
-                        <div className="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center bg-opacity-20 dark:bg-opacity-30 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                            <BanknotesIcon className="w-5 h-5 text-red-600" />
+                        <div className="w-8 h-8 rounded-lg bg-danger/15 flex items-center justify-center">
+                            <BanknotesIcon className="w-5 h-5 text-danger" />
                         </div>
-                        <span className="text-slate-500 dark:text-slate-400 font-semibold text-xs tracking-wide">Operating Expenses</span>
+                        <span className="text-brand-text-muted font-semibold text-[11px] uppercase tracking-wider">Operating Expenses</span>
                     </div>
-                    <div className="text-[32px] font-semibold tracking-tight text-slate-900 dark:text-white mt-1 min-h-[40px] flex items-center">
+                    <div className="text-[30px] leading-none font-bold tracking-tight text-brand-text mt-1 min-h-[36px] flex items-center tnum">
                         {loading ? (
-                            <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-red-600 dark:border-slate-700 dark:border-t-red-400 animate-spin"></div>
+                            <div className="w-5 h-5 rounded-full border-2 border-brand-border border-t-danger animate-spin"></div>
                         ) : isNewUser ? (
-                            <span className="text-xl text-slate-400 font-medium">No expenses yet</span>
+                            <span className="text-lg text-brand-text-muted font-medium">No expenses yet</span>
                         ) : (
                             formatCurrency(operatingExpenses, storeSettings)
                         )}
                     </div>
                 </div>
                 {!isNewUser && (
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative z-20 bg-white/50 dark:bg-slate-800/50 rounded-lg backdrop-blur-sm">
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative z-20">
                         <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
                     </div>
                 )}
             </div>
 
             {/* Content Area */}
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/50 z-10 relative h-[140px] flex flex-col justify-center">
+            <div className="mt-6 pt-4 border-t border-brand-border z-10 relative min-h-[120px] flex flex-col justify-center">
                 {isNewUser ? (
                     <div className="text-center">
-                        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-                            Organize your business by tracking daily operating costs like rent, utilities, and marketing.
+                        <p className="text-sm text-brand-text-muted mb-4 leading-relaxed">
+                            Track daily operating costs like rent, utilities and marketing.
                         </p>
                         <button
                             onClick={handleGetStarted}
-                            className="w-full py-3.5 px-4 bg-red-50 dark:bg-red-500/10 text-red-600 dark:text-red-400 rounded-2xl font-bold text-sm hover:bg-red-100 dark:hover:bg-red-500/20 transition-all duration-300 border border-red-100 dark:border-red-900/30 flex items-center justify-center gap-2 group/btn"
+                            className="w-full py-3 px-4 bg-sp-navy text-white rounded-lg font-bold text-sm hover:bg-sp-navy-light transition-colors flex items-center justify-center gap-2 group/btn active:scale-95"
                         >
                             <span>Start Adding Expenses</span>
                             <ArrowRightIcon className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
@@ -152,35 +151,32 @@ export const InteractiveOperatingExpensesCard: React.FC<InteractiveOperatingExpe
                         {expensesBreakdown.length > 0 && !loading && (
                             <div
                                 key={currentExpenseIndex}
-                                className="animate-expense-flash w-full flex justify-between items-center bg-red-50/50 dark:bg-red-900/10 px-4 py-3 rounded-xl border border-red-100 dark:border-red-900/30 shadow-sm"
+                                className="animate-expense-flash w-full flex justify-between items-center bg-surface-variant/60 px-4 py-3 rounded-xl border border-brand-border"
                             >
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
-                                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <span className="w-2 h-2 rounded-full bg-danger flex-shrink-0"></span>
+                                    <span className="text-sm font-semibold text-brand-text truncate">
                                         {expensesBreakdown[currentExpenseIndex].title}
                                     </span>
                                 </div>
-                                <span className="text-sm font-bold text-red-600 dark:text-red-400 font-mono bg-red-100 dark:bg-red-900/40 px-2 py-0.5 rounded-md border border-red-200 dark:border-red-800">
+                                <span className="text-sm font-bold text-danger tnum flex-shrink-0 ml-2">
                                     {formatCurrency(expensesBreakdown[currentExpenseIndex].amount, storeSettings)}
                                 </span>
                             </div>
                         )}
                         {loading && (
                             <div className="w-full flex justify-center">
-                                <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-red-500 animate-spin"></div>
+                                <div className="w-5 h-5 rounded-full border-2 border-brand-border border-t-danger animate-spin"></div>
                             </div>
                         )}
                         {!loading && expensesBreakdown.length === 0 && (
-                            <div className="w-full text-center text-xs text-slate-400 font-medium bg-slate-50 dark:bg-slate-800/50 py-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                            <div className="w-full text-center text-xs text-brand-text-muted font-medium bg-surface-variant/50 py-2.5 rounded-xl border border-brand-border">
                                 No recent expenses
                             </div>
                         )}
                     </>
                 )}
             </div>
-
-            {/* Subtle glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-red-500/0 via-red-500/0 to-red-500/5 dark:to-red-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem] z-0"></div>
         </div>
     );
 };

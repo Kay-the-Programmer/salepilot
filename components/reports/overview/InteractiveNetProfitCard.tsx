@@ -73,59 +73,49 @@ export const InteractiveNetProfitCard: React.FC<InteractiveNetProfitCardProps> =
 
     return (
         <div className={`dashboard-card group h-full ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
-            <div className="dashboard-card-glow"></div>
-            {/* Background Sparkline */}
-            <div className="absolute top-0 left-0 right-0 bottom-0 opacity-10 group-hover:opacity-20 transition-all duration-500 rounded-b-[2rem] pointer-events-none z-0">
-                {!loading && <StatSparkline data={trend} color="#3b82f6" height={160} />}
+            {/* Background sparkline */}
+            <div className="absolute inset-0 opacity-[0.08] pointer-events-none z-0">
+                {!loading && <StatSparkline data={trend} color="#002B6B" height={160} />}
             </div>
 
             <div className="flex justify-between items-start z-10 relative">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2.5 mb-3">
-                        <div className="w-8 h-8 rounded-xl bg-blue-100 flex items-center justify-center bg-opacity-20 dark:bg-opacity-30 shadow-inner group-hover:scale-110 transition-transform duration-300">
-                            <DocumentTextIcon className="w-5 h-5 text-blue-600" />
+                        <div className="w-8 h-8 rounded-lg bg-sp-navy-soft flex items-center justify-center">
+                            <DocumentTextIcon className="w-5 h-5 text-sp-navy" />
                         </div>
-                        <span className="text-slate-500 dark:text-slate-400 font-semibold text-xs tracking-wide">Net Profit</span>
+                        <span className="text-brand-text-muted font-semibold text-[11px] uppercase tracking-wider">Net Profit</span>
                     </div>
-                    <div className="text-[32px] font-semibold tracking-tight text-slate-900 dark:text-white mt-1 min-h-[40px] flex items-center">
+                    <div className="text-[30px] leading-none font-bold tracking-tight text-brand-text mt-1 min-h-[36px] flex items-center tnum">
                         {loading ? (
-                            <div className="w-5 h-5 rounded-full border-2 border-slate-200 border-t-blue-600 dark:border-slate-700 dark:border-t-blue-400 animate-spin"></div>
+                            <div className="w-5 h-5 rounded-full border-2 border-brand-border border-t-sp-navy animate-spin"></div>
                         ) : (
                             formatCurrency(netIncome, storeSettings)
                         )}
                     </div>
                 </div>
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative z-20 bg-white/50 dark:bg-slate-800/50 rounded-lg backdrop-blur-sm">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 relative z-20">
                     <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
                 </div>
             </div>
 
-            {/* Divider and Details Row */}
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-700/50 z-10 relative">
+            {/* Divider and details row */}
+            <div className="mt-6 pt-4 border-t border-brand-border z-10 relative">
                 <div className="grid grid-cols-2 gap-4">
-                    <div className="group/stat hover:bg-slate-50 dark:hover:bg-slate-800/50 p-2 rounded-xl transition-colors cursor-pointer">
-                        <div className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-blue-400 group-hover/stat:animate-pulse"></span>
-                            Transactions
-                        </div>
-                        <div className="text-lg font-bold text-slate-700 dark:text-slate-200">
-                            {loading ? '-' : transactions.toLocaleString()}
+                    <div>
+                        <div className="text-[10px] text-brand-text-muted uppercase tracking-widest font-bold mb-1">Transactions</div>
+                        <div className="text-lg font-bold text-brand-text tnum">
+                            {loading ? '—' : transactions.toLocaleString()}
                         </div>
                     </div>
-                    <div className="group/stat hover:bg-slate-50 dark:hover:bg-slate-800/50 p-2 rounded-xl transition-colors cursor-pointer border-l border-slate-100 dark:border-slate-700/50 pl-4">
-                        <div className="text-[10px] text-slate-400 uppercase tracking-widest font-semibold flex items-center gap-1.5 mb-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 group-hover/stat:animate-pulse"></span>
-                            Total Revenue
-                        </div>
-                        <div className="text-lg font-bold text-slate-700 dark:text-slate-200">
-                            {loading ? '-' : formatCurrency(revenue, storeSettings)}
+                    <div className="border-l border-brand-border pl-4">
+                        <div className="text-[10px] text-brand-text-muted uppercase tracking-widest font-bold mb-1">Total Revenue</div>
+                        <div className="text-lg font-bold text-brand-text tnum">
+                            {loading ? '—' : formatCurrency(revenue, storeSettings)}
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Subtle glow effect on hover */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/0 via-blue-500/0 to-blue-500/5 dark:to-blue-400/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[2rem] z-0"></div>
         </div>
     );
 };

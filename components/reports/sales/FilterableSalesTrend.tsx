@@ -64,19 +64,16 @@ export const FilterableSalesTrend: React.FC<FilterableRevenueChartProps> = ({ st
 
     return (
         <div className={`dashboard-card h-full ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
-            <div className="dashboard-card-glow transition-opacity !opacity-5 group-hover:!opacity-10"></div>
             <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-center mb-8">
-                    <div className="flex items-center gap-4">
-                        <div>
-                            <h3 className="font-bold text-slate-900 dark:text-white/90 text-lg tracking-tight">Sales Trend</h3>
-                            <div className="flex items-center gap-3 mt-1">
-                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                    <span className="w-2 h-2 rounded-full bg-orange-400 shadow-[0_0_5px_rgba(251,146,60,0.5)]"></span> Revenue
-                                </div>
-                                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                    <span className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_5px_rgba(139,92,246,0.5)]"></span> Profit
-                                </div>
+                <div className="flex justify-between items-start mb-6">
+                    <div>
+                        <h3 className="font-bold text-brand-text text-lg tracking-tight">Sales Trend</h3>
+                        <div className="flex items-center gap-3 mt-1.5">
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-text-muted">
+                                <span className="w-2 h-2 rounded-full bg-sp-orange"></span> Revenue
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-text-muted">
+                                <span className="w-2 h-2 rounded-full bg-sp-navy"></span> Profit
                             </div>
                         </div>
                     </div>
@@ -85,7 +82,7 @@ export const FilterableSalesTrend: React.FC<FilterableRevenueChartProps> = ({ st
 
                 {loading ? (
                     <div className="w-full h-[300px] flex items-center justify-center">
-                        <div className="w-10 h-10 rounded-full border-4 border-slate-100 border-t-blue-600 animate-spin dark:border-slate-700 dark:border-t-blue-400"></div>
+                        <div className="w-10 h-10 rounded-full border-4 border-brand-border border-t-sp-navy animate-spin"></div>
                     </div>
                 ) : (
                     <RevenueChart

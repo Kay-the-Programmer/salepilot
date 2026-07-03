@@ -64,17 +64,15 @@ export const FilterableCashflowTrend: React.FC<FilterableCashflowTrendProps> = (
 
     return (
         <div className={`dashboard-card h-full transition-all duration-300 ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
-            <div className="flex justify-between items-center mb-8">
-                <div className="flex items-center gap-4">
-                    <div>
-                        <h3 className="font-extrabold text-slate-900 dark:text-white text-lg tracking-tight">Cashflow Trend</h3>
-                        <div className="flex items-center gap-3 mt-1">
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                <span className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]"></span> Inflow
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                <span className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_5px_rgba(239,68,68,0.5)]"></span> Outflow
-                            </div>
+            <div className="flex justify-between items-start mb-6">
+                <div>
+                    <h3 className="font-bold text-brand-text text-lg tracking-tight">Cashflow Trend</h3>
+                    <div className="flex items-center gap-3 mt-1.5">
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-text-muted">
+                            <span className="w-2 h-2 rounded-full bg-success"></span> Inflow
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-brand-text-muted">
+                            <span className="w-2 h-2 rounded-full bg-danger"></span> Outflow
                         </div>
                     </div>
                 </div>
@@ -83,7 +81,7 @@ export const FilterableCashflowTrend: React.FC<FilterableCashflowTrendProps> = (
 
             {loading ? (
                 <div className="w-full h-[300px] flex items-center justify-center">
-                    <div className="w-10 h-10 rounded-full border-4 border-slate-100 border-t-blue-600 animate-spin dark:border-slate-700 dark:border-t-blue-400"></div>
+                    <div className="w-10 h-10 rounded-full border-4 border-brand-border border-t-sp-navy animate-spin"></div>
                 </div>
             ) : (
                 <RevenueChart
@@ -91,8 +89,8 @@ export const FilterableCashflowTrend: React.FC<FilterableCashflowTrendProps> = (
                     storeSettings={storeSettings}
                     barKey="inflow"
                     lineKey="outflow"
-                    barColor="#22c55e"
-                    lineColor="#ef4444"
+                    barColor="#16a34a"
+                    lineColor="#ba1a1a"
                     height={220}
                 />
             )}

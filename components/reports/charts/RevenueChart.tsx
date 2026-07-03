@@ -19,8 +19,8 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
     storeSettings,
     barKey = 'revenue',
     lineKey = 'profit',
-    barColor = '#fb923c',
-    lineColor = '#8b5cf6',
+    barColor = '#FF7F27', // orange bars (revenue)
+    lineColor = '#002B6B', // navy line (profit)
     height = 300
 }) => {
     return (
@@ -43,12 +43,11 @@ export const RevenueChart: React.FC<RevenueChartProps> = ({
                     />
                     <Tooltip
                         contentStyle={{
-                            borderRadius: '16px',
-                            border: 'none',
-                            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
-                            backgroundColor: 'rgba(44, 47, 211, 0.11)',
-                            backdropFilter: 'blur(8px)',
-                            padding: '12px'
+                            borderRadius: '12px',
+                            border: '1px solid #E2E8F0',
+                            boxShadow: '0 4px 12px -2px rgb(0 0 0 / 0.08)',
+                            backgroundColor: '#ffffff',
+                            padding: '10px 12px'
                         }}
                         itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                         cursor={{ stroke: '#94a3b8', strokeWidth: 1, strokeDasharray: '4 4' }}

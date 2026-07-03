@@ -330,28 +330,44 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const handleCreateNewPO = () => {
         if (!linkPOProduct || !onSavePurchaseOrder) return;
 
-        // Create a new PO with "Received" status
+        // A purchase order MUST reference a supplier (the column is NOT NULL with a
+        // foreign key). Prefer the product's own supplier, then the store's first
+        // supplier. If neither exists we cannot create a PO — receive the goods as a
+        // plain stock adjustment instead of sending an empty supplier that errors.
+        const supplier = linkPOProduct.supplierId
+            ? suppliers.find(s => s.id === linkPOProduct.supplierId)
+            : suppliers[0];
+
+        if (!supplier) {
+            showToast('No supplier is set for this product, so a purchase order can’t be created. Recorded the goods as a stock reception — assign a supplier to link a PO next time.', 'info');
+            handleSkipLinkPO();
+            return;
+        }
+
+        const cost = linkPOProduct.costPrice || 0;
+        // Created as fully received: the PO carries the reception, and the stock +
+        // GR/IR journal are posted by the "Receiving Stock" adjustment below.
         const newPO: PurchaseOrder = {
             id: `new_${Date.now()}`,
             poNumber: `PO-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-            supplierId: linkPOProduct.supplierId || suppliers[0]?.id || '',
-            supplierName: linkPOProduct.supplierId ? (suppliers.find(s => s.id === linkPOProduct.supplierId)?.name || 'Unknown Supplier') : (suppliers[0]?.name || 'Unknown Supplier'),
+            supplierId: supplier.id,
+            supplierName: supplier.name,
             status: 'received',
             items: [{
                 productId: linkPOProduct.id,
                 productName: linkPOProduct.name,
                 sku: linkPOProduct.sku,
                 quantity: linkPOQuantity,
-                costPrice: linkPOProduct.costPrice || 0,
+                costPrice: cost,
                 receivedQuantity: linkPOQuantity
             }],
             createdAt: new Date().toISOString(),
             orderedAt: new Date().toISOString(),
             receivedAt: new Date().toISOString(),
-            subtotal: (linkPOProduct.costPrice || 0) * linkPOQuantity,
+            subtotal: cost * linkPOQuantity,
             shippingCost: 0,
             tax: 0,
-            total: (linkPOProduct.costPrice || 0) * linkPOQuantity,
+            total: cost * linkPOQuantity,
         };
 
         onSavePurchaseOrder(newPO);

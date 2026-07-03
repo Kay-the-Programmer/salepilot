@@ -14,17 +14,18 @@ export const InventoryValueComparison: React.FC<InventoryValueComparisonProps> =
     totalCostValue,
     storeSettings
 }) => {
+    // Retail = navy (primary), Cost = neutral outline so the gap reads as margin.
     const data = [
-        { name: 'Retail Value', value: totalRetailValue, color: '#3b82f6' }, // blue-500
-        { name: 'Cost Value', value: totalCostValue, color: '#eab308' }, // yellow-500
+        { name: 'Retail Value', value: totalRetailValue, color: '#002B6B' },
+        { name: 'Cost Value', value: totalCostValue, color: '#94a3b8' },
     ];
 
     const CustomTooltip = ({ active, payload, label }: any) => {
         if (active && payload && payload.length) {
             return (
-                <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-3 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700">
-                    <p className="font-bold text-slate-900 dark:text-white mb-1 uppercase tracking-wider text-xs">{label}</p>
-                    <p className="text-sm font-black" style={{ color: payload[0].payload.color }}>
+                <div className="bg-surface p-3 rounded-lg shadow-lg border border-brand-border">
+                    <p className="font-bold text-brand-text mb-1 uppercase tracking-wider text-[10px]">{label}</p>
+                    <p className="text-sm font-bold tnum" style={{ color: payload[0].payload.color }}>
                         {formatCurrency(payload[0].value, storeSettings)}
                     </p>
                 </div>
@@ -34,8 +35,8 @@ export const InventoryValueComparison: React.FC<InventoryValueComparisonProps> =
     };
 
     return (
-        <div className="lg:col-span-2 dark:bg-slate-800 glass-effect rounded-2xl p-6 shadow-lg border border-slate-200/50 dark:border-white/10 flex flex-col h-full">
-            <h3 className="font-semibold text-brand-text text-lg mb-6">Inventory Value Comparison</h3>
+        <div className="bg-surface rounded-2xl p-6 border border-brand-border flex flex-col h-full">
+            <h3 className="font-bold text-brand-text text-lg tracking-tight mb-6">Inventory Value Comparison</h3>
 
             {/* Chart Area */}
             <div className="flex-1 w-full min-h-[200px]">
@@ -45,7 +46,7 @@ export const InventoryValueComparison: React.FC<InventoryValueComparisonProps> =
                             dataKey="name"
                             axisLine={false}
                             tickLine={false}
-                            tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600 }} // slate-500
+                            tick={{ fill: '#747782', fontSize: 12, fontWeight: 600 }}
                             dy={10}
                         />
                         <Tooltip content={<CustomTooltip />} cursor={{ fill: 'transparent' }} />
@@ -53,7 +54,7 @@ export const InventoryValueComparison: React.FC<InventoryValueComparisonProps> =
                             dataKey="value"
                             radius={[6, 6, 0, 0]}
                             barSize={60}
-                            animationDuration={1500}
+                            animationDuration={1200}
                         >
                             {data.map((entry, index) => (
                                 <Cell key={`cell-${index}`} fill={entry.color} />
@@ -63,15 +64,15 @@ export const InventoryValueComparison: React.FC<InventoryValueComparisonProps> =
                 </ResponsiveContainer>
             </div>
 
-            {/* Labels Area matching the existing layout */}
-            <div className="mt-8 flex justify-around px-4">
-                <div className="flex flex-col items-center">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Retail Value</div>
-                    <div className="text-sm text-slate-900 dark:text-white font-black mt-1 text-center">{formatCurrency(totalRetailValue, storeSettings)}</div>
+            {/* Value labels */}
+            <div className="mt-6 grid grid-cols-2 gap-3">
+                <div className="rounded-xl bg-surface-variant/50 border border-brand-border p-3 text-center">
+                    <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">Retail Value</div>
+                    <div className="text-base text-brand-text font-bold mt-1 tnum">{formatCurrency(totalRetailValue, storeSettings)}</div>
                 </div>
-                <div className="flex flex-col items-center">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest text-center">Cost Value</div>
-                    <div className="text-sm text-slate-900 dark:text-white font-black mt-1 text-center">{formatCurrency(totalCostValue, storeSettings)}</div>
+                <div className="rounded-xl bg-surface-variant/50 border border-brand-border p-3 text-center">
+                    <div className="text-[10px] font-bold text-brand-text-muted uppercase tracking-widest">Cost Value</div>
+                    <div className="text-base text-brand-text font-bold mt-1 tnum">{formatCurrency(totalCostValue, storeSettings)}</div>
                 </div>
             </div>
         </div>

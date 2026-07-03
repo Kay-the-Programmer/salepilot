@@ -13,22 +13,30 @@ interface StockAdjustmentModalProps {
     initialReason?: string;
 }
 
-/** Step 1 options — each reason explains what the number will mean. */
-const adjustmentReasons: { value: string; icon: string; hint: string }[] = [
-    { value: 'Receiving Stock', icon: '📦', hint: 'New goods arrived — by units or whole cartons' },
-    { value: 'Stock Count', icon: '📊', hint: 'Set stock to the exact counted amount' },
-    { value: 'Damaged Goods', icon: '⚠️', hint: 'Write off broken or expired items' },
-    { value: 'Theft', icon: '🚫', hint: 'Write off stolen or missing items' },
-    { value: 'Return', icon: '↩️', hint: 'Items coming back into stock' },
-    { value: 'Personal Use', icon: '👤', hint: 'Taken by the owner — booked to drawings' },
-    { value: 'Other', icon: '📝', hint: 'Any other correction, with your own note' },
+/**
+ * Each reason knows which way it moves stock, so the operator never has to think
+ * about signs:
+ *   in    → adds to stock (goods arriving / coming back)
+ *   out   → removes from stock (write-offs, withdrawals)
+ *   set   → sets the absolute level (physical count)
+ *   either→ direction is genuinely unknown; the operator picks Add or Remove
+ */
+type Direction = 'in' | 'out' | 'set' | 'either';
+const adjustmentReasons: { value: string; icon: string; hint: string; direction: Direction }[] = [
+    { value: 'Receiving Stock', icon: '📦', hint: 'New goods arrived — by units or whole cartons', direction: 'in' },
+    { value: 'Return', icon: '↩️', hint: 'Items coming back into stock', direction: 'in' },
+    { value: 'Stock Count', icon: '📊', hint: 'Set stock to the exact counted amount', direction: 'set' },
+    { value: 'Damaged Goods', icon: '⚠️', hint: 'Write off broken or expired items', direction: 'out' },
+    { value: 'Theft', icon: '🚫', hint: 'Write off stolen or missing items', direction: 'out' },
+    { value: 'Personal Use', icon: '👤', hint: 'Taken by the owner — booked to drawings', direction: 'out' },
+    { value: 'Other', icon: '📝', hint: 'Any other correction — you choose add or remove', direction: 'either' },
 ];
 
 /**
  * Quantity rules (Velocity): whole numbers for `unit` products, strictly two
- * decimals for `kg`. "Stock Count" sets the absolute level; every other reason
- * applies a signed delta (backend clamps the result at 0). "Receiving Stock"
- * can be entered per unit or per carton — cartons × units-per-carton.
+ * decimals for `kg`. The operator always types a positive amount; the reason's
+ * direction decides whether it's added or removed (backend clamps at 0).
+ * "Receiving Stock" can be entered per unit or per carton.
  */
 const roundQty = (value: number, isKg: boolean): number =>
     isKg ? Math.round(value * 100) / 100 : Math.round(value);
@@ -41,6 +49,8 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
     const [reason, setReason] = useState<string>('');
     const [customReason, setCustomReason] = useState('');
     const [quantityInput, setQuantityInput] = useState('');
+    // For "Other", the operator chooses the direction explicitly.
+    const [otherDirection, setOtherDirection] = useState<'in' | 'out'>('out');
     // Carton entry (Receiving Stock only)
     const [entryMode, setEntryMode] = useState<'units' | 'cartons'>('units');
     const [cartonsInput, setCartonsInput] = useState('');
@@ -48,23 +58,28 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
 
     const isKg = product?.unitOfMeasure === 'kg';
     const unitLabel = isKg ? 'kg' : 'units';
-    const isStockCount = reason === 'Stock Count';
+    const selectedReason = adjustmentReasons.find(r => r.value === reason);
+    const isStockCount = selectedReason?.direction === 'set';
     const isReceiving = reason === 'Receiving Stock';
+    // Resolve the concrete movement direction for the chosen reason.
+    const effectiveDir: 'in' | 'out' | 'set' = selectedReason?.direction === 'either'
+        ? otherDirection
+        : (selectedReason?.direction as 'in' | 'out' | 'set') || 'in';
 
-    const inputRe = (allowNegative: boolean) => isKg
-        ? (allowNegative ? /^-?\d*(\.\d{0,2})?$/ : /^\d*(\.\d{0,2})?$/)
-        : (allowNegative ? /^-?\d*$/ : /^\d*$/);
-    // Per-carton content follows the product's own precision; carton counts are whole.
+    // Amounts are always positive now — the direction is derived from the reason.
+    const inputRe = isKg ? /^\d*(\.\d{0,2})?$/ : /^\d*$/;
     const perCartonRe = isKg ? /^\d*(\.\d{0,2})?$/ : /^\d*$/;
     const cartonsRe = /^\d*$/;
 
     useEffect(() => {
         if (product && isOpen) {
             const initReason = initialReason && adjustmentReasons.some(r => r.value === initialReason) ? initialReason : '';
+            const initDef = adjustmentReasons.find(r => r.value === initReason);
             setReason(initReason);
             setStep(initReason ? 2 : 1);
-            setQuantityInput(initReason === 'Stock Count' ? fmtQty(Number(product.stock) || 0, product.unitOfMeasure === 'kg') : '');
+            setQuantityInput(initDef?.direction === 'set' ? fmtQty(Number(product.stock) || 0, product.unitOfMeasure === 'kg') : '');
             setCustomReason('');
+            setOtherDirection('out');
             setEntryMode('units');
             setCartonsInput('');
             setUnitsPerCartonInput(product.unitsPerCarton ? String(product.unitsPerCarton) : '');
@@ -76,65 +91,81 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
     const currentStock = roundQty(Number(product.stock) || 0, isKg);
 
     const handleReasonSelect = (value: string) => {
+        const def = adjustmentReasons.find(r => r.value === value);
         setReason(value);
-        setQuantityInput(value === 'Stock Count' ? fmtQty(currentStock, isKg) : '');
+        setQuantityInput(def?.direction === 'set' ? fmtQty(currentStock, isKg) : '');
+        setOtherDirection('out');
         setEntryMode('units');
         if (value !== 'Other') setCustomReason('');
         setStep(2);
     };
 
     const handleQuantityChange = (value: string) => {
-        if (!inputRe(!isStockCount && !isReceiving).test(value)) return;
+        if (!inputRe.test(value)) return;
         setQuantityInput(value);
     };
 
-    // Resolve the quantity that will be saved.
+    // The positive magnitude the operator entered.
     const cartons = parseInt(cartonsInput, 10);
     const perCarton = parseFloat(unitsPerCartonInput);
     const usingCartons = isReceiving && entryMode === 'cartons';
 
     const parsedDirect = parseFloat(quantityInput);
-    const hasDirect = quantityInput !== '' && quantityInput !== '-' && quantityInput !== '.' && quantityInput !== '-.' && !isNaN(parsedDirect);
+    const hasDirect = quantityInput !== '' && quantityInput !== '.' && !isNaN(parsedDirect);
     const hasCartons = !isNaN(cartons) && cartons > 0 && !isNaN(perCarton) && perCarton > 0;
 
     const hasQuantity = usingCartons ? hasCartons : hasDirect;
-    const quantity = usingCartons
+    const magnitude = usingCartons
         ? (hasCartons ? roundQty(cartons * perCarton, isKg) : NaN)
         : (hasDirect ? roundQty(parsedDirect, isKg) : NaN);
 
-    // Preview mirrors the backend exactly: absolute set for Stock Count,
-    // 0-clamped delta for everything else.
+    // Sign the magnitude by direction: absolute for Stock Count, +/- otherwise.
+    const signedQuantity = isStockCount
+        ? magnitude
+        : (effectiveDir === 'out' ? -magnitude : magnitude);
+
+    // Preview mirrors the backend exactly.
     const newStock = !hasQuantity ? currentStock
-        : isStockCount ? quantity
-            : Math.max(0, roundQty(currentStock + quantity, isKg));
+        : isStockCount ? magnitude
+            : Math.max(0, roundQty(currentStock + signedQuantity, isKg));
     const effectiveDelta = roundQty(newStock - currentStock, isKg);
-    const wouldClamp = !isStockCount && hasQuantity && roundQty(currentStock + quantity, isKg) < 0;
+    const wouldClamp = !isStockCount && hasQuantity && effectiveDir === 'out' && roundQty(currentStock + signedQuantity, isKg) < 0;
 
     const finalReason = reason === 'Other' && customReason.trim() ? customReason.trim() : reason;
     const isValid = !!reason
         && (reason !== 'Other' || !!customReason.trim())
         && hasQuantity
-        && (isStockCount ? quantity >= 0 : quantity !== 0);
+        && (isStockCount ? magnitude >= 0 : magnitude > 0);
 
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isValid) return;
-        onSave(product.id, quantity, finalReason);
+        onSave(product.id, signedQuantity, finalReason);
         onClose();
     };
 
-    const selectedReason = adjustmentReasons.find(r => r.value === reason);
-    const inputLabel = isStockCount ? 'New Stock Count' : 'Adjustment Amount';
+    const amountLabel = isStockCount ? 'New stock count'
+        : effectiveDir === 'in' ? (isReceiving ? 'Amount received' : 'Quantity to add')
+            : 'Quantity to remove';
+
     const helper = isStockCount
         ? `Enter the actual counted stock${isKg ? ' in kilograms (two decimals)' : ' in whole units'}. Stock will be set to this exact number.`
-        : isReceiving
-            ? `How much arrived${isKg ? ' (kilograms, two decimals)' : ' (whole units)'}?`
-            : `Positive numbers add stock, negative numbers remove stock${isKg ? ' (kilograms, two decimals)' : ' (whole units)'}.`;
+        : effectiveDir === 'in'
+            ? `This ${isReceiving ? 'adds the received goods to' : 'adds to'} your stock — just enter how much${isKg ? ' (kilograms, two decimals)' : ' (whole units)'}.`
+            : `This removes from your stock — just enter how much${isKg ? ' (kilograms, two decimals)' : ' (whole units)'}. No minus sign needed.`;
 
-    const segBtn = (active: boolean) =>
+    const segBtn = (active: boolean, tone: 'navy' | 'in' | 'out' = 'navy') =>
         `flex-1 px-3 py-2 rounded-lg text-sm font-bold transition-all ${active
-            ? 'bg-sp-navy text-white shadow-sm'
+            ? (tone === 'in' ? 'bg-success text-white shadow-sm' : tone === 'out' ? 'bg-danger text-white shadow-sm' : 'bg-sp-navy text-white shadow-sm')
             : 'text-brand-text-muted hover:text-brand-text'}`;
+
+    // Small "adds / removes" tag shown on each reason card and in the header.
+    const dirTag = (direction: Direction) => {
+        if (direction === 'set') return <span className="text-[10px] font-bold uppercase tracking-wider text-sp-navy bg-sp-navy-soft px-1.5 py-0.5 rounded">Sets</span>;
+        if (direction === 'in') return <span className="text-[10px] font-bold uppercase tracking-wider text-success bg-success/15 px-1.5 py-0.5 rounded">Adds</span>;
+        if (direction === 'out') return <span className="text-[10px] font-bold uppercase tracking-wider text-danger bg-danger/15 px-1.5 py-0.5 rounded">Removes</span>;
+        return <span className="text-[10px] font-bold uppercase tracking-wider text-brand-text-muted bg-surface-variant px-1.5 py-0.5 rounded">Add / Remove</span>;
+    };
 
     return (
         <div
@@ -198,7 +229,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                 {/* ── Step 1: pick the reason ── */}
                 {step === 1 && (
                     <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1.5">
-                        {adjustmentReasons.map(({ value, icon, hint }) => (
+                        {adjustmentReasons.map(({ value, icon, hint, direction }) => (
                             <button
                                 key={value}
                                 type="button"
@@ -208,11 +239,14 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                                     : 'border-brand-border bg-surface hover:border-sp-navy/40'}`}
                             >
                                 <span className="text-xl flex-shrink-0">{icon}</span>
-                                <span className="min-w-0">
-                                    <span className="block text-sm font-bold text-brand-text">{value}</span>
+                                <span className="min-w-0 flex-1">
+                                    <span className="flex items-center gap-2">
+                                        <span className="text-sm font-bold text-brand-text">{value}</span>
+                                        {dirTag(direction)}
+                                    </span>
                                     <span className="block text-xs text-brand-text-muted truncate">{hint}</span>
                                 </span>
-                                <svg className="w-4 h-4 ml-auto text-brand-text-muted flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+                                <svg className="w-4 h-4 text-brand-text-muted flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
                             </button>
                         ))}
                     </div>
@@ -222,14 +256,28 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                 {step === 2 && (
                     <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
                         {reason === 'Other' && (
-                            <InputField
-                                label="Reason"
-                                placeholder="Type reason..."
-                                value={customReason}
-                                onChange={(e) => setCustomReason(e.target.value)}
-                                required
-                                className="!mb-0"
-                            />
+                            <>
+                                <InputField
+                                    label="Reason"
+                                    placeholder="Type reason..."
+                                    value={customReason}
+                                    onChange={(e) => setCustomReason(e.target.value)}
+                                    required
+                                    className="!mb-0"
+                                />
+                                {/* Direction is unknown for a free-form reason — the operator chooses. */}
+                                <div>
+                                    <label className="block text-xs font-medium text-brand-text mb-1.5">Direction</label>
+                                    <div className="flex bg-surface-variant border border-brand-border p-1 rounded-lg">
+                                        <button type="button" className={segBtn(otherDirection === 'in', 'in')} onClick={() => setOtherDirection('in')}>
+                                            Add to stock
+                                        </button>
+                                        <button type="button" className={segBtn(otherDirection === 'out', 'out')} onClick={() => setOtherDirection('out')}>
+                                            Remove from stock
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
                         )}
 
                         {/* Receiving: units vs cartons */}
@@ -273,20 +321,31 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                                 </div>
                                 <p className="text-xs text-brand-text-muted italic">
                                     {hasCartons
-                                        ? <>Receiving <strong className="text-brand-text tnum">{cartons} carton{cartons === 1 ? '' : 's'} × {fmtQty(perCarton, isKg)} {unitLabel}</strong> = <strong className="text-brand-text tnum">{fmtQty(quantity, isKg)} {unitLabel}</strong></>
+                                        ? <>Receiving <strong className="text-brand-text tnum">{cartons} carton{cartons === 1 ? '' : 's'} × {fmtQty(perCarton, isKg)} {unitLabel}</strong> = <strong className="text-brand-text tnum">{fmtQty(magnitude, isKg)} {unitLabel}</strong></>
                                         : `Enter how many cartons arrived and how ${isKg ? 'many kilograms' : 'many units'} each carton holds.`}
                                 </p>
                             </div>
                         ) : (
                             <div className="space-y-3">
-                                <label className="block text-sm font-medium text-brand-text">{inputLabel}</label>
+                                <div className="flex items-center justify-between">
+                                    <label className="block text-sm font-medium text-brand-text">{amountLabel}</label>
+                                    {/* Live direction indicator so the movement is unmistakable */}
+                                    {!isStockCount && (
+                                        <span className={`inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${effectiveDir === 'in' ? 'text-success bg-success/15' : 'text-danger bg-danger/15'}`}>
+                                            {effectiveDir === 'in' ? '↑ Adding' : '↓ Removing'}
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="relative">
+                                    <span className={`absolute left-0 bottom-3 text-2xl font-bold pointer-events-none ${isStockCount ? 'hidden' : effectiveDir === 'in' ? 'text-success' : 'text-danger'}`}>
+                                        {effectiveDir === 'in' ? '+' : '−'}
+                                    </span>
                                     <input
                                         type="text"
                                         inputMode={isKg ? 'decimal' : 'numeric'}
                                         value={quantityInput}
                                         onChange={(e) => handleQuantityChange(e.target.value)}
-                                        className="w-full text-3xl font-bold px-0 py-2 bg-transparent border-b-2 border-brand-border focus:outline-none focus:border-sp-orange transition-colors text-brand-text placeholder-brand-text-muted/40 tnum"
+                                        className={`w-full text-3xl font-bold ${isStockCount ? 'px-0' : 'pl-7'} py-2 bg-transparent border-b-2 border-brand-border focus:outline-none focus:border-sp-orange transition-colors text-brand-text placeholder-brand-text-muted/40 tnum`}
                                         placeholder={isKg ? '0.00' : '0'}
                                         autoFocus
                                     />
@@ -313,12 +372,7 @@ const StockAdjustmentModal: React.FC<StockAdjustmentModalProps> = ({ isOpen, onC
                             </div>
                             {wouldClamp && (
                                 <p className="mt-2 text-xs font-medium text-danger">
-                                    Removing more than the current stock — the level will stop at 0 ({fmtQty(currentStock, isKg)} {unitLabel} removed).
-                                </p>
-                            )}
-                            {!isStockCount && hasQuantity && quantity === 0 && (
-                                <p className="mt-2 text-xs font-medium text-brand-text-muted">
-                                    An adjustment of 0 changes nothing — enter a positive or negative amount.
+                                    You're removing more than the current stock — the level will stop at 0 (only {fmtQty(currentStock, isKg)} {unitLabel} on hand).
                                 </p>
                             )}
                         </div>

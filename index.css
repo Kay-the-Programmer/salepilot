@@ -953,31 +953,27 @@ textarea {
   animation: wiggle 0.3s ease-in-out infinite;
 }
 
-/* Dashboard Premium Styling */
-:root {
-  --dashboard-card-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --dashboard-card-hover-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
+/* Report cards — Velocity "tonal layers": a flat surface with a 1px border and
+   a soft radius, no glassmorphism or heavy shadows (see DESIGN.md). Kept compact
+   so stat cards don't waste vertical space; chart cards self-size past the floor. */
 .dashboard-card {
-  @apply bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl rounded-[24px] md:rounded-[32px] p-5 md:p-7 border border-slate-100 dark:border-white/10 dark:shadow-none transition-all duration-300 hover:-translate-y-1 relative overflow-hidden flex flex-col justify-between;
-  box-shadow: var(--dashboard-card-shadow);
-  min-height: 380px;
+  @apply bg-surface rounded-2xl p-5 border border-brand-border transition-shadow duration-200 relative overflow-hidden flex flex-col justify-between;
+  min-height: 190px;
 }
 
 @media (min-width: 768px) {
   .dashboard-card {
-    min-height: 480px;
+    min-height: 210px;
   }
 }
 
 .dashboard-card:hover {
-  box-shadow: var(--dashboard-card-hover-shadow);
+  @apply shadow-sm;
 }
 
+/* Retained as a harmless no-op so existing markup doesn't need edits. */
 .dashboard-card-glow {
-  @apply absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-[32px] z-0;
-  background: radial-gradient(ellipse at top right, rgba(0, 43, 107, 0.06), transparent 60%);
+  display: none;
 }
 
 @keyframes snackbarBounceLeft {

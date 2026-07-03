@@ -12,7 +12,7 @@ export const SalesChannelChart: React.FC<SalesChannelChartProps> = ({ online, in
         { name: 'Online', value: online },
         { name: 'In-Store', value: inStore },
     ];
-    const COLORS = ['#3b82f6', '#fb923c'];
+    const COLORS = ['#002B6B', '#FF7F27']; // navy (online), orange (in-store)
 
     return (
         <div className="relative w-full h-[250px] flex items-center justify-center">
@@ -40,8 +40,8 @@ export const SalesChannelChart: React.FC<SalesChannelChartProps> = ({ online, in
                 </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-sm font-medium text-gray-500">Online</span>
-                <span className="text-2xl font-bold text-gray-900">{((online / (total || 1)) * 100).toFixed(1)}%</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-brand-text-muted">Online</span>
+                <span className="text-2xl font-bold text-brand-text tnum">{((online / (total || 1)) * 100).toFixed(1)}%</span>
             </div>
         </div>
     );

@@ -59,13 +59,13 @@ export const FilterableSalesChannelChart: React.FC<FilterableSalesChannelChartPr
     return (
         <div className={`dashboard-card h-full transition-all duration-300 ${isFilterOpen ? 'z-50' : 'z-auto'}`}>
             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-slate-900 dark:text-white text-lg">Sales Channels</h3>
+                <h3 className="font-bold text-brand-text text-lg tracking-tight">Sales Channels</h3>
                 <TimeRangeFilter value={filter} onChange={setFilter} onOpenChange={setIsFilterOpen} />
             </div>
 
             {loading ? (
                 <div className="flex-1 flex items-center justify-center">
-                    <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-slate-600 animate-spin"></div>
+                    <div className="w-8 h-8 rounded-full border-2 border-brand-border border-t-sp-navy animate-spin"></div>
                 </div>
             ) : (
                 <>
@@ -77,11 +77,11 @@ export const FilterableSalesChannelChart: React.FC<FilterableSalesChannelChartPr
                         />
                     </div>
                     <div className="mt-4 flex justify-center gap-6">
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
-                            <span className="w-3 h-3 rounded-full bg-blue-500"></span> Online
+                        <div className="flex items-center gap-2 text-sm text-brand-text-muted">
+                            <span className="w-3 h-3 rounded-full bg-sp-navy"></span> Online
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-400">
-                            <span className="w-3 h-3 rounded-full bg-orange-400"></span> In-Store
+                        <div className="flex items-center gap-2 text-sm text-brand-text-muted">
+                            <span className="w-3 h-3 rounded-full bg-sp-orange"></span> In-Store
                         </div>
                     </div>
                 </>
