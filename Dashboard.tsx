@@ -3,7 +3,6 @@ import SocketService from './services/socketService';
 import { SnackbarType } from './App';
 import { Product, Category, StockTakeSession, Sale, Return, Customer, Supplier, PurchaseOrder, User, StoreSettings, Account, JournalEntry, AuditLog, Payment, SupplierInvoice, SupplierPayment, Expense, RecurringExpense } from './types';
 import Logo from './assets/logo.png';
-import Sidebar from './components/Sidebar';
 import { lazy, Suspense } from 'react';
 
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
@@ -12,8 +11,8 @@ import { hasModule, MODULES } from './utils/entitlements';
 import type { CampaignDTO } from './utils/upsell';
 import { ROLE_PAGES } from './utils/rbac';
 
-const QuickView = lazy(() => import('@/pages/QuickView'));
 const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
+const StandaloneShell = lazy(() => import('@/components/standalone/StandaloneShell'));
 const PosShell = lazy(() => import('@/components/pos/PosShell'));
 const PosDashboard = lazy(() => import('@/components/pos/PosDashboard'));
 const CrmApp = lazy(() => import('@/components/crm/CrmApp'));
@@ -34,34 +33,20 @@ const PurchaseOrdersApp = lazy(() => import('@/pages/purchase-orders/PurchaseOrd
 const HustleApp = lazy(() => import('@/pages/hustle/HustleApp'));
 const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
 const SalesPage = lazy(() => import('@/pages/SalesPage'));
-const CategoriesPage = lazy(() => import('@/pages/CategoriesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
-const ReturnsPage = lazy(() => import('@/pages/ReturnsPage'));
-const SuppliersPage = lazy(() => import('@/pages/SuppliersPage'));
 const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const StoreRegistrationPage = lazy(() => import('@/pages/StoreRegistrationPage'));
-const ProfilePage = lazy(() => import('@/pages/ProfilePage'));
-const SettingsPage = lazy(() => import('@/pages/SettingsPage'));
-const UsersPage = lazy(() => import('@/pages/UsersPage'));
-const AllSalesPage = lazy(() => import('@/pages/AllSalesPage'));
-const AuditLogPage = lazy(() => import('@/pages/AuditLogPage'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
-const NotificationsPage = lazy(() => import('@/pages/NotificationsPage'));
 // The Super Admin platform pages now live inside a single standalone app shell
 // (its own navigation + brand chrome), opened from the app switcher like the other apps.
 const SuperAdminApp = lazy(() => import('@/components/superadmin-app/SuperAdminApp'));
 const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
 const MarketplaceDashboard = lazy(() => import('@/pages/shop/CustomerDashboard')); // The Marketplace Portal
 const CustomerOrdersPage = lazy(() => import('@/pages/customers/CustomerDashboard')); // The My Orders Page
-const CustomerRequestTrackingPage = lazy(() => import('@/pages/shop/CustomerRequestTrackingPage'));
 const MarketplaceRequestActionPage = lazy(() => import('@/pages/MarketplaceRequestActionPage'));
-const LogisticsPage = lazy(() => import('@/pages/LogisticsPage'));
 const UserGuidePage = lazy(() => import('@/pages/UserGuidePage'));
-const WhatsAppConversationsPage = lazy(() => import('@/pages/WhatsAppConversationsPage'));
-const WhatsAppSettingsPage = lazy(() => import('@/pages/WhatsAppSettingsPage'));
 const SupportPage = lazy(() => import('@/pages/SupportPage'));
-const PrivacyPolicyPage = lazy(() => import('@/pages/PrivacyPolicyPage'));
 
 import { useToast } from './contexts/ToastContext';
 import VerifyEmailOtpModal from './components/VerifyEmailOtpModal';
@@ -71,13 +56,10 @@ import { getCurrentUser, logout, getUsers, saveUser, deleteUser, verifySession, 
 import { api, getOnlineStatus, syncOfflineMutations, getPendingMutationCount } from './services/api';
 import { dbService } from './services/dbService';
 import {
-    Bars3Icon,
-    BuildingStorefrontIcon,
-    ArrowLeftOnRectangleIcon
+    BuildingStorefrontIcon
 } from './components/icons';
 import LoadingSpinner from './components/LoadingSpinner';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
-import NotificationBell from './components/NotificationBell';
 import PriorityNotificationModal from './components/PriorityNotificationModal';
 import { OnboardingProvider } from './contexts/OnboardingContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -100,7 +82,7 @@ const PERMISSIONS: Record<User['role'], string[]> = ROLE_PAGES;
 const DEFAULT_PAGES: Record<User['role'], string> = {
     superadmin: 'superadmin',
     admin: 'dash',
-    staff: 'sales',
+    staff: 'pos',
     inventory_manager: 'dash',
     customer: 'customer/dashboard',
     supplier: 'supplier/dashboard'
@@ -135,7 +117,9 @@ export default function Dashboard() {
     const [customers, setCustomers] = useState<Customer[]>([]);
     const [suppliers, setSuppliers] = useState<Supplier[]>([]);
     const [sales, setSales] = useState<Sale[]>([]);
-    const [returns, setReturns] = useState<Return[]>([]);
+    // Returns render inside the POS Sales History & Refunds view (fetched there);
+    // this cache only backs offline warm-up.
+    const [, setReturns] = useState<Return[]>([]);
     const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([]);
     const [supplierInvoices, setSupplierInvoices] = useState<SupplierInvoice[]>([]);
     const [stockTakeSession, setStockTakeSession] = useState<StockTakeSession | null>(null);
@@ -143,7 +127,6 @@ export default function Dashboard() {
     const [accounts, setAccounts] = useState<Account[]>([]);
     const [journalEntries, setJournalEntries] = useState<JournalEntry[]>([]);
     const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
-    const [pendingMatches, _] = useState<any[]>([]); // Prefixed with _ to silence unused warning if desired, or just remove if safe
     const [storeSettings, setStoreSettings] = useState<StoreSettings | null>(null);
     const [expenses, setExpenses] = useState<Expense[]>([]);
     const [recurringExpenses, setRecurringExpenses] = useState<RecurringExpense[]>([]);
@@ -157,8 +140,6 @@ export default function Dashboard() {
     // Dashboard branch) so it shows from the standalone app shells too.
     const { requestLogout } = useLogoutModal();
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
-    // Mobile sidebar state
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     // Standalone POS shell (/pos) mobile drawer
     const [posDrawerOpen, setPosDrawerOpen] = useState(false);
 
@@ -173,9 +154,11 @@ export default function Dashboard() {
     const [systemStores, setSystemStores] = useState<{ id: string; name: string }[]>([]);
 
     // --- Offline State ---
-    const [isOnline, setIsOnline] = useState(getOnlineStatus());
-    const [isSyncing, setIsSyncing] = useState(false);
-    const [lastSync, setLastSync] = useState<number | null>(null);
+    // (Only the setters are consumed since the legacy sidebar — which displayed
+    //  online/sync status — was retired; the sync engine still drives them.)
+    const [, setIsOnline] = useState(getOnlineStatus());
+    const [, setIsSyncing] = useState(false);
+    const [, setLastSync] = useState<number | null>(null);
     // Number of offline changes still queued for sync (drives the retry timer).
     const [pendingSyncCount, setPendingSyncCount] = useState(0);
 
@@ -221,21 +204,9 @@ export default function Dashboard() {
         });
     };
 
-    // Close mobile sidebar on Escape
-    useEffect(() => {
-        const onKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') setIsSidebarOpen(false);
-        };
-        window.addEventListener('keydown', onKeyDown);
-        return () => window.removeEventListener('keydown', onKeyDown);
-    }, []);
-
     const navigate = useNavigate();
     const location = useLocation();
     const { openAppSwitcher } = useAppSwitcher();
-
-    // Determine current "page" from URL
-    const currentPage = location.pathname.substring(1) || 'reports';
 
     // Suppress all proactive upsell while a sale is in progress (POS sale flow).
     const isMidSale = (() => {
@@ -299,13 +270,11 @@ export default function Dashboard() {
             .then(ok => { if (ok) upsellService.recordShown(m); });
     }, [products, customers, sales, currentUser, isMidSale]);
 
-    // Close mobile sidebar after navigation
-    useEffect(() => {
-        setIsSidebarOpen(false);
-    }, [location.pathname]);
-
     const hasAccess = (page: string, role: User['role']) => {
         const seg = page.split('/')[0];
+        // The platform owner can always open the Super Admin app, whichever
+        // mode they're in — the mode flag only gates the store-scoped pages.
+        if (role === 'superadmin' && seg === 'superadmin') return true;
         // When superadmin is in super mode, only allow strictly superadmin routes (Superadmin page)
         if (role === 'superadmin' && superMode === 'superadmin') {
             return ['superadmin', 'whatsapp', 'profile'].includes(seg);
@@ -637,7 +606,6 @@ export default function Dashboard() {
     };
 
     const handleLogout = () => {
-        setIsSidebarOpen(false);
         requestLogout(handleConfirmLogout);
     };
 
@@ -1013,53 +981,16 @@ export default function Dashboard() {
 
     const handleReceivePOItems = async (poId: string, receivedItems: { productId: string, quantity: number }[]) => {
         try {
-            // Find the PO locally first to calculate new state
-            const existingPO = purchaseOrders.find(p => p.id === poId);
-            if (!existingPO) throw new Error('Purchase Order not found');
-
-            // Create updated PO object
-            const updatedItems = existingPO.items.map(item => {
-                const receivedItem = receivedItems.find(r => r.productId === item.productId);
-                if (receivedItem) {
-                    const newReceived = (item.receivedQuantity || 0) + receivedItem.quantity;
-                    return { ...item, receivedQuantity: newReceived };
-                }
-                return item;
-            });
-
-            // Calculate new status
-            const allReceived = updatedItems.every(item => (item.receivedQuantity || 0) >= item.quantity);
-            const someReceived = updatedItems.some(item => (item.receivedQuantity || 0) > 0);
-            const newStatus: PurchaseOrder['status'] = allReceived ? 'received' : (someReceived ? 'partially_received' : 'ordered');
-
-            const updatedPO: PurchaseOrder = {
-                ...existingPO,
-                items: updatedItems,
-                status: newStatus
-            };
-
-            // Update PO
-            const result = await api.put<PurchaseOrder>(`/purchase-orders/${poId}`, updatedPO);
-
-            // Also update product stock for each received item
-            // Note: This logic assumes the backend /receive endpoint was doing both. 
-            // Since we are now manually updating the PO, we must also manually update the stock.
-            // However, InventoryPage already handles stock updates via onReceivePOItems? 
-            // NO. InventoryPage calls onReceivePOItems inside handleLinkToPO and DOES NOT call onAdjustStock there.
-            // So we MUST update stock here.
-
-            for (const item of receivedItems) {
-                // We use PATCH for stock updates
-                await api.patch(`/products/${item.productId}/stock`, {
-                    newQuantity: item.quantity,
-                    reason: 'Receiving Stock'
-                });
-            }
+            // The dedicated receive endpoint updates the PO's received quantities,
+            // increments stock with weighted-average costing and posts the correct
+            // journal entry (Dr Inventory / Cr Goods Received Not Invoiced) in one
+            // transaction — never adjust stock separately here, that double-posts.
+            const result = await api.post(`/purchase-orders/${poId}/receive`, receivedItems);
 
             if ((result as any).offline) {
                 showSnackbar('Offline: Stock reception queued.', 'info');
             } else {
-                showSnackbar('Purchase Order updated.', 'success');
+                showSnackbar('Stock received into inventory.', 'success');
                 fetchData();
             }
         } catch (err: any) {
@@ -1088,11 +1019,11 @@ export default function Dashboard() {
                 };
                 setStockTakeSession(offlineSession);
                 await dbService.put('settings', offlineSession, 'activeStockTake');
-                navigate('/stock-takes');
+                navigate('/inv/stock-takes');
                 showSnackbar('Offline: Stock take started. Changes will sync when back online.', 'info');
             } else {
                 setStockTakeSession(result as StockTakeSession);
-                navigate('/stock-takes');
+                navigate('/inv/stock-takes');
                 showSnackbar('New stock take session started.', 'info');
             }
         } catch (err: any) {
@@ -1151,34 +1082,6 @@ export default function Dashboard() {
             }
         } catch (err: any) {
             showSnackbar(err.message, 'error');
-        }
-    };
-
-    const handleSaveUser = async (userData: Omit<User, 'id'>, id?: string) => {
-        try {
-            await saveUser(userData, id);
-            setUsers(await getUsers());
-            showSnackbar(`User ${id ? 'updated' : 'created'} successfully!`, 'success');
-        } catch (err: any) {
-            showSnackbar(err.message, 'error');
-        }
-    };
-
-
-
-    const handleDeleteUser = async (userId: string) => {
-        if (userId === currentUser?.id) {
-            showSnackbar("You cannot delete your own account.", "error");
-            return;
-        }
-        if (window.confirm("Are you sure you want to delete this user?")) {
-            try {
-                await deleteUser(userId);
-                setUsers(await getUsers());
-                showSnackbar("User deleted successfully.", "success");
-            } catch (err: any) {
-                showSnackbar(err.message, "error");
-            }
         }
     };
 
@@ -1364,107 +1267,69 @@ export default function Dashboard() {
 
 
 
-    const renderPage = (pagePath: string) => {
-        const parts = pagePath.split('/');
-        const page = parts[0];
+    // ── Shared account overlays ──
+    // Email-verification banner + OTP modal + priority platform broadcasts.
+    // Mounted by the standalone page branches below (the ones that replaced the
+    // legacy sidebar shell, which used to own these). PriorityNotificationModal
+    // needs NotificationProvider, so this fragment must render inside one.
+    const accountOverlays = (
+        <>
+            {currentUser && !currentUser.isVerified && currentUser.role !== 'customer' && (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-2xl">
+                    <div className="bg-amber-50/90 dark:bg-amber-900/40 backdrop-blur-xl border border-amber-200/50 dark:border-amber-700/30 p-4 rounded-2xl shadow-[0_8px_32px_-4px_rgba(251,191,36,0.2)] flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-amber-100 dark:bg-amber-800/50 rounded-xl text-amber-600 dark:text-amber-400">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-amber-900 dark:text-amber-100">Email Not Verified</p>
+                                <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Please verify your email to access all features and ensure account security.</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        await api.post('/auth/resend-verification', { email: currentUser.email });
+                                        setShowOtpModal(true);
+                                    } catch (err: any) {
+                                        if (err.message && err.message.toLowerCase().includes('already verified')) {
+                                            const updated = { ...currentUser, isVerified: true };
+                                            setCurrentUser(updated);
+                                            try { localStorage.setItem('salePilotUser', JSON.stringify(updated)); } catch { }
+                                            showSnackbar('Your email is already verified!', 'success');
+                                        } else {
+                                            showSnackbar(err.message || 'Failed to resend email.', 'error');
+                                        }
+                                    }
+                                }}
+                                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-600/20 transition-all active:scale-95 whitespace-nowrap"
+                            >
+                                Verify Email
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <VerifyEmailOtpModal
+                isOpen={showOtpModal}
+                email={currentUser?.email || ''}
+                onClose={() => setShowOtpModal(false)}
+                onVerified={() => {
+                    const updatedUser = { ...currentUser!, isVerified: true };
+                    setCurrentUser(updatedUser);
+                    try { localStorage.setItem('salePilotUser', JSON.stringify(updatedUser)); } catch { }
+                    setShowOtpModal(false);
+                    showSnackbar('Email verified successfully!', 'success');
+                }}
+            />
+            <PriorityNotificationModal />
+        </>
+    );
 
-        if (!hasAccess(page, currentUser.role) && !hasAccess(pagePath, currentUser.role)) {
-            return <div className="p-8 text-center text-red-500">Access Denied. You do not have permission to view this page.</div>;
-        }
-
-        const renderContent = () => {
-            if (pagePath === 'customer/dashboard') {
-                return <MarketplaceDashboard />;
-            }
-
-            if (pagePath === 'supplier/orders') {
-                return <SupplierOrdersPage />;
-            }
-            if (pagePath === 'supplier/dashboard') {
-                return <SupplierDashboard />;
-            }
-
-            if (pagePath === 'customer/orders') {
-                return <CustomerOrdersPage />;
-            }
-
-            switch (page) {
-                case 'quick-view':
-                    return <QuickView user={currentUser} />;
-                case 'sales':
-                    // The point of sale lives only at /pos now; /sales presents sales data.
-                    return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
-                case 'sales-history':
-                    return <AllSalesPage customers={customers} storeSettings={storeSettings!} />;
-                case 'orders':
-                    return <OrdersPage storeSettings={storeSettings!} onOpenSidebar={openAppSwitcher} showSnackbar={showSnackbar} onDataRefresh={fetchData} />;
-                case 'returns':
-                    return <ReturnsPage sales={sales} returns={returns} onProcessReturn={handleProcessReturn} showSnackbar={showSnackbar} storeSettings={storeSettings!} />;
-                case 'customers':
-                    // The standalone admin customers page was removed; customers live in the CRM app now.
-                    return <Navigate to="/crm/customers" replace />;
-                case 'suppliers':
-                    return <SuppliersPage suppliers={suppliers} products={products} onSaveSupplier={handleSaveSupplier} onDeleteSupplier={handleDeleteSupplier} isLoading={isLoading} error={error} storeSettings={storeSettings!} />;
-                case 'purchase-orders':
-                    // Consolidated into the Procurement Hub — the single PO manager.
-                    return <Navigate to="/procure/orders" replace />;
-                case 'categories':
-                    return <CategoriesPage categories={categories} accounts={accounts} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} />;
-                case 'stock-takes':
-                    return <StockTakePage session={stockTakeSession} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />;
-                case 'reports':
-                    return <ReportsPage storeSettings={storeSettings!} user={currentUser} />;
-                case 'logistics':
-                    return <LogisticsPage />;
-                case 'accounting':
-                    // Consolidated into the single Accounting Hub (/books).
-                    return <Navigate to="/books" replace />;
-                case 'audit-trail':
-                    return <AuditLogPage logs={auditLogs} users={users} />;
-                case 'profile':
-                    return <ProfilePage user={currentUser} storeSettings={storeSettings!} onLogout={handleLogout} onInstall={handleInstall} installPrompt={installPrompt} onUpdateProfile={handleUpdateProfile} onChangePassword={handleChangePassword} />;
-                case 'settings':
-                    return <SettingsPage settings={storeSettings!} user={currentUser!} showSnackbar={showSnackbar} onSave={handleSaveSettings} />;
-                case 'users':
-                    return <UsersPage users={users} onSaveUser={handleSaveUser} onDeleteUser={handleDeleteUser} showSnackbar={showSnackbar} isLoading={isLoading} error={error} />;
-                case 'notifications':
-                    return <NotificationsPage userId={currentUser?.id} showSnackbar={showSnackbar} />;
-                case 'directory':
-                case 'marketplace':
-                    if (parts[1] === 'request' && parts[2]) {
-                        return <MarketplaceRequestActionPage requestId={parts[2]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} showSnackbar={showSnackbar} />;
-                    }
-                    return <MarketplacePage />;
-
-                case 'track':
-                    return <CustomerRequestTrackingPage />;
-                // NOTE: /superadmin/* is intercepted earlier and rendered as the
-                // standalone SuperAdminApp shell, so it never reaches this switch.
-
-                case 'inventory':
-                    return <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} />;
-                case 'user-guide':
-                    return <UserGuidePage />;
-                case 'whatsapp':
-                    if (parts[1] === 'settings') {
-                        return <WhatsAppSettingsPage storeSettings={storeSettings!} showSnackbar={showSnackbar} />;
-                    }
-                    return <WhatsAppConversationsPage showSnackbar={showSnackbar} currentUser={currentUser} superMode={superMode} />;
-                case 'support':
-                    return <SupportPage />;
-                case 'privacy':
-                    return <PrivacyPolicyPage />;
-                default:
-                    return <div className="p-8 text-center text-red-500">Page not found: {page}</div>;
-            }
-        };
-
-        return (
-            <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                {renderContent()}
-            </Suspense>
-        );
-    };
+    const suspenseFallback = <div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>;
 
     // ── Standalone Business Assistant app (/assistant, /assistant/chat) ──
     // Opens from the app switcher as its own focused app (AI Suite). Runs on
@@ -1695,7 +1560,7 @@ export default function Dashboard() {
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                             onNewSale={() => navigate('/pos')}
-                            onInventory={() => navigate('/inventory')}
+                            onInventory={() => navigate('/inv/items')}
                             onOrders={() => navigate('/orders')}
                         />
                     </Suspense>
@@ -1896,7 +1761,10 @@ export default function Dashboard() {
         if (!invAllowedPages.includes('inventory')) {
             return <Navigate to="/" replace />;
         }
-        const invSection = (invParts[2] === 'items' ? 'items' : invParts[2] === 'alerts' ? 'alerts' : 'dashboard') as 'dashboard' | 'items' | 'alerts';
+        const invSection = (invParts[2] === 'items' ? 'items'
+            : invParts[2] === 'alerts' ? 'alerts'
+                : invParts[2] === 'stock-takes' ? 'stock-takes'
+                    : 'dashboard') as 'dashboard' | 'items' | 'alerts' | 'stock-takes';
         return (
             <OnboardingProvider user={currentUser}>
                 <NotificationProvider user={currentUser}>
@@ -1914,6 +1782,11 @@ export default function Dashboard() {
                                     <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} embedded />
                                 </Suspense>
                             )}
+                            renderStockTakes={() => (
+                                <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                                    <StockTakePage session={stockTakeSession} products={products} onStart={handleStartStockTake} onUpdateItem={handleUpdateStockTakeItem} onCancel={handleCancelStockTake} onFinalize={handleFinalizeStockTake} />
+                                </Suspense>
+                            )}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/inv' : `/inv/${s}`)}
                             onPos={() => navigate('/pos')}
                             onExit={() => navigate('/')}
@@ -1926,8 +1799,9 @@ export default function Dashboard() {
         );
     }
 
-    // ── Standalone POS app (/pos, /pos/inventory, /pos/dashboard) ──
+    // ── Standalone POS app (/pos, /pos/history, /pos/inventory, /pos/dashboard) ──
     // Focused frame with its own menu; reuses the existing page logic/props.
+    // /pos/history deep-links the built-in "Sales History & Refunds" view.
     const posParts = location.pathname.split('/');
     if (posParts[1] === 'pos' && currentUser) {
         const posSection = posParts[2] === 'inventory' ? 'inventory'
@@ -1947,7 +1821,7 @@ export default function Dashboard() {
         if (posSection === 'dashboard') {
             posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
         } else {
-            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} />;
+            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} suppliers={suppliers} onProcessSale={handleProcessSale} onSaveProduct={handleSaveProduct} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} />;
         }
 
         return (
@@ -1989,6 +1863,7 @@ export default function Dashboard() {
                             storeId={superParts[2] === 'stores' ? superParts[3] : undefined}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
+                            onStoreMode={() => changeSuperMode('store')}
                         />
                     </Suspense>
                 </NotificationProvider>
@@ -1996,189 +1871,124 @@ export default function Dashboard() {
         );
     }
 
-    return (
-        <OnboardingProvider user={currentUser}>
-            <NotificationProvider user={currentUser}>
-                <div className="flex h-screen bg-gray-100 dark:bg-slate-950 font-sans transition-colors duration-200">
-                    {/* Mobile overlay/backdrop */}
-                    {isSidebarOpen && (
-                        <div
-                            className="fixed inset-0 bg-black/40 z-[55] md:hidden"
-                            onClick={() => setIsSidebarOpen(false)}
-                            aria-hidden="true"
-                        />
-                    )}
+    // ────────────────────────────────────────────────────────────────────────
+    // Standalone page branches — these replaced the legacy sidebar shell.
+    // Each page renders in its own focused frame (or wrapped in the shared
+    // StandaloneShell chrome) and mounts the shared account overlays.
+    // ────────────────────────────────────────────────────────────────────────
 
-                    {/* Sidebar container: modal on mobile, static on desktop */}
-                    <div id="app-sidebar" className={`
-                z-[110] md:static md:block
-                ${isSidebarOpen
-                            ? 'fixed inset-0 flex items-center justify-center p-4 pointer-events-none'
-                            : 'hidden md:block'
-                        }
-            `}>
-                        <Sidebar
-                            user={currentUser}
-                            onLogout={handleLogout}
-                            isOnline={isOnline}
-                            allowedPages={currentUser.role === 'superadmin' ? (superMode === 'superadmin' ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile'] : PERMISSIONS['admin']) : PERMISSIONS[currentUser.role]}
-                            superMode={currentUser.role === 'superadmin' ? superMode : undefined}
-                            onChangeSuperMode={(mode) => {
-                                setSuperMode(mode);
-                                try { localStorage.setItem(getSuperModeKey(currentUser.id), mode); } catch { }
-                                // Redirect to appropriate default page if current is no longer permitted
-                                const effectiveRole: User['role'] = (currentUser.role === 'superadmin' && mode === 'store') ? 'admin' : currentUser.role;
-                                const allowed = (currentUser.role === 'superadmin' && mode === 'superadmin') ? ['superadmin', 'superadmin/stores', 'superadmin/notifications', 'superadmin/subscriptions', 'superadmin/settings', 'whatsapp/conversations', 'whatsapp/settings', 'profile'] : PERMISSIONS[effectiveRole];
-                                const page = location.pathname.split('/')[1] || DEFAULT_PAGES[effectiveRole];
-                                if (!allowed.includes(page)) {
-                                    const next = (currentUser.role === 'superadmin' && mode === 'superadmin') ? 'superadmin' : DEFAULT_PAGES[effectiveRole];
-                                    navigate(`/${next}`);
-                                    try { localStorage.setItem(getLastPageKey(currentUser.id), next); } catch { }
-                                }
-                            }}
-                            storesForSelect={currentUser.role === 'superadmin' ? systemStores : undefined}
-                            selectedStoreId={currentUser.currentStoreId}
-                            onSelectStore={async (storeId) => {
-                                if (!storeId) return;
-                                try {
-                                    await api.patch('/users/me/current-store', { storeId });
-                                    const stored = getCurrentUser();
-                                    if (stored) {
-                                        const merged = { ...stored, currentStoreId: storeId } as User as any;
-                                        localStorage.setItem('salePilotUser', JSON.stringify(merged));
-                                        setCurrentUser(merged);
-                                        showSnackbar('Store context updated.', 'success');
-                                    }
-                                } catch (err: any) {
-                                    showSnackbar(err.message || 'Failed to set current store', 'error');
-                                }
-                            }}
-                            showOnMobile={isSidebarOpen}
-                            onMobileClose={() => setIsSidebarOpen(false)}
-                            lastSync={lastSync}
-                            isSyncing={isSyncing}
-                            installPrompt={installPrompt}
-                            onInstall={handleInstall}
-                            pendingMatchesCount={(pendingMatches || []).length}
-                        />
-                    </div>
+    const pathParts = location.pathname.split('/');
+    const seg = pathParts[1] || '';
+    const allowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
 
-                    {/* Main content */}
-                    <div id="main-content" className="flex-1 flex flex-col overflow-y-auto bg-background">
-                        {/* Universal top bar — the "Apps" button opens the SalePilot
-                            apps switcher, which is now the navigation surface that
-                            replaced the sidebar. Carries the global actions the sidebar
-                            used to own. Pages that ship their own full chrome (POS Sale,
-                            Reports) opt out. */}
-                        {location.pathname !== '/reports' && (
-                            <header className="sticky top-0 z-40 h-14 bg-surface border-b border-brand-border flex items-center gap-2 px-3 md:px-4 transition-all duration-200">
-                                <button
-                                    onClick={openAppSwitcher}
-                                    id="apps-launcher"
-                                    className="flex items-center gap-2 p-2 rounded-lg text-brand-text hover:bg-surface-variant focus:outline-none focus:ring-2 focus:ring-primary transition-colors active:scale-95"
-                                    aria-label="Open apps"
-                                    title="All apps"
-                                >
-                                    <Bars3Icon className="w-6 h-6" />
-                                    <span className="hidden sm:block text-sm font-semibold">Apps</span>
-                                </button>
+    // ── Standalone Reports app (/reports) — ships its own full-page chrome ──
+    if (seg === 'reports') {
+        if (!allowedPages.includes('reports')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={suspenseFallback}>
+                        <ReportsPage storeSettings={storeSettings!} user={currentUser} />
+                    </Suspense>
+                    {accountOverlays}
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
 
-                                <button onClick={() => navigate('/dash')} className="flex items-center" aria-label="Home dashboard">
-                                    <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
-                                </button>
+    // ── Sales History & Refunds live inside the POS app (/pos/history) ──
+    if (seg === 'sales' || seg === 'sales-history' || seg === 'returns') {
+        return <Navigate to="/pos/history" replace />;
+    }
 
-                                <div className="flex-1" />
+    // ── Standalone Orders app (/orders) — online order management ──
+    if (seg === 'orders') {
+        if (!allowedPages.includes('orders')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={suspenseFallback}>
+                        <StandaloneShell title="Orders" onBack={() => navigate('/')}>
+                            <OrdersPage storeSettings={storeSettings!} onOpenSidebar={openAppSwitcher} showSnackbar={showSnackbar} onDataRefresh={fetchData} />
+                        </StandaloneShell>
+                    </Suspense>
+                    {accountOverlays}
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
 
-                                {currentUser.role === 'superadmin' && (
-                                    <div className="hidden md:flex items-center gap-2 mr-1">
-                                        <div className="flex items-center bg-surface-variant rounded-lg p-0.5">
-                                            <button onClick={() => changeSuperMode('superadmin')} className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${superMode === 'superadmin' ? 'bg-primary text-white shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}>Platform</button>
-                                            <button onClick={() => changeSuperMode('store')} className={`px-2.5 py-1 rounded-md text-xs font-semibold transition-colors ${superMode === 'store' ? 'bg-primary text-white shadow-sm' : 'text-brand-text-muted hover:text-brand-text'}`}>Store</button>
-                                        </div>
-                                        {superMode === 'store' && systemStores && systemStores.length > 0 && (
-                                            <select value={currentUser.currentStoreId || ''} onChange={(e) => selectStore(e.target.value)} className="px-2 py-1.5 text-xs border border-brand-border rounded-lg bg-surface text-brand-text focus:ring-2 focus:ring-primary">
-                                                <option value="">Select store</option>
-                                                {systemStores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                            </select>
-                                        )}
-                                    </div>
-                                )}
+    // ── User guide & support (universal help pages, standalone chrome) ──
+    if (seg === 'user-guide' || seg === 'support') {
+        if (seg === 'support' && !allowedPages.includes('support')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={suspenseFallback}>
+                        <StandaloneShell title={seg === 'support' ? 'Support' : 'User Guide'}>
+                            {seg === 'support' ? <SupportPage /> : <UserGuidePage />}
+                        </StandaloneShell>
+                    </Suspense>
+                    {accountOverlays}
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
 
-                                <NotificationBell onNavigate={() => navigate('/notifications')} />
+    // ── Marketplace / public store directory (/directory, /marketplace) ──
+    if (seg === 'directory' || seg === 'marketplace') {
+        if (!allowedPages.includes('directory')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={suspenseFallback}>
+                        {pathParts[2] === 'request' && pathParts[3]
+                            ? <MarketplaceRequestActionPage requestId={pathParts[3]} products={products} storeSettings={storeSettings} onBack={() => navigate('/directory')} showSnackbar={showSnackbar} />
+                            : <MarketplacePage />}
+                    </Suspense>
+                    {accountOverlays}
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
 
-                                <button onClick={() => navigate('/profile')} aria-label="Your profile" title={currentUser?.name} className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white text-sm font-bold flex items-center justify-center shadow-sm active:scale-95 transition-transform flex-shrink-0">
-                                    {(currentUser?.name || 'U').charAt(0).toUpperCase()}
-                                </button>
+    // ── Customer self-service portal (/customer/dashboard, /customer/orders) ──
+    if (seg === 'customer') {
+        if (currentUser.role !== 'customer' && currentUser.role !== 'superadmin') return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={suspenseFallback}>
+                        <StandaloneShell title={pathParts[2] === 'orders' ? 'My Orders' : 'Marketplace Portal'}>
+                            {pathParts[2] === 'orders' ? <CustomerOrdersPage /> : <MarketplaceDashboard />}
+                        </StandaloneShell>
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
 
-                                <button onClick={handleLogout} aria-label="Logout" title="Logout" className="p-2 rounded-lg text-brand-text-muted hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex-shrink-0">
-                                    <ArrowLeftOnRectangleIcon className="w-5 h-5" />
-                                </button>
-                            </header>
-                        )}
+    // ── Supplier self-service portal (/supplier/dashboard, /supplier/orders) ──
+    if (seg === 'supplier') {
+        if (currentUser.role !== 'supplier' && currentUser.role !== 'superadmin') return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={suspenseFallback}>
+                        <StandaloneShell title="Supplier Portal">
+                            {pathParts[2] === 'orders' ? <SupplierOrdersPage /> : <SupplierDashboard />}
+                        </StandaloneShell>
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
 
-                        {renderPage(currentPage)}
-
-                        {/* Email Verification Banner */}
-                        {currentUser && !currentUser.isVerified && currentUser.role !== 'customer' && (
-                            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-[calc(100%-2rem)] max-w-2xl">
-                                <div className="bg-amber-50/90 dark:bg-amber-900/40 backdrop-blur-xl border border-amber-200/50 dark:border-amber-700/30 p-4 rounded-2xl shadow-[0_8px_32px_-4px_rgba(251,191,36,0.2)] flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-amber-100 dark:bg-amber-800/50 rounded-xl text-amber-600 dark:text-amber-400">
-                                            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-bold text-amber-900 dark:text-amber-100">Email Not Verified</p>
-                                            <p className="text-xs text-amber-700 dark:text-amber-300 font-medium">Please verify your email to access all features and ensure account security.</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-2">
-                                        <button
-                                            onClick={async () => {
-                                                try {
-                                                    await api.post('/auth/resend-verification', { email: currentUser.email });
-                                                    setShowOtpModal(true);
-                                                } catch (err: any) {
-                                                    if (err.message && err.message.toLowerCase().includes('already verified')) {
-                                                        // Update state to remove banner if backend confirmed they are verified
-                                                        const updated = { ...currentUser, isVerified: true };
-                                                        setCurrentUser(updated);
-                                                        try { localStorage.setItem('salePilotUser', JSON.stringify(updated)); } catch { }
-                                                        showSnackbar('Your email is already verified!', 'success');
-                                                    } else {
-                                                        showSnackbar(err.message || 'Failed to resend email.', 'error');
-                                                    }
-                                                }
-                                            }}
-                                            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-600/20 transition-all active:scale-95 whitespace-nowrap"
-                                        >
-                                            Verify Email
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    <VerifyEmailOtpModal
-                        isOpen={showOtpModal}
-                        email={currentUser?.email || ''}
-                        onClose={() => setShowOtpModal(false)}
-                        onVerified={() => {
-                            // Update user state and localStorage so the banner disappears
-                            const updatedUser = { ...currentUser!, isVerified: true };
-                            setCurrentUser(updatedUser);
-                            try { localStorage.setItem('salePilotUser', JSON.stringify(updatedUser)); } catch { }
-                            setShowOtpModal(false);
-                            showSnackbar('Email verified successfully!', 'success');
-                        }}
-                    />
-                    <PriorityNotificationModal />
-                </div>
-            </NotificationProvider>
-        </OnboardingProvider>
-    );
+    // ── Fallback — no page matched: land on the role's default app ──
+    const fallbackPage = currentUser.role === 'superadmin'
+        ? (superMode === 'store' ? DEFAULT_PAGES['admin'] : 'superadmin')
+        : DEFAULT_PAGES[currentUser.role];
+    return <Navigate to={`/${fallbackPage}`} replace />;
 }
 
 

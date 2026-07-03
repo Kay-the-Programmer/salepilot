@@ -79,8 +79,9 @@ export default function App() {
 
                                 <Route path="/setup-store" element={<Dashboard />} />
 
-                                {/* Standalone POS app (own shell: POS / Inventory / Dashboard) */}
+                                {/* Standalone POS app (own shell: POS / History & Refunds / Inventory / Dashboard) */}
                                 <Route path="/pos" element={<Dashboard />} />
+                                <Route path="/pos/history" element={<Dashboard />} />
                                 <Route path="/pos/inventory" element={<Dashboard />} />
                                 <Route path="/pos/dashboard" element={<Dashboard />} />
 
@@ -109,9 +110,10 @@ export default function App() {
                                 <Route path="/hustle" element={<Dashboard />} />
                                 <Route path="/config" element={<Dashboard />} />
 
-                                {/* Standalone Inventory Manager app (own shell: Dashboard / Inventory / Alerts) */}
+                                {/* Standalone Inventory Manager app (own shell: Dashboard / Inventory / Stock Takes / Alerts) */}
                                 <Route path="/inv" element={<Dashboard />} />
                                 <Route path="/inv/items" element={<Dashboard />} />
+                                <Route path="/inv/stock-takes" element={<Dashboard />} />
                                 <Route path="/inv/alerts" element={<Dashboard />} />
 
                                 {/* Standalone User Manager app (own shell: Team / Roles) */}
@@ -123,28 +125,37 @@ export default function App() {
                                 <Route path="/procure/suppliers" element={<Dashboard />} />
                                 <Route path="/procure/orders" element={<Dashboard />} />
 
-                                {/* Admin Dashboard Routes (All point to Dashboard) */}
+                                {/* Standalone pages that replaced the legacy admin shell */}
                                 <Route path="/reports" element={<Dashboard />} />
-                                <Route path="/inventory" element={<Dashboard />} />
-                                <Route path="/sales" element={<Dashboard />} />
-                                <Route path="/sales-history" element={<Dashboard />} />
-
-                                <Route path="/returns" element={<Dashboard />} />
-                                {/* The admin /customers page was removed — customers now live in the CRM app. */}
-                                <Route path="/customers" element={<Navigate to="/crm/customers" replace />} />
-                                <Route path="/suppliers" element={<Dashboard />} />
-                                <Route path="/purchase-orders" element={<Dashboard />} />
-                                <Route path="/categories" element={<Dashboard />} />
-                                <Route path="/stock-takes" element={<Dashboard />} />
-                                <Route path="/accounting" element={<Dashboard />} />
-                                <Route path="/audit-trail" element={<Dashboard />} />
-                                <Route path="/users" element={<Dashboard />} />
-                                <Route path="/notifications" element={<Dashboard />} />
-
-                                <Route path="/profile" element={<Dashboard />} />
-                                <Route path="/settings" element={<Dashboard />} />
+                                <Route path="/orders" element={<Dashboard />} />
                                 <Route path="/subscription" element={<SubscriptionPage />} />
                                 <Route path="/user-guide" element={<Dashboard />} />
+                                <Route path="/support" element={<Dashboard />} />
+
+                                {/* Sales History & Refunds live inside the POS app */}
+                                <Route path="/sales" element={<Navigate to="/pos/history" replace />} />
+                                <Route path="/sales-history" element={<Navigate to="/pos/history" replace />} />
+                                <Route path="/returns" element={<Navigate to="/pos/history" replace />} />
+
+                                {/* Legacy admin routes — permanent redirects into the standalone apps.
+                                    The legacy sidebar shell is gone; these aliases keep old links,
+                                    bookmarks and saved last-page keys working. */}
+                                <Route path="/inventory" element={<Navigate to="/inv/items" replace />} />
+                                <Route path="/categories" element={<Navigate to="/inv/items" replace />} />
+                                <Route path="/stock-takes" element={<Navigate to="/inv/stock-takes" replace />} />
+                                <Route path="/customers" element={<Navigate to="/crm/customers" replace />} />
+                                <Route path="/suppliers" element={<Navigate to="/procure/suppliers" replace />} />
+                                <Route path="/purchase-orders" element={<Navigate to="/procure/orders" replace />} />
+                                <Route path="/accounting" element={<Navigate to="/books" replace />} />
+                                <Route path="/audit-trail" element={<Navigate to="/audit" replace />} />
+                                <Route path="/users" element={<Navigate to="/team" replace />} />
+                                <Route path="/notifications" element={<Navigate to="/notify" replace />} />
+                                <Route path="/profile" element={<Navigate to="/account" replace />} />
+                                <Route path="/settings" element={<Navigate to="/config" replace />} />
+                                <Route path="/logistics" element={<Navigate to="/fleet" replace />} />
+                                <Route path="/quick-view" element={<Navigate to="/assistant" replace />} />
+                                <Route path="/whatsapp/conversations" element={<Navigate to="/superadmin/whatsapp" replace />} />
+                                <Route path="/whatsapp/settings" element={<Navigate to="/superadmin/whatsapp-settings" replace />} />
 
                                 {/* Super Admin Routes */}
                                 <Route path="/superadmin" element={<Dashboard />} />
@@ -154,6 +165,8 @@ export default function App() {
                                 <Route path="/superadmin/catalog" element={<Dashboard />} />
                                 <Route path="/superadmin/campaigns" element={<Dashboard />} />
                                 <Route path="/superadmin/feedback" element={<Dashboard />} />
+                                <Route path="/superadmin/whatsapp" element={<Dashboard />} />
+                                <Route path="/superadmin/whatsapp-settings" element={<Dashboard />} />
 
 
                                 {/* <Route path="/directory" element={<MarketplacePage />} />

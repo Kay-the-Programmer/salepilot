@@ -112,17 +112,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
     const [showFilters, setShowFilters] = useState(false);
 
-    // Resizable panel state
-    const [leftPanelWidth, setLeftPanelWidth] = useState(() => {
-        const saved = localStorage.getItem('inventory-panel-width');
-        return saved ? parseFloat(saved) : 60;
-    });
-    const [isResizing, setIsResizing] = useState(false);
-    // Mirror the live width in a ref so the resize listeners can persist it on
-    // mouse-up without the effect depending on (and re-subscribing for) every
-    // width change during a drag.
-    const leftPanelWidthRef = useRef(leftPanelWidth);
-
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
     const [detailedProduct, setDetailedProduct] = useState<Product | null>(null);
@@ -137,7 +126,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     const categoryMap = useMemo(() => new Map(categories.map(c => [c.id, c])), [categories]);
     const supplierMap = useMemo(() => new Map(suppliers.map(s => [s.id, s])), [suppliers]);
 
-    const canManageProducts = currentUser.role === 'admin' || currentUser.role === 'inventory_manager';
+    // Superadmin counts as a manager here — in Store Mode they act as the store's admin.
+    const canManageProducts = currentUser.role === 'admin' || currentUser.role === 'inventory_manager' || currentUser.role === 'superadmin';
     const { completeAction } = useOnboarding();
 
     // First-run CTAs (empty states own the "add your first X" guidance). Only
@@ -150,40 +140,6 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         handleOpenAddCategoryModal();
         completeAction(ONBOARDING_ACTIONS.CREATED_FIRST_CATEGORY);
     };
-
-    // Handle resizing. Depends only on `isResizing` so listeners are attached
-    // once per drag session, not re-bound on every pixel of movement.
-    useEffect(() => {
-        if (!isResizing) {
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-            return;
-        }
-
-        const handleMouseMove = (e: MouseEvent) => {
-            const newWidth = (e.clientX / window.innerWidth) * 100;
-            // Constrain between 40% and 75%
-            if (newWidth >= 40 && newWidth <= 75) {
-                leftPanelWidthRef.current = newWidth;
-                setLeftPanelWidth(newWidth);
-            }
-        };
-
-        const handleMouseUp = () => {
-            setIsResizing(false);
-            localStorage.setItem('inventory-panel-width', leftPanelWidthRef.current.toString());
-        };
-
-        document.addEventListener('mousemove', handleMouseMove);
-        document.addEventListener('mouseup', handleMouseUp);
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
-
-        return () => {
-            document.removeEventListener('mousemove', handleMouseMove);
-            document.removeEventListener('mouseup', handleMouseUp);
-        };
-    }, [isResizing]);
 
     // Search Debouncing
     useEffect(() => {
@@ -344,12 +300,14 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         if (detailedProduct && detailedProduct.id === productId) {
             setDetailedProduct(prev => {
                 if (!prev) return null;
-                let nextStock = prev.stock;
-                if (reason === 'Stock Count') {
-                    nextStock = newQuantity;
-                } else {
-                    nextStock = Math.max(0, prev.stock + newQuantity);
-                }
+                // API stock can arrive as a string (Postgres numeric) — coerce before
+                // arithmetic, and keep kg at two decimals to avoid float noise.
+                const isKg = prev.unitOfMeasure === 'kg';
+                const current = Number(prev.stock) || 0;
+                let nextStock = reason === 'Stock Count'
+                    ? newQuantity
+                    : Math.max(0, current + newQuantity);
+                nextStock = isKg ? Math.round(nextStock * 100) / 100 : Math.round(nextStock);
                 return { ...prev, stock: nextStock };
             });
         }
@@ -397,8 +355,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         };
 
         onSavePurchaseOrder(newPO);
-        // Also update the stock
-        onAdjustStock(linkPOProduct.id, linkPOProduct.stock + linkPOQuantity, 'Receiving Stock');
+        // Record the goods themselves as a signed DELTA — the backend adds it to
+        // the current stock for every reason except 'Stock Count'. (Passing the
+        // absolute total here used to double the received quantity.)
+        onAdjustStock(linkPOProduct.id, linkPOQuantity, 'Receiving Stock');
+        applyLocalStockDelta(linkPOProduct.id, linkPOQuantity);
 
         setIsLinkPOModalOpen(false);
         setLinkPOProduct(null);
@@ -407,19 +368,24 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     const handleSkipLinkPO = () => {
         if (!linkPOProduct) return;
-        // Just proceed with standard stock adjustment
-        const newStock = linkPOProduct.stock + linkPOQuantity;
-
-        onAdjustStock(linkPOProduct.id, newStock, 'Receiving Stock');
-
-        // Update local detail state if needed
-        if (detailedProduct && detailedProduct.id === linkPOProduct.id) {
-            setDetailedProduct({ ...detailedProduct, stock: newStock });
-        }
+        // Plain reception without a PO — signed delta, same as above.
+        onAdjustStock(linkPOProduct.id, linkPOQuantity, 'Receiving Stock');
+        applyLocalStockDelta(linkPOProduct.id, linkPOQuantity);
 
         setIsLinkPOModalOpen(false);
         setLinkPOProduct(null);
         setLinkPOQuantity(0);
+    };
+
+    /** Optimistically mirror a stock delta on the open detail view (numeric-safe:
+     *  API stock can arrive as a string, and kg stays at two decimals). */
+    const applyLocalStockDelta = (productId: string, delta: number) => {
+        setDetailedProduct(prev => {
+            if (!prev || prev.id !== productId) return prev;
+            const isKg = prev.unitOfMeasure === 'kg';
+            const next = Math.max(0, (Number(prev.stock) || 0) + delta);
+            return { ...prev, stock: isKg ? Math.round(next * 100) / 100 : Math.round(next) };
+        });
     };
 
     const handleOpenAddCategoryModal = () => {
@@ -764,10 +730,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
             />
 
             <div className={`flex-1 ${selectedItem ? 'flex' : 'hidden'} md:flex overflow-hidden w-full relative z-10`} id="inventory-content">
-                {/* Left Panel: List View */}
+                {/* Left Panel: List View — hidden while a product/category is open;
+                    the detail view takes the full screen (back button returns here). */}
                 <div
-                    className={`flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent hidden md:flex ${isEditingProduct ? '!hidden' : ''} ${selectedItem ? '' : 'md:w-full'}`}
-                    style={{ width: selectedItem ? (typeof window !== 'undefined' && window.innerWidth < 768 ? '0%' : `${leftPanelWidth}%`) : '100%', minWidth: selectedItem ? '420px' : 'none' }}
+                    className={`flex-col h-full overflow-hidden transition-all duration-500 ease-out bg-transparent hidden md:flex ${(isEditingProduct || selectedItem) ? '!hidden' : ''} md:w-full`}
                 >
                     <div className="flex-1 overflow-hidden relative">
                         {activeTab === 'products' ? (
@@ -820,21 +786,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     </div>
                 </div>
 
-                {/* Resize Handle (Desktop Only) — hidden while editing (form is full-width) */}
-                {selectedItem && !isEditingProduct && (
-                    <div
-                        onMouseDown={(e) => {
-                            e.preventDefault();
-                            setIsResizing(true);
-                        }}
-                        className="hidden md:block w-1 hover:w-1.5 bg-transparent hover:bg-primary/50 dark:hover:bg-primary/50 cursor-col-resize transition-all duration-200 z-20"
-                    />
-                )}
-
-                {/* Right Panel: Detail View */}
+                {/* Detail View — full screen whenever a product/category is open;
+                    fully hidden otherwise (the list owns the whole width). */}
                 <div
-                    className={`flex-1 flex flex-col bg-surface md:border-l md:border-brand-border h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden md:flex md:bg-background md:border-transparent' : 'flex w-full'}`}
-                    style={selectedItem ? { width: (isEditingProduct || (typeof window !== 'undefined' && window.innerWidth < 768)) ? '100%' : `${100 - leftPanelWidth}%` } : {}}
+                    className={`flex-col bg-surface h-full relative z-20 overflow-hidden transition-all duration-500 ease-out ${!selectedItem ? 'hidden' : 'flex flex-1 w-full'}`}
                 >
                     {selectedItem ? (
                         <div className="h-full overflow-y-auto scroll-smooth">

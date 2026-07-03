@@ -55,7 +55,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
             description: "Start building your inventory to begin making sales.",
             icon: <ArchiveBoxIcon className="w-5 h-5" />,
             actionLabel: "Add Product",
-            path: "/inventory",
+            path: "/inv/items",
             color: "indigo",
             show: !hasProducts
         },
@@ -65,7 +65,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
             description: "Keep track of where you source your items.",
             icon: <TruckIcon className="w-5 h-5" />,
             actionLabel: "Add Supplier",
-            path: "/suppliers",
+            path: "/procure/suppliers",
             color: "emerald",
             show: !hasSuppliers
         },
@@ -105,7 +105,7 @@ export const TipsCard: React.FC<TipsCardProps> = ({
             description: "Get smart insights and help from your AI assistant.",
             icon: <CpuChipIcon className="w-5 h-5" />,
             actionLabel: "Chat Now",
-            path: "/quick-view",
+            path: "/assistant",
             color: "indigo",
             show: true
         },

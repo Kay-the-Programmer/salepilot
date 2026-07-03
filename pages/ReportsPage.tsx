@@ -429,7 +429,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                     <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
                         <Icon name="grid_view" size={22} /> Full App
                     </button>
-                    <button type="button" className="crm-rail__item" onClick={() => navigate('/profile')}>
+                    <button type="button" className="crm-rail__item" onClick={() => navigate('/account')}>
                         <div className="crm-rail__user" style={{ border: 'none', padding: 0, margin: 0 }}>
                             <Avatar name={user?.name} src={user?.profilePicture} size={32} />
                             <div className="crm-rail__user-info">
@@ -473,7 +473,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                                         <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); openAppSwitcher(); }}>
                                             <Icon name="apps" size={20} /> SalePilot Apps
                                         </button>
-                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/profile'); }}>
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { setMenuOpen(false); navigate('/account'); }}>
                                             <Icon name="account_circle" size={20} /> Account
                                         </button>
                                     </div>

@@ -16,9 +16,12 @@ import SuperAdminCatalog from '../../pages/superadmin/SuperAdminCatalog';
 import SuperAdminCampaigns from '../../pages/superadmin/SuperAdminCampaigns';
 import SuperAdminFeedback from '../../pages/superadmin/SuperAdminFeedback';
 import SuperAdminSettings from '../../pages/superadmin/SuperAdminSettings';
+import WhatsAppConversationsPage from '../../pages/WhatsAppConversationsPage';
+import WhatsAppSettingsPage from '../../pages/WhatsAppSettingsPage';
+import { useToast } from '../../contexts/ToastContext';
 import '../crm/crm.css';
 
-export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'feedback' | 'settings';
+export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'feedback' | 'whatsapp' | 'whatsapp-settings' | 'settings';
 
 interface SuperAdminAppProps {
     user: User;
@@ -28,6 +31,9 @@ interface SuperAdminAppProps {
     storeId?: string;
     onExit: () => void;
     onLogout: () => void;
+    /** Switch the superadmin into Store mode (work inside a store's apps).
+        Owned by the host because the mode lives in Dashboard state. */
+    onStoreMode?: () => void;
 }
 
 const NAV: { id: SuperSection; label: string; icon: string; route: string }[] = [
@@ -38,6 +44,8 @@ const NAV: { id: SuperSection; label: string; icon: string; route: string }[] = 
     { id: 'catalog',    label: 'Plans & Pricing', icon: 'sell',       route: '/superadmin/catalog' },
     { id: 'campaigns',  label: 'Campaigns',  icon: 'ads_click',       route: '/superadmin/campaigns' },
     { id: 'feedback',   label: 'Feedback',   icon: 'reviews',         route: '/superadmin/feedback' },
+    { id: 'whatsapp',   label: 'WhatsApp',   icon: 'chat',            route: '/superadmin/whatsapp' },
+    { id: 'whatsapp-settings', label: 'WhatsApp Setup', icon: 'chat_paste_go', route: '/superadmin/whatsapp-settings' },
     { id: 'settings',   label: 'Settings',   icon: 'settings',        route: '/superadmin/settings' },
 ];
 
@@ -49,6 +57,8 @@ const sectionForSub = (subPath?: string): SuperSection => {
         case 'catalog': return 'catalog';
         case 'campaigns': return 'campaigns';
         case 'feedback': return 'feedback';
+        case 'whatsapp': return 'whatsapp';
+        case 'whatsapp-settings': return 'whatsapp-settings';
         case 'settings': return 'settings';
         default: return 'overview';
     }
@@ -62,10 +72,11 @@ const sectionForSub = (subPath?: string): SuperSection => {
  * with its own navigation.
  */
 export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
-    user, subPath, storeId, onExit, onLogout,
+    user, subPath, storeId, onExit, onLogout, onStoreMode,
 }) => {
     const navigate = useNavigate();
     const { openAppSwitcher } = useAppSwitcher();
+    const { showToast } = useToast();
     const active = sectionForSub(subPath);
 
     let content: React.ReactNode;
@@ -87,6 +98,12 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
             break;
         case 'feedback':
             content = <SuperAdminFeedback />;
+            break;
+        case 'whatsapp':
+            content = <WhatsAppConversationsPage showSnackbar={showToast} currentUser={user} superMode="superadmin" />;
+            break;
+        case 'whatsapp-settings':
+            content = <WhatsAppSettingsPage storeSettings={null} showSnackbar={showToast} />;
             break;
         case 'settings':
             content = <SuperAdminSettings />;
@@ -126,6 +143,11 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
                     <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
                         <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
+                    {onStoreMode && (
+                        <button type="button" className="crm-rail__item" onClick={onStoreMode}>
+                            <Icon name="storefront" size={22} /> Store Mode
+                        </button>
+                    )}
                     <button type="button" className="crm-rail__item" onClick={onExit}>
                         <Icon name="grid_view" size={22} /> Full App
                     </button>
@@ -150,7 +172,10 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
                     <img src={Logo} alt="SalePilot" className="crm-bar__brandlogo" />
                     <div className="crm-bar__actions">
                         <AppNavMenu
-                            items={NAV.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => navigate(n.route) }))}
+                            items={[
+                                ...NAV.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => navigate(n.route) })),
+                                ...(onStoreMode ? [{ icon: 'storefront', label: 'Store Mode', onClick: onStoreMode }] : []),
+                            ]}
                             onExit={onExit}
                             onLogout={onLogout}
                             triggerClassName="crm-iconbtn"

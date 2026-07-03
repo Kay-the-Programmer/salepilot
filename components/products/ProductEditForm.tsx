@@ -519,10 +519,14 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                         <section className={cardCls}>
                             <h2 className={sectionTitleCls}>Inventory</h2>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className={`transition-all duration-300 ${cartonMode ? 'opacity-80' : ''}`}>
+                                <div className={`transition-all duration-300 ${(cartonMode || productToEdit.id) ? 'opacity-80' : ''}`}>
                                     <label htmlFor="stock" className={`${labelCls} flex items-center justify-between`}>
-                                        <span>Stock *</span>
-                                        {cartonMode && (
+                                        <span>{productToEdit.id ? 'Stock' : 'Opening Stock *'}</span>
+                                        {productToEdit.id ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface-variant text-brand-text-muted">
+                                                Adjust Stock only
+                                            </span>
+                                        ) : cartonMode && (
                                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-success-muted text-primary">
                                                 <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                                                 Auto-sync
@@ -530,10 +534,15 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                         )}
                                     </label>
                                     <div className="relative">
-                                        <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" readOnly={cartonMode} step={product.unitOfMeasure === 'kg' ? '0.001' : '1'}
-                                            className={`${fieldCls} ${cartonMode ? '!bg-surface-variant text-brand-text-muted cursor-not-allowed' : ''}`} />
-                                        {cartonMode && <div className="absolute inset-0 z-10 cursor-not-allowed" title="Update Cartons Received to change stock" />}
+                                        <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" readOnly={cartonMode || !!productToEdit.id} step={product.unitOfMeasure === 'kg' ? '0.001' : '1'}
+                                            className={`${fieldCls} ${(cartonMode || productToEdit.id) ? '!bg-surface-variant text-brand-text-muted cursor-not-allowed' : ''}`} />
+                                        {(cartonMode || productToEdit.id) && <div className="absolute inset-0 z-10 cursor-not-allowed" title={productToEdit.id ? 'Stock moves only through Adjust Stock, purchase orders, sales and stock takes.' : 'Update Cartons Received to change stock'} />}
                                     </div>
+                                    {!!productToEdit.id && (
+                                        <p className="mt-1.5 text-[11px] text-brand-text-muted">
+                                            Use <strong>Adjust Stock</strong> on the product page to change stock — every change is audited and posted to your books.
+                                        </p>
+                                    )}
                                 </div>
                                 <div>
                                     <label htmlFor="reorderPoint" className={labelCls}>Reorder Point</label>

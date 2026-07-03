@@ -57,6 +57,8 @@ interface InventoryAppProps {
     storeSettings: StoreSettings | null;
     /** Render the existing InventoryPage (full management UI) for the items tab. */
     renderItems: () => React.ReactNode;
+    /** Render the stock-take session UI (counting & adjustment) for the stock-takes tab. */
+    renderStockTakes: () => React.ReactNode;
     onNavigate: (section: InvSection) => void;
     onPos: () => void;
     onExit: () => void;
@@ -71,7 +73,7 @@ interface InventoryAppProps {
  */
 export const InventoryApp: React.FC<InventoryAppProps> = ({
     section, user, products, categories, sales, purchaseOrders, storeSettings,
-    renderItems, onNavigate, onPos, onExit, onLogout, onGeneratePO,
+    renderItems, renderStockTakes, onNavigate, onPos, onExit, onLogout, onGeneratePO,
 }) => {
     const [toast, setToast] = useState<string | null>(null);
     const notify = (msg: string) => setToast(msg);
@@ -90,6 +92,8 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
     let content: React.ReactNode;
     if (section === 'items') {
         content = renderItems();
+    } else if (section === 'stock-takes') {
+        content = renderStockTakes();
     } else if (section === 'alerts') {
         content = (
             <InventoryAlerts

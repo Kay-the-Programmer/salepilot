@@ -52,26 +52,26 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
 
     return createPortal(
         <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-            {/* Backdrop with blur */}
+            {/* Backdrop with blur — Velocity overlay spec */}
             <div
-                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300"
+                className="absolute inset-0 bg-black/20 backdrop-blur-sm transition-opacity duration-300"
                 onClick={onClose}
             />
 
-            <div className="liquid-glass-card rounded-[2rem] relative dark:bg-slate-900 w-full sm:max-w-lg max-h-[96vh] sm:rounded-[2.5rem] rounded-t-[2.5rem] overflow-hidden flex flex-col animate-slide-up bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-900 dark:to-slate-950 border border-white/50 dark:border-slate-800/50">
+            <div className="relative bg-surface w-full sm:max-w-lg max-h-[96vh] sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col animate-slide-up border border-brand-border shadow-xl">
                 <form onSubmit={handleSubmit} className="flex flex-col h-full overflow-hidden">
                     {/* Header */}
-                    <div className="px-6 py-6 sm:px-8 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900">
+                    <div className="px-6 py-6 sm:px-8 border-b border-brand-border flex justify-between items-center bg-surface">
                         <div>
-                            <h3 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight uppercase">
+                            <h3 className="text-xl sm:text-2xl font-black text-brand-text tracking-tight uppercase">
                                 Record Payment
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                <p className="text-xs font-bold text-brand-text-muted uppercase tracking-widest">
                                     Order #{order.transactionId.slice(-6)}
                                 </p>
-                                <div className="w-1 h-1 rounded-full bg-slate-200 dark:bg-slate-700" />
-                                <p className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                                <div className="w-1 h-1 rounded-full bg-brand-border" />
+                                <p className="text-sm font-bold text-sp-orange">
                                     {formatCurrency(balanceDue, storeSettings)} due
                                 </p>
                             </div>
@@ -79,7 +79,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                         <button
                             type="button"
                             onClick={onClose}
-                            className="p-2.5 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all border border-slate-100 dark:border-slate-700 shadow-sm active:scale-95 transition-all duration-300"
+                            className="p-2.5 rounded-lg bg-surface-variant text-brand-text-muted hover:text-brand-text transition-all border border-brand-border shadow-sm active:scale-95 duration-300"
                         >
                             <XMarkIcon className="h-5 w-5" />
                         </button>
@@ -96,7 +96,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                 step="0.01"
                                 required
                                 icon={<CurrencyDollarIcon className="w-4 h-4" />}
-                                className="!font-black text-slate-900 dark:text-white border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 focus:ring-blue-500/20 shadow-sm"
+                                className="!font-black text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/20 focus:border-sp-orange shadow-sm"
                             />
                             <InputField
                                 label="Payment Date"
@@ -105,18 +105,18 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                 onChange={(e) => setDate(e.target.value)}
                                 required
                                 icon={<CalendarIcon className="w-4 h-4" />}
-                                className="!font-black text-slate-900 dark:text-white border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 focus:ring-blue-500/20 shadow-sm"
+                                className="!font-black text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/20 focus:border-sp-orange shadow-sm"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 ml-1">Payment Method</label>
+                            <label className="block text-[10px] font-black text-brand-text-muted uppercase tracking-widest mb-2 ml-1">Payment Method</label>
                             <div className="relative">
-                                <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+                                <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted pointer-events-none" />
                                 <select
                                     value={method}
                                     onChange={e => setMethod(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all appearance-none text-slate-900 dark:text-white font-bold shadow-sm"
+                                    className="w-full pl-11 pr-4 py-3 bg-surface border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-sp-orange/20 focus:border-sp-orange transition-all appearance-none text-brand-text font-bold shadow-sm"
                                 >
                                     {(storeSettings.paymentMethods || []).map(pm => (
                                         <option key={pm.id} value={pm.name}>{pm.name}</option>
@@ -125,7 +125,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                         <option value="" disabled>No payment methods configured</option>
                                     )}
                                 </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500">
+                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-brand-text-muted">
                                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </div>
                             </div>
@@ -138,16 +138,16 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                             onChange={(e) => setReference(e.target.value)}
                             placeholder="Optional reference details"
                             icon={<ClipboardDocumentListIcon className="w-4 h-4" />}
-                            className="!font-black text-slate-900 dark:text-white border-slate-200 dark:border-slate-700 rounded-2xl bg-white dark:bg-slate-800 focus:ring-blue-500/20 shadow-sm"
+                            className="!font-black text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/20 focus:border-sp-orange shadow-sm"
                         />
                     </div>
 
-                    {/* Footer */}
-                    <div className="px-6 py-6 sm:px-8 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sm:flex sm:flex-row-reverse gap-4">
+                    {/* Footer — orange is the money "conversion" action */}
+                    <div className="px-6 py-6 sm:px-8 border-t border-brand-border bg-surface sm:flex sm:flex-row-reverse gap-4">
                         <button
                             type="submit"
                             disabled={isInvalid}
-                            className={`w-full sm:w-auto px-8 py-4 bg-emerald-600 dark:bg-emerald-500 text-white dark:text-white rounded-[1.5rem] font-bold text-sm hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-all shadow-xl shadow-emerald-600/10 active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2`}
+                            className="w-full sm:w-auto px-8 py-4 bg-sp-orange text-white rounded-lg font-bold text-sm hover:bg-sp-orange-light transition-all shadow-sm active:scale-[0.98] disabled:opacity-50 disabled:active:scale-100 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             onClick={() => {
                                 // simple click handler protection if form submit doesn't catch it
                                 if (isInvalid) return;
@@ -159,7 +159,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                         <button
                             type="button"
                             onClick={onClose}
-                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-[1.5rem] font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-700 transition-all active:scale-[0.98] flex items-center justify-center active:scale-95 transition-all duration-300"
+                            className="w-full sm:w-auto mt-3 sm:mt-0 px-8 py-4 bg-surface text-brand-text border border-brand-border rounded-lg font-bold text-sm hover:bg-surface-variant transition-all active:scale-[0.98] flex items-center justify-center duration-300"
                         >
                             Discard
                         </button>

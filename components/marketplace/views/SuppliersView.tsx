@@ -52,8 +52,8 @@ export default function SuppliersView() {
                 targetSupplier = await api.post<Supplier>('/suppliers', newSupplierPayload);
             }
 
-            // 3. Navigate to PO creation
-            navigate('/purchase-orders', {
+            // 3. Navigate to PO creation (the Procurement Hub is the single PO manager)
+            navigate('/procure/orders', {
                 state: {
                     action: 'create_po',
                     supplierId: targetSupplier.id

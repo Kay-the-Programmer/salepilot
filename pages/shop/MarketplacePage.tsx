@@ -101,7 +101,7 @@ export default function MarketplacePage() {
                     <div className="flex items-center gap-6">
                         {currentUser ? (
                             <div className="flex items-center gap-4">
-                                <button className="flex flex-col items-center gap-1 group" onClick={() => navigate(currentUser.role === 'customer' ? '/customer/dashboard' : '/reports')}>
+                                <button className="flex flex-col items-center gap-1 group" onClick={() => navigate(currentUser.role === 'customer' ? '/customer/dashboard' : '/dash')}>
                                     <HiOutlineUserCircle className="w-6 h-6 text-white/70 group-hover:text-white transition-colors" />
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-white/60 group-hover:text-white">Account</span>
                                 </button>

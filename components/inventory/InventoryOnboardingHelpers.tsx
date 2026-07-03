@@ -41,7 +41,7 @@ const InventoryOnboardingHelpers: React.FC<InventoryOnboardingHelpersProps> = ({
                 icon={<TruckIcon />}
                 actionButton={{
                     label: 'Go to Suppliers',
-                    onClick: () => navigate('/suppliers')
+                    onClick: () => navigate('/procure/suppliers')
                 }}
                 variant="compact"
             />

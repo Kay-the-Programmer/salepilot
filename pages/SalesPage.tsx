@@ -41,6 +41,8 @@ interface SalesPageProps {
     suppliers: Supplier[];
     onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
     onProcessReturn: (returnInfo: Return) => void;
+    /** Open on a specific view — /pos/history deep-links Sales History & Refunds. */
+    initialView?: 'sell' | 'history';
 }
 
 const SalesPage: React.FC<SalesPageProps> = ({
@@ -56,6 +58,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     onSaveProduct,
     onProcessReturn,
     onLogout,
+    initialView,
 }) => {
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
@@ -75,7 +78,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Mobile: cart aside opens as a full-screen sheet
     const [mobileCartOpen, setMobileCartOpen] = useState(false);
     // POS top-level view + menu (Sell vs Sales History & Refunds)
-    const [posView, setPosView] = useState<'sell' | 'history'>('sell');
+    const [posView, setPosView] = useState<'sell' | 'history'>(initialView || 'sell');
+    // Keep the view in sync when the route flips between /pos and /pos/history
+    // (same component instance, different prop).
+    useEffect(() => { setPosView(initialView || 'sell'); }, [initialView]);
     const [posMenuOpen, setPosMenuOpen] = useState(false);
     const [appliedStoreCredit, setAppliedStoreCredit] = useState(0);
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');

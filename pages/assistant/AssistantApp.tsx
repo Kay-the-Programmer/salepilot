@@ -186,7 +186,7 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
           <RailItem icon={theme === 'dark' ? 'light_mode' : 'dark_mode'} label={theme === 'dark' ? 'Light mode' : 'Dark mode'} onClick={toggleTheme} />
           <RailItem icon="grid_view" label="Full app" onClick={handleExit} />
           <button
-            onClick={() => navigate('/profile')}
+            onClick={() => navigate('/account')}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:m3-bg-surface-high transition mt-1"
             title="Profile"
           >
@@ -214,7 +214,7 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
           onExit={handleExit}
           rightExtra={
             <button
-              onClick={() => navigate('/profile')}
+              onClick={() => navigate('/account')}
               className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold"
               title="Profile"
             >

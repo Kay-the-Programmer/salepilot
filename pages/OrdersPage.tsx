@@ -182,7 +182,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
     }), [orders, total]);
 
     return (
-        <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900">
+        <div className="flex flex-col h-full bg-background">
 
             <OrdersHeader
                 searchTerm={searchTerm}
@@ -203,7 +203,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
                 <div className="flex-1 flex overflow-hidden p-0">
                     {/* Orders List Content */}
-                    <div className="flex-1 flex flex-col min-w-0 bg-slate-50 dark:bg-slate-900">
+                    <div className="flex-1 flex flex-col min-w-0 bg-background">
                         <div className="flex-1 overflow-y-auto premium-scrollbar p-0">
                             <OrdersMetrics
                                 stats={stats}
@@ -233,12 +233,12 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
 
                     {/* Desktop Sideview */}
                     {selectedOrder && (
-                        <div className="hidden xl:flex w-[450px] flex-col bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden animate-slide-in-right">
-                            <div className="liquid-glass-header px-6 py-2 border-b border-slate-100 dark:border-slate-900 flex items-center justify-between dark:bg-slate-900 sticky top-0 z-20">
-                                <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">Order Details</h2>
+                        <div className="hidden xl:flex w-[450px] flex-col bg-surface border-l border-brand-border shadow-xl overflow-hidden animate-slide-in-right">
+                            <div className="px-6 py-2 border-b border-brand-border flex items-center justify-between bg-surface sticky top-0 z-20">
+                                <h2 className="text-lg font-bold text-brand-text">Order Details</h2>
                                 <button
                                     onClick={() => setSelectedOrder(null)}
-                                    className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95 transition-all duration-300"
+                                    className="p-2 rounded-xl text-brand-text-muted hover:text-brand-text hover:bg-surface-variant transition-all border border-transparent hover:border-brand-border active:scale-95 duration-300"
                                 >
                                     <HiOutlineXMark className="w-5 h-5" />
                                 </button>
@@ -248,13 +248,14 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                 <OrderDetailContent order={selectedOrder} storeSettings={storeSettings} />
                             </div>
 
-                            {/* Sideview Actions */}
-                            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+                            {/* Sideview Actions — orange is reserved for the money
+                                "conversion" action, navy for standard flow steps. */}
+                            <div className="p-6 border-t border-brand-border bg-surface-variant/50">
                                 <div className="flex flex-col gap-3">
                                     {selectedOrder.paymentStatus !== 'paid' && (
                                         <button
                                             onClick={() => handleMarkAsPaid(selectedOrder)}
-                                            className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition-all flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                                            className="w-full py-3 bg-sp-orange hover:bg-sp-orange-light text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
                                         >
                                             <HiOutlineBanknotes className="w-5 h-5" />
                                             Record Payment
@@ -264,7 +265,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.fulfillmentStatus === 'pending' && (
                                         <button
                                             onClick={() => updateStatus(selectedOrder.transactionId, 'fulfilled')}
-                                            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                                            className="w-full py-3 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
                                         >
                                             <HiOutlineCheckCircle className="w-5 h-5" />
                                             Fulfill Order
@@ -274,7 +275,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                                     {selectedOrder.fulfillmentStatus === 'fulfilled' && (
                                         <button
                                             onClick={() => updateStatus(selectedOrder.transactionId, 'shipped')}
-                                            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold dark:text-white dark:hover:text-white dark:bg-blue-600 dark:hover:bg-blue-700 transition-all flex items-center justify-center gap-2 active:scale-95 transition-all duration-300"
+                                            className="w-full py-3 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold transition-all flex items-center justify-center gap-2 active:scale-95 duration-300"
                                         >
                                             <HiOutlineTruck className="w-5 h-5" />
                                             Mark Shipped
@@ -316,7 +317,7 @@ export default function OrdersPage({ storeSettings, showSnackbar, onDataRefresh 
                 title={confirmModal.title}
                 message={confirmModal.message}
                 confirmText="Update Status"
-                confirmButtonClass="bg-[#0f172a] rounded-2xl font-bold uppercase tracking-widest text-xs"
+                confirmButtonClass="bg-sp-navy hover:bg-sp-navy-light rounded-lg font-bold uppercase tracking-widest text-xs"
                 variant="floating"
             />
         </div>

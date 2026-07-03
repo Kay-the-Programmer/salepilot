@@ -7,7 +7,7 @@ import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
-export type InvSection = 'dashboard' | 'items' | 'alerts';
+export type InvSection = 'dashboard' | 'items' | 'alerts' | 'stock-takes';
 
 interface InventoryShellProps {
     active: InvSection;
@@ -22,6 +22,7 @@ interface InventoryShellProps {
 const NAV: { id: InvSection; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'items', label: 'Inventory', icon: 'list_alt' },
+    { id: 'stock-takes', label: 'Stock Takes', icon: 'fact_check' },
     { id: 'alerts', label: 'Alerts', icon: 'notification_important' },
 ];
 

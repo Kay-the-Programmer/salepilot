@@ -106,7 +106,7 @@ export const InventoryMobileShell: React.FC<InventoryMobileShellProps> = ({
                         <img src={Logo} alt="SalePilot" className="h-8 w-auto object-contain" />
                         <div className="flex items-center gap-3">
                             <button
-                                onClick={() => navigate('/notifications')}
+                                onClick={() => navigate('/notify')}
                                 className="relative p-2 text-brand-text-muted rounded-full hover:bg-surface-variant active:scale-90 transition-transform"
                                 aria-label="Notifications"
                             >

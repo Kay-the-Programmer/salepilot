@@ -21,14 +21,14 @@ const OrdersFilterBar: React.FC<OrdersFilterBarProps> = ({
             </div>
 
             {/* Filter Tabs (Mobile Only) */}
-            <div className="md:hidden px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-white/30 dark:bg-slate-900/30 backdrop-blur-sm">
+            <div className="md:hidden px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-background">
                 {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map(status => (
                     <button
                         key={status}
                         onClick={() => setFilterStatus(status)}
-                        className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterStatus === status
-                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 shadow-lg'
-                            : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterStatus === status
+                            ? 'bg-sp-navy text-white shadow-sm'
+                            : 'bg-surface text-brand-text-muted border border-brand-border hover:border-sp-navy'
                             }`}
                     >
                         {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}

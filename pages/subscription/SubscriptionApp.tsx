@@ -321,7 +321,7 @@ const SubscriptionApp: React.FC = () => {
         ]}
         onExit={() => navigate('/')}
         rightExtra={
-          <button onClick={() => navigate('/profile')} className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold" title="Profile">
+          <button onClick={() => navigate('/account')} className="w-10 h-10 rounded-full overflow-hidden border-2 m3-border-primary flex items-center justify-center m3-bg-primary-fixed m3-text-primary font-bold" title="Profile">
             {user.profilePicture ? <img src={user.profilePicture} alt={user.name} className="w-full h-full object-cover" /> : <span>{initial}</span>}
           </button>
         }

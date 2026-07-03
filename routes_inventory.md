@@ -1,61 +1,87 @@
 # SalePilot Routes Inventory
 
-This document outlines all 29 routes identified in the SalePilot application. Routes are categorized by their primary function and target component.
+The legacy sidebar admin shell has been retired (July 2026). Every surface is now a
+**standalone app** with its own chrome, launched from the SalePilot app switcher.
+Old admin URLs remain as permanent redirects so bookmarks and saved last-page keys
+keep working.
 
 ## Public Routes
-These routes are accessible without any authentication.
 
-| # | Route Path | Component | Description |
-|---|------------|-----------|-------------|
-| 1 | `/` | `LandingPage` | The main marketing landing page for SalePilot. |
-| 2 | `/directory` | `MarketplacePage` | A public directory of all stores using SalePilot. |
+| Route Path | Component | Description |
+|------------|-----------|-------------|
+| `/` | `Dashboard` (fallback) | Redirects an authenticated user to their role's default app; login otherwise. |
+| `/privacy`, `/terms` | Static pages | Legal pages. |
+| `/track`, `/track/:trackingNumber` | `TrackShipmentPage` | Public shipment tracking. |
+| `/offers/track/:id` | `OfferLiveTracking` | Public offer tracking. |
+| `/shop/:storeId/*` | `ShopLayout` + children | Customer-facing online storefront (home, products, product, cart). |
 
-## Authentication Routes
-Handled by the `Dashboard` wrapper which delegates to `LoginPage` for non-authenticated users.
+## Authentication
 
-| # | Route Path | Component | Description |
-|---|------------|-----------|-------------|
-| 3 | `/login` | `LoginPage` | User sign-in page. |
-| 4 | `/register` | `LoginPage` | New user registration page. |
-| 5 | `/forgot-password` | `LoginPage` | Password recovery request page. |
+| Route Path | Description |
+|------------|-------------|
+| `/login`, `/register` | Login + the single registration wizard (account + store). |
+| `/forgot-password`, `/auth/reset-password`, `/auth/verify-email` | Dedicated auth pages. |
+| `/setup-store` | Legacy alias → `/register`. |
 
-## Admin Dashboard Routes
-These routes are managed by the `Dashboard` component and require a valid user session. They include the main sidebar and application layout.
+## Standalone Apps (app switcher)
 
-| # | Route Path | Component | Description |
-|---|------------|-----------|-------------|
-| 6 | `/reports` | `ReportsPage` | Main dashboard with analytics and summaries. |
-| 7 | `/sales` | `AllSalesPage` | Sales data presentation (transactions list). The POS terminal lives only at `/pos`. |
-| 8 | `/sales-history` | `AllSalesPage` | List and filter all historical sales. |
-| 9 | `/orders` | `OrdersPage` | Online order management and processing. |
-| 10 | `/inventory` | `InventoryPage` | Product management, stock levels, and variants. |
-| 11 | `/categories` | `CategoriesPage` | Product category and attribute definition. |
-| 12 | `/stock-takes` | `StockTakePage` | Inventory counting and adjustment sessions. |
-| 13 | `/returns` | `ReturnsPage` | Processing customer returns and refunds. |
-| 14 | `/customers` | `CustomersPage` | CRM for managing customer profiles and credit. |
-| 15 | `/suppliers` | `SuppliersPage` | Supplier directory and contact management. |
-| 16 | `/purchase-orders` | `PurchaseOrdersPage` | Procurement and stock reception management. |
-| 17 | `/accounting` | `AccountingPage` | Financial ledger, accounts, and journal entries. |
-| 18 | `/audit-trail` | `AuditLogPage` | System logs for tracking changes and user actions. |
-| 19 | `/users` | `UsersPage` | Internal user management (staff, admins, etc). |
-| 20 | `/notifications` | `NotificationsPage` | System notifications and announcements. |
-| 21 | `/profile` | `ProfilePage` | Personal user settings and password management. |
-| 22 | `/settings` | `SettingsPage` | Store-wide configuration and preferences. |
-| 23 | `/superadmin` | `SuperAdminPage` | Multi-store management (Superadmin role only). |
-| 24 | `/marketing` | `MarketingPage` | AI-powered social media poster generator. |
-| 25 | `/setup-store` | redirect → `/register` | Legacy alias. `/register` is the single registration surface: `LoginPage` wizard (account + store) for new signups, `StoreRegistrationPage` for authenticated accounts without a store (e.g. new Google sign-ins). |
+| Route | App | Notes |
+|-------|-----|-------|
+| `/pos`, `/pos/history`, `/pos/dashboard` | POS Terminal | `/pos/history` = Sales History & Refunds (returns live here). `/pos/inventory` redirects to `/inv/items`. |
+| `/hustle` | Hustle POS | Fast amount-entry sales. |
+| `/dash`, `/dash/sales`, `/dash/products` | Business Dashboard | |
+| `/reports` | Reports | Full analytics; ships its own chrome. |
+| `/orders` | Orders | Online order management (Velocity-styled). |
+| `/crm`, `/crm/customers`, `/crm/loyalty`, `/crm/insights` | CRM | |
+| `/inv`, `/inv/items`, `/inv/stock-takes`, `/inv/alerts` | Inventory Manager | Stock takes are a section of this app. |
+| `/procure`, `/procure/suppliers`, `/procure/orders` | Procurement Hub | Single PO manager. |
+| `/po` | Purchase Orders | Order lists & supplier POs. |
+| `/books` | Accounting Hub | |
+| `/team`, `/team/roles` | User Manager | |
+| `/audit` | Audit Trail | |
+| `/notify` | Notifications | |
+| `/account` | Account / Profile | |
+| `/config` | Settings | |
+| `/subscription` | Subscription | Plan, billing & modules. |
+| `/assistant`, `/assistant/chat` | Business Assistant (AI) | |
+| `/businesses` | Business Manager | Multi-store portfolio hub. |
+| `/fleet` | Logistics | |
+| `/marketing` | Marketing Suite | Gated "Coming Soon". |
+| `/store` | Online Store | Storefront link/QR/catalog sharing. |
+| `/superadmin`, `/superadmin/{stores,notifications,subscriptions,catalog,campaigns,feedback,whatsapp,whatsapp-settings,settings}` | Super Admin | Platform control center; WhatsApp console lives here. "Store Mode" button switches the superadmin into store apps. |
 
-## Online Store (Public)
-Routes for the customer-facing online storefront.
+## Standalone Pages (no launcher entry)
 
-| # | Route Path | Component | Description |
-|---|------------|-----------|-------------|
-| 26 | `/shop/:storeId` | `ShopHomePage` | Homepage for a specific online store. |
-| 27 | `/shop/:storeId/products` | `ShopProductList` | Product listing/search for an online store. |
-| 28 | `/shop/:storeId/product/:productId` | `ShopProductDetail` | Detailed product view for customers. |
-| 29 | `/shop/:storeId/cart` | `CartPage` | Shopping cart and checkout initiation. |
+| Route | Page | Reached from |
+|-------|------|--------------|
+| `/user-guide` | User Guide | Account app → "Help & guide". |
+| `/support` | Support | Privacy page. |
+| `/directory`, `/marketplace` (+ `/marketplace/request/:id`) | B2B Marketplace | In-app links. |
+| `/customer/dashboard`, `/customer/orders` | Customer portal | Customer role default. |
+| `/supplier/dashboard`, `/supplier/orders` | Supplier portal | Supplier role default. |
+
+## Legacy Redirects (permanent)
+
+| Old route | Redirects to |
+|-----------|--------------|
+| `/inventory`, `/categories` | `/inv/items` |
+| `/stock-takes` | `/inv/stock-takes` |
+| `/sales`, `/sales-history`, `/returns` | `/pos/history` |
+| `/customers` | `/crm/customers` |
+| `/suppliers` | `/procure/suppliers` |
+| `/purchase-orders` | `/procure/orders` |
+| `/accounting` | `/books` |
+| `/audit-trail` | `/audit` |
+| `/users` | `/team` |
+| `/notifications` | `/notify` |
+| `/profile` | `/account` |
+| `/settings` | `/config` |
+| `/logistics` | `/fleet` |
+| `/quick-view` | `/assistant` |
+| `/whatsapp/conversations` | `/superadmin/whatsapp` |
+| `/whatsapp/settings` | `/superadmin/whatsapp-settings` |
 
 ## Notes
-- All Admin routes are protected and will redirect to `/login` if no session exists.
-- The `Dashboard` component handles navigation between admin pages using nested path detection.
-- Any unrecognized path (`*`) currently falls back to the `Dashboard`, which defaults to the `Reports` or `Inventory` page depending on user permissions.
+- Route guards: each app branch in `Dashboard.tsx` checks the role's page permissions from `utils/rbac.ts` (`ROLE_PAGES`); the app switcher uses the same map via `standaloneApps.ts`.
+- Unknown paths fall back to the role's default app (`DEFAULT_PAGES`): superadmin → `/superadmin` (or `/dash` in Store Mode), admin/inventory_manager → `/dash`, staff → `/pos`, customer/supplier → their portals.
+- Deleted with the legacy shell: `components/Sidebar.tsx`, `pages/{QuickView, SuppliersPage, CategoriesPage, ProfilePage, SettingsPage, UsersPage, NotificationsPage, AuditLogPage, LogisticsPage, AllSalesPage, ReturnsPage}.tsx`, `components/sales/all_sales/*`, and the SettingsPage-only settings sections.

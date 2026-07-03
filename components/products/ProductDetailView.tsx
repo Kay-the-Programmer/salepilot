@@ -48,7 +48,8 @@ const ProductDetailView: React.FC<{
   onPersonalUse,
   onBack
 }) => {
-  const canManage = user.role === 'admin' || user.role === 'inventory_manager';
+  // Superadmin counts as a manager — in Store Mode they act as the store's admin.
+  const canManage = user.role === 'admin' || user.role === 'inventory_manager' || user.role === 'superadmin';
 
   const price = asNumber(product.price);
   const cost = asNumber(product.costPrice);

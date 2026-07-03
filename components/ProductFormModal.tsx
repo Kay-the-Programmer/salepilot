@@ -969,7 +969,7 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                     <div className="grid grid-cols-3 gap-2">
                                         <div>
                                             <label htmlFor="stock" className="block text-sm font-medium text-gray-700 mb-1">
-                                                Stock{product.unitOfMeasure === 'kg' ? ' (kg)' : ''} *
+                                                {productToEdit ? 'Stock' : `Opening Stock${product.unitOfMeasure === 'kg' ? ' (kg)' : ''} *`}
                                             </label>
                                             <input
                                                 type="number"
@@ -979,8 +979,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 onChange={handleChange}
                                                 required
                                                 min="0"
+                                                readOnly={!!productToEdit}
+                                                title={productToEdit ? 'Stock moves only through Adjust Stock, purchase orders, sales and stock takes.' : undefined}
                                                 step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
-                                                className="w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                                className={`w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${productToEdit ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
                                         <div>
