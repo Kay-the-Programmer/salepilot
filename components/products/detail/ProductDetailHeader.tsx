@@ -13,11 +13,14 @@ const ProductDetailHeader: React.FC<ProductDetailHeaderProps> = ({
 }) => {
     return (
         <header className="flex-none px-4 sm:px-6 h-16 bg-surface border-b border-brand-border flex items-center gap-3 sticky top-0 z-30 w-full">
+            {/* The detail view is full-screen, so the back button shows on every
+                breakpoint — it's the only way back to the product list. */}
             {onBack && (
                 <button
                     onClick={onBack}
-                    className="md:hidden shrink-0 w-9 h-9 -ml-1 flex items-center justify-center rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition-colors"
-                    aria-label="Go back"
+                    className="shrink-0 w-9 h-9 -ml-1 flex items-center justify-center rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition-colors"
+                    aria-label="Back to product list"
+                    title="Back to product list"
                 >
                     <ArrowLeftIcon className="w-5 h-5" />
                 </button>

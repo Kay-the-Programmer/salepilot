@@ -534,7 +534,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                         )}
                                     </label>
                                     <div className="relative">
-                                        <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" readOnly={cartonMode || !!productToEdit.id} step={product.unitOfMeasure === 'kg' ? '0.001' : '1'}
+                                        <input type="number" name="stock" id="stock" value={product.stock} onChange={handleChange} required min="0" readOnly={cartonMode || !!productToEdit.id} step={product.unitOfMeasure === 'kg' ? '0.01' : '1'}
                                             className={`${fieldCls} ${(cartonMode || productToEdit.id) ? '!bg-surface-variant text-brand-text-muted cursor-not-allowed' : ''}`} />
                                         {(cartonMode || productToEdit.id) && <div className="absolute inset-0 z-10 cursor-not-allowed" title={productToEdit.id ? 'Stock moves only through Adjust Stock, purchase orders, sales and stock takes.' : 'Update Cartons Received to change stock'} />}
                                     </div>

@@ -59,6 +59,19 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
     const fileInputRef = useRef<HTMLInputElement>(null);
     const { showToast } = useToast();
     const [isCameraModalOpen, setIsCameraModalOpen] = useState(false);
+
+    /** Stock precision convention: whole numbers for `unit`, two decimals for `kg`. */
+    const roundStockQty = (value: string | number, unitOfMeasure?: 'unit' | 'kg'): number => {
+        const n = parseFloat(String(value)) || 0;
+        return unitOfMeasure === 'kg' ? Math.round(n * 100) / 100 : Math.round(n);
+    };
+
+    /** Snap the main stock input to its unit's precision when focus leaves it. */
+    const normalizeStockInput = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        if (e.target.value === '') return;
+        const rounded = roundStockQty(e.target.value, product.unitOfMeasure);
+        setProduct(prev => ({ ...prev, stock: rounded }));
+    };
     const [isSupplierModalOpen, setIsSupplierModalOpen] = useState(false);
     const [isBarcodeScannerOpen, setIsBarcodeScannerOpen] = useState(false);
     const [localSuppliers, setLocalSuppliers] = useState<Supplier[]>(suppliers);
@@ -408,9 +421,10 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         type="number"
                                         value={product.stock}
                                         onChange={handleChange}
+                                        onBlur={normalizeStockInput}
                                         required
                                         min="0"
-                                        step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
+                                        step={product.unitOfMeasure === 'kg' ? "0.01" : "1"}
                                     />
                                 </div>
                                 <div>
@@ -546,12 +560,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                         <div className="grid grid-cols-2 gap-2">
                                             <input
                                                 type="number"
-                                                step={v.unitOfMeasure === 'kg' ? '0.001' : '1'}
+                                                step={v.unitOfMeasure === 'kg' ? '0.01' : '1'}
                                                 min="0"
                                                 value={v.stock}
                                                 onChange={(e) => setProduct(prev => ({
                                                     ...prev,
-                                                    variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, stock: parseFloat(e.target.value || '0') } : vv) || []
+                                                    variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, stock: roundStockQty(e.target.value, vv.unitOfMeasure) } : vv) || []
                                                 }))}
                                                 className="w-full px-3 py-2 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                 placeholder="Stock"
@@ -977,11 +991,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                 id="stock"
                                                 value={product.stock}
                                                 onChange={handleChange}
+                                                onBlur={normalizeStockInput}
                                                 required
                                                 min="0"
                                                 readOnly={!!productToEdit}
                                                 title={productToEdit ? 'Stock moves only through Adjust Stock, purchase orders, sales and stock takes.' : undefined}
-                                                step={product.unitOfMeasure === 'kg' ? "0.001" : "1"}
+                                                step={product.unitOfMeasure === 'kg' ? "0.01" : "1"}
                                                 className={`w-full px-3 py-2 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${productToEdit ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : ''}`}
                                             />
                                         </div>
@@ -1117,12 +1132,12 @@ const ProductFormModal: React.FC<ProductFormModalProps> = ({ isOpen, onClose, on
                                                     <label className="block text-xs font-medium text-gray-700 mb-1">Stock</label>
                                                     <input
                                                         type="number"
-                                                        step={v.unitOfMeasure === 'kg' ? '0.001' : '1'}
+                                                        step={v.unitOfMeasure === 'kg' ? '0.01' : '1'}
                                                         min="0"
                                                         value={v.stock}
                                                         onChange={(e) => setProduct(prev => ({
                                                             ...prev,
-                                                            variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, stock: parseFloat(e.target.value || '0') } : vv) || []
+                                                            variants: prev.variants?.map((vv, i) => i === idx ? { ...vv, stock: roundStockQty(e.target.value, vv.unitOfMeasure) } : vv) || []
                                                         }))}
                                                         className="w-full px-2 py-1.5 text-sm rounded-none border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                                     />
