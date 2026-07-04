@@ -2,74 +2,101 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/landing/LandingPageHeader';
 
+/**
+ * Privacy Policy — styled to the Velocity design system (DESIGN.md):
+ * deep-navy primary, vibrant-orange conversion accents, flat tonal cards with
+ * 1px borders (no glassmorphism), soft corners and the app's Plus Jakarta Sans.
+ */
+const SECTIONS = [
+    { n: '01', title: 'Introduction' },
+    { n: '02', title: 'Information We Collect' },
+    { n: '03', title: 'How We Use Your Data' },
+    { n: '04', title: 'Data Sharing & Security' },
+    { n: '05', title: 'Your Rights' },
+    { n: '06', title: 'Device Permissions' },
+];
+
+const SectionHeading: React.FC<{ n: string; children: React.ReactNode }> = ({ n, children }) => (
+    <h2 className="flex items-center gap-3 text-xl font-bold text-brand-text tracking-tight mb-4">
+        <span className="w-9 h-9 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-bold tnum">
+            {n}
+        </span>
+        {children}
+    </h2>
+);
+
 const PrivacyPolicyPage: React.FC = () => {
     const navigate = useNavigate();
 
-    const handleLogin = () => {
-        navigate('/login');
-    };
-
-    const handleStartFree = () => {
-        navigate('/register');
-    };
-
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 font-google transition-colors duration-500">
-            <Header onLogin={handleLogin} onStartFree={handleStartFree} />
+        <div className="min-h-screen bg-background text-brand-text transition-colors duration-300">
+            <Header onLogin={() => navigate('/login')} onStartFree={() => navigate('/register')} />
 
-            <main className="max-w-4xl mx-auto px-4 py-24 relative z-10">
-                <div className="liquid-glass-card rounded-[2.5rem] bg-white/70 dark:bg-slate-900/80 backdrop-blur-2xl border border-white dark:border-slate-800/50 p-8 md:p-12 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700">
-                    <div className="mb-12 text-center">
-                        <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white uppercase tracking-tight mb-4">
-                            Privacy Policy
-                        </h1>
-                        <p className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                            Last Updated: May 10, 2026
-                        </p>
-                    </div>
+            <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-28 pb-20">
+                {/* Page heading */}
+                <div className="mb-10">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-text-muted mb-3">
+                        Last updated: May 10, 2026
+                    </p>
+                    <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-brand-text">
+                        Privacy Policy
+                    </h1>
+                    <p className="mt-3 text-brand-text-muted leading-relaxed max-w-2xl">
+                        We are committed to protecting your personal information and your right to privacy.
+                        This policy explains what we collect, how we use it, and the choices you have.
+                    </p>
+                </div>
 
-                    <div className="space-y-12 text-slate-700 dark:text-slate-300 leading-relaxed">
+                {/* Card */}
+                <div className="bg-surface border border-brand-border rounded-2xl shadow-sm p-6 md:p-10">
+                    <div className="space-y-10 text-brand-text-muted leading-relaxed">
                         <section>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 text-sm">01</span>
-                                Introduction
-                            </h2>
+                            <SectionHeading n={SECTIONS[0].n}>{SECTIONS[0].title}</SectionHeading>
                             <p>
-                                Welcome to SalePilot. We are committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our application.
+                                Welcome to SalePilot. We are committed to protecting your personal information and your
+                                right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard
+                                your information when you visit our website and use our application.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 text-sm">02</span>
-                                Information We Collect
-                            </h2>
-                            <div className="space-y-4">
-                                <p>We collect personal information that you voluntarily provide to us when you register on the application, express an interest in obtaining information about us or our products and services, or otherwise when you contact us.</p>
-                                <ul className="list-disc pl-6 space-y-2 font-medium">
-                                    <li><span className="text-slate-900 dark:text-white">Account Data:</span> Name, email address, password, and phone number.</li>
-                                    <li><span className="text-slate-900 dark:text-white">Business Data:</span> Store name, address, inventory details, and sales records.</li>
-                                    <li><span className="text-slate-900 dark:text-white">Payment Data:</span> Transaction history and billing information (processed securely through Lenco).</li>
-                                </ul>
-                            </div>
+                            <SectionHeading n={SECTIONS[1].n}>{SECTIONS[1].title}</SectionHeading>
+                            <p className="mb-4">
+                                We collect personal information that you voluntarily provide when you register, express
+                                interest in our products and services, or otherwise contact us.
+                            </p>
+                            <ul className="space-y-2.5">
+                                {[
+                                    ['Account Data', 'Name, email address, password, and phone number.'],
+                                    ['Business Data', 'Store name, address, inventory details, and sales records.'],
+                                    ['Payment Data', 'Transaction history and billing information (processed securely through Lenco).'],
+                                ].map(([label, desc]) => (
+                                    <li key={label} className="flex gap-3">
+                                        <span className="mt-2 w-1.5 h-1.5 shrink-0 rounded-full bg-secondary" />
+                                        <span>
+                                            <span className="font-semibold text-brand-text">{label}:</span> {desc}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 text-sm">03</span>
-                                How We Use Your Data
-                            </h2>
-                            <p className="mb-4">We use personal information collected via our application for a variety of business purposes described below:</p>
-                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <SectionHeading n={SECTIONS[2].n}>{SECTIONS[2].title}</SectionHeading>
+                            <p className="mb-4">We use the personal information we collect for the business purposes described below:</p>
+                            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {[
-                                    'To facilitate account creation and logon process.',
-                                    'To send administrative information to you.',
-                                    'To fulfill and manage your orders.',
+                                    'To facilitate account creation and the login process.',
+                                    'To send you administrative information.',
+                                    'To fulfil and manage your orders.',
                                     'To post testimonials with your consent.',
-                                    'To request feedback and contact you about use of our App.',
-                                    'To protect our Services from fraud.'
+                                    'To request feedback and contact you about your use of the app.',
+                                    'To protect our services from fraud.',
                                 ].map((item, i) => (
-                                    <li key={i} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 text-sm font-semibold">
+                                    <li
+                                        key={i}
+                                        className="bg-surface-variant border border-brand-border rounded-xl p-4 text-sm font-medium text-brand-text"
+                                    >
                                         {item}
                                     </li>
                                 ))}
@@ -77,65 +104,63 @@ const PrivacyPolicyPage: React.FC = () => {
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 text-sm">04</span>
-                                Data Sharing & Security
-                            </h2>
+                            <SectionHeading n={SECTIONS[3].n}>{SECTIONS[3].title}</SectionHeading>
                             <p>
-                                We only share information with your consent, to comply with laws, to provide you with services, to protect your rights, or to fulfill business obligations. We use administrative, technical, and physical security measures to help protect your personal information.
+                                We only share information with your consent, to comply with laws, to provide you with our
+                                services, to protect your rights, or to fulfil business obligations. We use administrative,
+                                technical, and physical security measures to help protect your personal information.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-orange-600 text-sm">05</span>
-                                Your Rights
-                            </h2>
+                            <SectionHeading n={SECTIONS[4].n}>{SECTIONS[4].title}</SectionHeading>
                             <p>
-                                In some regions, such as the European Economic Area (EEA), you have rights that allow you greater access to and control over your personal information. You may review, change, or terminate your account at any time.
+                                In some regions, such as the European Economic Area (EEA), you have rights that give you
+                                greater access to and control over your personal information. You may review, change, or
+                                terminate your account at any time.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider mb-4 flex items-center gap-3">
-                                <span className="w-8 h-8 rounded-lg bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center text-rose-600 text-sm">06</span>
-                                Device Permissions
-                            </h2>
-                            <div className="space-y-4">
-                                <p>To provide certain features, our application may request access to specific device functions:</p>
-                                <div className="bg-slate-50 dark:bg-slate-800/50 p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-start gap-4">
-                                        <div className="p-3 bg-white dark:bg-slate-900 rounded-xl shadow-sm">
-                                            <svg className="w-6 h-6 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <h4 className="font-bold text-slate-900 dark:text-white mb-1">Camera Access</h4>
-                                            <p className="text-sm">We request camera access solely for the purpose of scanning barcodes and capturing product images for your inventory. We do not record video or capture images without your explicit action within the app.</p>
-                                        </div>
+                            <SectionHeading n={SECTIONS[5].n}>{SECTIONS[5].title}</SectionHeading>
+                            <p className="mb-4">To provide certain features, our application may request access to specific device functions:</p>
+                            <div className="bg-surface-variant border border-brand-border rounded-xl p-5">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-11 h-11 shrink-0 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                                        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        </svg>
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-brand-text mb-1">Camera Access</h4>
+                                        <p className="text-sm">
+                                            We request camera access solely to scan barcodes and capture product images for
+                                            your inventory. We do not record video or capture images without your explicit
+                                            action within the app.
+                                        </p>
                                     </div>
                                 </div>
                             </div>
                         </section>
 
-                        <div className="pt-12 border-t border-slate-100 dark:border-slate-800">
-                            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                        {/* Footer CTA */}
+                        <div className="pt-8 border-t border-brand-border">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
                                 <div>
-                                    <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-wider mb-1">Still have questions?</h4>
-                                    <p className="text-sm text-slate-500 font-bold uppercase tracking-widest">Our support team is here to help.</p>
+                                    <h4 className="font-bold text-brand-text">Still have questions?</h4>
+                                    <p className="text-sm text-brand-text-muted mt-0.5">Our support team is here to help.</p>
                                 </div>
                                 <div className="flex gap-3">
                                     <button
                                         onClick={() => navigate('/terms')}
-                                        className="px-8 py-4 bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-700 rounded-2xl font-black uppercase tracking-widest text-xs hover:translate-y-[-2px] transition-all shadow-xl active:scale-95"
+                                        className="px-6 py-3 rounded-lg border border-primary text-primary bg-transparent font-semibold text-sm hover:bg-primary/5 transition-colors active:scale-[0.98]"
                                     >
                                         Terms of Service
                                     </button>
                                     <button
                                         onClick={() => navigate('/support')}
-                                        className="px-8 py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl font-black uppercase tracking-widest text-xs hover:translate-y-[-2px] transition-all shadow-xl active:scale-95"
+                                        className="px-6 py-3 rounded-lg bg-secondary text-white font-semibold text-sm hover:opacity-90 transition-opacity active:scale-[0.98]"
                                     >
                                         Contact Support
                                     </button>
@@ -146,11 +171,12 @@ const PrivacyPolicyPage: React.FC = () => {
                 </div>
             </main>
 
-            <footer className="bg-slate-900 text-white py-12">
-                <div className="max-w-7xl mx-auto px-4 text-center">
-                    <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">
-                        © {new Date().getFullYear()} SalePilot. All rights reserved.
-                    </p>
+            <footer className="bg-sp-navy text-white/70 py-10">
+                <div className="max-w-3xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <span className="text-lg font-bold tracking-tight text-white">
+                        Sale<span className="text-secondary">Pilot</span>
+                    </span>
+                    <p className="text-sm">© {new Date().getFullYear()} SalePilot. All rights reserved.</p>
                 </div>
             </footer>
         </div>
