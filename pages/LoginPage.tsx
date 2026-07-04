@@ -4,12 +4,7 @@ import { SnackbarType } from '../App';
 import { login, loginWithGoogle } from '../services/authService';
 import { signInWithGoogle } from '../services/firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import {
-    HiOutlineEnvelope,
-    HiOutlineLockClosed,
-    HiOutlineEye,
-    HiOutlineEyeSlash,
-} from 'react-icons/hi2';
+import { HiOutlineEye, HiOutlineEyeSlash } from 'react-icons/hi2';
 import { FcGoogle } from 'react-icons/fc';
 import Logo from '../assets/logo.png';
 
@@ -78,34 +73,29 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
         }
     };
 
-    return (
-        <div className="min-h-screen bg-mesh-light flex flex-col overflow-hidden">
-            <div className="pointer-events-none fixed inset-0 z-0">
-                <div className="absolute top-[-15%] left-[-8%] w-[55%] h-[55%] rounded-full bg-primary/8 blur-[120px]" />
-                <div className="absolute bottom-[-15%] right-[-8%] w-[50%] h-[50%] rounded-full bg-warning/10 blur-[120px]" />
-            </div>
+    const inputClass =
+        'block w-full rounded-xl border border-brand-border bg-surface px-3.5 py-3 text-sm font-medium text-brand-text placeholder:text-brand-text-muted/50 outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:opacity-60';
 
-            <header className="relative z-10 flex items-center justify-between h-20 px-6 md:px-10">
-                <img src={Logo} alt="SalePilot" className="h-9 object-contain opacity-90 hover:opacity-100 transition-opacity" />
-                <div className="flex items-center gap-3">
-                    <span className="hidden sm:block text-sm font-semibold text-brand-text-muted">New here?</span>
-                    <button
-                        type="button"
-                        onClick={() => navigate('/register')}
-                        className="px-5 py-2 rounded-full border border-brand-border bg-surface text-sm font-bold text-brand-text hover:bg-surface-variant transition-all duration-200 active:scale-95"
-                    >
-                        Create Account
-                    </button>
-                </div>
+    return (
+        <div className="min-h-screen bg-background flex flex-col">
+            <header className="flex items-center justify-between h-16 px-5 md:px-8">
+                <img src={Logo} alt="SalePilot" className="h-8 object-contain" />
+                <button
+                    type="button"
+                    onClick={() => navigate('/register')}
+                    className="text-sm font-semibold text-brand-text-muted hover:text-primary transition-colors"
+                >
+                    Create account
+                </button>
             </header>
 
-            <main className="relative z-10 flex-1 flex items-center justify-center px-4 py-8">
-                <div className="w-full max-w-[440px] animate-fade-in">
-                    <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-xl border border-warm-200 dark:border-white/8 rounded-3xl p-8 shadow-xl shadow-warm-900/6">
-                        <div className="text-center mb-8">
-                            <h1 className="text-2xl font-extrabold tracking-tight text-brand-text">Welcome Back</h1>
-                            <p className="mt-2 text-sm text-brand-text-muted leading-relaxed">
-                                {"Log in to manage your store's performance."}
+            <main className="flex-1 flex items-center justify-center px-5 py-10">
+                <div className="w-full max-w-[400px] animate-fade-in">
+                    <div className="rounded-2xl border border-brand-border bg-surface p-7 shadow-sm sm:p-8">
+                        <div className="mb-7">
+                            <h1 className="text-[22px] font-bold tracking-tight text-brand-text">Welcome back</h1>
+                            <p className="mt-1.5 text-sm text-brand-text-muted">
+                                Log in to manage your store.
                             </p>
                         </div>
 
@@ -114,35 +104,37 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                             type="button"
                             onClick={handleGoogleLogin}
                             disabled={anyLoading}
-                            className="w-full flex items-center justify-center gap-3 py-3.5 mb-5 bg-surface dark:bg-white/[0.06] border border-brand-border dark:border-white/10 rounded-2xl text-brand-text text-sm font-bold shadow-sm hover:bg-surface-variant transition-all duration-200 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-brand-border bg-surface py-3 text-sm font-semibold text-brand-text transition-colors hover:bg-surface-variant disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             {isGoogleLoading
-                                ? <div className="w-5 h-5 border-2 border-warm-300 dark:border-warm-700 border-t-primary rounded-full animate-spin" />
-                                : <FcGoogle className="w-5 h-5 flex-shrink-0" />}
+                                ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-border border-t-primary" />
+                                : <FcGoogle className="h-5 w-5" />}
                             <span>{isGoogleLoading ? 'Signing in…' : 'Continue with Google'}</span>
                         </button>
 
-                        <div className="relative flex items-center mb-5">
-                            <div className="flex-1 border-t border-brand-border dark:border-white/8" />
-                            <span className="mx-4 text-[10px] font-extrabold text-brand-text-muted uppercase tracking-widest">or</span>
-                            <div className="flex-1 border-t border-brand-border dark:border-white/8" />
+                        <div className="my-6 flex items-center gap-3">
+                            <div className="h-px flex-1 bg-brand-border" />
+                            <span className="text-xs font-medium text-brand-text-muted">or</span>
+                            <div className="h-px flex-1 bg-brand-border" />
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {error && (
-                                <div className="p-3.5 bg-danger-muted dark:bg-danger/10 border border-danger/20 rounded-2xl">
-                                    <p className="text-xs font-bold text-danger text-center uppercase tracking-wide">{error}</p>
+                                <div className="rounded-xl border border-danger/20 bg-danger-muted px-3.5 py-2.5">
+                                    <p className="text-xs font-medium text-danger">{error}</p>
                                 </div>
                             )}
 
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <HiOutlineEnvelope className="h-5 w-5 text-brand-text-muted group-focus-within:text-primary transition-colors" />
-                                </div>
+                            <div>
+                                <label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-brand-text-muted">
+                                    Email
+                                </label>
                                 <input
-                                    type="email" required
-                                    className="block w-full pl-11 pr-4 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-sm font-semibold outline-none"
-                                    placeholder="Email address"
+                                    id="email"
+                                    type="email"
+                                    required
+                                    className={inputClass}
+                                    placeholder="you@company.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={anyLoading}
@@ -150,58 +142,57 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                 />
                             </div>
 
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <HiOutlineLockClosed className="h-5 w-5 text-brand-text-muted group-focus-within:text-primary transition-colors" />
+                            <div>
+                                <div className="mb-1.5 flex items-center justify-between">
+                                    <label htmlFor="password" className="block text-xs font-semibold text-brand-text-muted">
+                                        Password
+                                    </label>
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate('/forgot-password')}
+                                        className="text-xs font-medium text-brand-text-muted hover:text-primary transition-colors"
+                                    >
+                                        Forgot?
+                                    </button>
                                 </div>
-                                <input
-                                    type={showPassword ? 'text' : 'password'} required
-                                    className="block w-full pl-11 pr-12 py-4 bg-warm-100 dark:bg-white/[0.06] border-0 rounded-2xl text-brand-text placeholder:text-brand-text-muted focus:ring-2 focus:ring-primary/20 focus:bg-white dark:focus:bg-white/[0.09] transition-all text-sm font-semibold outline-none"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    disabled={anyLoading}
-                                    autoComplete="current-password"
-                                />
-                                <button
-                                    type="button"
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-brand-text-muted hover:text-brand-text transition-colors"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    tabIndex={-1}
-                                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                                >
-                                    {showPassword ? <HiOutlineEyeSlash className="h-5 w-5" /> : <HiOutlineEye className="h-5 w-5" />}
-                                </button>
-                            </div>
-
-                            <div className="flex items-center justify-between px-1 pt-1">
-                                <button
-                                    type="button"
-                                    onClick={() => navigate('/forgot-password')}
-                                    className="text-xs font-bold text-brand-text-muted hover:text-primary transition-colors uppercase tracking-wider"
-                                >
-                                    Forgot password?
-                                </button>
+                                <div className="relative">
+                                    <input
+                                        id="password"
+                                        type={showPassword ? 'text' : 'password'}
+                                        required
+                                        className={`${inputClass} pr-11`}
+                                        placeholder="Enter your password"
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        disabled={anyLoading}
+                                        autoComplete="current-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-brand-text-muted hover:text-brand-text transition-colors"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        tabIndex={-1}
+                                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                    >
+                                        {showPassword ? <HiOutlineEyeSlash className="h-5 w-5" /> : <HiOutlineEye className="h-5 w-5" />}
+                                    </button>
+                                </div>
                             </div>
 
                             <button
                                 type="submit"
                                 disabled={anyLoading}
-                                className="w-full py-4 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl font-extrabold uppercase tracking-[0.15em] text-[11px] shadow-lg shadow-primary/25 transition-all active:scale-[0.98] hover:-translate-y-0.5 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:translate-y-0 mt-2"
+                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-semibold text-white transition-colors hover:bg-primary-dark disabled:opacity-60 disabled:cursor-not-allowed"
                             >
-                                {isLoading ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : 'Log in to Dashboard'}
+                                {isLoading ? <div className="h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white" /> : 'Log in'}
                             </button>
                         </form>
-
-                        <p className="mt-6 text-center text-[10px] text-brand-text-muted leading-relaxed">
-                            Secured by <span className="font-bold">Firebase Auth</span> &amp; end-to-end encryption
-                        </p>
                     </div>
 
-                    <div className="flex justify-center flex-wrap gap-5 mt-6">
-                        <a href="/privacy" className="text-xs text-brand-text-muted hover:text-primary transition-colors font-semibold">Privacy Policy</a>
-                        <a href="#" className="text-xs text-brand-text-muted hover:text-primary transition-colors font-semibold">Terms of Service</a>
-                        <a href="#" className="text-xs text-brand-text-muted hover:text-primary transition-colors font-semibold">Contact Support</a>
+                    <div className="mt-6 flex justify-center gap-5">
+                        <a href="/privacy" className="text-xs text-brand-text-muted hover:text-primary transition-colors">Privacy</a>
+                        <a href="#" className="text-xs text-brand-text-muted hover:text-primary transition-colors">Terms</a>
+                        <a href="#" className="text-xs text-brand-text-muted hover:text-primary transition-colors">Support</a>
                     </div>
                 </div>
             </main>
