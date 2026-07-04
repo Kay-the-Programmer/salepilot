@@ -154,9 +154,6 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
                             <Icon name="storefront" size={22} /> Store Mode
                         </button>
                     )}
-                    <button type="button" className="crm-rail__item" onClick={onExit}>
-                        <Icon name="grid_view" size={22} /> Full App
-                    </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout

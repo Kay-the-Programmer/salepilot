@@ -439,9 +439,6 @@ export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, sh
                 </nav>
 
                 <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
-                        <Icon name="grid_view" size={22} /> Full App
-                    </button>
                     <RailThemeButton />
                     <button type="button" className="crm-rail__item crm-rail__item--logout" onClick={onLogout}>
                         <Icon name="logout" size={22} /> Logout

@@ -22,7 +22,6 @@ import PosIcon from '../components/sales/PosIcon';
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import Logo from '../assets/logo.png';
 import AppSwitcher from '../components/standalone/AppSwitcher';
-import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { setPendingNewProduct } from '../utils/pendingProduct';
 import './sale-v2.css';
@@ -57,7 +56,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
     initialView,
 }) => {
     const navigate = useNavigate();
-    const { theme, toggleTheme } = useTheme();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory] = useState('All Items');
@@ -554,10 +552,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             Scanner Active
                         </span>
                     )}
-
-                    <button type="button" className="sale__iconbtn" onClick={toggleTheme} aria-label="Toggle light or dark theme" title="Toggle theme">
-                        <PosIcon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} size={22} />
-                    </button>
 
                     {/* Simple POS menu — Sell / Sales History / Held / Help */}
                     <div className="sale__menuwrap">

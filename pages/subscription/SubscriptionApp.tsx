@@ -354,10 +354,6 @@ const SubscriptionApp: React.FC = () => {
               <span className="material-symbols-outlined" style={{ fontSize: 22 }}>apps</span>
               SalePilot Apps
             </button>
-            <button onClick={() => navigate('/')} className="sub-navitem">
-              <span className="material-symbols-outlined" style={{ fontSize: 22 }}>grid_view</span>
-              Full App
-            </button>
           </div>
         </aside>
 

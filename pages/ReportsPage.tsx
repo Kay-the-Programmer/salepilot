@@ -23,19 +23,10 @@ import { AiSummaryCard } from '../components/reports/AiSummaryCard';
 import { Settings, X, LayoutGrid } from 'lucide-react';
 
 const DEFAULT_CARDS: DashboardCardConfig[] = [
-    { id: 'tips', label: 'Tips & Guidance', visible: true, order: 0 },
-    { id: 'expenses', label: 'Operating Expenses', visible: true, order: 1 },
-    { id: 'profit', label: 'Net Profit', visible: true, order: 2 },
-    { id: 'cashflow', label: 'Cashflow Trend', visible: true, order: 3 },
-    { id: 'cashflow-stats', label: 'Cashflow Stats', visible: true, order: 4 },
-    { id: 'outflow-breakdown', label: 'Outflow Breakdown', visible: true, order: 5 },
-    { id: 'financial-position', label: 'Financial Position', visible: true, order: 6 },
-    { id: 'personal-stats', label: 'Personal Use Stats', visible: true, order: 7 },
-    { id: 'personal-list', label: 'Personal Use List', visible: true, order: 8 },
-    { id: 'sales-trend', label: 'Sales Trends', visible: true, order: 9 },
-    { id: 'channels', label: 'Sales Channels', visible: true, order: 10 },
-    { id: 'recent-orders', label: 'Recent Orders', visible: true, order: 11 },
-    { id: 'top-sales', label: 'Top Selling Products', visible: true, order: 12 },
+    { id: 'expenses', label: 'Operating Expenses', visible: true, order: 0 },
+    { id: 'profit', label: 'Net Profit', visible: true, order: 1 },
+    { id: 'cashflow', label: 'Cashflow Trend', visible: true, order: 2 },
+    { id: 'sales-trend', label: 'Sales Trend', visible: true, order: 3 },
 ];
 
 interface ReportsPageProps {
@@ -104,7 +95,14 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
         const saved = localStorage.getItem('salepilot_dashboard_config');
         if (saved) {
             try {
-                return JSON.parse(saved);
+                const parsed: DashboardCardConfig[] = JSON.parse(saved);
+                // The report was trimmed to four core cards. Drop any legacy cards
+                // from a previously-saved config, and backfill any of the four that
+                // are missing — preserving the user's saved order/visibility.
+                const allowed = parsed.filter(c => DEFAULT_CARDS.some(d => d.id === c.id));
+                const savedIds = new Set(allowed.map(c => c.id));
+                const missing = DEFAULT_CARDS.filter(d => !savedIds.has(d.id));
+                return [...allowed, ...missing];
             } catch (e) {
                 console.error('Failed to parse dashboard config', e);
             }
@@ -315,9 +313,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                         <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
                             <Icon name="apps" size={22} /> SalePilot Apps
                         </button>
-                        <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
-                            <Icon name="grid_view" size={22} /> Full App
-                        </button>
                     </div>
                 </aside>
 
@@ -425,9 +420,6 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                     </button>
                     <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
                         <Icon name="apps" size={22} /> SalePilot Apps
-                    </button>
-                    <button type="button" className="crm-rail__item" onClick={() => navigate('/')}>
-                        <Icon name="grid_view" size={22} /> Full App
                     </button>
                     <button type="button" className="crm-rail__item" onClick={() => navigate('/account')}>
                         <div className="crm-rail__user" style={{ border: 'none', padding: 0, margin: 0 }}>
