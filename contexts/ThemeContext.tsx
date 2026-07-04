@@ -2,7 +2,23 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 type Theme = 'light' | 'dark';
 /** 'system' follows the device's light/dark setting automatically. */
-type ThemePreference = 'system' | 'light' | 'dark';
+export type ThemePreference = 'system' | 'light' | 'dark';
+
+/**
+ * Material-symbol icon name + human label for each preference — shared by every
+ * in-app theme control so they read consistently. 'system' is the auto-follow-
+ * device state, shown with the `brightness_auto` glyph.
+ */
+export const THEME_PREFERENCE_ICON: Record<ThemePreference, string> = {
+    system: 'brightness_auto',
+    light: 'light_mode',
+    dark: 'dark_mode',
+};
+export const THEME_PREFERENCE_LABEL: Record<ThemePreference, string> = {
+    system: 'Auto theme',
+    light: 'Light mode',
+    dark: 'Dark mode',
+};
 
 interface ThemeContextType {
     /** The theme actually applied right now (when preference is 'system', this is the OS theme). */

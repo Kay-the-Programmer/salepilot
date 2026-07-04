@@ -4,7 +4,7 @@ import PosIcon from '../sales/PosIcon';
 import AssistantLauncher from '../../pages/assistant/AssistantLauncher';
 import AppSwitcherOverlay from '../standalone/AppSwitcherOverlay';
 import { recordAppUse } from '../standalone/appUsage';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme, THEME_PREFERENCE_ICON, THEME_PREFERENCE_LABEL } from '../../contexts/ThemeContext';
 import Logo from '../../assets/logo.png';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
@@ -42,7 +42,7 @@ export const PosShell: React.FC<PosShellProps> = ({
     children,
 }) => {
     const [appsOpen, setAppsOpen] = useState(false);
-    const { theme, toggleTheme } = useTheme();
+    const { preference, cycleTheme } = useTheme();
     useEffect(() => { recordAppUse('pos'); }, []);
     const renderNav = (inDrawer: boolean) => (
         <>
@@ -80,9 +80,9 @@ export const PosShell: React.FC<PosShellProps> = ({
                     <PosIcon name="apps" size={22} />
                     SalePilot Apps
                 </button>
-                <button type="button" className="posshell__navitem" onClick={toggleTheme}>
-                    <PosIcon name={theme === 'dark' ? 'light_mode' : 'dark_mode'} size={22} />
-                    {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+                <button type="button" className="posshell__navitem" onClick={cycleTheme}>
+                    <PosIcon name={THEME_PREFERENCE_ICON[preference]} size={22} />
+                    {THEME_PREFERENCE_LABEL[preference]}
                 </button>
                 <button type="button" className="posshell__navitem posshell__navitem--logout" onClick={() => { onLogout(); onCloseDrawer(); }}>
                     <PosIcon name="logout" size={22} />

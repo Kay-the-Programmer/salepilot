@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../../services/api';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme, THEME_PREFERENCE_ICON, THEME_PREFERENCE_LABEL } from '../../contexts/ThemeContext';
 import '../assistant/assistant.css';
 
 interface TrackResult {
@@ -33,7 +33,7 @@ const fmtDate = (s?: string) => (s ? new Date(s).toLocaleString(undefined, { dat
 const TrackShipmentPage: React.FC = () => {
   const { trackingNumber } = useParams();
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { preference, cycleTheme } = useTheme();
   const [query, setQuery] = useState(trackingNumber || '');
   const [result, setResult] = useState<TrackResult | null>(null);
   const [status, setStatus] = useState<'idle' | 'loading' | 'notfound' | 'error'>('idle');
@@ -69,8 +69,8 @@ const TrackShipmentPage: React.FC = () => {
           <span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 26 }}>local_shipping</span>
           <h1 className="text-lg md:text-xl font-bold m3-text-primary tracking-tight">Track Shipment</h1>
         </div>
-        <button onClick={toggleTheme} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title="Toggle theme">
-          <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
+        <button onClick={cycleTheme} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title={`Switch theme — ${THEME_PREFERENCE_LABEL[preference]}`}>
+          <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{THEME_PREFERENCE_ICON[preference]}</span>
         </button>
       </header>
 

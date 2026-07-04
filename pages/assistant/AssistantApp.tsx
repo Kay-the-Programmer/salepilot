@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentUser } from '../../services/authService';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme, THEME_PREFERENCE_ICON, THEME_PREFERENCE_LABEL } from '../../contexts/ThemeContext';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import type { User, Product, Sale, Customer, StoreSettings } from '../../types';
 import {
@@ -58,7 +58,7 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
   onExit,
 }) => {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { preference, cycleTheme } = useTheme();
   const { openAppSwitcher } = useAppSwitcher();
 
   // When embedded by Dashboard, `user` is provided; otherwise resolve the session.
@@ -183,7 +183,7 @@ const AssistantApp: React.FC<AssistantAppProps> = ({
         </nav>
         <div className="px-3 py-3 space-y-1 border-t m3-border-outline-variant flex-shrink-0">
           <RailItem icon="apps" label="SalePilot Apps" onClick={openAppSwitcher} />
-          <RailItem icon={theme === 'dark' ? 'light_mode' : 'dark_mode'} label={theme === 'dark' ? 'Light mode' : 'Dark mode'} onClick={toggleTheme} />
+          <RailItem icon={THEME_PREFERENCE_ICON[preference]} label={THEME_PREFERENCE_LABEL[preference]} onClick={cycleTheme} />
           <button
             onClick={() => navigate('/account')}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:m3-bg-surface-high transition mt-1"

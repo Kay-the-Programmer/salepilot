@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme, THEME_PREFERENCE_ICON, THEME_PREFERENCE_LABEL } from '../../contexts/ThemeContext';
 import { getCurrentUser } from '../../services/authService';
 import '../../pages/assistant/assistant.css';
 import AppSwitcher from './AppSwitcher';
@@ -31,7 +31,7 @@ const StandaloneShell: React.FC<StandaloneShellProps> = ({
   children,
 }) => {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { preference, cycleTheme } = useTheme();
   const user = getCurrentUser();
 
   return (
@@ -52,8 +52,8 @@ const StandaloneShell: React.FC<StandaloneShellProps> = ({
         <img src={Logo} alt="SalePilot" className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-7 w-auto pointer-events-none" />
         <div className="flex items-center gap-1">
           {headerActions}
-          <button onClick={toggleTheme} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title="Toggle theme">
-            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
+          <button onClick={cycleTheme} className="w-10 h-10 flex items-center justify-center rounded-full m3-text-on-surface-variant hover:m3-bg-surface-high transition active:scale-90" title={`Switch theme — ${THEME_PREFERENCE_LABEL[preference]}`}>
+            <span className="material-symbols-outlined" style={{ fontSize: 22 }}>{THEME_PREFERENCE_ICON[preference]}</span>
           </button>
         </div>
       </header>

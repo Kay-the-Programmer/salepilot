@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTheme } from '../../contexts/ThemeContext';
+import { useTheme, THEME_PREFERENCE_ICON, THEME_PREFERENCE_LABEL } from '../../contexts/ThemeContext';
 
 export interface AppNavItem {
     icon: string;
@@ -25,7 +25,7 @@ interface AppNavMenuProps {
  */
 export const AppNavMenu: React.FC<AppNavMenuProps> = ({ items, onExit, onLogout, triggerClassName }) => {
     const [open, setOpen] = useState(false);
-    const { theme, toggleTheme } = useTheme();
+    const { preference, cycleTheme } = useTheme();
 
     const btnClass = triggerClassName
         || 'inline-flex items-center justify-center w-10 h-10 rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition';
@@ -69,8 +69,8 @@ export const AppNavMenu: React.FC<AppNavMenuProps> = ({ items, onExit, onLogout,
                 )}
             </div>
             )}
-            <button type="button" onClick={toggleTheme} aria-label="Toggle light or dark theme" className={btnClass}>
-                <span className="material-symbols-rounded">{theme === 'dark' ? 'light_mode' : 'dark_mode'}</span>
+            <button type="button" onClick={cycleTheme} aria-label="Switch theme — auto, light or dark" title={THEME_PREFERENCE_LABEL[preference]} className={btnClass}>
+                <span className="material-symbols-rounded">{THEME_PREFERENCE_ICON[preference]}</span>
             </button>
         </div>
     );
