@@ -18,6 +18,7 @@ interface EmailTemplate {
     description: string;
     recipient: string;
     category: 'event' | 'tip';
+    builtIn: boolean;
     variables: TemplateVar[];
     sample: Record<string, string | number>;
     condition: TemplateCondition | null;
@@ -37,6 +38,7 @@ const SuperAdminEmails: React.FC = () => {
     const [loading, setLoading] = useState(true);
 
     // Editable draft for the selected template
+    const [name, setName] = useState('');
     const [subject, setSubject] = useState('');
     const [html, setHtml] = useState('');
     const [enabled, setEnabled] = useState(true);
@@ -45,6 +47,8 @@ const SuperAdminEmails: React.FC = () => {
     const [saving, setSaving] = useState(false);
     const [testing, setTesting] = useState(false);
     const [resetting, setResetting] = useState(false);
+    const [creating, setCreating] = useState(false);
+    const [deleting, setDeleting] = useState(false);
 
     const [previewHtml, setPreviewHtml] = useState('');
     const [previewSubject, setPreviewSubject] = useState('');
@@ -75,6 +79,7 @@ const SuperAdminEmails: React.FC = () => {
     // Load the selected template into the editable draft.
     useEffect(() => {
         if (!selected) return;
+        setName(selected.name);
         setSubject(selected.subject);
         setHtml(selected.html);
         setEnabled(selected.enabled);
@@ -120,17 +125,52 @@ const SuperAdminEmails: React.FC = () => {
     };
 
     const save = async () => {
-        if (!selectedKey) return;
+        if (!selectedKey || !selected) return;
         setSaving(true);
         try {
-            await api.put(`/superadmin/email-templates/${selectedKey}`, { subject, html, enabled, config });
+            // `name` is only editable (and sent) for custom tips.
+            const payload: any = { subject, html, enabled, config };
+            if (!selected.builtIn) payload.name = name;
+            await api.put(`/superadmin/email-templates/${selectedKey}`, payload);
             showToast('Email template saved', 'success');
             setDirty(false);
-            setTemplates(prev => prev.map(t => t.key === selectedKey ? { ...t, subject, html, enabled, config } : t));
+            setTemplates(prev => prev.map(t => t.key === selectedKey ? { ...t, name, subject, html, enabled, config } : t));
         } catch (e: any) {
             showToast(e?.message || 'Failed to save', 'error');
         } finally {
             setSaving(false);
+        }
+    };
+
+    const createTip = async () => {
+        setCreating(true);
+        try {
+            const res = await api.post<{ template: EmailTemplate }>('/superadmin/email-templates', {});
+            const created = res.template;
+            await load();
+            if (created?.key) setSelectedKey(created.key);
+            showToast('New tip created — edit and enable it when ready', 'success');
+        } catch (e: any) {
+            showToast(e?.message || 'Failed to create tip', 'error');
+        } finally {
+            setCreating(false);
+        }
+    };
+
+    const deleteTip = async () => {
+        if (!selected || selected.builtIn) return;
+        if (!window.confirm(`Delete the tip “${selected.name}”? This can’t be undone.`)) return;
+        setDeleting(true);
+        try {
+            await api.delete(`/superadmin/email-templates/${selected.key}`);
+            const remaining = templates.filter(t => t.key !== selected.key);
+            setTemplates(remaining);
+            setSelectedKey(remaining[0]?.key || null);
+            showToast('Tip deleted', 'success');
+        } catch (e: any) {
+            showToast(e?.message || 'Failed to delete tip', 'error');
+        } finally {
+            setDeleting(false);
         }
     };
 
@@ -193,6 +233,14 @@ const SuperAdminEmails: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
                 {/* ── Template list ── */}
                 <aside className="space-y-2">
+                    <button
+                        type="button"
+                        onClick={createTip}
+                        disabled={creating}
+                        className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl border border-dashed border-primary/50 text-primary text-sm font-bold hover:bg-primary/5 transition-colors disabled:opacity-50"
+                    >
+                        {creating ? 'Creating…' : '+ New tip'}
+                    </button>
                     {templates.map(t => (
                         <button
                             key={t.key}
@@ -230,9 +278,22 @@ const SuperAdminEmails: React.FC = () => {
                     <div className="space-y-5">
                         <div className="p-4 rounded-xl border border-brand-border bg-surface">
                             <div className="flex items-start justify-between gap-3 mb-1">
-                                <div>
-                                    <h2 className="font-bold text-brand-text">{selected.name}</h2>
-                                    <p className="text-xs text-brand-text-muted mt-0.5">{selected.description}</p>
+                                <div className="min-w-0 flex-1">
+                                    {selected.builtIn ? (
+                                        <h2 className="font-bold text-brand-text">{selected.name}</h2>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            value={name}
+                                            onChange={(e) => { setName(e.target.value); markDirty(); }}
+                                            placeholder="Tip name"
+                                            className="w-full font-bold text-brand-text bg-transparent border-b border-transparent hover:border-brand-border focus:border-primary outline-none pb-0.5"
+                                        />
+                                    )}
+                                    <p className="text-xs text-brand-text-muted mt-0.5">
+                                        {selected.description}
+                                        {!selected.builtIn && <span className="ml-1 text-secondary font-semibold">· Custom tip</span>}
+                                    </p>
                                 </div>
                                 <label className="flex items-center gap-2 shrink-0 cursor-pointer">
                                     <span className="text-xs font-bold text-brand-text-muted uppercase tracking-wide">{enabled ? 'On' : 'Off'}</span>
@@ -345,15 +406,26 @@ const SuperAdminEmails: React.FC = () => {
                             >
                                 {testing ? 'Sending…' : 'Send test to me'}
                             </button>
-                            <button
-                                type="button"
-                                onClick={resetToDefault}
-                                disabled={resetting}
-                                className="px-5 py-2.5 rounded-lg border border-brand-border bg-surface text-sm font-bold text-brand-text-muted hover:bg-surface-variant transition-colors disabled:opacity-50"
-                                title="Restore the on-brand default subject and design"
-                            >
-                                {resetting ? 'Resetting…' : 'Reset to default'}
-                            </button>
+                            {selected.builtIn ? (
+                                <button
+                                    type="button"
+                                    onClick={resetToDefault}
+                                    disabled={resetting}
+                                    className="px-5 py-2.5 rounded-lg border border-brand-border bg-surface text-sm font-bold text-brand-text-muted hover:bg-surface-variant transition-colors disabled:opacity-50"
+                                    title="Restore the on-brand default subject and design"
+                                >
+                                    {resetting ? 'Resetting…' : 'Reset to default'}
+                                </button>
+                            ) : (
+                                <button
+                                    type="button"
+                                    onClick={deleteTip}
+                                    disabled={deleting}
+                                    className="px-5 py-2.5 rounded-lg border border-danger/40 bg-surface text-sm font-bold text-danger hover:bg-danger/5 transition-colors disabled:opacity-50"
+                                >
+                                    {deleting ? 'Deleting…' : 'Delete tip'}
+                                </button>
+                            )}
                             {selected.updatedAt && (
                                 <span className="text-xs text-brand-text-muted">
                                     Last edited {new Date(selected.updatedAt).toLocaleDateString()}
