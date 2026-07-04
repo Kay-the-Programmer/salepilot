@@ -6,13 +6,13 @@
   "scope": "/",
   "icons": [
     {
-      "src": "/images/salepilot.png",
+      "src": "/images/salepilot.png?v=2",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/images/salepilot.png",
+      "src": "/images/salepilot.png?v=2",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

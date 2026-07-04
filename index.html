@@ -3,11 +3,11 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/images/salepilot.png" />
+  <link rel="icon" type="image/png" href="/images/salepilot.png?v=2" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#002b6b">
   <link rel="manifest" href="/manifest.json">
-  <link rel="apple-touch-icon" href="/images/salepilot.png" sizes="180x180">
+  <link rel="apple-touch-icon" href="/images/salepilot.png?v=2" sizes="180x180">
   <meta name="apple-mobile-web-app-title" content="SalePilot">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -84,7 +84,7 @@
         }
         */
 
-        navigator.serviceWorker.register('/sw.js?v=11').then(registration => {
+        navigator.serviceWorker.register('/sw.js?v=12').then(registration => {
           console.log('SW registered: ', registration);
         }).catch(registrationError => {
           console.log('SW registration failed: ', registrationError);
