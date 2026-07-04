@@ -17,9 +17,11 @@ interface EmailTemplate {
     name: string;
     description: string;
     recipient: string;
+    category: 'event' | 'tip';
     variables: TemplateVar[];
     sample: Record<string, string | number>;
     condition: TemplateCondition | null;
+    schedule: TemplateCondition | null;
     subject: string;
     html: string;
     enabled: boolean;
@@ -42,6 +44,7 @@ const SuperAdminEmails: React.FC = () => {
     const [dirty, setDirty] = useState(false);
     const [saving, setSaving] = useState(false);
     const [testing, setTesting] = useState(false);
+    const [resetting, setResetting] = useState(false);
 
     const [previewHtml, setPreviewHtml] = useState('');
     const [previewSubject, setPreviewSubject] = useState('');
@@ -156,6 +159,23 @@ const SuperAdminEmails: React.FC = () => {
         }
     };
 
+    const resetToDefault = async () => {
+        if (!selectedKey) return;
+        setResetting(true);
+        try {
+            const res = await api.post<{ template: { subject: string; html: string } }>(`/superadmin/email-templates/${selectedKey}/reset`, {});
+            const t = res.template;
+            if (t) { setSubject(t.subject); setHtml(t.html); }
+            setDirty(false);
+            setTemplates(prev => prev.map(x => x.key === selectedKey ? { ...x, subject: t.subject, html: t.html } : x));
+            showToast('Restored the on-brand default design', 'success');
+        } catch (e: any) {
+            showToast(e?.message || 'Failed to reset', 'error');
+        } finally {
+            setResetting(false);
+        }
+    };
+
     if (loading) {
         return <div className="p-10 text-center text-brand-text-muted">Loading email templates…</div>;
     }
@@ -195,7 +215,12 @@ const SuperAdminEmails: React.FC = () => {
                                     <span className={`absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-all ${t.enabled ? 'left-[18px]' : 'left-0.5'}`} />
                                 </span>
                             </div>
-                            <div className="text-[11px] text-brand-text-muted mt-1">To: {t.recipient}</div>
+                            <div className="flex items-center gap-1.5 mt-1">
+                                <span className="text-[11px] text-brand-text-muted">To: {t.recipient}</span>
+                                {t.category === 'tip' && (
+                                    <span className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-secondary/15 text-secondary">Tip</span>
+                                )}
+                            </div>
                         </button>
                     ))}
                 </aside>
@@ -236,7 +261,7 @@ const SuperAdminEmails: React.FC = () => {
                             />
                         </div>
 
-                        {/* Condition (optional) */}
+                        {/* Condition (send gate) */}
                         {selected.condition && (
                             <div>
                                 <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-1.5">Condition</label>
@@ -249,6 +274,24 @@ const SuperAdminEmails: React.FC = () => {
                                         onChange={(e) => { setConfig(c => ({ ...c, [selected.condition!.field]: Number(e.target.value) })); markDirty(); }}
                                         className="w-28 px-2 py-1.5 rounded-lg border border-brand-border bg-surface text-sm focus:ring-2 focus:ring-primary/20 outline-none"
                                     />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Schedule (tip timing) */}
+                        {selected.schedule && (
+                            <div>
+                                <label className="block text-xs font-extrabold uppercase tracking-widest text-brand-text-muted mb-1.5">When to send</label>
+                                <div className="flex items-center gap-2 text-sm text-brand-text">
+                                    <span>{selected.schedule.label}</span>
+                                    <input
+                                        type="number"
+                                        min={1}
+                                        value={config[selected.schedule.field] ?? selected.schedule.default}
+                                        onChange={(e) => { setConfig(c => ({ ...c, [selected.schedule!.field]: Number(e.target.value) })); markDirty(); }}
+                                        className="w-24 px-2 py-1.5 rounded-lg border border-brand-border bg-surface text-sm focus:ring-2 focus:ring-primary/20 outline-none"
+                                    />
+                                    <span className="text-brand-text-muted">day(s)</span>
                                 </div>
                             </div>
                         )}
@@ -301,6 +344,15 @@ const SuperAdminEmails: React.FC = () => {
                                 className="px-5 py-2.5 rounded-lg border border-brand-border bg-surface text-sm font-bold text-brand-text hover:bg-surface-variant transition-colors disabled:opacity-50"
                             >
                                 {testing ? 'Sending…' : 'Send test to me'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={resetToDefault}
+                                disabled={resetting}
+                                className="px-5 py-2.5 rounded-lg border border-brand-border bg-surface text-sm font-bold text-brand-text-muted hover:bg-surface-variant transition-colors disabled:opacity-50"
+                                title="Restore the on-brand default subject and design"
+                            >
+                                {resetting ? 'Resetting…' : 'Reset to default'}
                             </button>
                             {selected.updatedAt && (
                                 <span className="text-xs text-brand-text-muted">
