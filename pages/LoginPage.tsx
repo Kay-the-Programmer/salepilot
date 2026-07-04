@@ -134,7 +134,7 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
                                     type="email"
                                     required
                                     className={inputClass}
-                                    placeholder="you@company.com"
+                                    placeholder="you@gmail.com"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     disabled={anyLoading}
