@@ -16,7 +16,7 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-const MAX_VISIBLE_TOASTS = 4;
+const MAX_VISIBLE_TOASTS = 2;
 
 /** Errors and warnings stay long enough to read; confirmations get out of the way. */
 const DURATION_BY_TYPE: Record<ToastType, number> = {

@@ -598,6 +598,19 @@ export default function Dashboard() {
         showSnackbar(`Welcome back, ${user.name}!`, 'success');
     };
 
+    // Completion callback shared by both registration entry points (the
+    // unauthenticated "Create Account" flow and the authenticated store-less
+    // flow). By this point the account exists, is logged in, and the store is
+    // created — so route straight to the role's home. Token is read at call
+    // time (the unauthenticated flow only logs in mid-registration).
+    const finishRegistration = (user: User) => {
+        const token = getCurrentUser()?.token;
+        const merged = token ? ({ ...user, token } as User) : user;
+        try { localStorage.setItem('salePilotUser', JSON.stringify(merged)); } catch { /* ignore */ }
+        setCurrentUser(merged);
+        navigate(`/${DEFAULT_PAGES[merged.role] || 'dash'}`);
+    };
+
     const handleConfirmLogout = () => {
         logout();
         setCurrentUser(null);
@@ -1156,27 +1169,28 @@ export default function Dashboard() {
     }
 
     if (!currentUser) {
+        // Unauthenticated "Create Account" → the single registration surface
+        // (account creation + store setup) at /register. Every other path → login.
+        if (location.pathname === '/register') {
+            return (
+                <Suspense fallback={<LoadingSpinner />}>
+                    <StoreRegistrationPage requireAccount onCompleted={finishRegistration} showSnackbar={showSnackbar} />
+                </Suspense>
+            );
+        }
         return <LoginPage onLogin={handleLogin} showSnackbar={showSnackbar} />;
     }
 
-    // If user has no current store yet, guide them to create one (except superadmin and customers, who are store-agnostic).
-    // /register is the ONLY registration surface — any other URL (e.g. a fresh
-    // Google user landing on their role's default page) redirects there instead
-    // of rendering a duplicate setup UI in place.
+    // Authenticated but store-less (e.g. first Google sign-in) → the SAME
+    // registration surface, store-only (the account already exists). Superadmin
+    // and customers are store-agnostic. Any non-/register URL redirects here.
     if (currentUser && !currentUser.currentStoreId && currentUser.role !== 'superadmin' && currentUser.role !== 'customer') {
         if (location.pathname !== '/register') {
             return <Navigate to="/register" replace />;
         }
-        const token = getCurrentUser()?.token;
-        const handleCompleted = (user: User) => {
-            const merged = token ? ({ ...user, token } as User) : user;
-            try { localStorage.setItem('salePilotUser', JSON.stringify(merged)); } catch { }
-            setCurrentUser(merged);
-            navigate(`/${DEFAULT_PAGES[merged.role]}`);
-        };
         return (
             <Suspense fallback={<LoadingSpinner />}>
-                <StoreRegistrationPage onCompleted={handleCompleted} showSnackbar={showSnackbar} />
+                <StoreRegistrationPage onCompleted={finishRegistration} showSnackbar={showSnackbar} />
             </Suspense>
         );
     }

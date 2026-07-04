@@ -14,6 +14,7 @@ import SuperAdminNotifications from '../../pages/superadmin/SuperAdminNotificati
 import SuperAdminSubscriptions from '../../pages/superadmin/SuperAdminSubscriptions';
 import SuperAdminCatalog from '../../pages/superadmin/SuperAdminCatalog';
 import SuperAdminCampaigns from '../../pages/superadmin/SuperAdminCampaigns';
+import SuperAdminEmails from '../../pages/superadmin/SuperAdminEmails';
 import SuperAdminFeedback from '../../pages/superadmin/SuperAdminFeedback';
 import SuperAdminSettings from '../../pages/superadmin/SuperAdminSettings';
 import WhatsAppConversationsPage from '../../pages/WhatsAppConversationsPage';
@@ -21,7 +22,7 @@ import WhatsAppSettingsPage from '../../pages/WhatsAppSettingsPage';
 import { useToast } from '../../contexts/ToastContext';
 import '../crm/crm.css';
 
-export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'feedback' | 'whatsapp' | 'whatsapp-settings' | 'settings';
+export type SuperSection = 'overview' | 'stores' | 'broadcasts' | 'billing' | 'catalog' | 'campaigns' | 'emails' | 'feedback' | 'whatsapp' | 'whatsapp-settings' | 'settings';
 
 interface SuperAdminAppProps {
     user: User;
@@ -43,6 +44,7 @@ const NAV: { id: SuperSection; label: string; icon: string; route: string }[] = 
     { id: 'billing',    label: 'Billing',    icon: 'payments',        route: '/superadmin/subscriptions' },
     { id: 'catalog',    label: 'Plans & Pricing', icon: 'sell',       route: '/superadmin/catalog' },
     { id: 'campaigns',  label: 'Campaigns',  icon: 'ads_click',       route: '/superadmin/campaigns' },
+    { id: 'emails',     label: 'Emails',     icon: 'mail',            route: '/superadmin/emails' },
     { id: 'feedback',   label: 'Feedback',   icon: 'reviews',         route: '/superadmin/feedback' },
     { id: 'whatsapp',   label: 'WhatsApp',   icon: 'chat',            route: '/superadmin/whatsapp' },
     { id: 'whatsapp-settings', label: 'WhatsApp Setup', icon: 'chat_paste_go', route: '/superadmin/whatsapp-settings' },
@@ -56,6 +58,7 @@ const sectionForSub = (subPath?: string): SuperSection => {
         case 'subscriptions': return 'billing';
         case 'catalog': return 'catalog';
         case 'campaigns': return 'campaigns';
+        case 'emails': return 'emails';
         case 'feedback': return 'feedback';
         case 'whatsapp': return 'whatsapp';
         case 'whatsapp-settings': return 'whatsapp-settings';
@@ -95,6 +98,9 @@ export const SuperAdminApp: React.FC<SuperAdminAppProps> = ({
             break;
         case 'campaigns':
             content = <SuperAdminCampaigns />;
+            break;
+        case 'emails':
+            content = <SuperAdminEmails />;
             break;
         case 'feedback':
             content = <SuperAdminFeedback />;

@@ -164,6 +164,7 @@ export default function App() {
                                 <Route path="/superadmin/subscriptions" element={<Dashboard />} />
                                 <Route path="/superadmin/catalog" element={<Dashboard />} />
                                 <Route path="/superadmin/campaigns" element={<Dashboard />} />
+                                <Route path="/superadmin/emails" element={<Dashboard />} />
                                 <Route path="/superadmin/feedback" element={<Dashboard />} />
                                 <Route path="/superadmin/whatsapp" element={<Dashboard />} />
                                 <Route path="/superadmin/whatsapp-settings" element={<Dashboard />} />
