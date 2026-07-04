@@ -4,12 +4,12 @@ import { registerStoreAndRefreshUser, checkStoreNameAvailability } from '../serv
 import { login, register, verifyRegistration } from '../services/authService';
 import { User } from '../types';
 import Logo from '../assets/salepilot.png';
-import LocationPicker from '../components/ui/LocationPicker';
 import { StepArt, StepArtKey } from '../components/registration/StepArt';
 import { useNavigate } from 'react-router-dom';
 import {
     HiOutlineBuildingStorefront,
     HiOutlinePhone,
+    HiOutlineMapPin,
     HiOutlineArrowLeft,
     HiCheckCircle,
     HiOutlineEnvelope,
@@ -472,16 +472,24 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
                     {/* Location Step */}
                     {currentKey === 'location' && (
                         <div className="space-y-4">
-                            <label className="block text-sm font-medium text-brand-text mb-1.5">
-                                Store Location <span className="text-danger">*</span>
-                            </label>
-                            <LocationPicker
-                                onLocationSelect={(loc) => setAddress(loc.address)}
-                                initialAddress={address}
-                            />
-                            {!address && (
-                                <p className="text-xs text-warning">Please set your store location.</p>
-                            )}
+                            <div>
+                                <label className="block text-sm font-medium text-brand-text mb-1.5">
+                                    Store Location <span className="text-danger">*</span>
+                                </label>
+                                <div className="relative">
+                                    <HiOutlineMapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted" />
+                                    <input
+                                        type="text"
+                                        required
+                                        autoFocus
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        className="w-full pl-9 pr-3 py-2.5 border border-brand-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent"
+                                        placeholder="e.g. 123 Cairo Road, Lusaka"
+                                    />
+                                </div>
+                                <p className="mt-1.5 text-xs text-brand-text-muted">Your store's physical address, shown on receipts.</p>
+                            </div>
 
                             {/* Summary */}
                             <div className="mt-6 p-4 bg-surface-variant rounded-xl border border-brand-border">
