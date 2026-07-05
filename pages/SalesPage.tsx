@@ -72,6 +72,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [showReceiptModal, setShowReceiptModal] = useState(false);
     const [lastSale, setLastSale] = useState<Sale | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+    // Phone number collected at the POS — backend auto-saves it to the customer
+    // (find-or-create by phone when no customer is selected).
+    const [customerPhone, setCustomerPhone] = useState('');
     const [showCustomerPicker, setShowCustomerPicker] = useState(false);
     // Progressive disclosure: 'cart' = building the order, 'payment' = method/charge step,
     // 'confirm' = mobile-money gateway/manual confirmation step.
@@ -238,6 +241,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
         setDiscount('0');
         setDiscountType('amount');
         setSelectedCustomer(null);
+        setCustomerPhone('');
         setAppliedStoreCredit(0);
         setCashReceived('');
         showSnackbar('Cart cleared', 'info');
@@ -398,6 +402,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 storeCreditUsed: finalAppliedCredit,
                 customerId: selectedCustomer?.id,
                 customerName: selectedCustomer?.name,
+                // Collected number wins; fall back to the mobile-money number so
+                // gateway payments auto-capture the customer's phone too.
+                customerPhone: (customerPhone.trim() || mobileMoneyNumber.trim()) || undefined,
+                attendedBy: user?.name,
                 refundStatus: 'none' as const,
                 cashReceived: isCashMethod ? cashReceivedNumber : undefined,
                 changeDue: isCashMethod ? changeDue : undefined,
@@ -466,7 +474,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 if (type === 'invoice') {
                     showSnackbar(`Invoice created for ${selectedCustomer?.name}`, 'success');
                 } else {
-                    setLastSale(newSale);
+                    // Fill receipt-only fields the server/offline queue may omit.
+                    setLastSale({
+                        ...newSale,
+                        customerName: newSale.customerName || selectedCustomer?.name,
+                        attendedBy: newSale.attendedBy || user?.name,
+                    });
                     setShowReceiptModal(true);
                 }
                 clearCart();
@@ -868,6 +881,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                                 setSelectedCustomer(c);
                                                 setAppliedStoreCredit(0);
                                             }}
+                                            customerPhone={customerPhone}
+                                            onCustomerPhoneChange={setCustomerPhone}
                                         />
                                     </div>
                                 )}

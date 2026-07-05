@@ -646,62 +646,48 @@ export default function Dashboard() {
     };
 
     const handleSaveProduct = async (productData: Product | Omit<Product, 'id'>): Promise<Product> => {
+        // ProductEditForm persists the product itself (image-aware postFormData/
+        // putFormData) and hands back the saved record — which always carries a
+        // server id. So when we're given a product that already has an id, the
+        // write has already happened: re-saving it here was redundant AND, because
+        // a freshly created product already has an id, this handler used to mistake
+        // the create for an update — setProducts(map) found no match, so the new
+        // product never entered the list until a manual page refresh. In that case
+        // we simply reconcile local state (upsert). Only id-less payloads (e.g. the
+        // Order Checklist importer in PurchaseOrdersApp) still need a create call.
+        const alreadySaved = 'id' in productData && !!(productData as Product).id;
+
+        if (alreadySaved) {
+            const saved = productData as Product;
+            const isNew = !products.some(p => p.id === saved.id);
+            setProducts(prev => isNew
+                ? [saved, ...prev]
+                : prev.map(p => (p.id === saved.id ? saved : p)));
+            if (isNew) upsellService.recordManualAdd();
+            showSnackbar(`Product ${isNew ? 'added' : 'updated'} successfully!`, 'success');
+            logEvent('Inventory', isNew ? 'Create Product' : 'Update Product');
+            try { await dbService.put('products', saved); } catch (_) { /* cache best-effort */ }
+            return saved;
+        }
+
         try {
-            const isUpdating = 'id' in productData && !!(productData as Product).id;
-
-            // Use FormData for both creating and updating to consistently handle images (kept for future compatibility)
-            const formData = new FormData();
-            Object.keys(productData).forEach(key => {
-                const value = (productData as any)[key];
-                if (key === 'images' && Array.isArray(value)) {
-                    value.forEach(image => {
-                        // We only append new files, not existing URL strings
-                        if (image instanceof File) {
-                            formData.append('images', image);
-                        }
-                    });
-                } else if (value !== null && value !== undefined) {
-                    formData.append(key, value);
-                }
-            });
-
-            // If updating, send existing image URLs so the backend knows what to keep
-            if (isUpdating && (productData as Product).imageUrls) {
-                formData.append('existing_images', JSON.stringify((productData as Product).imageUrls));
-            }
-
-            const savedProduct = isUpdating
-                ? await api.put<Product & { offline?: boolean }>(`/products/${(productData as Product).id}`, productData)
-                // Send as JSON, the backend handles both content types now.
-                : await api.post<Product & { offline?: boolean }>('/products', productData);
+            const savedProduct = await api.post<Product & { offline?: boolean }>('/products', productData);
 
             if ((savedProduct as any).offline) {
-                showSnackbar(`Offline: Change for "${(productData as any).name}" queued.`, 'info');
-                const tempId = isUpdating ? (productData as Product).id : `offline_${Date.now()}`;
-                const tempProduct = { ...(productData as any), id: tempId, imageUrls: [] } as Product;
-                // UI update for offline
-                if (isUpdating) {
-                    setProducts(prev => prev.map(p => p.id === tempId ? tempProduct : p));
-                } else {
-                    setProducts(prev => [tempProduct, ...prev]);
-                    upsellService.recordManualAdd();
-                }
+                showSnackbar(`Offline: New product "${(productData as any).name}" queued.`, 'info');
+                const tempProduct = { ...(productData as any), id: `offline_${Date.now()}`, imageUrls: [] } as Product;
+                setProducts(prev => [tempProduct, ...prev]);
+                upsellService.recordManualAdd();
                 // Persist to IndexedDB so details remain available after reload while offline
                 try { await dbService.put('products', tempProduct); } catch (_) { }
                 return tempProduct;
-            } else {
-                showSnackbar(`Product ${isUpdating ? 'updated' : 'added'} successfully!`, 'success');
-                logEvent('Inventory', isUpdating ? 'Update Product' : 'Create Product');
-                // Update state directly instead of calling fetchData()
-                if (isUpdating) {
-                    setProducts(prev => prev.map(p => p.id === (savedProduct as Product).id ? (savedProduct as Product) : p));
-                } else {
-                    // Add the new product to the top of the list
-                    setProducts(prev => [savedProduct as Product, ...prev]);
-                    upsellService.recordManualAdd();
-                }
-                return savedProduct as Product;
             }
+
+            showSnackbar('Product added successfully!', 'success');
+            logEvent('Inventory', 'Create Product');
+            setProducts(prev => [savedProduct as Product, ...prev]);
+            upsellService.recordManualAdd();
+            return savedProduct as Product;
         } catch (err: any) {
             // The error message from the backend is more user-friendly
             const message = err.response?.data?.message || err.message;

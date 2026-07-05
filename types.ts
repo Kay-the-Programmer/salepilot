@@ -117,6 +117,11 @@ export interface Sale {
     refundStatus: 'none' | 'partially_refunded' | 'fully_refunded' | 'returned' | 'partially_returned';
     customerId?: string;
     customerName?: string;
+    /** Phone number collected at the POS; the backend auto-saves it to the customer record. */
+    customerPhone?: string;
+    /** Cashier who processed the sale — shown on the receipt ("Attended by"). */
+    attendedBy?: string;
+    attendedById?: string;
     totalRefunded?: number;
     originalTotal?: number;
     // New fields for invoicing

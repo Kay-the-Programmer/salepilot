@@ -15,7 +15,7 @@ interface ReceiptModalProps {
 }
 
 const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, showSnackbar, storeSettings }) => {
-    const { transactionId, timestamp, cart, total, subtotal, tax, discount, customerName, storeCreditUsed } = saleData;
+    const { transactionId, timestamp, cart, total, subtotal, tax, discount, customerName, customerPhone, attendedBy, storeCreditUsed } = saleData;
     const modalPrintAreaRef = useRef<HTMLDivElement>(null);
     const barcodeRef = useRef<HTMLCanvasElement>(null);
 
@@ -208,10 +208,19 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                     {new Date(timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                                 </p>
                             </div>
-                            {customerName && (
+                            {attendedBy && (
+                                <div className="col-span-2">
+                                    <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Attended By</p>
+                                    <p className="text-sm font-semibold text-slate-900">{attendedBy}</p>
+                                </div>
+                            )}
+                            {(customerName || customerPhone) && (
                                 <div className="col-span-2">
                                     <p className="text-[10px] text-slate-400 uppercase tracking-widest mb-0.5">Customer</p>
-                                    <p className="text-sm font-semibold text-slate-900">{customerName}</p>
+                                    <p className="text-sm font-semibold text-slate-900">{customerName || customerPhone}</p>
+                                    {customerName && customerPhone && (
+                                        <p className="text-xs text-slate-500">{customerPhone}</p>
+                                    )}
                                 </div>
                             )}
                         </div>

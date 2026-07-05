@@ -8,9 +8,20 @@ interface CustomerSelectProps {
     customers: Customer[];
     selectedCustomer: Customer | null;
     onSelectCustomer: (customer: Customer | null) => void;
+    /** Phone number collected for this sale — auto-saved to the customer on checkout. */
+    customerPhone?: string;
+    onCustomerPhoneChange?: (phone: string) => void;
 }
 
-const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCustomer, onSelectCustomer }) => {
+const digitsOnly = (v: string) => v.replace(/\D/g, '');
+
+const CustomerSelect: React.FC<CustomerSelectProps> = ({
+    customers,
+    selectedCustomer,
+    onSelectCustomer,
+    customerPhone = '',
+    onCustomerPhoneChange,
+}) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -18,11 +29,23 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
     const filteredCustomers = useMemo(() => {
         if (!searchTerm) return [];
         const term = searchTerm.toLowerCase();
+        const termDigits = digitsOnly(searchTerm);
         return customers.filter(c =>
             c.name.toLowerCase().includes(term) ||
-            (c.email && c.email.toLowerCase().includes(term))
+            (c.email && c.email.toLowerCase().includes(term)) ||
+            (termDigits.length >= 3 && c.phone && digitsOnly(c.phone).includes(termDigits))
         ).slice(0, 5); // Limit results for performance
     }, [searchTerm, customers]);
+
+    // Auto-match: when the typed phone number belongs to an existing customer,
+    // attach them to the sale automatically.
+    useEffect(() => {
+        if (selectedCustomer || !customerPhone) return;
+        const phoneDigits = digitsOnly(customerPhone);
+        if (phoneDigits.length < 7) return;
+        const match = customers.find(c => c.phone && digitsOnly(c.phone) === phoneDigits);
+        if (match) onSelectCustomer(match);
+    }, [customerPhone, customers, selectedCustomer, onSelectCustomer]);
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -43,7 +66,12 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
     const handleClear = () => {
         onSelectCustomer(null);
         setSearchTerm('');
+        onCustomerPhoneChange?.('');
     };
+
+    const selectedNeedsPhone = !!selectedCustomer && !selectedCustomer.phone;
+    const phoneInputVisible = !!onCustomerPhoneChange && (!selectedCustomer || selectedNeedsPhone);
+    const phoneDigits = digitsOnly(customerPhone);
 
     return (
         <div className="relative" ref={wrapperRef}>
@@ -59,7 +87,7 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
                         </div>
                         <div>
                             <p className="font-semibold text-sm text-slate-900 dark:text-primary">{selectedCustomer.name}</p>
-                            <p className="text-xs text-primary dark:text-primary">{selectedCustomer.email}</p>
+                            <p className="text-xs text-primary dark:text-primary">{selectedCustomer.phone || selectedCustomer.email}</p>
                         </div>
                     </div>
                     <button
@@ -75,7 +103,7 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
                     <input
                         id="customer-search"
                         type="text"
-                        placeholder="Search by name or email..."
+                        placeholder="Search by name, phone or email..."
                         value={searchTerm}
                         onChange={e => {
                             setSearchTerm(e.target.value);
@@ -95,11 +123,32 @@ const CustomerSelect: React.FC<CustomerSelectProps> = ({ customers, selectedCust
                                         className="px-4 py-2.5 mx-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/10 cursor-pointer active:scale-[0.98] transition-all duration-200"
                                     >
                                         <p className="font-semibold text-sm text-slate-900 dark:text-white">{customer.name}</p>
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{customer.email}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{customer.phone || customer.email}</p>
                                     </li>
                                 ))}
                             </ul>
                         </div>
+                    )}
+                </div>
+            )}
+
+            {phoneInputVisible && (
+                <div className="mt-2">
+                    <input
+                        id="customer-phone"
+                        type="tel"
+                        inputMode="tel"
+                        placeholder={selectedNeedsPhone ? `Add ${selectedCustomer!.name}'s phone number...` : 'Customer phone number (optional)...'}
+                        value={customerPhone}
+                        onChange={e => onCustomerPhoneChange!(e.target.value)}
+                        className="w-full px-4 py-3 border border-slate-200 dark:border-white/10 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary/50 focus:border-primary/50 outline-none transition-all shadow-sm"
+                    />
+                    {phoneDigits.length >= 7 && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 px-1">
+                            {selectedNeedsPhone
+                                ? 'Number will be saved to this customer on checkout.'
+                                : 'New number — a customer profile will be saved automatically on checkout.'}
+                        </p>
                     )}
                 </div>
             )}
