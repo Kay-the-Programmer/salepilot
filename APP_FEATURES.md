@@ -110,7 +110,7 @@ Each feature below is launched as a tile from the **Discover** launcher (`compon
 - **Functions:** `handleSaveCustomer` / `handleDeleteCustomer`; loyalty, segments, insights; store credit & account balances; two‑way **WhatsApp Inbox** (see 4.11).
 
 ### 4.6 Procurement & Suppliers
-- **Procurement Hub** (`components/procure-app/ProcureApp.tsx`), **Purchase Orders app** (`pages/purchase-orders/PurchaseOrdersApp.tsx`, `pages/PurchaseOrdersPage.tsx`), `pages/SuppliersPage.tsx`.
+- **Purchase Orders** hub (`components/procure-app/ProcureApp.tsx`; renamed from "Procurement Hub") — Dashboard / Suppliers / Orders / Order Lists. The Order Lists tab embeds `pages/purchase-orders/PurchaseOrdersApp.tsx` (the former standalone `/po` app, now merged). `pages/SuppliersPage.tsx`.
 - **Functions:** `handleSaveSupplier` / `handleDeleteSupplier`, `handleSavePurchaseOrder` / `handleDeletePurchaseOrder`, `handleReceivePOItems` (receive stock → updates inventory + PO status).
 
 ### 4.7 Accounting Hub

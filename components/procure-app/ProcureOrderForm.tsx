@@ -42,7 +42,16 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     const [productSearch, setProductSearch] = useState('');
 
     const selectSupplier = (supplier: Supplier) => {
-        setPo(prev => ({ ...prev, supplierId: supplier.id, supplierName: supplier.name, items: [], isMarketplaceOrder: !!supplier.linkedStoreId }));
+        // Preserve any pre-filled items when assigning the first supplier (e.g. a
+        // PO drafted from an order list); only clear when switching suppliers,
+        // since catalogue items are supplier-scoped.
+        setPo(prev => ({
+            ...prev,
+            supplierId: supplier.id,
+            supplierName: supplier.name,
+            items: prev.supplierId && prev.supplierId !== supplier.id ? [] : prev.items,
+            isMarketplaceOrder: !!supplier.linkedStoreId,
+        }));
         setSupplierPickerOpen(false);
     };
 

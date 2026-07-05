@@ -27,11 +27,16 @@ interface ProcureOrdersProps {
     /** Auto-reorder is a premium add-on. */
     autoReorderEntitled?: boolean;
     onRequireUpgrade?: () => void;
+    /** A PO drafted from an order list — opened in the form so the user assigns
+     *  a supplier (required by the backend) before it is first saved. */
+    importedDraft?: PurchaseOrder | null;
+    onConsumeImportedDraft?: () => void;
 }
 
-type Filter = 'all' | 'open' | 'received' | 'canceled';
+type Filter = 'all' | 'drafts' | 'open' | 'received' | 'canceled';
 const FILTERS: { id: Filter; label: string }[] = [
     { id: 'all', label: 'All' },
+    { id: 'drafts', label: 'Drafts' },
     { id: 'open', label: 'Open' },
     { id: 'received', label: 'Received' },
     { id: 'canceled', label: 'Canceled' },
@@ -40,6 +45,7 @@ const FILTERS: { id: Filter; label: string }[] = [
 export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
     purchaseOrders, suppliers, products, storeSettings, onSave, onDelete, onReceiveItems, showSnackbar,
     draftSupplierId, onConsumeDraft, autoGenerate, onConsumeAutoGenerate, autoReorderEntitled = false, onRequireUpgrade,
+    importedDraft, onConsumeImportedDraft,
 }) => {
     const [view, setView] = useState<'list' | 'form' | 'suggest' | 'detail'>('list');
     const [editing, setEditing] = useState<PurchaseOrder | null>(null);
@@ -77,6 +83,19 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
         setView('form');
     };
 
+    // Open a PO drafted from an order list in the form (as an "edit" of the
+    // not-yet-saved draft, so its id/number/items/notes carry through). The
+    // form requires a supplier before saving — satisfying the backend rule.
+    useEffect(() => {
+        if (importedDraft) {
+            setEditing(importedDraft);
+            setCreateSupplierId(undefined);
+            setFormItems(undefined);
+            setView('form');
+            onConsumeImportedDraft?.();
+        }
+    }, [importedDraft, onConsumeImportedDraft]);
+
     // Pre-open the create form when arriving from a supplier's "Place Order".
     useEffect(() => {
         if (draftSupplierId) {
@@ -99,6 +118,7 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
 
     const visible = useMemo(() => {
         const list = purchaseOrders.filter(po => {
+            if (filter === 'drafts') return po.status === 'draft';
             if (filter === 'open') return OPEN_STATUSES.includes(po.status);
             if (filter === 'received') return po.status === 'received';
             if (filter === 'canceled') return po.status === 'canceled';

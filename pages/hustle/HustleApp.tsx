@@ -26,12 +26,19 @@ interface HustleAppProps {
   sales: Sale[];
   storeSettings: StoreSettings;
   showSnackbar?: (message: string, type?: any) => void;
+  /**
+   * Embedded as the POS "Quick" mode: hide the app's own chrome (desktop
+   * sidebar + mobile top bar) and render only the keypad, with an optional
+   * mode switcher rendered on top so the user can flip back to Standard.
+   */
+  embedded?: boolean;
+  modeSwitch?: React.ReactNode;
 }
 
 const startOfDay = (d = new Date()) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
 const DAY = 86400000;
 
-const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackbar }) => {
+const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackbar, embedded = false, modeSwitch }) => {
   const navigate = useNavigate();
   const { preference, cycleTheme } = useTheme();
   const { openAppSwitcher } = useAppSwitcher();
@@ -148,7 +155,9 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
 
   return (
     <div className="sp-assistant sp-hustle h-full flex overflow-hidden">
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — hidden when embedded as the POS Quick mode (the POS
+          shell already provides the navigation chrome). */}
+      {!embedded && (
       <aside className="hidden md:flex flex-col w-60 flex-shrink-0 m3-bg-surface border-r m3-border-outline-variant">
         <div className="h-16 flex items-center gap-2 px-5 flex-shrink-0">
           <span className="material-symbols-outlined m3-text-primary" style={{ fontSize: 26 }}>bolt</span>
@@ -166,32 +175,42 @@ const HustleApp: React.FC<HustleAppProps> = ({ sales, storeSettings, showSnackba
           <button onClick={cycleTheme} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold m3-text-on-surface-variant hover:m3-bg-surface-high transition"><span className="material-symbols-outlined" style={{ fontSize: 22 }}>{THEME_PREFERENCE_ICON[preference]}</span>{THEME_PREFERENCE_LABEL[preference]}</button>
         </div>
       </aside>
+      )}
 
       {/* Main column */}
       <div className="flex-1 min-h-0 flex flex-col">
-        {/* Mobile top bar — collapsible in the Hustle view to free up space */}
-        {(view !== 'hustle' || !barHidden) && (
-          <StandaloneTopBar
-            currentRoute="hustle"
-            navItems={NAV.map(n => ({ icon: n.icon, label: n.label, active: view === n.id, onClick: () => setView(n.id) }))}
-            onExit={() => navigate('/')}
-          />
+        {embedded ? (
+          modeSwitch && (
+            <div className="flex-shrink-0 flex justify-center py-2 border-b m3-border-outline-variant">{modeSwitch}</div>
+          )
+        ) : (
+          /* Mobile top bar — collapsible in the Hustle view to free up space */
+          (view !== 'hustle' || !barHidden) && (
+            <StandaloneTopBar
+              currentRoute="hustle"
+              navItems={NAV.map(n => ({ icon: n.icon, label: n.label, active: view === n.id, onClick: () => setView(n.id) }))}
+              onExit={() => navigate('/')}
+            />
+          )
         )}
 
         {/* Body */}
         <div className={`flex-1 min-h-0 flex flex-col${view === 'hustle' ? ' md:items-center md:justify-center md:overflow-y-auto md:py-8' : ''}`}>
           {view === 'hustle' && (
             <div className="flex-1 min-h-0 flex flex-col justify-center w-full max-w-md mx-auto px-4 pb-3 md:flex-none md:max-w-sm md:px-6 md:pt-6 md:pb-6 md:m3-bg-surface-lowest md:border md:m3-border-outline-variant md:rounded-3xl md:shadow-lg">
-              {/* Show / hide the top bar to maximise space (mobile only) */}
-              <button
-                type="button"
-                onClick={() => setBarHidden((h) => !h)}
-                className="md:hidden min-h-0 flex-shrink-0 self-center mt-1 mb-1 inline-flex items-center gap-1 h-6 px-3 rounded-full m3-bg-surface-container m3-text-on-surface-variant text-[11px] font-semibold active:scale-95 transition"
-                aria-label={barHidden ? 'Show menu bar' : 'Hide menu bar to free up space'}
-              >
-                <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{barHidden ? 'expand_more' : 'expand_less'}</span>
-                {barHidden ? 'Show menu' : 'More space'}
-              </button>
+              {/* Show / hide the top bar to maximise space (mobile only) —
+                  irrelevant when embedded in the POS (no own top bar). */}
+              {!embedded && (
+                <button
+                  type="button"
+                  onClick={() => setBarHidden((h) => !h)}
+                  className="md:hidden min-h-0 flex-shrink-0 self-center mt-1 mb-1 inline-flex items-center gap-1 h-6 px-3 rounded-full m3-bg-surface-container m3-text-on-surface-variant text-[11px] font-semibold active:scale-95 transition"
+                  aria-label={barHidden ? 'Show menu bar' : 'Hide menu bar to free up space'}
+                >
+                  <span className="material-symbols-outlined" style={{ fontSize: 16 }}>{barHidden ? 'expand_more' : 'expand_less'}</span>
+                  {barHidden ? 'Show menu' : 'More space'}
+                </button>
+              )}
 
               {/* Current entry */}
               <div className="flex-shrink-0 flex flex-col items-center text-center">

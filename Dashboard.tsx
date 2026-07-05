@@ -7,6 +7,7 @@ import { lazy, Suspense } from 'react';
 
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
+import PosModeToggle from './components/pos/PosModeToggle';
 import { hasModule, MODULES } from './utils/entitlements';
 import type { CampaignDTO } from './utils/upsell';
 import { ROLE_PAGES } from './utils/rbac';
@@ -29,7 +30,6 @@ const NotificationsApp = lazy(() => import('@/pages/notifications/NotificationsA
 const ProfileApp = lazy(() => import('@/pages/profile/ProfileApp'));
 const AccountingApp = lazy(() => import('@/pages/accounting/AccountingApp'));
 const LogisticsApp = lazy(() => import('@/pages/logistics/LogisticsApp'));
-const PurchaseOrdersApp = lazy(() => import('@/pages/purchase-orders/PurchaseOrdersApp'));
 const HustleApp = lazy(() => import('@/pages/hustle/HustleApp'));
 const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
 const SalesPage = lazy(() => import('@/pages/SalesPage'));
@@ -142,6 +142,14 @@ export default function Dashboard() {
     const [installPrompt, setInstallPrompt] = useState<any | null>(null); // PWA install prompt event
     // Standalone POS shell (/pos) mobile drawer
     const [posDrawerOpen, setPosDrawerOpen] = useState(false);
+    // POS mode — Standard cart checkout vs the Quick keypad (embedded Hustle POS).
+    const [posMode, setPosMode] = useState<'standard' | 'quick'>(
+        () => (typeof localStorage !== 'undefined' && localStorage.getItem('pos.mode') === 'quick') ? 'quick' : 'standard',
+    );
+    const changePosMode = useCallback((m: 'standard' | 'quick') => {
+        setPosMode(m);
+        try { localStorage.setItem('pos.mode', m); } catch { /* ignore */ }
+    }, []);
 
     // Superadmin mode and store selection
     const [superMode, setSuperMode] = useState<'superadmin' | 'store'>(() => {
@@ -1443,26 +1451,10 @@ export default function Dashboard() {
         );
     }
 
-    // ── Standalone Purchase Orders app (/po) ──
+    // ── Legacy /po → merged into the Purchase Orders hub (/procure/lists) ──
     const poParts = location.pathname.split('/');
     if (poParts[1] === 'po' && currentUser) {
-        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
-        if (!allowed.includes('purchase-orders')) return <Navigate to="/" replace />;
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                        <PurchaseOrdersApp
-                            purchaseOrders={purchaseOrders}
-                            products={products}
-                            storeSettings={storeSettings!}
-                            onSaveProduct={handleSaveProduct}
-                            showSnackbar={showSnackbar}
-                        />
-                    </Suspense>
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
+        return <Navigate to="/procure/lists" replace />;
     }
 
     // ── Standalone Logistics app (/fleet) ──
@@ -1686,14 +1678,14 @@ export default function Dashboard() {
         );
     }
 
-    // ── Standalone Supplier & Procurement Hub (/procure, /procure/suppliers, /procure/orders) ──
+    // ── Standalone Purchase Orders hub (/procure, /procure/suppliers, /procure/orders, /procure/lists) ──
     const procParts = location.pathname.split('/');
     if (procParts[1] === 'procure' && currentUser) {
         const procAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
         if (!procAllowedPages.includes('suppliers')) {
             return <Navigate to="/" replace />;
         }
-        const procSection = (procParts[2] === 'suppliers' ? 'suppliers' : procParts[2] === 'orders' ? 'orders' : 'dashboard') as 'dashboard' | 'suppliers' | 'orders';
+        const procSection = (procParts[2] === 'suppliers' ? 'suppliers' : procParts[2] === 'orders' ? 'orders' : procParts[2] === 'lists' ? 'lists' : 'dashboard') as 'dashboard' | 'suppliers' | 'orders' | 'lists';
         return (
             <OnboardingProvider user={currentUser}>
                 <NotificationProvider user={currentUser}>
@@ -1703,6 +1695,7 @@ export default function Dashboard() {
                             user={currentUser}
                             suppliers={suppliers}
                             products={products}
+                            categories={categories}
                             purchaseOrders={purchaseOrders}
                             supplierInvoices={supplierInvoices}
                             storeSettings={storeSettings}
@@ -1711,6 +1704,7 @@ export default function Dashboard() {
                             onSavePurchaseOrder={handleSavePurchaseOrder}
                             onDeletePurchaseOrder={handleDeletePurchaseOrder}
                             onReceivePOItems={handleReceivePOItems}
+                            onSaveProduct={handleSaveProduct}
                             showSnackbar={showSnackbar}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/procure' : `/procure/${s}`)}
                             onExit={() => navigate('/')}
@@ -1817,11 +1811,24 @@ export default function Dashboard() {
         }
 
         const openPosDrawer = () => setPosDrawerOpen(true);
+        // The Quick keypad (embedded Hustle POS) is only offered while selling —
+        // Sales History and the POS Dashboard always use the standard view.
+        const posSelling = posSection === 'pos' && posParts[2] !== 'history';
         let posContent: ReactNode;
         if (posSection === 'dashboard') {
             posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
+        } else if (posSelling && posMode === 'quick') {
+            posContent = (
+                <HustleApp
+                    embedded
+                    sales={sales}
+                    storeSettings={storeSettings!}
+                    showSnackbar={showSnackbar}
+                    modeSwitch={<PosModeToggle mode={posMode} onChange={changePosMode} />}
+                />
+            );
         } else {
-            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} />;
+            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} posMode={posMode} onChangePosMode={changePosMode} />;
         }
 
         return (

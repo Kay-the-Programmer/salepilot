@@ -120,10 +120,11 @@ export default function App() {
                                 <Route path="/team" element={<Dashboard />} />
                                 <Route path="/team/roles" element={<Dashboard />} />
 
-                                {/* Standalone Supplier & Procurement Hub (own shell: Dashboard / Suppliers / Orders) */}
+                                {/* Standalone Purchase Orders hub (own shell: Dashboard / Suppliers / Orders / Order Lists) */}
                                 <Route path="/procure" element={<Dashboard />} />
                                 <Route path="/procure/suppliers" element={<Dashboard />} />
                                 <Route path="/procure/orders" element={<Dashboard />} />
+                                <Route path="/procure/lists" element={<Dashboard />} />
 
                                 {/* Standalone pages that replaced the legacy admin shell */}
                                 <Route path="/reports" element={<Dashboard />} />

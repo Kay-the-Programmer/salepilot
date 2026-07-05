@@ -16,6 +16,10 @@ export interface QuickList {
     items: QuickItem[];
     createdAt: number;
     importedAt?: number;
+    /** Set once the list has been exported to a purchase order — guards against
+     *  accidentally creating duplicate POs from the same list. */
+    exportedAt?: number;
+    exportedPoNumber?: string;
 }
 
 /** Fetch every order list for the current store. */

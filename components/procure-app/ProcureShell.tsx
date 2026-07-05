@@ -8,7 +8,7 @@ import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 
-export type ProcSection = 'dashboard' | 'suppliers' | 'orders';
+export type ProcSection = 'dashboard' | 'suppliers' | 'orders' | 'lists';
 
 interface ProcureShellProps {
     active: ProcSection;
@@ -23,19 +23,20 @@ const NAV: { id: ProcSection; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'suppliers', label: 'Suppliers', icon: 'local_shipping' },
     { id: 'orders', label: 'Orders', icon: 'receipt_long' },
+    { id: 'lists', label: 'Order Lists', icon: 'checklist' },
 ];
 
-/** Standalone Supplier & Procurement Hub frame — reuses the shared M3 chrome. */
+/** Standalone Purchase Orders hub frame — reuses the shared M3 chrome. */
 export const ProcureShell: React.FC<ProcureShellProps> = ({ active, user, onNavigate, onExit, onLogout, children }) => {
     const { openAppSwitcher } = useAppSwitcher();
     return (
         <div className="crm">
-            <aside className="crm-rail" aria-label="Procurement navigation">
+            <aside className="crm-rail" aria-label="Purchase Orders navigation">
                 <div className="crm-rail__brand">
-                    <span className="crm-bar__logo"><Icon name="local_shipping" size={22} fill={1} /></span>
+                    <span className="crm-bar__logo"><Icon name="shopping_cart_checkout" size={22} fill={1} /></span>
                     <div className="crm-rail__brand-text">
-                        <span className="crm-rail__brand-title">SalePilot Procurement</span>
-                        <span className="crm-rail__brand-sub">Supplier Hub</span>
+                        <span className="crm-rail__brand-title">SalePilot Purchase Orders</span>
+                        <span className="crm-rail__brand-sub">Suppliers &amp; POs</span>
                     </div>
                 </div>
 

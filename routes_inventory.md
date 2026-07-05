@@ -34,8 +34,8 @@ keep working.
 | `/orders` | Orders | Online order management (Velocity-styled). |
 | `/crm`, `/crm/customers`, `/crm/loyalty`, `/crm/insights` | CRM | |
 | `/inv`, `/inv/items`, `/inv/stock-takes`, `/inv/alerts` | Inventory Manager | Stock takes are a section of this app. |
-| `/procure`, `/procure/suppliers`, `/procure/orders` | Procurement Hub | Single PO manager. |
-| `/po` | Purchase Orders | Order lists & supplier POs. |
+| `/procure`, `/procure/suppliers`, `/procure/orders`, `/procure/lists` | Purchase Orders | Suppliers + PO manager + Order Lists (merged former `/po` app). |
+| `/po` | → redirects to `/procure/lists` | Legacy Purchase Orders app, folded into the hub. |
 | `/books` | Accounting Hub | |
 | `/team`, `/team/roles` | User Manager | |
 | `/audit` | Audit Trail | |

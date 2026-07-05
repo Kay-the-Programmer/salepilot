@@ -1,9 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { Supplier, Product, PurchaseOrder, SupplierInvoice, StoreSettings, User } from '../../types';
+import { Supplier, Product, Category, PurchaseOrder, SupplierInvoice, StoreSettings, User } from '../../types';
 import { ProcureShell, ProcSection } from './ProcureShell';
 import ProcureDashboard from './ProcureDashboard';
 import ProcureSuppliers from './ProcureSuppliers';
 import ProcureOrders from './ProcureOrders';
+import PurchaseOrdersApp from '../../pages/purchase-orders/PurchaseOrdersApp';
 import PremiumUpgradeModal from '../ui/PremiumUpgradeModal';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import { buildProcureOverview, generateReorderDrafts } from './procureModel';
@@ -15,6 +16,7 @@ interface ProcureAppProps {
     user: User;
     suppliers: Supplier[];
     products: Product[];
+    categories: Category[];
     purchaseOrders: PurchaseOrder[];
     supplierInvoices: SupplierInvoice[];
     storeSettings: StoreSettings | null;
@@ -23,6 +25,7 @@ interface ProcureAppProps {
     onSavePurchaseOrder: (po: PurchaseOrder) => void;
     onDeletePurchaseOrder: (poId: string) => void;
     onReceivePOItems: (poId: string, items: { productId: string; quantity: number }[]) => void;
+    onSaveProduct: (product: Product | Omit<Product, 'id'>) => Promise<Product>;
     showSnackbar: (message: string, type?: any) => void;
     onNavigate: (section: ProcSection) => void;
     onExit: () => void;
@@ -30,17 +33,22 @@ interface ProcureAppProps {
 }
 
 /**
- * Standalone Supplier & Procurement Hub. The dashboard derives from live
- * suppliers / purchase orders / supplier invoices; the Suppliers and Orders
- * tabs reuse the existing management pages unchanged.
+ * Standalone Purchase Orders hub (formerly "Procurement Hub"). The dashboard
+ * derives from live suppliers / purchase orders / supplier invoices; the
+ * Suppliers and Orders tabs reuse the existing management pages, and the Order
+ * Lists tab embeds the former standalone /po app.
  */
 export const ProcureApp: React.FC<ProcureAppProps> = ({
-    section, user, suppliers, products, purchaseOrders, supplierInvoices, storeSettings,
-    onSaveSupplier, onDeleteSupplier, onSavePurchaseOrder, onDeletePurchaseOrder, onReceivePOItems, showSnackbar,
+    section, user, suppliers, products, categories, purchaseOrders, supplierInvoices, storeSettings,
+    onSaveSupplier, onDeleteSupplier, onSavePurchaseOrder, onDeletePurchaseOrder, onReceivePOItems, onSaveProduct, showSnackbar,
     onNavigate, onExit, onLogout,
 }) => {
     const [draftSupplierId, setDraftSupplierId] = useState<string | null>(null);
     const [autoSignal, setAutoSignal] = useState(false);
+    // A PO drafted from an order list, opened in the Orders form so the user
+    // assigns a supplier there — the backend requires one, so we never save
+    // a supplier-less PO directly.
+    const [listDraftPo, setListDraftPo] = useState<PurchaseOrder | null>(null);
     const [upgradeOpen, setUpgradeOpen] = useState(false);
     const autoReorderEntitled = hasModule(storeSettings, MODULES.AUTO_REORDER);
 
@@ -92,6 +100,21 @@ export const ProcureApp: React.FC<ProcureAppProps> = ({
                 onConsumeAutoGenerate={() => setAutoSignal(false)}
                 autoReorderEntitled={autoReorderEntitled}
                 onRequireUpgrade={() => setUpgradeOpen(true)}
+                importedDraft={listDraftPo}
+                onConsumeImportedDraft={() => setListDraftPo(null)}
+            />
+        );
+    } else if (section === 'lists') {
+        content = (
+            <PurchaseOrdersApp
+                embedded
+                purchaseOrders={purchaseOrders}
+                products={products}
+                categories={categories}
+                storeSettings={storeSettings!}
+                onSaveProduct={onSaveProduct}
+                showSnackbar={showSnackbar}
+                onCreatePurchaseOrder={(po) => { setListDraftPo(po); onNavigate('orders'); }}
             />
         );
     } else {

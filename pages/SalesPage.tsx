@@ -19,6 +19,7 @@ import { ConfirmPaymentPanel } from '../components/sales/ConfirmPaymentPanel';
 import { SalesHistoryView } from '../components/sales/SalesHistoryView';
 import CustomerSelect from '../components/sales/CustomerSelect';
 import PosIcon from '../components/sales/PosIcon';
+import PosModeToggle from '../components/pos/PosModeToggle';
 import UnifiedScannerModal from '../components/UnifiedScannerModal';
 import Logo from '../assets/logo.png';
 import AppSwitcher from '../components/standalone/AppSwitcher';
@@ -40,6 +41,10 @@ interface SalesPageProps {
     onProcessReturn: (returnInfo: Return) => void;
     /** Open on a specific view — /pos/history deep-links Sales History & Refunds. */
     initialView?: 'sell' | 'history';
+    /** POS mode (Standard cart POS vs the Quick keypad). When provided, a
+     *  Standard/Quick switch is shown in the top bar while selling. */
+    posMode?: 'standard' | 'quick';
+    onChangePosMode?: (mode: 'standard' | 'quick') => void;
 }
 
 const SalesPage: React.FC<SalesPageProps> = ({
@@ -54,6 +59,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
     onProcessReturn,
     onLogout,
     initialView,
+    posMode,
+    onChangePosMode,
 }) => {
     const navigate = useNavigate();
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -551,6 +558,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
                             <span className="sale__scanbadge-dot" />
                             Scanner Active
                         </span>
+                    )}
+
+                    {posView === 'sell' && posMode && onChangePosMode && (
+                        <PosModeToggle mode={posMode} onChange={onChangePosMode} />
                     )}
 
                     {/* Simple POS menu — Sell / Sales History / Held / Help */}
