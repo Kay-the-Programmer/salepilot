@@ -145,51 +145,50 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
     return createPortal(
         <div
-            className="fixed inset-0 z-[200] bg-brand-text/40 dark:bg-slate-950/60 backdrop-blur-md flex items-end sm:items-center justify-center sm:p-4 transition-all duration-300 animate-fade-in"
+            className="fixed inset-0 z-[200] bg-slate-950/40 dark:bg-slate-950/70 backdrop-blur-sm flex items-end sm:items-center justify-center sm:p-4 transition-all duration-300 animate-fade-in"
             role="dialog"
             aria-modal="true"
             aria-labelledby="receipt-title"
             onClick={onClose}
         >
             <div
-                className="relative w-full sm:max-w-[420px] max-h-[92vh] sm:max-h-[88vh] flex flex-col bg-background dark:bg-slate-900 sm:rounded-[28px] rounded-t-[28px] shadow-[0_24px_60px_rgb(26,26,46,0.18)] ring-1 ring-brand-border dark:ring-white/10 overflow-hidden animate-slide-up"
+                className="relative w-full sm:max-w-[400px] max-h-[92vh] sm:max-h-[88vh] flex flex-col bg-background rounded-t-2xl sm:rounded-2xl border border-brand-border shadow-xl overflow-hidden animate-slide-up"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Drag handle (mobile) */}
-                <div className="absolute top-0 inset-x-0 h-10 flex justify-center items-center sm:hidden z-20 print-hidden">
-                    <div className="w-12 h-1.5 bg-brand-border rounded-full" />
+                <div className="flex-none flex justify-center pt-2.5 pb-1 sm:hidden print-hidden">
+                    <div className="w-10 h-1 bg-brand-border rounded-full" />
                 </div>
 
-                {/* Close */}
-                <button
-                    onClick={onClose}
-                    aria-label="Close receipt"
-                    className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center rounded-full bg-surface/80 dark:bg-slate-800/80 border border-brand-border dark:border-white/10 text-brand-text-muted hover:text-brand-text transition-colors backdrop-blur-md active:scale-95 print-hidden"
-                >
-                    <PosIcon name="close" size={18} />
-                </button>
-
-                {/* Success header */}
-                <div className="flex-none pt-9 sm:pt-7 pb-5 px-6 text-center print-hidden">
-                    <div className="w-14 h-14 mx-auto rounded-2xl bg-success-muted dark:bg-primary/15 flex items-center justify-center mb-3">
-                        <PosIcon name="check_circle" size={30} fill={1} className="text-primary" />
+                {/* Slim confirmation header */}
+                <div className="flex-none flex items-center justify-between gap-3 px-5 pt-4 sm:pt-5 pb-4 print-hidden">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="flex-none w-8 h-8 rounded-full bg-success-muted flex items-center justify-center">
+                            <PosIcon name="check_circle" size={18} fill={1} className="text-success" />
+                        </span>
+                        <div className="min-w-0 leading-tight">
+                            <p id="receipt-title" className="text-sm font-bold text-brand-text">Payment successful</p>
+                            <p className="text-xs text-brand-text-muted">{formatCurrency(total, storeSettings)} received</p>
+                        </div>
                     </div>
-                    <h2 id="receipt-title" className="text-lg font-extrabold tracking-tight text-brand-text">Payment Successful</h2>
-                    <p className="text-[13px] text-brand-text-muted mt-0.5">{formatCurrency(total, storeSettings)} received</p>
+                    <button
+                        onClick={onClose}
+                        aria-label="Close receipt"
+                        className="flex-none w-8 h-8 flex items-center justify-center rounded-lg text-brand-text-muted hover:bg-surface-variant hover:text-brand-text transition-colors active:scale-95"
+                    >
+                        <PosIcon name="close" size={18} />
+                    </button>
                 </div>
 
                 {/* Scrollable receipt */}
-                <div className="flex-1 overflow-y-auto no-scrollbar pb-28 px-4 sm:px-6">
+                <div className="flex-1 overflow-y-auto no-scrollbar px-4 sm:px-6 pb-6">
                     <div
                         ref={modalPrintAreaRef}
-                        className="bg-white text-slate-900 rounded-3xl p-6 sm:p-7 shadow-sm print:shadow-none print:p-0 mx-auto w-full max-w-sm"
+                        className="bg-white text-slate-900 rounded-lg border border-slate-200 p-6 print:border-0 print:p-0 mx-auto w-full max-w-sm"
                     >
                         {/* Header */}
                         <div className="text-center mb-6">
-                            <div className="w-14 h-14 mx-auto bg-slate-100 rounded-2xl flex items-center justify-center mb-3 print-hidden">
-                                <PosIcon name="storefront" size={28} fill={1} className="text-slate-500" />
-                            </div>
-                            <h2 className="text-xl font-extrabold tracking-tight text-slate-900 mb-1">{storeSettings.name}</h2>
+                            <h2 className="text-lg font-extrabold tracking-tight text-slate-900 mb-1">{storeSettings.name}</h2>
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Official Receipt</p>
                         </div>
 
@@ -274,8 +273,8 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                                 </div>
                             )}
                             <div className="flex justify-between items-end pt-3">
-                                <span className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-0.5">Total</span>
-                                <span className="text-3xl font-extrabold tracking-tight" style={{ color: '#002b6b' }}>
+                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Total</span>
+                                <span className="text-2xl font-extrabold tracking-tight" style={{ color: '#002b6b' }}>
                                     {formatCurrency(total, storeSettings)}
                                 </span>
                             </div>
@@ -299,19 +298,19 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                 </div>
 
                 {/* Action bar */}
-                <div className="absolute bottom-0 inset-x-0 p-4 px-5 sm:px-6 border-t border-brand-border dark:border-white/5 bg-background/90 dark:bg-slate-900/90 backdrop-blur-xl z-20 print-hidden flex gap-3">
+                <div className="flex-none p-4 sm:px-6 border-t border-brand-border bg-background print-hidden flex gap-3">
                     <button
                         onClick={onClose}
-                        className="flex-none px-5 py-3.5 rounded-2xl bg-surface dark:bg-slate-800 border border-brand-border dark:border-white/10 text-brand-text font-bold text-[15px] hover:bg-warm-100 dark:hover:bg-slate-700 active:scale-95 transition-all"
+                        className="flex-none px-5 py-3 rounded-lg bg-surface-variant text-brand-text font-semibold text-[15px] hover:bg-warm-300 active:scale-95 transition-all"
                     >
                         Done
                     </button>
                     <button
                         onClick={handlePrint}
-                        className="flex-1 py-3.5 bg-secondary hover:bg-[#e86d12] text-white rounded-2xl text-[15px] font-bold tracking-wide shadow-lg shadow-primary/25 flex items-center justify-center gap-2 active:scale-95 transition-all"
+                        className="flex-1 py-3 bg-secondary hover:bg-secondary/90 text-white rounded-lg text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
                     >
-                        <PosIcon name="print" size={20} />
-                        Print Receipt
+                        <PosIcon name="print" size={18} />
+                        Print receipt
                     </button>
                 </div>
             </div>
