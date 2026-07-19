@@ -26,6 +26,10 @@ const ShopHomePage = lazy(() => import('@/pages/shop/ShopHomePage'));
 const ShopProductList = lazy(() => import('@/pages/shop/ShopProductList'));
 const ShopProductDetail = lazy(() => import('@/pages/shop/ShopProductDetail'));
 const CartPage = lazy(() => import('@/pages/shop/CartPage'));
+const CheckoutPage = lazy(() => import('@/pages/shop/CheckoutPage'));
+const OrderStatusPage = lazy(() => import('@/pages/shop/OrderStatusPage'));
+// Cross-store marketplace (public discovery + B2B request/offer hub).
+const MarketplacePage = lazy(() => import('@/pages/shop/MarketplacePage'));
 
 import { ThemeProvider } from './contexts/ThemeContext';
 
@@ -109,6 +113,8 @@ export default function App() {
                                 <Route path="/po" element={<Dashboard />} />
                                 <Route path="/hustle" element={<Dashboard />} />
                                 <Route path="/config" element={<Dashboard />} />
+                                {/* Owner-facing Online Store hub (storefront link, QR & sharing) */}
+                                <Route path="/store" element={<Dashboard />} />
 
                                 {/* Standalone Inventory Manager app (own shell: Dashboard / Inventory / Stock Takes / Alerts) */}
                                 <Route path="/inv" element={<Dashboard />} />
@@ -199,7 +205,13 @@ export default function App() {
                                     <Route path="products" element={<ShopProductList />} />
                                     <Route path="product/:productId" element={<ShopProductDetail />} />
                                     <Route path="cart" element={<CartPage />} />
+                                    <Route path="checkout" element={<CheckoutPage />} />
+                                    <Route path="order/:orderId" element={<OrderStatusPage />} />
                                 </Route>
+
+                                {/* Public cross-store marketplace */}
+                                <Route path="/marketplace" element={<MarketplacePage />} />
+                                <Route path="/directory" element={<Navigate to="/marketplace" replace />} />
 
                                 <Route path="*" element={<Dashboard />} />
                             </Routes>
