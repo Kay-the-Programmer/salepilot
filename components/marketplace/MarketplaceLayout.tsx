@@ -3,11 +3,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { HiOutlineLightningBolt, HiOutlineUserGroup, HiOutlineInbox, HiOutlineClipboardList } from 'react-icons/hi';
 import { HiOutlineBuildingStorefront, HiOutlineShoppingBag } from 'react-icons/hi2';
 
-interface MarketplaceLayoutProps {
-    children: React.ReactNode;
-}
-
-export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) {
+/**
+ * Section tabs for the marketplace, styled for the navy structural header —
+ * rendered as the bottom row of MarketplacePage's sticky <header> so the nav
+ * stays visible while the page scrolls.
+ */
+export function MarketplaceNavTabs() {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -31,34 +32,38 @@ export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) 
     };
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Navigation tabs */}
-            <div className="bg-surface border-b border-brand-border">
-                <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
-                    <div className="flex items-center gap-6 sm:gap-8 overflow-x-auto no-scrollbar">
-                        {tabs.map(tab => (
-                            <button
-                                key={tab.id}
-                                onClick={() => handleTabChange(tab.id)}
-                                className={`
-                                    flex items-center gap-2 h-12 border-b-2 text-sm font-semibold transition-colors whitespace-nowrap
-                                    ${activeView === tab.id
-                                        ? 'border-sp-amber text-sp-navy'
-                                        : 'border-transparent text-brand-text-muted hover:text-brand-text'}
-                                `}
-                            >
-                                <tab.icon className="w-[18px] h-[18px]" />
-                                {tab.label}
-                            </button>
-                        ))}
-                    </div>
+        <nav aria-label="Marketplace sections" className="border-t border-white/10">
+            <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
+                <div className="flex items-center gap-5 sm:gap-7 overflow-x-auto no-scrollbar">
+                    {tabs.map(tab => (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabChange(tab.id)}
+                            className={`
+                                flex items-center gap-2 h-12 border-b-2 text-sm font-semibold transition-colors whitespace-nowrap
+                                ${activeView === tab.id
+                                    ? 'border-sp-amber text-white'
+                                    : 'border-transparent text-white/65 hover:text-white'}
+                            `}
+                        >
+                            <tab.icon className="w-[18px] h-[18px]" />
+                            {tab.label}
+                        </button>
+                    ))}
                 </div>
             </div>
+        </nav>
+    );
+}
 
-            {/* Content */}
-            <div className="min-h-[calc(100vh-180px)]">
-                {children}
-            </div>
+interface MarketplaceLayoutProps {
+    children: React.ReactNode;
+}
+
+export default function MarketplaceLayout({ children }: MarketplaceLayoutProps) {
+    return (
+        <div className="min-h-[60vh] bg-background">
+            {children}
         </div>
     );
 }

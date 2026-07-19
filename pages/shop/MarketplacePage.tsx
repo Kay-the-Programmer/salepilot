@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import MarketplaceLayout from '../../components/marketplace/MarketplaceLayout';
+import MarketplaceLayout, { MarketplaceNavTabs } from '../../components/marketplace/MarketplaceLayout';
 import ShopDiscoveryView from '../../components/marketplace/views/ShopDiscoveryView';
 import QuickOffersView from '../../components/marketplace/views/QuickOffersView';
 import SuppliersView from '../../components/marketplace/views/SuppliersView';
@@ -167,6 +167,9 @@ export default function MarketplacePage() {
                         </div>
                     </form>
                 </div>
+
+                {/* Section nav — part of the sticky header so it never scrolls away */}
+                <MarketplaceNavTabs />
             </header>
 
             <MarketplaceLayout>
