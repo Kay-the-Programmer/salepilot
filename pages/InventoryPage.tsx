@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
 import { Product, Category, Supplier, StoreSettings, User, Account, PurchaseOrder } from '../types';
 
 import ProductList from '../components/ProductList';
@@ -19,7 +19,8 @@ import InventoryEmptyState from '../components/inventory/InventoryEmptyState';
 import InventoryOnboardingHelpers from '../components/inventory/InventoryOnboardingHelpers';
 
 
-import UnifiedScannerModal from '../components/UnifiedScannerModal';
+// Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
+const UnifiedScannerModal = lazy(() => import('../components/UnifiedScannerModal'));
 import LinkToPOModal from '../components/LinkToPOModal';
 import LoadingSpinner from '../components/LoadingSpinner';
 
@@ -940,6 +941,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 confirmText="Delete"
             />
 
+            {isScanModalOpen && (
+            <Suspense fallback={null}>
             <UnifiedScannerModal
                 isOpen={isScanModalOpen}
                 onClose={() => setIsScanModalOpen(false)}
@@ -992,6 +995,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     }
                 }}
             />
+            </Suspense>
+            )}
 
             <BarcodeLookupModal
                 isOpen={isManualLookupOpen}

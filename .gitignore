@@ -24,3 +24,6 @@ android
 *.njsproj
 *.sln
 *.sw?
+
+# Local env (contains API keys) — never commit
+.env

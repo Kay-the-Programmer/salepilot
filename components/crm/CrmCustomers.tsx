@@ -1,8 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, lazy, Suspense } from 'react';
 import { StoreSettings } from '../../types';
 import { Icon, Avatar, TierBadge } from './CrmBits';
 import { CrmOverview, CustomerMetrics, formatMoney, formatMonthYear } from './crmModel';
-import UnifiedScannerModal from '../UnifiedScannerModal';
+// Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
+const UnifiedScannerModal = lazy(() => import('../UnifiedScannerModal'));
 
 interface CrmCustomersProps {
     overview: CrmOverview;
@@ -148,12 +149,16 @@ export const CrmCustomers: React.FC<CrmCustomersProps> = ({ overview, storeSetti
                 </div>
             )}
 
-            <UnifiedScannerModal
-                isOpen={scanOpen}
-                onClose={() => setScanOpen(false)}
-                onScanSuccess={(text) => { onSearch(text.trim()); setScanOpen(false); }}
-                title="Scan customer barcode"
-            />
+            {scanOpen && (
+                <Suspense fallback={null}>
+                    <UnifiedScannerModal
+                        isOpen={scanOpen}
+                        onClose={() => setScanOpen(false)}
+                        onScanSuccess={(text) => { onSearch(text.trim()); setScanOpen(false); }}
+                        title="Scan customer barcode"
+                    />
+                </Suspense>
+            )}
         </main>
     );
 };

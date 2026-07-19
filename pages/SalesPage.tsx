@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
 import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, User, Return } from '../types';
 import { SnackbarType } from '../App';
 import { api } from '@/services/api';
@@ -20,7 +20,9 @@ import { SalesHistoryView } from '../components/sales/SalesHistoryView';
 import CustomerSelect from '../components/sales/CustomerSelect';
 import PosIcon from '../components/sales/PosIcon';
 import PosModeToggle from '../components/pos/PosModeToggle';
-import UnifiedScannerModal from '../components/UnifiedScannerModal';
+// Lazy-loaded: the @zxing scanner bundle (~424 kB) is fetched only when the
+// scanner is actually opened, keeping it out of the POS page's initial load.
+const UnifiedScannerModal = lazy(() => import('../components/UnifiedScannerModal'));
 import Logo from '../assets/logo.png';
 import AppSwitcher from '../components/standalone/AppSwitcher';
 import { useNavigate } from 'react-router-dom';
@@ -1021,15 +1023,19 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 </div>
             )}
 
-            <UnifiedScannerModal
-                isOpen={isCamScannerOpen}
-                onClose={() => setIsCamScannerOpen(false)}
-                onScanSuccess={(code) => {
-                    setIsCamScannerOpen(false);
-                    handleContinuousScan(code);
-                }}
-                title="Scan Product"
-            />
+            {isCamScannerOpen && (
+                <Suspense fallback={null}>
+                    <UnifiedScannerModal
+                        isOpen={isCamScannerOpen}
+                        onClose={() => setIsCamScannerOpen(false)}
+                        onScanSuccess={(code) => {
+                            setIsCamScannerOpen(false);
+                            handleContinuousScan(code);
+                        }}
+                        title="Scan Product"
+                    />
+                </Suspense>
+            )}
 
             {/* First-visit walkthrough — only while the register (its targets) is on screen */}
             {posView === 'sell' && (

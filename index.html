@@ -19,7 +19,18 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
   <!-- Material Symbols Rounded (variable font) -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-  <script src="https://pay.sandbox.lenco.co/js/v1/inline.js"></script>
+  <!-- Lenco inline widget: sandbox on local dev, live everywhere else
+       (mirrors the backend, which picks its Lenco API base per key type). -->
+  <script>
+    (function () {
+      var s = document.createElement('script');
+      var isLocal = /^(localhost|127\.|192\.168\.|10\.)/.test(window.location.hostname);
+      s.src = isLocal
+        ? 'https://pay.sandbox.lenco.co/js/v1/inline.js'
+        : 'https://pay.lenco.co/js/v1/inline.js';
+      document.head.appendChild(s);
+    })();
+  </script>
 
   <style>
     @keyframes fadeIn {

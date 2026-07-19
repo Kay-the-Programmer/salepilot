@@ -1,10 +1,11 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import JsBarcode from 'jsbarcode';
 import { Sale, StoreSettings } from '@/types.ts';
 import { SnackbarType } from '../../App';
 import { formatCurrency } from '@/utils/currency.ts';
 import PosIcon from './PosIcon';
+import salepilotLogo from '@/assets/salepilot.png';
 
 interface ReceiptModalProps {
     isOpen: boolean;
@@ -18,6 +19,30 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
     const { transactionId, timestamp, cart, total, subtotal, tax, discount, customerName, customerPhone, attendedBy, storeCreditUsed } = saleData;
     const modalPrintAreaRef = useRef<HTMLDivElement>(null);
     const barcodeRef = useRef<HTMLCanvasElement>(null);
+    const [logoDataUrl, setLogoDataUrl] = useState<string>('');
+
+    // Rasterize the SalePilot logo to a base64 data URL so it survives the copy
+    // into the separate print window — relative asset URLs and network fetches
+    // don't resolve in the about:blank print document, and printing fires on a
+    // 250ms timer that wouldn't wait for an <img> to load over the network.
+    useEffect(() => {
+        let cancelled = false;
+        const img = new Image();
+        img.onload = () => {
+            try {
+                const canvas = document.createElement('canvas');
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                canvas.getContext('2d')?.drawImage(img, 0, 0);
+                if (!cancelled) setLogoDataUrl(canvas.toDataURL('image/png'));
+            } catch {
+                if (!cancelled) setLogoDataUrl(salepilotLogo);
+            }
+        };
+        img.onerror = () => { if (!cancelled) setLogoDataUrl(salepilotLogo); };
+        img.src = salepilotLogo;
+        return () => { cancelled = true; };
+    }, []);
 
     useEffect(() => {
         if (isOpen && transactionId && barcodeRef.current) {
@@ -188,6 +213,11 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                     >
                         {/* Header */}
                         <div className="text-center mb-6">
+                            <img
+                                src={logoDataUrl || salepilotLogo}
+                                alt="SalePilot"
+                                style={{ height: '42px', width: 'auto', maxWidth: '75%', margin: '0 auto 12px', display: 'block' }}
+                            />
                             <h2 className="text-lg font-extrabold tracking-tight text-slate-900 mb-1">{storeSettings.name}</h2>
                             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Official Receipt</p>
                         </div>

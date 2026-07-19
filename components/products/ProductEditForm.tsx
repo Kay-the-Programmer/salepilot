@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Product, Category, Supplier, StoreSettings } from '../../types';
 import { api, buildAssetUrl } from '../../services/api';
 import SparklesIcon from '../icons/SparklesIcon';
@@ -7,7 +7,8 @@ import CameraIcon from '../icons/CameraIcon';
 import CameraCaptureModal from '../CameraCaptureModal';
 import ArrowUpTrayIcon from '../icons/ArrowUpTrayIcon';
 import SupplierFormModal from '../suppliers/SupplierFormModal';
-import UnifiedScannerModal from '../UnifiedScannerModal';
+// Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
+const UnifiedScannerModal = lazy(() => import('../UnifiedScannerModal'));
 import ArrowLeftIcon from '../icons/ArrowLeftIcon';
 import { useProductForm } from '../../hooks/useProductForm';
 import { formatCurrency } from '@/utils/currency';
@@ -624,18 +625,22 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                 onClose={() => setIsSupplierModalOpen(false)}
                 onSave={handleCreateSupplier}
             />
-            <UnifiedScannerModal
-                isOpen={isBarcodeScannerOpen}
-                onClose={() => setIsBarcodeScannerOpen(false)}
-                onScanSuccess={(code) => {
-                    setProduct(prev => ({ ...prev, barcode: code }));
-                    setIsBarcodeScannerOpen(false);
-                    if (!product.name) {
-                        handleLookup(code);
-                    }
-                }}
-                title="Scan Product Barcode"
-            />
+            {isBarcodeScannerOpen && (
+                <Suspense fallback={null}>
+                    <UnifiedScannerModal
+                        isOpen={isBarcodeScannerOpen}
+                        onClose={() => setIsBarcodeScannerOpen(false)}
+                        onScanSuccess={(code) => {
+                            setProduct(prev => ({ ...prev, barcode: code }));
+                            setIsBarcodeScannerOpen(false);
+                            if (!product.name) {
+                                handleLookup(code);
+                            }
+                        }}
+                        title="Scan Product Barcode"
+                    />
+                </Suspense>
+            )}
         </>
     );
 };

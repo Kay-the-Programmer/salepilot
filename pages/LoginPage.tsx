@@ -3,6 +3,7 @@ import { User } from '../types';
 import { SnackbarType } from '../App';
 import { login, loginWithGoogle } from '../services/authService';
 import { signInWithGoogle } from '../services/firebase/auth';
+import VerifyEmailOtpModal from '../components/VerifyEmailOtpModal';
 import { useNavigate } from 'react-router-dom';
 import { HiOutlineEye, HiOutlineEyeSlash } from 'react-icons/hi2';
 import { FcGoogle } from 'react-icons/fc';
@@ -29,6 +30,9 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    // Set when the backend refuses login because the email is unverified — opens
+    // the OTP modal so the user can verify, then we complete the sign-in.
+    const [pendingVerifyEmail, setPendingVerifyEmail] = useState<string | null>(null);
 
     const anyLoading = isLoading || isGoogleLoading;
 
@@ -43,6 +47,14 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
             // second toast (visible on Google sign-in, where the wording differs).
             onLogin(user!);
         } catch (err: any) {
+            // The account exists but its email isn't verified — the backend has
+            // just re-sent an OTP. Open the verification modal instead of failing.
+            if (err?.status === 403 && (err?.body?.code === 'EMAIL_NOT_VERIFIED' || err?.body?.requiresVerification)) {
+                setPendingVerifyEmail(err?.body?.email || email);
+                setError(null);
+                showSnackbar('Please verify your email to continue — we sent you a code.', 'info');
+                return;
+            }
             const msg = err?.message ?? 'An unexpected error occurred.';
             setError(msg);
             showSnackbar(msg, 'error');
@@ -78,6 +90,28 @@ export default function LoginPage({ onLogin, showSnackbar }: LoginPageProps) {
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
+            {/* Email-verification gate: shown when login is refused for an
+                unverified account. On success we finish the sign-in with the
+                credentials already entered. */}
+            <VerifyEmailOtpModal
+                isOpen={!!pendingVerifyEmail}
+                email={pendingVerifyEmail || ''}
+                onClose={() => setPendingVerifyEmail(null)}
+                onVerified={async () => {
+                    setPendingVerifyEmail(null);
+                    setIsLoading(true);
+                    try {
+                        const user = await login(email, password);
+                        onLogin(user!);
+                    } catch (e: any) {
+                        const msg = e?.message ?? 'Sign-in failed after verification. Please try again.';
+                        setError(msg);
+                        showSnackbar(msg, 'error');
+                    } finally {
+                        setIsLoading(false);
+                    }
+                }}
+            />
             <header className="flex items-center justify-between h-16 px-5 md:px-8">
                 <img src={Logo} alt="SalePilot" className="h-8 object-contain" />
                 <button

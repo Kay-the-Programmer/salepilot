@@ -1,10 +1,11 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, lazy, Suspense } from 'react';
 import { Product, StockTakeSession } from '../types';
 import ClipboardDocumentListIcon from '../components/icons/ClipboardDocumentListIcon';
 import XMarkIcon from '../components/icons/XMarkIcon';
 import QrCodeIcon from '../components/icons/QrCodeIcon';
 import ConfirmationModal from '../components/ConfirmationModal';
-import UnifiedScannerModal from '../components/UnifiedScannerModal';
+// Lazy-loaded: the @zxing scanner bundle (~424 kB) loads only on first scan.
+const UnifiedScannerModal = lazy(() => import('../components/UnifiedScannerModal'));
 import { HiOutlineXMark } from 'react-icons/hi2';
 
 interface StockTakePageProps {
@@ -426,12 +427,16 @@ const StockTakePage: React.FC<StockTakePageProps> = ({ session, products, onStar
                 confirmButtonClass="bg-danger hover:bg-danger/90 rounded-lg p-4 font-black uppercase tracking-widest text-[10px]"
                 variant="floating"
             />
-            <UnifiedScannerModal
-                isOpen={isScannerOpen}
-                onClose={() => setIsScannerOpen(false)}
-                onScanSuccess={handleScanSuccess}
-                title="Scan Product to Count"
-            />
+            {isScannerOpen && (
+                <Suspense fallback={null}>
+                    <UnifiedScannerModal
+                        isOpen={isScannerOpen}
+                        onClose={() => setIsScannerOpen(false)}
+                        onScanSuccess={handleScanSuccess}
+                        title="Scan Product to Count"
+                    />
+                </Suspense>
+            )}
             <ConfirmationModal
                 isOpen={isFinalizeModalOpen}
                 onClose={() => setIsFinalizeModalOpen(false)}
