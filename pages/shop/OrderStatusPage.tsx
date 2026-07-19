@@ -171,9 +171,17 @@ const OrderStatusPage: React.FC = () => {
                     </ul>
                 )}
 
-                <div className="px-6 py-5 bg-warm-100/60 flex items-end justify-between">
-                    <span className="text-sm font-bold text-brand-text-muted uppercase tracking-widest">Total due</span>
-                    <span className="text-3xl font-bold tracking-tight text-sp-navy">{formatPrice(summary.total)}</span>
+                <div className="px-6 py-5 bg-warm-100/60">
+                    {Number(summary.deliveryFee) > 0 && (
+                        <div className="flex justify-between text-sm mb-2">
+                            <span className="text-brand-text-muted">Includes delivery fee</span>
+                            <span className="font-semibold text-brand-text">{formatPrice(Number(summary.deliveryFee))}</span>
+                        </div>
+                    )}
+                    <div className="flex items-end justify-between">
+                        <span className="text-sm font-bold text-brand-text-muted uppercase tracking-widest">Total due</span>
+                        <span className="text-3xl font-bold tracking-tight text-sp-navy">{formatPrice(summary.total)}</span>
+                    </div>
                 </div>
             </div>
 

@@ -1,16 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HiOutlineLightningBolt, HiOutlineUserGroup, HiOutlineInbox, HiOutlineClipboardList } from 'react-icons/hi';
-import { HiOutlineBuildingStorefront, HiOutlineShoppingBag, HiOutlineBars3, HiOutlineXMark } from 'react-icons/hi2';
+import { HiOutlineBuildingStorefront, HiOutlineShoppingBag, HiOutlineClipboardDocumentList, HiOutlineBars3, HiOutlineXMark } from 'react-icons/hi2';
 
+// B2B wholesale marketplace sections. The old mock B2B tabs (quick offers /
+// requests / activity / retailers) were demo scaffolding with dead links —
+// unlinked until those flows are real.
 const SECTIONS = [
-    { id: 'shop', label: 'Shop', icon: HiOutlineShoppingBag },
-    { id: 'quick-offers', label: 'Quick Offers', icon: HiOutlineLightningBolt },
-    { id: 'requests', label: 'Requests', icon: HiOutlineInbox },
-    { id: 'activity', label: 'Activity', icon: HiOutlineClipboardList },
-    { id: 'suppliers', label: 'Suppliers', icon: HiOutlineUserGroup },
-    { id: 'retailers', label: 'Retailers', icon: HiOutlineBuildingStorefront },
+    { id: 'shop', label: 'Browse products', icon: HiOutlineShoppingBag },
+    { id: 'suppliers', label: 'Suppliers', icon: HiOutlineBuildingStorefront },
+    { id: 'my-orders', label: 'My orders', icon: HiOutlineClipboardDocumentList },
 ];
 
 /**

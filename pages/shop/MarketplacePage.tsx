@@ -2,11 +2,8 @@ import { useState, useEffect, useRef, FormEvent } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import MarketplaceLayout, { MarketplaceNavMenu } from '../../components/marketplace/MarketplaceLayout';
 import ShopDiscoveryView from '../../components/marketplace/views/ShopDiscoveryView';
-import QuickOffersView from '../../components/marketplace/views/QuickOffersView';
-import SuppliersView from '../../components/marketplace/views/SuppliersView';
-import RetailersView from '../../components/marketplace/views/RetailersView';
-import RequestsView from '../../components/marketplace/views/RequestsView';
-import ActivityView from '../../components/marketplace/views/ActivityView';
+import SuppliersDirectoryView from '../../components/marketplace/views/SuppliersDirectoryView';
+import MyOrdersView from '../../components/marketplace/views/MyOrdersView';
 import { getCurrentUser } from '../../services/authService';
 import SalePilotLogo from '../../assets/salepilot.png';
 import { HiOutlineUserCircle, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
@@ -63,16 +60,12 @@ export default function MarketplacePage() {
 
     const renderView = () => {
         switch (activeView) {
-            case 'quick-offers':
-                return <QuickOffersView />;
-            case 'requests':
-                return <RequestsView />;
-            case 'activity':
-                return <ActivityView />;
             case 'suppliers':
-                return <SuppliersView />;
-            case 'retailers':
-                return <RetailersView />;
+                return <SuppliersDirectoryView />;
+            case 'my-orders':
+                return <MyOrdersView />;
+            // Legacy mock B2B views (quick-offers / requests / activity /
+            // retailers) fall through to the wholesale landing.
             case 'shop':
             default:
                 return <ShopDiscoveryView />;
@@ -105,7 +98,7 @@ export default function MarketplacePage() {
                                     type="search"
                                     value={searchDraft}
                                     onChange={e => setSearchDraft(e.target.value)}
-                                    placeholder="Search products and stores…"
+                                    placeholder="Search wholesale products & suppliers…"
                                     className="w-full h-11 pl-5 pr-14 rounded-lg bg-white text-brand-text text-sm font-medium placeholder:text-brand-text-muted/70 focus:outline-none focus:ring-2 focus:ring-sp-amber"
                                 />
                                 <button
@@ -157,7 +150,7 @@ export default function MarketplacePage() {
                                 type="search"
                                 value={searchDraft}
                                 onChange={e => setSearchDraft(e.target.value)}
-                                placeholder="Search products and stores…"
+                                placeholder="Search wholesale products & suppliers…"
                                 className="w-full h-11 pl-4 pr-14 rounded-lg bg-white text-brand-text text-sm font-medium placeholder:text-brand-text-muted/70 focus:outline-none focus:ring-2 focus:ring-sp-amber"
                             />
                             <button
@@ -182,7 +175,7 @@ export default function MarketplacePage() {
                     <div>
                         <h3 className="text-base font-bold mb-3">SalePilot Marketplace</h3>
                         <p className="text-sm text-white/70 leading-relaxed max-w-xs">
-                            Discover and order from local businesses — live stock, direct from each store.
+                            Where retailers buy from wholesalers — live stock, real prices, direct from each supplier.
                         </p>
                     </div>
                     <div>
@@ -190,12 +183,17 @@ export default function MarketplacePage() {
                         <ul className="space-y-1.5 text-sm text-white/70">
                             <li>
                                 <button onClick={() => setSearchParams(new URLSearchParams())} className="hover:text-white transition-colors">
-                                    Shop products
+                                    Browse products
                                 </button>
                             </li>
                             <li>
-                                <button onClick={() => { const p = new URLSearchParams(); p.set('view', 'quick-offers'); setSearchParams(p); }} className="hover:text-white transition-colors">
-                                    B2B quick offers
+                                <button onClick={() => { const p = new URLSearchParams(); p.set('view', 'suppliers'); setSearchParams(p); }} className="hover:text-white transition-colors">
+                                    Suppliers
+                                </button>
+                            </li>
+                            <li>
+                                <button onClick={() => { const p = new URLSearchParams(); p.set('view', 'my-orders'); setSearchParams(p); }} className="hover:text-white transition-colors">
+                                    My orders
                                 </button>
                             </li>
                             <li>

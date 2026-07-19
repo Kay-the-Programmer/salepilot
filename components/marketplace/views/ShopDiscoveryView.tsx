@@ -68,7 +68,7 @@ const ShopDiscoveryView: React.FC = () => {
     const railRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        shopService.getPublicStores()
+        shopService.getPublicStores({ wholesale: true })
             .then(setStores)
             .catch(() => { })
             .finally(() => setStoresLoading(false));
@@ -78,7 +78,7 @@ const ShopDiscoveryView: React.FC = () => {
         let cancelled = false;
         setLoading(true);
         setPage(1);
-        shopService.getGlobalProducts({ search: query || undefined, sort, page: 1, limit: PAGE_SIZE })
+        shopService.getGlobalProducts({ search: query || undefined, sort, page: 1, limit: PAGE_SIZE, wholesale: true })
             .then(res => {
                 if (cancelled) return;
                 setProducts(res.items);
@@ -95,7 +95,7 @@ const ShopDiscoveryView: React.FC = () => {
         setLoadingMore(true);
         try {
             const next = page + 1;
-            const res = await shopService.getGlobalProducts({ search: query || undefined, sort, page: next, limit: PAGE_SIZE });
+            const res = await shopService.getGlobalProducts({ search: query || undefined, sort, page: next, limit: PAGE_SIZE, wholesale: true });
             setProducts(prev => [...prev, ...res.items]);
             setPage(next);
         } finally {
@@ -138,20 +138,20 @@ const ShopDiscoveryView: React.FC = () => {
                     <div className="relative px-5 py-8 sm:px-10 sm:py-12 flex flex-col sm:flex-row sm:items-center gap-6 sm:gap-10">
                         <div className="flex-1 min-w-0">
                             <p className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-white/60 mb-2">
-                                <HiOutlineSparkles className="w-3.5 h-3.5" /> SalePilot Marketplace
+                                <HiOutlineSparkles className="w-3.5 h-3.5" /> SalePilot Wholesale Marketplace
                             </p>
                             <h1 className="text-2xl sm:text-4xl font-bold tracking-tight leading-tight mb-2">
-                                Shop from local businesses
+                                Stock your shop at wholesale
                             </h1>
                             <p className="text-sm sm:text-base text-white/70 leading-relaxed max-w-lg">
-                                Every product here is live stock from a real store — order online, pay on delivery or pickup.
+                                Buy directly from wholesalers and distributors — live stock, real prices, order online and pay on delivery or pickup.
                             </p>
                         </div>
                         {/* Live stats */}
                         <div className="flex sm:flex-col gap-3 sm:gap-2.5 flex-none">
                             <div className="flex-1 sm:flex-none bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 sm:px-5 text-center sm:text-left">
                                 <p className="text-2xl sm:text-3xl font-bold tracking-tight leading-none">{storesLoading ? '—' : stores.length}</p>
-                                <p className="text-[11px] font-semibold uppercase tracking-wider text-white/60 mt-1">Stores</p>
+                                <p className="text-[11px] font-semibold uppercase tracking-wider text-white/60 mt-1">Suppliers</p>
                             </div>
                             <div className="flex-1 sm:flex-none bg-white/10 backdrop-blur-sm rounded-lg px-4 py-3 sm:px-5 text-center sm:text-left">
                                 <p className="text-2xl sm:text-3xl font-bold tracking-tight leading-none">{catalogTotal ?? '—'}</p>
@@ -167,7 +167,7 @@ const ShopDiscoveryView: React.FC = () => {
                 <section>
                     <div className="flex items-center justify-between gap-3 mb-3.5">
                         <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-brand-text">
-                            Browse stores
+                            Browse suppliers
                             {!storesLoading && <span className="ml-2 text-sm font-medium text-brand-text-muted">({stores.length})</span>}
                         </h2>
                         {/* Desktop rail arrows */}
@@ -204,7 +204,7 @@ const ShopDiscoveryView: React.FC = () => {
             {searching && matchingStores.length > 0 && (
                 <section>
                     <h2 className="text-sm font-bold uppercase tracking-widest text-brand-text-muted mb-3">
-                        Stores matching “{query}”
+                        Suppliers matching “{query}”
                     </h2>
                     <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                         {matchingStores.map(store => <StoreRailCard key={store.id} store={store} />)}
@@ -231,7 +231,7 @@ const ShopDiscoveryView: React.FC = () => {
                         {!loading && (
                             <p className="text-sm text-brand-text-muted mt-0.5">
                                 {total} {total === 1 ? 'product' : 'products'}
-                                {!searching && !storesLoading ? <> from {stores.length} {stores.length === 1 ? 'store' : 'stores'}</> : null}
+                                {!searching && !storesLoading ? <> from {stores.length} {stores.length === 1 ? 'supplier' : 'suppliers'}</> : null}
                             </p>
                         )}
                     </div>
@@ -292,10 +292,26 @@ const ShopDiscoveryView: React.FC = () => {
                 )}
             </section>
 
-            {/* ── All stores grid (browse mode, full directory at the end) ── */}
+            {/* ── No suppliers yet: invite wholesalers to list themselves ── */}
+            {!searching && !storesLoading && stores.length === 0 && (
+                <section className="rounded-lg border border-brand-border bg-surface py-14 text-center px-6">
+                    <p className="font-semibold text-brand-text mb-1">No wholesale suppliers listed yet</p>
+                    <p className="text-sm text-brand-text-muted mb-5 max-w-md mx-auto">
+                        Are you a wholesaler or distributor on SalePilot? Turn on “Wholesale supplier” in your Online Store settings to list your catalog here.
+                    </p>
+                    <Link
+                        to="/store"
+                        className="inline-flex items-center h-11 px-6 rounded-lg bg-sp-navy text-white font-semibold text-sm hover:bg-sp-navy-light transition-colors active:scale-[0.98]"
+                    >
+                        Open Online Store settings
+                    </Link>
+                </section>
+            )}
+
+            {/* ── All suppliers grid (browse mode, full directory at the end) ── */}
             {!searching && !storesLoading && stores.length > 3 && (
                 <section className="border-t border-brand-border pt-8">
-                    <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-brand-text mb-4">All stores</h2>
+                    <h2 className="text-lg sm:text-xl font-semibold tracking-tight text-brand-text mb-4">All suppliers</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
                         {stores.map(store => (
                             <Link

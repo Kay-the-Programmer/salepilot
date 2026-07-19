@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import QRCode from 'qrcode';
 import {
-    Link2, Copy, ExternalLink, Send, CalendarClock, Check, Megaphone,
+    Link2, Copy, ExternalLink, Send, CalendarClock, Check, Megaphone, Warehouse,
 } from 'lucide-react';
 import { StoreSettings, User } from '../../types';
 import { whatsappService, WhatsAppStatus } from '../../services/whatsappService';
 import { whatsappCampaignService } from '../../services/whatsappCampaignService';
 import StandaloneTopBar from '../standalone/StandaloneTopBar';
+import { api } from '../../services/api';
 
 interface OnlineStoreAppProps {
     user: User;
@@ -44,6 +45,31 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
     const [when, setWhen] = useState('');
     const [message, setMessage] = useState(`Hi [Name]! 🛍️ Browse our latest catalog and order online here: ${link}`);
     const [sending, setSending] = useState(false);
+
+    // Wholesale-marketplace listing + delivery fee (persisted in store settings)
+    const [wholesale, setWholesale] = useState<boolean>((storeSettings as any)?.isWholesaleSupplier === true);
+    const [deliveryFee, setDeliveryFee] = useState<string>(String((storeSettings as any)?.deliveryFee ?? 0));
+    const [savingMarket, setSavingMarket] = useState(false);
+    useEffect(() => {
+        setWholesale((storeSettings as any)?.isWholesaleSupplier === true);
+        setDeliveryFee(String((storeSettings as any)?.deliveryFee ?? 0));
+    }, [storeSettings]);
+
+    const saveMarketplace = async () => {
+        setSavingMarket(true);
+        try {
+            // Merge onto the freshest settings so we never clobber other fields.
+            const current = await api.get<StoreSettings>('/settings');
+            await api.put('/settings', {
+                ...current,
+                isWholesaleSupplier: wholesale,
+                deliveryFee: Math.max(0, Number(deliveryFee) || 0),
+            });
+            showSnackbar(wholesale ? 'You are listed on the wholesale marketplace.' : 'Marketplace settings saved.', 'success');
+        } catch (e: any) {
+            showSnackbar(e?.message || 'Could not save marketplace settings.', 'error');
+        } finally { setSavingMarket(false); }
+    };
 
     useEffect(() => { setMessage(`Hi [Name]! 🛍️ Browse our latest catalog and order online here: ${link}`); }, [link]);
     useEffect(() => { if (link) QRCode.toDataURL(link, { width: 320, margin: 1 }).then(setQr).catch(() => setQr(null)); }, [link]);
@@ -126,6 +152,45 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    {/* Wholesale marketplace listing */}
+                    <div className={`${card} p-6`}>
+                        <div className="flex items-center gap-2 mb-1">
+                            <Warehouse className="w-5 h-5 text-sp-green" />
+                            <h2 className="text-base font-extrabold text-brand-text">Wholesale marketplace</h2>
+                        </div>
+                        <p className="text-sm text-brand-text-muted mb-4">
+                            List your store on the SalePilot marketplace so retailers can browse your catalog and order stock from you.
+                        </p>
+                        <label className="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-brand-border mb-3 cursor-pointer">
+                            <span>
+                                <span className="block text-sm font-bold text-brand-text">List as a wholesale supplier</span>
+                                <span className="block text-xs text-brand-text-muted mt-0.5">Your live catalog appears on /marketplace for buying businesses.</span>
+                            </span>
+                            <input
+                                type="checkbox"
+                                checked={wholesale}
+                                onChange={e => setWholesale(e.target.checked)}
+                                className="w-5 h-5 accent-sp-amber cursor-pointer"
+                            />
+                        </label>
+                        <label className="block mb-4">
+                            <span className="block text-xs font-bold uppercase tracking-wide text-brand-text-muted mb-1.5">Delivery fee for online orders</span>
+                            <input
+                                className={input}
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                value={deliveryFee}
+                                onChange={e => setDeliveryFee(e.target.value)}
+                                placeholder="0.00"
+                            />
+                            <span className="text-xs text-brand-text-muted">Flat fee added when a buyer chooses delivery at checkout. Set 0 for free delivery.</span>
+                        </label>
+                        <button className={`${btnPrimary} w-full py-3`} onClick={saveMarketplace} disabled={savingMarket}>
+                            {savingMarket ? 'Saving…' : 'Save marketplace settings'}
+                        </button>
                     </div>
 
                     {/* Catalog sharing / scheduling */}

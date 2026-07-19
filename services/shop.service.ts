@@ -13,8 +13,10 @@ export interface ShopInfo {
         email?: string;
         website?: string;
         isOnlineStoreEnabled?: boolean;
+        isWholesaleSupplier?: boolean;
         currency?: any;
         taxRate?: number;
+        deliveryFee?: number;
         receiptMessage?: string;
     };
 }
@@ -40,6 +42,23 @@ export interface PublicStore {
     email?: string;
     website?: string;
     currency?: any;
+    isWholesaleSupplier?: boolean;
+}
+
+/** One of the signed-in buyer's orders, across every store (B2B "My orders"). */
+export interface MyOrder {
+    transactionId: string;
+    timestamp: string;
+    storeId: string;
+    storeName: string;
+    storeCurrency?: any;
+    total: number;
+    subtotal: number;
+    tax: number;
+    deliveryFee?: number;
+    paymentStatus: string;
+    fulfillmentStatus: string;
+    items: { name: string; quantity: number; price: number }[];
 }
 
 export interface GlobalProduct extends Product {
@@ -53,6 +72,7 @@ export interface ShopOrderStatus {
     total: number;
     subtotal: number;
     tax: number;
+    deliveryFee?: number;
     paymentStatus: string;
     fulfillmentStatus: string;
     customerName?: string;
@@ -88,7 +108,7 @@ export const shopService = {
         return api.get<ShopCategory[]>(`/shop/${storeId}/categories`);
     },
 
-    createOrder: async (storeId: string, orderData: { cart: any[]; customerDetails: any }) => {
+    createOrder: async (storeId: string, orderData: { cart: any[]; customerDetails: any; fulfillment?: 'delivery' | 'pickup' }) => {
         return api.post(`/shop/${storeId}/orders`, orderData);
     },
 
@@ -104,22 +124,28 @@ export const shopService = {
         return api.get<ShopOrderStatus>(`/shop/${storeId}/orders/${orderId}?${params.toString()}`);
     },
 
-    /** Marketplace: all stores with an enabled online storefront. */
-    getPublicStores: async (): Promise<PublicStore[]> => {
-        return api.get<PublicStore[]>('/shop/stores');
+    /** Marketplace: stores with an enabled online storefront (wholesale=true → suppliers only). */
+    getPublicStores: async (opts: { wholesale?: boolean } = {}): Promise<PublicStore[]> => {
+        return api.get<PublicStore[]>(`/shop/stores${opts.wholesale ? '?wholesale=1' : ''}`);
     },
 
-    /** Marketplace: paginated cross-store product search. */
+    /** Marketplace: paginated cross-store product search (wholesale=true → supplier catalogs only). */
     getGlobalProducts: async (
-        opts: { search?: string; sort?: ShopSort; page?: number; limit?: number } = {}
+        opts: { search?: string; sort?: ShopSort; page?: number; limit?: number; wholesale?: boolean } = {}
     ): Promise<{ items: GlobalProduct[]; total: number; page: number; pageSize: number }> => {
         const params = new URLSearchParams();
         if (opts.search) params.append('search', opts.search);
         if (opts.sort) params.append('sort', opts.sort);
+        if (opts.wholesale) params.append('wholesale', '1');
         params.append('page', String(opts.page || 1));
         if (opts.limit) params.append('limit', String(opts.limit));
         return api.get<{ items: GlobalProduct[]; total: number; page: number; pageSize: number }>(
             `/shop/global-products?${params.toString()}`
         );
+    },
+
+    /** Signed-in buyer: order history across all stores. */
+    getMyOrders: async (): Promise<MyOrder[]> => {
+        return api.get<MyOrder[]>('/marketplace/my-orders');
     },
 };

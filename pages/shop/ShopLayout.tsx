@@ -192,7 +192,11 @@ const ShopLayout: React.FC = () => {
                     </div>
                     <div>
                         <h3 className="text-base font-bold mb-3">Powered by SalePilot</h3>
-                        <p className="text-sm text-white/70">Simple, powerful POS & inventory for growing businesses.</p>
+                        <p className="text-sm text-white/70 mb-3">Simple, powerful POS & inventory for growing businesses.</p>
+                        <ul className="space-y-1.5 text-sm text-white/70">
+                            <li><Link to="/terms" className="hover:text-white transition-colors">Terms of service</Link></li>
+                            <li><Link to="/privacy" className="hover:text-white transition-colors">Privacy policy</Link></li>
+                        </ul>
                     </div>
                 </div>
                 <div className="border-t border-white/10">

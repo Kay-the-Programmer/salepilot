@@ -54,7 +54,9 @@ const CheckoutPage: React.FC = () => {
     const subtotal = cartSubtotal(items);
     const taxRate = Number(shopInfo.settings?.taxRate) || 0;
     const tax = subtotal * (taxRate / 100);
-    const total = subtotal + tax;
+    // Flat store-configured delivery fee — charged only when delivering.
+    const deliveryFee = fulfillment === 'delivery' ? Math.max(0, Number(shopInfo.settings?.deliveryFee) || 0) : 0;
+    const total = subtotal + tax + deliveryFee;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -86,6 +88,7 @@ const CheckoutPage: React.FC = () => {
                     address: fulfillment === 'delivery' ? details.address.trim() : `PICKUP at ${shopInfo.settings.name || shopInfo.name}`,
                     note: details.note.trim() || undefined,
                 },
+                fulfillment,
             };
             const response: any = await shopService.createOrder(storeId, payload);
             logEvent('Shop', 'Purchase', `Order ID: ${response?.orderId}`);
@@ -180,7 +183,7 @@ const CheckoutPage: React.FC = () => {
                         <h2 className="text-base font-bold text-brand-text mb-4">How will you get your order?</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                             {([
-                                { id: 'delivery' as const, icon: HiOutlineTruck, title: 'Delivery', body: 'The store delivers to your address' },
+                                { id: 'delivery' as const, icon: HiOutlineTruck, title: 'Delivery', body: Number(shopInfo.settings?.deliveryFee) > 0 ? `The store delivers to your address (+${formatPrice(Number(shopInfo.settings.deliveryFee))})` : 'The store delivers to your address' },
                                 { id: 'pickup' as const, icon: HiOutlineBuildingStorefront, title: 'Pickup', body: shopInfo.settings.address || 'Collect from the store' },
                             ]).map(({ id, icon: Icon, title, body }) => (
                                 <button
@@ -252,6 +255,12 @@ const CheckoutPage: React.FC = () => {
                                 <dt className="text-brand-text-muted">Tax{taxRate > 0 ? ` (${taxRate}%)` : ''}</dt>
                                 <dd className="font-semibold text-brand-text">{formatPrice(tax)}</dd>
                             </div>
+                            {deliveryFee > 0 && (
+                                <div className="flex justify-between">
+                                    <dt className="text-brand-text-muted">Delivery fee</dt>
+                                    <dd className="font-semibold text-brand-text">{formatPrice(deliveryFee)}</dd>
+                                </div>
+                            )}
                             <div className="flex justify-between items-end pt-2">
                                 <dt className="font-bold text-brand-text">Total due</dt>
                                 <dd className="text-3xl font-bold tracking-tight text-sp-navy">{formatPrice(total)}</dd>
