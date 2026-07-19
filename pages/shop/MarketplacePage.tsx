@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, FormEvent } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import MarketplaceLayout, { MarketplaceNavTabs } from '../../components/marketplace/MarketplaceLayout';
+import MarketplaceLayout, { MarketplaceNavMenu } from '../../components/marketplace/MarketplaceLayout';
 import ShopDiscoveryView from '../../components/marketplace/views/ShopDiscoveryView';
 import QuickOffersView from '../../components/marketplace/views/QuickOffersView';
 import SuppliersView from '../../components/marketplace/views/SuppliersView';
@@ -84,7 +84,10 @@ export default function MarketplacePage() {
             {/* ── Navy structural header (Velocity) ── */}
             <header className="bg-sp-navy text-white sticky top-0 z-50">
                 <div className="max-w-[1400px] mx-auto px-4 sm:px-6">
-                    <div className="h-16 sm:h-20 flex items-center justify-between gap-4 sm:gap-8">
+                    <div className="h-16 sm:h-20 flex items-center justify-between gap-3 sm:gap-6">
+                        {/* Section menu (hamburger) */}
+                        <MarketplaceNavMenu />
+
                         {/* Brand */}
                         <button
                             onClick={() => { setSearchParams(new URLSearchParams()); }}
@@ -167,9 +170,6 @@ export default function MarketplacePage() {
                         </div>
                     </form>
                 </div>
-
-                {/* Section nav — part of the sticky header so it never scrolls away */}
-                <MarketplaceNavTabs />
             </header>
 
             <MarketplaceLayout>
