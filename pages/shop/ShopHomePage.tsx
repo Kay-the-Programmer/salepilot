@@ -5,6 +5,7 @@ import { shopService } from '../../services/shop.service';
 import { Product, Category } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
 import { addToCart, updateQuantity, useShopCart, effectiveUnitPrice } from './cartStore';
+import { getCurrentUser } from '../../services/authService';
 import ShopProductCard from './ShopProductCard';
 import type { ShopOutletContext } from './ShopLayout';
 
@@ -20,7 +21,9 @@ const ShopHomePage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const { qtyOf } = useShopCart(shopInfo.id);
     const { showToast } = useToast();
-    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier;
+    // Trade pricing is account-gated: guests browse a wholesale storefront at
+    // retail prices; signed-in buyers see wholesale prices + MOQs.
+    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier && !!getCurrentUser();
 
     /** One-tap add / stepper wiring for a grid card. */
     const quickAddFor = (p: Product) => ({
@@ -73,7 +76,7 @@ const ShopHomePage: React.FC = () => {
                     <p className="text-xs font-bold uppercase tracking-[0.2em] text-white/60 mb-3">Welcome to</p>
                     <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-tight mb-4">{storeName}</h1>
                     <p className="text-base sm:text-lg text-white/75 leading-relaxed mb-8 max-w-xl">
-                        Browse the catalog, add to your cart and order in minutes — pay on delivery or pickup.
+                        {shopInfo.settings.storeDescription || 'Browse the catalog, add to your cart and order in minutes — pay on delivery or pickup.'}
                     </p>
                     <Link
                         to={`/shop/${shopInfo.id}/products`}

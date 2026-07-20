@@ -54,8 +54,11 @@ const CheckoutPage: React.FC = () => {
     const subtotal = cartSubtotal(items);
     const taxRate = Number(shopInfo.settings?.taxRate) || 0;
     const tax = subtotal * (taxRate / 100);
-    // Flat store-configured delivery fee — charged only when delivering.
-    const deliveryFee = fulfillment === 'delivery' ? Math.max(0, Number(shopInfo.settings?.deliveryFee) || 0) : 0;
+    // Flat store-configured delivery fee — charged only when delivering,
+    // waived at/above the store's free-delivery threshold.
+    const freeAbove = shopInfo.settings?.freeDeliveryAbove != null ? Number(shopInfo.settings.freeDeliveryAbove) : null;
+    const feeWaived = freeAbove != null && subtotal >= freeAbove;
+    const deliveryFee = fulfillment === 'delivery' && !feeWaived ? Math.max(0, Number(shopInfo.settings?.deliveryFee) || 0) : 0;
     const total = subtotal + tax + deliveryFee;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -260,6 +263,17 @@ const CheckoutPage: React.FC = () => {
                                     <dt className="text-brand-text-muted">Delivery fee</dt>
                                     <dd className="font-semibold text-brand-text">{formatPrice(deliveryFee)}</dd>
                                 </div>
+                            )}
+                            {fulfillment === 'delivery' && feeWaived && (
+                                <div className="flex justify-between">
+                                    <dt className="text-brand-text-muted">Delivery fee</dt>
+                                    <dd className="font-semibold text-success">Free</dd>
+                                </div>
+                            )}
+                            {fulfillment === 'delivery' && !feeWaived && freeAbove != null && (
+                                <p className="text-xs text-brand-text-muted">
+                                    Free delivery on orders over {formatPrice(freeAbove)}.
+                                </p>
                             )}
                             <div className="flex justify-between items-end pt-2">
                                 <dt className="font-bold text-brand-text">Total due</dt>

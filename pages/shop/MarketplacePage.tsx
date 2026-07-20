@@ -5,8 +5,66 @@ import ShopDiscoveryView from '../../components/marketplace/views/ShopDiscoveryV
 import SuppliersDirectoryView from '../../components/marketplace/views/SuppliersDirectoryView';
 import MyOrdersView from '../../components/marketplace/views/MyOrdersView';
 import { getCurrentUser } from '../../services/authService';
+import { shopService, MyNotification } from '../../services/shop.service';
 import SalePilotLogo from '../../assets/salepilot.png';
-import { HiOutlineUserCircle, HiOutlineMagnifyingGlass } from 'react-icons/hi2';
+import { HiOutlineUserCircle, HiOutlineMagnifyingGlass, HiOutlineBell } from 'react-icons/hi2';
+
+/** Buyer bell: the signed-in user's order updates, right in the marketplace. */
+const BuyerBell: React.FC = () => {
+    const [open, setOpen] = useState(false);
+    const [items, setItems] = useState<MyNotification[] | null>(null);
+
+    useEffect(() => {
+        if (!open || items !== null) return;
+        shopService.getMyNotifications().then(setItems).catch(() => setItems([]));
+    }, [open, items]);
+
+    const unread = (items || []).filter(n => !n.isRead).length;
+
+    return (
+        <div className="relative">
+            <button
+                onClick={() => setOpen(o => !o)}
+                aria-label="Notifications"
+                aria-expanded={open}
+                className="relative w-11 h-11 rounded-lg flex items-center justify-center text-white/85 hover:bg-white/10 transition-colors"
+            >
+                <HiOutlineBell className="w-6 h-6" />
+                {unread > 0 && (
+                    <span className="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-sp-amber text-white text-[10px] font-bold flex items-center justify-center">
+                        {unread}
+                    </span>
+                )}
+            </button>
+            {open && (
+                <>
+                    <div className="fixed inset-0 z-[90]" onClick={() => setOpen(false)} aria-hidden />
+                    <div className="absolute right-0 top-full mt-2 w-80 max-w-[85vw] z-[100] bg-surface border border-brand-border rounded-lg shadow-xl overflow-hidden">
+                        <p className="px-4 py-3 text-sm font-bold text-brand-text border-b border-brand-border">Notifications</p>
+                        {items === null ? (
+                            <p className="px-4 py-6 text-sm text-brand-text-muted">Loading…</p>
+                        ) : items.length === 0 ? (
+                            <p className="px-4 py-6 text-sm text-brand-text-muted">Nothing yet — order updates will appear here.</p>
+                        ) : (
+                            <ul className="max-h-80 overflow-y-auto divide-y divide-brand-border">
+                                {items.map(n => (
+                                    <li key={n.id} className="px-4 py-3">
+                                        <p className="text-sm font-semibold text-brand-text flex items-center gap-2">
+                                            {!n.isRead && <span className="w-2 h-2 rounded-full bg-sp-amber flex-none" aria-label="Unread" />}
+                                            {n.title}
+                                        </p>
+                                        <p className="text-xs text-brand-text-muted mt-0.5 leading-relaxed">{n.message}</p>
+                                        <p className="text-[10px] text-brand-text-muted mt-1">{new Date(n.createdAt).toLocaleString()}</p>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
+                </>
+            )}
+        </div>
+    );
+};
 
 /**
  * SalePilot Marketplace — public, shopping-first discovery across every store
@@ -112,7 +170,8 @@ export default function MarketplacePage() {
                         </form>
 
                         {/* Account */}
-                        <div className="flex-none flex items-center gap-3">
+                        <div className="flex-none flex items-center gap-2 sm:gap-3">
+                            {currentUser && <BuyerBell />}
                             {currentUser ? (
                                 <button
                                     onClick={() => navigate(currentUser.role === 'customer' ? '/marketplace' : '/dash')}

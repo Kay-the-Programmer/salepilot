@@ -6,6 +6,8 @@ import { buildAssetUrl } from '../../services/api';
 import { Product, Category } from '../../types';
 import { logEvent } from '../../src/utils/analytics';
 import { addToCart, useShopCart, effectiveUnitPrice } from './cartStore';
+import { getCurrentUser } from '../../services/authService';
+import { waChatLink } from '../../utils/whatsapp';
 import ShopProductCard from './ShopProductCard';
 import type { ShopOutletContext } from './ShopLayout';
 
@@ -15,7 +17,9 @@ import type { ShopOutletContext } from './ShopLayout';
 const ShopProductDetail: React.FC = () => {
     const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
     const { formatPrice, openCart, shopInfo } = useOutletContext<ShopOutletContext>();
-    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier;
+    const isWholesaleStore = !!shopInfo.settings?.isWholesaleSupplier;
+    // Trade pricing is account-gated: guests see retail, signed-in buyers wholesale.
+    const isWholesale = isWholesaleStore && !!getCurrentUser();
     const [product, setProduct] = useState<Product | null>(null);
     const [related, setRelated] = useState<Product[]>([]);
     const [category, setCategory] = useState<Category | null>(null);
@@ -187,6 +191,11 @@ const ShopProductDetail: React.FC = () => {
                                 Retail {formatPrice(product.price)}
                             </p>
                         )}
+                        {isWholesaleStore && !isWholesale && product.wholesalePrice != null && (
+                            <p className="mt-1.5 text-sm text-brand-text-muted">
+                                Buying for a business? <Link to="/login" className="font-semibold text-sp-navy hover:underline">Sign in</Link> for the wholesale price ({formatPrice(product.wholesalePrice)}).
+                            </p>
+                        )}
                     </div>
 
                     {/* Stock + in-cart chips */}
@@ -253,6 +262,20 @@ const ShopProductDetail: React.FC = () => {
                                 )}
                             </button>
                         </div>
+                    )}
+
+                    {/* Chat with the store — negotiating over WhatsApp is how this
+                        market works; the store's phone is already public. */}
+                    {waChatLink(shopInfo.settings?.phone) && (
+                        <a
+                            href={waChatLink(shopInfo.settings?.phone, `Hi! I'm interested in "${product.name}" on your SalePilot store.`)!}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="mb-8 inline-flex items-center justify-center gap-2 h-12 px-6 rounded-lg border-2 border-[#25D366] text-[#128C7E] font-bold text-sm hover:bg-[#25D366]/10 transition-colors active:scale-[0.98] self-start"
+                        >
+                            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-current" aria-hidden><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.87 9.87 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm5.83 14.12c-.25.7-1.45 1.33-2 1.38-.51.05-1.15.24-3.88-.81-3.27-1.29-5.38-4.62-5.54-4.83-.16-.22-1.33-1.77-1.33-3.38 0-1.61.85-2.4 1.15-2.73.3-.33.65-.41.87-.41h.62c.2 0 .47-.08.73.56.27.65.91 2.24.99 2.4.08.16.13.36.02.58-.11.22-.16.35-.32.54-.16.19-.34.43-.49.57-.16.16-.33.34-.14.66.19.32.85 1.4 1.83 2.27 1.25 1.12 2.31 1.46 2.64 1.62.33.16.52.14.71-.08.19-.22.82-.96 1.04-1.29.22-.33.44-.27.73-.16.3.11 1.9.9 2.23 1.06.33.16.54.24.62.38.08.13.08.78-.17 1.48z"/></svg>
+                            Chat with the store on WhatsApp
+                        </a>
                     )}
 
                     {/* Description */}

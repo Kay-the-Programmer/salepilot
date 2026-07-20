@@ -46,13 +46,17 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
     const [message, setMessage] = useState(`Hi [Name]! 🛍️ Browse our latest catalog and order online here: ${link}`);
     const [sending, setSending] = useState(false);
 
-    // Wholesale-marketplace listing + delivery fee (persisted in store settings)
+    // Wholesale-marketplace listing + delivery config + blurb (store settings)
     const [wholesale, setWholesale] = useState<boolean>((storeSettings as any)?.isWholesaleSupplier === true);
     const [deliveryFee, setDeliveryFee] = useState<string>(String((storeSettings as any)?.deliveryFee ?? 0));
+    const [freeAbove, setFreeAbove] = useState<string>((storeSettings as any)?.freeDeliveryAbove != null ? String((storeSettings as any).freeDeliveryAbove) : '');
+    const [description, setDescription] = useState<string>((storeSettings as any)?.storeDescription || '');
     const [savingMarket, setSavingMarket] = useState(false);
     useEffect(() => {
         setWholesale((storeSettings as any)?.isWholesaleSupplier === true);
         setDeliveryFee(String((storeSettings as any)?.deliveryFee ?? 0));
+        setFreeAbove((storeSettings as any)?.freeDeliveryAbove != null ? String((storeSettings as any).freeDeliveryAbove) : '');
+        setDescription((storeSettings as any)?.storeDescription || '');
     }, [storeSettings]);
 
     const saveMarketplace = async () => {
@@ -64,6 +68,8 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
                 ...current,
                 isWholesaleSupplier: wholesale,
                 deliveryFee: Math.max(0, Number(deliveryFee) || 0),
+                freeDeliveryAbove: freeAbove.trim() === '' ? '' : Math.max(0, Number(freeAbove) || 0),
+                storeDescription: description.trim(),
             });
             showSnackbar(wholesale ? 'You are listed on the wholesale marketplace.' : 'Marketplace settings saved.', 'success');
         } catch (e: any) {
@@ -175,19 +181,45 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
                                 className="w-5 h-5 accent-sp-amber cursor-pointer"
                             />
                         </label>
-                        <label className="block mb-4">
-                            <span className="block text-xs font-bold uppercase tracking-wide text-brand-text-muted mb-1.5">Delivery fee for online orders</span>
-                            <input
-                                className={input}
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                value={deliveryFee}
-                                onChange={e => setDeliveryFee(e.target.value)}
-                                placeholder="0.00"
+                        <label className="block mb-3">
+                            <span className="block text-xs font-bold uppercase tracking-wide text-brand-text-muted mb-1.5">Store description</span>
+                            <textarea
+                                className={`${input} min-h-[70px] resize-y`}
+                                maxLength={600}
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
+                                placeholder="Tell buyers what you sell, e.g. Bulk groceries and beverages, Lusaka — nationwide delivery."
                             />
-                            <span className="text-xs text-brand-text-muted">Flat fee added when a buyer chooses delivery at checkout. Set 0 for free delivery.</span>
+                            <span className="text-xs text-brand-text-muted">Shown on your storefront hero and marketplace supplier card.</span>
                         </label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                            <label className="block">
+                                <span className="block text-xs font-bold uppercase tracking-wide text-brand-text-muted mb-1.5">Delivery fee for online orders</span>
+                                <input
+                                    className={input}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={deliveryFee}
+                                    onChange={e => setDeliveryFee(e.target.value)}
+                                    placeholder="0.00"
+                                />
+                                <span className="text-xs text-brand-text-muted">Flat fee when a buyer chooses delivery. 0 = free.</span>
+                            </label>
+                            <label className="block">
+                                <span className="block text-xs font-bold uppercase tracking-wide text-brand-text-muted mb-1.5">Free delivery above</span>
+                                <input
+                                    className={input}
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    value={freeAbove}
+                                    onChange={e => setFreeAbove(e.target.value)}
+                                    placeholder="e.g. 500"
+                                />
+                                <span className="text-xs text-brand-text-muted">Waive the fee at/above this order subtotal. Blank = never.</span>
+                            </label>
+                        </div>
                         <button className={`${btnPrimary} w-full py-3`} onClick={saveMarketplace} disabled={savingMarket}>
                             {savingMarket ? 'Saving…' : 'Save marketplace settings'}
                         </button>

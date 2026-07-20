@@ -142,6 +142,11 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ isOpen, onClose, storeId, items
                                                 Max available — only {item.stock} in stock
                                             </p>
                                         )}
+                                        {(item.moq || 0) > 1 && (
+                                            <p className="mt-1.5 text-[11px] font-semibold text-brand-text-muted">
+                                                Minimum order {item.moq} — going below removes the item
+                                            </p>
+                                        )}
                                     </div>
                                 </li>
                             ))}

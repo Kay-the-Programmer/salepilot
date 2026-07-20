@@ -8,8 +8,9 @@ import {
     HiOutlineChevronRight,
     HiOutlineXMark,
     HiOutlineSparkles,
+    HiCheckBadge,
 } from 'react-icons/hi2';
-import { shopService, GlobalProduct, PublicStore, ShopSort } from '../../../services/shop.service';
+import { shopService, GlobalProduct, PublicStore, ShopSort, GlobalCategory } from '../../../services/shop.service';
 import { formatCurrency } from '../../../utils/currency';
 import ShopProductCard from '../../../pages/shop/ShopProductCard';
 
@@ -33,11 +34,16 @@ const StoreRailCard: React.FC<{ store: PublicStore }> = ({ store }) => (
             {store.name.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-brand-text truncate group-hover:text-sp-navy transition-colors">{store.name}</p>
+            <p className="text-sm font-bold text-brand-text truncate group-hover:text-sp-navy transition-colors flex items-center gap-1">
+                <span className="truncate">{store.name}</span>
+                {store.isVerified && <HiCheckBadge className="w-4 h-4 flex-none text-sp-navy" title="Verified supplier" />}
+            </p>
             <p className="text-[11px] text-brand-text-muted truncate flex items-center gap-1 mt-0.5">
-                {store.address
-                    ? <><HiOutlineMapPin className="w-3 h-3 flex-none" />{store.address}</>
-                    : <><HiOutlineBuildingStorefront className="w-3 h-3 flex-none" />Online store</>}
+                {store.storeDescription
+                    ? store.storeDescription
+                    : store.address
+                        ? <><HiOutlineMapPin className="w-3 h-3 flex-none" />{store.address}</>
+                        : <><HiOutlineBuildingStorefront className="w-3 h-3 flex-none" />Online store</>}
             </p>
         </div>
     </Link>
@@ -54,12 +60,14 @@ const ShopDiscoveryView: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const query = searchParams.get('q') || '';
     const sort = (searchParams.get('sort') as ShopSort) || 'newest';
+    const activeCat = searchParams.get('cat') || '';
     const searching = !!query;
 
     const [products, setProducts] = useState<GlobalProduct[]>([]);
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [stores, setStores] = useState<PublicStore[]>([]);
+    const [categories, setCategories] = useState<GlobalCategory[]>([]);
     const [storesLoading, setStoresLoading] = useState(true);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
@@ -72,13 +80,16 @@ const ShopDiscoveryView: React.FC = () => {
             .then(setStores)
             .catch(() => { })
             .finally(() => setStoresLoading(false));
+        shopService.getGlobalCategories({ wholesale: true })
+            .then(setCategories)
+            .catch(() => { });
     }, []);
 
     useEffect(() => {
         let cancelled = false;
         setLoading(true);
         setPage(1);
-        shopService.getGlobalProducts({ search: query || undefined, sort, page: 1, limit: PAGE_SIZE, wholesale: true })
+        shopService.getGlobalProducts({ search: query || undefined, sort, page: 1, limit: PAGE_SIZE, wholesale: true, category: activeCat || undefined })
             .then(res => {
                 if (cancelled) return;
                 setProducts(res.items);
@@ -88,14 +99,14 @@ const ShopDiscoveryView: React.FC = () => {
             .catch(err => console.error('Failed to load marketplace products', err))
             .finally(() => { if (!cancelled) setLoading(false); });
         return () => { cancelled = true; };
-    }, [query, sort]);
+    }, [query, sort, activeCat]);
 
     const loadMore = async () => {
         if (loadingMore) return;
         setLoadingMore(true);
         try {
             const next = page + 1;
-            const res = await shopService.getGlobalProducts({ search: query || undefined, sort, page: next, limit: PAGE_SIZE, wholesale: true });
+            const res = await shopService.getGlobalProducts({ search: query || undefined, sort, page: next, limit: PAGE_SIZE, wholesale: true, category: activeCat || undefined });
             setProducts(prev => [...prev, ...res.items]);
             setPage(next);
         } finally {
@@ -214,6 +225,27 @@ const ShopDiscoveryView: React.FC = () => {
 
             {/* ── Products ── */}
             <section>
+                {/* Category chips: cross-supplier facet (aggregated by name) */}
+                {categories.length > 0 && (
+                    <div className="flex gap-2 overflow-x-auto no-scrollbar pb-3 mb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
+                        <button
+                            onClick={() => updateParam('cat', '')}
+                            className={`flex-none h-9 px-4 rounded-full text-sm font-semibold transition-colors ${!activeCat ? 'bg-sp-navy text-white' : 'bg-surface border border-brand-border text-brand-text-muted hover:text-brand-text'}`}
+                        >
+                            All
+                        </button>
+                        {categories.map(c => (
+                            <button
+                                key={c.name}
+                                onClick={() => updateParam('cat', activeCat === c.name ? '' : c.name)}
+                                className={`flex-none h-9 px-4 rounded-full text-sm font-semibold transition-colors whitespace-nowrap ${activeCat === c.name ? 'bg-sp-navy text-white' : 'bg-surface border border-brand-border text-brand-text-muted hover:text-brand-text'}`}
+                            >
+                                {c.name} <span className="opacity-60">({c.productCount})</span>
+                            </button>
+                        ))}
+                    </div>
+                )}
+
                 {/* Toolbar: title + count left, sort right; stacks on mobile */}
                 <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4 sm:mb-5">
                     <div className="min-w-0">

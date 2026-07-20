@@ -17,6 +17,8 @@ export interface ShopInfo {
         currency?: any;
         taxRate?: number;
         deliveryFee?: number;
+        freeDeliveryAbove?: number | null;
+        storeDescription?: string | null;
         receiptMessage?: string;
     };
 }
@@ -43,6 +45,24 @@ export interface PublicStore {
     website?: string;
     currency?: any;
     isWholesaleSupplier?: boolean;
+    isVerified?: boolean;
+    storeDescription?: string | null;
+}
+
+/** Cross-store category facet (aggregated by name across supplier catalogs). */
+export interface GlobalCategory {
+    name: string;
+    productCount: number;
+}
+
+/** A notification addressed to the signed-in user (buyer bell). */
+export interface MyNotification {
+    id: string;
+    title: string;
+    message: string;
+    link?: string | null;
+    isRead: boolean;
+    createdAt: string;
 }
 
 /** One of the signed-in buyer's orders, across every store (B2B "My orders"). */
@@ -58,7 +78,7 @@ export interface MyOrder {
     deliveryFee?: number;
     paymentStatus: string;
     fulfillmentStatus: string;
-    items: { name: string; quantity: number; price: number }[];
+    items: { name: string; quantity: number; price: number; productId?: string }[];
 }
 
 export interface GlobalProduct extends Product {
@@ -131,12 +151,13 @@ export const shopService = {
 
     /** Marketplace: paginated cross-store product search (wholesale=true → supplier catalogs only). */
     getGlobalProducts: async (
-        opts: { search?: string; sort?: ShopSort; page?: number; limit?: number; wholesale?: boolean } = {}
+        opts: { search?: string; sort?: ShopSort; page?: number; limit?: number; wholesale?: boolean; category?: string } = {}
     ): Promise<{ items: GlobalProduct[]; total: number; page: number; pageSize: number }> => {
         const params = new URLSearchParams();
         if (opts.search) params.append('search', opts.search);
         if (opts.sort) params.append('sort', opts.sort);
         if (opts.wholesale) params.append('wholesale', '1');
+        if (opts.category) params.append('category', opts.category);
         params.append('page', String(opts.page || 1));
         if (opts.limit) params.append('limit', String(opts.limit));
         return api.get<{ items: GlobalProduct[]; total: number; page: number; pageSize: number }>(
@@ -147,5 +168,15 @@ export const shopService = {
     /** Signed-in buyer: order history across all stores. */
     getMyOrders: async (): Promise<MyOrder[]> => {
         return api.get<MyOrder[]>('/marketplace/my-orders');
+    },
+
+    /** Marketplace: category names aggregated across supplier catalogs. */
+    getGlobalCategories: async (opts: { wholesale?: boolean } = {}): Promise<GlobalCategory[]> => {
+        return api.get<GlobalCategory[]>(`/shop/global-categories${opts.wholesale ? '?wholesale=1' : ''}`);
+    },
+
+    /** Signed-in buyer: own notifications (order updates etc.) for the bell. */
+    getMyNotifications: async (): Promise<MyNotification[]> => {
+        return api.get<MyNotification[]>('/notifications/mine');
     },
 };

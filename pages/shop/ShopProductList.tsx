@@ -5,6 +5,7 @@ import { shopService, ShopSort, ShopCategory } from '../../services/shop.service
 import { Product } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
 import { addToCart, updateQuantity, useShopCart, effectiveUnitPrice } from './cartStore';
+import { getCurrentUser } from '../../services/authService';
 import ShopProductCard from './ShopProductCard';
 import type { ShopOutletContext } from './ShopLayout';
 
@@ -26,7 +27,8 @@ const SORT_OPTIONS: { value: ShopSort; label: string }[] = [
 const ShopProductList: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
     const { formatPrice, shopInfo } = useOutletContext<ShopOutletContext>();
-    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier;
+    // Trade pricing is account-gated: guests see retail, signed-in buyers wholesale.
+    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier && !!getCurrentUser();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const query = searchParams.get('q') || '';

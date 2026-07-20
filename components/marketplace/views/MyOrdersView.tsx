@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { HiOutlineClipboardDocumentList, HiOutlineBuildingStorefront, HiOutlineArrowRight } from 'react-icons/hi2';
+import { HiOutlineClipboardDocumentList, HiOutlineBuildingStorefront, HiOutlineArrowRight, HiOutlineArrowPath } from 'react-icons/hi2';
 import { shopService, MyOrder } from '../../../services/shop.service';
 import { getCurrentUser } from '../../../services/authService';
 import { formatCurrency } from '../../../utils/currency';
+import { addToCart } from '../../../pages/shop/cartStore';
 
 const STATUS_STYLES: Record<string, string> = {
     pending: 'bg-amber-100 text-amber-800',
@@ -31,6 +32,22 @@ const MyOrdersView: React.FC = () => {
     const [user] = useState(() => getCurrentUser());
     const [orders, setOrders] = useState<MyOrder[] | null>(null);
     const [error, setError] = useState('');
+
+    // Restocking is repetitive: refill the cart with this order's lines and
+    // land on the supplier's cart. Prices/stock/MOQ resync at checkout —
+    // the server is authoritative anyway.
+    const reorder = (order: MyOrder) => {
+        const lines = (order.items || []).filter(i => i.productId);
+        for (const item of lines) {
+            addToCart(order.storeId, {
+                id: item.productId!,
+                name: item.name || 'Item',
+                price: Number(item.price) || 0,
+                stock: 0, // unknown here — clamped server-side at checkout
+            }, Math.max(1, Math.round(Number(item.quantity) || 1)));
+        }
+        navigate(`/shop/${order.storeId}/cart`);
+    };
 
     useEffect(() => {
         if (!user) return;
@@ -122,10 +139,20 @@ const MyOrdersView: React.FC = () => {
                                     )}
                                 </ul>
                             )}
-                            <div className="px-5 py-3 bg-warm-100/60 flex items-center justify-between">
+                            <div className="px-5 py-3 bg-warm-100/60 flex items-center justify-between gap-3">
                                 <span className="text-xs font-bold uppercase tracking-widest text-brand-text-muted">Total</span>
-                                <span className="text-lg font-bold tracking-tight text-sp-navy">
-                                    {formatCurrency(Number(order.total) || 0, { currency: order.storeCurrency || { code: 'ZMW', symbol: 'K', position: 'before' } } as any)}
+                                <span className="flex items-center gap-3">
+                                    <span className="text-lg font-bold tracking-tight text-sp-navy">
+                                        {formatCurrency(Number(order.total) || 0, { currency: order.storeCurrency || { code: 'ZMW', symbol: 'K', position: 'before' } } as any)}
+                                    </span>
+                                    {(order.items || []).some(i => i.productId) && (
+                                        <button
+                                            onClick={() => reorder(order)}
+                                            className="inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg border border-sp-navy text-sp-navy text-xs font-bold hover:bg-sp-navy/5 transition-colors active:scale-95"
+                                        >
+                                            <HiOutlineArrowPath className="w-4 h-4" /> Order again
+                                        </button>
+                                    )}
                                 </span>
                             </div>
                         </li>
