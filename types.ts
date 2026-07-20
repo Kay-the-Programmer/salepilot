@@ -47,6 +47,9 @@ export interface Product {
     // B2B wholesale marketplace fields
     wholesalePrice?: number | null;    // Per-unit price for retailer buyers (null = retail price)
     minOrderQuantity?: number | null;  // Minimum quantity per online order line
+    // Denormalized review aggregates (maintained on review write)
+    ratingAvg?: number | null;
+    ratingCount?: number;
 }
 
 export interface User {

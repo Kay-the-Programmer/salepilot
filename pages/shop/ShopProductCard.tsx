@@ -84,6 +84,13 @@ const ShopProductCard: React.FC<ShopProductCardProps> = ({ product, storeId, for
                 {product.brand && (
                     <p className="text-xs text-brand-text-muted mt-0.5 truncate">{product.brand}</p>
                 )}
+                {(product.ratingCount || 0) > 0 && (
+                    <p className="text-xs mt-0.5 flex items-center gap-1">
+                        <span className="text-sp-amber" aria-hidden>★</span>
+                        <span className="font-bold text-brand-text">{Number(product.ratingAvg).toFixed(1)}</span>
+                        <span className="text-brand-text-muted">({product.ratingCount})</span>
+                    </p>
+                )}
 
                 {/* Price + quick add */}
                 <div className="mt-auto pt-3 flex items-center justify-between gap-2">

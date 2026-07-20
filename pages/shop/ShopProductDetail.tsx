@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useParams, useOutletContext } from 'react-router-dom';
 import { HiOutlineCheckCircle, HiOutlinePlus, HiOutlineMinus, HiOutlineShoppingBag, HiOutlinePhoto, HiOutlineChevronRight } from 'react-icons/hi2';
-import { shopService } from '../../services/shop.service';
+import { shopService, ProductReviews } from '../../services/shop.service';
 import { buildAssetUrl } from '../../services/api';
 import { Product, Category } from '../../types';
 import { logEvent } from '../../src/utils/analytics';
@@ -29,6 +29,37 @@ const ShopProductDetail: React.FC = () => {
     const [justAdded, setJustAdded] = useState(false);
     const { qtyOf } = useShopCart(storeId);
     const inCartQty = product ? qtyOf(product.id) : 0;
+
+    // Reviews (public read; verified buyers can write)
+    const [reviews, setReviews] = useState<ProductReviews | null>(null);
+    const [myRating, setMyRating] = useState(0);
+    const [myComment, setMyComment] = useState('');
+    const [reviewBusy, setReviewBusy] = useState(false);
+    const [reviewMsg, setReviewMsg] = useState<{ text: string; ok: boolean } | null>(null);
+    const signedIn = !!getCurrentUser();
+
+    const loadReviews = React.useCallback(() => {
+        if (!storeId || !productId) return;
+        shopService.getReviews(storeId, productId).then(setReviews).catch(() => { });
+    }, [storeId, productId]);
+    useEffect(() => { setReviews(null); setMyRating(0); setMyComment(''); setReviewMsg(null); loadReviews(); }, [loadReviews]);
+
+    const sendReview = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!storeId || !productId || myRating < 1) return;
+        setReviewBusy(true);
+        setReviewMsg(null);
+        try {
+            await shopService.submitReview(storeId, productId, { rating: myRating, comment: myComment.trim() || undefined });
+            setReviewMsg({ text: 'Review saved — thank you!', ok: true });
+            setMyComment('');
+            loadReviews();
+        } catch (err: any) {
+            setReviewMsg({ text: err?.message || 'Could not save your review.', ok: false });
+        } finally {
+            setReviewBusy(false);
+        }
+    };
 
     useEffect(() => {
         if (!storeId || !productId) return;
@@ -174,10 +205,20 @@ const ShopProductDetail: React.FC = () => {
                     <h1 className="text-2xl sm:text-[32px] sm:leading-10 font-semibold tracking-tight text-brand-text mb-2">
                         {product.name}
                     </h1>
-                    <div className="flex items-center gap-2 text-sm text-brand-text-muted mb-5">
+                    <div className="flex items-center gap-2 text-sm text-brand-text-muted mb-5 flex-wrap">
                         {product.brand && <span className="font-medium">{product.brand}</span>}
                         {product.brand && product.sku && <span aria-hidden>·</span>}
                         {product.sku && <span>SKU {product.sku}</span>}
+                        {reviews && reviews.summary.count > 0 && (
+                            <>
+                                <span aria-hidden>·</span>
+                                <a href="#reviews" className="flex items-center gap-1 font-semibold text-brand-text hover:text-sp-navy">
+                                    <span className="text-sp-amber" aria-hidden>★</span>
+                                    {reviews.summary.average.toFixed(1)}
+                                    <span className="font-normal text-brand-text-muted">({reviews.summary.count} review{reviews.summary.count === 1 ? '' : 's'})</span>
+                                </a>
+                            </>
+                        )}
                     </div>
 
                     {/* Price — display-price role */}
@@ -287,6 +328,83 @@ const ShopProductDetail: React.FC = () => {
                     </div>
                 </div>
             </div>
+
+            {/* ── Reviews ── */}
+            <section id="reviews">
+                <h2 className="text-xl sm:text-2xl font-semibold tracking-tight text-brand-text mb-4">
+                    Reviews
+                    {reviews && reviews.summary.count > 0 && (
+                        <span className="ml-2 text-base font-medium text-brand-text-muted">
+                            <span className="text-sp-amber" aria-hidden>★</span> {reviews.summary.average.toFixed(1)} · {reviews.summary.count}
+                        </span>
+                    )}
+                </h2>
+
+                {(!reviews || reviews.reviews.length === 0) && (
+                    <p className="text-sm text-brand-text-muted mb-5">No reviews yet{signedIn ? ' — be the first.' : '.'}</p>
+                )}
+
+                {reviews && reviews.reviews.length > 0 && (
+                    <ul className="space-y-4 mb-6">
+                        {reviews.reviews.map(r => (
+                            <li key={r.id} className="bg-surface border border-brand-border rounded-lg p-4">
+                                <div className="flex items-center justify-between gap-3 mb-1.5 flex-wrap">
+                                    <p className="text-sm font-bold text-brand-text">{r.authorName || 'Verified buyer'}</p>
+                                    <p className="text-xs text-brand-text-muted">{new Date(r.createdAt).toLocaleDateString()}</p>
+                                </div>
+                                <p className="text-sp-amber text-sm tracking-tight mb-1" aria-label={`${r.rating} out of 5`}>
+                                    {'★'.repeat(r.rating)}<span className="text-brand-border">{'★'.repeat(5 - r.rating)}</span>
+                                </p>
+                                {r.comment && <p className="text-sm text-brand-text leading-relaxed">{r.comment}</p>}
+                            </li>
+                        ))}
+                    </ul>
+                )}
+
+                {signedIn ? (
+                    <form onSubmit={sendReview} className="bg-surface border border-brand-border rounded-lg p-5">
+                        <p className="text-sm font-bold text-brand-text mb-3">Rate this product</p>
+                        <div className="flex items-center gap-1 mb-3" role="radiogroup" aria-label="Rating">
+                            {[1, 2, 3, 4, 5].map(n => (
+                                <button
+                                    key={n}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={myRating === n}
+                                    aria-label={`${n} star${n === 1 ? '' : 's'}`}
+                                    onClick={() => setMyRating(n)}
+                                    className={`text-2xl leading-none transition-transform active:scale-90 ${n <= myRating ? 'text-sp-amber' : 'text-brand-border hover:text-sp-amber/60'}`}
+                                >
+                                    ★
+                                </button>
+                            ))}
+                        </div>
+                        <textarea
+                            value={myComment}
+                            onChange={e => setMyComment(e.target.value)}
+                            maxLength={1000}
+                            rows={3}
+                            placeholder="What should other buyers know? (optional)"
+                            className="w-full px-4 py-3 rounded-lg bg-surface border border-brand-border text-sm text-brand-text placeholder:text-brand-text-muted/60 focus:outline-none focus:border-sp-navy transition-colors resize-y mb-3"
+                        />
+                        {reviewMsg && (
+                            <p className={`text-sm font-semibold mb-3 ${reviewMsg.ok ? 'text-success' : 'text-danger'}`} role="status">{reviewMsg.text}</p>
+                        )}
+                        <button
+                            type="submit"
+                            disabled={reviewBusy || myRating < 1}
+                            className="h-11 px-6 rounded-lg bg-sp-navy text-white text-sm font-semibold hover:bg-sp-navy-light transition-colors active:scale-[0.98] disabled:opacity-50"
+                        >
+                            {reviewBusy ? 'Saving…' : 'Submit review'}
+                        </button>
+                        <p className="mt-2 text-xs text-brand-text-muted">Only buyers who have ordered this item can review it.</p>
+                    </form>
+                ) : (
+                    <p className="text-sm text-brand-text-muted">
+                        <Link to="/login" className="font-semibold text-sp-navy hover:underline">Sign in</Link> to review — reviews are limited to verified buyers.
+                    </p>
+                )}
+            </section>
 
             {/* ── Related products ── */}
             {related.length > 0 && (

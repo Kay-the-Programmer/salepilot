@@ -179,4 +179,27 @@ export const shopService = {
     getMyNotifications: async (): Promise<MyNotification[]> => {
         return api.get<MyNotification[]>('/notifications/mine');
     },
+
+    /** Public: latest reviews + rating summary for a product. */
+    getReviews: async (storeId: string, productId: string): Promise<ProductReviews> => {
+        return api.get<ProductReviews>(`/shop/${storeId}/products/${productId}/reviews`);
+    },
+
+    /** Signed-in verified buyer: create or update their review (403 otherwise). */
+    submitReview: async (storeId: string, productId: string, data: { rating: number; comment?: string }) => {
+        return api.post(`/shop/${storeId}/products/${productId}/reviews`, data);
+    },
 };
+
+export interface ProductReview {
+    id: string;
+    authorName?: string;
+    rating: number;
+    comment?: string | null;
+    createdAt: string;
+}
+
+export interface ProductReviews {
+    summary: { average: number; count: number };
+    reviews: ProductReview[];
+}
