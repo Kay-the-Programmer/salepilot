@@ -132,7 +132,7 @@ export default function MarketplacePage() {
                                         Log in
                                     </button>
                                     <button
-                                        onClick={() => navigate('/register')}
+                                        onClick={() => navigate('/register?type=supplier')}
                                         className="h-11 px-4 sm:px-5 rounded-lg bg-sp-amber text-white text-sm font-bold hover:brightness-95 transition-all active:scale-95 whitespace-nowrap"
                                     >
                                         <span className="sm:hidden">Sell</span>
@@ -207,7 +207,7 @@ export default function MarketplacePage() {
                         <h3 className="text-base font-bold mb-3">For businesses</h3>
                         <p className="text-sm text-white/70 mb-3">Get your store online with POS, inventory and a free storefront.</p>
                         <button
-                            onClick={() => navigate('/register')}
+                            onClick={() => navigate('/register?type=supplier')}
                             className="h-11 px-5 rounded-lg bg-sp-amber text-white text-sm font-bold hover:brightness-95 transition-all active:scale-95"
                         >
                             Sell on SalePilot

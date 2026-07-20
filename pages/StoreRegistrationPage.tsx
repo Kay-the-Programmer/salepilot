@@ -77,6 +77,13 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
     const [phone, setPhone] = useState('');
     const [address, setAddress] = useState('');
     const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+    // Selling model: supplier registration (?type=supplier, the marketplace
+    // "Sell on SalePilot" path) pre-selects wholesale — the store is listed on
+    // the B2B marketplace from day one. Changeable later in the Online Store app.
+    const [isWholesale, setIsWholesale] = useState<boolean>(() => {
+        const t = new URLSearchParams(window.location.search).get('type');
+        return t === 'supplier' || t === 'wholesale';
+    });
 
     const [isLoading, setIsLoading] = useState(false);
     const [isCheckingName, setIsCheckingName] = useState(false);
@@ -166,7 +173,7 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
         setIsLoading(true);
         setError(null);
         try {
-            const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes, phone, address);
+            const { store, user } = await registerStoreAndRefreshUser(trimmedName, selectedTypes, phone, address, isWholesale);
             showSnackbar(`Store "${store.name}" created successfully! 🎉`, 'success');
             onCompleted(user);
         } catch (err: any) {
@@ -441,7 +448,35 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
                     {/* Business Type Step */}
                     {currentKey === 'type' && (
                         <div className="space-y-4">
-                            <p className="text-sm text-brand-text-muted">Select all categories that describe your store.</p>
+                            <div>
+                                <p className="text-sm font-medium text-brand-text mb-2">Who do you sell to?</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {([
+                                        { v: false, title: 'Retail', body: 'I sell to customers' },
+                                        { v: true, title: 'Wholesale supplier', body: 'I supply retailers — list me on the marketplace' },
+                                    ] as const).map(opt => (
+                                        <button
+                                            key={String(opt.v)}
+                                            type="button"
+                                            onClick={() => setIsWholesale(opt.v)}
+                                            aria-pressed={isWholesale === opt.v}
+                                            className={`p-3 rounded-lg border-2 text-left transition-all ${isWholesale === opt.v
+                                                ? 'border-primary bg-primary/5'
+                                                : 'border-brand-border'
+                                                }`}
+                                        >
+                                            <div className={`text-sm font-semibold ${isWholesale === opt.v ? 'text-primary' : 'text-brand-text'}`}>{opt.title}</div>
+                                            <div className="text-xs text-brand-text-muted mt-0.5">{opt.body}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                                {isWholesale && (
+                                    <p className="mt-2 text-xs text-brand-text-muted">
+                                        Your catalog will be listed on the SalePilot wholesale marketplace so retailers can order from you. You can turn this off anytime in the Online Store app.
+                                    </p>
+                                )}
+                            </div>
+                            <p className="text-sm text-brand-text-muted">Select all categories that describe your {isWholesale ? 'products' : 'store'}.</p>
                             <div className="grid grid-cols-2 gap-2">
                                 {BUSINESS_TYPES.map((type) => {
                                     const active = selectedTypes.includes(type.id);
@@ -498,6 +533,10 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
                                     <div>
                                         <span className="text-brand-text-muted">Store: </span>
                                         <span className="font-medium text-brand-text">{name || '—'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-brand-text-muted">Selling model: </span>
+                                        <span className="font-medium text-brand-text">{isWholesale ? 'Wholesale supplier (listed on the marketplace)' : 'Retail'}</span>
                                     </div>
                                     <div>
                                         <span className="text-brand-text-muted">Type: </span>

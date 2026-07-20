@@ -35,12 +35,20 @@ const SuppliersDirectoryView: React.FC = () => {
                     <p className="text-sm text-brand-text-muted mb-5 max-w-md mx-auto">
                         Are you a wholesaler on SalePilot? Turn on “Wholesale supplier” in your Online Store settings to appear here.
                     </p>
-                    <Link
-                        to="/store"
-                        className="inline-flex items-center h-11 px-6 rounded-lg bg-sp-navy text-white font-semibold text-sm hover:bg-sp-navy-light transition-colors active:scale-[0.98]"
-                    >
-                        Open Online Store settings
-                    </Link>
+                    <div className="flex flex-wrap items-center justify-center gap-3">
+                        <Link
+                            to="/store"
+                            className="inline-flex items-center h-11 px-6 rounded-lg bg-sp-navy text-white font-semibold text-sm hover:bg-sp-navy-light transition-colors active:scale-[0.98]"
+                        >
+                            Open Online Store settings
+                        </Link>
+                        <Link
+                            to="/register?type=supplier"
+                            className="inline-flex items-center h-11 px-6 rounded-lg border border-sp-navy text-sp-navy font-semibold text-sm hover:bg-sp-navy/5 transition-colors active:scale-[0.98]"
+                        >
+                            New here? Register as a supplier
+                        </Link>
+                    </div>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
