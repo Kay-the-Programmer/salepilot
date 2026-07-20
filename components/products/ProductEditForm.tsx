@@ -513,6 +513,29 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                         </div>
                                     </div>
                                 )}
+
+                                {/* ── Wholesale marketplace pricing ── */}
+                                <div className="pt-4 border-t border-brand-border">
+                                    <p className={`${labelCls} mb-1`}>Wholesale marketplace</p>
+                                    <p className="text-xs text-brand-text-muted mb-3">
+                                        Used when retailers buy from you on the SalePilot marketplace. Leave blank to sell at the selling price with no minimum.
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <label htmlFor="wholesalePrice" className={labelCls}>Wholesale Price</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-medium">{sym}</span>
+                                                <input type="number" name="wholesalePrice" id="wholesalePrice" value={product.wholesalePrice ?? ''} onChange={handleChange} min="0.01" step="0.01" placeholder="0.00"
+                                                    className="w-full pl-9 pr-4 py-2.5 text-sm rounded-lg border border-brand-border bg-surface text-brand-text focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors" />
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label htmlFor="minOrderQuantity" className={labelCls}>Minimum Order Quantity</label>
+                                            <input type="number" name="minOrderQuantity" id="minOrderQuantity" value={product.minOrderQuantity ?? ''} onChange={handleChange} min="1" step="1" placeholder="e.g. 12"
+                                                className="w-full px-4 py-2.5 text-sm rounded-lg border border-brand-border bg-surface text-brand-text focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors" />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </section>
 

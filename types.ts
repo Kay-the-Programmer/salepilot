@@ -44,6 +44,9 @@ export interface Product {
     cartonPrice?: number;     // Total price of one carton/box
     unitsPerCarton?: number;  // Number of sellable units per carton
     cartonsReceived?: number; // Total cartons received (for reference)
+    // B2B wholesale marketplace fields
+    wholesalePrice?: number | null;    // Per-unit price for retailer buyers (null = retail price)
+    minOrderQuantity?: number | null;  // Minimum quantity per online order line
 }
 
 export interface User {

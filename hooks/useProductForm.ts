@@ -110,7 +110,7 @@ export const useProductForm = ({
         const { name, value } = e.target;
         const numericFields = ['reorderPoint', 'safetyStock'];
         const decimalFields = ['stock', 'weight'];
-        const stringNumericFields = ['price', 'costPrice'];
+        const stringNumericFields = ['price', 'costPrice', 'wholesalePrice', 'minOrderQuantity'];
 
         if (name.startsWith('custom_')) {
             const attributeId = name.slice(7);
@@ -345,6 +345,10 @@ export const useProductForm = ({
         formData.append('dimensions', product.dimensions || '');
         formData.append('variants', JSON.stringify(product.variants || []));
         formData.append('custom_attributes', JSON.stringify(product.customAttributes || {}));
+
+        // B2B wholesale marketplace fields ('' clears the value server-side)
+        formData.append('wholesale_price', product.wholesalePrice?.toString() || '');
+        formData.append('min_order_quantity', product.minOrderQuantity?.toString() || '');
 
         // Carton / bulk pricing fields
         if (cartonMode && cartonPrice) {

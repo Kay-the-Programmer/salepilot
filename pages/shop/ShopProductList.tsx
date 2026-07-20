@@ -4,7 +4,7 @@ import { HiOutlineMagnifyingGlass, HiOutlineXMark, HiOutlineCheck } from 'react-
 import { shopService, ShopSort, ShopCategory } from '../../services/shop.service';
 import { Product } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
-import { addToCart, updateQuantity, useShopCart } from './cartStore';
+import { addToCart, updateQuantity, useShopCart, effectiveUnitPrice } from './cartStore';
 import ShopProductCard from './ShopProductCard';
 import type { ShopOutletContext } from './ShopLayout';
 
@@ -25,7 +25,8 @@ const SORT_OPTIONS: { value: ShopSort; label: string }[] = [
  */
 const ShopProductList: React.FC = () => {
     const { storeId } = useParams<{ storeId: string }>();
-    const { formatPrice } = useOutletContext<ShopOutletContext>();
+    const { formatPrice, shopInfo } = useOutletContext<ShopOutletContext>();
+    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier;
     const [searchParams, setSearchParams] = useSearchParams();
 
     const query = searchParams.get('q') || '';
@@ -121,8 +122,9 @@ const ShopProductList: React.FC = () => {
         qty: qtyOf(p.id),
         onAdd: () => {
             addToCart(storeId!, {
-                id: p.id, name: p.name, price: p.price,
+                id: p.id, name: p.name, price: effectiveUnitPrice(p, isWholesale),
                 image: p.imageUrls?.[0], stock: p.stock, unitOfMeasure: p.unitOfMeasure,
+                moq: isWholesale ? p.minOrderQuantity || undefined : undefined,
             });
             showToast(`${p.name} added to cart`, 'success');
         },
@@ -321,6 +323,7 @@ const ShopProductList: React.FC = () => {
                                         storeId={storeId!}
                                         formatPrice={formatPrice}
                                         quickAdd={quickAddFor(product)}
+                                        wholesale={isWholesale}
                                     />
                                 ))}
                             </div>

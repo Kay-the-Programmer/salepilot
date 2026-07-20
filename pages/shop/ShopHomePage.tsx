@@ -4,7 +4,7 @@ import { HiOutlineShoppingBag, HiOutlineArrowRight, HiOutlineTruck, HiOutlineShi
 import { shopService } from '../../services/shop.service';
 import { Product, Category } from '../../types';
 import { useToast } from '../../contexts/ToastContext';
-import { addToCart, updateQuantity, useShopCart } from './cartStore';
+import { addToCart, updateQuantity, useShopCart, effectiveUnitPrice } from './cartStore';
 import ShopProductCard from './ShopProductCard';
 import type { ShopOutletContext } from './ShopLayout';
 
@@ -20,14 +20,16 @@ const ShopHomePage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const { qtyOf } = useShopCart(shopInfo.id);
     const { showToast } = useToast();
+    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier;
 
     /** One-tap add / stepper wiring for a grid card. */
     const quickAddFor = (p: Product) => ({
         qty: qtyOf(p.id),
         onAdd: () => {
             addToCart(shopInfo.id, {
-                id: p.id, name: p.name, price: p.price,
+                id: p.id, name: p.name, price: effectiveUnitPrice(p, isWholesale),
                 image: p.imageUrls?.[0], stock: p.stock, unitOfMeasure: p.unitOfMeasure,
+                moq: isWholesale ? p.minOrderQuantity || undefined : undefined,
             });
             showToast(`${p.name} added to cart`, 'success');
         },
@@ -146,7 +148,7 @@ const ShopHomePage: React.FC = () => {
                 ) : (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {featured.map(p => (
-                            <ShopProductCard key={p.id} product={p} storeId={shopInfo.id} formatPrice={formatPrice} quickAdd={quickAddFor(p)} />
+                            <ShopProductCard key={p.id} product={p} storeId={shopInfo.id} formatPrice={formatPrice} quickAdd={quickAddFor(p)} wholesale={isWholesale} />
                         ))}
                     </div>
                 )}
@@ -166,7 +168,7 @@ const ShopHomePage: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {newest.map(p => (
-                            <ShopProductCard key={p.id} product={p} storeId={shopInfo.id} formatPrice={formatPrice} quickAdd={quickAddFor(p)} />
+                            <ShopProductCard key={p.id} product={p} storeId={shopInfo.id} formatPrice={formatPrice} quickAdd={quickAddFor(p)} wholesale={isWholesale} />
                         ))}
                     </div>
                 </section>

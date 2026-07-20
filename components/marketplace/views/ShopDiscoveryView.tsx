@@ -274,6 +274,7 @@ const ShopDiscoveryView: React.FC = () => {
                                     storeId={(p as any).storeId}
                                     formatPrice={priceFor(p)}
                                     showStore
+                                    wholesale
                                 />
                             ))}
                         </div>

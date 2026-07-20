@@ -19,6 +19,8 @@ interface ShopProductCardProps {
     showStore?: boolean;
     /** When provided, the card gets a one-tap add button / inline stepper. */
     quickAdd?: QuickAdd;
+    /** Wholesale storefront: show wholesale price (when set) + MOQ badge. */
+    wholesale?: boolean;
 }
 
 /**
@@ -26,10 +28,13 @@ interface ShopProductCardProps {
  * in storefront context — a one-tap add button that becomes a stepper once
  * the item is in the cart, so shoppers never have to leave the grid.
  */
-const ShopProductCard: React.FC<ShopProductCardProps> = ({ product, storeId, formatPrice, showStore, quickAdd }) => {
+const ShopProductCard: React.FC<ShopProductCardProps> = ({ product, storeId, formatPrice, showStore, quickAdd, wholesale }) => {
     const outOfStock = product.stock <= 0;
     const lowStock = !outOfStock && product.stock > 0 && product.stock <= 5;
     const atMax = !!quickAdd && quickAdd.qty >= product.stock;
+    const wholesalePriced = !!wholesale && product.wholesalePrice != null;
+    const displayPrice = wholesalePriced ? (product.wholesalePrice as number) : product.price;
+    const moq = wholesale && product.minOrderQuantity && product.minOrderQuantity > 1 ? product.minOrderQuantity : 0;
 
     // Keep taps on the quick-add controls from following the card link.
     const guard = (fn: () => void) => (e: React.MouseEvent) => {
@@ -82,8 +87,20 @@ const ShopProductCard: React.FC<ShopProductCardProps> = ({ product, storeId, for
 
                 {/* Price + quick add */}
                 <div className="mt-auto pt-3 flex items-center justify-between gap-2">
-                    <span className="text-base font-bold text-sp-navy tracking-tight truncate">
-                        {formatPrice(product.price)}
+                    <span className="min-w-0">
+                        <span className="block text-base font-bold text-sp-navy tracking-tight truncate">
+                            {formatPrice(displayPrice)}
+                        </span>
+                        {(wholesalePriced || moq > 0) && (
+                            <span className="flex items-center gap-1.5 mt-0.5">
+                                {wholesalePriced && (
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-sp-amber">Wholesale</span>
+                                )}
+                                {moq > 0 && (
+                                    <span className="text-[10px] font-semibold text-brand-text-muted">Min {moq}</span>
+                                )}
+                            </span>
+                        )}
                     </span>
 
                     {quickAdd && !outOfStock && (

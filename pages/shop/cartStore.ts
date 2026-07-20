@@ -17,7 +17,15 @@ export interface CartItem {
     quantity: number;
     stock: number;
     unitOfMeasure?: string;
+    /** Wholesale minimum order quantity (absent/≤1 = no minimum). */
+    moq?: number;
 }
+
+/** Price a buyer actually pays: wholesale price on wholesale storefronts when set. */
+export const effectiveUnitPrice = (
+    p: { price: number; wholesalePrice?: number | null },
+    wholesale: boolean | undefined
+): number => (wholesale && p.wholesalePrice != null ? p.wholesalePrice : p.price);
 
 const cartKey = (storeId: string) => `cart_${storeId}`;
 
@@ -42,10 +50,11 @@ export const cartCount = (items: CartItem[]): number =>
 export const cartSubtotal = (items: CartItem[]): number =>
     items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
-/** Clamp a desired quantity to [1, stock] (stock ≤ 0 means unknown → allow). */
-const clampQty = (qty: number, stock: number) => {
+/** Clamp a desired quantity to [min(=MOQ or 1), stock] (stock ≤ 0 means unknown → allow). */
+const clampQty = (qty: number, stock: number, moq?: number) => {
+    const lower = moq && moq > 1 ? moq : 1;
     const upper = stock > 0 ? stock : 9999;
-    return Math.max(1, Math.min(upper, Math.round(qty) || 1));
+    return Math.max(lower, Math.min(upper, Math.round(qty) || lower));
 };
 
 export const addToCart = (
@@ -56,11 +65,13 @@ export const addToCart = (
     const items = getCart(storeId);
     const existing = items.find(i => i.id === item.id);
     if (existing) {
-        existing.quantity = clampQty(existing.quantity + quantity, item.stock ?? existing.stock);
+        existing.quantity = clampQty(existing.quantity + quantity, item.stock ?? existing.stock, item.moq ?? existing.moq);
         existing.price = item.price; // refresh price/stock snapshots
         existing.stock = item.stock ?? existing.stock;
+        existing.moq = item.moq ?? existing.moq;
     } else {
-        items.push({ ...item, quantity: clampQty(quantity, item.stock) });
+        // First add jumps straight to the MOQ so wholesale lines are valid.
+        items.push({ ...item, quantity: clampQty(quantity, item.stock, item.moq) });
     }
     persist(storeId, items);
     return items;
@@ -68,11 +79,13 @@ export const addToCart = (
 
 export const updateQuantity = (storeId: string, id: string, quantity: number): CartItem[] => {
     let items = getCart(storeId);
-    if (quantity <= 0) {
+    const item = items.find(i => i.id === id);
+    const min = item?.moq && item.moq > 1 ? item.moq : 1;
+    // Stepping below the minimum removes the line (mirrors the qty-0 case).
+    if (quantity < min) {
         items = items.filter(i => i.id !== id);
-    } else {
-        const item = items.find(i => i.id === id);
-        if (item) item.quantity = clampQty(quantity, item.stock);
+    } else if (item) {
+        item.quantity = clampQty(quantity, item.stock, item.moq);
     }
     persist(storeId, items);
     return items;

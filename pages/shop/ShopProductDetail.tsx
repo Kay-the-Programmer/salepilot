@@ -5,7 +5,7 @@ import { shopService } from '../../services/shop.service';
 import { buildAssetUrl } from '../../services/api';
 import { Product, Category } from '../../types';
 import { logEvent } from '../../src/utils/analytics';
-import { addToCart, useShopCart } from './cartStore';
+import { addToCart, useShopCart, effectiveUnitPrice } from './cartStore';
 import ShopProductCard from './ShopProductCard';
 import type { ShopOutletContext } from './ShopLayout';
 
@@ -14,7 +14,8 @@ import type { ShopOutletContext } from './ShopLayout';
  */
 const ShopProductDetail: React.FC = () => {
     const { storeId, productId } = useParams<{ storeId: string; productId: string }>();
-    const { formatPrice, openCart } = useOutletContext<ShopOutletContext>();
+    const { formatPrice, openCart, shopInfo } = useOutletContext<ShopOutletContext>();
+    const isWholesale = !!shopInfo.settings?.isWholesaleSupplier;
     const [product, setProduct] = useState<Product | null>(null);
     const [related, setRelated] = useState<Product[]>([]);
     const [category, setCategory] = useState<Category | null>(null);
@@ -38,6 +39,10 @@ const ShopProductDetail: React.FC = () => {
                 const prod = await shopService.getProductById(storeId, productId);
                 if (cancelled) return;
                 setProduct(prod);
+                // Wholesale MOQ: start the qty picker at the minimum.
+                if (isWholesale && prod.minOrderQuantity && prod.minOrderQuantity > 1) {
+                    setQuantity(prod.minOrderQuantity);
+                }
 
                 // Category name (breadcrumb) + related items from the same category.
                 const [cats, rel] = await Promise.all([
@@ -85,15 +90,19 @@ const ShopProductDetail: React.FC = () => {
 
     const images = product.imageUrls || [];
     const inStock = product.stock > 0;
+    const wholesalePriced = isWholesale && product.wholesalePrice != null;
+    const unitPrice = effectiveUnitPrice(product, isWholesale);
+    const moqMin = isWholesale && product.minOrderQuantity && product.minOrderQuantity > 1 ? product.minOrderQuantity : 1;
 
     const handleAddToCart = () => {
         addToCart(storeId, {
             id: product.id,
             name: product.name,
-            price: product.price,
+            price: unitPrice,
             image: images[0],
             stock: product.stock,
             unitOfMeasure: product.unitOfMeasure,
+            moq: moqMin > 1 ? moqMin : undefined,
         }, quantity);
         logEvent('Shop', 'Add to Cart', product.name);
         setJustAdded(true);
@@ -168,9 +177,17 @@ const ShopProductDetail: React.FC = () => {
                     </div>
 
                     {/* Price — display-price role */}
-                    <p className="text-4xl sm:text-5xl font-bold tracking-tight text-sp-navy mb-5">
-                        {formatPrice(product.price)}
-                    </p>
+                    <div className="mb-5">
+                        <p className="text-4xl sm:text-5xl font-bold tracking-tight text-sp-navy">
+                            {formatPrice(unitPrice)}
+                        </p>
+                        {wholesalePriced && (
+                            <p className="mt-1.5 text-sm text-brand-text-muted">
+                                <span className="font-bold uppercase tracking-wider text-sp-amber text-[11px] mr-2">Wholesale price</span>
+                                Retail {formatPrice(product.price)}
+                            </p>
+                        )}
+                    </div>
 
                     {/* Stock + in-cart chips */}
                     <div className="mb-6 flex items-center gap-2 flex-wrap">
@@ -182,6 +199,11 @@ const ShopProductDetail: React.FC = () => {
                         ) : (
                             <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-danger/15 text-danger text-sm font-bold">
                                 Out of stock
+                            </span>
+                        )}
+                        {moqMin > 1 && (
+                            <span className="inline-flex items-center px-3 py-1.5 rounded-xl bg-sp-amber/15 text-amber-700 text-sm font-bold">
+                                Minimum order: {moqMin}
                             </span>
                         )}
                         {inCartQty > 0 && (
@@ -197,7 +219,7 @@ const ShopProductDetail: React.FC = () => {
                         <div className="flex items-stretch gap-3 mb-8">
                             <div className="flex items-center border border-brand-border rounded-lg overflow-hidden bg-surface">
                                 <button
-                                    onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                                    onClick={() => setQuantity(q => Math.max(moqMin, q - 1))}
                                     aria-label="Decrease quantity"
                                     className="w-12 h-12 flex items-center justify-center text-brand-text-muted hover:bg-surface-variant transition-colors"
                                 >
@@ -205,10 +227,10 @@ const ShopProductDetail: React.FC = () => {
                                 </button>
                                 <input
                                     type="number"
-                                    min={1}
+                                    min={moqMin}
                                     max={product.stock}
                                     value={quantity}
-                                    onChange={e => setQuantity(Math.max(1, Math.min(product.stock, parseInt(e.target.value) || 1)))}
+                                    onChange={e => setQuantity(Math.max(moqMin, Math.min(product.stock, parseInt(e.target.value) || moqMin)))}
                                     aria-label="Quantity"
                                     className="w-14 h-12 text-center font-bold text-brand-text bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                 />
@@ -261,7 +283,7 @@ const ShopProductDetail: React.FC = () => {
                     <div className="min-w-0">
                         <p className="text-[10px] font-bold uppercase tracking-widest text-brand-text-muted leading-none mb-1">Total</p>
                         <p className="text-xl font-bold tracking-tight text-sp-navy leading-none truncate">
-                            {formatPrice(product.price * quantity)}
+                            {formatPrice(unitPrice * quantity)}
                         </p>
                     </div>
                     <button
