@@ -5,7 +5,7 @@ import { shopService, ProductReviews } from '../../services/shop.service';
 import { buildAssetUrl } from '../../services/api';
 import { Product, Category } from '../../types';
 import { logEvent } from '../../src/utils/analytics';
-import { addToCart, useShopCart, effectiveUnitPrice } from './cartStore';
+import { addToCart, useShopCart, effectiveUnitPrice, tierUnitPrice } from './cartStore';
 import { getCurrentUser } from '../../services/authService';
 import { waChatLink } from '../../utils/whatsapp';
 import ShopProductCard from './ShopProductCard';
@@ -126,7 +126,10 @@ const ShopProductDetail: React.FC = () => {
     const images = product.imageUrls || [];
     const inStock = product.stock > 0;
     const wholesalePriced = isWholesale && product.wholesalePrice != null;
-    const unitPrice = effectiveUnitPrice(product, isWholesale);
+    const baseUnitPrice = effectiveUnitPrice(product, isWholesale);
+    const tiers = isWholesale ? product.priceTiers || [] : [];
+    // Unit price the buyer pays at the CURRENTLY selected quantity.
+    const unitPrice = tierUnitPrice(baseUnitPrice, tiers, quantity);
     const moqMin = isWholesale && product.minOrderQuantity && product.minOrderQuantity > 1 ? product.minOrderQuantity : 1;
 
     const handleAddToCart = () => {
@@ -134,6 +137,8 @@ const ShopProductDetail: React.FC = () => {
             id: product.id,
             name: product.name,
             price: unitPrice,
+            basePrice: baseUnitPrice,
+            tiers: tiers.length > 0 ? tiers : undefined,
             image: images[0],
             stock: product.stock,
             unitOfMeasure: product.unitOfMeasure,
@@ -236,6 +241,29 @@ const ShopProductDetail: React.FC = () => {
                             <p className="mt-1.5 text-sm text-brand-text-muted">
                                 Buying for a business? <Link to="/login" className="font-semibold text-sp-navy hover:underline">Sign in</Link> for the wholesale price ({formatPrice(product.wholesalePrice)}).
                             </p>
+                        )}
+                        {tiers.length > 0 && (
+                            <div className="mt-3 inline-block rounded-lg border border-brand-border overflow-hidden">
+                                <p className="px-3.5 py-2 bg-surface-variant text-[11px] font-bold uppercase tracking-wider text-brand-text-muted">Buy more, pay less</p>
+                                <table className="text-sm">
+                                    <tbody>
+                                        <tr className={quantity < (tiers[0]?.minQty || 2) ? 'bg-sp-navy/5 font-bold' : ''}>
+                                            <td className="px-3.5 py-1.5 text-brand-text-muted">1+</td>
+                                            <td className="px-3.5 py-1.5 text-brand-text text-right">{formatPrice(baseUnitPrice)}</td>
+                                        </tr>
+                                        {tiers.map((t, i) => {
+                                            const next = tiers[i + 1];
+                                            const active = quantity >= t.minQty && (!next || quantity < next.minQty);
+                                            return (
+                                                <tr key={t.minQty} className={active ? 'bg-sp-navy/5 font-bold' : ''}>
+                                                    <td className="px-3.5 py-1.5 text-brand-text-muted">{t.minQty}+</td>
+                                                    <td className="px-3.5 py-1.5 text-brand-text text-right">{formatPrice(t.price)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         )}
                     </div>
 

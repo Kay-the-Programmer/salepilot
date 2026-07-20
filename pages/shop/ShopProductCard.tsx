@@ -98,13 +98,16 @@ const ShopProductCard: React.FC<ShopProductCardProps> = ({ product, storeId, for
                         <span className="block text-base font-bold text-sp-navy tracking-tight truncate">
                             {formatPrice(displayPrice)}
                         </span>
-                        {(wholesalePriced || moq > 0) && (
-                            <span className="flex items-center gap-1.5 mt-0.5">
+                        {(wholesalePriced || moq > 0 || (wholesale && (product.priceTiers?.length || 0) > 0)) && (
+                            <span className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                                 {wholesalePriced && (
                                     <span className="text-[10px] font-bold uppercase tracking-wider text-sp-amber">Wholesale</span>
                                 )}
                                 {moq > 0 && (
                                     <span className="text-[10px] font-semibold text-brand-text-muted">Min {moq}</span>
+                                )}
+                                {wholesale && (product.priceTiers?.length || 0) > 0 && (
+                                    <span className="text-[10px] font-semibold text-success">Bulk deals</span>
                                 )}
                             </span>
                         )}

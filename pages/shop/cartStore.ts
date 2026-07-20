@@ -19,13 +19,35 @@ export interface CartItem {
     unitOfMeasure?: string;
     /** Wholesale minimum order quantity (absent/≤1 = no minimum). */
     moq?: number;
+    /** Base unit price before quantity breaks (defaults to price). */
+    basePrice?: number;
+    /** Wholesale quantity-break tiers; price is recomputed as qty changes. */
+    tiers?: PriceTier[];
 }
+
+export interface PriceTier { minQty: number; price: number }
 
 /** Price a buyer actually pays: wholesale price on wholesale storefronts when set. */
 export const effectiveUnitPrice = (
     p: { price: number; wholesalePrice?: number | null },
     wholesale: boolean | undefined
 ): number => (wholesale && p.wholesalePrice != null ? p.wholesalePrice : p.price);
+
+/** Apply quantity-break tiers: the deepest tier the qty reaches wins. */
+export const tierUnitPrice = (base: number, tiers: PriceTier[] | undefined | null, qty: number): number => {
+    let price = base;
+    for (const t of [...(tiers || [])].sort((a, b) => a.minQty - b.minQty)) {
+        if (t.minQty >= 2 && t.price > 0 && qty >= t.minQty) price = t.price;
+    }
+    return price;
+};
+
+/** Refresh a cart line's unit price from its tiers for its current quantity. */
+const repriceLine = (item: CartItem) => {
+    if (item.tiers && item.tiers.length > 0) {
+        item.price = tierUnitPrice(item.basePrice ?? item.price, item.tiers, item.quantity);
+    }
+};
 
 const cartKey = (storeId: string) => `cart_${storeId}`;
 
@@ -69,9 +91,14 @@ export const addToCart = (
         existing.price = item.price; // refresh price/stock snapshots
         existing.stock = item.stock ?? existing.stock;
         existing.moq = item.moq ?? existing.moq;
+        existing.basePrice = item.basePrice ?? existing.basePrice;
+        existing.tiers = item.tiers ?? existing.tiers;
+        repriceLine(existing);
     } else {
         // First add jumps straight to the MOQ so wholesale lines are valid.
-        items.push({ ...item, quantity: clampQty(quantity, item.stock, item.moq) });
+        const line = { ...item, quantity: clampQty(quantity, item.stock, item.moq) };
+        repriceLine(line);
+        items.push(line);
     }
     persist(storeId, items);
     return items;
@@ -86,6 +113,7 @@ export const updateQuantity = (storeId: string, id: string, quantity: number): C
         items = items.filter(i => i.id !== id);
     } else if (item) {
         item.quantity = clampQty(quantity, item.stock, item.moq);
+        repriceLine(item);
     }
     persist(storeId, items);
     return items;

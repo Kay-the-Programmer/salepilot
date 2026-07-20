@@ -125,6 +125,8 @@ const ShopProductList: React.FC = () => {
         onAdd: () => {
             addToCart(storeId!, {
                 id: p.id, name: p.name, price: effectiveUnitPrice(p, isWholesale),
+                basePrice: effectiveUnitPrice(p, isWholesale),
+                tiers: isWholesale ? p.priceTiers || undefined : undefined,
                 image: p.imageUrls?.[0], stock: p.stock, unitOfMeasure: p.unitOfMeasure,
                 moq: isWholesale ? p.minOrderQuantity || undefined : undefined,
             });

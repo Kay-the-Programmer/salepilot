@@ -50,6 +50,8 @@ export interface Product {
     // Denormalized review aggregates (maintained on review write)
     ratingAvg?: number | null;
     ratingCount?: number;
+    // Wholesale quantity-break tiers (sorted asc by minQty)
+    priceTiers?: { minQty: number; price: number }[] | null;
 }
 
 export interface User {

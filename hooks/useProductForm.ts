@@ -349,6 +349,7 @@ export const useProductForm = ({
         // B2B wholesale marketplace fields ('' clears the value server-side)
         formData.append('wholesale_price', product.wholesalePrice?.toString() || '');
         formData.append('min_order_quantity', product.minOrderQuantity?.toString() || '');
+        formData.append('price_tiers', (product.priceTiers || []).length > 0 ? JSON.stringify(product.priceTiers) : '');
 
         // Carton / bulk pricing fields
         if (cartonMode && cartonPrice) {
