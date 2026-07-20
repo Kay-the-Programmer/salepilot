@@ -12,7 +12,24 @@ import {
 } from 'react-icons/hi2';
 import { shopService, GlobalProduct, PublicStore, ShopSort, GlobalCategory } from '../../../services/shop.service';
 import { formatCurrency } from '../../../utils/currency';
+import { buildAssetUrl } from '../../../services/api';
 import ShopProductCard from '../../../pages/shop/ShopProductCard';
+
+/** Logo avatar with initial-letter fallback (shared look for supplier cards). */
+export const StoreAvatar: React.FC<{ store: PublicStore; size?: string }> = ({ store, size = 'w-11 h-11 text-lg' }) => (
+    store.logoUrl ? (
+        <img
+            src={buildAssetUrl(store.logoUrl)}
+            alt={`${store.name} logo`}
+            className={`${size} flex-none rounded-lg object-cover bg-warm-100 border border-brand-border`}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+    ) : (
+        <div className={`${size} flex-none rounded-lg bg-sp-navy flex items-center justify-center text-white font-bold`}>
+            {store.name.charAt(0).toUpperCase()}
+        </div>
+    )
+);
 
 const PAGE_SIZE = 24;
 const DEFAULT_CURRENCY = { code: 'ZMW', symbol: 'K', position: 'before' };
@@ -30,9 +47,7 @@ const StoreRailCard: React.FC<{ store: PublicStore }> = ({ store }) => (
         to={`/shop/${store.id}`}
         className="group flex-none w-56 snap-start flex items-center gap-3 bg-surface border border-brand-border rounded-lg p-3.5 transition-all hover:border-sp-navy hover:shadow-md active:scale-[0.98]"
     >
-        <div className="w-11 h-11 flex-none rounded-lg bg-sp-navy flex items-center justify-center text-white font-bold text-lg">
-            {store.name.charAt(0).toUpperCase()}
-        </div>
+        <StoreAvatar store={store} />
         <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-brand-text truncate group-hover:text-sp-navy transition-colors flex items-center gap-1">
                 <span className="truncate">{store.name}</span>
@@ -360,9 +375,7 @@ const ShopDiscoveryView: React.FC = () => {
                                 to={`/shop/${store.id}`}
                                 className="group flex items-center gap-3.5 bg-surface border border-brand-border rounded-lg p-4 transition-all hover:border-sp-navy hover:shadow-md active:scale-[0.99]"
                             >
-                                <div className="w-11 h-11 flex-none rounded-lg bg-sp-navy flex items-center justify-center text-white font-bold text-lg">
-                                    {store.name.charAt(0).toUpperCase()}
-                                </div>
+                                <StoreAvatar store={store} />
                                 <div className="flex-1 min-w-0">
                                     <p className="text-sm font-bold text-brand-text truncate group-hover:text-sp-navy transition-colors">{store.name}</p>
                                     <p className="text-[11px] text-brand-text-muted truncate mt-0.5">

@@ -6,6 +6,7 @@ import { formatCurrency } from '../../utils/currency';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import CartDrawer from './CartDrawer';
 import { CartItem, cartCount, getCart, subscribeToCart } from './cartStore';
+import { buildAssetUrl } from '../../services/api';
 
 export interface ShopOutletContext {
     shopInfo: ShopInfo;
@@ -101,9 +102,18 @@ const ShopLayout: React.FC = () => {
                     <div className="h-16 flex items-center justify-between gap-4">
                         {/* Identity */}
                         <Link to={`/shop/${storeId}`} className="flex items-center gap-2.5 min-w-0">
-                            <div className="w-9 h-9 flex-none bg-sp-navy rounded-lg flex items-center justify-center text-white font-bold text-lg">
-                                {storeName.charAt(0).toUpperCase()}
-                            </div>
+                            {shopInfo.settings.logoUrl ? (
+                                <img
+                                    src={buildAssetUrl(shopInfo.settings.logoUrl)}
+                                    alt={`${storeName} logo`}
+                                    className="w-9 h-9 flex-none rounded-lg object-cover bg-warm-100 border border-brand-border"
+                                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                />
+                            ) : (
+                                <div className="w-9 h-9 flex-none bg-sp-navy rounded-lg flex items-center justify-center text-white font-bold text-lg">
+                                    {storeName.charAt(0).toUpperCase()}
+                                </div>
+                            )}
                             <span className="text-lg font-bold tracking-tight text-brand-text truncate max-w-[160px] sm:max-w-xs">
                                 {storeName}
                             </span>

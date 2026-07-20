@@ -37,6 +37,9 @@ const CheckoutPage: React.FC = () => {
         if (error) errorRef.current?.scrollIntoView({ block: 'center' });
     }, [error]);
 
+    // Trade credit standing (only meaningful when the store granted a line)
+    const [credit, setCredit] = useState<{ creditLimit: number | null; balance: number; available: number | null } | null>(null);
+
     useEffect(() => {
         if (!storeId) return;
         const refresh = () => setItems(getCart(storeId));
@@ -45,6 +48,7 @@ const CheckoutPage: React.FC = () => {
         const user = getCurrentUser();
         if (user) {
             setDetails(prev => ({ ...prev, name: user.name || '', email: user.email || '', phone: user.phone || '' }));
+            shopService.getMyCredit(storeId).then(setCredit).catch(() => { });
         }
         return subscribeToCart(refresh);
     }, [storeId]);
@@ -232,6 +236,17 @@ const CheckoutPage: React.FC = () => {
                                 </p>
                             </div>
                         </div>
+                        {credit?.creditLimit != null && (
+                            <div className="mt-3 p-4 rounded-lg border border-brand-border bg-surface-variant/60">
+                                <p className="text-sm font-bold text-brand-text mb-1">Trade credit with this store</p>
+                                <p className="text-xs text-brand-text-muted">
+                                    {formatPrice(credit.balance)} outstanding of a {formatPrice(credit.creditLimit)} limit — {formatPrice(credit.available || 0)} available.
+                                    {total > (credit.available || 0) && (
+                                        <span className="block mt-1 font-semibold text-danger">This order ({formatPrice(total)}) exceeds your available credit and will be declined.</span>
+                                    )}
+                                </p>
+                            </div>
+                        )}
                     </section>
                 </div>
 

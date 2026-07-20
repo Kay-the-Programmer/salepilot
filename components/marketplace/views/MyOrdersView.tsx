@@ -8,6 +8,7 @@ import { addToCart } from '../../../pages/shop/cartStore';
 
 const STATUS_STYLES: Record<string, string> = {
     pending: 'bg-amber-100 text-amber-800',
+    accepted: 'bg-sp-navy/10 text-sp-navy',
     fulfilled: 'bg-success/15 text-success',
     shipped: 'bg-sp-navy/10 text-sp-navy',
     cancelled: 'bg-danger/10 text-danger',

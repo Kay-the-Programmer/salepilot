@@ -1,4 +1,4 @@
-import { api } from './api';
+import { api, API_BASE_URL } from './api';
 import { Product, Category } from '../types';
 
 export interface ShopInfo {
@@ -14,6 +14,7 @@ export interface ShopInfo {
         website?: string;
         isOnlineStoreEnabled?: boolean;
         isWholesaleSupplier?: boolean;
+        logoUrl?: string | null;
         currency?: any;
         taxRate?: number;
         deliveryFee?: number;
@@ -47,6 +48,7 @@ export interface PublicStore {
     isWholesaleSupplier?: boolean;
     isVerified?: boolean;
     storeDescription?: string | null;
+    logoUrl?: string | null;
 }
 
 /** Cross-store category facet (aggregated by name across supplier catalogs). */
@@ -189,6 +191,34 @@ export const shopService = {
     submitReview: async (storeId: string, productId: string, data: { rating: number; comment?: string }) => {
         return api.post(`/shop/${storeId}/products/${productId}/reviews`, data);
     },
+
+    /** Crawler-friendly share URL for a product (serves OG tags, redirects humans). */
+    productShareUrl: (storeId: string, productId: string): string =>
+        `${API_BASE_URL}/shop/${storeId}/products/${productId}/share`,
+
+    /** Signed-in buyer: trade-credit standing with a store (nulls = no credit line). */
+    getMyCredit: async (storeId: string): Promise<{ creditLimit: number | null; balance: number; available: number | null }> => {
+        return api.get(`/shop/${storeId}/my-credit`);
+    },
+
+    // ── RFQ (request-for-quote) ──────────────────────────────────────────────
+    /** Public: recent open requests. */
+    getRecentRequests: async (): Promise<any[]> => api.get('/marketplace/requests/recent'),
+    /** Signed-in: post a request (suppliers with matching stock get notified). */
+    createRequest: async (data: { customerName: string; customerEmail?: string; customerPhone?: string; query: string; targetPrice?: number }) =>
+        api.post('/marketplace/requests', data),
+    /** Signed-in: my requests with offer counts. */
+    getMyRequests: async (): Promise<any[]> => api.get('/marketplace/my-requests'),
+    /** Signed-in: one request incl. offers. */
+    getRequestDetails: async (id: string): Promise<any> => api.get(`/marketplace/requests/${id}`),
+    /** Buyer: accept/decline an offer on their request. */
+    respondToOffer: async (offerId: string, action: 'accept' | 'decline') =>
+        api.post(`/marketplace/offers/${offerId}/respond`, { action }),
+    /** Supplier: pending quote requests matched to my store. */
+    getStoreMatches: async (storeId: string): Promise<any[]> => api.get(`/marketplace/stores/${storeId}/matches`),
+    /** Supplier: submit a quote for a request. */
+    submitOffer: async (data: { requestId: string; sellerPrice: number; productId?: string }) =>
+        api.post('/marketplace/offers', data),
 };
 
 export interface ProductReview {

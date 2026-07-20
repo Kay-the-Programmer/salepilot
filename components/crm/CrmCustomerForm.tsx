@@ -174,6 +174,19 @@ export const CrmCustomerForm: React.FC<CrmCustomerFormProps> = ({ isOpen, onClos
                                     </div>
                                     <p className="crm-input-group__hint">Prepaid balance the customer can spend in store.</p>
                                 </div>
+
+                                <div className="crm-input-group">
+                                    <label className="crm-input-group__label" htmlFor="cf-credit-limit">Credit Limit (trade credit)</label>
+                                    <div className="crm-input-affix">
+                                        <span className="crm-input-affix__prefix">{currency}</span>
+                                        <input
+                                            id="cf-credit-limit" className="crm-input" name="creditLimit" type="number"
+                                            min="0" step="0.01" placeholder="No limit set"
+                                            value={(customer as any).creditLimit ?? ''} onChange={handleChange}
+                                        />
+                                    </div>
+                                    <p className="crm-input-group__hint">Caps this customer's outstanding balance for online orders. Leave blank for no credit line.</p>
+                                </div>
                             </section>
 
                             <section className="crm-form-section">

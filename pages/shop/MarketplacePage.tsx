@@ -4,6 +4,7 @@ import MarketplaceLayout, { MarketplaceNavMenu } from '../../components/marketpl
 import ShopDiscoveryView from '../../components/marketplace/views/ShopDiscoveryView';
 import SuppliersDirectoryView from '../../components/marketplace/views/SuppliersDirectoryView';
 import MyOrdersView from '../../components/marketplace/views/MyOrdersView';
+import RequestsRfqView from '../../components/marketplace/views/RequestsRfqView';
 import { getCurrentUser } from '../../services/authService';
 import { shopService, MyNotification } from '../../services/shop.service';
 import SalePilotLogo from '../../assets/salepilot.png';
@@ -120,6 +121,8 @@ export default function MarketplacePage() {
         switch (activeView) {
             case 'suppliers':
                 return <SuppliersDirectoryView />;
+            case 'requests':
+                return <RequestsRfqView />;
             case 'my-orders':
                 return <MyOrdersView />;
             // Legacy mock B2B views (quick-offers / requests / activity /

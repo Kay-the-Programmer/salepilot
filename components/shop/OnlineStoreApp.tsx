@@ -7,7 +7,7 @@ import { StoreSettings, User } from '../../types';
 import { whatsappService, WhatsAppStatus } from '../../services/whatsappService';
 import { whatsappCampaignService } from '../../services/whatsappCampaignService';
 import StandaloneTopBar from '../standalone/StandaloneTopBar';
-import { api } from '../../services/api';
+import { api, buildAssetUrl } from '../../services/api';
 
 interface OnlineStoreAppProps {
     user: User;
@@ -52,12 +52,31 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
     const [freeAbove, setFreeAbove] = useState<string>((storeSettings as any)?.freeDeliveryAbove != null ? String((storeSettings as any).freeDeliveryAbove) : '');
     const [description, setDescription] = useState<string>((storeSettings as any)?.storeDescription || '');
     const [savingMarket, setSavingMarket] = useState(false);
+    const [logoUrl, setLogoUrl] = useState<string>((storeSettings as any)?.logoUrl || '');
+    const [uploadingLogo, setUploadingLogo] = useState(false);
     useEffect(() => {
         setWholesale((storeSettings as any)?.isWholesaleSupplier === true);
         setDeliveryFee(String((storeSettings as any)?.deliveryFee ?? 0));
         setFreeAbove((storeSettings as any)?.freeDeliveryAbove != null ? String((storeSettings as any).freeDeliveryAbove) : '');
         setDescription((storeSettings as any)?.storeDescription || '');
+        setLogoUrl((storeSettings as any)?.logoUrl || '');
     }, [storeSettings]);
+
+    const uploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        setUploadingLogo(true);
+        try {
+            const fd = new FormData();
+            fd.append('logo', file);
+            const r: any = await api.postFormData('/settings/logo', fd);
+            setLogoUrl(r?.logoUrl || '');
+            showSnackbar('Logo updated.', 'success');
+        } catch (err: any) {
+            showSnackbar(err?.message || 'Could not upload the logo.', 'error');
+        } finally { setUploadingLogo(false); }
+    };
 
     const saveMarketplace = async () => {
         setSavingMarket(true);
@@ -181,6 +200,24 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
                                 className="w-5 h-5 accent-sp-amber cursor-pointer"
                             />
                         </label>
+                        <div className="mb-4">
+                            <span className="block text-xs font-bold uppercase tracking-wide text-brand-text-muted mb-1.5">Store logo</span>
+                            <div className="flex items-center gap-3">
+                                {logoUrl ? (
+                                    <img src={buildAssetUrl(logoUrl)} alt="Store logo" className="w-14 h-14 rounded-xl object-cover border border-brand-border bg-surface-variant" />
+                                ) : (
+                                    <div className="w-14 h-14 rounded-xl bg-surface-variant border border-brand-border flex items-center justify-center text-brand-text-muted text-xl font-bold">
+                                        {storeName.charAt(0).toUpperCase()}
+                                    </div>
+                                )}
+                                <label className={`${btnGhost} cursor-pointer`}>
+                                    {uploadingLogo ? 'Uploading…' : logoUrl ? 'Replace logo' : 'Upload logo'}
+                                    <input type="file" accept="image/*" className="hidden" disabled={uploadingLogo} onChange={uploadLogo} />
+                                </label>
+                            </div>
+                            <span className="text-xs text-brand-text-muted">Shown on your storefront header and marketplace supplier card.</span>
+                        </div>
+
                         <label className="block mb-3">
                             <span className="block text-xs font-bold uppercase tracking-wide text-brand-text-muted mb-1.5">Store description</span>
                             <textarea

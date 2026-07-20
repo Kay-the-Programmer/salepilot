@@ -7,6 +7,7 @@ import { useOutletContext } from 'react-router-dom';
 
 const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
     pending: { label: 'Pending confirmation', cls: 'bg-warning/15 text-amber-700' },
+    accepted: { label: 'Accepted — being prepared', cls: 'bg-sp-navy/10 text-sp-navy' },
     processing: { label: 'Being prepared', cls: 'bg-info/15 text-info' },
     fulfilled: { label: 'Fulfilled', cls: 'bg-success/15 text-success' },
     completed: { label: 'Completed', cls: 'bg-success/15 text-success' },

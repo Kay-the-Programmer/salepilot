@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { HiOutlineBuildingStorefront, HiOutlineMapPin, HiOutlinePhone, HiOutlineArrowRight, HiCheckBadge } from 'react-icons/hi2';
 import { shopService, PublicStore } from '../../../services/shop.service';
 import { waChatLink } from '../../../utils/whatsapp';
+import { StoreAvatar } from './ShopDiscoveryView';
 
 /**
  * Wholesale supplier directory: every store that opted into the B2B
@@ -56,9 +57,7 @@ const SuppliersDirectoryView: React.FC = () => {
                     {stores.map(store => (
                         <div key={store.id} className="bg-surface border border-brand-border rounded-lg p-5 flex flex-col">
                             <div className="flex items-center gap-3.5 mb-4">
-                                <div className="w-12 h-12 flex-none rounded-lg bg-sp-navy flex items-center justify-center text-white font-bold text-xl">
-                                    {store.name.charAt(0).toUpperCase()}
-                                </div>
+                                <StoreAvatar store={store} size="w-12 h-12 text-xl" />
                                 <div className="min-w-0">
                                     <p className="text-base font-bold text-brand-text truncate flex items-center gap-1.5">
                                         <span className="truncate">{store.name}</span>

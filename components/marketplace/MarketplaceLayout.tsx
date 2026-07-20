@@ -1,14 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HiOutlineBuildingStorefront, HiOutlineShoppingBag, HiOutlineClipboardDocumentList, HiOutlineBars3, HiOutlineXMark } from 'react-icons/hi2';
+import { HiOutlineBuildingStorefront, HiOutlineShoppingBag, HiOutlineClipboardDocumentList, HiOutlineMegaphone, HiOutlineBars3, HiOutlineXMark } from 'react-icons/hi2';
 
-// B2B wholesale marketplace sections. The old mock B2B tabs (quick offers /
-// requests / activity / retailers) were demo scaffolding with dead links —
-// unlinked until those flows are real.
+// B2B wholesale marketplace sections. Requests = the real RFQ flow (the old
+// mock tabs stayed unlinked until the backend was fixed and this UI built).
 const SECTIONS = [
     { id: 'shop', label: 'Browse products', icon: HiOutlineShoppingBag },
     { id: 'suppliers', label: 'Suppliers', icon: HiOutlineBuildingStorefront },
+    { id: 'requests', label: 'Requests', icon: HiOutlineMegaphone },
     { id: 'my-orders', label: 'My orders', icon: HiOutlineClipboardDocumentList },
 ];
 
