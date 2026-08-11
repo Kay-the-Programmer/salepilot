@@ -22,18 +22,19 @@ const OrdersMetrics: React.FC<OrdersMetricsProps> = ({
     setViewMode
 }) => {
     return (
-        <div className="px-6 py-2 border-brand-border bg-transparent flex flex-row items-center justify-between gap-4">
+        <div className="px-6 py-3 border-brand-border bg-transparent flex flex-row items-center justify-between gap-4">
             <div className="overflow-x-auto no-scrollbar w-full md:w-auto">
-                <div className="flex items-center gap-8 min-w-max py-2">
+                {/* Velocity metric strip — label-md caption over a display-weight value */}
+                <div className="flex items-stretch gap-6 min-w-max py-1">
                     {[
-                        { label: 'Total Orders', value: stats.total },
-                        { label: 'Pending', value: stats.pending },
-                        { label: 'Revenue', value: formatCurrency(stats.revenue, storeSettings) },
-                        { label: 'Avg Value', value: formatCurrency(stats.avgOrderValue, storeSettings) }
+                        { label: 'Total Orders', value: stats.total, accent: false },
+                        { label: 'Pending', value: stats.pending, accent: false },
+                        { label: 'Revenue', value: formatCurrency(stats.revenue, storeSettings), accent: true },
+                        { label: 'Avg Value', value: formatCurrency(stats.avgOrderValue, storeSettings), accent: false }
                     ].map((s, i) => (
-                        <div key={i} className="flex flex-col">
-                            <span className="text-[10px] font-black text-brand-text-muted uppercase tracking-[0.2em] mb-0.5">{s.label}</span>
-                            <span className="text-base font-bold text-brand-text tracking-tight tnum">{s.value}</span>
+                        <div key={i} className="flex flex-col justify-center pr-6 border-r border-brand-border last:border-r-0 last:pr-0">
+                            <span className="text-[11px] font-semibold text-brand-text-muted uppercase tracking-wider mb-1">{s.label}</span>
+                            <span className={`text-xl font-bold tracking-tight tnum leading-none ${s.accent ? 'text-sp-navy' : 'text-brand-text'}`}>{s.value}</span>
                         </div>
                     ))}
                 </div>

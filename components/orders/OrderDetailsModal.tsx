@@ -103,7 +103,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                         <div>
                             <div className="flex items-center gap-3 mb-1">
                                 <h2 className="text-xl sm:text-2xl font-bold text-brand-text">Order Details</h2>
-                                <span className="px-2.5 py-1 bg-surface-variant text-brand-text-muted text-xs font-black rounded-full border border-brand-border uppercase tracking-widest">
+                                <span className="px-2.5 py-1 bg-surface-variant text-brand-text-muted text-xs font-semibold rounded-lg border border-brand-border tracking-wide tnum">
                                     #{order.transactionId.slice(-8)}
                                 </span>
                             </div>
@@ -148,7 +148,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                     {order.paymentStatus !== 'paid' && onRecordPayment && (
                                         <button
                                             onClick={() => onRecordPayment(order)}
-                                            className="px-6 py-3.5 bg-sp-orange hover:bg-sp-orange-light text-white rounded-lg font-black uppercase tracking-widest text-[11px] shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                                            className="h-12 px-6 bg-sp-orange hover:bg-sp-orange-light text-white rounded-lg font-bold text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
                                         >
                                             <HiOutlineBanknotes className="w-5 h-5" />
                                             Record Payment
@@ -158,7 +158,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                     {order.fulfillmentStatus === 'pending' && onUpdateStatus && (
                                         <button
                                             onClick={() => onUpdateStatus(order.transactionId, 'fulfilled')}
-                                            className="px-6 py-3.5 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-black uppercase tracking-widest text-[11px] shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                                            className="h-12 px-6 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
                                         >
                                             <HiOutlineCheckCircle className="w-5 h-5" />
                                             Fulfill Order
@@ -168,7 +168,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
                                     {order.fulfillmentStatus === 'fulfilled' && onUpdateStatus && (
                                         <button
                                             onClick={() => onUpdateStatus(order.transactionId, 'shipped')}
-                                            className="px-6 py-3.5 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-black uppercase tracking-widest text-[11px] shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
+                                            className="h-12 px-6 bg-sp-navy hover:bg-sp-navy-light text-white rounded-lg font-bold text-sm shadow-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95"
                                         >
                                             <HiOutlineTruck className="w-5 h-5" />
                                             Mark Shipped

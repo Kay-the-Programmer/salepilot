@@ -36,6 +36,7 @@ export const STANDALONE_APPS: AppDef[] = [
     { name: 'User Manager', page: 'team', route: 'team', desc: 'Team members, roles & access', iconName: 'manage_accounts', requires: 'users' },
     { name: 'Purchase Orders', page: 'procure', route: 'procure', desc: 'Suppliers, POs & order lists', iconName: 'shopping_cart_checkout', requires: 'suppliers' },
     { name: 'Accounting Hub', page: 'books', route: 'books', desc: 'Ledger, expenses & reports', iconName: 'account_balance', requires: 'accounting' },
+    { name: 'Expenses', page: 'expenses', route: 'expenses', desc: 'Record what you spend for the store', iconName: 'receipt_long', requires: 'expenses' },
     // { name: 'Logistics', page: 'fleet', route: 'fleet', desc: 'Shipments, couriers & fleet', iconName: 'local_shipping', requires: 'logistics' },
     { name: 'Subscription', page: 'subscription', route: 'subscription', desc: 'Plan, billing & modules', iconName: 'card_membership', requires: 'subscription' },
     { name: 'Settings', page: 'config', route: 'config', desc: 'Store, POS & system config', iconName: 'settings', requires: 'settings' },

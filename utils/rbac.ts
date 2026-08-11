@@ -26,6 +26,7 @@ export type Permission =
     | 'settings:manage'
     | 'accounting:manage'
     | 'expenses:manage'
+    | 'expenses:record'
     | 'billing:manage'
     | 'audit:read'
     | 'inventory:read'
@@ -48,7 +49,7 @@ export type Permission =
     | 'ai:use';
 
 const STORE_PERMISSIONS: Permission[] = [
-    'users:manage', 'settings:read', 'settings:manage', 'accounting:manage', 'expenses:manage',
+    'users:manage', 'settings:read', 'settings:manage', 'accounting:manage', 'expenses:manage', 'expenses:record',
     'billing:manage', 'audit:read', 'inventory:read', 'inventory:manage', 'suppliers:manage',
     'purchasing:manage', 'sales:read', 'sales:perform', 'returns:perform', 'customers:read',
     'customers:create', 'customers:manage', 'reports:dashboard', 'reports:sales', 'logistics:read',
@@ -66,6 +67,7 @@ export const ROLE_PERMISSIONS: Record<Role, Permission[]> = {
     staff: [
         'inventory:read', 'sales:read', 'sales:perform', 'returns:perform', 'customers:read',
         'customers:create', 'reports:sales', 'settings:read', 'logistics:read', 'logistics:manage',
+        'expenses:record',
         'messaging:read', 'messaging:send', 'ai:use',
     ],
     customer: [],
@@ -119,6 +121,9 @@ export const PAGE_ACCESS: Record<string, Role[]> = {
 
     // Finance & billing
     'accounting':               ['admin'],
+    // Record-your-own-expenses surface. Staff hold 'expenses:record'; the full
+    // books stay on 'accounting' above.
+    'expenses':                 ['admin', 'staff'],
     'subscription':             ['admin'],
 
     // Team & governance

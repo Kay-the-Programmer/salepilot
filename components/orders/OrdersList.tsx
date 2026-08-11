@@ -43,7 +43,7 @@ const OrdersList: React.FC<OrdersListProps> = ({
                         </div>
                     }
                     status={
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${toneClass(fulfillmentMeta(order.fulfillmentStatus).tone)}`}>
+                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wide ${toneClass(fulfillmentMeta(order.fulfillmentStatus).tone)}`}>
                             {order.fulfillmentStatus?.replace('_', ' ') || 'pending'}
                         </span>
                     }
@@ -67,11 +67,11 @@ const OrdersList: React.FC<OrdersListProps> = ({
                         </div>
                     }
                     status={
-                        <div className="flex flex-col sm:flex-row gap-1">
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider w-fit ${toneClass(fulfillmentMeta(order.fulfillmentStatus).tone)}`}>
+                        <div className="flex flex-col sm:flex-row gap-1.5">
+                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-semibold uppercase tracking-wide w-fit ${toneClass(fulfillmentMeta(order.fulfillmentStatus).tone)}`}>
                                 {order.fulfillmentStatus?.replace('_', ' ') || 'pending'}
                             </span>
-                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider w-fit ${toneClass(paymentMeta(order.paymentStatus).tone)}`}>
+                            <span className={`px-2.5 py-1 rounded-lg text-[9px] font-semibold uppercase tracking-wide w-fit ${toneClass(paymentMeta(order.paymentStatus).tone)}`}>
                                 {order.paymentStatus?.replace('_', ' ') || 'pending'}
                             </span>
                         </div>

@@ -63,15 +63,15 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                     {/* Header */}
                     <div className="px-6 py-6 sm:px-8 border-b border-brand-border flex justify-between items-center bg-surface">
                         <div>
-                            <h3 className="text-xl sm:text-2xl font-black text-brand-text tracking-tight uppercase">
+                            <h3 className="text-xl sm:text-2xl font-bold text-brand-text tracking-tight">
                                 Record Payment
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <p className="text-xs font-bold text-brand-text-muted uppercase tracking-widest">
+                                <p className="text-xs font-semibold text-brand-text-muted tracking-wide tnum">
                                     Order #{order.transactionId.slice(-6)}
                                 </p>
                                 <div className="w-1 h-1 rounded-full bg-brand-border" />
-                                <p className="text-sm font-bold text-sp-orange">
+                                <p className="text-sm font-bold text-sp-orange tnum">
                                     {formatCurrency(balanceDue, storeSettings)} due
                                 </p>
                             </div>
@@ -96,7 +96,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                 step="0.01"
                                 required
                                 icon={<CurrencyDollarIcon className="w-4 h-4" />}
-                                className="!font-black text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/20 focus:border-sp-orange shadow-sm"
+                                className="!font-semibold text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/30 focus:border-sp-orange shadow-sm"
                             />
                             <InputField
                                 label="Payment Date"
@@ -105,18 +105,18 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                                 onChange={(e) => setDate(e.target.value)}
                                 required
                                 icon={<CalendarIcon className="w-4 h-4" />}
-                                className="!font-black text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/20 focus:border-sp-orange shadow-sm"
+                                className="!font-semibold text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/30 focus:border-sp-orange shadow-sm"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[10px] font-black text-brand-text-muted uppercase tracking-widest mb-2 ml-1">Payment Method</label>
+                            <label className="block text-xs font-semibold text-brand-text-muted uppercase tracking-wider mb-2 ml-1">Payment Method</label>
                             <div className="relative">
                                 <BanknotesIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted pointer-events-none" />
                                 <select
                                     value={method}
                                     onChange={e => setMethod(e.target.value)}
-                                    className="w-full pl-11 pr-4 py-3 bg-surface border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-sp-orange/20 focus:border-sp-orange transition-all appearance-none text-brand-text font-bold shadow-sm"
+                                    className="w-full h-14 pl-11 pr-4 bg-surface border border-brand-border rounded-lg focus:outline-none focus:ring-2 focus:ring-sp-orange/30 focus:border-sp-orange transition-all appearance-none text-brand-text font-semibold shadow-sm"
                                 >
                                     {(storeSettings.paymentMethods || []).map(pm => (
                                         <option key={pm.id} value={pm.name}>{pm.name}</option>
@@ -138,7 +138,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
                             onChange={(e) => setReference(e.target.value)}
                             placeholder="Optional reference details"
                             icon={<ClipboardDocumentListIcon className="w-4 h-4" />}
-                            className="!font-black text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/20 focus:border-sp-orange shadow-sm"
+                            className="!font-semibold text-brand-text border-brand-border rounded-lg bg-surface focus:ring-sp-orange/30 focus:border-sp-orange shadow-sm"
                         />
                     </div>
 

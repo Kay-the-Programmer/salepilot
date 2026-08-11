@@ -29,6 +29,7 @@ const AuditApp = lazy(() => import('@/pages/audit/AuditApp'));
 const NotificationsApp = lazy(() => import('@/pages/notifications/NotificationsApp'));
 const ProfileApp = lazy(() => import('@/pages/profile/ProfileApp'));
 const AccountingApp = lazy(() => import('@/pages/accounting/AccountingApp'));
+const ExpensesApp = lazy(() => import('@/components/expenses-app/ExpensesApp'));
 const LogisticsApp = lazy(() => import('@/pages/logistics/LogisticsApp'));
 const HustleApp = lazy(() => import('@/pages/hustle/HustleApp'));
 const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
@@ -103,6 +104,7 @@ const STANDALONE_APP_REQUIRES: Record<string, string> = {
     notify: 'notifications',
     account: 'profile',
     books: 'accounting',
+    expenses: 'expenses',
     fleet: 'logistics',
     po: 'purchase-orders',
     hustle: 'sales',
@@ -1350,6 +1352,29 @@ export default function Dashboard() {
                             customers={customers}
                             storeSettings={storeSettings}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/assistant' : `/assistant/${s}`)}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Staff expense recording (/expenses) ──
+    // Deliberately separate from /books: staff hold `expenses:record`, so they
+    // get the recording form and their own history, not the ledger.
+    const expensesParts = location.pathname.split('/');
+    if (expensesParts[1] === 'expenses' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('expenses')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <ExpensesApp
+                            user={currentUser}
+                            storeSettings={storeSettings}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         />

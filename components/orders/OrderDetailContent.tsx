@@ -107,9 +107,9 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                                 <span className="font-medium tnum">-{formatCurrency(order.discount, storeSettings)}</span>
                             </div>
                         )}
-                        <div className="flex justify-between items-center text-sm font-bold text-brand-text pt-2 border-t border-brand-border">
-                            <span>Total</span>
-                            <span className="text-base tnum">{formatCurrency(order.total, storeSettings)}</span>
+                        <div className="flex justify-between items-baseline text-brand-text pt-3 mt-1 border-t border-brand-border">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-brand-text-muted">Total</span>
+                            <span className="text-2xl font-bold tnum tracking-tight">{formatCurrency(order.total, storeSettings)}</span>
                         </div>
                     </div>
                 </section>
@@ -164,7 +164,7 @@ const OrderDetailContent: React.FC<OrderDetailContentProps> = ({ order, storeSet
                                     <span className="text-xs text-white/60 tnum">/ {formatCurrency(order.total, storeSettings)}</span>
                                 </div>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${order.paymentStatus === 'paid'
+                            <div className={`px-3 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wide border ${order.paymentStatus === 'paid'
                                 ? 'bg-success/20 text-success-muted border-success/30'
                                 : 'bg-sp-orange/20 text-sp-orange-light border-sp-orange/30'}`}>
                                 {formatStatusString(order.paymentStatus)}

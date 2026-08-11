@@ -20,13 +20,13 @@ const OrdersFilterBar: React.FC<OrdersFilterBarProps> = ({
                 <ListGridToggle viewMode={viewMode} onViewModeChange={setViewMode} size="sm" />
             </div>
 
-            {/* Filter Tabs (Mobile Only) */}
+            {/* Filter Tabs (Mobile Only) — soft rounded-lg chips, navy active */}
             <div className="md:hidden px-6 py-4 flex items-center gap-2 overflow-x-auto no-scrollbar bg-background">
                 {['all', 'pending', 'fulfilled', 'shipped', 'cancelled'].map(status => (
                     <button
                         key={status}
                         onClick={() => setFilterStatus(status)}
-                        className={`px-5 py-2 rounded-lg text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${filterStatus === status
+                        className={`px-4 h-10 rounded-lg text-sm font-semibold transition-all whitespace-nowrap ${filterStatus === status
                             ? 'bg-sp-navy text-white shadow-sm'
                             : 'bg-surface text-brand-text-muted border border-brand-border hover:border-sp-navy'
                             }`}

@@ -109,6 +109,8 @@ export default function App() {
                                 <Route path="/notify" element={<Dashboard />} />
                                 <Route path="/account" element={<Dashboard />} />
                                 <Route path="/books" element={<Dashboard />} />
+                                {/* Staff-facing expense recording (own expenses only) */}
+                                <Route path="/expenses" element={<Dashboard />} />
                                 <Route path="/fleet" element={<Dashboard />} />
                                 <Route path="/po" element={<Dashboard />} />
                                 <Route path="/hustle" element={<Dashboard />} />
