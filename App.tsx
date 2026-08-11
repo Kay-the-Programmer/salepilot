@@ -111,6 +111,8 @@ export default function App() {
                                 <Route path="/books" element={<Dashboard />} />
                                 {/* Staff-facing expense recording (own expenses only) */}
                                 <Route path="/expenses" element={<Dashboard />} />
+                                {/* Customer quotations & invoices */}
+                                <Route path="/quotes" element={<Dashboard />} />
                                 <Route path="/fleet" element={<Dashboard />} />
                                 <Route path="/po" element={<Dashboard />} />
                                 <Route path="/hustle" element={<Dashboard />} />

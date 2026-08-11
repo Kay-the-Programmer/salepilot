@@ -30,6 +30,7 @@ const NotificationsApp = lazy(() => import('@/pages/notifications/NotificationsA
 const ProfileApp = lazy(() => import('@/pages/profile/ProfileApp'));
 const AccountingApp = lazy(() => import('@/pages/accounting/AccountingApp'));
 const ExpensesApp = lazy(() => import('@/components/expenses-app/ExpensesApp'));
+const SalesDocsApp = lazy(() => import('@/components/sales-docs/SalesDocsApp'));
 const LogisticsApp = lazy(() => import('@/pages/logistics/LogisticsApp'));
 const HustleApp = lazy(() => import('@/pages/hustle/HustleApp'));
 const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
@@ -105,6 +106,7 @@ const STANDALONE_APP_REQUIRES: Record<string, string> = {
     account: 'profile',
     books: 'accounting',
     expenses: 'expenses',
+    quotes: 'sales-docs',
     fleet: 'logistics',
     po: 'purchase-orders',
     hustle: 'sales',
@@ -1352,6 +1354,31 @@ export default function Dashboard() {
                             customers={customers}
                             storeSettings={storeSettings}
                             onNavigate={(s) => navigate(s === 'dashboard' ? '/assistant' : `/assistant/${s}`)}
+                            onExit={() => navigate('/')}
+                            onLogout={handleLogout}
+                        />
+                    </Suspense>
+                </NotificationProvider>
+            </OnboardingProvider>
+        );
+    }
+
+    // ── Customer quotations & invoices (/quotes) ──
+    // Documents only: the sale a document becomes is what posts to the books,
+    // which is why this isn't behind 'accounting'.
+    const quotesParts = location.pathname.split('/');
+    if (quotesParts[1] === 'quotes' && currentUser) {
+        const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
+        if (!allowed.includes('sales-docs')) return <Navigate to="/" replace />;
+        return (
+            <OnboardingProvider user={currentUser}>
+                <NotificationProvider user={currentUser}>
+                    <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
+                        <SalesDocsApp
+                            user={currentUser}
+                            storeSettings={storeSettings}
+                            customers={customers}
+                            products={products}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         />
