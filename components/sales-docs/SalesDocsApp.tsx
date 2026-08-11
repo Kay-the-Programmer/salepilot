@@ -13,6 +13,10 @@ import Logo from '../../assets/logo.png';
 import { DocStatus, DocType, NEXT_STATUSES, SalesDocument, SalesDocumentItem, STATUS_LABEL } from './types';
 import { downloadDocumentPdf, printDocumentPdf } from './documentPdf';
 import '../crm/crm.css';
+// Defines the `.sp-assistant` scope: both the --m3-* custom properties and the
+// m3-* utility classes live there. Without this import the panels below have no
+// background at all — same reason AccountingShell imports it.
+import '../../pages/assistant/assistant.css';
 
 interface SalesDocsAppProps {
     user: User;
@@ -284,7 +288,11 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                     </div>
                 </header>
 
-                <main className="p-4 sm:p-6 overflow-y-auto">
+                {/* `sp-assistant` carries the --m3-* variables AND the m3-* utility
+                    classes (pages/assistant/assistant.css) — both are scoped to it.
+                    Without this wrapper every surface, border and text colour below
+                    resolves to nothing and the panels render transparent. */}
+                <main className="sp-assistant sp-docs p-4 sm:p-6 overflow-y-auto">
                     <div className="max-w-6xl mx-auto">
                         <div className="flex flex-wrap items-center gap-3 mb-5">
                             <div className="flex-1 min-w-[200px]">
@@ -325,7 +333,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                         {loading ? (
                             <div className="flex justify-center py-16"><LoadingSpinner /></div>
                         ) : visible.length === 0 ? (
-                            <div className="rounded-2xl border m3-border-outline-variant m3-bg-surface-container-low py-16 text-center">
+                            <div className="rounded-2xl border m3-border-outline-variant m3-bg-surface-low py-16 text-center">
                                 <Icon name={tab === 'quotation' ? 'request_quote' : 'receipt_long'} size={40} />
                                 <p className="mt-3 text-sm font-semibold m3-text-on-surface">
                                     No {tab === 'quotation' ? 'quotations' : 'invoices'} yet
@@ -335,8 +343,8 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                                 </p>
                             </div>
                         ) : (
-                            <div className="rounded-2xl border m3-border-outline-variant m3-bg-surface-container-low overflow-hidden">
-                                <ul className="divide-y m3-divide-outline-variant">
+                            <div className="rounded-2xl border m3-border-outline-variant m3-bg-surface-low overflow-hidden">
+                                <ul className="divide-y divide-[color:var(--m3-outline-variant)]">
                                     {visible.map(doc => (
                                         <li key={doc.id}>
                                             <button
@@ -406,7 +414,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
             {confirmDialog}
 
             {toast && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[color:var(--m3-primary)] shadow-lg z-[60]">
+                <div className="sp-assistant fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[color:var(--m3-primary)] shadow-lg z-[60]">
                     {toast}
                 </div>
             )}
@@ -432,7 +440,7 @@ const DocumentDetail: React.FC<{
     const next = NEXT_STATUSES[doc.status] || [];
 
     return (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
+        <div className="sp-assistant sp-docs fixed inset-0 z-50 flex justify-end bg-black/40" onClick={onClose}>
             <div
                 className="w-full max-w-xl h-full overflow-y-auto m3-bg-surface shadow-2xl"
                 onClick={e => e.stopPropagation()}
@@ -459,7 +467,7 @@ const DocumentDetail: React.FC<{
                                     <th className="text-right px-3 py-2 font-semibold">Amount</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y m3-divide-outline-variant">
+                            <tbody className="divide-y divide-[color:var(--m3-outline-variant)]">
                                 {(doc.items || []).map((item, i) => (
                                     <tr key={item.id || i}>
                                         <td className="px-3 py-2">
@@ -637,7 +645,7 @@ const DocumentEditor: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onCancel}>
+        <div className="sp-assistant sp-docs fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={onCancel}>
             <div
                 className="w-full max-w-3xl max-h-[92vh] overflow-y-auto rounded-2xl m3-bg-surface shadow-2xl"
                 onClick={e => e.stopPropagation()}

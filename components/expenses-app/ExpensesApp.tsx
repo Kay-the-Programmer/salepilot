@@ -10,6 +10,9 @@ import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import LoadingSpinner from '../LoadingSpinner';
 import Logo from '../../assets/logo.png';
 import '../crm/crm.css';
+// Defines the `.sp-assistant` scope carrying the --m3-* variables and m3-*
+// utilities used below (same import AccountingShell makes).
+import '../../pages/assistant/assistant.css';
 
 interface ExpenseAccountOption {
     id: string;
@@ -197,7 +200,9 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                     </div>
                 </header>
 
-                <main className="p-4 sm:p-6 overflow-y-auto">
+                {/* `sp-assistant` scopes the --m3-* variables and m3-* utilities
+                    used below; without it every surface renders transparent. */}
+                <main className="sp-assistant p-4 sm:p-6 overflow-y-auto">
                     <div className="max-w-5xl mx-auto">
                         <div className="mb-5">
                             <h1 className="text-xl font-bold m3-text-on-surface">My Expenses</h1>
@@ -213,7 +218,7 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                                 <section className="lg:col-span-2">
                                     <form
                                         onSubmit={handleSubmit}
-                                        className="rounded-2xl p-4 sm:p-5 m3-bg-surface-container-low border m3-border-outline-variant"
+                                        className="rounded-2xl p-4 sm:p-5 m3-bg-surface-low border m3-border-outline-variant"
                                     >
                                         <h2 className="text-sm font-bold m3-text-on-surface mb-4">Record an expense</h2>
 
@@ -317,7 +322,7 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                                 </section>
 
                                 <section className="lg:col-span-3">
-                                    <div className="rounded-2xl m3-bg-surface-container-low border m3-border-outline-variant overflow-hidden">
+                                    <div className="rounded-2xl m3-bg-surface-low border m3-border-outline-variant overflow-hidden">
                                         <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 border-b m3-border-outline-variant">
                                             <h2 className="text-sm font-bold m3-text-on-surface">Recorded by you</h2>
                                             <span className="text-sm font-bold m3-text-on-surface">
@@ -330,7 +335,7 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                                                 Nothing recorded yet. Your expenses will appear here.
                                             </p>
                                         ) : (
-                                            <ul className="divide-y m3-divide-outline-variant">
+                                            <ul className="divide-y divide-[color:var(--m3-outline-variant)]">
                                                 {rows.map(row => (
                                                     <li key={row.id} className="px-4 sm:px-5 py-3 flex items-center gap-3">
                                                         <div className="min-w-0 flex-1">
@@ -359,7 +364,7 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
             </div>
 
             {toast && (
-                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[color:var(--m3-primary)] shadow-lg z-50">
+                <div className="sp-assistant fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-[color:var(--m3-primary)] shadow-lg z-50">
                     {toast}
                 </div>
             )}
