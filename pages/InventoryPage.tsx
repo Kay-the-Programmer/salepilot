@@ -8,6 +8,7 @@ import StockAdjustmentModal from '../components/StockAdjustmentModal';
 import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
 import ProductEditForm from '../components/products/ProductEditForm';
+import ProductImportModal from '../components/products/ProductImportModal';
 import { takePendingNewProduct } from '../utils/pendingProduct';
 import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
@@ -54,6 +55,8 @@ interface InventoryPageProps {
     currentUser: User;
     /** True when hosted inside the standalone Inventory app (hides the duplicate mobile header). */
     embedded?: boolean;
+    /** Re-pull products + categories — used after a bulk CSV import writes many rows. */
+    onRefreshCatalog?: () => void | Promise<void>;
 }
 
 const InventoryPage: React.FC<InventoryPageProps> = ({
@@ -78,8 +81,10 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
     storeSettings,
     currentUser,
     embedded = false,
+    onRefreshCatalog,
 }) => {
     const { showToast } = useToast();
+    const [importOpen, setImportOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
     const [isEditingProduct, setIsEditingProduct] = useState(false); // Inline edit mode
     const [searchTerm, setSearchTerm] = useState('');
@@ -693,6 +698,19 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                         )}
                     </div>
 
+                    {canManageProducts && activeTab === 'products' && (
+                        <button
+                            type="button"
+                            onClick={() => setImportOpen(true)}
+                            className="shrink-0 flex items-center gap-1.5 h-11 pl-3 pr-4 rounded-lg border border-primary/40 text-primary text-sm font-bold transition active:scale-95 hover:bg-primary/5"
+                            title="Import products from a CSV file"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                            </svg>
+                            <span className="hidden lg:inline">Import CSV</span>
+                        </button>
+                    )}
                     {canManageProducts && (
                         <button
                             type="button"
@@ -928,6 +946,22 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                 onClose={handleClosePrintModal}
                 product={productToPrint}
                 storeSettings={storeSettings}
+            />
+
+            <ProductImportModal
+                isOpen={importOpen}
+                onClose={() => setImportOpen(false)}
+                onImported={async (result) => {
+                    // The import writes straight to the database, so the page's
+                    // product list has to be re-pulled rather than patched.
+                    await onRefreshCatalog?.();
+                    showToast(
+                        `${result.created} product${result.created === 1 ? '' : 's'} imported`
+                        + (result.updated ? ` · ${result.updated} updated` : '')
+                        + (result.skipped ? ` · ${result.skipped} skipped` : ''),
+                        'success',
+                    );
+                }}
             />
 
             <ConfirmationModal

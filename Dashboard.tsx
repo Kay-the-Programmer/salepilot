@@ -747,6 +747,24 @@ export default function Dashboard() {
         }
     };
 
+    /**
+     * Re-pull the catalogue from the server. Used after a bulk CSV import, which
+     * writes many products (and possibly new categories) straight to the
+     * database — too much to patch into local state row by row.
+     */
+    const refreshCatalog = async () => {
+        try {
+            const [nextProducts, nextCategories] = await Promise.all([
+                api.get<Product[]>('/products'),
+                api.get<Category[]>('/categories'),
+            ]);
+            setProducts(nextProducts);
+            setCategories(nextCategories);
+        } catch (err: any) {
+            showSnackbar(err?.message || 'Could not refresh the catalogue.', 'error');
+        }
+    };
+
     const handleStockAdjustment = async (productId: string, newQuantity: number, reason: string) => {
         try {
             const result = await api.patch(`/products/${productId}/stock`, { newQuantity, reason });
@@ -1811,7 +1829,7 @@ export default function Dashboard() {
                             storeSettings={storeSettings}
                             renderItems={() => (
                                 <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} embedded />
+                                    <InventoryPage products={products} categories={categories} suppliers={suppliers} accounts={accounts} purchaseOrders={purchaseOrders} onSaveProduct={handleSaveProduct} onDeleteProduct={handleDeleteProduct} onArchiveProduct={handleArchiveProduct} onStockChange={handleStockChange} onAdjustStock={handleStockAdjustment} onReceivePOItems={handleReceivePOItems} onSavePurchaseOrder={handleSavePurchaseOrder} onSaveCategory={handleSaveCategory} onDeleteCategory={handleDeleteCategory} isLoading={isLoading} error={error} storeSettings={storeSettings!} currentUser={currentUser} onOpenSidebar={() => { }} embedded onRefreshCatalog={refreshCatalog} />
                                 </Suspense>
                             )}
                             renderStockTakes={() => (
