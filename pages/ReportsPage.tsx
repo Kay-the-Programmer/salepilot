@@ -1,11 +1,12 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { StoreSettings, User, DashboardCardConfig } from '../types';
 import { useNotifications } from '../contexts/NotificationContext';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import {
+    createPdf, drawPdfFooter, drawPdfHeader, drawPdfTable, loadStoreLogo,
+    pdfFileName, pdfMoney, pdfNumber, savePdf,
+} from '../utils/pdfDocument';
 import { api } from '../services/api';
 import { fetchDashboardRange } from '../components/reports/reportsData';
-import { formatCurrency } from '../utils/currency';
 import { hasModule, MODULES } from '../utils/entitlements';
 import { useNavigate } from 'react-router-dom';
 import { useAppSwitcher } from '../contexts/AppSwitcherContext';
@@ -183,21 +184,32 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
         document.body.removeChild(link);
     };
 
-    const handleExportPDF = () => {
+    // Branded, banded and footed like every other PDF the app exports
+    // (utils/pdfDocument); async because it fetches the store logo first.
+    const handleExportPDF = async () => {
         if (!reportData || !dailySales) return;
-        const doc = new jsPDF() as any;
-        doc.setFontSize(20);
-        doc.text('Sales Report', 14, 22);
-        doc.setFontSize(11);
-        doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
-        const tableColumn = ['Date', 'Revenue', 'Units Sold'];
-        const tableRows = dailySales.map(day => [
-            day.date,
-            formatCurrency(day.totalRevenue, storeSettings),
-            day.totalQuantity
-        ]);
-        doc.autoTable({ head: [tableColumn], body: tableRows, startY: 40 });
-        doc.save(`sales_report_${startDate}_to_${endDate}.pdf`);
+        const doc = createPdf();
+        const startY = drawPdfHeader(doc, {
+            title: 'Sales Report',
+            settings: storeSettings,
+            logo: await loadStoreLogo(storeSettings),
+            meta: [`Period: ${startDate} to ${endDate}`],
+        });
+        drawPdfTable(doc, {
+            startY,
+            head: [['Date', 'Revenue', 'Units Sold']],
+            body: dailySales.map(day => [
+                day.date,
+                pdfMoney(day.totalRevenue, storeSettings),
+                pdfNumber(day.totalQuantity),
+            ]),
+            columnStyles: {
+                1: { halign: 'right' },
+                2: { halign: 'right' },
+            },
+        });
+        drawPdfFooter(doc, storeSettings);
+        savePdf(doc, pdfFileName('Sales Report', storeSettings, `${startDate}_to_${endDate}`));
     };
 
     const handleDatePreset = (preset: '7d' | '30d' | 'month') => {
@@ -545,7 +557,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                                         <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { handleExportCSV(); setIsExportMenuOpen(false); }}>
                                             <span style={{ width: 10, height: 10, borderRadius: 99, background: 'var(--c-primary)' }} /> Export as CSV
                                         </button>
-                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { handleExportPDF(); setIsExportMenuOpen(false); }}>
+                                        <button type="button" role="menuitem" style={menuItemStyle} onClick={() => { void handleExportPDF(); setIsExportMenuOpen(false); }}>
                                             <span style={{ width: 10, height: 10, borderRadius: 99, background: 'var(--c-error)' }} /> Export as PDF
                                         </button>
                                     </div>

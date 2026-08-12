@@ -260,6 +260,12 @@ export interface StoreSettings {
     phone: string;
     email: string;
     website: string;
+    /** Company logo (store_settings.logo_url) — heads quotations, invoices and the storefront. */
+    logoUrl?: string | null;
+    /** Taxpayer ID printed on receipts, delivery notes, quotations and invoices. */
+    tpin?: string | null;
+    /** Trading line under the business name, e.g. "Office Furniture & Stationery". */
+    businessTagline?: string | null;
     isOnlineStoreEnabled: boolean;
 
     // Financial

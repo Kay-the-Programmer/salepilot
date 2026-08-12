@@ -514,7 +514,8 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         setSearchTerm('');
     };
 
-    const handleExportLowStock = () => {
+    // Async because the export fetches the store logo before drawing.
+    const handleExportLowStock = async () => {
         // Find all unarchived products below or at reorder point
         const lowStockProducts = products.filter(p => {
             if (p.status === 'archived') return false;
@@ -529,7 +530,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         }
 
         try {
-            generateLowStockPDF(lowStockProducts, categories, storeSettings);
+            await generateLowStockPDF(lowStockProducts, categories, storeSettings);
             showToast('Low stock report generated successfully', 'success');
             logEvent('Inventory', 'export_low_stock_pdf');
         } catch (err: any) {

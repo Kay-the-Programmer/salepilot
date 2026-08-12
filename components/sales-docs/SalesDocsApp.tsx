@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { User, StoreSettings, Customer, Product, Sale } from '../../types';
-import { api } from '../../services/api';
+import { api, buildAssetUrl } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
 import { Icon, Avatar } from '../crm/CrmBits';
 import AppSwitcher from '../standalone/AppSwitcher';
@@ -10,7 +10,12 @@ import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import LoadingSpinner from '../LoadingSpinner';
 import { useConfirm } from '../ui/useConfirm';
 import Logo from '../../assets/logo.png';
-import { DocStatus, DocType, NEXT_STATUSES, SalesDocument, SalesDocumentItem, STATUS_LABEL } from './types';
+import {
+    DocStatus, DocType, DOC_ICON, DOC_LABEL, DOC_SINGULAR, DOC_TYPES, hasLineItems, isPriced,
+    NEXT_STATUSES, SalesDocument, SalesDocumentItem, STATUS_LABEL,
+} from './types';
+import { downloadManualDocPdf, printManualDocPdf } from './manualDocPdf';
+import { amountInWords, currencyUnits } from './amountInWords';
 import { downloadDocumentPdf, printDocumentPdf } from './documentPdf';
 import '../crm/crm.css';
 // Defines the `.sp-assistant` scope: both the --m3-* custom properties and the
@@ -41,6 +46,12 @@ const STATUS_TONE: Record<DocStatus, string> = {
     cancelled: 'bg-gray-500/15 text-gray-400',
 };
 
+/** Stamp colour by status — the same rule the PDF stamp follows. */
+const STAMP_TONE = (status: DocStatus) =>
+    status === 'accepted' || status === 'converted' ? 'border-emerald-600 text-emerald-600'
+        : status === 'declined' || status === 'cancelled' || status === 'expired' ? 'border-red-600 text-red-600'
+            : 'border-[color:var(--m3-primary)] text-[color:var(--m3-primary)]';
+
 const today = () => new Date().toISOString().slice(0, 10);
 const emptyItem = (): SalesDocumentItem => ({ name: '', quantity: 1, unitPrice: 0 });
 
@@ -70,6 +81,38 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
     const [toast, setToast] = useState<string | null>(null);
 
     const canDelete = user.role === 'admin' || user.role === 'superadmin';
+    // Owners/admins manage the company logo that heads every document.
+    const canBrand = canDelete;
+
+    const [logoUrl, setLogoUrl] = useState<string>(storeSettings?.logoUrl || '');
+    const [uploadingLogo, setUploadingLogo] = useState(false);
+    useEffect(() => { setLogoUrl(storeSettings?.logoUrl || ''); }, [storeSettings]);
+
+    // The parent's copy of the settings can be a render behind an upload, so the
+    // freshest logo is merged in here — it's what the PDF and preview both read.
+    const settings = useMemo(
+        () => (storeSettings ? ({ ...storeSettings, logoUrl } as StoreSettings) : storeSettings),
+        [storeSettings, logoUrl],
+    );
+
+    const uploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+        setUploadingLogo(true);
+        setError(null);
+        try {
+            const fd = new FormData();
+            fd.append('logo', file);
+            const r: any = await api.postFormData('/settings/logo', fd);
+            setLogoUrl(r?.logoUrl || '');
+            setToast('Logo updated. It now heads your quotations and invoices.');
+        } catch (err: any) {
+            setError(err?.message || 'Could not upload the logo.');
+        } finally {
+            setUploadingLogo(false);
+        }
+    };
 
     const load = useCallback(async (type: DocType) => {
         try {
@@ -239,7 +282,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                 </div>
 
                 <nav className="crm-rail__nav">
-                    {(['quotation', 'invoice'] as DocType[]).map(t => (
+                    {DOC_TYPES.map(t => (
                         <button
                             key={t}
                             type="button"
@@ -247,8 +290,8 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                             aria-current={tab === t ? 'page' : undefined}
                             onClick={() => { setTab(t); setSelected(null); }}
                         >
-                            <Icon name={t === 'quotation' ? 'request_quote' : 'receipt_long'} size={22} fill={tab === t ? 1 : 0} />
-                            {t === 'quotation' ? 'Quotations' : 'Invoices'}
+                            <Icon name={DOC_ICON[t]} size={22} fill={tab === t ? 1 : 0} />
+                            {DOC_LABEL[t]}
                         </button>
                     ))}
                 </nav>
@@ -296,15 +339,30 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                     <div className="max-w-6xl mx-auto">
                         <div className="flex flex-wrap items-center gap-3 mb-5">
                             <div className="flex-1 min-w-[200px]">
-                                <h1 className="text-xl font-bold m3-text-on-surface">
-                                    {tab === 'quotation' ? 'Quotations' : 'Invoices'}
-                                </h1>
+                                <h1 className="text-xl font-bold m3-text-on-surface">{DOC_LABEL[tab]}</h1>
                                 <p className="text-sm m3-text-on-surface-variant mt-0.5">
                                     {tab === 'quotation'
                                         ? 'Price offers for customers. Nothing is sold until a quote is accepted and converted.'
-                                        : 'Bills for customers. Converting one records the sale and reduces stock.'}
+                                        : tab === 'invoice'
+                                            ? 'Bills for customers. Converting one records the sale and reduces stock.'
+                                            : tab === 'delivery_note'
+                                                ? 'Proof of goods handed over — quantities and descriptions, with signature lines. No prices.'
+                                                : 'Acknowledges money received. A record for the customer; it does not post to your books.'}
                                 </p>
                             </div>
+                            {canBrand && (
+                                <label className="flex items-center gap-2 px-3 py-2 rounded-lg border m3-border-outline-variant cursor-pointer text-sm font-semibold m3-text-on-surface">
+                                    {logoUrl ? (
+                                        <img src={buildAssetUrl(logoUrl)} alt="Company logo"
+                                            className="w-8 h-8 rounded object-contain m3-bg-surface-container" />
+                                    ) : (
+                                        <Icon name="add_photo_alternate" size={20} />
+                                    )}
+                                    <span>{uploadingLogo ? 'Uploading…' : logoUrl ? 'Replace logo' : 'Upload company logo'}</span>
+                                    <input type="file" accept="image/*" className="hidden"
+                                        disabled={uploadingLogo} onChange={uploadLogo} />
+                                </label>
+                            )}
                             <input
                                 className={`${FIELD} max-w-xs`}
                                 placeholder="Search number or customer"
@@ -316,7 +374,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                                 className="px-4 py-2.5 rounded-lg text-sm font-bold text-white bg-[color:var(--m3-primary)]"
                                 onClick={() => { setSelected(null); setEditing({ docType: tab } as SalesDocument); }}
                             >
-                                New {tab === 'quotation' ? 'quotation' : 'invoice'}
+                                New {DOC_SINGULAR[tab]}
                             </button>
                         </div>
 
@@ -365,7 +423,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                                                     {STATUS_LABEL[doc.status]}
                                                 </span>
                                                 <span className="text-sm font-bold m3-text-on-surface whitespace-nowrap">
-                                                    {formatCurrency(doc.total, storeSettings!)}
+                                                    {formatCurrency(doc.total, settings!)}
                                                 </span>
                                             </button>
                                         </li>
@@ -380,7 +438,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
             {selected && !editing && (
                 <DocumentDetail
                     doc={selected}
-                    storeSettings={storeSettings}
+                    storeSettings={settings}
                     busy={busy}
                     canDelete={canDelete}
                     onClose={() => setSelected(null)}
@@ -398,7 +456,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                     docType={editing.docType || tab}
                     customers={customers}
                     products={products}
-                    storeSettings={storeSettings}
+                    storeSettings={settings}
                     onCancel={() => setEditing(null)}
                     onSaved={async (saved) => {
                         setEditing(null);
@@ -458,9 +516,25 @@ const DocumentDetail: React.FC<{
                 </div>
 
                 <div className="p-5">
+                    {/* Mirrors the PDF header so what's on screen is what prints. */}
+                    <div className="flex items-start gap-3 mb-4">
+                        {storeSettings?.logoUrl && (
+                            <img
+                                src={buildAssetUrl(storeSettings.logoUrl)}
+                                alt={`${storeSettings?.name || 'Company'} logo`}
+                                className="w-14 h-14 rounded-lg object-contain m3-bg-surface-container"
+                            />
+                        )}
+                        <div className="min-w-0">
+                            <p className="text-sm font-bold m3-text-on-surface truncate">{storeSettings?.name || 'SalePilot'}</p>
+                            {storeSettings?.address && <p className="text-xs m3-text-on-surface-variant truncate">{storeSettings.address}</p>}
+                            {storeSettings?.phone && <p className="text-xs m3-text-on-surface-variant truncate">{storeSettings.phone}</p>}
+                        </div>
+                    </div>
+
                     <div className="rounded-xl border m3-border-outline-variant overflow-hidden mb-4">
                         <table className="w-full text-sm">
-                            <thead className="m3-bg-surface-container">
+                            <thead className="bg-[color:var(--m3-primary)] text-white">
                                 <tr>
                                     <th className="text-left px-3 py-2 font-semibold">Description</th>
                                     <th className="text-right px-3 py-2 font-semibold">Qty</th>
@@ -469,7 +543,8 @@ const DocumentDetail: React.FC<{
                             </thead>
                             <tbody className="divide-y divide-[color:var(--m3-outline-variant)]">
                                 {(doc.items || []).map((item, i) => (
-                                    <tr key={item.id || i}>
+                                    // Banded rows — every other line tinted, matching the PDF.
+                                    <tr key={item.id || i} className={i % 2 === 1 ? 'm3-bg-surface-container' : ''}>
                                         <td className="px-3 py-2">
                                             {item.name}
                                             {item.sku && <span className="block text-xs m3-text-on-surface-variant">{item.sku}</span>}
@@ -495,6 +570,17 @@ const DocumentDetail: React.FC<{
                         </div>
                     </dl>
 
+                    {/* Preview of the stamp that is drawn on the PDF. */}
+                    <div className="flex justify-end mb-5">
+                        <div className={`w-[190px] text-center rounded-lg border-2 p-1 ${STAMP_TONE(doc.status)}`}>
+                            <div className="rounded border border-current/50 py-2 px-2">
+                                <p className="text-[10px] font-bold uppercase tracking-wide truncate">{storeSettings?.name || 'SalePilot'}</p>
+                                <p className="text-sm font-extrabold tracking-wider">{isQuote ? 'QUOTATION' : 'INVOICE'}</p>
+                                <p className="text-[9px] font-semibold uppercase">Issued {new Date(doc.issueDate).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    </div>
+
                     {doc.convertedSaleId && (
                         <p className="mb-4 px-3 py-2 rounded-lg bg-emerald-500/10 text-emerald-600 text-xs font-semibold">
                             Recorded as a sale. It now appears under Receivables in the Accounting Hub.
@@ -503,11 +589,11 @@ const DocumentDetail: React.FC<{
 
                     <div className="flex flex-wrap gap-2">
                         <button type="button" className="px-3 py-2 rounded-lg text-sm font-semibold border m3-border-outline-variant"
-                            onClick={() => downloadDocumentPdf(doc, storeSettings)}>
+                            onClick={() => { void (isPriced(doc.docType) ? downloadDocumentPdf(doc, storeSettings) : downloadManualDocPdf(doc, storeSettings)); }}>
                             <Icon name="download" size={16} /> PDF
                         </button>
                         <button type="button" className="px-3 py-2 rounded-lg text-sm font-semibold border m3-border-outline-variant"
-                            onClick={() => printDocumentPdf(doc, storeSettings)}>
+                            onClick={() => { void (isPriced(doc.docType) ? printDocumentPdf(doc, storeSettings) : printManualDocPdf(doc, storeSettings)); }}>
                             <Icon name="print" size={16} /> Print
                         </button>
                         {doc.status === 'draft' && (
@@ -533,7 +619,9 @@ const DocumentDetail: React.FC<{
                                 Convert to invoice
                             </button>
                         )}
-                        {!isQuote && doc.status !== 'converted' && doc.status !== 'cancelled' && (
+                        {/* Only an invoice becomes a sale. A delivery note and a
+                            receipt are records of something that already happened. */}
+                        {doc.docType === 'invoice' && doc.status !== 'converted' && doc.status !== 'cancelled' && (
                             <button type="button" disabled={busy}
                                 className="px-3 py-2 rounded-lg text-sm font-bold text-white bg-[color:var(--m3-primary)] disabled:opacity-50"
                                 onClick={onConvertToSale}>
@@ -581,6 +669,18 @@ const DocumentEditor: React.FC<{
     );
     const [saving, setSaving] = useState(false);
 
+    // Receipt-only: the single figure acknowledged, and how it arrived.
+    const [amount, setAmount] = useState(String(initial.total ?? ''));
+    const [paymentMethod, setPaymentMethod] = useState<string>(initial.paymentMethod || 'cash');
+    const [paymentReference, setPaymentReference] = useState(initial.paymentReference || '');
+    // Delivery-note-only: the two people who sign the page.
+    const [deliveredBy, setDeliveredBy] = useState(initial.deliveredBy || '');
+    const [receivedBy, setReceivedBy] = useState(initial.receivedBy || '');
+
+    const isReceipt = docType === 'receipt';
+    const isDeliveryNote = docType === 'delivery_note';
+    const priced = isPriced(docType);
+
     const taxRate = Number(initial.taxRate ?? storeSettings?.taxRate ?? 0);
 
     // Mirrors the server's arithmetic so the operator sees the same figures the
@@ -606,9 +706,16 @@ const DocumentEditor: React.FC<{
         });
     };
 
-    const valid = customerName.trim() !== '' &&
-        items.length > 0 &&
-        items.every(i => i.name.trim() !== '' && Number(i.quantity) > 0 && Number(i.unitPrice) >= 0);
+    const valid = customerName.trim() !== '' && (
+        isReceipt
+            // A receipt needs one positive figure and nothing else.
+            ? Number(amount) > 0
+            : items.length > 0 && items.every(i =>
+                i.name.trim() !== ''
+                && Number(i.quantity) > 0
+                // A delivery note carries no prices, so a blank one is fine.
+                && (isDeliveryNote || Number(i.unitPrice) >= 0))
+    );
 
     const save = async () => {
         if (!valid || saving) return;
@@ -625,13 +732,22 @@ const DocumentEditor: React.FC<{
                 discount: Number(discount) || 0,
                 notes: notes || undefined,
                 terms: terms || undefined,
-                items: items.map(i => ({
+                items: isReceipt ? [] : items.map(i => ({
                     productId: i.productId || undefined,
                     name: i.name.trim(),
                     sku: i.sku || undefined,
                     quantity: Number(i.quantity),
-                    unitPrice: Number(i.unitPrice),
+                    unitPrice: Number(i.unitPrice) || 0,
                 })),
+                ...(isReceipt ? {
+                    amount: Number(amount),
+                    paymentMethod,
+                    paymentReference: paymentMethod === 'cheque' ? (paymentReference || undefined) : undefined,
+                } : {}),
+                ...(isDeliveryNote ? {
+                    deliveredBy: deliveredBy || undefined,
+                    receivedBy: receivedBy || undefined,
+                } : {}),
             };
             const saved = isEdit
                 ? await api.put<SalesDocument>(`/sales-documents/${initial.id}`, body)
@@ -652,7 +768,7 @@ const DocumentEditor: React.FC<{
             >
                 <div className="sticky top-0 z-10 px-5 py-4 flex items-center justify-between m3-bg-surface border-b m3-border-outline-variant">
                     <h2 className="text-base font-bold m3-text-on-surface">
-                        {isEdit ? `Edit ${initial.number}` : `New ${docType === 'quotation' ? 'quotation' : 'invoice'}`}
+                        {isEdit ? `Edit ${initial.number}` : `New ${DOC_SINGULAR[docType]}`}
                     </h2>
                     <button type="button" onClick={onCancel} aria-label="Close"><Icon name="close" size={20} /></button>
                 </div>
@@ -700,16 +816,80 @@ const DocumentEditor: React.FC<{
                             <input id="doc-issued" type="date" className={FIELD} value={issueDate}
                                 onChange={e => setIssueDate(e.target.value)} />
                         </div>
-                        <div>
-                            <label className={LABEL} htmlFor="doc-valid">
-                                {docType === 'quotation' ? 'Valid until' : 'Due date'}
-                            </label>
-                            <input id="doc-valid" type="date" className={FIELD} value={validUntil}
-                                onChange={e => setValidUntil(e.target.value)} />
-                        </div>
+                        {priced && (
+                            <div>
+                                <label className={LABEL} htmlFor="doc-valid">
+                                    {docType === 'quotation' ? 'Valid until' : 'Due date'}
+                                </label>
+                                <input id="doc-valid" type="date" className={FIELD} value={validUntil}
+                                    onChange={e => setValidUntil(e.target.value)} />
+                            </div>
+                        )}
                     </div>
 
-                    <h3 className="text-sm font-bold m3-text-on-surface mb-2">Line items</h3>
+                    {/* A receipt has no line items — one figure, and how it was paid. */}
+                    {isReceipt && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label className={LABEL} htmlFor="doc-amount">Amount received</label>
+                                <input
+                                    id="doc-amount"
+                                    className={FIELD}
+                                    inputMode="decimal"
+                                    value={amount}
+                                    placeholder="0.00"
+                                    onChange={e => setAmount(e.target.value)}
+                                />
+                                {Number(amount) > 0 && (
+                                    <p className="text-xs m3-text-on-surface-variant mt-1">
+                                        {amountInWords(
+                                            Number(amount),
+                                            currencyUnits(storeSettings?.currency?.code).major,
+                                            currencyUnits(storeSettings?.currency?.code).minor,
+                                        )}
+                                    </p>
+                                )}
+                            </div>
+                            <div>
+                                <label className={LABEL} htmlFor="doc-method">Paid by</label>
+                                <select id="doc-method" className={FIELD} value={paymentMethod}
+                                    onChange={e => setPaymentMethod(e.target.value)}>
+                                    <option value="cash">Cash</option>
+                                    <option value="cheque">Cheque</option>
+                                </select>
+                            </div>
+                            {paymentMethod === 'cheque' && (
+                                <div>
+                                    <label className={LABEL} htmlFor="doc-cheque">Cheque No.</label>
+                                    <input id="doc-cheque" className={FIELD} value={paymentReference}
+                                        onChange={e => setPaymentReference(e.target.value)} />
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Delivery notes are signed for on both sides. */}
+                    {isDeliveryNote && (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label className={LABEL} htmlFor="doc-delivered-by">Delivered by</label>
+                                <input id="doc-delivered-by" className={FIELD} value={deliveredBy}
+                                    placeholder="Left blank prints a signature line"
+                                    onChange={e => setDeliveredBy(e.target.value)} />
+                            </div>
+                            <div>
+                                <label className={LABEL} htmlFor="doc-received-by">Received by</label>
+                                <input id="doc-received-by" className={FIELD} value={receivedBy}
+                                    placeholder="Usually signed on delivery"
+                                    onChange={e => setReceivedBy(e.target.value)} />
+                            </div>
+                        </div>
+                    )}
+
+                    {hasLineItems(docType) && (<>
+                    <h3 className="text-sm font-bold m3-text-on-surface mb-2">
+                        {isDeliveryNote ? "Goods delivered" : "Line items"}
+                    </h3>
                     <div className="space-y-2 mb-3">
                         {items.map((item, i) => (
                             <div key={i} className="grid grid-cols-12 gap-2 items-end">
@@ -735,11 +915,13 @@ const DocumentEditor: React.FC<{
                                     <input id={`item-qty-${i}`} className={FIELD} inputMode="decimal" value={item.quantity}
                                         onChange={e => setItem(i, { quantity: e.target.value as any })} />
                                 </div>
+                                {priced && (
                                 <div className="col-span-5 sm:col-span-2">
-                                    <label className={LABEL} htmlFor={`item-price-${i}`}>Unit price</label>
-                                    <input id={`item-price-${i}`} className={FIELD} inputMode="decimal" value={item.unitPrice}
+                                    <label className={LABEL} htmlFor={`item-price-`}>Unit price</label>
+                                    <input id={`item-price-`} className={FIELD} inputMode="decimal" value={item.unitPrice}
                                         onChange={e => setItem(i, { unitPrice: e.target.value as any })} />
                                 </div>
+                                )}
                                 <div className="col-span-3 sm:col-span-1 flex justify-end pb-1">
                                     <button
                                         type="button"
@@ -758,7 +940,9 @@ const DocumentEditor: React.FC<{
                         onClick={() => setItems(prev => [...prev, emptyItem()])}>
                         + Add line
                     </button>
+                    </>)}
 
+                    {priced && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                         <div>
                             <label className={LABEL} htmlFor="doc-discount">Discount</label>
@@ -775,18 +959,24 @@ const DocumentEditor: React.FC<{
                             </div>
                         </div>
                     </div>
+                    )}
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
                         <div>
-                            <label className={LABEL} htmlFor="doc-notes">Notes</label>
+                            <label className={LABEL} htmlFor="doc-notes">
+                                {isReceipt ? 'Being payment for' : 'Notes'}
+                            </label>
                             <textarea id="doc-notes" className={FIELD} rows={2} value={notes}
-                                onChange={e => setNotes(e.target.value)} placeholder="Shown on the document" />
+                                onChange={e => setNotes(e.target.value)}
+                                placeholder={isReceipt ? 'e.g. Part payment for INV-0004' : 'Shown on the document'} />
                         </div>
-                        <div>
-                            <label className={LABEL} htmlFor="doc-terms">Terms</label>
-                            <textarea id="doc-terms" className={FIELD} rows={2} value={terms}
-                                onChange={e => setTerms(e.target.value)} placeholder="e.g. Payment within 14 days" />
-                        </div>
+                        {priced && (
+                            <div>
+                                <label className={LABEL} htmlFor="doc-terms">Terms</label>
+                                <textarea id="doc-terms" className={FIELD} rows={2} value={terms}
+                                    onChange={e => setTerms(e.target.value)} placeholder="e.g. Payment within 14 days" />
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex gap-3">

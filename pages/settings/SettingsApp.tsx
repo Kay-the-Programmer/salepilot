@@ -200,6 +200,13 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                 <Field label="Phone number"><input className={inputCls} type="tel" name="phone" value={currentSettings.phone || ''} onChange={handleChange} placeholder="+260…" /></Field>
                 <Field label="Website"><input className={inputCls} name="website" value={currentSettings.website || ''} onChange={handleChange} placeholder="https://…" /></Field>
                 <Field label="Address"><textarea className={`${inputCls} h-auto py-3`} rows={3} name="address" value={currentSettings.address || ''} onChange={handleChange} placeholder="123 Main Street, City" /></Field>
+                {/* Both print on receipts, delivery notes, quotations and invoices. */}
+                <Field label="TPIN">
+                  <input className={inputCls} name="tpin" value={currentSettings.tpin || ''} onChange={handleChange} placeholder="e.g. 2001554857" />
+                </Field>
+                <Field label="Trading line">
+                  <input className={inputCls} name="businessTagline" value={currentSettings.businessTagline || ''} onChange={handleChange} placeholder="e.g. Office Furniture, Stationery & General Dealing" />
+                </Field>
               </Card>
             )}
 
