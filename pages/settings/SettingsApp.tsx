@@ -7,6 +7,7 @@ import type { StoreSettings, User } from '../../types';
 import type { SnackbarType } from '../../App';
 import { api, buildAssetUrl } from '../../services/api';
 import { hasModule, MODULES } from '../../utils/entitlements';
+import { announceLogoUpdate } from '../../utils/pdfDocument';
 import '../assistant/assistant.css';
 
 // Reused feature sections (logic unchanged)
@@ -97,6 +98,8 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
       fd.append('logo', file);
       const r = await api.postFormData<{ logoUrl: string }>('/settings/logo', fd);
       setLogoUrl(r?.logoUrl || '');
+      // Tell the rest of the app, so documents printed in this session are branded.
+      if (r?.logoUrl) announceLogoUpdate(r.logoUrl);
       showSnackbar('Logo updated. It now heads your documents.', 'success');
     } catch (err: any) {
       showSnackbar(err?.message || 'Could not upload the logo.', 'error');

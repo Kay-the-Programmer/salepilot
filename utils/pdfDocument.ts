@@ -70,22 +70,61 @@ export const pdfNumber = (n: number | string | null | undefined): string => {
 export const pdfDate = (d?: string | number | Date | null): string =>
     d ? new Date(d).toLocaleDateString() : '—';
 
+let cachedSettings: PdfSettings | undefined;
+
+/**
+ * Store settings straight from the server, cached for the session.
+ *
+ * Two jobs: it gives surfaces that don't hold settings (the AI assistants) a
+ * masthead, and it's the authority on the logo — see `loadStoreLogo`.
+ */
+export const loadPdfStoreSettings = async (): Promise<PdfSettings> => {
+    if (cachedSettings !== undefined) return cachedSettings;
+    try {
+        cachedSettings = await api.get<StoreSettings>('/settings');
+    } catch {
+        cachedSettings = null;
+    }
+    return cachedSettings;
+};
+
+/**
+ * Announce a freshly uploaded logo.
+ *
+ * Drops the cached settings so the next export re-reads them, and tells the rest
+ * of the app (Dashboard holds the `storeSettings` every screen is handed) so the
+ * new logo shows up without a page reload.
+ */
+export const STORE_LOGO_UPDATED_EVENT = 'salepilot:logo-updated';
+
+export const announceLogoUpdate = (logoUrl: string) => {
+    cachedSettings = undefined;
+    window.dispatchEvent(new CustomEvent(STORE_LOGO_UPDATED_EVENT, { detail: { logoUrl } }));
+};
+
 /**
  * Fetch the store logo and turn it into a data URL.
+ *
+ * The caller's `settings` can be stale: most screens receive them once when the
+ * app loads, so a logo uploaded during the session isn't in that copy and every
+ * document printed afterwards came out unbranded until the page was reloaded.
+ * When the passed settings carry no logo we therefore ask the server rather than
+ * concluding there isn't one.
  *
  * jsPDF rasterises images through a canvas, and a canvas painted with a
  * cross-origin `<img>` is tainted — reading it back throws. Fetching the bytes
  * ourselves sidesteps that. Any failure (offline, missing file, CORS) resolves
- * to null so the document still exports, just without the logo.
+ * to null so the document still exports, just without the logo — but it says so
+ * in the console, because a silently missing logo is exactly the bug above.
  */
 export const loadStoreLogo = async (settings: PdfSettings): Promise<PdfLogo | null> => {
-    const raw = settings?.logoUrl;
+    const raw = settings?.logoUrl || (await loadPdfStoreSettings())?.logoUrl;
     if (!raw) return null;
     try {
         const res = await fetch(buildAssetUrl(raw), { mode: 'cors' });
-        if (!res.ok) return null;
+        if (!res.ok) throw new Error(`logo request failed (${res.status})`);
         const blob = await res.blob();
-        if (!blob.type.startsWith('image/')) return null;
+        if (!blob.type.startsWith('image/')) throw new Error(`logo is not an image (${blob.type})`);
         const dataUrl: string = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(String(reader.result));
@@ -99,28 +138,10 @@ export const loadStoreLogo = async (settings: PdfSettings): Promise<PdfLogo | nu
             img.src = dataUrl;
         });
         return { dataUrl, ...size };
-    } catch {
+    } catch (err) {
+        console.warn('[pdf] Could not load the store logo; exporting without it.', raw, err);
         return null;
     }
-};
-
-let cachedSettings: PdfSettings | undefined;
-
-/**
- * Store settings for surfaces that don't already hold them (the AI assistants).
- *
- * Without this their exports would be the only ones with no store name or logo
- * in the masthead. Cached for the session — one fetch, and an export never fails
- * just because settings couldn't be read.
- */
-export const loadPdfStoreSettings = async (): Promise<PdfSettings> => {
-    if (cachedSettings !== undefined) return cachedSettings;
-    try {
-        cachedSettings = await api.get<StoreSettings>('/settings');
-    } catch {
-        cachedSettings = null;
-    }
-    return cachedSettings;
 };
 
 export const PDF_MARGIN = 40;
@@ -142,8 +163,10 @@ export const drawPdfLogo = (pdf: jsPDF, logo: PdfLogo | null, x = PDF_MARGIN, y 
     try {
         pdf.addImage(logo.dataUrl, x, y, w, h, undefined, 'FAST');
         return { textX: x + w + 14, bottom: y + h };
-    } catch {
-        // A format jsPDF can't decode shouldn't cost the user their export.
+    } catch (err) {
+        // A format jsPDF can't decode shouldn't cost the user their export —
+        // but it must not disappear quietly either.
+        console.warn('[pdf] The store logo could not be drawn into the document.', err);
         return { textX: x, bottom: y };
     }
 };

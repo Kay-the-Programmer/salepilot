@@ -9,6 +9,7 @@ import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
 import PosModeToggle from './components/pos/PosModeToggle';
 import { hasModule, MODULES } from './utils/entitlements';
+import { STORE_LOGO_UPDATED_EVENT } from './utils/pdfDocument';
 import type { CampaignDTO } from './utils/upsell';
 import { ROLE_PAGES } from './utils/rbac';
 
@@ -633,6 +634,19 @@ export default function Dashboard() {
     const handleLogout = () => {
         requestLogout(handleConfirmLogout);
     };
+
+    // The logo is uploaded by its own endpoint, so a `storeSettings` fetched at
+    // startup would keep the old value for the rest of the session — and every
+    // document printed after the upload came out unbranded. Patch it in place.
+    useEffect(() => {
+        const onLogo = (e: Event) => {
+            const url = (e as CustomEvent<{ logoUrl: string }>).detail?.logoUrl;
+            if (!url) return;
+            setStoreSettings(prev => (prev ? { ...prev, logoUrl: url } : prev));
+        };
+        window.addEventListener(STORE_LOGO_UPDATED_EVENT, onLogo);
+        return () => window.removeEventListener(STORE_LOGO_UPDATED_EVENT, onLogo);
+    }, []);
 
     const handleSaveSettings = async (settings: StoreSettings) => {
         try {

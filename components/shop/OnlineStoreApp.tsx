@@ -8,6 +8,7 @@ import { whatsappService, WhatsAppStatus } from '../../services/whatsappService'
 import { whatsappCampaignService } from '../../services/whatsappCampaignService';
 import StandaloneTopBar from '../standalone/StandaloneTopBar';
 import { api, buildAssetUrl } from '../../services/api';
+import { announceLogoUpdate } from '../../utils/pdfDocument';
 
 interface OnlineStoreAppProps {
     user: User;
@@ -72,6 +73,7 @@ export const OnlineStoreApp: React.FC<OnlineStoreAppProps> = ({ user, storeSetti
             fd.append('logo', file);
             const r: any = await api.postFormData('/settings/logo', fd);
             setLogoUrl(r?.logoUrl || '');
+            if (r?.logoUrl) announceLogoUpdate(r.logoUrl);
             showSnackbar('Logo updated.', 'success');
         } catch (err: any) {
             showSnackbar(err?.message || 'Could not upload the logo.', 'error');

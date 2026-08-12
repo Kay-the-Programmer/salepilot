@@ -17,6 +17,7 @@ import {
 import { downloadManualDocPdf, printManualDocPdf } from './manualDocPdf';
 import { amountInWords, currencyUnits } from './amountInWords';
 import { downloadDocumentPdf, printDocumentPdf } from './documentPdf';
+import { announceLogoUpdate } from '../../utils/pdfDocument';
 import '../crm/crm.css';
 // Defines the `.sp-assistant` scope: both the --m3-* custom properties and the
 // m3-* utility classes live there. Without this import the panels below have no
@@ -106,6 +107,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
             fd.append('logo', file);
             const r: any = await api.postFormData('/settings/logo', fd);
             setLogoUrl(r?.logoUrl || '');
+            if (r?.logoUrl) announceLogoUpdate(r.logoUrl);
             setToast('Logo updated. It now heads your quotations and invoices.');
         } catch (err: any) {
             setError(err?.message || 'Could not upload the logo.');
