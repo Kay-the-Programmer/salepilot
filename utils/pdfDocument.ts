@@ -313,8 +313,17 @@ export const drawPdfHeader = (pdf: jsPDF, options: PdfHeaderOptions): number => 
 /**
  * The shared table: navy header, banded rows, page margins. Callers pass their
  * own head/body/column widths; everything visual comes from here.
+ *
+ * Header cells take their column's alignment, so "Amount" sits over the right
+ * edge of the figures beneath it. autoTable applies `headStyles` after
+ * `columnStyles`, so a column declared `halign: 'right'` still drew its heading
+ * hard left — the numeric headings floated at the wrong end of their columns.
+ * The hook below re-applies the column's alignment to the head row.
  */
 export const drawPdfTable = (pdf: jsPDF, options: UserOptions) => {
+    const columnStyles = options.columnStyles || {};
+    const headAlign = options.headStyles?.halign;
+
     autoTable(pdf, {
         theme: 'plain',
         styles: { fontSize: 9, cellPadding: 6, textColor: 40 },
@@ -322,6 +331,16 @@ export const drawPdfTable = (pdf: jsPDF, options: UserOptions) => {
         alternateRowStyles: { fillColor: PDF_ZEBRA },
         margin: { left: PDF_MARGIN, right: PDF_MARGIN },
         ...options,
+        didParseCell: (data) => {
+            if (data.section === 'head') {
+                // An explicit headStyles.halign from the caller wins; otherwise
+                // follow the column.
+                const column = (columnStyles as Record<string | number, { halign?: string }>)[data.column.index];
+                const align = headAlign || column?.halign;
+                if (align) data.cell.styles.halign = align as typeof data.cell.styles.halign;
+            }
+            options.didParseCell?.(data);
+        },
     });
     return (pdf as any).lastAutoTable?.finalY ?? options.startY ?? 0;
 };
