@@ -2,14 +2,14 @@ import jsPDF from 'jspdf';
 import { StoreSettings } from '../../types';
 import { SalesDocument } from './types';
 import {
-    PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawPdfFooter, drawPdfLogo, drawPdfTable,
+    PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawCompanyMasthead, drawPdfFooter, drawPdfTable,
     loadStoreLogo, pdfDate, pdfFileName, pdfMoney, pdfNumber, printPdf, savePdf,
 } from '../../utils/pdfDocument';
 
 /**
- * Quotations and invoices share the app-wide PDF look (utils/pdfDocument) but
- * keep their own header: a customer-facing document leads with the document
- * number and dates, not a report title.
+ * Quotations and invoices print under the same company letterhead as the
+ * receipt and delivery-note pads (utils/pdfDocument → drawCompanyMasthead), so
+ * a customer receiving all four sees one business, not four templates.
  */
 const money = (n: number, settings: StoreSettings | null) => pdfMoney(n, settings);
 const qty = (n: number) => pdfNumber(n);
@@ -17,6 +17,13 @@ const dateLabel = (d?: string | null) => pdfDate(d);
 
 export type DocumentLogo = PdfLogo;
 export const loadDocumentLogo = loadStoreLogo;
+
+/**
+ * The serial printed in red on the letterhead. Documents are numbered
+ * "QUO-0042" internally, but the pads show just the digits — that's the number
+ * a customer quotes back over the phone.
+ */
+export const docSerial = (doc: SalesDocument) => doc.number.replace(/^[A-Z]+-/, '');
 
 /**
  * The company stamp.
@@ -71,42 +78,15 @@ export const buildDocumentPdf = (
     const marginX = PDF_MARGIN;
     const isQuote = doc.docType === 'quotation';
 
-    // ── Header: store on the left, document identity on the right ──
-    const { textX, bottom } = drawPdfLogo(pdf, logo);
-    let headerBottom = Math.max(bottom, 74);
+    // ── Company letterhead, identical to the receipt and delivery-note pads ──
+    let y = drawCompanyMasthead(pdf, {
+        settings,
+        logo,
+        title: isQuote ? 'QUOTATION' : 'INVOICE',
+        serial: docSerial(doc),
+    });
 
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(16);
-    pdf.setTextColor(PDF_NAVY[0], PDF_NAVY[1], PDF_NAVY[2]);
-    pdf.text(settings?.name || 'SalePilot', textX, 56);
-
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(9);
-    pdf.setTextColor(110);
-    const storeLines = [settings?.address, settings?.phone, settings?.email].filter(Boolean) as string[];
-    storeLines.forEach((line, i) => pdf.text(line, textX, 74 + i * 12));
-    headerBottom = Math.max(headerBottom, 74 + storeLines.length * 12);
-
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(20);
-    pdf.setTextColor(30);
-    pdf.text(isQuote ? 'QUOTATION' : 'INVOICE', pageWidth - marginX, 56, { align: 'right' });
-
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(10);
-    pdf.setTextColor(90);
-    pdf.text(doc.number, pageWidth - marginX, 74, { align: 'right' });
-    pdf.text(`Issued: ${dateLabel(doc.issueDate)}`, pageWidth - marginX, 88, { align: 'right' });
-    if (doc.validUntil) {
-        pdf.text(
-            `${isQuote ? 'Valid until' : 'Due'}: ${dateLabel(doc.validUntil)}`,
-            pageWidth - marginX, 102, { align: 'right' },
-        );
-        headerBottom = Math.max(headerBottom, 102);
-    }
-
-    // ── Bill to ──
-    let y = headerBottom + 24;
+    // ── Prepared for / bill to, with the dates on the right ──
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(9);
     pdf.setTextColor(120);
@@ -120,6 +100,18 @@ export const buildDocumentPdf = (
     pdf.setTextColor(110);
     const customerLines = [doc.customerPhone, doc.customerEmail, doc.customerAddress].filter(Boolean) as string[];
     customerLines.forEach((line, i) => pdf.text(line, marginX, y + 30 + i * 12));
+
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9.5);
+    pdf.setTextColor(90);
+    pdf.text(`Issued: ${dateLabel(doc.issueDate)}`, pageWidth - marginX, y, { align: 'right' });
+    if (doc.validUntil) {
+        pdf.text(
+            `${isQuote ? 'Valid until' : 'Due'}: ${dateLabel(doc.validUntil)}`,
+            pageWidth - marginX, y + 14, { align: 'right' },
+        );
+    }
+
     y = y + 30 + customerLines.length * 12 + 14;
 
     // ── Line items ──

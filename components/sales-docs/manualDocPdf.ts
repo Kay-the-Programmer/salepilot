@@ -2,9 +2,10 @@ import jsPDF from 'jspdf';
 import { StoreSettings } from '../../types';
 import { SalesDocument } from './types';
 import {
-    PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawPdfLogo, drawPdfTable,
+    PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawCompanyMasthead, drawPdfTable,
     loadStoreLogo, pdfDate, pdfMoney, pdfNumber, pdfFileName, printPdf, savePdf,
 } from '../../utils/pdfDocument';
+import { docSerial } from './documentPdf';
 import { amountInWords, currencyUnits } from './amountInWords';
 
 /**
@@ -16,7 +17,6 @@ import { amountInWords, currencyUnits } from './amountInWords';
  * are handed to customers who compare them against the old book.
  */
 
-const RED: [number, number, number] = [200, 30, 30];
 const INK: [number, number, number] = [30, 30, 30];
 const MUTED = 110;
 
@@ -48,9 +48,9 @@ const fillRow = (
 };
 
 /**
- * Shared masthead: logo, business name, trading line, address block, contacts,
- * then the document title with the TPIN under it and the serial number boxed on
- * the right — the arrangement on the printed pads.
+ * The letterhead now lives in utils/pdfDocument as `drawCompanyMasthead`, so
+ * quotations and invoices print under exactly the same company header as these
+ * pads do.
  */
 const drawMasthead = (
     pdf: jsPDF,
@@ -58,66 +58,8 @@ const drawMasthead = (
     settings: StoreSettings | null,
     logo: PdfLogo | null,
     title: string,
-): number => {
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const right = pageWidth - PDF_MARGIN;
-
-    const drawn = drawPdfLogo(pdf, logo, PDF_MARGIN, 30, 58);
-    const textX = drawn.textX;
-
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(22);
-    pdf.setTextColor(PDF_NAVY[0], PDF_NAVY[1], PDF_NAVY[2]);
-    pdf.text((settings?.name || 'SalePilot').toUpperCase(), textX, 52);
-
-    const tagline = (settings as any)?.businessTagline;
-    if (tagline) {
-        pdf.setFont('helvetica', 'italic');
-        pdf.setFontSize(8.5);
-        pdf.setTextColor(MUTED);
-        pdf.text(String(tagline), textX, 66);
-    }
-
-    // Address on the left, contacts on the right — as on the pads.
-    pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(8);
-    pdf.setTextColor(MUTED);
-    const addressLines = String(settings?.address || '').split(/\s*,\s*|\n/).filter(Boolean);
-    addressLines.slice(0, 4).forEach((line, i) => pdf.text(line, PDF_MARGIN, 88 + i * 10));
-
-    const contacts = [settings?.phone, settings?.email].filter(Boolean) as string[];
-    contacts.forEach((line, i) => pdf.text(String(line), right, 88 + i * 10, { align: 'right' }));
-
-    // Title + TPIN, centred between the two blocks.
-    const titleY = 112 + Math.max(addressLines.length, contacts.length, 2) * 2;
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(17);
-    pdf.setTextColor(PDF_NAVY[0], PDF_NAVY[1], PDF_NAVY[2]);
-    pdf.text(title, pageWidth / 2, titleY, { align: 'center' });
-
-    const tpin = (settings as any)?.tpin;
-    if (tpin) {
-        pdf.setFont('helvetica', 'bold');
-        pdf.setFontSize(9);
-        pdf.setTextColor(INK[0], INK[1], INK[2]);
-        pdf.text(`TPIN No. ${tpin}`, pageWidth / 2, titleY + 13, { align: 'center' });
-    }
-
-    // Serial number, red like the pre-printed pads.
-    pdf.setFont('helvetica', 'bold');
-    pdf.setFontSize(11);
-    pdf.setTextColor(MUTED);
-    pdf.text('No.', right - 78, titleY);
-    pdf.setTextColor(RED[0], RED[1], RED[2]);
-    pdf.setFontSize(13);
-    pdf.text(doc.number.replace(/^[A-Z]+-/, ''), right - 56, titleY);
-
-    pdf.setDrawColor(PDF_NAVY[0], PDF_NAVY[1], PDF_NAVY[2]);
-    pdf.setLineWidth(1.2);
-    const ruleY = titleY + (tpin ? 22 : 12);
-    pdf.line(PDF_MARGIN, ruleY, right, ruleY);
-    return ruleY + 24;
-};
+): number =>
+    drawCompanyMasthead(pdf, { settings, logo, title, serial: docSerial(doc) });
 
 /** Signature block: a label, a dotted rule, and room to sign. */
 const signatureRows = (pdf: jsPDF, rows: { label: string; value?: string | null }[], startY: number) => {
@@ -259,8 +201,13 @@ export const buildReceiptPdf = (
     pdf.text(pdfMoney(doc.total, settings), boxX + boxW / 2, boxY + 26, { align: 'center' });
     y += 34;
 
-    // Payment method — ticked box, as on the pad.
-    const method = (doc.paymentMethod || 'cash').toLowerCase();
+    // Payment method — ticked boxes, as on the pad, but the boxes are the
+    // store's own methods from Settings (Cash, MTN, Airtel…) rather than a
+    // hard-coded Cash/Cheque pair. Cash and Cheque remain the fallback for a
+    // store that has cleared the list.
+    const method = String(doc.paymentMethod || 'cash').toLowerCase();
+    const configured = (settings?.paymentMethods || []).map(pm => pm.name).filter(Boolean);
+    const methods = (configured.length ? configured : ['Cash', 'Cheque']).slice(0, 4);
     const tick = (label: string, checked: boolean, x: number) => {
         pdf.setDrawColor(120);
         pdf.setLineWidth(0.8);
@@ -276,15 +223,29 @@ export const buildReceiptPdf = (
         pdf.setTextColor(MUTED);
         pdf.text(label, x + 17, y);
     };
-    tick('Cash', method === 'cash', PDF_MARGIN);
-    tick('Cheque No.', method === 'cheque', PDF_MARGIN + 90);
-    if (method === 'cheque' && doc.paymentReference) {
+    // Spread the boxes evenly across the width the reference line doesn't need.
+    const tickSpan = Math.min(120, (right - PDF_MARGIN - 150) / Math.max(methods.length, 1));
+    methods.forEach((name, i) => {
+        const checked = name.toLowerCase() === method
+            // Legacy receipts stored the method as a lowercase id ('cash'/'cheque').
+            || name.toLowerCase().replace(/\s+/g, '_') === method;
+        tick(name, checked, PDF_MARGIN + i * tickSpan);
+    });
+
+    // Reference line — a cheque number, a mobile-money transaction id, whatever
+    // the method needs.
+    const refX = PDF_MARGIN + methods.length * tickSpan + 10;
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(9.5);
+    pdf.setTextColor(MUTED);
+    pdf.text('Ref. No.', refX, y);
+    dottedLine(pdf, refX + 45, right, y + 2);
+    if (doc.paymentReference) {
         pdf.setFont('helvetica', 'bold');
         pdf.setFontSize(10);
         pdf.setTextColor(INK[0], INK[1], INK[2]);
-        pdf.text(String(doc.paymentReference), PDF_MARGIN + 175, y);
+        pdf.text(String(doc.paymentReference), refX + 51, y);
     }
-    dottedLine(pdf, PDF_MARGIN + 170, PDF_MARGIN + 300, y + 2);
     y += 44;
 
     signatureRows(pdf, [{ label: 'Prepared by', value: doc.createdByName }], y);

@@ -677,6 +677,13 @@ const DocumentEditor: React.FC<{
     const [deliveredBy, setDeliveredBy] = useState(initial.deliveredBy || '');
     const [receivedBy, setReceivedBy] = useState(initial.receivedBy || '');
 
+    // How a receipt can be paid comes from Settings → POS & checkout, so the
+    // boxes ticked on the printed receipt are the store's own methods.
+    const paymentOptions = useMemo(() => {
+        const configured = (storeSettings?.paymentMethods || []).map(pm => pm.name).filter(Boolean);
+        return configured.length ? configured : ['Cash', 'Cheque'];
+    }, [storeSettings]);
+
     const isReceipt = docType === 'receipt';
     const isDeliveryNote = docType === 'delivery_note';
     const priced = isPriced(docType);
@@ -742,7 +749,7 @@ const DocumentEditor: React.FC<{
                 ...(isReceipt ? {
                     amount: Number(amount),
                     paymentMethod,
-                    paymentReference: paymentMethod === 'cheque' ? (paymentReference || undefined) : undefined,
+                    paymentReference: paymentMethod.toLowerCase() === 'cash' ? undefined : (paymentReference || undefined),
                 } : {}),
                 ...(isDeliveryNote ? {
                     deliveredBy: deliveredBy || undefined,
@@ -854,15 +861,24 @@ const DocumentEditor: React.FC<{
                                 <label className={LABEL} htmlFor="doc-method">Paid by</label>
                                 <select id="doc-method" className={FIELD} value={paymentMethod}
                                     onChange={e => setPaymentMethod(e.target.value)}>
-                                    <option value="cash">Cash</option>
-                                    <option value="cheque">Cheque</option>
+                                    {/* A saved receipt may name a method the store has since
+                                        removed — keep it listed so editing doesn't silently
+                                        change how it was paid. */}
+                                    {(paymentOptions.some(o => o.toLowerCase() === paymentMethod.toLowerCase())
+                                        ? paymentOptions
+                                        : [paymentMethod, ...paymentOptions]).map(name => (
+                                            <option key={name} value={name}>{name}</option>
+                                        ))}
                                 </select>
                             </div>
-                            {paymentMethod === 'cheque' && (
+                            {/* Cash needs no reference; everything else has one — a cheque
+                                number, a mobile-money transaction id. */}
+                            {paymentMethod.toLowerCase() !== 'cash' && (
                                 <div>
-                                    <label className={LABEL} htmlFor="doc-cheque">Cheque No.</label>
-                                    <input id="doc-cheque" className={FIELD} value={paymentReference}
-                                        onChange={e => setPaymentReference(e.target.value)} />
+                                    <label className={LABEL} htmlFor="doc-ref">Reference No.</label>
+                                    <input id="doc-ref" className={FIELD} value={paymentReference}
+                                        onChange={e => setPaymentReference(e.target.value)}
+                                        placeholder="Cheque no. / transaction id" />
                                 </div>
                             )}
                         </div>

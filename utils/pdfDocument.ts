@@ -22,6 +22,8 @@ export const PDF_NAVY: [number, number, number] = [0, 43, 107];
 export const PDF_ORANGE: [number, number, number] = [255, 127, 39];
 /** Row banding — white / faint navy tint. */
 export const PDF_ZEBRA: [number, number, number] = [240, 244, 250];
+/** Serial numbers, red like the pre-printed pads. */
+export const PDF_SERIAL_RED: [number, number, number] = [200, 30, 30];
 
 /**
  * What the shared helpers need in order to brand a document. A full
@@ -144,6 +146,88 @@ export const drawPdfLogo = (pdf: jsPDF, logo: PdfLogo | null, x = PDF_MARGIN, y 
         // A format jsPDF can't decode shouldn't cost the user their export.
         return { textX: x, bottom: y };
     }
+};
+
+export interface CompanyMastheadOptions {
+    settings: PdfSettings;
+    logo?: PdfLogo | null;
+    /** Document name, centred: QUOTATION, INVOICE, RECEIPT, DELIVERY NOTE. */
+    title: string;
+    /** Serial printed in red on the right, as on a pre-printed pad. */
+    serial?: string | null;
+}
+
+/**
+ * The company letterhead every customer-facing document carries.
+ *
+ * Modelled on the printed pads a shop already issues: logo and business name
+ * across the top, the trading line under it, the address block on the left and
+ * the contacts on the right, then the document title with the TPIN beneath it
+ * and the serial number in red. Customers compare these against the old book,
+ * so the familiar arrangement matters more than novelty.
+ *
+ * Returns the y coordinate the document body should start at.
+ */
+export const drawCompanyMasthead = (pdf: jsPDF, options: CompanyMastheadOptions): number => {
+    const { settings, logo = null, title, serial } = options;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const right = pageWidth - PDF_MARGIN;
+
+    const { textX } = drawPdfLogo(pdf, logo, PDF_MARGIN, 30, 58);
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(22);
+    pdf.setTextColor(PDF_NAVY[0], PDF_NAVY[1], PDF_NAVY[2]);
+    pdf.text((settings?.name || 'SalePilot').toUpperCase(), textX, 52);
+
+    const tagline = settings?.businessTagline;
+    if (tagline) {
+        pdf.setFont('helvetica', 'italic');
+        pdf.setFontSize(8.5);
+        pdf.setTextColor(110);
+        pdf.text(String(tagline), textX, 66);
+    }
+
+    // Address on the left, contacts on the right — as on the pads.
+    pdf.setFont('helvetica', 'normal');
+    pdf.setFontSize(8);
+    pdf.setTextColor(110);
+    const addressLines = String(settings?.address || '').split(/\s*,\s*|\n/).filter(Boolean);
+    addressLines.slice(0, 4).forEach((line, i) => pdf.text(line, PDF_MARGIN, 88 + i * 10));
+
+    const contacts = [settings?.phone, settings?.email, settings?.website].filter(Boolean) as string[];
+    contacts.slice(0, 4).forEach((line, i) => pdf.text(String(line), right, 88 + i * 10, { align: 'right' }));
+
+    // Title + TPIN, centred between the two blocks.
+    const titleY = 112 + Math.max(addressLines.length, contacts.length, 2) * 2;
+    pdf.setFont('helvetica', 'bold');
+    pdf.setFontSize(17);
+    pdf.setTextColor(PDF_NAVY[0], PDF_NAVY[1], PDF_NAVY[2]);
+    pdf.text(title, pageWidth / 2, titleY, { align: 'center' });
+
+    const tpin = settings?.tpin;
+    if (tpin) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(9);
+        pdf.setTextColor(30);
+        pdf.text(`TPIN No. ${tpin}`, pageWidth / 2, titleY + 13, { align: 'center' });
+    }
+
+    if (serial) {
+        pdf.setFont('helvetica', 'bold');
+        pdf.setFontSize(11);
+        pdf.setTextColor(110);
+        pdf.text('No.', right - 78, titleY);
+        pdf.setTextColor(PDF_SERIAL_RED[0], PDF_SERIAL_RED[1], PDF_SERIAL_RED[2]);
+        pdf.setFontSize(13);
+        pdf.text(serial, right - 56, titleY);
+    }
+
+    pdf.setDrawColor(PDF_NAVY[0], PDF_NAVY[1], PDF_NAVY[2]);
+    pdf.setLineWidth(1.2);
+    const ruleY = titleY + (tpin ? 22 : 12);
+    pdf.line(PDF_MARGIN, ruleY, right, ruleY);
+    return ruleY + 24;
 };
 
 export interface PdfHeaderOptions {

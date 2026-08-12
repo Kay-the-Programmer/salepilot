@@ -5,7 +5,7 @@ import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
 import type { StoreSettings, User } from '../../types';
 import type { SnackbarType } from '../../App';
-import { api } from '../../services/api';
+import { api, buildAssetUrl } from '../../services/api';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import '../assistant/assistant.css';
 
@@ -78,7 +78,32 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
   const [pmName, setPmName] = useState('');
   const [spmName, setSpmName] = useState('');
 
+  // The logo is stored by its own endpoint (multipart) and is deliberately kept
+  // out of `currentSettings`: it saves the moment it's picked, so folding it in
+  // would light up the "unsaved changes" bar for a change already persisted.
+  const [logoUrl, setLogoUrl] = useState<string>(settings.logoUrl || '');
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
   useEffect(() => { setCurrentSettings(settings); }, [settings]);
+  useEffect(() => { setLogoUrl(settings.logoUrl || ''); }, [settings]);
+
+  const uploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setUploadingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append('logo', file);
+      const r = await api.postFormData<{ logoUrl: string }>('/settings/logo', fd);
+      setLogoUrl(r?.logoUrl || '');
+      showSnackbar('Logo updated. It now heads your documents.', 'success');
+    } catch (err: any) {
+      showSnackbar(err?.message || 'Could not upload the logo.', 'error');
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const fetchVerificationStatus = async () => {
     try { setVerificationStatus(await api.get<any>('/verification/status')); }
@@ -195,6 +220,28 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
 
             {active === 'store' && (
               <Card>
+                {/* Heads every quotation, invoice, receipt and delivery note. */}
+                <Field label="Company logo">
+                  <div className="flex items-center gap-3">
+                    <span className="w-16 h-16 rounded-xl m3-bg-surface-high border m3-border-outline-variant flex items-center justify-center overflow-hidden shrink-0">
+                      {logoUrl ? (
+                        <img src={buildAssetUrl(logoUrl)} alt="Company logo" className="w-full h-full object-contain" />
+                      ) : (
+                        <span className="material-symbols-outlined m3-text-on-surface-variant" style={{ fontSize: 26 }}>add_photo_alternate</span>
+                      )}
+                    </span>
+                    <div className="min-w-0">
+                      <label className={`inline-flex items-center gap-1.5 h-10 px-4 rounded-xl font-semibold text-sm cursor-pointer active:scale-95 transition ${uploadingLogo ? 'm3-bg-surface-high m3-text-on-surface-variant' : 'm3-bg-primary m3-text-on-primary'}`}>
+                        <span className="material-symbols-outlined" style={{ fontSize: 18 }}>upload</span>
+                        {uploadingLogo ? 'Uploading…' : logoUrl ? 'Replace logo' : 'Upload logo'}
+                        <input type="file" accept="image/*" className="sr-only" disabled={uploadingLogo} onChange={uploadLogo} />
+                      </label>
+                      <p className="text-[12px] m3-text-on-surface-variant mt-1.5">
+                        Prints at the top of quotations, invoices, receipts and delivery notes.
+                      </p>
+                    </div>
+                  </div>
+                </Field>
                 <Field label="Store name"><input className={inputCls} name="name" value={currentSettings.name || ''} onChange={handleChange} placeholder="My Store" /></Field>
                 <Field label="Contact email"><input className={inputCls} type="email" name="email" value={currentSettings.email || ''} onChange={handleChange} placeholder="store@email.com" /></Field>
                 <Field label="Phone number"><input className={inputCls} type="tel" name="phone" value={currentSettings.phone || ''} onChange={handleChange} placeholder="+260…" /></Field>
