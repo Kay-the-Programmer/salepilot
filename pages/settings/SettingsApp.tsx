@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme, THEME_PREFERENCE_ICON, THEME_PREFERENCE_LABEL } from '../../contexts/ThemeContext';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import StandaloneTopBar from '../../components/standalone/StandaloneTopBar';
-import type { StoreSettings, User } from '../../types';
+import type { BankAccount, StoreSettings, User } from '../../types';
+import { BANK_ACCOUNT_FIELDS } from '../../types';
 import type { SnackbarType } from '../../App';
 import { api, buildAssetUrl } from '../../services/api';
 import { hasModule, MODULES } from '../../utils/entitlements';
@@ -37,6 +38,16 @@ const CATEGORIES: { id: Category; label: string; icon: string; group: 'Store' | 
   { id: 'referrals', label: 'Referrals', icon: 'redeem', group: 'System' },
   { id: 'scanner', label: 'Barcode scanner', icon: 'barcode_scanner', group: 'System' },
 ];
+
+const BANK_FIELD_PLACEHOLDER: Partial<Record<keyof BankAccount, string>> = {
+  bankName: 'e.g. Zanaco',
+  swiftCode: 'e.g. ZNCOZMLU',
+  bankAddress: 'e.g. Cairo Road, Lusaka',
+  accountName: 'Account holder',
+  accountNumber: '0123456789',
+  branchName: 'e.g. Manda Hill',
+  branchSortCode: 'e.g. 010056',
+};
 
 const inputCls = 'w-full h-11 px-3.5 rounded-xl m3-bg-surface-lowest border m3-border-outline-variant outline-none focus:m3-border-primary text-sm m3-text-on-surface m3-placeholder transition';
 
@@ -137,6 +148,27 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
   };
   const removePM = (key: 'paymentMethods' | 'supplierPaymentMethods', id: string) =>
     setCurrentSettings((prev) => ({ ...prev, [key]: (prev[key] || []).filter((pm) => pm.id !== id) }));
+
+  /* Bank accounts — saved with the rest of the settings, then reused on every invoice. */
+  const setBank = (idx: number, patch: Partial<BankAccount>) =>
+    setCurrentSettings((prev) => ({
+      ...prev,
+      bankAccounts: (prev.bankAccounts || []).map((b, i) => (i === idx ? { ...b, ...patch } : b)),
+    }));
+  const addBank = () =>
+    setCurrentSettings((prev) => ({
+      ...prev,
+      bankAccounts: [
+        ...(prev.bankAccounts || []),
+        {
+          id: `bank_${Date.now()}`, bankName: '', swiftCode: '', bankAddress: '',
+          accountName: prev.name || '', accountNumber: '', branchName: '', branchSortCode: '',
+          showOnInvoices: true,
+        },
+      ],
+    }));
+  const removeBank = (id: string) =>
+    setCurrentSettings((prev) => ({ ...prev, bankAccounts: (prev.bankAccounts || []).filter((b) => b.id !== id) }));
 
   const handleSave = () => { onSave(currentSettings); showSnackbar('Settings saved.', 'success'); };
   const handleReset = () => setCurrentSettings(settings);
@@ -275,7 +307,51 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                     </Field>
                   </div>
                 </Card>
-                <p className="text-xs font-bold uppercase tracking-wide m3-text-on-surface-variant mt-2 mb-2 px-1">Accept mobile money (Lenco)</p>
+                <p className="text-xs font-bold uppercase tracking-wide m3-text-on-surface-variant mt-4 mb-2 px-1">Bank accounts on invoices</p>
+                <Card>
+                  <p className="text-[13px] m3-text-on-surface-variant -mt-1">
+                    Saved once and printed on every invoice under “Payment details”, so customers know where to pay.
+                  </p>
+                  {(currentSettings.bankAccounts || []).length === 0 && (
+                    <p className="text-[13px] m3-text-on-surface-variant">No bank accounts yet.</p>
+                  )}
+                  {(currentSettings.bankAccounts || []).map((bank, i) => (
+                    <div key={bank.id} className="rounded-xl border m3-border-outline-variant p-3 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-bold m3-text-on-surface flex-1 truncate">
+                          {bank.bankName || `Account ${i + 1}`}
+                        </span>
+                        <label className="flex items-center gap-1.5 text-[12px] font-semibold m3-text-on-surface-variant cursor-pointer">
+                          <input type="checkbox" checked={bank.showOnInvoices !== false}
+                            onChange={(e) => setBank(i, { showOnInvoices: e.target.checked })} />
+                          Show on invoices
+                        </label>
+                        <button onClick={() => removeBank(bank.id)} aria-label={`Remove ${bank.bankName || `account ${i + 1}`}`}
+                          className="w-9 h-9 flex items-center justify-center rounded-xl m3-text-on-surface-variant hover:m3-text-error hover:m3-bg-error-container transition shrink-0">
+                          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>delete</span>
+                        </button>
+                      </div>
+                      {/* Same seven rows, in the same order, as the invoice prints. */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {BANK_ACCOUNT_FIELDS.map(({ key, label }) => (
+                          <Field key={key} label={label}>
+                            <input
+                              className={inputCls}
+                              value={(bank[key] as string) || ''}
+                              onChange={(e) => setBank(i, { [key]: e.target.value } as Partial<BankAccount>)}
+                              placeholder={BANK_FIELD_PLACEHOLDER[key] || ''}
+                            />
+                          </Field>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                  <button onClick={addBank} className="h-11 px-4 rounded-xl m3-bg-primary m3-text-on-primary font-semibold active:scale-95 transition inline-flex items-center gap-1.5">
+                    <span className="material-symbols-outlined" style={{ fontSize: 18 }}>add</span>Add bank account
+                  </button>
+                </Card>
+
+                <p className="text-xs font-bold uppercase tracking-wide m3-text-on-surface-variant mt-4 mb-2 px-1">Accept mobile money (Lenco)</p>
                 {hasGateway ? (
                   <Card>
                     <p className="text-[13px] m3-text-on-surface-variant mb-3 px-1">
@@ -380,7 +456,7 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
 
 const descriptions: Record<Category, string> = {
   store: 'Your business name and contact information.',
-  financial: 'Tax rate, currency and mobile-money keys.',
+  financial: 'Tax rate, currency, bank accounts and mobile-money keys.',
   pos: 'Receipt message, store credit and payment methods.',
   inventory: 'Stock alerts and SKU formatting.',
   notifications: 'Choose what alerts you receive.',

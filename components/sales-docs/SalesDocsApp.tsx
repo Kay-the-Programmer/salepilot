@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { User, StoreSettings, Customer, Product, Sale } from '../../types';
+import { User, StoreSettings, Customer, Product, Sale, BANK_ACCOUNT_FIELDS } from '../../types';
 import { api, buildAssetUrl } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
 import { Icon, Avatar } from '../crm/CrmBits';
@@ -497,6 +497,8 @@ const DocumentDetail: React.FC<{
     onDelete: () => void;
 }> = ({ doc, storeSettings, busy, canDelete, onClose, onEdit, onStatus, onConvertToInvoice, onConvertToSale, onDelete }) => {
     const isQuote = doc.docType === 'quotation';
+    // Bank accounts the store offers on invoices; the same filter the PDF applies.
+    const invoiceBanks = (storeSettings?.bankAccounts || []).filter(b => b.showOnInvoices !== false);
     const next = NEXT_STATUSES[doc.status] || [];
 
     return (
@@ -571,6 +573,30 @@ const DocumentDetail: React.FC<{
                             <dt>Total</dt><dd>{formatCurrency(doc.total, storeSettings!)}</dd>
                         </div>
                     </dl>
+
+                    {/* Bank details, exactly as the invoice prints them. */}
+                    {doc.docType === 'invoice' && invoiceBanks.length > 0 && (
+                        <div className="mb-5">
+                            <p className="text-xs font-bold uppercase tracking-wide m3-text-on-surface-variant mb-2">Payment details</p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {invoiceBanks.map(bank => (
+                                    <div key={bank.id} className="rounded-lg border m3-border-outline-variant px-3 py-2">
+                                        <dl className="text-xs space-y-0.5">
+                                            {BANK_ACCOUNT_FIELDS
+                                                .map(f => ({ label: f.label, value: String(bank[f.key] ?? '').trim() }))
+                                                .filter(r => r.value)
+                                                .map(r => (
+                                                    <div key={r.label} className="flex gap-2">
+                                                        <dt className="m3-text-on-surface-variant w-28 shrink-0">{r.label}:</dt>
+                                                        <dd className="font-semibold m3-text-on-surface break-all">{r.value}</dd>
+                                                    </div>
+                                                ))}
+                                        </dl>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
 
                     {/* Preview of the stamp that is drawn on the PDF. */}
                     <div className="flex justify-end mb-5">

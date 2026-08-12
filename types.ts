@@ -252,6 +252,35 @@ export interface PurchaseOrder {
     marketplaceOrderId?: string; // ID of the Sale in the supplier's store
 }
 
+/**
+ * A bank account a customer can pay into. Saved once on the store and reused on
+ * every invoice, so the details are never retyped.
+ */
+export interface BankAccount {
+    id: string;
+    // Printed on invoices in exactly this order.
+    bankName: string;
+    swiftCode?: string;
+    bankAddress?: string;
+    accountName: string;
+    accountNumber: string;
+    branchName?: string;
+    branchSortCode?: string;
+    /** Off for an account kept on file but not offered to customers. */
+    showOnInvoices?: boolean;
+}
+
+/** Invoice bank-detail rows, in the order they print. */
+export const BANK_ACCOUNT_FIELDS: { key: keyof BankAccount; label: string }[] = [
+    { key: 'bankName', label: 'Bank Name' },
+    { key: 'swiftCode', label: 'Swift Code' },
+    { key: 'bankAddress', label: 'Bank Address' },
+    { key: 'accountName', label: 'Account Name' },
+    { key: 'accountNumber', label: 'Account Number' },
+    { key: 'branchName', label: 'Branch Name' },
+    { key: 'branchSortCode', label: 'Branch Sort Code' },
+];
+
 export interface StoreSettings {
     storeId: string;
     // Store Information
@@ -287,6 +316,8 @@ export interface StoreSettings {
     enableStoreCredit: boolean;
     paymentMethods: { id: string; name: string; }[];
     supplierPaymentMethods: { id: string; name: string; }[];
+    /** Printed on invoices under "Payment details". */
+    bankAccounts?: BankAccount[];
 
     // Accounting Mappings
     taxAccountId?: string;

@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf';
-import { StoreSettings } from '../../types';
+import { BANK_ACCOUNT_FIELDS, StoreSettings } from '../../types';
 import { SalesDocument } from './types';
 import {
     PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawCompanyMasthead, drawPdfFooter, drawPdfTable,
@@ -178,6 +178,60 @@ export const buildDocumentPdf = (
             const lines = pdf.splitTextToSize(doc.terms, pageWidth - marginX * 2);
             pdf.text(lines, marginX, cursor + 14);
             cursor += 14 + lines.length * 12;
+        }
+    }
+
+    // ── Payment details ──
+    // Invoices only: a quotation isn't a request for money, so printing bank
+    // details on one invites a customer to pay for something not yet agreed.
+    if (!isQuote) {
+        const banks = (settings?.bankAccounts || []).filter(b => b.showOnInvoices !== false);
+        if (banks.length) {
+            // Each account prints as labelled rows — Bank Name, Swift Code,
+            // Bank Address, Account Name, Account Number, Branch Name, Branch
+            // Sort Code — in that order. Rows the store left blank are skipped
+            // rather than printed as an empty label, which would read as an
+            // unfinished form to the customer.
+            const rowsFor = (bank: typeof banks[number]) =>
+                BANK_ACCOUNT_FIELDS
+                    .map(f => ({ label: f.label, value: String(bank[f.key] ?? '').trim() }))
+                    .filter(r => r.value);
+
+            cursor += 16;
+            const tallest = Math.max(...banks.map(b => rowsFor(b).length));
+            const blockHeight = 18 + Math.ceil(banks.length / 2) * (tallest * 12 + 16);
+            // Keep an account's rows together rather than splitting them.
+            if (cursor + blockHeight > pdf.internal.pageSize.getHeight() - 70) {
+                pdf.addPage();
+                cursor = 60;
+            }
+            pdf.setFont('helvetica', 'bold');
+            pdf.setFontSize(9);
+            pdf.setTextColor(120);
+            pdf.text('PAYMENT DETAILS', marginX, cursor);
+            cursor += 16;
+
+            // Two accounts sit side by side; a third wraps to the next line.
+            const colWidth = (pageWidth - marginX * 2) / Math.min(banks.length, 2);
+            const labelWidth = 88;
+            banks.forEach((bank, i) => {
+                const col = i % 2;
+                const x = marginX + col * colWidth;
+                if (col === 0 && i > 0) cursor += tallest * 12 + 16;
+                rowsFor(bank).forEach((row, r) => {
+                    const y = cursor + r * 12;
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setFontSize(8.5);
+                    pdf.setTextColor(120);
+                    pdf.text(`${row.label}:`, x, y);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(40);
+                    // One line per row: a long bank address is truncated rather
+                    // than pushing the rows below it out of alignment.
+                    pdf.text(pdf.splitTextToSize(row.value, colWidth - labelWidth - 12)[0], x + labelWidth, y);
+                });
+            });
+            cursor += tallest * 12 + 6;
         }
     }
 
