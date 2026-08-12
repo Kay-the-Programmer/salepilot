@@ -9,7 +9,10 @@ import Logo from '../../assets/logo.png';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
 
-export type PosSection = 'pos' | 'inventory' | 'dashboard';
+// The POS terminal is for selling and stock. The dashboard lives in the
+// Reports/Dashboard apps, reachable from the app switcher, and is no longer
+// offered here.
+export type PosSection = 'pos' | 'inventory';
 
 interface PosShellProps {
     active: PosSection;
@@ -25,7 +28,6 @@ interface PosShellProps {
 const NAV: { id: PosSection; icon: string; label: string }[] = [
     { id: 'pos', icon: 'point_of_sale', label: 'Point of Sale' },
     { id: 'inventory', icon: 'inventory_2', label: 'Inventory Manager' },
-    { id: 'dashboard', icon: 'monitoring', label: 'Dashboard' },
 ];
 
 /**

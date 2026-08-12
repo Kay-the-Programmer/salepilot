@@ -646,15 +646,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         <PosIcon name="inventory_2" size={20} />
                                         Inventory
                                     </button>
-                                    <button
-                                        type="button"
-                                        role="menuitem"
-                                        className="sale__menu-item"
-                                        onClick={() => { navigate('/pos/dashboard'); setPosMenuOpen(false); }}
-                                    >
-                                        <PosIcon name="monitoring" size={20} />
-                                        Dashboard
-                                    </button>
                                     <div className="sale__menu-sep" />
                                     <button
                                         type="button"

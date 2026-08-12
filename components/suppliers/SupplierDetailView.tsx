@@ -149,9 +149,12 @@ const ProductItem: React.FC<{ product: Product; storeSettings: StoreSettings }> 
 };
 
 const SupplierDetailView: React.FC<SupplierDetailViewProps> = ({ supplier, products, onEdit, storeSettings }) => {
+    // At cost, like every other inventory valuation in the app (the books value
+    // stock at what it cost, not at what it might sell for).
     const totalProductValue = products.reduce((sum, product) => {
         const stock = typeof product.stock === 'number' ? product.stock : (parseFloat(String(product.stock)) || 0);
-        return sum + (stock * product.price);
+        const cost = typeof product.costPrice === 'number' ? product.costPrice : (parseFloat(String(product.costPrice)) || 0);
+        return sum + (stock * cost);
     }, 0);
 
     const activeProducts = products.filter(p => p.status === 'active').length;

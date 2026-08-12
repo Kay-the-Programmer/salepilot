@@ -61,7 +61,10 @@ const ProductDetailView: React.FC<{
   const isActive = product.status === 'active';
 
   const margin = cost > 0 && price > 0 ? Math.round(((price - cost) / price) * 100) : null;
-  const inventoryValue = price * stock;
+  // Stock on hand valued at cost, the same rule the books and every other
+  // inventory total use. Valuing it at the retail price counted profit that
+  // hasn't been earned yet, and didn't add up to the store's total.
+  const inventoryValue = cost * stock;
 
   // Heuristic capacity bar: stock relative to a sensible target above the reorder point.
   const target = Math.max(reorder * 4, stock, 1);

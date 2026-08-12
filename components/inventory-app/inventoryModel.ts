@@ -52,11 +52,18 @@ export const thresholdFor = (p: Product, settings?: StoreSettings | null): numbe
     return ss > 0 ? ss : 5;
 };
 
-/** Unit value: prefer cost price, fall back to retail price. */
-const unitValue = (p: Product): number => {
-    const cost = num(p.costPrice);
-    return cost > 0 ? cost : num(p.price);
-};
+/**
+ * Unit value for stock on hand: cost price, and nothing else.
+ *
+ * This used to fall back to the retail price when a product had no cost, which
+ * valued that stock at what it might sell for. Inventory is an asset carried at
+ * cost, so that overstated the figure and — because the server values inventory
+ * as `SUM(stock * cost_price)` for the balance sheet, the accounting summary and
+ * the multi-store dashboard — it disagreed with every other total in the app.
+ * A product with no cost now contributes 0, which is what the books say; the
+ * accounting hub already reports how many products are missing a cost.
+ */
+const unitValue = (p: Product): number => num(p.costPrice);
 
 export const buildInventoryOverview = (
     products: Product[],

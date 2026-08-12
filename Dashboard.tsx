@@ -16,7 +16,6 @@ import { ROLE_PAGES } from './utils/rbac';
 const InventoryPage = lazy(() => import('@/pages/InventoryPage'));
 const StandaloneShell = lazy(() => import('@/components/standalone/StandaloneShell'));
 const PosShell = lazy(() => import('@/components/pos/PosShell'));
-const PosDashboard = lazy(() => import('@/components/pos/PosDashboard'));
 const CrmApp = lazy(() => import('@/components/crm/CrmApp'));
 const MarketingApp = lazy(() => import('@/components/marketing/MarketingApp'));
 const OnlineStoreApp = lazy(() => import('@/components/shop/OnlineStoreApp'));
@@ -1863,14 +1862,17 @@ export default function Dashboard() {
         );
     }
 
-    // ── Standalone POS app (/pos, /pos/history, /pos/inventory, /pos/dashboard) ──
+    // ── Standalone POS app (/pos, /pos/history, /pos/inventory) ──
     // Focused frame with its own menu; reuses the existing page logic/props.
     // /pos/history deep-links the built-in "Sales History & Refunds" view.
     const posParts = location.pathname.split('/');
     if (posParts[1] === 'pos' && currentUser) {
-        const posSection = posParts[2] === 'inventory' ? 'inventory'
-            : posParts[2] === 'dashboard' ? 'dashboard'
-                : 'pos';
+        // The POS no longer carries a dashboard; an old bookmark lands on the
+        // till rather than a dead route.
+        if (posParts[2] === 'dashboard') {
+            return <Navigate to="/pos" replace />;
+        }
+        const posSection = posParts[2] === 'inventory' ? 'inventory' : 'pos';
 
         // Inventory is the standalone Inventory app — render it at /inv/items so it
         // has the same chrome/header everywhere (the embedded InventoryShell header,
@@ -1885,9 +1887,7 @@ export default function Dashboard() {
         // Sales History and the POS Dashboard always use the standard view.
         const posSelling = posSection === 'pos' && posParts[2] !== 'history';
         let posContent: ReactNode;
-        if (posSection === 'dashboard') {
-            posContent = <PosDashboard storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} />;
-        } else if (posSelling && posMode === 'quick') {
+        if (posSelling && posMode === 'quick') {
             posContent = (
                 <HustleApp
                     embedded
@@ -1910,7 +1910,7 @@ export default function Dashboard() {
                             user={currentUser}
                             drawerOpen={posDrawerOpen}
                             onCloseDrawer={() => setPosDrawerOpen(false)}
-                            onNavigate={(s) => navigate(s === 'pos' ? '/pos' : s === 'inventory' ? '/inv/items' : `/pos/${s}`)}
+                            onNavigate={(s) => navigate(s === 'inventory' ? '/inv/items' : '/pos')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         >
