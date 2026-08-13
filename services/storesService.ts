@@ -62,7 +62,10 @@ export interface MyStoreSummary extends MyStore {
   transactions: number;
   productsCount: number;
   lowStockCount: number;
+  /** Stock at cost. */
   inventoryValue: number;
+  /** Stock at selling price — expected takings if it all sells. */
+  inventoryRetailValue: number;
   customersCount: number;
   usersCount: number;
   trend: { date: string; revenue: number }[];
@@ -78,6 +81,7 @@ export interface MyStoresSummary {
     productsCount: number;
     lowStockCount: number;
     inventoryValue: number;
+    inventoryRetailValue: number;
     customersCount: number;
     usersCount: number;
   } | null;

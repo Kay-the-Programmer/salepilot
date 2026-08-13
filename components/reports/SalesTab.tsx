@@ -11,10 +11,13 @@ import ChevronRightIcon from '../icons/ChevronRightIcon';
 import { FilterableStatCard } from './FilterableStatCard';
 import { FilterableSalesTrend } from './sales/FilterableSalesTrend';
 import { FilterableTopProducts } from './sales/FilterableTopProducts';
+import { ProductSalesReport } from './sales/ProductSalesReport';
 
 interface SalesTabProps {
     reportData: any;
     storeSettings: StoreSettings;
+    startDate: string;
+    endDate: string;
     dailySales: any[] | null;
     dailyPage: number;
     setDailyPage: React.Dispatch<React.SetStateAction<number>>;
@@ -24,6 +27,8 @@ interface SalesTabProps {
 
 export const SalesTab: React.FC<SalesTabProps> = ({
     storeSettings,
+    startDate,
+    endDate,
     dailySales,
     dailyPage,
     setDailyPage,
@@ -78,7 +83,10 @@ export const SalesTab: React.FC<SalesTabProps> = ({
                 </div>
             </div>
 
-            {/* Row 3: Daily Sales Table */}
+            {/* Row 3: Per-product units sold for the selected period */}
+            <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} />
+
+            {/* Row 4: Daily Sales Table */}
             {dailySales && dailySales.length > 0 && (
                 <div className="bg-surface rounded-2xl p-6 border border-brand-border">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">

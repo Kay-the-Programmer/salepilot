@@ -31,7 +31,14 @@ export interface InvCategoryStat {
 }
 
 export interface InventoryOverview {
+    /** Stock at cost — what the books carry the inventory at. */
     totalValue: number;
+    /** Stock at selling price — what the shelf is expected to bring in if it all sells. */
+    retailValue: number;
+    /** retailValue - totalValue: the margin still sitting on the shelf. */
+    potentialProfit: number;
+    /** Products with no cost price: they contribute 0 to totalValue. */
+    missingCostCount: number;
     totalSkus: number;
     totalUnits: number;
     lowStockCount: number;
@@ -75,6 +82,8 @@ export const buildInventoryOverview = (
     const active = products.filter(p => p.status !== 'archived');
 
     let totalValue = 0;
+    let retailValue = 0;
+    let missingCostCount = 0;
     let totalUnits = 0;
     const lowStockItems: Product[] = [];
     const criticalItems: Product[] = [];
@@ -83,6 +92,8 @@ export const buildInventoryOverview = (
     for (const p of active) {
         const stock = num(p.stock);
         totalValue += stock * unitValue(p);
+        retailValue += stock * num(p.price);
+        if (unitValue(p) <= 0) missingCostCount++;
         totalUnits += stock;
         const thr = thresholdFor(p, settings);
         if (stock <= 0) outOfStockCount++;
@@ -174,6 +185,9 @@ export const buildInventoryOverview = (
 
     return {
         totalValue,
+        retailValue,
+        potentialProfit: retailValue - totalValue,
+        missingCostCount,
         totalSkus: active.length,
         totalUnits,
         lowStockCount: lowStockItems.length,

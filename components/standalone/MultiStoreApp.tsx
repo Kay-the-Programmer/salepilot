@@ -293,7 +293,8 @@ export const MultiStoreApp: React.FC<MultiStoreAppProps> = ({ user, onLogout, sh
                                 </div>
                                 <div>
                                     <div className="text-sm font-extrabold text-brand-text tnum">{money(s.inventoryValue)}</div>
-                                    <div className="text-[11px] text-brand-text-muted">Inventory</div>
+                                    <div className="text-[11px] text-brand-text-muted">Stock at cost</div>
+                                    <div className="text-[11px] text-brand-text-muted tnum">{money(s.inventoryRetailValue)} expected</div>
                                 </div>
                                 <div>
                                     <div className="text-sm font-extrabold text-brand-text tnum">{s.customersCount}</div>

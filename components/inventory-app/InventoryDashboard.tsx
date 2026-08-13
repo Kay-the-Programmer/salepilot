@@ -15,7 +15,7 @@ interface InventoryDashboardProps {
 }
 
 export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview, storeSettings, onAddItem, onViewItems, onViewAlerts }) => {
-    const { totalValue, totalSkus, totalUnits, lowStockCount, criticalCount, activity, categories, topMover } = overview;
+    const { totalValue, retailValue, potentialProfit, missingCostCount, totalSkus, totalUnits, lowStockCount, criticalCount, activity, categories, topMover } = overview;
 
     return (
         <main className="crm-main crm-section-fade">
@@ -37,18 +37,29 @@ export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview
                         <span className="inv-metric__chip inv-metric__chip--p">{totalUnits.toLocaleString()} units</span>
                     </div>
                     <div>
-                        <p className="inv-metric__label">Total Value</p>
-                        <p className="inv-metric__value">{formatMoney(totalValue, storeSettings)}</p>
+                        <p className="inv-metric__label">Expected Sales Value</p>
+                        <p className="inv-metric__value">{formatMoney(retailValue, storeSettings)}</p>
+                        <p className="inv-metric__sub">If all stock sells at current prices</p>
                     </div>
                 </div>
 
                 <div className="inv-metric">
                     <div className="inv-metric__top">
-                        <span className="inv-metric__icon inv-metric__icon--s"><Icon name="inventory" size={24} /></span>
+                        <span className="inv-metric__icon inv-metric__icon--s"><Icon name="savings" size={24} /></span>
+                        {totalValue > 0 && (
+                            <span className="inv-metric__chip inv-metric__chip--s">
+                                {formatMoney(potentialProfit, storeSettings)} profit
+                            </span>
+                        )}
                     </div>
                     <div>
-                        <p className="inv-metric__label">Total Items</p>
-                        <p className="inv-metric__value">{totalSkus.toLocaleString()} <small>SKUs</small></p>
+                        <p className="inv-metric__label">Stock Value (at cost)</p>
+                        <p className="inv-metric__value">{formatMoney(totalValue, storeSettings)}</p>
+                        <p className="inv-metric__sub">
+                            {missingCostCount > 0
+                                ? `${missingCostCount} product${missingCostCount === 1 ? '' : 's'} missing a cost price`
+                                : `${totalSkus.toLocaleString()} SKUs on the books`}
+                        </p>
                     </div>
                 </div>
 

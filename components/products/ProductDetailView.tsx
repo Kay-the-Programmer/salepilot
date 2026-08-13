@@ -65,6 +65,8 @@ const ProductDetailView: React.FC<{
   // inventory total use. Valuing it at the retail price counted profit that
   // hasn't been earned yet, and didn't add up to the store's total.
   const inventoryValue = cost * stock;
+  // What this shelf is expected to bring in if it all sells at the current price.
+  const expectedSalesValue = price * stock;
 
   // Heuristic capacity bar: stock relative to a sensible target above the reorder point.
   const target = Math.max(reorder * 4, stock, 1);
@@ -292,7 +294,8 @@ const ProductDetailView: React.FC<{
             <div className={`${card} p-5`}>
               <h4 className="text-[11px] font-bold text-brand-text-muted uppercase tracking-wide mb-4">Quick Stats</h4>
               <div className="space-y-2.5">
-                <div className="flex justify-between"><span className="text-[13px] text-brand-text-muted">Inventory value</span><span className="text-sm font-bold text-brand-text tabular-nums">{formatCurrency(inventoryValue, storeSettings)}</span></div>
+                <div className="flex justify-between"><span className="text-[13px] text-brand-text-muted">Stock value (cost)</span><span className="text-sm font-bold text-brand-text tabular-nums">{formatCurrency(inventoryValue, storeSettings)}</span></div>
+                <div className="flex justify-between"><span className="text-[13px] text-brand-text-muted">Expected sales value</span><span className="text-sm font-bold text-brand-text tabular-nums">{formatCurrency(expectedSalesValue, storeSettings)}</span></div>
                 <div className="flex justify-between"><span className="text-[13px] text-brand-text-muted">On hand</span><span className="text-sm font-bold text-brand-text tabular-nums">{stock} {unit}</span></div>
                 <div className="flex justify-between"><span className="text-[13px] text-brand-text-muted">Reorder point</span><span className="text-sm font-bold text-brand-text tabular-nums">{reorder} {unit}</span></div>
               </div>

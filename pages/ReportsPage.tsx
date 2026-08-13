@@ -253,6 +253,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                     <SalesTab
                         reportData={reportData}
                         storeSettings={storeSettings}
+                        startDate={startDate}
+                        endDate={endDate}
                         dailySales={dailySales}
                         dailyPage={dailyPage}
                         setDailyPage={setDailyPage}
