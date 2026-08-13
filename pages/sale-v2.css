@@ -1628,6 +1628,9 @@
 .histcard__meta {
   font-size: var(--v2-text-xs);
   color: var(--v2-color-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .histcard__right {

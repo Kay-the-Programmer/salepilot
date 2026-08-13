@@ -35,6 +35,21 @@ const statusBadge = (sale: Sale): { cls: string; label: string } => {
 
 type ReturnLine = { quantity: number; reason: string; addToStock: boolean; name: string; price: number };
 
+/**
+ * Card title: what was sold, so the list is scannable at a glance. When a search
+ * is active the matching line leads, otherwise the first line does; the rest
+ * collapse into "+N more". Falls back to the transaction id for an empty cart.
+ */
+const cartTitle = (sale: Sale, term: string): string => {
+    const cart = sale.cart || [];
+    if (cart.length === 0) return sale.transactionId;
+    const t = term.toLowerCase().trim();
+    const idx = t ? cart.findIndex(i => (i.name || '').toLowerCase().includes(t)) : -1;
+    const lead = cart[idx >= 0 ? idx : 0];
+    const label = `${lead.quantity > 1 ? `${lead.quantity}× ` : ''}${lead.name || 'Item'}`;
+    return cart.length > 1 ? `${label} +${cart.length - 1} more` : label;
+};
+
 export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSettings, customers, onProcessReturn, showSnackbar, onStartSelling }) => {
     const [sales, setSales] = useState<Sale[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -239,11 +254,12 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                                     onClick={() => openSale(sale)}
                                 >
                                     <div className="histcard__main">
-                                        <span className="histcard__id">{sale.transactionId}</span>
+                                        <span className="histcard__id">{cartTitle(sale, search)}</span>
                                         <span className="histcard__meta">
                                             {new Date(sale.timestamp).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}
                                             {' · '}{new Date(sale.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                             {' · '}{sale.customerName || 'Walk-in'}
+                                            {' · '}{sale.transactionId}
                                         </span>
                                     </div>
                                     <div className="histcard__right">
