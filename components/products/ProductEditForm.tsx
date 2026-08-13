@@ -262,11 +262,11 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label htmlFor="categoryId" className={labelCls}>Category *</label>
+                                        <label htmlFor="categoryId" className={labelCls}>Category</label>
                                         <div className="flex gap-2">
                                             <div className="relative flex-1">
-                                                <select name="categoryId" id="categoryId" value={product.categoryId || ''} onChange={handleChange} required className={`${fieldCls} appearance-none pr-10`}>
-                                                    <option value="" disabled>Select a category</option>
+                                                <select name="categoryId" id="categoryId" value={product.categoryId || ''} onChange={handleChange} className={`${fieldCls} appearance-none pr-10`}>
+                                                    <option value="">Uncategorized</option>
                                                     {categories.filter(c => c.parentId === null).map(c => (
                                                         <React.Fragment key={c.id}>
                                                             <option value={c.id} className="font-bold">{c.name}</option>
@@ -325,7 +325,7 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                         <button
                                             type="button"
                                             onClick={handleGenerateDescription}
-                                            disabled={isGenerating || !product.name || !product.categoryId}
+                                            disabled={isGenerating || !product.name}
                                             className="absolute bottom-2.5 right-2.5 inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-success-muted dark:bg-primary/15 text-primary hover:bg-primary/15 disabled:opacity-50 text-xs font-bold active:scale-95 transition-all"
                                         >
                                             <SparklesIcon className="w-3.5 h-3.5" />
@@ -487,12 +487,17 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                         <p className="text-[11px] text-brand-text-muted mt-1.5">What you paid for this item.</p>
                                     </div>
                                     <div>
-                                        <label htmlFor="price" className={labelCls}>Selling Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''} *</label>
+                                        <label htmlFor="price" className={labelCls}>Selling Price {product.unitOfMeasure === 'kg' ? '(per kg)' : ''}</label>
                                         <div className="relative">
                                             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary font-medium">{sym}</span>
-                                            <input type="number" name="price" id="price" value={product.price} onChange={handleChange} required min="0.01" step="0.01" placeholder="0.00"
+                                            <input type="number" name="price" id="price" value={product.price} onChange={handleChange} min="0" step="0.01" placeholder="0.00"
                                                 className="w-full pl-9 pr-4 py-3.5 text-xl font-bold tabular-nums rounded-lg border border-brand-border bg-surface text-primary focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors" />
                                         </div>
+                                        {!(product.price > 0) && (
+                                            <p className="text-[11px] text-brand-text-muted mt-1.5">
+                                                Leave blank to record the product now and price it later — it stays off the register until it has a price.
+                                            </p>
+                                        )}
                                         {(product.price > 0 && product.costPrice !== undefined) && (
                                             <div className="flex justify-between items-center bg-success-muted mt-2 p-3 rounded-lg">
                                                 <span className="text-[12px] font-semibold text-brand-text-muted">Est. Profit Margin</span>

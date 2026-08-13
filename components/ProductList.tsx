@@ -46,11 +46,13 @@ const ProductCard: React.FC<{
   const tone = stockStatus(product, storeSettings);
 
   // Minimal status chip — semantic tint, no shadow/blur (DESIGN.md status chips).
-  const chipCls = tone.key === 'out'
-    ? 'bg-danger-muted text-danger'
-    : tone.key === 'low'
-      ? 'bg-warning-muted text-warning'
-      : 'bg-surface-variant text-brand-text-muted';
+  const chipCls = tone.key === 'unpriced'
+    ? 'bg-primary/10 text-primary'
+    : tone.key === 'out'
+      ? 'bg-danger-muted text-danger'
+      : tone.key === 'low'
+        ? 'bg-warning-muted text-warning'
+        : 'bg-surface-variant text-brand-text-muted';
 
   return (
     <div
@@ -109,7 +111,9 @@ const ProductListRow: React.FC<{
   const stock = asNumber(product.stock);
   const tone = stockStatus(product, storeSettings);
 
-  const dotCls = tone.key === 'out' ? 'bg-danger' : tone.key === 'low' ? 'bg-warning' : 'bg-success';
+  const dotCls = tone.key === 'unpriced'
+    ? 'bg-primary'
+    : tone.key === 'out' ? 'bg-danger' : tone.key === 'low' ? 'bg-warning' : 'bg-success';
 
   return (
     <div
@@ -154,8 +158,10 @@ const ProductList: React.FC<Props> = React.memo(({
   selectedProductId,
   onAddProduct
 }) => {
+  // Category is optional, so an unset one reads as "Uncategorized" rather than
+  // a bare dash — matching the mobile shell and the reports.
   const getCategoryName = (categoryId?: string) =>
-    categoryId ? (categories.find(c => c.id === categoryId)?.name || '-') : '-';
+    (categoryId && categories.find(c => c.id === categoryId)?.name) || 'Uncategorized';
 
   return (
     <UnifiedListGrid<Product>

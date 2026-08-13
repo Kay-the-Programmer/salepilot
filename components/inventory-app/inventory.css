@@ -39,6 +39,16 @@
 .inv-metric__value small { font-size: 15px; font-weight: 400; color: var(--c-outline); margin-left: 4px; }
 .inv-metric__sub { font-size: 12px; color: var(--c-outline); margin: 6px 0 0; }
 
+/* "Recorded, not stocked / not priced yet" strip under the metrics. */
+.inv-pending {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin: 0 16px 20px; padding: 12px 16px;
+  border: 1px solid var(--c-outline-variant); border-radius: var(--c-radius-lg);
+  background: var(--c-surface-container, #f6f3ee); color: var(--c-on-surface-variant);
+}
+.inv-pending__text { margin: 0; font-size: 13px; flex: 1; min-width: 220px; }
+.inv-pending__text strong { color: var(--c-on-surface); font-weight: 700; }
+
 /* Two-column body */
 .inv-cols { display: grid; grid-template-columns: 1fr; gap: 28px; align-items: start; }
 @media (min-width: 1024px) { .inv-cols { grid-template-columns: 2fr 1fr; } }

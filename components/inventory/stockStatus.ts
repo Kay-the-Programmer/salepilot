@@ -8,11 +8,11 @@ import { Product, StoreSettings } from '../../types';
  * "out / low / in stock" thresholds and labels never drift between them.
  */
 
-export type StockKey = 'out' | 'low' | 'ok';
+export type StockKey = 'unpriced' | 'out' | 'low' | 'ok';
 
 export interface StockStatus {
     key: StockKey;
-    label: 'Out of stock' | 'Low stock' | 'In stock';
+    label: 'Needs price' | 'Out of stock' | 'Low stock' | 'In stock';
 }
 
 /** Coerce a possibly-string stock/number field to a finite number. */
@@ -21,6 +21,9 @@ export const asNumber = (val: unknown): number => {
     return Number.isFinite(n) ? n : 0;
 };
 
+/** A product recorded for later: no selling price, so it can't reach the till. */
+export const isUnpriced = (product: Product): boolean => !(asNumber(product.price) > 0);
+
 /** Derive a product's stock status from its stock vs. its reorder point. */
 export const stockStatus = (
     product: Product,
@@ -28,6 +31,9 @@ export const stockStatus = (
 ): StockStatus => {
     const stock = asNumber(product.stock);
     const reorder = product.reorderPoint ?? storeSettings?.lowStockThreshold ?? 0;
+    // Ranked above the stock states on purpose: an unpriced product is kept off
+    // the POS whatever its stock level, so that is the fact worth surfacing.
+    if (isUnpriced(product)) return { key: 'unpriced', label: 'Needs price' };
     if (stock <= 0) return { key: 'out', label: 'Out of stock' };
     if (stock <= reorder) return { key: 'low', label: 'Low stock' };
     return { key: 'ok', label: 'In stock' };

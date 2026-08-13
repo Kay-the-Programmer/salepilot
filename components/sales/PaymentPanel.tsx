@@ -24,6 +24,11 @@ interface PaymentPanelProps {
     isProcessing: boolean;
     onBack: () => void;
     onCloseMobile: () => void;
+    /** Sale date as YYYY-MM-DD; today unless the cashier is entering old books. */
+    saleDate: string;
+    setSaleDate: (val: string) => void;
+    /** Today as YYYY-MM-DD — the latest date a sale may carry. */
+    today: string;
 }
 
 const getPaymentIcon = (name: string): string => {
@@ -60,7 +65,11 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({
     isProcessing,
     onBack,
     onCloseMobile,
+    saleDate,
+    setSaleDate,
+    today,
 }) => {
+    const isBackdated = !!saleDate && saleDate !== today;
     const isCashMethod = (selectedPaymentMethod || '').toLowerCase().includes('cash');
     const isMobileMoney = ['mobile', 'lenco', 'mtn', 'airtel'].some(k =>
         (selectedPaymentMethod || '').toLowerCase().includes(k)
@@ -113,6 +122,25 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({
                         </button>
                     </div>
                 )}
+
+                {/* Sale date — lets a store type up sales that were kept on
+                    paper. Defaults to today; future dates are not selectable. */}
+                <div className="cart__field">
+                    <label className="cart__field-label" htmlFor="pay-sale-date">Sale date</label>
+                    <input
+                        id="pay-sale-date"
+                        type="date"
+                        className="cart__input"
+                        value={saleDate}
+                        max={today}
+                        onChange={e => setSaleDate(e.target.value)}
+                    />
+                    {isBackdated && (
+                        <p className="cart__hint cart__hint--warn">
+                            Recording this sale on {new Date(`${saleDate}T12:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })} — it will appear in that day's reports, not today's.
+                        </p>
+                    )}
+                </div>
 
                 <div className="cart__field">
                     <span className="cart__field-label">Payment method</span>

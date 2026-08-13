@@ -93,6 +93,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
     const [cashReceived, setCashReceived] = useState<string>('');
     const [isProcessing, setIsProcessing] = useState(false);
+    // Sale date, so a store moving off paper books can enter past sales and have
+    // them land in the right day's reports. Defaults to today, every sale.
+    const todayStr = useMemo(() => {
+        const d = new Date();
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }, []);
+    const [saleDate, setSaleDate] = useState<string>(todayStr);
     const cashInputRef = useRef<HTMLInputElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -274,6 +281,10 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
         return products.filter(p => {
             if (p.status !== 'active') return false;
+            // Products recorded but not yet priced are catalogue entries, not
+            // sellable goods — keep them off the register until they're priced,
+            // so nothing can be rung up for nothing.
+            if (!(Number(p.price) > 0)) return false;
             if (activeCategory !== 'All Items' && (!catObj || (p as any).categoryId !== catObj.id)) return false;
             if (!term) return true;
             return (
@@ -290,6 +301,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
             p.status === 'active' &&
             (p.barcode === trimmed || p.sku === trimmed)
         );
+        if (product && !(Number(product.price) > 0)) {
+            // Scanned something we already know about but haven't priced. Say so
+            // rather than falling through to an external lookup that would offer
+            // to add it a second time.
+            showSnackbar(`${product.name} has no selling price yet. Set a price in Inventory before selling it.`, 'info');
+            return;
+        }
         if (product) {
             addToCart(product);
             // Modal popup removed for seamless continuous scanning
@@ -395,7 +413,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
         setIsProcessing(true);
 
         try {
+            // A backdated sale is stamped at midday on the chosen date: far
+            // enough from either midnight that the store's local day and the
+            // stored UTC instant can't land on different dates.
+            const saleTimestamp = (!saleDate || saleDate === todayStr)
+                ? new Date().toISOString()
+                : new Date(`${saleDate}T12:00:00`).toISOString();
+
             const baseSaleData = {
+                timestamp: saleTimestamp,
                 cart: cart.map(item => ({ ...item, returnedQuantity: 0 })),
                 total,
                 subtotal,
@@ -416,7 +442,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
             let saleData: Partial<Sale>;
 
             if (type === 'invoice') {
-                const dueDate = new Date();
+                // Terms run from the sale date, so a backdated invoice is
+                // already the right number of days into its 30.
+                const dueDate = new Date(saleTimestamp);
                 dueDate.setDate(dueDate.getDate() + 30);
                 saleData = {
                     ...baseSaleData,
@@ -464,7 +492,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         amount: total,
                         method: selectedPaymentMethod,
                         id: Date.now().toString(),
-                        date: new Date().toISOString(),
+                        date: saleTimestamp,
                         reference: reference
                     } as Payment]
                 };
@@ -831,6 +859,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 isProcessing={isProcessing}
                                 onBack={() => setCartView('cart')}
                                 onCloseMobile={() => setMobileCartOpen(false)}
+                                saleDate={saleDate}
+                                setSaleDate={setSaleDate}
+                                today={todayStr}
                             />
                         ) : (
                             <>
@@ -864,6 +895,21 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* The sale date is chosen at the payment step but
+                                    sticks for the next sale, which is what makes
+                                    typing up a day of paper books bearable. This
+                                    banner is the standing reminder that the till
+                                    is not on today, with one tap back to today. */}
+                                {saleDate !== todayStr && (
+                                    <div className="cart__backdate">
+                                        <PosIcon name="event" size={18} />
+                                        <span>
+                                            Recording sales for {new Date(`${saleDate}T12:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
+                                        </span>
+                                        <button type="button" onClick={() => setSaleDate(todayStr)}>Back to today</button>
+                                    </div>
+                                )}
 
                                 {showCustomerPicker && (
                                     <div className="cart__customer">

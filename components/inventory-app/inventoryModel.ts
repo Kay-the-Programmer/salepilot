@@ -39,6 +39,10 @@ export interface InventoryOverview {
     potentialProfit: number;
     /** Products with no cost price: they contribute 0 to totalValue. */
     missingCostCount: number;
+    /** Recorded but not yet priced — held off the POS until a price is set. */
+    unpricedCount: number;
+    /** Recorded with nothing on the shelf yet — waiting to be stocked. */
+    notStockedCount: number;
     totalSkus: number;
     totalUnits: number;
     lowStockCount: number;
@@ -84,6 +88,8 @@ export const buildInventoryOverview = (
     let totalValue = 0;
     let retailValue = 0;
     let missingCostCount = 0;
+    let unpricedCount = 0;
+    let notStockedCount = 0;
     let totalUnits = 0;
     const lowStockItems: Product[] = [];
     const criticalItems: Product[] = [];
@@ -94,6 +100,8 @@ export const buildInventoryOverview = (
         totalValue += stock * unitValue(p);
         retailValue += stock * num(p.price);
         if (unitValue(p) <= 0) missingCostCount++;
+        if (!(num(p.price) > 0)) unpricedCount++;
+        if (stock <= 0) notStockedCount++;
         totalUnits += stock;
         const thr = thresholdFor(p, settings);
         if (stock <= 0) outOfStockCount++;
@@ -188,6 +196,8 @@ export const buildInventoryOverview = (
         retailValue,
         potentialProfit: retailValue - totalValue,
         missingCostCount,
+        unpricedCount,
+        notStockedCount,
         totalSkus: active.length,
         totalUnits,
         lowStockCount: lowStockItems.length,

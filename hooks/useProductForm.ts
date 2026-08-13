@@ -320,8 +320,10 @@ export const useProductForm = ({
     const validate = () => {
         const priceNum = parseFloat(product.price.toString());
         if (!product.name) return "Product Name is required.";
-        if (!product.categoryId) return "Category is required.";
-        if (priceNum <= 0) return "Price must be greater than zero.";
+        // Price is deliberately optional: a product can be recorded before it is
+        // priced or stocked (a supplier list you plan to carry, stock arriving
+        // next week). It stays out of the POS until it has a price.
+        if (Number.isFinite(priceNum) && priceNum < 0) return "Price cannot be negative.";
         return null;
     };
 

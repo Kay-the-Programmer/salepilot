@@ -43,12 +43,16 @@ const ProductCard: React.FC<{
     const status = stockStatus(product, storeSettings);
     const unit = product.unitOfMeasure === 'kg' ? 'kg' : 'units';
 
-    const pill = status.key === 'out'
-        ? 'bg-danger-muted text-danger'
-        : status.key === 'low'
-            ? 'bg-warning-muted text-warning'
-            : 'bg-success-muted text-primary';
-    const dot = status.key === 'out' ? 'bg-danger' : status.key === 'low' ? 'bg-warning' : 'bg-success';
+    const pill = status.key === 'unpriced'
+        ? 'bg-primary/10 text-primary'
+        : status.key === 'out'
+            ? 'bg-danger-muted text-danger'
+            : status.key === 'low'
+                ? 'bg-warning-muted text-warning'
+                : 'bg-success-muted text-primary';
+    const dot = status.key === 'unpriced'
+        ? 'bg-primary'
+        : status.key === 'out' ? 'bg-danger' : status.key === 'low' ? 'bg-warning' : 'bg-success';
 
     return (
         <article

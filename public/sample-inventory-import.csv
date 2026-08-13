@@ -1,0 +1,13 @@
+name,sku,barcode,category,price,costPrice,stock,description,brand,unitOfMeasure,reorderPoint
+Mealie Meal 25kg,MM-25KG,6001234500011,Groceries,285,232.50,60,Breakfast roller meal,Antelope,unit,12
+Cooking Oil 2L,OIL-2L,6001234500028,Groceries,95,70,48,Pure sunflower cooking oil,Golden,unit,10
+"Sugar, White 1kg",SUG-1KG,6001234500035,Groceries,32.50,25,150,Refined white sugar,Zambia Sugar,unit,30
+Coca-Cola 500ml,COKE-500,6001234500042,Beverages,15,10.50,240,Chilled soft drink,Coca-Cola,unit,48
+Mosi Lager 375ml,MOSI-375,6001234500059,Beverages,22,16,120,Bottled lager,Zambian Breweries,unit,24
+Bread Loaf,BRD-STD,,Bakery,22,14,35,Baked fresh daily,Supa Bake,unit,10
+Tomatoes,,,Fresh Produce,18.99,12,40,Sold by weight,,kg,8
+Beef Steak,BEEF-STK,,Butchery,89.99,68,25,Sold by weight,,kg,5
+Laundry Bar Soap 1kg,SOAP-1KG,6001234500066,Household,28,19.50,90,Multipurpose washing bar,Boom,unit,20
+Toothpaste 100ml,TP-100,6001234500073,Health & Beauty,26.50,18,75,Fluoride toothpaste,Colgate,unit,15
+Exercise Book A4,BOOK-A4,,Stationery,12,7.50,300,72-page ruled exercise book,Freedom,unit,60
+Airtime Voucher K10,AIR-10,,Airtime,10,,200,No cost price recorded yet,,unit,50

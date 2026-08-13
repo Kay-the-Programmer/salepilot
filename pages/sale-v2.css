@@ -910,6 +910,51 @@
   box-shadow: var(--v2-shadow-focus);
 }
 
+/* Date inputs read left-to-right; the right-aligned money styling fights them. */
+.cart__input[type="date"] { text-align: left; font-weight: var(--v2-weight-semibold); }
+
+.cart__hint {
+  margin: var(--v2-space-2) 0 0;
+  font-size: var(--v2-text-xs);
+  line-height: 1.45;
+  color: var(--v2-color-text-muted);
+}
+
+.cart__backdate {
+  display: flex;
+  align-items: center;
+  gap: var(--v2-space-2);
+  margin: 0 var(--v2-space-4) var(--v2-space-3);
+  padding: var(--v2-space-2) var(--v2-space-3);
+  border-radius: var(--v2-radius-md);
+  background: var(--v2-color-warning-soft);
+  color: var(--v2-color-ink);
+  font-size: var(--v2-text-sm);
+  font-weight: var(--v2-weight-semibold);
+}
+
+.cart__backdate span { flex: 1; min-width: 0; }
+
+.cart__backdate button {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
+  font-size: var(--v2-text-xs);
+  font-weight: var(--v2-weight-bold);
+  color: var(--v2-color-primary);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.cart__hint--warn {
+  padding: var(--v2-space-2) var(--v2-space-3);
+  border-radius: var(--v2-radius-md);
+  background: var(--v2-color-warning-soft);
+  color: var(--v2-color-ink);
+  font-weight: var(--v2-weight-medium);
+}
+
 .cart__change {
   display: flex;
   align-items: center;

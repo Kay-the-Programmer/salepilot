@@ -15,7 +15,7 @@ interface InventoryDashboardProps {
 }
 
 export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview, storeSettings, onAddItem, onViewItems, onViewAlerts }) => {
-    const { totalValue, retailValue, potentialProfit, missingCostCount, totalSkus, totalUnits, lowStockCount, criticalCount, activity, categories, topMover } = overview;
+    const { totalValue, retailValue, potentialProfit, missingCostCount, unpricedCount, notStockedCount, totalSkus, totalUnits, lowStockCount, criticalCount, activity, categories, topMover } = overview;
 
     return (
         <main className="crm-main crm-section-fade">
@@ -74,6 +74,29 @@ export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview
                     </div>
                 </button>
             </div>
+
+            {/* Products recorded ahead of stocking them. Both figures are why the
+                totals above can look lower than the shelf suggests, so they sit
+                right under them with a way through to fix each one. */}
+            {(unpricedCount > 0 || notStockedCount > 0) && (
+                <div className="inv-pending">
+                    <Icon name="pending_actions" size={20} />
+                    <p className="inv-pending__text">
+                        {notStockedCount > 0 && (
+                            <>
+                                <strong>{notStockedCount}</strong> product{notStockedCount === 1 ? '' : 's'} recorded but not stocked yet
+                            </>
+                        )}
+                        {notStockedCount > 0 && unpricedCount > 0 && ' · '}
+                        {unpricedCount > 0 && (
+                            <>
+                                <strong>{unpricedCount}</strong> waiting on a selling price — held off the register until priced
+                            </>
+                        )}
+                    </p>
+                    <button type="button" className="crm-link" onClick={onViewItems}>Review items</button>
+                </div>
+            )}
 
             {/* Activity + alerts */}
             <div className="inv-cols">
