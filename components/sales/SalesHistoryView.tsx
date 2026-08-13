@@ -50,11 +50,20 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
 
     const taxRate = storeSettings.taxRate / 100;
 
+    // Debounced term actually sent to the server. Searching server-side is what
+    // lets a product match reach past the 50 rows this view holds.
+    const [query, setQuery] = useState('');
+    useEffect(() => {
+        const t = setTimeout(() => setQuery(search.trim()), 300);
+        return () => clearTimeout(t);
+    }, [search]);
+
     const fetchSales = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const res = await api.get<{ items: Sale[] }>(`/sales?page=1&limit=50&sortBy=date&sortOrder=desc`);
+            const qs = query ? `&search=${encodeURIComponent(query)}` : '';
+            const res = await api.get<{ items: Sale[] }>(`/sales?page=1&limit=50&sortBy=date&sortOrder=desc${qs}`);
             setSales(res?.items || []);
         } catch (err: any) {
             try {
@@ -67,7 +76,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [query]);
 
     useEffect(() => { fetchSales(); }, [fetchSales]);
 
@@ -89,7 +98,8 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
         if (!t) return enriched;
         return enriched.filter(s =>
             s.transactionId.toLowerCase().includes(t) ||
-            (s.customerName || '').toLowerCase().includes(t)
+            (s.customerName || '').toLowerCase().includes(t) ||
+            (s.cart || []).some(i => (i.name || '').toLowerCase().includes(t))
         );
     }, [enriched, search]);
 
@@ -179,7 +189,7 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                             type="text"
                             value={search}
                             onChange={e => setSearch(e.target.value)}
-                            placeholder="Search by transaction ID or customer"
+                            placeholder="Search by product, transaction ID or customer"
                             aria-label="Search sales"
                         />
                         {search && (
