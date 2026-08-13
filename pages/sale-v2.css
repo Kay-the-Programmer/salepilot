@@ -920,6 +920,52 @@
   color: var(--v2-color-text-muted);
 }
 
+/* Sale date correction, opened from the detail pane (admin only). */
+.hist__datefix {
+  margin-bottom: var(--v2-space-4);
+  padding: var(--v2-space-3);
+  border: 1px solid var(--v2-color-primary-border);
+  border-radius: var(--v2-radius-md);
+  background: var(--v2-color-primary-soft);
+}
+
+.hist__datefix label {
+  display: block;
+  font-size: var(--v2-text-xs);
+  font-weight: var(--v2-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--v2-color-text-muted);
+  margin-bottom: var(--v2-space-2);
+}
+
+.hist__datefix input[type="date"] {
+  width: 100%;
+  height: 42px;
+  padding: 0 var(--v2-space-3);
+  border: 1px solid var(--v2-color-border);
+  border-radius: var(--v2-radius-md);
+  background: var(--v2-color-surface);
+  color: var(--v2-color-ink);
+  font: inherit;
+  font-weight: var(--v2-weight-semibold);
+}
+
+.hist__datefix-note {
+  margin: var(--v2-space-2) 0 0;
+  font-size: var(--v2-text-xs);
+  line-height: 1.45;
+  color: var(--v2-color-text-muted);
+}
+
+.hist__datefix-actions {
+  display: flex;
+  gap: var(--v2-space-2);
+  margin-top: var(--v2-space-3);
+}
+
+.hist__datefix-actions .v2-btn { flex: 1; }
+
 .cart__backdate {
   display: flex;
   align-items: center;

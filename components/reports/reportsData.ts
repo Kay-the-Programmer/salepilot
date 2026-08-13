@@ -19,3 +19,12 @@ export const fetchDashboardRange = (startDate: string, endDate: string): Promise
     cache.set(key, { at: Date.now(), promise });
     return promise;
 };
+
+/**
+ * Drop every cached range. Call after something moves a figure between periods
+ * — correcting a sale's date is the case this exists for: without it the cards
+ * would keep showing the sale on its old day for up to the TTL.
+ */
+export const invalidateDashboardCache = (): void => {
+    cache.clear();
+};

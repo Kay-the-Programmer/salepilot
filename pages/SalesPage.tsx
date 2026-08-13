@@ -41,6 +41,8 @@ interface SalesPageProps {
     onLogout?: () => void;
     categories: Category[];
     onProcessReturn: (returnInfo: Return) => void;
+    /** Refetch app-wide data when a sale moves between days (date correction). */
+    onSaleChanged?: () => void;
     /** Open on a specific view — /pos/history deep-links Sales History & Refunds. */
     initialView?: 'sell' | 'history';
     /** POS mode (Standard cart POS vs the Quick keypad). When provided, a
@@ -59,6 +61,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     storeSettings,
     categories,
     onProcessReturn,
+    onSaleChanged,
     onLogout,
     initialView,
     posMode,
@@ -745,6 +748,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                     onProcessReturn={onProcessReturn}
                     showSnackbar={showSnackbar}
                     onStartSelling={() => setPosView('sell')}
+                    userRole={user?.role}
+                    onSaleChanged={onSaleChanged}
                 />
             ) : (
                 <div className="sale__body">

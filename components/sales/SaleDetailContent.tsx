@@ -4,9 +4,11 @@ import { formatCurrency } from '@/utils/currency';
 interface SaleDetailContentProps {
     sale: Sale;
     storeSettings: StoreSettings;
+    /** Admin-only: opens the date correction control. Omitted for other roles. */
+    onEditDate?: () => void;
 }
 
-export default function SaleDetailContent({ sale, storeSettings }: SaleDetailContentProps) {
+export default function SaleDetailContent({ sale, storeSettings, onEditDate }: SaleDetailContentProps) {
     const calculatedAmountPaid = sale.amountPaid !== undefined ? sale.amountPaid : (sale.payments?.reduce((sum, p) => sum + p.amount, 0) ?? sale.amountPaid);
     const balanceDue = Math.max(0, sale.total - calculatedAmountPaid);
 
@@ -44,6 +46,15 @@ export default function SaleDetailContent({ sale, storeSettings }: SaleDetailCon
                         <span className="text-slate-400 dark:text-slate-500 ml-1.5">
                             {new Date(sale.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
+                        {onEditDate && (
+                            <button
+                                type="button"
+                                onClick={onEditDate}
+                                className="ml-2 text-xs font-semibold text-primary hover:underline"
+                            >
+                                Change
+                            </button>
+                        )}
                     </span>
                 </div>
                 <div className="flex items-center justify-between py-3">

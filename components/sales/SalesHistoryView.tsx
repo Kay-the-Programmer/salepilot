@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Sale, Customer, StoreSettings, Return } from '../../types';
+import { Sale, Customer, StoreSettings, Return, User } from '../../types';
 import { api } from '../../services/api';
 import { dbService } from '../../services/dbService';
 import { formatCurrency } from '../../utils/currency';
@@ -7,6 +7,7 @@ import SaleDetailContent from './SaleDetailContent';
 import ReceiptModal from './ReceiptModal';
 import PosIcon from './PosIcon';
 import { SnackbarType } from '../../App';
+import { invalidateDashboardCache } from '../reports/reportsData';
 
 interface SalesHistoryViewProps {
     storeSettings: StoreSettings;
@@ -15,6 +16,10 @@ interface SalesHistoryViewProps {
     showSnackbar: (message: string, type?: SnackbarType) => void;
     /** First-run CTA: jump back to the register to make the first sale. */
     onStartSelling?: () => void;
+    /** Correcting a sale's date rewrites history, so it is admin-only. */
+    userRole?: User['role'];
+    /** Refetch app-wide data after a sale moves between days. */
+    onSaleChanged?: () => void;
 }
 
 const REASONS = ['Defective / Damaged', 'Wrong Item', 'Changed Mind', 'Other'];
@@ -50,7 +55,7 @@ const cartTitle = (sale: Sale, term: string): string => {
     return cart.length > 1 ? `${label} +${cart.length - 1} more` : label;
 };
 
-export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSettings, customers, onProcessReturn, showSnackbar, onStartSelling }) => {
+export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSettings, customers, onProcessReturn, showSnackbar, onStartSelling, userRole, onSaleChanged }) => {
     const [sales, setSales] = useState<Sale[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -62,6 +67,12 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
 
     const [itemsToReturn, setItemsToReturn] = useState<{ [productId: string]: ReturnLine }>({});
     const [refundMethod, setRefundMethod] = useState('original_method');
+
+    // Date correction (admin only). `dateDraft` is a YYYY-MM-DD string; null
+    // means the editor is closed.
+    const canEditDate = userRole === 'admin' || userRole === 'superadmin';
+    const [dateDraft, setDateDraft] = useState<string | null>(null);
+    const [savingDate, setSavingDate] = useState(false);
 
     const taxRate = storeSettings.taxRate / 100;
 
@@ -100,7 +111,52 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
         setItemsToReturn({});
         setRefundMethod('original_method');
         setRefundMode(false);
+        setDateDraft(null);
     }, [selectedSale]);
+
+    const toDateInput = (iso: string) => {
+        const d = new Date(iso);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+
+    /**
+     * Move a sale to a different day. The sale keeps its time of day, so a
+     * receipt reprint still reads sensibly; only the date changes. The server
+     * moves the payment rows and the journal entry with it, so every report
+     * agrees — which is why the whole list is refetched afterwards rather than
+     * patched in place.
+     */
+    const saveDate = async () => {
+        if (!selectedSale || !dateDraft || savingDate) return;
+        const original = new Date(selectedSale.timestamp);
+        const [y, m, d] = dateDraft.split('-').map(Number);
+        const next = new Date(original);
+        next.setFullYear(y, m - 1, d);
+
+        setSavingDate(true);
+        try {
+            const updated = await api.patch<Sale>(`/sales/${selectedSale.transactionId}/date`, {
+                timestamp: next.toISOString(),
+            });
+            setSelectedSale(prev => (prev ? { ...prev, timestamp: updated?.timestamp || next.toISOString() } : prev));
+            setDateDraft(null);
+            showSnackbar(
+                `Sale moved to ${next.toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' })}`,
+                'success',
+            );
+            // The sale now belongs to a different day, so anything holding
+            // per-period figures is stale: the reports cards cache ranges for a
+            // minute, and the Business Dashboard computes from the app-wide
+            // sales list. Refresh all three rather than only this list.
+            invalidateDashboardCache();
+            onSaleChanged?.();
+            fetchSales();
+        } catch (err: any) {
+            showSnackbar(err?.message || 'Could not change the sale date.', 'error');
+        } finally {
+            setSavingDate(false);
+        }
+    };
 
     const enriched = useMemo(() => sales.map(s => {
         if (s.customerName || !s.customerId) return s;
@@ -398,7 +454,36 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                             </div>
                         </div>
                         <div className="hist__detail-body">
-                            <SaleDetailContent sale={selectedSale} storeSettings={storeSettings} />
+                            {dateDraft !== null && (
+                                <div className="hist__datefix">
+                                    <label htmlFor="hist-date-input">Move this sale to</label>
+                                    <input
+                                        id="hist-date-input"
+                                        type="date"
+                                        value={dateDraft}
+                                        max={toDateInput(new Date().toISOString())}
+                                        onChange={e => setDateDraft(e.target.value)}
+                                    />
+                                    <p className="hist__datefix-note">
+                                        It will leave today's sales and count towards that day's totals and reports everywhere.
+                                    </p>
+                                    <div className="hist__datefix-actions">
+                                        <button type="button" className="v2-btn v2-btn--secondary" onClick={() => setDateDraft(null)} disabled={savingDate}>
+                                            Cancel
+                                        </button>
+                                        <button type="button" className="v2-btn v2-btn--primary" onClick={saveDate} disabled={savingDate || !dateDraft}>
+                                            {savingDate ? 'Saving…' : 'Save date'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            <SaleDetailContent
+                                sale={selectedSale}
+                                storeSettings={storeSettings}
+                                onEditDate={canEditDate && dateDraft === null
+                                    ? () => setDateDraft(toDateInput(selectedSale.timestamp))
+                                    : undefined}
+                            />
                         </div>
                         <div className="pay__foot">
                             <div className="cart__secondary">
