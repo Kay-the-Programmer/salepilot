@@ -42,16 +42,21 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     const [productSearch, setProductSearch] = useState('');
 
     const selectSupplier = (supplier: Supplier) => {
-        // Preserve any pre-filled items when assigning the first supplier (e.g. a
-        // PO drafted from an order list); only clear when switching suppliers,
-        // since catalogue items are supplier-scoped.
+        // Items survive a supplier change now that any product can be ordered
+        // from any supplier — switching who you buy from shouldn't wipe the
+        // basket you just built.
         setPo(prev => ({
             ...prev,
             supplierId: supplier.id,
             supplierName: supplier.name,
-            items: prev.supplierId && prev.supplierId !== supplier.id ? [] : prev.items,
             isMarketplaceOrder: !!supplier.linkedStoreId,
         }));
+        setSupplierPickerOpen(false);
+    };
+
+    /** Raise the order with no supplier named; it can be set before receiving. */
+    const clearSupplier = () => {
+        setPo(prev => ({ ...prev, supplierId: '', supplierName: '', isMarketplaceOrder: false }));
         setSupplierPickerOpen(false);
     };
 
@@ -75,12 +80,21 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
 
     const supplier = useMemo(() => suppliers.find(s => s.id === po.supplierId) || null, [suppliers, po.supplierId]);
 
+    // The whole catalogue is orderable, not just what is already linked to the
+    // chosen supplier: stores buy the same product from whoever has it, and a
+    // product with no supplier on file could not be ordered at all before.
+    // Products already tied to this supplier simply sort first.
     const availableProducts = useMemo(() => {
-        if (!po.supplierId) return [] as Product[];
         const inPo = new Set(po.items.map(i => i.productId));
         const term = productSearch.trim().toLowerCase();
-        return products.filter(p => p.supplierId === po.supplierId && p.status === 'active' && !inPo.has(p.id)
-            && (!term || p.name.toLowerCase().includes(term) || p.sku.toLowerCase().includes(term)));
+        return products
+            .filter(p => p.status === 'active' && !inPo.has(p.id)
+                && (!term || p.name.toLowerCase().includes(term) || (p.sku || '').toLowerCase().includes(term)))
+            .sort((a, b) => {
+                const aOwn = po.supplierId && a.supplierId === po.supplierId ? 0 : 1;
+                const bOwn = po.supplierId && b.supplierId === po.supplierId ? 0 : 1;
+                return aOwn - bOwn || a.name.localeCompare(b.name);
+            });
     }, [po.supplierId, po.items, products, productSearch]);
 
     const suggested = useMemo(
@@ -89,7 +103,7 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
     );
 
     const addAllSuggested = () => {
-        if (suggested.length === 0) { showSnackbar('Nothing to reorder for this supplier.', 'info'); return; }
+        if (suggested.length === 0) { showSnackbar(po.supplierId ? 'Nothing to reorder for this supplier.' : 'Nothing is below its reorder point.', 'info'); return; }
         setPo(prev => ({
             ...prev,
             items: [...prev.items, ...suggested.map(p => productToPoItem(p, p.suggestedQty))],
@@ -107,7 +121,7 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
         onSave(applyPlaceOrder(base, placeOrder), placeOrder);
     };
 
-    const canContinue = !!po.supplierId && po.items.length > 0;
+    const canContinue = po.items.length > 0;
     const sym = storeSettings.currency?.symbol ?? '$';
 
     return (
@@ -126,7 +140,7 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
                     {/* Progress */}
                     <div className="po-steps">
                         <div className="po-steps__labels">
-                            <span className={po.supplierId ? 'is-done' : 'is-active'}>Supplier</span>
+                            <span className={po.supplierId ? 'is-done' : 'is-active'}>Supplier (optional)</span>
                             <span className={step === 'build' ? 'is-active' : 'is-done'}>Add Items</span>
                             <span className={step === 'review' ? 'is-active' : ''}>Review</span>
                         </div>
@@ -142,15 +156,23 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
                             {/* Supplier */}
                             <section style={{ marginBottom: 32 }}>
                                 <div className="po-sec-head">
-                                    <h2 className="crm-form-section__title">Supplier Details</h2>
-                                    {po.supplierId && (
-                                        <button type="button" className="crm-btn crm-btn--ghost" onClick={() => setSupplierPickerOpen(o => !o)} style={{ padding: '6px 14px' }}>
-                                            <Icon name="sync" size={18} /> Change Supplier
+                                    <h2 className="crm-form-section__title">Supplier <span style={{ fontWeight: 400, color: 'var(--c-on-surface-variant)' }}>(optional)</span></h2>
+                                    {!supplierPickerOpen && (
+                                        <button type="button" className="crm-btn crm-btn--ghost" onClick={() => setSupplierPickerOpen(true)} style={{ padding: '6px 14px' }}>
+                                            <Icon name="sync" size={18} /> {po.supplierId ? 'Change Supplier' : 'Choose Supplier'}
                                         </button>
                                     )}
                                 </div>
 
-                                {supplier && !supplierPickerOpen ? (
+                                {!supplierPickerOpen && !supplier ? (
+                                    <div className="po-supplier">
+                                        <Avatar name="?" size={56} square />
+                                        <div style={{ minWidth: 0, flex: 1 }}>
+                                            <h3 className="po-supplier__name">No supplier yet</h3>
+                                            <p className="po-supplier__addr">You can add the supplier before receiving the stock.</p>
+                                        </div>
+                                    </div>
+                                ) : supplier && !supplierPickerOpen ? (
                                     <div className="po-supplier">
                                         <Avatar name={supplier.name} size={56} square />
                                         <div style={{ minWidth: 0, flex: 1 }}>
@@ -168,8 +190,16 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
                                     </div>
                                 ) : (
                                     <div className="po-picker">
+                                        <button type="button" className={`po-picker__row${!po.supplierId ? ' is-active' : ''}`} onClick={clearSupplier}>
+                                            <span className="po-picker__thumb"><Icon name="help" size={20} /></span>
+                                            <div style={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
+                                                <p className="po-picker__name">No supplier yet</p>
+                                                <p className="po-picker__meta">Raise the order now, name the supplier later</p>
+                                            </div>
+                                            {!po.supplierId && <Icon name="check_circle" size={20} fill={1} className="po-picker__check" />}
+                                        </button>
                                         {suppliers.length === 0 ? (
-                                            <p className="crm-input-group__hint" style={{ padding: 8 }}>No suppliers yet — add one in the Suppliers tab first.</p>
+                                            <p className="crm-input-group__hint" style={{ padding: 8 }}>No suppliers on file yet — you can still order without one.</p>
                                         ) : suppliers.map(s => (
                                             <button key={s.id} type="button" className={`po-picker__row${s.id === po.supplierId ? ' is-active' : ''}`} onClick={() => selectSupplier(s)}>
                                                 <Avatar name={s.name} size={40} square />
@@ -188,12 +218,12 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
                             <section style={{ marginBottom: 32 }}>
                                 <div className="po-sec-head">
                                     <h2 className="crm-form-section__title">Order Items</h2>
-                                    <button type="button" className="crm-btn crm-btn--primary" disabled={!po.supplierId} onClick={() => setItemPickerOpen(o => !o)} style={{ opacity: po.supplierId ? 1 : 0.5, padding: '8px 16px' }}>
+                                    <button type="button" className="crm-btn crm-btn--primary" onClick={() => setItemPickerOpen(o => !o)} style={{ padding: '8px 16px' }}>
                                         <Icon name="add" size={20} /> Add Item
                                     </button>
                                 </div>
 
-                                {po.supplierId && suggested.length > 0 && (
+                                {suggested.length > 0 && (
                                     <button type="button" className="po-suggest" onClick={addAllSuggested}>
                                         <Icon name="auto_awesome" size={18} fill={1} />
                                         <span>{suggested.length} product{suggested.length === 1 ? '' : 's'} below reorder point — tap to add suggested quantities.</span>
@@ -208,13 +238,18 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
                                             <input type="text" value={productSearch} onChange={e => setProductSearch(e.target.value)} placeholder="Search products to add..." />
                                         </div>
                                         {availableProducts.length === 0 ? (
-                                            <p className="crm-input-group__hint" style={{ padding: 8 }}>{po.supplierId ? 'No more products from this supplier.' : 'Select a supplier first.'}</p>
+                                            <p className="crm-input-group__hint" style={{ padding: 8 }}>
+                                                {productSearch.trim() ? `No products match “${productSearch.trim()}”.` : 'Every product is already on this order.'}
+                                            </p>
                                         ) : availableProducts.slice(0, 40).map(p => (
                                             <button key={p.id} type="button" className="po-picker__row" onClick={() => { addProductToPO(p); setProductSearch(''); }}>
                                                 <span className="po-picker__thumb"><Icon name="inventory_2" size={20} /></span>
                                                 <div style={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
                                                     <p className="po-picker__name">{p.name}</p>
-                                                    <p className="po-picker__meta">SKU {p.sku} · {formatMoney(num(p.costPrice), storeSettings)} cost</p>
+                                                    <p className="po-picker__meta">
+                                                        SKU {p.sku || '—'} · {formatMoney(num(p.costPrice), storeSettings)} cost
+                                                        {po.supplierId && p.supplierId === po.supplierId ? ' · usual supplier' : ''}
+                                                    </p>
                                                 </div>
                                                 <Icon name="add" size={20} className="po-picker__check" />
                                             </button>
@@ -225,7 +260,7 @@ export const ProcureOrderForm: React.FC<ProcureOrderFormProps> = ({
                                 {po.items.length === 0 ? (
                                     <div className="crm-empty" style={{ padding: '40px 16px', background: 'var(--c-surface-low)', borderRadius: 'var(--c-radius-lg)' }}>
                                         <Icon name="inventory_2" size={36} />
-                                        <p className="crm-empty__text">{po.supplierId ? 'No items yet. Tap “Add Item”.' : 'Pick a supplier, then add items.'}</p>
+                                        <p className="crm-empty__text">No items yet. Tap “Add Item”.</p>
                                     </div>
                                 ) : (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

@@ -7,10 +7,11 @@ import { InventoryOverview } from './inventoryModel';
 interface InventoryDashboardProps {
     overview: InventoryOverview;
     storeSettings?: StoreSettings | null;
-    onAddItem: () => void;
+    /** Omitted for roles without `inventory:manage` — the CTA is then hidden. */
+    onAddItem?: () => void;
     onViewItems: () => void;
     onViewAlerts: () => void;
-    onGeneratePO: () => void;
+    onGeneratePO?: () => void;
     onNotify: (msg: string) => void;
 }
 
@@ -24,9 +25,11 @@ export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview
                     <h2 className="crm-pagehead__title">Inventory Overview</h2>
                     <p className="crm-pagehead__sub">Manage and monitor your shop's assets in real-time.</p>
                 </div>
-                <button className="crm-btn crm-btn--primary" type="button" onClick={onAddItem}>
-                    <Icon name="add" size={20} /> Add New Item
-                </button>
+                {onAddItem && (
+                    <button className="crm-btn crm-btn--primary" type="button" onClick={onAddItem}>
+                        <Icon name="add" size={20} /> Add New Item
+                    </button>
+                )}
             </div>
 
             {/* Bento metrics */}

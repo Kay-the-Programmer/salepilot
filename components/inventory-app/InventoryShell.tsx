@@ -6,6 +6,7 @@ import AppNavMenu from '../standalone/AppNavMenu';
 import Logo from '../../assets/logo.png';
 import RailThemeButton from '../standalone/RailThemeButton';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
+import { can, canAccessPage } from '../../utils/rbac';
 
 export type InvSection = 'dashboard' | 'items' | 'alerts' | 'stock-takes';
 
@@ -32,6 +33,13 @@ const NAV: { id: InvSection; label: string; icon: string }[] = [
  */
 export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, onNavigate, onPos, onExit, onLogout, children }) => {
     const { openAppSwitcher } = useAppSwitcher();
+    // Staff hold `inventory:read` — they look stock up but never count it, so
+    // Stock Takes is not offered to them. Same list drives the desktop rail and
+    // the mobile menu so the two can't drift apart.
+    const nav = NAV.filter(n => n.id !== 'stock-takes' || can(user?.role, 'inventory:manage'));
+    // The register is not every role's next stop: an inventory manager holds no
+    // `sales:perform`, so pointing them at the POS would only 403.
+    const showPos = canAccessPage(user?.role, 'pos');
     return (
         <div className="crm">
             {/* Desktop rail */}
@@ -44,7 +52,7 @@ export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, on
                 </div>
 
                 <nav className="crm-rail__nav">
-                    {NAV.map(item => (
+                    {nav.map(item => (
                         <button
                             key={item.id}
                             type="button"
@@ -59,9 +67,11 @@ export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, on
                 </nav>
 
                 <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={onPos}>
-                        <Icon name="point_of_sale" size={22} /> Point of Sale
-                    </button>
+                    {showPos && (
+                        <button type="button" className="crm-rail__item" onClick={onPos}>
+                            <Icon name="point_of_sale" size={22} /> Point of Sale
+                        </button>
+                    )}
                     <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
                         <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
@@ -87,8 +97,8 @@ export const InventoryShell: React.FC<InventoryShellProps> = ({ active, user, on
                     <div className="crm-bar__actions">
                         <AppNavMenu
                             items={[
-                                ...NAV.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => onNavigate(n.id) })),
-                                { icon: 'point_of_sale', label: 'Point of Sale', onClick: onPos },
+                                ...nav.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => onNavigate(n.id) })),
+                                ...(showPos ? [{ icon: 'point_of_sale', label: 'Point of Sale', onClick: onPos }] : []),
                             ]}
                             onExit={onExit}
                             onLogout={onLogout}

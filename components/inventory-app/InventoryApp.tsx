@@ -7,6 +7,7 @@ import InventoryDashboard from './InventoryDashboard';
 import InventoryAlerts from './InventoryAlerts';
 import { buildInventoryOverview } from './inventoryModel';
 import { hasModule, MODULES, FREE_PRODUCT_LIMIT } from '../../utils/entitlements';
+import { can } from '../../utils/rbac';
 import { UpsellInline } from '../upsell/UpsellCard';
 import '../crm/crm.css';
 import './inventory.css';
@@ -46,6 +47,22 @@ const ProductCapBanner: React.FC<{ count: number; storeSettings: StoreSettings |
         </div>
     );
 };
+
+/**
+ * Backstop for a section the signed-in role may not open. The navigation never
+ * offers it, so reaching this means a hand-typed route or a stale bookmark —
+ * say so plainly rather than rendering an empty screen or a 403 from the API.
+ */
+const NoAccess: React.FC = () => (
+    <main className="crm-main crm-section-fade">
+        <div className="crm-empty" style={{ padding: '64px 16px' }}>
+            <Icon name="lock" size={40} />
+            <p className="crm-empty__text">
+                Your role doesn't have access to this section. Ask a store administrator if you need it.
+            </p>
+        </div>
+    </main>
+);
 
 interface InventoryAppProps {
     section: InvSection;
@@ -89,17 +106,26 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
         [products, categories, sales, purchaseOrders, storeSettings],
     );
 
+    // Staff may read stock but not change it, and raising a purchase order is
+    // `purchasing:manage`. Offering either to them only produced a 403 at the
+    // end of the journey, so the CTAs are not rendered.
+    const canManageStock = can(user?.role, 'inventory:manage');
+    const canRaisePo = can(user?.role, 'purchasing:manage');
+
     let content: React.ReactNode;
     if (section === 'items') {
         content = renderItems();
     } else if (section === 'stock-takes') {
-        content = renderStockTakes();
+        // Counting stock rewrites levels — `inventory:manage`. Reached only via
+        // the rail, which already hides it, so this is the backstop for a
+        // hand-typed route.
+        content = canManageStock ? renderStockTakes() : <NoAccess />;
     } else if (section === 'alerts') {
         content = (
             <InventoryAlerts
                 overview={overview}
                 storeSettings={storeSettings}
-                onGeneratePO={onGeneratePO}
+                onGeneratePO={canRaisePo ? onGeneratePO : undefined}
                 onViewItems={() => onNavigate('items')}
             />
         );
@@ -108,10 +134,10 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
             <InventoryDashboard
                 overview={overview}
                 storeSettings={storeSettings}
-                onAddItem={() => onNavigate('items')}
+                onAddItem={canManageStock ? () => onNavigate('items') : undefined}
                 onViewItems={() => onNavigate('items')}
                 onViewAlerts={() => onNavigate('alerts')}
-                onGeneratePO={onGeneratePO}
+                onGeneratePO={canRaisePo ? onGeneratePO : undefined}
                 onNotify={notify}
             />
         );

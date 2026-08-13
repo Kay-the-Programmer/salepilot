@@ -9,7 +9,8 @@ import { InventoryOverview, thresholdFor } from './inventoryModel';
 interface InventoryAlertsProps {
     overview: InventoryOverview;
     storeSettings?: StoreSettings | null;
-    onGeneratePO: () => void;
+    /** Omitted for roles without `purchasing:manage`; the CTA is then hidden. */
+    onGeneratePO?: () => void;
     onViewItems: () => void;
 }
 
@@ -27,7 +28,7 @@ export const InventoryAlerts: React.FC<InventoryAlertsProps> = ({ overview, stor
                     <h2 className="crm-pagehead__title">Inventory Alerts</h2>
                     <p className="crm-pagehead__sub">{lowStockCount} item{lowStockCount === 1 ? '' : 's'} at or below their reorder point.</p>
                 </div>
-                {lowStockCount > 0 && (
+                {lowStockCount > 0 && onGeneratePO && (
                     <button
                         className="crm-btn crm-btn--filled"
                         type="button"

@@ -41,12 +41,15 @@ const isLow = (p: Product): boolean =>
  *  `exclude` skips products already on the order. */
 export const suggestReorder = (
     products: Product[],
-    supplierId: string,
+    supplierId: string | null | undefined,
     exclude: Set<string> = new Set(),
 ): (Product & { suggestedQty: number })[] => {
-    if (!supplierId) return [];
+    // With a supplier chosen, suggest what that supplier normally provides;
+    // without one, suggest everything below its reorder point, so an order
+    // raised before the supplier is known still gets the same head start.
     return products
-        .filter(p => p.supplierId === supplierId && p.status === 'active' && !exclude.has(p.id)
+        .filter(p => (supplierId ? p.supplierId === supplierId : true)
+            && p.status === 'active' && !exclude.has(p.id)
             && typeof p.reorderPoint !== 'undefined' && num(p.stock) < num(p.reorderPoint))
         .map(p => ({ ...p, suggestedQty: reorderQty(p) }));
 };

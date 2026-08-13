@@ -234,8 +234,9 @@ export interface ReceptionEvent {
 export interface PurchaseOrder {
     id: string;
     poNumber: string; // e.g., PO-2024-001
-    supplierId: string;
-    supplierName: string; // denormalized for easy display
+    /** Optional: an order can be raised before the supplier is decided. */
+    supplierId?: string | null;
+    supplierName: string; // denormalized for easy display ("Unassigned supplier" when none)
     status: 'draft' | 'ordered' | 'partially_received' | 'received' | 'canceled';
     items: POItem[];
     createdAt: string;
