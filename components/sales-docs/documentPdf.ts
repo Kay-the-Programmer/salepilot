@@ -2,7 +2,7 @@ import jsPDF from 'jspdf';
 import { BANK_ACCOUNT_FIELDS, StoreSettings } from '../../types';
 import { SalesDocument } from './types';
 import {
-    PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawCompanyMasthead, drawPdfFooter, drawPdfTable,
+    PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawCompanyMasthead, drawPdfFooterAsync, drawPdfTable,
     loadStoreLogo, pdfDate, pdfFileName, pdfMoney, pdfNumber, printPdf, savePdf,
 } from '../../utils/pdfDocument';
 
@@ -68,11 +68,11 @@ const drawStamp = (pdf: jsPDF, doc: SalesDocument, settings: StoreSettings | nul
  * the DOM, so the output is identical regardless of the browser, screen size or
  * theme the document happened to be viewed in.
  */
-export const buildDocumentPdf = (
+export const buildDocumentPdf = async (
     doc: SalesDocument,
     settings: StoreSettings | null,
     logo: DocumentLogo | null = null,
-): jsPDF => {
+): Promise<jsPDF> => {
     const pdf = createPdf();
     const pageWidth = pdf.internal.pageSize.getWidth();
     const marginX = PDF_MARGIN;
@@ -246,7 +246,7 @@ export const buildDocumentPdf = (
         drawStamp(pdf, doc, settings, pageWidth - marginX - 170, stampY);
     }
 
-    drawPdfFooter(pdf, settings);
+    await drawPdfFooterAsync(pdf, settings);
     return pdf;
 };
 

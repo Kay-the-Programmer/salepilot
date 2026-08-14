@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { StoreSettings, User, DashboardCardConfig } from '../types';
 import { useNotifications } from '../contexts/NotificationContext';
 import {
-    createPdf, drawPdfFooter, drawPdfHeader, drawPdfTable, loadStoreLogo,
+    createPdf, drawPdfFooterAsync, drawPdfHeader, drawPdfTable, loadStoreLogo,
     pdfFileName, pdfMoney, pdfNumber, savePdf,
 } from '../utils/pdfDocument';
 import { api } from '../services/api';
@@ -208,7 +208,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                 2: { halign: 'right' },
             },
         });
-        drawPdfFooter(doc, storeSettings);
+        await drawPdfFooterAsync(doc, storeSettings);
         savePdf(doc, pdfFileName('Sales Report', storeSettings, `${startDate}_to_${endDate}`));
     };
 

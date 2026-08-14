@@ -3,7 +3,7 @@ import { api } from '../../../services/api';
 import { formatCurrency } from '../../../utils/currency';
 import { StoreSettings } from '../../../types';
 import {
-    createPdf, drawPdfHeader, drawPdfTable, drawPdfFooter, savePdf,
+    createPdf, drawPdfHeader, drawPdfTable, drawPdfFooterAsync, savePdf,
     pdfMoney, pdfNumber, pdfFileName, loadStoreLogo, PDF_NAVY,
 } from '../../../utils/pdfDocument';
 import ChevronLeftIcon from '../../icons/ChevronLeftIcon';
@@ -203,7 +203,7 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
 
         // Footer stamps "<store> · Generated <date time>" and "Page n of m" on
         // every page — called last so the page count is final.
-        drawPdfFooter(doc, storeSettings);
+        await drawPdfFooterAsync(doc, storeSettings);
         savePdf(doc, pdfFileName(
             'Product Sales',
             storeSettings,
@@ -219,7 +219,7 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
                     <p className="text-sm text-brand-text-muted mt-0.5">
                         {totals
                             ? `${totals.quantity.toLocaleString()} units across ${totals.products} product${totals.products === 1 ? '' : 's'} · ${formatCurrency(totals.revenue, storeSettings)}`
-                            : 'Quantities are net of returns'}
+                            : 'Units sold in this period; returns are counted on the day they happen'}
                     </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -307,7 +307,7 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
                                             <div className="font-semibold text-brand-text truncate max-w-[280px]">{r.name}</div>
                                             <div className="text-[11px] text-brand-text-muted truncate max-w-[280px]">
                                                 {r.sku || '—'} · {r.categoryName}
-                                                {r.returnedQuantity > 0 && ` · ${r.returnedQuantity} returned`}
+                                                {r.returnedQuantity > 0 && ` · ${r.returnedQuantity} returned this period`}
                                             </div>
                                         </td>
                                         <td className="py-2.5 px-3 text-right font-bold text-brand-text tnum">{r.quantity.toLocaleString()}</td>

@@ -3,7 +3,8 @@ import { StoreSettings } from '../../types';
 import { SalesDocument } from './types';
 import {
     PDF_MARGIN, PDF_NAVY, PdfLogo, createPdf, drawCompanyMasthead, drawPdfTable,
-    loadStoreLogo, pdfDate, pdfMoney, pdfNumber, pdfFileName, printPdf, savePdf,
+    drawPdfFooterAsync, loadStoreLogo, pdfDate, pdfMoney, pdfNumber, pdfFileName,
+    printPdf, savePdf,
 } from '../../utils/pdfDocument';
 import { docSerial } from './documentPdf';
 import { amountInWords, currencyUnits } from './amountInWords';
@@ -263,8 +264,16 @@ export const buildManualDocPdf = (
         ? buildReceiptPdf(doc, settings, logo)
         : buildDeliveryNotePdf(doc, settings, logo));
 
-const withLogo = async (doc: SalesDocument, settings: StoreSettings | null) =>
-    buildManualDocPdf(doc, settings, await loadStoreLogo(settings));
+/**
+ * Builds the document, then stamps the shared footer — receipts and delivery
+ * notes are the documents customers keep, so they carry the SalePilot mark like
+ * every other export.
+ */
+const withLogo = async (doc: SalesDocument, settings: StoreSettings | null) => {
+    const pdf = buildManualDocPdf(doc, settings, await loadStoreLogo(settings));
+    await drawPdfFooterAsync(pdf, settings);
+    return pdf;
+};
 
 export const downloadManualDocPdf = async (doc: SalesDocument, settings: StoreSettings | null) => {
     savePdf(

@@ -1,6 +1,6 @@
 import { Product, StoreSettings, Category } from '../types';
 import {
-    PDF_MARGIN, createPdf, drawPdfFooter, drawPdfHeader, drawPdfTable,
+    PDF_MARGIN, createPdf, drawPdfFooterAsync, drawPdfHeader, drawPdfTable,
     loadStoreLogo, pdfFileName, pdfMoney, pdfNumber, savePdf,
 } from './pdfDocument';
 
@@ -31,7 +31,7 @@ export const generateLowStockPDF = async (
         doc.setFontSize(11);
         doc.setTextColor(90);
         doc.text('No products are currently low on stock.', PDF_MARGIN, startY);
-        drawPdfFooter(doc, storeSettings);
+        await drawPdfFooterAsync(doc, storeSettings);
         savePdf(doc, pdfFileName('Low Stock Report', storeSettings));
         return;
     }
@@ -58,6 +58,6 @@ export const generateLowStockPDF = async (
         },
     });
 
-    drawPdfFooter(doc, storeSettings);
+    await drawPdfFooterAsync(doc, storeSettings);
     savePdf(doc, pdfFileName('Low Stock Report', storeSettings));
 };

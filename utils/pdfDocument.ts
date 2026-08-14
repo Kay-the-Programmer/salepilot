@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 import { StoreSettings } from '../types';
 import { api, buildAssetUrl } from '../services/api';
+import SalePilotMarkUrl from '../assets/salepilot.png';
 
 /**
  * One look for every PDF the app exports.
@@ -346,24 +347,98 @@ export const drawPdfTable = (pdf: jsPDF, options: UserOptions) => {
 };
 
 /**
- * Stamp "<store> · generated <date>" and "Page n of m" on every page.
+ * The SalePilot wordmark, loaded once per session and reused by every export.
+ *
+ * These documents get emailed to customers, handed to accountants and shared in
+ * WhatsApp groups, so the mark in the footer is the product's quietest and most
+ * effective marketing channel. It is deliberately in the FOOTER: the header
+ * belongs to the store's own branding, and a customer-facing invoice must look
+ * like the shop's document, not ours.
+ *
+ * Bundled through Vite (same origin), so unlike the store logo there is no CORS
+ * or tainted-canvas hazard. A failure resolves to null and the export continues
+ * unbranded rather than dying.
+ */
+let salePilotMark: Promise<PdfLogo | null> | undefined;
+
+export const loadSalePilotMark = (): Promise<PdfLogo | null> => {
+    if (salePilotMark) return salePilotMark;
+    salePilotMark = (async () => {
+        try {
+            const res = await fetch(SalePilotMarkUrl);
+            if (!res.ok) throw new Error(`mark request failed (${res.status})`);
+            const blob = await res.blob();
+            const dataUrl: string = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(String(reader.result));
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(blob);
+            });
+            const size = await new Promise<{ width: number; height: number }>((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+                img.onerror = () => reject(new Error('mark could not be decoded'));
+                img.src = dataUrl;
+            });
+            return { dataUrl, ...size };
+        } catch (err) {
+            console.warn('[pdf] SalePilot mark unavailable; exporting without it.', err);
+            return null;
+        }
+    })();
+    return salePilotMark;
+};
+
+/**
+ * Stamp the SalePilot mark, "<store> · generated <date>" and "Page n of m" on
+ * every page.
  *
  * Runs last on purpose: the page count isn't known until the content is laid
- * out, so calling this earlier would under-number multi-page exports.
+ * out, so calling this earlier would under-number multi-page exports. The mark
+ * is passed in (already loaded) because this function is synchronous — callers
+ * that want it use `drawPdfFooterAsync`, which every export in the app does.
  */
-export const drawPdfFooter = (pdf: jsPDF, settings: PdfSettings) => {
+export const drawPdfFooter = (pdf: jsPDF, settings: PdfSettings, mark: PdfLogo | null = null) => {
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
     const total = pdf.getNumberOfPages();
     const stamp = `${settings?.name || 'SalePilot'} · Generated ${new Date().toLocaleString()}`;
+    const baseline = pageHeight - 24;
+
+    // Mark height chosen so the wordmark's cap-height matches the 8pt footer
+    // text rather than towering over it.
+    const markH = 11;
+    const markW = mark ? (mark.width / mark.height) * markH : 0;
+
     for (let page = 1; page <= total; page++) {
         pdf.setPage(page);
         pdf.setFont('helvetica', 'normal');
         pdf.setFontSize(8);
         pdf.setTextColor(140);
-        pdf.text(stamp, PDF_MARGIN, pageHeight - 24);
-        pdf.text(`Page ${page} of ${total}`, pageWidth - PDF_MARGIN, pageHeight - 24, { align: 'right' });
+
+        let textX = PDF_MARGIN;
+        if (mark) {
+            try {
+                // Sits on the text baseline, left of the stamp.
+                pdf.addImage(mark.dataUrl, PDF_MARGIN, baseline - markH + 2.5, markW, markH, undefined, 'FAST');
+                textX = PDF_MARGIN + markW + 8;
+            } catch (err) {
+                console.warn('[pdf] SalePilot mark could not be drawn.', err);
+            }
+        }
+
+        pdf.text(stamp, textX, baseline);
+        pdf.text(`Page ${page} of ${total}`, pageWidth - PDF_MARGIN, baseline, { align: 'right' });
     }
+};
+
+/**
+ * The footer every export should use: loads the SalePilot mark, then stamps it
+ * with the rest of the footer. One await keeps the branding on every document
+ * without each caller having to remember it.
+ */
+export const drawPdfFooterAsync = async (pdf: jsPDF, settings: PdfSettings) => {
+    drawPdfFooter(pdf, settings, await loadSalePilotMark());
 };
 
 /**
