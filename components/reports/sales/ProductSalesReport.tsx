@@ -2,6 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../../../services/api';
 import { formatCurrency } from '../../../utils/currency';
 import { StoreSettings } from '../../../types';
+import {
+    createPdf, drawPdfHeader, drawPdfTable, drawPdfFooter, savePdf,
+    pdfMoney, pdfNumber, pdfFileName, loadStoreLogo,
+} from '../../../utils/pdfDocument';
 import ChevronLeftIcon from '../../icons/ChevronLeftIcon';
 import ChevronRightIcon from '../../icons/ChevronRightIcon';
 
@@ -117,6 +121,55 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
         URL.revokeObjectURL(url);
     };
 
+    /**
+     * Same table as a printable PDF — what a store hands to an owner or files
+     * for the day. A single-day range says so in the header rather than
+     * repeating the date twice.
+     */
+    const exportPdf = async () => {
+        if (!rows || rows.length === 0) return;
+        const doc = createPdf();
+        const period = startDate === endDate
+            ? `Day: ${startDate}`
+            : `Period: ${startDate} to ${endDate}`;
+        const startY = drawPdfHeader(doc, {
+            title: 'Product Sales Report',
+            settings: storeSettings,
+            logo: await loadStoreLogo(storeSettings),
+            meta: [period, `${totals?.quantity ?? 0} units across ${totals?.products ?? 0} products`],
+        });
+        drawPdfTable(doc, {
+            startY,
+            head: [['Product', 'SKU', 'Units Sold', 'Sales', 'Revenue', 'Profit']],
+            body: rows.map(r => [
+                r.name,
+                r.sku || '—',
+                pdfNumber(r.quantity),
+                pdfNumber(r.transactionCount),
+                pdfMoney(r.revenue, storeSettings),
+                pdfMoney(r.profit, storeSettings),
+            ]),
+            foot: totals ? [[
+                'Total', '',
+                pdfNumber(totals.quantity), '',
+                pdfMoney(totals.revenue, storeSettings),
+                pdfMoney(totals.profit, storeSettings),
+            ]] : undefined,
+            columnStyles: {
+                2: { halign: 'right' },
+                3: { halign: 'right' },
+                4: { halign: 'right' },
+                5: { halign: 'right' },
+            },
+        });
+        drawPdfFooter(doc, storeSettings);
+        savePdf(doc, pdfFileName(
+            'Product Sales',
+            storeSettings,
+            startDate === endDate ? startDate : `${startDate}_to_${endDate}`,
+        ));
+    };
+
     return (
         <div className="bg-surface rounded-2xl p-6 border border-brand-border">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
@@ -147,11 +200,19 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
                     </select>
                     <button
                         type="button"
+                        onClick={exportPdf}
+                        disabled={!rows || rows.length === 0}
+                        className="text-sm font-semibold px-3 py-2 rounded-lg border border-brand-border text-brand-text hover:bg-surface-variant transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        PDF
+                    </button>
+                    <button
+                        type="button"
                         onClick={exportCsv}
                         disabled={!rows || rows.length === 0}
                         className="text-sm font-semibold px-3 py-2 rounded-lg border border-brand-border text-brand-text hover:bg-surface-variant transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                     >
-                        Export CSV
+                        CSV
                     </button>
                 </div>
             </div>

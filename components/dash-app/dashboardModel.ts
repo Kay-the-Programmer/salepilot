@@ -268,6 +268,32 @@ export const PERIOD_LABEL: Record<DashPeriod, string> = {
     all: 'All Time',
 };
 
+/**
+ * The same window as `YYYY-MM-DD` strings, for the server-side report endpoints
+ * (which take calendar dates, not epochs). `end` is exclusive here, so the last
+ * inclusive day is a millisecond earlier — a window ending at midnight must not
+ * report an extra empty day.
+ */
+export const rangeDates = (range: DashRange, now: number = Date.now()): { startDate: string; endDate: string } => {
+    const iso = (t: number) => {
+        const d = new Date(t);
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+
+    // The metric cards use ROLLING windows — "Day" means the last 24 hours, so
+    // its window straddles two calendar dates. A date-based report asked for
+    // those dates would quietly include yesterday, which is not what someone
+    // picking "Day" means. So the two rolling presets are mapped to calendar
+    // days here; every other preset already starts on a calendar boundary.
+    if (range.kind === 'preset' && (range.preset === 'today' || range.preset === 'week')) {
+        const days = range.preset === 'today' ? 0 : 6;
+        return { startDate: iso(now - days * DAY), endDate: iso(now) };
+    }
+
+    const { start, end } = rangeWindow(range, now);
+    return { startDate: iso(start), endDate: iso(Math.max(start, end - 1)) };
+};
+
 /** Short human label for a range — preset name, or formatted custom date(s). */
 export const rangeLabel = (range: DashRange): string => {
     if (range.kind === 'preset') return PERIOD_LABEL[range.preset];

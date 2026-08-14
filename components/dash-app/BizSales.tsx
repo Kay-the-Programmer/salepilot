@@ -2,9 +2,10 @@ import React from 'react';
 import { StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { formatMoney, timeAgo } from '../crm/crmModel';
-import { DashboardOverview, DashRange } from './dashboardModel';
+import { DashboardOverview, DashRange, rangeDates } from './dashboardModel';
 import { MetricCard, TrendChart } from './DashBits';
 import PeriodPicker from './PeriodPicker';
+import { ProductSalesReport } from '../reports/sales/ProductSalesReport';
 
 interface BizSalesProps {
     overview: DashboardOverview;
@@ -16,7 +17,13 @@ interface BizSalesProps {
 
 const STATUS_LABEL: Record<string, string> = { paid: 'Paid', unpaid: 'Unpaid', partially_paid: 'Part-paid' };
 
-export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, onReports }) => (
+export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, onReports }) => {
+    // The dashboard thinks in epoch windows; the report endpoint takes calendar
+    // dates. One conversion here keeps the table on exactly the period the
+    // picker above it is showing.
+    const { startDate, endDate } = rangeDates(range);
+
+    return (
     <main className="crm-main crm-section-fade">
         <div className="crm-pagehead" style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <div>
@@ -42,6 +49,14 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
             </div>
             <TrendChart points={overview.trend} max={overview.trendMax} storeSettings={storeSettings} height={260} />
         </section>
+
+        {/* What actually sold in this period, with PDF/CSV export. Same
+            component the Reports app uses, so the two can never disagree. */}
+        {storeSettings && (
+            <section style={{ marginBottom: 16 }}>
+                <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} />
+            </section>
+        )}
 
         <section className="crm-panel">
             <div className="crm-panel__head">
@@ -79,6 +94,7 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
             )}
         </section>
     </main>
-);
+    );
+};
 
 export default BizSales;
