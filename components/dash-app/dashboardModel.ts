@@ -51,8 +51,15 @@ const rangeWindow = (range: DashRange, now: number): { start: number; end: numbe
 const saleNet = (s: Sale): number => {
     if ((s as any).fulfillmentStatus === 'cancelled') return 0;
     const base = Math.max(0, num(s.subtotal) - num((s as any).discount));
-    const total = num(s.total);
-    const refundedFraction = total > 0 ? Math.min(1, num(s.totalRefunded) / total) : 0;
+    const refunded = num(s.totalRefunded);
+    // The refunded SHARE must be measured against what the sale was worth
+    // BEFORE the refund. `total` from /sales is already net of refunds, so
+    // dividing by it inflated the share (a K90 refund on a K360 sale read as
+    // 90/270 = 33% instead of 25%) and under-reported revenue. `originalTotal`
+    // is the pre-refund figure; older cached rows that lack it are reconstructed
+    // by adding the refund back.
+    const original = num(s.originalTotal) || num(s.total) + refunded;
+    const refundedFraction = original > 0 ? Math.min(1, refunded / original) : 0;
     return base * (1 - refundedFraction);
 };
 
