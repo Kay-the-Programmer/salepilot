@@ -13,11 +13,13 @@ interface BizSalesProps {
     range: DashRange;
     onRange: (r: DashRange) => void;
     onReports: () => void;
+    /** Signed-in user, printed on exports as who ran the report. */
+    preparedBy?: string;
 }
 
 const STATUS_LABEL: Record<string, string> = { paid: 'Paid', unpaid: 'Unpaid', partially_paid: 'Part-paid' };
 
-export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, onReports }) => {
+export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, onReports, preparedBy }) => {
     // The dashboard thinks in epoch windows; the report endpoint takes calendar
     // dates. One conversion here keeps the table on exactly the period the
     // picker above it is showing.
@@ -54,7 +56,7 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
             component the Reports app uses, so the two can never disagree. */}
         {storeSettings && (
             <section style={{ marginBottom: 16 }}>
-                <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} />
+                <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} preparedBy={preparedBy} />
             </section>
         )}
 

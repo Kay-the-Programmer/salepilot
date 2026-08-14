@@ -4,7 +4,7 @@ import { formatCurrency } from '../../../utils/currency';
 import { StoreSettings } from '../../../types';
 import {
     createPdf, drawPdfHeader, drawPdfTable, drawPdfFooter, savePdf,
-    pdfMoney, pdfNumber, pdfFileName, loadStoreLogo,
+    pdfMoney, pdfNumber, pdfFileName, loadStoreLogo, PDF_NAVY,
 } from '../../../utils/pdfDocument';
 import ChevronLeftIcon from '../../icons/ChevronLeftIcon';
 import ChevronRightIcon from '../../icons/ChevronRightIcon';
@@ -28,6 +28,8 @@ interface ProductSalesReportProps {
     /** Page-level range, YYYY-MM-DD. */
     startDate: string;
     endDate: string;
+    /** Printed on the export as who ran it. */
+    preparedBy?: string;
 }
 
 type SortKey = 'quantity' | 'revenue' | 'profit' | 'name' | 'transactions';
@@ -46,9 +48,18 @@ const csvCell = (value: unknown): string => {
     return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 };
 
+/** Human names for the sort, used on the export header. */
+const SORT_LABEL: Record<SortKey, string> = {
+    name: 'product name',
+    quantity: 'units sold',
+    transactions: 'number of sales',
+    revenue: 'revenue',
+    profit: 'profit',
+};
+
 const PAGE_SIZES = [10, 25, 50];
 
-export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSettings, startDate, endDate }) => {
+export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSettings, startDate, endDate, preparedBy }) => {
     const [rows, setRows] = useState<ProductSalesRow[] | null>(null);
     const [totals, setTotals] = useState<{ products: number; quantity: number; revenue: number; profit: number } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -129,15 +140,27 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
     const exportPdf = async () => {
         if (!rows || rows.length === 0) return;
         const doc = createPdf();
-        const period = startDate === endDate
-            ? `Day: ${startDate}`
-            : `Period: ${startDate} to ${endDate}`;
+        const longDate = (d: string) =>
+            new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+
+        // The header states exactly what the reader is holding: which day(s),
+        // how the rows are ordered, and — when a search is active — that this is
+        // a filtered subset, so a partial total is never mistaken for the day's.
+        const meta = [
+            startDate === endDate ? longDate(startDate) : `${longDate(startDate)} — ${longDate(endDate)}`,
+            `${pdfNumber(totals?.quantity ?? 0)} units · ${pdfNumber(totals?.products ?? 0)} products`,
+            `Sorted by ${SORT_LABEL[sortBy]} (${sortOrder === 'desc' ? 'high to low' : 'low to high'})`,
+        ];
+        if (query) meta.push(`Filtered by "${query}"`);
+        if (preparedBy) meta.push(`Prepared by ${preparedBy}`);
+
         const startY = drawPdfHeader(doc, {
-            title: 'Product Sales Report',
+            title: 'Product Sales',
             settings: storeSettings,
             logo: await loadStoreLogo(storeSettings),
-            meta: [period, `${totals?.quantity ?? 0} units across ${totals?.products ?? 0} products`],
+            meta,
         });
+
         drawPdfTable(doc, {
             startY,
             head: [['Product', 'SKU', 'Units Sold', 'Sales', 'Revenue', 'Profit']],
@@ -150,18 +173,36 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
                 pdfMoney(r.profit, storeSettings),
             ]),
             foot: totals ? [[
-                'Total', '',
-                pdfNumber(totals.quantity), '',
+                'Total',
+                '',
+                pdfNumber(totals.quantity),
+                '',
                 pdfMoney(totals.revenue, storeSettings),
                 pdfMoney(totals.profit, storeSettings),
             ]] : undefined,
+            // Fixed widths for the figures so they line up down the page; the
+            // product name takes the remainder and wraps rather than pushing the
+            // money columns off their edges.
             columnStyles: {
-                2: { halign: 'right' },
-                3: { halign: 'right' },
-                4: { halign: 'right' },
-                5: { halign: 'right' },
+                0: { cellWidth: 'auto' },
+                1: { cellWidth: 70 },
+                2: { cellWidth: 62, halign: 'right' },
+                3: { cellWidth: 48, halign: 'right' },
+                4: { cellWidth: 78, halign: 'right' },
+                5: { cellWidth: 78, halign: 'right' },
+            },
+            // A totals row must read as one: bold, navy, ruled off from the body.
+            footStyles: {
+                fontStyle: 'bold',
+                fillColor: false,
+                textColor: PDF_NAVY,
+                lineWidth: { top: 1 },
+                lineColor: PDF_NAVY,
             },
         });
+
+        // Footer stamps "<store> · Generated <date time>" and "Page n of m" on
+        // every page — called last so the page count is final.
         drawPdfFooter(doc, storeSettings);
         savePdf(doc, pdfFileName(
             'Product Sales',

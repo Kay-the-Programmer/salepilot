@@ -51,6 +51,7 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
                 range={range}
                 onRange={setRange}
                 onReports={onReports}
+                preparedBy={user?.name}
             />
         );
     } else if (section === 'products') {

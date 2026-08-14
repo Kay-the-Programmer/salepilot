@@ -255,6 +255,7 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ storeSettings, user }) => {
                         storeSettings={storeSettings}
                         startDate={startDate}
                         endDate={endDate}
+                        preparedBy={user?.name}
                         dailySales={dailySales}
                         dailyPage={dailyPage}
                         setDailyPage={setDailyPage}

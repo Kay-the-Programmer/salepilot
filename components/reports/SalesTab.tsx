@@ -18,6 +18,8 @@ interface SalesTabProps {
     storeSettings: StoreSettings;
     startDate: string;
     endDate: string;
+    /** Signed-in user, printed on exports as who ran the report. */
+    preparedBy?: string;
     dailySales: any[] | null;
     dailyPage: number;
     setDailyPage: React.Dispatch<React.SetStateAction<number>>;
@@ -29,6 +31,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
     storeSettings,
     startDate,
     endDate,
+    preparedBy,
     dailySales,
     dailyPage,
     setDailyPage,
@@ -84,7 +87,7 @@ export const SalesTab: React.FC<SalesTabProps> = ({
             </div>
 
             {/* Row 3: Per-product units sold for the selected period */}
-            <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} />
+            <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} preparedBy={preparedBy} />
 
             {/* Row 4: Daily Sales Table */}
             {dailySales && dailySales.length > 0 && (
