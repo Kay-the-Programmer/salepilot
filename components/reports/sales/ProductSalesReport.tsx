@@ -25,9 +25,21 @@ export interface ProductSalesRow {
 
 interface ProductSalesReportProps {
     storeSettings: StoreSettings;
-    /** Page-level range, YYYY-MM-DD. */
+    /**
+     * Page-level range as sent to the API — either YYYY-MM-DD (inclusive
+     * calendar days) or full ISO instants (exclusive end), which callers with a
+     * precise window use so the server can't re-interpret the boundary in its
+     * own timezone.
+     */
     startDate: string;
     endDate: string;
+    /**
+     * The same range as inclusive calendar days, for headings, exports and file
+     * names. Defaults to startDate/endDate, which is correct when those are
+     * already plain days.
+     */
+    startDay?: string;
+    endDay?: string;
     /** Printed on the export as who ran it. */
     preparedBy?: string;
 }
@@ -59,7 +71,10 @@ const SORT_LABEL: Record<SortKey, string> = {
 
 const PAGE_SIZES = [10, 25, 50];
 
-export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSettings, startDate, endDate, preparedBy }) => {
+export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSettings, startDate, endDate, startDay, endDay, preparedBy }) => {
+    // Everything the reader sees is dated in plain days, never in raw instants.
+    const fromDay = startDay || startDate;
+    const toDay = endDay || endDate;
     const [rows, setRows] = useState<ProductSalesRow[] | null>(null);
     const [totals, setTotals] = useState<{ products: number; quantity: number; revenue: number; profit: number } | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -125,7 +140,7 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `product_sales_${startDate}_to_${endDate}.csv`);
+        link.setAttribute('download', `product_sales_${fromDay}_to_${toDay}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
@@ -147,7 +162,7 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
         // how the rows are ordered, and — when a search is active — that this is
         // a filtered subset, so a partial total is never mistaken for the day's.
         const meta = [
-            startDate === endDate ? longDate(startDate) : `${longDate(startDate)} — ${longDate(endDate)}`,
+            fromDay === toDay ? longDate(fromDay) : `${longDate(fromDay)} — ${longDate(toDay)}`,
             `${pdfNumber(totals?.quantity ?? 0)} units · ${pdfNumber(totals?.products ?? 0)} products`,
             `Sorted by ${SORT_LABEL[sortBy]} (${sortOrder === 'desc' ? 'high to low' : 'low to high'})`,
         ];
@@ -207,7 +222,7 @@ export const ProductSalesReport: React.FC<ProductSalesReportProps> = ({ storeSet
         savePdf(doc, pdfFileName(
             'Product Sales',
             storeSettings,
-            startDate === endDate ? startDate : `${startDate}_to_${endDate}`,
+            fromDay === toDay ? fromDay : `${fromDay}_to_${toDay}`,
         ));
     };
 

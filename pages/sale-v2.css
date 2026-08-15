@@ -417,6 +417,40 @@
   margin: 0 0 var(--v2-space-4);
 }
 
+/* Sales History head: title on the left, period picker + PDF export on the
+   right, wrapping to their own line on narrow tills. */
+.hist__head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--v2-space-3);
+  flex-wrap: wrap;
+}
+
+.hist__head-row h2 { margin-bottom: var(--v2-space-4); }
+
+.hist__head-tools {
+  display: flex;
+  align-items: center;
+  gap: var(--v2-space-3);
+  margin-bottom: var(--v2-space-4);
+}
+
+.hist__export {
+  min-height: 40px;
+  padding: 8px 14px;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.hist__export:disabled { opacity: 0.5; cursor: default; }
+
+.hist__count {
+  margin: var(--v2-space-3) 0 0;
+  font-size: var(--v2-text-sm);
+  color: var(--v2-color-text-muted);
+}
+
 .sale__chips {
   display: flex;
   flex-wrap: nowrap;

@@ -1,6 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Icon } from '../crm/CrmBits';
 import { DashRange, DashPeriod, PERIOD_LABEL, presetRange, rangeLabel } from './dashboardModel';
+// Self-contained styles: this control is used outside the dashboard (POS Sales
+// History), where dash.css and the .crm token scope are not present.
+import './period-picker.css';
 
 const DAY = 86400000;
 const startOfDay = (t: number) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { User, StoreSettings } from '../../types';
 import { api } from '../../services/api';
-import { formatCurrency } from '../../utils/currency';
+import { formatCurrency, paymentMethodsOf } from '../../utils/currency';
 import { Icon, Avatar } from '../crm/CrmBits';
 import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
@@ -53,6 +53,25 @@ const accountLabel = (a: ExpenseAccountOption) => (a.number ? `${a.number} · ${
  * backend scopes every read here to the signed-in user, so this view can only
  * ever show that person's own expenses.
  */
+/** Not a tender — the expense is unpaid and posts to Accounts Payable. */
+const ON_ACCOUNT = 'On account (pay later)';
+
+/**
+ * Which ledger account the money leaves.
+ *
+ * The chart offers only Cash and Accounts Payable as ways to pay (the backend's
+ * PAYMENT_SUB_TYPES), so every tender that moves money now — cash, mobile
+ * money, bank — posts against Cash, and only "on account" posts to Payables.
+ * The tender's own name rides along on the expense, so "paid by MTN" survives
+ * that simplification.
+ */
+const accountForMethod = (accounts: ExpenseAccountOption[], method: string): string => {
+    if (accounts.length === 0) return '';
+    const wantPayable = method === ON_ACCOUNT;
+    const match = accounts.find(a => a.name.toLowerCase().includes('payable') === wantPayable);
+    return (match || accounts[0]).id;
+};
+
 export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, onExit, onLogout }) => {
     const { openAppSwitcher } = useAppSwitcher();
 
@@ -70,6 +89,25 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
     const [amount, setAmount] = useState('');
     const [expenseAccountId, setExpenseAccountId] = useState('');
     const [paymentAccountId, setPaymentAccountId] = useState('');
+    // The store's OWN tender for this expense — the same list Settings offers
+    // and the till records on a sale. ON_ACCOUNT means it isn't paid yet, which
+    // posts to Accounts Payable rather than Cash.
+    const [paymentMethod, setPaymentMethod] = useState('');
+
+    // The store's tenders, plus the on-account option.
+    const tenderOptions = useMemo(
+        () => [...paymentMethodsOf(storeSettings).map(m => m.name), ON_ACCOUNT],
+        [storeSettings],
+    );
+
+    // Keep the choice tied to the store's list: pick the first configured
+    // tender, and re-pick if the current one is no longer offered.
+    useEffect(() => {
+        if (tenderOptions.includes(paymentMethod)) return;
+        const first = tenderOptions[0];
+        setPaymentMethod(first);
+        setPaymentAccountId(accountForMethod(paymentAccounts, first));
+    }, [tenderOptions, paymentMethod, paymentAccounts]);
     const [reference, setReference] = useState('');
 
     const loadAccounts = useCallback(async () => {
@@ -133,6 +171,7 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                 expenseAccountName: expenseAccount?.name,
                 paymentAccountId,
                 paymentAccountName: paymentAccount?.name,
+                paymentMethod: paymentMethod === ON_ACCOUNT ? undefined : paymentMethod,
                 category: expenseAccount?.name,
                 reference: reference.trim() || undefined,
             });
@@ -283,15 +322,19 @@ export const ExpensesApp: React.FC<ExpensesAppProps> = ({ user, storeSettings, o
                                                 </div>
 
                                                 <div className="mb-3">
-                                                    <label className={LABEL} htmlFor="exp-payment">Payment Method</label>
+                                                    <label className={LABEL} htmlFor="exp-payment">Paid by</label>
                                                     <select
                                                         id="exp-payment"
                                                         className={FIELD}
-                                                        value={paymentAccountId}
-                                                        onChange={e => setPaymentAccountId(e.target.value)}
+                                                        value={paymentMethod}
+                                                        onChange={e => {
+                                                            const value = e.target.value;
+                                                            setPaymentMethod(value);
+                                                            setPaymentAccountId(accountForMethod(paymentAccounts, value));
+                                                        }}
                                                     >
-                                                        {paymentAccounts.map(a => (
-                                                            <option key={a.id} value={a.id}>{accountLabel(a)}</option>
+                                                        {tenderOptions.map(name => (
+                                                            <option key={name} value={name}>{name}</option>
                                                         ))}
                                                     </select>
                                                 </div>

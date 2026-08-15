@@ -118,7 +118,7 @@ export const BizOverview: React.FC<BizOverviewProps> = ({
                 <section className="dash-card dash-trend-card">
                     <div className="dash-card__head">
                         <h3 className="dash-card__title">Sales Trend</h3>
-                        <span className="dash-trend__hint">Last 7 days</span>
+                        <span className="dash-trend__hint">{overview.rangeLabel}</span>
                     </div>
                     <TrendChart points={overview.trend} max={overview.trendMax} storeSettings={storeSettings} height={260} />
                 </section>

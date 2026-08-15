@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Sale, Customer, StoreSettings, Return, User } from '../../types';
 import { api } from '../../services/api';
 import { dbService } from '../../services/dbService';
@@ -8,6 +8,12 @@ import ReceiptModal from './ReceiptModal';
 import PosIcon from './PosIcon';
 import { SnackbarType } from '../../App';
 import { invalidateDashboardCache } from '../reports/reportsData';
+import PeriodPicker from '../dash-app/PeriodPicker';
+import { DashRange, presetRange, rangeDates, rangeDaysOf, rangeLabel, windowFor } from '../dash-app/dashboardModel';
+import {
+    createPdf, drawPdfHeader, drawPdfTable, drawPdfFooterAsync, savePdf,
+    pdfMoney, pdfNumber, pdfFileName, loadStoreLogo, PDF_NAVY,
+} from '../../utils/pdfDocument';
 
 interface SalesHistoryViewProps {
     storeSettings: StoreSettings;
@@ -64,6 +70,22 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
     const [mobileDetailOpen, setMobileDetailOpen] = useState(false);
     const [refundMode, setRefundMode] = useState(false);
     const [receiptOpen, setReceiptOpen] = useState(false);
+    const [exporting, setExporting] = useState(false);
+
+    // Reporting period — the SAME control and window definition the Business
+    // Dashboard uses, so "This Month" means one thing across the whole product.
+    // Defaults to All Time, which is what this list showed before it could be
+    // filtered at all.
+    const [range, setRange] = useState<DashRange>(presetRange('all'));
+    // Pinned instant the period resolves against; open-ended presets run to
+    // "now", and re-reading the clock each render would refetch in a loop.
+    const [now, setNow] = useState(() => Date.now());
+    const firstRange = useRef(true);
+    useEffect(() => {
+        if (firstRange.current) { firstRange.current = false; return; }
+        setNow(Date.now());
+    }, [range]);
+    const { startDate, endDate } = useMemo(() => rangeDates(range, now), [range, now]);
 
     const [itemsToReturn, setItemsToReturn] = useState<{ [productId: string]: ReturnLine }>({});
     const [refundMethod, setRefundMethod] = useState('original_method');
@@ -84,25 +106,44 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
         return () => clearTimeout(t);
     }, [search]);
 
+    /** The period as query params — one place, shared by the list and the export. */
+    const periodQuery = useCallback(
+        (extra = '') =>
+            `startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}` +
+            `${query ? `&search=${encodeURIComponent(query)}` : ''}${extra}`,
+        [startDate, endDate, query],
+    );
+
+    const [total, setTotal] = useState(0);
+
     const fetchSales = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const qs = query ? `&search=${encodeURIComponent(query)}` : '';
-            const res = await api.get<{ items: Sale[] }>(`/sales?page=1&limit=50&sortBy=date&sortOrder=desc${qs}`);
+            const res = await api.get<{ items: Sale[]; total: number }>(
+                `/sales?page=1&limit=50&sortBy=date&sortOrder=desc&${periodQuery()}`,
+            );
             setSales(res?.items || []);
+            setTotal(Number(res?.total) || (res?.items || []).length);
         } catch (err: any) {
             try {
-                const all = await dbService.getAll<Sale>('sales');
+                // Offline: the cached rows are filtered to the same window, so
+                // the list never claims to show a period it isn't showing.
+                const w = windowFor(range, now);
+                const all = (await dbService.getAll<Sale>('sales')).filter(s => {
+                    const t = new Date(s.timestamp).getTime();
+                    return !Number.isNaN(t) && t >= w.start && t < w.end;
+                });
                 all.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
                 setSales(all.slice(0, 50));
+                setTotal(all.length);
             } catch {
                 setError(err?.message || 'Failed to load sales.');
             }
         } finally {
             setIsLoading(false);
         }
-    }, [query]);
+    }, [periodQuery, range, now]);
 
     useEffect(() => { fetchSales(); }, [fetchSales]);
 
@@ -173,6 +214,106 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
             (s.cart || []).some(i => (i.name || '').toLowerCase().includes(t))
         );
     }, [enriched, search]);
+
+    /**
+     * The period's sales as a printable PDF — what a store hands to an owner or
+     * files for the day.
+     *
+     * The list on screen holds the newest 50 rows; an export that quietly
+     * printed only those would read as a complete period statement while
+     * omitting most of it, so the whole window is paged in first. Very large
+     * periods stop at a stated ceiling and the header says so rather than
+     * truncating in silence.
+     */
+    const EXPORT_LIMIT = 2000;
+    const exportPdf = async () => {
+        if (exporting) return;
+        setExporting(true);
+        try {
+            const PAGE = 200;
+            const rows: Sale[] = [];
+            let page = 1;
+            let reported = 0;
+            for (;;) {
+                const res = await api.get<{ items: Sale[]; total: number }>(
+                    `/sales?page=${page}&limit=${PAGE}&sortBy=date&sortOrder=desc&${periodQuery()}`,
+                );
+                const items = res?.items || [];
+                reported = Number(res?.total) || reported;
+                rows.push(...items);
+                if (items.length < PAGE || rows.length >= Math.min(reported || Infinity, EXPORT_LIMIT)) break;
+                page++;
+            }
+            if (rows.length === 0) {
+                showSnackbar(`No sales in ${rangeLabel(range).toLowerCase()} to export.`, 'info');
+                return;
+            }
+
+            const w = windowFor(range, now);
+            const { startDay, endDay } = rangeDaysOf(w.start, w.end);
+            const longDate = (d: string) =>
+                new Date(`${d}T12:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'long', year: 'numeric' });
+
+            // Refunded sales still belong on the statement — they are part of
+            // what happened — so the total is the net of what was actually kept.
+            const net = rows.reduce((sum, s) => sum + (Number(s.total) || 0), 0);
+
+            const meta = [
+                startDay === endDay ? longDate(startDay) : `${longDate(startDay)} — ${longDate(endDay)}`,
+                `${pdfNumber(rows.length)} transaction${rows.length === 1 ? '' : 's'} · ${pdfMoney(net, storeSettings)}`,
+            ];
+            if (query) meta.push(`Filtered by "${query}"`);
+            if (reported > rows.length) meta.push(`Showing the newest ${pdfNumber(rows.length)} of ${pdfNumber(reported)} transactions`);
+
+            const doc = createPdf();
+            const startY = drawPdfHeader(doc, {
+                title: 'Sales History',
+                settings: storeSettings,
+                logo: await loadStoreLogo(storeSettings),
+                meta,
+            });
+
+            drawPdfTable(doc, {
+                startY,
+                head: [['Date', 'Transaction', 'Customer', 'Items', 'Status', 'Total']],
+                body: rows.map(s => [
+                    new Date(s.timestamp).toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+                    s.transactionId,
+                    s.customerName || 'Walk-in',
+                    pdfNumber((s.cart || []).reduce((n, i) => n + (Number(i.quantity) || 0), 0)),
+                    statusBadge(s).label,
+                    pdfMoney(s.total, storeSettings),
+                ]),
+                foot: [['Total', '', '', '', '', pdfMoney(net, storeSettings)]],
+                columnStyles: {
+                    0: { cellWidth: 84 },
+                    1: { cellWidth: 'auto' },
+                    2: { cellWidth: 92 },
+                    3: { cellWidth: 44, halign: 'right' },
+                    4: { cellWidth: 64 },
+                    5: { cellWidth: 78, halign: 'right' },
+                },
+                footStyles: {
+                    fontStyle: 'bold',
+                    fillColor: false,
+                    textColor: PDF_NAVY,
+                    lineWidth: { top: 1 },
+                    lineColor: PDF_NAVY,
+                },
+            });
+
+            await drawPdfFooterAsync(doc, storeSettings);
+            savePdf(doc, pdfFileName(
+                'Sales History',
+                storeSettings,
+                startDay === endDay ? startDay : `${startDay}_to_${endDay}`,
+            ));
+        } catch (err: any) {
+            showSnackbar(err?.message || 'Could not export the sales history.', 'error');
+        } finally {
+            setExporting(false);
+        }
+    };
 
     const openSale = (sale: Sale) => {
         setSelectedSale(sale);
@@ -253,7 +394,22 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
             {/* List */}
             <main className="sale__browse">
                 <div className="sale__browse-head">
-                    <h2>Sales History</h2>
+                    <div className="hist__head-row">
+                        <h2>Sales History</h2>
+                        <div className="hist__head-tools">
+                            <PeriodPicker range={range} onRange={setRange} />
+                            <button
+                                type="button"
+                                className="v2-btn v2-btn--secondary hist__export"
+                                onClick={exportPdf}
+                                disabled={exporting || isLoading || filtered.length === 0}
+                                title={`Export ${rangeLabel(range).toLowerCase()} as a PDF`}
+                            >
+                                <PosIcon name={exporting ? 'hourglass_top' : 'picture_as_pdf'} size={18} />
+                                {exporting ? 'Preparing…' : 'PDF'}
+                            </button>
+                        </div>
+                    </div>
                     <div className="sale__search" style={{ maxWidth: 'none' }}>
                         <PosIcon name="search" size={20} className="sale__search-icon" />
                         <input
@@ -269,6 +425,15 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                             </button>
                         )}
                     </div>
+                    {/* The list holds the newest 50; saying so keeps a partial
+                        view from reading as the whole period. The PDF export
+                        covers the full period regardless. */}
+                    {!isLoading && !error && total > 0 && (
+                        <p className="hist__count">
+                            {total.toLocaleString()} transaction{total === 1 ? '' : 's'} in {rangeLabel(range).toLowerCase()}
+                            {total > filtered.length && ` · showing the newest ${filtered.length}`}
+                        </p>
+                    )}
                 </div>
 
                 {isLoading ? (
@@ -286,8 +451,17 @@ export const SalesHistoryView: React.FC<SalesHistoryViewProps> = ({ storeSetting
                 ) : filtered.length === 0 ? (
                     <div className="sale__empty">
                         <PosIcon name="receipt_long" size={40} />
-                        <p>{search ? `No sales match “${search}”.` : 'No sales recorded yet.'}</p>
-                        {!search && onStartSelling && (
+                        <p>
+                            {search
+                                ? `No sales match “${search}” in ${rangeLabel(range).toLowerCase()}.`
+                                : range.kind === 'preset' && range.preset === 'all'
+                                    ? 'No sales recorded yet.'
+                                    : `No sales in ${rangeLabel(range).toLowerCase()}.`}
+                        </p>
+                        {/* "Make your first sale" is only true when there are no
+                            sales AT ALL — not when a chosen period happens to be
+                            empty. */}
+                        {!search && range.kind === 'preset' && range.preset === 'all' && onStartSelling && (
                             <button
                                 type="button"
                                 className="v2-btn v2-btn--primary"

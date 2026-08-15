@@ -6,6 +6,9 @@ import { DashDelta, TrendPoint } from './dashboardModel';
 
 /** Coloured up/down delta pill (matches the template's trend chips). */
 export const DeltaChip: React.FC<{ delta: DashDelta; small?: boolean }> = ({ delta, small }) => {
+    // "All Time" has no preceding period — showing a permanent "+100% / New"
+    // there was noise, so the chip is simply omitted.
+    if (!delta.comparable) return null;
     if (delta.isNew) {
         return <span className={`dash-delta dash-delta--up${small ? ' dash-delta--sm' : ''}`}><Icon name="trending_up" size={small ? 12 : 14} /> New</span>;
     }

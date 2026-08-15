@@ -2,7 +2,7 @@ import React from 'react';
 import { StoreSettings } from '../../types';
 import { Icon } from '../crm/CrmBits';
 import { formatMoney, timeAgo } from '../crm/crmModel';
-import { DashboardOverview, DashRange, rangeDates } from './dashboardModel';
+import { DashboardOverview, DashRange, rangeDates, rangeDaysOf, windowFor } from './dashboardModel';
 import { MetricCard, TrendChart } from './DashBits';
 import PeriodPicker from './PeriodPicker';
 import { ProductSalesReport } from '../reports/sales/ProductSalesReport';
@@ -12,6 +12,8 @@ interface BizSalesProps {
     storeSettings?: StoreSettings | null;
     range: DashRange;
     onRange: (r: DashRange) => void;
+    /** The pinned instant the period resolves against — see DashboardApp. */
+    now: number;
     onReports: () => void;
     /** Signed-in user, printed on exports as who ran the report. */
     preparedBy?: string;
@@ -19,11 +21,12 @@ interface BizSalesProps {
 
 const STATUS_LABEL: Record<string, string> = { paid: 'Paid', unpaid: 'Unpaid', partially_paid: 'Part-paid' };
 
-export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, onReports, preparedBy }) => {
-    // The dashboard thinks in epoch windows; the report endpoint takes calendar
-    // dates. One conversion here keeps the table on exactly the period the
-    // picker above it is showing.
-    const { startDate, endDate } = rangeDates(range);
+export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, now, onReports, preparedBy }) => {
+    // The table below is filtered by the SAME window the cards above are — one
+    // conversion, from the one window definition, so the two can't drift apart.
+    const { startDate, endDate } = rangeDates(range, now);
+    const w = windowFor(range, now);
+    const { startDay, endDay } = rangeDaysOf(w.start, w.end);
 
     return (
     <main className="crm-main crm-section-fade">
@@ -45,7 +48,7 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
             <div className="dash-card__head">
                 <div>
                     <h3 className="dash-card__title">Revenue Trend</h3>
-                    <p className="dash-card__sub">Daily revenue over the last 7 days</p>
+                    <p className="dash-card__sub">Revenue across {overview.rangeLabel.toLowerCase()}</p>
                 </div>
                 <button className="crm-link" type="button" onClick={onReports}>Open full reports</button>
             </div>
@@ -56,7 +59,7 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
             component the Reports app uses, so the two can never disagree. */}
         {storeSettings && (
             <section style={{ marginBottom: 16 }}>
-                <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} preparedBy={preparedBy} />
+                <ProductSalesReport storeSettings={storeSettings} startDate={startDate} endDate={endDate} startDay={startDay} endDay={endDay} preparedBy={preparedBy} />
             </section>
         )}
 
@@ -64,7 +67,7 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
             <div className="crm-panel__head">
                 <div>
                     <h3 className="crm-panel__title">Recent Transactions</h3>
-                    <p className="crm-panel__sub">Newest sales across POS and online</p>
+                    <p className="crm-panel__sub">Newest sales in {overview.rangeLabel.toLowerCase()}, POS and online</p>
                 </div>
                 <button className="crm-link" type="button" onClick={onReports}>View all</button>
             </div>

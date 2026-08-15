@@ -1,6 +1,6 @@
 import React from 'react';
 import { CartItem, Customer, StoreSettings } from '../../types';
-import { formatCurrency } from '../../utils/currency';
+import { formatCurrency, isCashMethod, paymentMethodsOf } from '../../utils/currency';
 import PosIcon from './PosIcon';
 
 interface PaymentPanelProps {
@@ -70,17 +70,16 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({
     today,
 }) => {
     const isBackdated = !!saleDate && saleDate !== today;
-    const isCashMethod = (selectedPaymentMethod || '').toLowerCase().includes('cash');
+    const isCash = isCashMethod(selectedPaymentMethod, storeSettings);
     const isMobileMoney = ['mobile', 'lenco', 'mtn', 'airtel'].some(k =>
         (selectedPaymentMethod || '').toLowerCase().includes(k)
     );
     const cashReceivedNumber = parseFloat(cashReceived || '0') || 0;
 
-    const paymentMethods = (storeSettings.paymentMethods && storeSettings.paymentMethods.length > 0)
-        ? storeSettings.paymentMethods
-        : [{ id: 'pm_cash', name: 'Cash' }, { id: 'pm_card', name: 'Card' }];
+    // The store's own tenders — never a list invented here.
+    const paymentMethods = paymentMethodsOf(storeSettings);
 
-    const isPayDisabled = cart.length === 0 || total < 0 || (isCashMethod && cashReceivedNumber < total) || isProcessing;
+    const isPayDisabled = cart.length === 0 || total < 0 || (isCash && cashReceivedNumber < total) || isProcessing;
 
     const quickAmounts = total > 0
         ? [total, Math.ceil(total / 50) * 50, Math.ceil(total / 100) * 100, Math.ceil(total / 500) * 500]
@@ -174,7 +173,7 @@ export const PaymentPanel: React.FC<PaymentPanelProps> = ({
                     </div>
                 )}
 
-                {isCashMethod && (
+                {isCash && (
                     <div className="cart__field">
                         <label className="cart__field-label" htmlFor="pay-cash-input">Cash received</label>
                         <input

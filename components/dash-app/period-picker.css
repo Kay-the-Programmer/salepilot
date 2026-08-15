@@ -1,0 +1,123 @@
+/* ============================================================
+   Period picker — the ONE reporting-period control.
+
+   Lives with the Business Dashboard but is used by any surface that
+   filters by period (the POS Sales History does), so it carries its own
+   styles rather than relying on the host's stylesheet. The Velocity
+   tokens it draws on are declared on `.crm`, which the POS is not
+   inside, so every colour has a fallback matching the light palette and
+   `.dark` supplies the dark one. Inside a `.crm` app the real tokens win
+   and nothing changes.
+   ============================================================ */
+
+.dash-period {
+  position: relative;
+  --pp-ease: var(--c-ease, cubic-bezier(0.2, 0, 0, 1));
+  --pp-surface: var(--c-surface-lowest, #ffffff);
+  --pp-surface-low: var(--c-surface-low, #f1f4f6);
+  --pp-surface-hover: var(--c-surface-container, #ebeef0);
+  --pp-text: var(--c-on-bg, #181c1e);
+  --pp-text-muted: var(--c-on-surface-variant, #434651);
+  --pp-outline: var(--c-outline, #747782);
+  --pp-outline-variant: var(--c-outline-variant, #c4c6d2);
+  --pp-primary: var(--c-primary, #002b6b);
+  --pp-on-primary: var(--c-on-primary, #ffffff);
+  --pp-radius: var(--c-radius, 8px);
+  --pp-radius-lg: var(--c-radius-lg, 12px);
+  --pp-radius-xl: var(--c-radius-xl, 16px);
+  --pp-radius-pill: var(--c-radius-pill, 9999px);
+}
+
+.dark .dash-period {
+  --pp-surface: var(--c-surface-lowest, #0b0e11);
+  --pp-surface-low: var(--c-surface-low, #181d22);
+  --pp-surface-hover: var(--c-surface-container, #1c2024);
+  --pp-text: var(--c-on-bg, #eef1f3);
+  --pp-text-muted: var(--c-on-surface-variant, #c4c6d2);
+  --pp-outline: var(--c-outline, #8b8e99);
+  --pp-outline-variant: var(--c-outline-variant, #434651);
+  --pp-primary: var(--c-primary, #b0c6ff);
+  --pp-on-primary: var(--c-on-primary, #001944);
+}
+
+/* The picker draws its chevrons and calendar glyph with Material Symbols
+   ligatures. The `.msr` rule that turns those into icons is scoped to `.crm`,
+   so outside a CRM-shell app the icon names rendered as literal text
+   ("calendar_month", "chevron_left"). Scoped to this control so it cannot
+   affect a host's own icon styling. */
+.dash-period .msr {
+  font-family: 'Material Symbols Rounded';
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  white-space: nowrap;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  user-select: none;
+}
+
+.dash-period__btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border: 1px solid var(--pp-outline-variant);
+  background: var(--pp-surface); color: var(--pp-text);
+  border-radius: var(--pp-radius-pill); cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 600;
+  transition: background-color 0.15s var(--pp-ease), border-color 0.15s var(--pp-ease);
+}
+.dash-period__btn:hover { background: var(--pp-surface-hover); }
+.dash-period__btn.is-open { border-color: var(--pp-primary); }
+.dash-period__btn .msr { color: var(--pp-primary); }
+.dash-period__label { white-space: nowrap; }
+
+.dash-period__pop {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 70;
+  width: 300px; max-width: calc(100vw - 32px);
+  background: var(--pp-surface); border: 1px solid var(--pp-outline-variant);
+  border-radius: var(--pp-radius-xl); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
+  padding: 14px; animation: sp-period-fade 0.16s var(--pp-ease) both;
+}
+@media (max-width: 420px) { .dash-period__pop { left: 0; right: auto; } }
+
+@keyframes sp-period-fade {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dash-period__presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
+.dash-period__preset {
+  border: 1px solid var(--pp-outline-variant); background: var(--pp-surface-low);
+  color: var(--pp-text-muted); cursor: pointer; font-family: inherit;
+  font-size: 12px; font-weight: 600; padding: 8px 6px; border-radius: var(--pp-radius-lg);
+  transition: background-color 0.15s var(--pp-ease), color 0.15s var(--pp-ease), border-color 0.15s var(--pp-ease);
+}
+.dash-period__preset:hover { color: var(--pp-text); }
+.dash-period__preset.is-active { background: var(--pp-primary); border-color: var(--pp-primary); color: var(--pp-on-primary); }
+
+.dash-period__calhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.dash-period__month { font-size: 14px; font-weight: 700; color: var(--pp-text); }
+.dash-period__nav {
+  width: 32px; height: 32px; min-width: 0; min-height: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; color: var(--pp-text-muted); cursor: pointer;
+  border-radius: var(--pp-radius); transition: background-color 0.15s var(--pp-ease);
+}
+.dash-period__nav:hover { background: var(--pp-surface-hover); color: var(--pp-text); }
+
+.dash-period__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.dash-period__grid--dow { margin-bottom: 2px; }
+.dash-period__dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--pp-outline); padding: 4px 0; }
+.dash-period__day {
+  aspect-ratio: 1 / 1; min-width: 0; min-height: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  border: none; background: none; cursor: pointer; font-family: inherit;
+  font-size: 13px; font-weight: 600; color: var(--pp-text); border-radius: var(--pp-radius);
+  transition: background-color 0.12s var(--pp-ease);
+}
+.dash-period__day:hover:not(:disabled) { background: var(--pp-surface-hover); }
+.dash-period__day:disabled { color: var(--pp-outline-variant); cursor: default; }
+.dash-period__day.is-today { box-shadow: inset 0 0 0 1.5px var(--pp-outline-variant); }
+.dash-period__day.is-sel { background: var(--pp-primary); color: var(--pp-on-primary); }
+.dash-period__day.is-sel.is-today { box-shadow: none; }
+
+.dash-period__hint { font-size: 11px; color: var(--pp-text-muted); margin: 10px 2px 0; text-align: center; }

@@ -1,10 +1,11 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Product, Sale, Customer, StoreSettings, User } from '../../types';
+import { api } from '../../services/api';
 import { DashboardShell, DashSection } from './DashboardShell';
 import BizOverview from './BizOverview';
 import BizSales from './BizSales';
 import BizProducts from './BizProducts';
-import { buildDashboard, DashRange } from './dashboardModel';
+import { buildDashboard, DashRange, DashServerTotals, rangeDatePair } from './dashboardModel';
 import { UpsellInline } from '../upsell/UpsellCard';
 import '../crm/crm.css';
 import './dash.css';
@@ -37,9 +38,55 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
 }) => {
     const [range, setRange] = useState<DashRange>({ kind: 'preset', preset: 'week' });
 
+    // The period's "now" is PINNED, not read at render time. Open-ended presets
+    // ("This Week" runs to the current instant) otherwise resolved to a slightly
+    // different end on every render, so each render produced a new request URL
+    // and the report table refetched in a loop. It is re-pinned when the period
+    // changes, which is the only time the window is meant to move.
+    const [now, setNow] = useState(() => Date.now());
+    const firstRange = useRef(true);
+    useEffect(() => {
+        // The initial range is already pinned by useState — re-pinning it here
+        // would fetch every window twice on mount.
+        if (firstRange.current) { firstRange.current = false; return; }
+        setNow(Date.now());
+    }, [range]);
+
+    // Period totals come from the server's aggregate report, which sees every
+    // sale. The locally derived figures below are computed from GET /sales,
+    // which the backend caps at the newest 1000 rows — so on a busy store
+    // "This Year" was quietly under-reported with no warning. The local numbers
+    // stay as the offline / no-permission fallback.
+    const [serverTotals, setServerTotals] = useState<DashServerTotals | null>(null);
+    useEffect(() => {
+        let cancelled = false;
+        const { current, prior, comparable } = rangeDatePair(range, now);
+        const fetchWindow = async (w: { startDate: string; endDate: string }) => {
+            const res = await api.get<any>(`/reports/dashboard?startDate=${encodeURIComponent(w.startDate)}&endDate=${encodeURIComponent(w.endDate)}`);
+            return {
+                revenue: Number(res?.sales?.totalRevenue) || 0,
+                orders: Number(res?.sales?.totalTransactions) || 0,
+            };
+        };
+        (async () => {
+            try {
+                const [cur, prev] = await Promise.all([
+                    fetchWindow(current),
+                    comparable ? fetchWindow(prior) : Promise.resolve({ revenue: 0, orders: 0 }),
+                ]);
+                if (!cancelled) setServerTotals({ revenue: cur.revenue, orders: cur.orders, prevRevenue: prev.revenue, prevOrders: prev.orders });
+            } catch {
+                // Offline, or a role without report permission — fall back to the
+                // client-side figures rather than showing nothing.
+                if (!cancelled) setServerTotals(null);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [range, now]);
+
     const overview = useMemo(
-        () => buildDashboard(sales, products, customers, storeSettings, range),
-        [sales, products, customers, storeSettings, range],
+        () => buildDashboard(sales, products, customers, storeSettings, range, now, serverTotals),
+        [sales, products, customers, storeSettings, range, now, serverTotals],
     );
 
     let content: React.ReactNode;
@@ -50,6 +97,7 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
                 storeSettings={storeSettings}
                 range={range}
                 onRange={setRange}
+                now={now}
                 onReports={onReports}
                 preparedBy={user?.name}
             />

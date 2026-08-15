@@ -2,7 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspens
 import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, User, Return } from '../types';
 import { SnackbarType } from '../App';
 import { api } from '@/services/api';
-import { formatCurrency } from '../utils/currency';
+import { formatCurrency, isCashMethod as isCashTender, paymentMethodsOf } from '../utils/currency';
 import TourGuide from '../components/TourGuide';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
@@ -145,16 +145,16 @@ const SalesPage: React.FC<SalesPageProps> = ({
 
     const { isActive: isExternalScannerActive } = useBarcodeScanner(stableScanCallback, { paused: isScannerModalOpen });
 
-    // Auto-select first payment method
+    // Keep the selected tender tied to the store's OWN list: pick the first
+    // when nothing is chosen, and re-pick when the current one is no longer
+    // offered (renamed or removed in Settings while the till was open).
+    // Otherwise the sale records a method the store cannot report on.
     useEffect(() => {
-        const methods = storeSettings.paymentMethods || [];
-        const fallbacks = [{ id: 'pm_cash', name: 'Cash' }, { id: 'pm_card', name: 'Card' }];
-        const allMethods = methods.length > 0 ? methods : fallbacks;
-
-        if (allMethods.length > 0 && !selectedPaymentMethod) {
-            setSelectedPaymentMethod(allMethods[0].name);
-        }
-    }, [storeSettings.paymentMethods, selectedPaymentMethod]);
+        const allMethods = paymentMethodsOf(storeSettings);
+        if (allMethods.length === 0) return;
+        const stillOffered = allMethods.some(m => m.name === selectedPaymentMethod);
+        if (!stillOffered) setSelectedPaymentMethod(allMethods[0].name);
+    }, [storeSettings, selectedPaymentMethod]);
 
     // Reset cash when payment method changes
     useEffect(() => {
@@ -364,9 +364,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
         return { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit };
     }, [cart, discount, discountType, appliedStoreCredit, taxRate]);
 
-    const isCashMethod = useMemo(() =>
-        (selectedPaymentMethod || '').toLowerCase().includes('cash'),
-        [selectedPaymentMethod]
+    // Cash-ness comes from the store's configured method (matched by id), so
+    // renaming "CASH" in Settings doesn't silently remove the cash-received box
+    // and its change calculation.
+    const isCashMethod = useMemo(
+        () => isCashTender(selectedPaymentMethod, storeSettings),
+        [selectedPaymentMethod, storeSettings]
     );
     const cashReceivedNumber = useMemo(() => parseFloat(cashReceived || '0') || 0, [cashReceived]);
     const changeDue = useMemo(() => Math.max(0, cashReceivedNumber - total), [cashReceivedNumber, total]);

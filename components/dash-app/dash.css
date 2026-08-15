@@ -67,67 +67,10 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* ---------- Period picker (single button + calendar popover) ---------- */
-.crm .dash-period { position: relative; }
-.crm .dash-period__btn {
-  display: inline-flex; align-items: center; gap: 8px;
-  padding: 8px 12px; border: 1px solid var(--c-outline-variant);
-  background: var(--c-surface-lowest); color: var(--c-on-bg);
-  border-radius: var(--c-radius-pill); cursor: pointer; font-family: inherit;
-  font-size: 13px; font-weight: 600;
-  transition: background-color 0.15s var(--c-ease), border-color 0.15s var(--c-ease);
-}
-.crm .dash-period__btn:hover { background: var(--c-surface-container); }
-.crm .dash-period__btn.is-open { border-color: var(--c-primary); }
-.crm .dash-period__btn .msr { color: var(--c-primary); }
-.crm .dash-period__label { white-space: nowrap; }
+/* Period picker styles now live in period-picker.css, imported by the
+   component itself — the POS Sales History uses the same control and is not
+   inside a .crm scope. */
 
-.crm .dash-period__pop {
-  position: absolute; right: 0; top: calc(100% + 8px); z-index: 70;
-  width: 300px; max-width: calc(100vw - 32px);
-  background: var(--c-surface-lowest); border: 1px solid var(--c-outline-variant);
-  border-radius: var(--c-radius-xl); box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
-  padding: 14px; animation: crm-fade 0.16s var(--c-ease) both;
-}
-@media (max-width: 420px) { .crm .dash-period__pop { left: 0; right: auto; } }
-
-.crm .dash-period__presets { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 12px; }
-.crm .dash-period__preset {
-  border: 1px solid var(--c-outline-variant); background: var(--c-surface-low);
-  color: var(--c-on-surface-variant); cursor: pointer; font-family: inherit;
-  font-size: 12px; font-weight: 600; padding: 8px 6px; border-radius: var(--c-radius-lg);
-  transition: background-color 0.15s var(--c-ease), color 0.15s var(--c-ease), border-color 0.15s var(--c-ease);
-}
-.crm .dash-period__preset:hover { color: var(--c-on-bg); }
-.crm .dash-period__preset.is-active { background: var(--c-primary); border-color: var(--c-primary); color: var(--c-on-primary); }
-
-.crm .dash-period__calhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-.crm .dash-period__month { font-size: 14px; font-weight: 700; color: var(--c-on-bg); }
-.crm .dash-period__nav {
-  width: 32px; height: 32px; min-width: 0; min-height: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  border: none; background: none; color: var(--c-on-surface-variant); cursor: pointer;
-  border-radius: var(--c-radius); transition: background-color 0.15s var(--c-ease);
-}
-.crm .dash-period__nav:hover { background: var(--c-surface-container); color: var(--c-on-bg); }
-
-.crm .dash-period__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-.crm .dash-period__grid--dow { margin-bottom: 2px; }
-.crm .dash-period__dow { text-align: center; font-size: 11px; font-weight: 700; color: var(--c-outline); padding: 4px 0; }
-.crm .dash-period__day {
-  aspect-ratio: 1 / 1; min-width: 0; min-height: 0;
-  display: inline-flex; align-items: center; justify-content: center;
-  border: none; background: none; cursor: pointer; font-family: inherit;
-  font-size: 13px; font-weight: 600; color: var(--c-on-bg); border-radius: var(--c-radius);
-  transition: background-color 0.12s var(--c-ease);
-}
-.crm .dash-period__day:hover:not(:disabled) { background: var(--c-surface-container); }
-.crm .dash-period__day:disabled { color: var(--c-outline-variant); cursor: default; }
-.crm .dash-period__day.is-today { box-shadow: inset 0 0 0 1.5px var(--c-outline-variant); }
-.crm .dash-period__day.is-sel { background: var(--c-primary); color: var(--c-on-primary); }
-.crm .dash-period__day.is-sel.is-today { box-shadow: none; }
-
-.crm .dash-period__hint { font-size: 11px; color: var(--c-on-surface-variant); margin: 10px 2px 0; text-align: center; }
 
 /* ---------- Section heads ---------- */
 .crm .dash-section-head {
