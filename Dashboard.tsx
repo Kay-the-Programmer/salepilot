@@ -974,13 +974,26 @@ export default function Dashboard() {
         }
     };
 
+    // CategoryList already confirms, and its dialog spells out the subtree and
+    // the products about to be unfiled — so this asks the server to cascade
+    // rather than putting a second, vaguer window.confirm in front of it.
     const handleDeleteCategory = async (categoryId: string) => {
-        if (window.confirm('Are you sure you want to delete this category? This action cannot be undone.')) {
-            try {
-                const result = await api.delete(`/categories/${categoryId}`);
-                if ((result as any).offline) { showSnackbar('Offline: Deletion queued.', 'info'); } else { fetchData(); }
-            } catch (err: any) { showSnackbar(err.message, 'error'); }
-        }
+        try {
+            const result = await api.delete(`/categories/${categoryId}?cascade=true`) as any;
+            if (result?.offline) {
+                showSnackbar('Offline: Deletion queued.', 'info');
+                return;
+            }
+            const subs = result?.subCategories ?? 0;
+            const unfiled = result?.affectedProducts ?? 0;
+            showSnackbar(
+                'Category deleted'
+                    + (subs > 0 ? ` with ${subs} sub-categor${subs === 1 ? 'y' : 'ies'}` : '')
+                    + (unfiled > 0 ? `. ${unfiled} product${unfiled === 1 ? '' : 's'} left uncategorised` : ''),
+                'success'
+            );
+            fetchData();
+        } catch (err: any) { showSnackbar(err.message, 'error'); }
     };
 
     const handleDeleteCustomer = async (customerId: string) => {

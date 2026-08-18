@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Category } from '../types';
+import { Category, Product } from '../types';
 import PencilIcon from './icons/PencilIcon';
 import TrashIcon from './icons/TrashIcon';
 import ChevronDownIcon from './icons/ChevronDownIcon';
@@ -13,6 +13,8 @@ interface CategoryListProps {
     searchTerm: string;
     onEdit: (category: Category) => void;
     onDelete: (categoryId: string) => void;
+    /** Used only to tell the user how many products a delete will unfile. */
+    products?: Product[];
     isLoading: boolean;
     error: string | null;
     selectedCategoryId?: string | null;
@@ -30,6 +32,7 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
     searchTerm,
     onEdit,
     onDelete,
+    products = [],
     isLoading,
     error,
     selectedCategoryId,
@@ -101,6 +104,19 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
 
     const getSubCategoryCount = (categoryId: string): number => {
         return categories.filter(c => c.parentId === categoryId).length;
+    };
+
+    /** Every category under [categoryId], at any depth — what a delete removes. */
+    const getDescendantIds = (categoryId: string): string[] => {
+        const out: string[] = [];
+        const walk = (parentId: string) => {
+            for (const child of categories.filter(c => c.parentId === parentId)) {
+                out.push(child.id);
+                walk(child.id);
+            }
+        };
+        walk(categoryId);
+        return out;
     };
 
     const getAttributeCount = (category: Category): number => {
@@ -407,17 +423,32 @@ const CategoryList: React.FC<CategoryListProps> = React.memo(({
                 }}
                 title="Delete Category"
                 message={
-                    categoryToDelete && (
-                        <span>
-                            Are you sure you want to delete <span className="font-semibold text-gray-900">{categoryToDelete.name}</span>?
-                            {getSubCategoryCount(categoryToDelete.id) > 0 && (
-                                <span className="block mt-2 p-2 bg-red-50 text-red-700 rounded text-sm border border-red-100">
-                                    <span className="font-bold">Warning:</span> This category has {getSubCategoryCount(categoryToDelete.id)} sub-categories that will also be affected.
-                                </span>
-                            )}
-                            <span className="block mt-2 text-sm text-gray-500">This action cannot be undone.</span>
-                        </span>
-                    )
+                    categoryToDelete && (() => {
+                        // Deleting a parent takes its whole subtree, so the count
+                        // has to be the subtree and not just the direct children.
+                        const descendants = getDescendantIds(categoryToDelete.id);
+                        const affectedIds = new Set([categoryToDelete.id, ...descendants]);
+                        const affectedProducts = products.filter(
+                            pr => pr.categoryId && affectedIds.has(pr.categoryId)
+                        ).length;
+
+                        return (
+                            <span>
+                                Are you sure you want to delete <span className="font-semibold text-gray-900">{categoryToDelete.name}</span>?
+                                {descendants.length > 0 && (
+                                    <span className="block mt-2 p-2 bg-red-50 text-red-700 rounded text-sm border border-red-100">
+                                        <span className="font-bold">Warning:</span> its {descendants.length} sub-categor{descendants.length === 1 ? 'y' : 'ies'} will be deleted with it.
+                                    </span>
+                                )}
+                                {affectedProducts > 0 && (
+                                    <span className="block mt-2 p-2 bg-amber-50 text-amber-800 rounded text-sm border border-amber-100">
+                                        {affectedProducts} product{affectedProducts === 1 ? '' : 's'} filed here will be kept, but left uncategorised.
+                                    </span>
+                                )}
+                                <span className="block mt-2 text-sm text-gray-500">This action cannot be undone.</span>
+                            </span>
+                        );
+                    })()
                 }
                 confirmText="Delete Category"
                 confirmButtonClass="bg-red-600 hover:bg-red-700 focus:ring-red-500"

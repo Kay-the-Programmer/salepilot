@@ -822,6 +822,7 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                             <div className="h-full overflow-y-auto scroll-smooth pb-[100px] md:pb-24 p-2 md:p-4">
                                 <CategoryList
                                     categories={categories}
+                                    products={products}
                                     searchTerm={searchTerm}
                                     onEdit={handleOpenEditCategoryModal}
                                     onDelete={onDeleteCategory || (() => { })}
