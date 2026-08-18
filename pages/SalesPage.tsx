@@ -468,23 +468,13 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         (selectedPaymentMethod || '').toLowerCase().includes('airtel');
 
                     if (isMobileMoney) {
-                        try {
-                            // If Merchant Key is set, generate local reference and skip backend initiation
-                            if (storeSettings.lencoPublicKey) {
-                                const localRef = `SP-${Date.now()}`;
-                                setLencoReference(localRef);
-                                setCartView('confirm');
-                            } else {
-                                // No merchant Lenco account connected. The Accept Mobile Money
-                                // add-on enables this option, but funds must settle to the
-                                // MERCHANT — we never route a sale to the platform account.
-                                // Guide them to connect their own Lenco account first.
-                                showSnackbar('Connect your Lenco account in Settings → Financial to receive mobile-money payments.', 'warning');
-                            }
-                        } catch (err) {
-                            console.error('Failed to initiate Lenco reference:', err);
-                            showSnackbar('Failed to initiate payment. Please try again.', 'error');
-                        }
+                        // Every store can take MTN/Airtel money — the customer sends it to
+                        // the store's own till and the cashier records it. A connected Lenco
+                        // account only adds the automated prompt on top; its absence must
+                        // never block the sale. Funds always settle to the MERCHANT, so a
+                        // till sale is never routed through the platform account.
+                        setLencoReference(storeSettings.lencoPublicKey ? `SP-${Date.now()}` : undefined);
+                        setCartView('confirm');
                         setIsProcessing(false);
                         return;
                     }
@@ -570,6 +560,18 @@ const SalesPage: React.FC<SalesPageProps> = ({
             setIsVerifyingPayment(false);
         }
     }, [processTransaction, showSnackbar]);
+
+    // Manual mobile-money confirmation — the store collected on its own till.
+    // The operator transaction ID is kept verbatim on the sale for reconciliation,
+    // except that a `ref-` prefix is reserved for gateway references the server
+    // re-verifies against Lenco, so a typed one is namespaced away from it.
+    const handleManualMobileMoneyConfirm = (manualRef?: string) => {
+        const typed = (manualRef || '').trim();
+        const reference = typed && !typed.toLowerCase().startsWith('ref-')
+            ? typed
+            : `MANUAL-${typed || Date.now()}`;
+        processTransaction('paid', reference);
+    };
 
     const handleCancelVerification = async () => {
         if (!lencoReference) return;
@@ -824,6 +826,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 reference={lencoReference}
                                 merchantPublicKey={storeSettings.lencoPublicKey}
                                 isGatewayUnlocked={isGatewayUnlocked}
+                                paymentMethodLabel={selectedPaymentMethod}
                                 onLencoSuccess={(response) => {
                                     if (storeSettings.lencoPublicKey) {
                                         processTransaction('paid', response.reference);
@@ -840,7 +843,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         handleLencoVerification(response.reference);
                                     }
                                 }}
-                                onManualConfirm={() => processTransaction('paid', `MANUAL-${Date.now()}`)}
+                                onManualConfirm={handleManualMobileMoneyConfirm}
                                 onUpgrade={() => showSnackbar('Payment Gateway is a premium add-on — manage it from Settings → Subscription.', 'info')}
                                 onBack={() => setCartView('payment')}
                                 onCloseMobile={() => setMobileCartOpen(false)}
