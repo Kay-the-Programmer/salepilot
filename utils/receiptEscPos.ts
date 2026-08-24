@@ -6,6 +6,30 @@ import { COLUMNS, EscPosBuilder, wrap } from './escpos';
  *  is loaded, so the till has to be told — see `thermalPrinter`. */
 export type PaperWidth = 58 | 80;
 
+/** Characters of the transaction id that become the sale's receipt code. */
+const RECEIPT_CODE_LENGTH = 10;
+
+/**
+ * The short code that identifies one sale, on paper and on screen.
+ *
+ * Taken from the END of the transaction id, because that is where every id this
+ * system mints carries its entropy: the backend produces
+ * `SALE-<timestamp>-<random>` and an offline till produces a UUID. The head
+ * does not distinguish anything — every web sale for years running begins
+ * `SALE-169`, so a code cut from the front names no particular sale.
+ *
+ * Kept as a literal tail of the id rather than something cleaner-looking with
+ * the separators stripped: sales are searched by substring, so a code that is
+ * still a piece of the id is one a scanner can find the sale with.
+ */
+export const receiptCode = (transactionId: string): string => {
+    const id = (transactionId ?? '').trim();
+    const tail = id.length > RECEIPT_CODE_LENGTH ? id.slice(-RECEIPT_CODE_LENGTH) : id;
+    // Upper case reads far better in a thermal printer's small font, and the
+    // sale lookup is case-insensitive, so nothing is lost by it.
+    return tail.toUpperCase();
+};
+
 const shortDate = (iso: string): string => {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
@@ -41,10 +65,8 @@ export const buildReceiptBytes = (
     b.align('left').feed(1).rule();
 
     // ── Sale identity ──
-    const receiptNo = sale.transactionId.length > 8
-        ? sale.transactionId.slice(0, 8).toUpperCase()
-        : sale.transactionId;
-    b.columnsRow('Receipt', receiptNo);
+    const code = receiptCode(sale.transactionId);
+    b.columnsRow('Receipt', code);
     b.columnsRow('Date', shortDate(sale.timestamp));
     if (sale.customerName) b.columnsRow('Customer', sale.customerName.slice(0, columns - 10));
     if (sale.attendedBy) b.columnsRow('Attended by', sale.attendedBy.slice(0, columns - 13));
@@ -86,7 +108,10 @@ export const buildReceiptBytes = (
     // ── Footer ──
     b.feed(1).align('center');
     if (settings.receiptMessage) wrap(settings.receiptMessage, columns).forEach(l => b.line(l));
-    b.line(receiptNo);
+    // The receipt's own identity, scannable. A customer bringing this back for
+    // a return or a query is found by passing the paper under the scanner
+    // instead of reading ten characters off a thermal print.
+    b.feed(1).barcode(code);
     b.align('left');
 
     if (options.openDrawer) b.openDrawer();
@@ -123,6 +148,10 @@ export const buildTestBytes = (paperWidth: PaperWidth, printerLabel: string): Ui
     b.line('If the lines above reach both edges');
     b.line('without wrapping, this printer is');
     b.line('ready to use.');
+    // Proves the printer can draw a barcode at all. Not every cheap clone
+    // implements the command, and finding that out here beats finding it out
+    // from a customer holding a receipt nobody can scan.
+    b.feed(1).align('center').barcode('SALEPILOT1').align('left');
     b.cut();
     return b.build();
 };

@@ -116,3 +116,60 @@ describe('wrap', () => {
         expect(wrap('   ', 20)).toEqual(['']);
     });
 });
+
+/**
+ * A barcode is the one thing on a receipt whose correctness nobody can eyeball:
+ * a wrong byte prints bars that look perfectly convincing and scan as nothing,
+ * or as the wrong sale. The command bytes are pinned exactly.
+ */
+describe('barcode', () => {
+    const bytes = (value: string) => Array.from(new EscPosBuilder().barcode(value).build());
+
+    it('sets the geometry before emitting the symbol', () => {
+        const b = bytes('AB');
+        // GS h 64 (height), GS w 2 (module width), GS H 2 (number below the
+        // bars), GS f 0 (that number in Font A).
+        expect(b.slice(0, 12)).toEqual([
+            0x1d, 0x68, 64,
+            0x1d, 0x77, 2,
+            0x1d, 0x48, 2,
+            0x1d, 0x66, 0,
+        ]);
+    });
+
+    it('emits CODE128 in the length-prefixed form, code set B', () => {
+        const b = bytes('AB');
+        // GS k 73 n, then '{' 'B' 'A' 'B'. n counts the selector.
+        expect(b.slice(12)).toEqual([0x1d, 0x6b, 73, 4, 0x7b, 0x42, 0x41, 0x42]);
+    });
+
+    it('counts the code-set selector in the length byte', () => {
+        const b = bytes('SALEPILOT1');
+        const n = b[15];
+        // Without this the printer reads two bytes past the end of the data and
+        // prints a symbol that scans as the wrong thing, or not at all.
+        expect(n).toBe('SALEPILOT1'.length + 2);
+        expect(b.length).toBe(12 + 4 + n);
+    });
+
+    it('doubles a literal brace, which would otherwise switch code set', () => {
+        expect(bytes('A{B').slice(18)).toEqual([0x41, 0x7b, 0x7b, 0x42]);
+    });
+
+    it('drops characters code set B cannot carry, rather than voiding the symbol', () => {
+        // One accented character in a code would otherwise abort the whole
+        // barcode, and the receipt would print bars for nothing.
+        expect(bytes('AB\u00e9C').slice(18)).toEqual([0x41, 0x42, 0x43]);
+    });
+
+    it('emits nothing at all when there is nothing to encode', () => {
+        // Better a receipt with no barcode than one carrying an empty symbol.
+        expect(bytes('')).toEqual([]);
+        expect(bytes('\u00e9\u00e8')).toEqual([]);
+    });
+
+    it('never exceeds the single length byte the command allows', () => {
+        const b = bytes('X'.repeat(400));
+        expect(b[15]).toBeLessThanOrEqual(255);
+    });
+});

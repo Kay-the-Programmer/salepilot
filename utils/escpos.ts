@@ -23,6 +23,21 @@ export const COLUMNS: Record<58 | 80, number> = {
 export type Align = 'left' | 'center' | 'right';
 
 /**
+ * Barcode geometry, in printer dots.
+ *
+ * A 58mm roll gives 384 dots across. A CODE128 symbol costs 11 modules per
+ * character plus 35 for the start, checksum and stop, so a ten-character code
+ * is 145 modules — 290 dots at two dots per module, which clears the narrow
+ * roll with room to spare. Three dots per module, the printer's own default,
+ * would overrun it and print a symbol no scanner can read.
+ */
+const BARCODE_HEIGHT_DOTS = 64;
+const BARCODE_MODULE_WIDTH = 2;
+
+/** `GS k`'s length byte is one octet, and it counts the code-set selector. */
+const CODE128_MAX_BYTES = 255;
+
+/**
  * Accumulates an ESC/POS byte stream.
  *
  * Text is encoded to a single-byte code page rather than UTF-8: these printers
@@ -111,6 +126,30 @@ export class EscPosBuilder {
         return this;
     }
 
+    /**
+     * A CODE128 barcode carrying the sale's receipt code.
+     *
+     * This is what makes a paper receipt usable at the counter: a return or a
+     * query is looked up by passing it under the scanner rather than reading a
+     * code off a thermal print and typing it back in.
+     *
+     * The human-readable number is printed by the printer itself, beneath the
+     * bars, from the same data — so the digits on the paper cannot drift out of
+     * step with what the bars encode.
+     */
+    barcode(value: string): this {
+        const data = code128Data(value);
+        if (!data.length) return this; // nothing encodable; skip rather than emit a broken symbol
+        this.bytes.push(GS, 0x68, BARCODE_HEIGHT_DOTS); // GS h — height
+        this.bytes.push(GS, 0x77, BARCODE_MODULE_WIDTH); // GS w — module width
+        this.bytes.push(GS, 0x48, 0x02); // GS H — print the number below the bars
+        this.bytes.push(GS, 0x66, 0x00); // GS f — that number in Font A
+        // GS k 73 n d1..dn — CODE128 in the length-prefixed form. The older
+        // NUL-terminated form has no CODE128 at all.
+        this.bytes.push(GS, 0x6b, 73, data.length, ...data);
+        return this;
+    }
+
     build(): Uint8Array {
         return new Uint8Array(this.bytes);
     }
@@ -147,6 +186,29 @@ export const encode = (value: string): number[] => {
         }
     }
     return out;
+};
+
+/**
+ * A CODE128 payload, ready for `GS k`.
+ *
+ * Prefixed with `{B` to select code set B, which covers printable ASCII — the
+ * set that can carry the letters, digits and hyphen a receipt code is made of.
+ * Without a selector the printer picks its own set and rejects anything the set
+ * cannot represent, printing nothing at all.
+ */
+export const code128Data = (value: string): number[] => {
+    const out: number[] = [0x7b, 0x42]; // '{' 'B'
+    for (const char of value) {
+        const code = char.charCodeAt(0);
+        // Outside code set B the printer aborts the whole symbol, so anything
+        // unrepresentable is dropped rather than allowed to void the barcode.
+        if (code < 0x20 || code > 0x7e) continue;
+        // '{' introduces a set selector, so a literal one is doubled.
+        if (char === '{') out.push(0x7b, 0x7b);
+        else out.push(code);
+        if (out.length >= CODE128_MAX_BYTES) break;
+    }
+    return out.length > 2 ? out : [];
 };
 
 /** Wrap a long product name onto the roll rather than letting it truncate. */

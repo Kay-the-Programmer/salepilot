@@ -7,7 +7,7 @@ import { formatCurrency } from '@/utils/currency.ts';
 import PosIcon from './PosIcon';
 import salepilotLogo from '@/assets/salepilot.png';
 import PrinterSettingsModal from './PrinterSettingsModal';
-import { buildReceiptBytes } from '../../utils/receiptEscPos';
+import { buildReceiptBytes, receiptCode } from '../../utils/receiptEscPos';
 import { PrinterError, PrinterStatus, getOpenDrawer, getPaperWidth, getPrinterStatus, isSupported, printBytes, reconnect } from '../../services/thermalPrinter';
 
 interface ReceiptModalProps {
@@ -54,8 +54,9 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
     useEffect(() => {
         if (isOpen && transactionId && barcodeRef.current) {
             try {
-                const barcodeId = transactionId.length > 12 ? transactionId.slice(-10) : transactionId;
-                JsBarcode(barcodeRef.current, barcodeId, {
+                // The same code the thermal receipt prints under its barcode.
+                // A sale has one identifier, whichever copy is in front of you.
+                JsBarcode(barcodeRef.current, receiptCode(transactionId), {
                     format: "CODE128",
                     displayValue: true,
                     margin: 0,

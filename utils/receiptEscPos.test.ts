@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Sale, StoreSettings } from '../types';
-import { buildReceiptBytes, buildTestBytes } from './receiptEscPos';
+import { buildReceiptBytes, buildTestBytes, receiptCode } from './receiptEscPos';
 import { COLUMNS } from './escpos';
 
 const settings = {
@@ -49,14 +49,25 @@ const printedLines = (bytes: Uint8Array): string[] => {
     const GS_LEN: Record<number, number> = {
         0x21: 3, // GS ! n       character size
         0x56: 4, // GS V m n     cut
+        0x68: 3, // GS h n       barcode height
+        0x77: 3, // GS w n       barcode module width
+        0x48: 3, // GS H n       barcode number position
+        0x66: 3, // GS f n       barcode number font
     };
+    // GS k is the one command whose length is carried in the stream rather than
+    // fixed. Skipping it by a guessed width would spill its payload into the
+    // text and report barcode data as printed lines.
+    const gsBarcodeLength = (at: number): number => 4 + bytes[at + 3];
 
     const out: string[] = [];
     let line = '';
     for (let i = 0; i < bytes.length; ) {
         const b = bytes[i];
         if (b === 0x1b) { i += ESC_LEN[bytes[i + 1]] ?? 2; continue; }
-        if (b === 0x1d) { i += GS_LEN[bytes[i + 1]] ?? 3; continue; }
+        if (b === 0x1d) {
+            i += bytes[i + 1] === 0x6b ? gsBarcodeLength(i) : GS_LEN[bytes[i + 1]] ?? 3;
+            continue;
+        }
         if (b === 0x0a) { out.push(line); line = ''; i += 1; continue; }
         line += String.fromCharCode(b);
         i += 1;
@@ -80,8 +91,10 @@ describe('buildReceiptBytes', () => {
     });
 
     it('prints the same identifying details as the on-screen receipt', () => {
-        // Receipt number is the first 8 of the transaction id, as on screen.
-        expect(text).toContain('SALE-178');
+        // The receipt code is the tail of the transaction id. It used to be the
+        // first eight characters, which named no particular sale: every sale
+        // this system makes for years running starts 'SALE-17'.
+        expect(text).toContain(receiptCode(sale.transactionId));
         expect(text).toContain('Docs Owner');
         expect(text).toContain('Walk-in');
     });
@@ -149,5 +162,78 @@ describe('buildTestBytes', () => {
     it('cuts, so the test sheet can be torn off', () => {
         const bytes = buildTestBytes(80, 'Counter');
         expect(Array.from(bytes.slice(-4))).toEqual([0x1d, 0x56, 0x42, 0x00]);
+    });
+});
+
+/**
+ * The receipt code is what ties a piece of paper back to a row in the sales
+ * table. It has to identify one sale — the old code, cut from the front of the
+ * transaction id, was the same on every receipt the store ever printed — and it
+ * has to be something the sale lookup can actually find.
+ */
+describe('receiptCode', () => {
+    it('tells apart two sales made in the same second', () => {
+        const a = receiptCode('SALE-1787044297768-i5f0wxz');
+        const b = receiptCode('SALE-1787044297768-q9c2mtv');
+        expect(a).not.toEqual(b);
+    });
+
+    it('is still a piece of the transaction id, so the sale can be found by it', () => {
+        // Sales are searched by case-insensitive substring. A code prettied up
+        // by stripping the separators would scan into the search box and match
+        // nothing at all.
+        const id = 'SALE-1787044297768-i5f0wxz';
+        expect(id.toLowerCase()).toContain(receiptCode(id).toLowerCase());
+    });
+
+    it('identifies an offline sale, whose id is a UUID', () => {
+        const id = '3f2a1b9c-4d5e-6f70-8a9b-cdef01234567';
+        expect(id.toLowerCase()).toContain(receiptCode(id).toLowerCase());
+        expect(receiptCode(id)).toBe('EF01234567');
+    });
+
+    it('uses a short id whole rather than padding or truncating it', () => {
+        expect(receiptCode('AB12')).toBe('AB12');
+    });
+
+    it('survives an id that is missing or blank', () => {
+        // A receipt still has to print. A blank code drops the barcode; it must
+        // not throw and lose the sale's receipt entirely.
+        expect(receiptCode('')).toBe('');
+        expect(receiptCode(undefined as unknown as string)).toBe('');
+    });
+});
+
+describe('the barcode on a printed receipt', () => {
+    const bytes = buildReceiptBytes(sale, settings, { paperWidth: 58 });
+    const code = receiptCode(sale.transactionId);
+
+    /** The data carried by the first GS k symbol in the stream. */
+    const encoded = (b: Uint8Array): string => {
+        for (let i = 0; i < b.length - 3; i++) {
+            if (b[i] === 0x1d && b[i + 1] === 0x6b && b[i + 2] === 73) {
+                // Past GS k m n and the two-byte code-set selector.
+                return String.fromCharCode(...b.subarray(i + 6, i + 4 + b[i + 3]));
+            }
+        }
+        return '';
+    };
+
+    it('carries the sale code the receipt prints as text', () => {
+        // The bars and the number beside them must name the same sale, or a
+        // scanned return finds a different one.
+        expect(encoded(bytes)).toBe(code);
+        expect(asText(bytes)).toContain(code);
+    });
+
+    it('fits the narrow roll', () => {
+        // 58mm is 384 dots. CODE128 costs 11 modules a character plus 35, at
+        // two dots a module — a code that overruns prints bars no scanner reads.
+        const modules = 11 * code.length + 35;
+        expect(modules * 2).toBeLessThan(384);
+    });
+
+    it('is offered on the test page, so a printer that cannot draw one is caught in settings', () => {
+        expect(encoded(buildTestBytes(58, 'POS-58'))).not.toBe('');
     });
 });
