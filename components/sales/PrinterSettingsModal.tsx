@@ -122,7 +122,7 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
         status.batteryPercent !== null && status.batteryPercent <= LOW_BATTERY_PERCENT;
 
     return createPortal(
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
             <div className="w-full max-w-lg rounded-xl bg-surface border border-brand-border shadow-xl overflow-hidden">
                 <div className="flex items-center justify-between px-5 py-4 border-b border-brand-border">
                     <h2 className="text-base font-bold text-brand-text">Receipt printer</h2>

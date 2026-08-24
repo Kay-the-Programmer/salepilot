@@ -81,14 +81,18 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         return () => { cancelled = true; };
     }, [isOpen]);
 
-    // Handle Escape key
+    // Handle Escape key.
+    //
+    // Stands down while printer settings are open on top. Both modals listen
+    // on the window, so one Escape would otherwise reach both and dismiss the
+    // receipt along with the dialog the cashier meant to close.
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isOpen) onClose();
+            if (e.key === 'Escape' && isOpen && !printerOpen) onClose();
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
+    }, [isOpen, onClose, printerOpen]);
 
     if (!isOpen) return null;
 
