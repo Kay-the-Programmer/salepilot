@@ -6,6 +6,9 @@ import { SnackbarType } from '../../App';
 import { formatCurrency } from '@/utils/currency.ts';
 import PosIcon from './PosIcon';
 import salepilotLogo from '@/assets/salepilot.png';
+import PrinterSettingsModal from './PrinterSettingsModal';
+import { buildReceiptBytes } from '../../utils/receiptEscPos';
+import { PrinterError, PrinterStatus, getOpenDrawer, getPaperWidth, getPrinterStatus, isSupported, printBytes, reconnect } from '../../services/thermalPrinter';
 
 interface ReceiptModalProps {
     isOpen: boolean;
@@ -20,6 +23,10 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
     const modalPrintAreaRef = useRef<HTMLDivElement>(null);
     const barcodeRef = useRef<HTMLCanvasElement>(null);
     const [logoDataUrl, setLogoDataUrl] = useState<string>('');
+    const [printerOpen, setPrinterOpen] = useState(false);
+    // What this till's printer can do right now. Resolved on open so the button
+    // can say what it will do before it is pressed.
+    const [printer, setPrinter] = useState<PrinterStatus | null>(null);
 
     // Rasterize the SalePilot logo to a base64 data URL so it survives the copy
     // into the separate print window — relative asset URLs and network fetches
@@ -65,6 +72,15 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
         }
     }, [isOpen, transactionId]);
 
+    // A granted printer is remembered by the browser, so this resolves without
+    // prompting anyone — a prompt on open would just get dismissed.
+    useEffect(() => {
+        if (!isOpen || !isSupported()) return;
+        let cancelled = false;
+        getPrinterStatus().then(s => { if (!cancelled) setPrinter(s); });
+        return () => { cancelled = true; };
+    }, [isOpen]);
+
     // Handle Escape key
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -76,7 +92,44 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
 
     if (!isOpen) return null;
 
-    const handlePrint = () => {
+    /**
+     * Print to the till's own receipt printer when one is set up, and fall back
+     * to the browser dialog when it is not — a till that never set a printer up
+     * keeps working exactly as before.
+     *
+     * The direct path sends ESC/POS bytes straight to the device, which is what
+     * allows the paper cut and the cash-drawer pulse; a rendered page through
+     * the OS can do neither.
+     *
+     * A Bluetooth printer whose grant did not survive the last page reload is
+     * reopened here rather than in settings. This click is a user gesture, and
+     * a gesture is the only moment the browser will reopen the link — sending
+     * the cashier off to reconnect first would be sending them away from the
+     * one press that can do it.
+     */
+    const handlePrintReceipt = async () => {
+        if (!printer?.transport) return handleBrowserPrint();
+        try {
+            if (printer.needsReconnect) {
+                await reconnect();
+                setPrinter(await getPrinterStatus());
+            }
+            await printBytes(buildReceiptBytes(saleData, storeSettings, {
+                paperWidth: getPaperWidth(),
+                openDrawer: getOpenDrawer(),
+            }));
+        } catch (err) {
+            // The sale is already banked. Say what went wrong and leave the
+            // browser dialog as the way to still hand over a receipt.
+            showSnackbar(
+                err instanceof PrinterError ? err.message : 'Could not reach the printer.',
+                'error',
+            );
+            handleBrowserPrint();
+        }
+    };
+
+    const handleBrowserPrint = () => {
         if (!modalPrintAreaRef.current || !barcodeRef.current) return;
 
         const printWindow = window.open('', '', 'height=600,width=400');
@@ -336,13 +389,33 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                         Done
                     </button>
                     <button
-                        onClick={handlePrint}
+                        onClick={handlePrintReceipt}
                         className="flex-1 py-3 bg-secondary hover:bg-secondary/90 text-white rounded-lg text-[15px] font-bold flex items-center justify-center gap-2 active:scale-95 transition-all"
                     >
                         <PosIcon name="print" size={18} />
                         Print receipt
                     </button>
+                    {isSupported() && (
+                        <button
+                            onClick={() => setPrinterOpen(true)}
+                            aria-label="Receipt printer settings"
+                            title={
+                                !printer?.transport
+                                    ? 'Connect a receipt printer'
+                                    : printer.needsReconnect
+                                        ? `${printer.label} — tap Print to reconnect`
+                                        : `${printer.label} connected`
+                            }
+                            className="flex-none px-4 py-3 rounded-lg bg-surface-variant text-brand-text hover:bg-warm-300 active:scale-95 transition-all"
+                        >
+                            <PosIcon name="settings" size={18} />
+                        </button>
+                    )}
                 </div>
+                <PrinterSettingsModal
+                    isOpen={printerOpen}
+                    onClose={() => { setPrinterOpen(false); getPrinterStatus().then(setPrinter); }}
+                />
             </div>
         </div>,
         document.body

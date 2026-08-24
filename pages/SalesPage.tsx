@@ -5,6 +5,7 @@ import { api } from '@/services/api';
 import { formatCurrency, isCashMethod as isCashTender, paymentMethodsOf } from '../utils/currency';
 import TourGuide from '../components/TourGuide';
 import ReceiptModal from '../components/sales/ReceiptModal';
+import PrinterSettingsModal from '../components/sales/PrinterSettingsModal';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import OutOfStockModal from '../components/sales/OutOfStockModal';
 import LowStockAlertModal from '../components/sales/LowStockAlertModal';
@@ -75,6 +76,9 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [discountType, setDiscountType] = useState<'amount' | 'percentage'>('amount');
     const [heldSales, setHeldSales] = useState<CartItem[][]>([]);
     const [showReceiptModal, setShowReceiptModal] = useState(false);
+    // Reachable before any sale is made. Pairing a printer used to mean
+    // ringing something up first, just to get at the cog on the receipt.
+    const [showPrinterSettings, setShowPrinterSettings] = useState(false);
     const [lastSale, setLastSale] = useState<Sale | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     // Phone number collected at the POS — backend auto-saves it to the customer
@@ -672,6 +676,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         <PosIcon name="help" size={20} />
                                         Help Guide
                                     </button>
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className="sale__menu-item"
+                                        onClick={() => { setShowPrinterSettings(true); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="print" size={20} />
+                                        Receipt Printer
+                                    </button>
                                     <div className="sale__menu-sep" />
                                     <button
                                         type="button"
@@ -1024,6 +1037,11 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 heldSales={heldSales}
                 onRecallSale={handleRecallSale}
                 storeSettings={storeSettings}
+            />
+
+            <PrinterSettingsModal
+                isOpen={showPrinterSettings}
+                onClose={() => setShowPrinterSettings(false)}
             />
 
             {showReceiptModal && lastSale && (

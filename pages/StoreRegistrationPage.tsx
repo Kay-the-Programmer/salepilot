@@ -18,6 +18,7 @@ import {
     HiOutlineEye,
     HiOutlineEyeSlash,
 } from 'react-icons/hi2';
+import { sanitizePhone, phoneError as phoneErrorFor, PHONE_MAX_DIGITS } from '../utils/phone';
 
 interface StoreRegistrationPageProps {
     onCompleted: (user: User) => void;
@@ -26,6 +27,7 @@ interface StoreRegistrationPageProps {
 }
 
 const MIN_LEN = 2;
+
 
 export const BUSINESS_TYPES = [
     { id: 'retail_grocery', label: 'Grocery & Supermarket', icon: '🛒' },
@@ -99,7 +101,11 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
     const trimmedName = useMemo(() => name.replace(/\s+/g, ' ').trim(), [name]);
 
     const isAccountValid = emailIsValid(email) && password.length >= 8 && password === confirmPassword;
-    const isStoreValid = trimmedName.length >= MIN_LEN && !nameError && !isCheckingName;
+    // Optional, so an empty field is fine — but a half-typed one is not, and it
+    // must not reach the server as something that cannot be called back.
+    const phoneError = useMemo(() => phoneErrorFor(phone), [phone]);
+
+    const isStoreValid = trimmedName.length >= MIN_LEN && !nameError && !isCheckingName && !phoneError;
     const isTypeValid = selectedTypes.length > 0;
     const isLocationValid = address.trim().length > 0;
 
@@ -435,12 +441,19 @@ const StoreRegistrationPage: React.FC<StoreRegistrationPageProps> = ({
                                     <HiOutlinePhone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-brand-text-muted" />
                                     <input
                                         type="tel"
+                                        inputMode="tel"
+                                        autoComplete="tel"
+                                        maxLength={PHONE_MAX_DIGITS + 1}
                                         value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
-                                        className="w-full pl-9 pr-3 py-2.5 border border-brand-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent"
-                                        placeholder="+260 971 234 567"
+                                        // Sanitising on change (not on submit) covers pasting and
+                                        // autofill too, so a letter never lands in the field at all.
+                                        onChange={(e) => setPhone(sanitizePhone(e.target.value))}
+                                        className={`w-full pl-9 pr-3 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-transparent ${phoneError ? 'border-danger' : 'border-brand-border'}`}
+                                        aria-invalid={!!phoneError}
+                                        placeholder="+260971234567"
                                     />
                                 </div>
+                                {phoneError && <p className="mt-1 text-xs text-danger">{phoneError}</p>}
                             </div>
                         </div>
                     )}
