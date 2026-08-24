@@ -400,22 +400,27 @@ const ReceiptModal: React.FC<ReceiptModalProps> = ({ isOpen, onClose, saleData, 
                         <PosIcon name="print" size={18} />
                         Print receipt
                     </button>
-                    {isSupported() && (
-                        <button
-                            onClick={() => setPrinterOpen(true)}
-                            aria-label="Receipt printer settings"
-                            title={
-                                !printer?.transport
+                    {/* Always offered, including where this browser cannot drive a
+                        printer at all. Hiding it left an iPhone with no way to find
+                        out why — the settings screen is where that is explained, and
+                        it was the one screen unreachable from the device with the
+                        problem. */}
+                    <button
+                        onClick={() => setPrinterOpen(true)}
+                        aria-label="Receipt printer settings"
+                        title={
+                            !isSupported()
+                                ? 'Receipt printer setup'
+                                : !printer?.transport
                                     ? 'Connect a receipt printer'
                                     : printer.needsReconnect
                                         ? `${printer.label} — tap Print to reconnect`
                                         : `${printer.label} connected`
-                            }
-                            className="flex-none px-4 py-3 rounded-lg bg-surface-variant text-brand-text hover:bg-warm-300 active:scale-95 transition-all"
-                        >
-                            <PosIcon name="settings" size={18} />
-                        </button>
-                    )}
+                        }
+                        className="flex-none px-4 py-3 rounded-lg bg-surface-variant text-brand-text hover:bg-warm-300 active:scale-95 transition-all"
+                    >
+                        <PosIcon name="settings" size={18} />
+                    </button>
                 </div>
                 <PrinterSettingsModal
                     isOpen={printerOpen}

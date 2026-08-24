@@ -83,6 +83,52 @@ export const isBluetoothSupported = (): boolean => !!bluetooth();
 export const isSupported = (): boolean =>
     isUsbSupported() || isSerialSupported() || isBluetoothSupported();
 
+/**
+ * Why a browser cannot reach a printer, when it cannot.
+ *
+ *  * `ios` — no iPhone or iPad can, in any browser. Apple ships none of these
+ *    APIs in WebKit, and iOS requires every browser to use WebKit underneath,
+ *    so Chrome and Firefox there are Safari wearing a different icon.
+ *  * `insecure-context` — the APIs exist but are withheld from pages served
+ *    over plain HTTP. This is the recoverable one, and worth telling apart:
+ *    a till opened at `http://192.168.1.x` looks exactly as unsupported as an
+ *    iPhone, and the fix is one the shop can actually carry out.
+ *  * `browser` — everything else, which in practice means an older or
+ *    non-Chromium desktop browser.
+ */
+export type PrinterSupportReason = 'ios' | 'insecure-context' | 'browser';
+
+export const getUnsupportedReason = (): PrinterSupportReason | null => {
+    if (isSupported()) return null;
+    // Checked before the secure-context test on purpose: HTTPS does not help an
+    // iPhone, and telling a shopkeeper to go and fix their certificate when the
+    // device could never print would waste a real afternoon.
+    if (isIosWebKit()) return 'ios';
+    if (!isSecureContext()) return 'insecure-context';
+    return 'browser';
+};
+
+const isSecureContext = (): boolean => {
+    try {
+        return window.isSecureContext !== false;
+    } catch {
+        return true;
+    }
+};
+
+/** Whether this is an iPhone or iPad, whatever the browser calls itself. */
+const isIosWebKit = (): boolean => {
+    try {
+        const ua = navigator.userAgent || '';
+        if (/iPad|iPhone|iPod/.test(ua)) return true;
+        // An iPad on iPadOS 13 and later reports itself as a Mac. A desktop Mac
+        // has no touch screen, so the touch points are what give it away.
+        return /Macintosh/.test(ua) && (navigator.maxTouchPoints ?? 0) > 1;
+    } catch {
+        return false;
+    }
+};
+
 const sleep = (ms: number): Promise<void> => new Promise(r => setTimeout(r, ms));
 
 const readPref = (key: string): string | null => {

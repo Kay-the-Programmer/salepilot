@@ -377,3 +377,70 @@ describe('battery on a pocket printer', () => {
         expect((await getPrinterStatus()).batteryPercent).toBeNull();
     });
 });
+
+/**
+ * Why a till cannot print matters as much as that it cannot.
+ *
+ * All three cases look identical from the code's point of view — no printer
+ * APIs on the object — but only one of them has a fix the shop can carry out,
+ * and one of them has no fix on that device at all. Telling an iPhone owner to
+ * try a different browser sends them round a loop that cannot end, because
+ * every browser on iOS is Safari underneath.
+ */
+describe('getUnsupportedReason', () => {
+    const load = async (env: {
+        ua?: string;
+        maxTouchPoints?: number;
+        secure?: boolean;
+        bluetooth?: boolean;
+    }) => {
+        vi.resetModules();
+        vi.stubGlobal('localStorage', memoryStorage());
+        vi.stubGlobal('window', { isSecureContext: env.secure ?? true });
+        vi.stubGlobal('navigator', {
+            userAgent: env.ua ?? 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            maxTouchPoints: env.maxTouchPoints ?? 0,
+            bluetooth: env.bluetooth ? { requestDevice: async () => null } : undefined,
+        });
+        return import('./thermalPrinter');
+    };
+
+    const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15';
+    const IPAD = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15';
+
+    it('says nothing is wrong when the browser can reach a printer', async () => {
+        const { getUnsupportedReason } = await load({ bluetooth: true });
+        expect(getUnsupportedReason()).toBeNull();
+    });
+
+    it('names iOS, which no browser choice can work around', async () => {
+        const { getUnsupportedReason } = await load({ ua: IPHONE });
+        expect(getUnsupportedReason()).toBe('ios');
+    });
+
+    it('spots an iPad, which claims to be a Mac', async () => {
+        // iPadOS 13 and later report a desktop user agent. Only the touch
+        // screen separates an iPad from a Mac, and a Mac genuinely can print.
+        const { getUnsupportedReason } = await load({ ua: IPAD, maxTouchPoints: 5 });
+        expect(getUnsupportedReason()).toBe('ios');
+    });
+
+    it('does not mistake a desktop Mac for an iPad', async () => {
+        const { getUnsupportedReason } = await load({ ua: IPAD, maxTouchPoints: 0 });
+        expect(getUnsupportedReason()).toBe('browser');
+    });
+
+    it('calls out plain HTTP, which is the one the shop can fix', async () => {
+        // A till opened at http://192.168.1.20 looks exactly as unsupported as
+        // an iPhone, and the fix is entirely different.
+        const { getUnsupportedReason } = await load({ secure: false });
+        expect(getUnsupportedReason()).toBe('insecure-context');
+    });
+
+    it('still says iOS for an iPhone on plain HTTP', async () => {
+        // Ordering matters: HTTPS would not help here, and sending someone to
+        // fix a certificate they do not need is an afternoon wasted.
+        const { getUnsupportedReason } = await load({ ua: IPHONE, secure: false });
+        expect(getUnsupportedReason()).toBe('ios');
+    });
+});

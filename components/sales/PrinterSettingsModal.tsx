@@ -11,7 +11,8 @@ import {
     getPrinterStatus,
     isBluetoothSupported,
     isSerialSupported,
-    isSupported,
+    PrinterSupportReason,
+    getUnsupportedReason,
     isUsbSupported,
     printBytes,
     reconnect,
@@ -30,6 +31,56 @@ interface PrinterSettingsModalProps {
 /** Charge below this is worth warning about — a pocket printer at 15% will not
  *  finish the shift, and it fails by dropping the connection mid-receipt. */
 const LOW_BATTERY_PERCENT = 20;
+
+/**
+ * What to tell someone whose browser cannot reach a printer.
+ *
+ * Each case names the thing they can actually do next. The iOS one matters
+ * most: it is the only case with no fix on the device in their hand, and
+ * without saying so plainly a shopkeeper will keep trying other browsers.
+ */
+const UnsupportedNotice: React.FC<{ reason: PrinterSupportReason }> = ({ reason }) => {
+    if (reason === 'ios') {
+        return (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 space-y-2">
+                <p className="font-bold">iPhone and iPad cannot connect to a receipt printer</p>
+                <p>
+                    Apple does not let web pages reach printers, and every browser on iOS runs on
+                    Safari&rsquo;s engine underneath &mdash; so Chrome or Firefox here will not help either.
+                </p>
+                <p>
+                    <strong>Receipts still print.</strong> Print receipt opens the system dialog, which
+                    prints to any AirPrint printer on the same network.
+                </p>
+                <p>
+                    For a Bluetooth pocket printer, run the till in Chrome on an Android phone or
+                    tablet, or install the SalePilot desktop app.
+                </p>
+            </div>
+        );
+    }
+
+    if (reason === 'insecure-context') {
+        return (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800 space-y-2">
+                <p className="font-bold">Printer access needs a secure connection</p>
+                <p>
+                    Browsers only offer printers to pages served over HTTPS, and this till is open
+                    over plain HTTP. Open SalePilot at its <strong>https://</strong> address and the
+                    printer options below will appear.
+                </p>
+            </div>
+        );
+    }
+
+    return (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+            This browser cannot talk to a receipt printer directly. Use Chrome or Edge &mdash;
+            on Android too &mdash; or install the SalePilot desktop app. Receipts still print
+            through the normal browser dialog.
+        </div>
+    );
+};
 
 const NO_PRINTER: PrinterStatus = {
     transport: null,
@@ -120,6 +171,7 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
 
     const lowBattery =
         status.batteryPercent !== null && status.batteryPercent <= LOW_BATTERY_PERCENT;
+    const unsupportedReason = getUnsupportedReason();
 
     return createPortal(
         <div className="fixed inset-0 z-[210] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
@@ -132,12 +184,8 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
                 </div>
 
                 <div className="p-5 space-y-4">
-                    {!isSupported() ? (
-                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                            This browser cannot talk to a receipt printer directly. Use Chrome or Edge —
-                            on Android too — or install the SalePilot desktop app. Receipts still print
-                            through the normal browser dialog.
-                        </div>
+                    {unsupportedReason ? (
+                        <UnsupportedNotice reason={unsupportedReason} />
                     ) : (
                         <>
                             <div className="rounded-lg border border-brand-border p-3">
