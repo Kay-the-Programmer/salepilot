@@ -25,6 +25,12 @@ export interface Product {
     // DEPRECATED: category: string;
     categoryId?: string;
     price: number; // Retail Price
+    /**
+     * How this product is taxed. Zero-rated and exempt both attract no tax
+     * but are reported differently on a VAT return, so they are kept apart.
+     * Absent means standard-rated.
+     */
+    taxClass?: 'standard' | 'zero' | 'exempt';
     costPrice?: number;
     stock: number;
     unitOfMeasure?: 'unit' | 'kg';
@@ -86,6 +92,12 @@ export interface CartItem {
     unitOfMeasure?: 'unit' | 'kg';
     returnedQuantity?: number;
     costPrice?: number; // Cost of the item at the time of sale
+    /**
+     * Carried from the product so the till taxes the line the way the server
+     * will. Without it a mixed basket is quoted at the standard rate and
+     * charged at another.
+     */
+    taxClass?: 'standard' | 'zero' | 'exempt';
 }
 
 export interface Customer {
@@ -113,6 +125,20 @@ export interface Payment {
     reference?: string;
 }
 
+/**
+ * Tax charged on one sale, split by the class it was charged under.
+ *
+ * Frozen when the sale is made. A receipt is a record of what was charged, so
+ * reprinting one must not re-derive it against a rate or a classification that
+ * has changed since.
+ */
+export interface TaxClassTotal {
+    taxClass: 'standard' | 'zero' | 'exempt';
+    ratePct: number;
+    net: number;
+    tax: number;
+}
+
 export interface Sale {
     transactionId: string;
     timestamp: string;
@@ -120,6 +146,13 @@ export interface Sale {
     total: number;
     subtotal: number;
     tax: number;
+    /**
+     * The tax split by class, as charged. Absent on sales made before this
+     * existed, and on any whose tax could not be explained by the current
+     * classes — a breakdown that does not sum to the tax on the receipt
+     * would be worse than none.
+     */
+    taxBreakdown?: TaxClassTotal[] | null;
     discount: number;
     storeCreditUsed?: number;
     refundStatus: 'none' | 'partially_refunded' | 'fully_refunded' | 'returned' | 'partially_returned';
@@ -300,6 +333,12 @@ export interface StoreSettings {
 
     // Financial
     taxRate: number; // as a percentage, e.g., 10 for 10%
+    /**
+     * Shelf prices already contain tax, so it is extracted from the price
+     * rather than added at the till. Off by default, which is the behaviour
+     * every store had before the setting existed.
+     */
+    pricesIncludeTax?: boolean;
     currency: {
         symbol: string; // e.g., '$'
         code: string; // e.g., 'USD'

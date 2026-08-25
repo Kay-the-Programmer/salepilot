@@ -6,6 +6,8 @@ import { formatCurrency, isCashMethod as isCashTender, paymentMethodsOf } from '
 import TourGuide from '../components/TourGuide';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import PrinterSettingsModal from '../components/sales/PrinterSettingsModal';
+import CashDrawerModal from '../components/sales/CashDrawerModal';
+import { computeTax, toTaxClass } from '../utils/tax';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import OutOfStockModal from '../components/sales/OutOfStockModal';
 import LowStockAlertModal from '../components/sales/LowStockAlertModal';
@@ -79,6 +81,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Reachable before any sale is made. Pairing a printer used to mean
     // ringing something up first, just to get at the cog on the receipt.
     const [showPrinterSettings, setShowPrinterSettings] = useState(false);
+    const [showCashDrawer, setShowCashDrawer] = useState(false);
     const [lastSale, setLastSale] = useState<Sale | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     // Phone number collected at the POS — backend auto-saves it to the customer
@@ -174,7 +177,6 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
     }, [cart.length]);
 
-    const taxRate = storeSettings.taxRate / 100;
 
     const roundQty = useCallback((q: number) => Math.round(q * 1000) / 1000, []);
     const getStepFor = useCallback((uom?: 'unit' | 'kg') => (uom === 'kg' ? 0.1 : 1), []);
@@ -210,6 +212,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                         stock: availableStock,
                         unitOfMeasure: product.unitOfMeasure,
                         costPrice: product.costPrice,
+                        taxClass: product.taxClass,
                     },
                     ...prev
                 ]);
@@ -354,19 +357,42 @@ const SalesPage: React.FC<SalesPageProps> = ({
         handleContinuousScanRef.current = handleContinuousScan;
     }, [handleContinuousScan]);
 
+    // Totals come from the shared tax engine rather than one rate on the
+    // subtotal: a basket mixing zero-rated staples with standard-rated goods
+    // is taxed line by line. `utils/tax.ts` mirrors the server's copy, so what
+    // the customer is quoted here is what the server will charge.
     const { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit } = useMemo(() => {
-        const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const grossSubtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
         const discountValue = parseFloat(discount) || 0;
-        const discountAmount = discountType === 'percentage'
-            ? subtotal * (discountValue / 100)
+        const entered = discountType === 'percentage'
+            ? grossSubtotal * (discountValue / 100)
             : discountValue;
-        const subtotalAfterDiscount = Math.max(0, subtotal - discountAmount);
-        const taxAmount = subtotalAfterDiscount * taxRate;
-        const totalBeforeCredit = subtotalAfterDiscount + taxAmount;
+
+        const result = computeTax(
+            cart.map(item => ({
+                price: item.price,
+                quantity: item.quantity,
+                taxClass: toTaxClass((item as any).taxClass),
+            })),
+            entered,
+            {
+                standardRatePct: storeSettings.taxRate,
+                pricesIncludeTax: storeSettings.pricesIncludeTax === true,
+            },
+        );
+
+        const totalBeforeCredit = result.total;
         const finalAppliedCredit = Math.min(appliedStoreCredit, totalBeforeCredit);
-        const total = totalBeforeCredit - finalAppliedCredit;
-        return { subtotal, discountAmount, taxAmount, total, totalBeforeCredit, finalAppliedCredit };
-    }, [cart, discount, discountType, appliedStoreCredit, taxRate]);
+        return {
+            // Ex-tax, so the figure sent to the server is the one it stores.
+            subtotal: result.subtotal,
+            discountAmount: result.discount,
+            taxAmount: result.tax,
+            total: totalBeforeCredit - finalAppliedCredit,
+            totalBeforeCredit,
+            finalAppliedCredit,
+        };
+    }, [cart, discount, discountType, appliedStoreCredit, storeSettings.taxRate, storeSettings.pricesIncludeTax]);
 
     // Cash-ness comes from the store's configured method (matched by id), so
     // renaming "CASH" in Settings doesn't silently remove the cash-received box
@@ -684,6 +710,15 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     >
                                         <PosIcon name="print" size={20} />
                                         Receipt Printer
+                                    </button>
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className="sale__menu-item"
+                                        onClick={() => { setShowCashDrawer(true); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="point_of_sale" size={20} />
+                                        Till / Cash Drawer
                                     </button>
                                     <div className="sale__menu-sep" />
                                     <button
@@ -1042,6 +1077,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
             <PrinterSettingsModal
                 isOpen={showPrinterSettings}
                 onClose={() => setShowPrinterSettings(false)}
+            />
+
+            <CashDrawerModal
+                isOpen={showCashDrawer}
+                onClose={() => setShowCashDrawer(false)}
+                storeSettings={storeSettings}
             />
 
             {showReceiptModal && lastSale && (

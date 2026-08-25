@@ -9,6 +9,7 @@ import LabelPrintModal from '../components/LabelPrintModal';
 import ProductDetailView from '../components/products/ProductDetailView';
 import ProductEditForm from '../components/products/ProductEditForm';
 import ProductImportModal from '../components/products/ProductImportModal';
+import { buildProductCsv, downloadCsv } from '../components/products/csv';
 import { takePendingNewProduct } from '../utils/pendingProduct';
 import CategoryDetailView from '../components/products/CategoryDetailView';
 import { api } from '../services/api';
@@ -598,6 +599,26 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         return arr;
     }, [filteredProducts, sortBy, sortOrder, categoryMap]);
 
+    /**
+     * Writes the products currently in view to a CSV using the importer's own
+     * columns, so the file can be edited and imported straight back — the same
+     * round-trip used to move a catalogue between stores or bulk-edit prices.
+     */
+    const handleExportCsv = () => {
+        if (sortedProducts.length === 0) {
+            showToast('No products to export', 'info');
+            return;
+        }
+        const csv = buildProductCsv(
+            sortedProducts,
+            id => (id ? categoryMap.get(id)?.name || '' : ''),
+        );
+        const stamp = new Date().toISOString().slice(0, 10);
+        downloadCsv(`salepilot-products-${stamp}.csv`, csv);
+        showToast(`Exported ${sortedProducts.length} product${sortedProducts.length === 1 ? '' : 's'}`, 'success');
+        logEvent('Inventory', 'export_products_csv');
+    };
+
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(12);
     const totalPages = Math.max(1, Math.ceil(sortedProducts.length / pageSize));
@@ -710,6 +731,19 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 16.5V9.75m0 0l-3 3m3-3l3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
                             </svg>
                             <span className="hidden lg:inline">Import CSV</span>
+                        </button>
+                    )}
+                    {activeTab === 'products' && (
+                        <button
+                            type="button"
+                            onClick={handleExportCsv}
+                            className="shrink-0 flex items-center gap-1.5 h-11 pl-3 pr-4 rounded-lg border border-primary/40 text-primary text-sm font-bold transition active:scale-95 hover:bg-primary/5"
+                            title="Export these products to a CSV file you can re-import"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                            </svg>
+                            <span className="hidden lg:inline">Export CSV</span>
                         </button>
                     )}
                     {canManageProducts && (

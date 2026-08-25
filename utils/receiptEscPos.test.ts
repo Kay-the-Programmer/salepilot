@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Sale, StoreSettings } from '../types';
-import { buildReceiptBytes, buildTestBytes, receiptCode } from './receiptEscPos';
+import { buildReceiptBytes, buildTestBytes, receiptCode, taxLabel } from './receiptEscPos';
 import { COLUMNS } from './escpos';
 
 const settings = {
@@ -235,5 +235,94 @@ describe('the barcode on a printed receipt', () => {
 
     it('is offered on the test page, so a printer that cannot draw one is caught in settings', () => {
         expect(encoded(buildTestBytes(58, 'POS-58'))).not.toBe('');
+    });
+});
+
+/**
+ * A receipt may be handed to a customer's own accountant. The tax figure is
+ * computed elsewhere and tested there; what matters here is that the receipt
+ * does not make a claim about it that is untrue.
+ */
+describe('the tax line on a receipt', () => {
+    const withTax = (over: Partial<Sale>): Sale => ({ ...sale, ...over } as Sale);
+
+    it('states the rate when the whole basket really carried it', () => {
+        const s = withTax({ subtotal: 100, discount: 0, tax: 16 });
+        expect(taxLabel(s, settings)).toBe('Tax (16%)');
+    });
+
+    it('drops the rate when the basket was mixed', () => {
+        // 100 of goods taxed 8.00 is not 16% of anything on this receipt —
+        // some of it was zero-rated. Printing "(16%)" beside it would be false.
+        const s = withTax({ subtotal: 100, discount: 0, tax: 8 });
+        expect(taxLabel(s, settings)).toBe('Tax');
+    });
+
+    it('says the tax was already in the price when prices include it', () => {
+        const inclusive = { ...settings, pricesIncludeTax: true } as StoreSettings;
+        const s = withTax({ subtotal: 100, discount: 0, tax: 16 });
+        expect(taxLabel(s, inclusive)).toBe('Includes tax (16%)');
+    });
+
+    it('accounts for the discount before deciding', () => {
+        // Tax is charged on what was actually paid for, so a discounted basket
+        // at the standard rate must still name its rate.
+        const s = withTax({ subtotal: 200, discount: 100, tax: 16 });
+        expect(taxLabel(s, settings)).toBe('Tax (16%)');
+    });
+
+    it('says nothing about a rate when the store charges none', () => {
+        const untaxed = { ...settings, taxRate: 0 } as StoreSettings;
+        expect(taxLabel(withTax({ subtotal: 100, discount: 0, tax: 0 }), untaxed)).toBe('Tax');
+    });
+});
+
+/**
+ * A mixed basket is the case the whole tax rework exists for, and the receipt
+ * is where a customer or an inspector actually sees it. A breakdown that does
+ * not agree with the tax printed above it makes the receipt worthless as a tax
+ * document.
+ */
+describe('the per-class tax breakdown on a receipt', () => {
+    const mixed = {
+        ...sale,
+        subtotal: 300,
+        discount: 0,
+        tax: 16,
+        total: 316,
+        taxBreakdown: [
+            { taxClass: 'zero' as const, ratePct: 0, net: 200, tax: 0 },
+            { taxClass: 'standard' as const, ratePct: 16, net: 100, tax: 16 },
+        ],
+    } as Sale;
+
+    it('names each class and what it was taxed at', () => {
+        const text = asText(buildReceiptBytes(mixed, settings, { paperWidth: 80 }));
+        expect(text).toContain('Zero rated');
+        expect(text).toContain('Standard 16%');
+    });
+
+    it('shows a breakdown that adds up to the tax charged', () => {
+        const summed = (mixed.taxBreakdown ?? []).reduce((a, c) => a + c.tax, 0);
+        expect(summed).toBe(mixed.tax);
+    });
+
+    it('does not repeat itself when only one class was involved', () => {
+        // A single-class basket is fully described by the tax line already, and
+        // every extra line is paper off a 58mm roll.
+        const single = {
+            ...mixed,
+            taxBreakdown: [{ taxClass: 'standard' as const, ratePct: 16, net: 100, tax: 16 }],
+        } as Sale;
+        const text = asText(buildReceiptBytes(single, settings, { paperWidth: 58 }));
+        expect(text).not.toContain('Standard 16%');
+    });
+
+    it('prints normally for a sale that carries no breakdown at all', () => {
+        // Every sale made before this existed. The receipt must still print.
+        const legacy = { ...mixed, taxBreakdown: undefined } as Sale;
+        const text = asText(buildReceiptBytes(legacy, settings, { paperWidth: 80 }));
+        expect(text).toContain('TOTAL');
+        expect(text).not.toContain('Zero rated');
     });
 });

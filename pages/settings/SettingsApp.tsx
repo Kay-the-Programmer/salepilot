@@ -135,6 +135,10 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
       setCurrentSettings((prev) => ({ ...prev, currency: { ...prev.currency, [f]: value } }));
     } else if (name === 'enableStoreCredit') {
       setCurrentSettings((prev) => ({ ...prev, enableStoreCredit: (e.target as HTMLInputElement).checked }));
+    } else if (name === 'pricesIncludeTax') {
+      // A select carrying a choice, not a value: 'inclusive' means the shelf
+      // price already contains tax and the till extracts it.
+      setCurrentSettings((prev) => ({ ...prev, pricesIncludeTax: value === 'inclusive' }));
     } else {
       setCurrentSettings((prev) => ({ ...prev, [name]: type === 'number' ? parseFloat(value) || 0 : value }));
     }
@@ -296,6 +300,22 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
               <>
                 <Card>
                   <Field label="Tax rate (%)"><input className={inputCls} type="number" name="taxRate" value={currentSettings.taxRate ?? 0} onChange={handleChange} placeholder="0" /></Field>
+                  <Field label="Shelf prices">
+                    <select
+                      className={inputCls}
+                      name="pricesIncludeTax"
+                      value={currentSettings.pricesIncludeTax ? 'inclusive' : 'exclusive'}
+                      onChange={handleChange}
+                    >
+                      <option value="exclusive">Tax added at the till</option>
+                      <option value="inclusive">Tax already included in the price</option>
+                    </select>
+                    <p className="text-[11px] text-brand-text-muted mt-1.5">
+                      Changes what customers pay. With tax included, a {currentSettings.currency?.symbol || 'K'}116
+                      shelf price stays {currentSettings.currency?.symbol || 'K'}116 and the tax is taken out of it;
+                      otherwise tax is added on top at the till.
+                    </p>
+                  </Field>
                   <div className="grid grid-cols-3 gap-3">
                     <Field label="Symbol"><input className={inputCls} name="currency.symbol" value={currentSettings.currency?.symbol || ''} onChange={handleChange} placeholder="K" /></Field>
                     <Field label="Code"><input className={inputCls} name="currency.code" value={currentSettings.currency?.code || ''} onChange={handleChange} placeholder="ZMW" /></Field>

@@ -507,6 +507,25 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({
                                     </div>
                                 </div>
 
+                                <div>
+                                    <label htmlFor="taxClass" className={labelCls}>Tax treatment</label>
+                                    <select
+                                        name="taxClass"
+                                        id="taxClass"
+                                        value={product.taxClass ?? 'standard'}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 rounded-lg border border-brand-border bg-surface text-brand-text focus:border-secondary focus:ring-2 focus:ring-secondary/20 outline-none transition-colors"
+                                    >
+                                        <option value="standard">Standard rated ({storeSettings.taxRate}%)</option>
+                                        <option value="zero">Zero rated (0%)</option>
+                                        <option value="exempt">Exempt (0%)</option>
+                                    </select>
+                                    <p className="text-[11px] text-brand-text-muted mt-1.5">
+                                        Staples are usually zero rated. Zero rated and exempt are both
+                                        charged nothing, but a tax return reports them separately.
+                                    </p>
+                                </div>
+
                                 {(product.price > 0 && product.costPrice !== undefined) && (
                                     <div className="p-3.5 rounded-lg bg-surface-variant border border-brand-border">
                                         <div className="flex justify-between items-center mb-1.5">

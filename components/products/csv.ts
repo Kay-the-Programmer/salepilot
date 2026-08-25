@@ -138,3 +138,66 @@ export const buildTemplateCsv = (): string => {
     ];
     return [header, ...examples].join('\n');
 };
+
+/** Wraps a value in quotes only when it would otherwise break the grid. */
+const csvCell = (value: unknown): string => {
+    if (value === null || value === undefined) return '';
+    const s = String(value);
+    return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+};
+
+/** The subset of a product the CSV round-trip carries. */
+export interface ExportableProduct {
+    name: string;
+    sku?: string;
+    barcode?: string;
+    categoryId?: string;
+    price: number;
+    costPrice?: number;
+    stock: number | string;
+    description?: string;
+    brand?: string;
+    unitOfMeasure?: string;
+    reorderPoint?: number;
+}
+
+/**
+ * Serialises products using exactly the columns `parseProductCsv` reads, in the
+ * template's order — so an export can be edited in a spreadsheet and fed
+ * straight back into the importer without any column mapping.
+ *
+ * `categoryName` resolves a product's category id to the human name the
+ * importer matches on (it find-or-creates by name, not by id).
+ */
+export const buildProductCsv = (
+    products: ExportableProduct[],
+    categoryName: (categoryId?: string) => string = () => '',
+): string => {
+    const header = IMPORT_FIELDS.join(',');
+    const lines = products.map(p => [
+        p.name,
+        p.sku ?? '',
+        p.barcode ?? '',
+        categoryName(p.categoryId),
+        p.price ?? '',
+        p.costPrice ?? '',
+        p.stock ?? '',
+        p.description ?? '',
+        p.brand ?? '',
+        p.unitOfMeasure ?? '',
+        p.reorderPoint ?? '',
+    ].map(csvCell).join(','));
+    return [header, ...lines].join('\r\n');
+};
+
+/** Hands the browser a CSV file to save. */
+export const downloadCsv = (filename: string, csv: string): void => {
+    // Excel only honours UTF-8 in a .csv when the BOM is present.
+    const blob = new Blob(['\ufeff', csv], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+};

@@ -1,4 +1,4 @@
-import { Sale, StoreSettings } from '../types';
+import { Sale, StoreSettings, TaxClassTotal } from '../types';
 import { formatCurrency } from './currency';
 import { COLUMNS, EscPosBuilder, wrap } from './escpos';
 
@@ -87,7 +87,18 @@ export const buildReceiptBytes = (
     if (sale.storeCreditUsed && sale.storeCreditUsed > 0) {
         b.columnsRow('Store credit', `-${money(sale.storeCreditUsed)}`);
     }
-    if (sale.tax > 0) b.columnsRow(`Tax (${settings.taxRate}%)`, money(sale.tax));
+    if (sale.tax > 0) {
+        b.columnsRow(taxLabel(sale, settings), money(sale.tax));
+        // Split by class when the sale carries one and more than one class was
+        // involved. A single-class basket is already fully described by the
+        // line above, and repeating it adds a line to the roll for nothing.
+        const breakdown = sale.taxBreakdown ?? [];
+        if (breakdown.length > 1) {
+            for (const part of breakdown) {
+                b.columnsRow(`  ${classLabel(part)}`, money(part.tax));
+            }
+        }
+    }
 
     b.bold(true).size(true);
     // Double-width halves the usable columns, so the total is laid out against
@@ -118,6 +129,41 @@ export const buildReceiptBytes = (
     b.cut();
 
     return b.build();
+};
+
+/**
+ * How one class reads on a receipt: what it is, and what it was taxed at.
+ *
+ * Zero-rated and exempt are named separately even though both cost nothing.
+ * A customer reclaiming tax, or an inspector reading the roll, needs to see
+ * which of the two applied — they are not the same thing on a tax return.
+ */
+const classLabel = (part: TaxClassTotal): string => {
+    if (part.taxClass === 'zero') return `Zero rated (${money0(part.net)})`;
+    if (part.taxClass === 'exempt') return `Exempt (${money0(part.net)})`;
+    return `Standard ${part.ratePct}% (${money0(part.net)})`;
+};
+
+/** Net value beside a class name, unadorned — the roll is 32 columns wide. */
+const money0 = (n: number): string => n.toFixed(2);
+
+/**
+ * How to name the tax line.
+ *
+ * A rate is only stated when the whole basket actually carried it. Once
+ * products can be zero-rated or exempt, "Tax (16%)" on a mixed basket is a
+ * false statement on a document a customer may present to their own
+ * accountant — the figure is right, the rate beside it is not.
+ *
+ * With tax-inclusive prices the wording changes too: nothing was added at the
+ * till, so the receipt says what the marked price already contained.
+ */
+export const taxLabel = (sale: Sale, settings: StoreSettings): string => {
+    const rate = Number(settings.taxRate) || 0;
+    const taxed = Math.round((sale.subtotal - sale.discount) * rate) / 100;
+    const wholeBasketAtStandardRate = Math.abs(taxed - sale.tax) < 0.02;
+    const name = settings.pricesIncludeTax ? "Includes tax" : "Tax";
+    return wholeBasketAtStandardRate && rate > 0 ? `${name} (${rate}%)` : name;
 };
 
 /** Lay a label/value row out against the double-width grid. */
