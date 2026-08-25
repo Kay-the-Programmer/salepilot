@@ -86,6 +86,12 @@ export interface MyOrder {
 }
 
 export interface GlobalProduct extends Product {
+    /**
+     * The store selling it. Always present: /shop/global-products selects
+     * p.* across stores, and a product from the marketplace is meaningless
+     * without knowing whose it is.
+     */
+    storeId: string;
     storeName?: string;
     currency?: any;
 }

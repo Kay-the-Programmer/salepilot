@@ -45,7 +45,7 @@ const ShopProductList: React.FC = () => {
     const [searchDraft, setSearchDraft] = useState(query);
     const { qtyOf } = useShopCart(storeId);
     const { showToast } = useToast();
-    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     useEffect(() => { setSearchDraft(query); }, [query]);
 
