@@ -153,6 +153,12 @@ export interface Sale {
      * would be worse than none.
      */
     taxBreakdown?: TaxClassTotal[] | null;
+    /**
+     * A manager's single-use approval, when the sale needs one — a discount
+     * past the store limit, say. Sent with the sale and spent by the server;
+     * never stored on it.
+     */
+    overrideId?: string;
     discount: number;
     storeCreditUsed?: number;
     refundStatus: 'none' | 'partially_refunded' | 'fully_refunded' | 'returned' | 'partially_returned';
