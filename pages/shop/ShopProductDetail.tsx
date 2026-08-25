@@ -144,6 +144,7 @@ const ShopProductDetail: React.FC = () => {
             stock: product.stock,
             unitOfMeasure: product.unitOfMeasure,
             moq: moqMin > 1 ? moqMin : undefined,
+            taxClass: product.taxClass,
         }, quantity);
         logEvent('Shop', 'Add to Cart', product.name);
         setJustAdded(true);

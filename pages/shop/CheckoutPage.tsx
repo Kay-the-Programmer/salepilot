@@ -4,7 +4,7 @@ import { HiOutlineArrowLeft, HiOutlineBanknotes, HiOutlineLockClosed, HiOutlineT
 import { shopService } from '../../services/shop.service';
 import { getCurrentUser } from '../../services/authService';
 import { logEvent } from '../../src/utils/analytics';
-import { CartItem, cartSubtotal, clearCart, getCart, subscribeToCart } from './cartStore';
+import { CartItem, cartTotals, clearCart, getCart, subscribeToCart } from './cartStore';
 import type { ShopOutletContext } from './ShopLayout';
 
 type FulfillmentChoice = 'delivery' | 'pickup';
@@ -55,13 +55,16 @@ const CheckoutPage: React.FC = () => {
 
     if (!storeId) return null;
 
-    const subtotal = cartSubtotal(items);
+    // Taxed through the shared engine, so the figure quoted here is the
+    // one the server charges when the order is placed.
     const taxRate = Number(shopInfo.settings?.taxRate) || 0;
-    const tax = subtotal * (taxRate / 100);
+    const { subtotal, tax } = cartTotals(items, shopInfo.settings);
     // Flat store-configured delivery fee — charged only when delivering,
     // waived at/above the store's free-delivery threshold.
     const freeAbove = shopInfo.settings?.freeDeliveryAbove != null ? Number(shopInfo.settings.freeDeliveryAbove) : null;
-    const feeWaived = freeAbove != null && subtotal >= freeAbove;
+    // Against the value of the goods, tax included — the same measure the
+    // server uses, or the fee shown here disagrees with the one charged.
+    const feeWaived = freeAbove != null && subtotal + tax >= freeAbove;
     const deliveryFee = fulfillment === 'delivery' && !feeWaived ? Math.max(0, Number(shopInfo.settings?.deliveryFee) || 0) : 0;
     const total = subtotal + tax + deliveryFee;
 

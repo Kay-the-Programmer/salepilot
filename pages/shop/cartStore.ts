@@ -8,6 +8,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { computeTax, toTaxClass } from '../../utils/tax';
 
 export interface CartItem {
     id: string;
@@ -23,6 +24,12 @@ export interface CartItem {
     basePrice?: number;
     /** Wholesale quantity-break tiers; price is recomputed as qty changes. */
     tiers?: PriceTier[];
+    /**
+     * How the product is taxed. Carried so the cart quotes the same tax the
+     * server will charge at checkout. Absent on carts saved before this
+     * existed, which reads as standard rated — the old behaviour exactly.
+     */
+    taxClass?: 'standard' | 'zero' | 'exempt';
 }
 
 export interface PriceTier { minQty: number; price: number }
@@ -72,6 +79,33 @@ export const cartCount = (items: CartItem[]): number =>
 export const cartSubtotal = (items: CartItem[]): number =>
     items.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
+/**
+ * What the shopper owes, taxed the way the server will tax it.
+ *
+ * Uses the shared engine rather than one rate on the subtotal, because a
+ * basket mixing zero-rated staples with standard-rated goods is charged line
+ * by line at checkout. A cart page doing its own flat-rate sum would quote a
+ * figure the shopper is then not charged.
+ */
+export const cartTotals = (
+    items: CartItem[],
+    settings: { taxRate?: number; pricesIncludeTax?: boolean } | undefined,
+): { subtotal: number; tax: number; total: number } => {
+    const result = computeTax(
+        items.map(i => ({
+            price: i.price,
+            quantity: i.quantity,
+            taxClass: toTaxClass(i.taxClass),
+        })),
+        0,
+        {
+            standardRatePct: Number(settings?.taxRate) || 0,
+            pricesIncludeTax: settings?.pricesIncludeTax === true,
+        },
+    );
+    return { subtotal: result.subtotal, tax: result.tax, total: result.total };
+};
+
 /** Clamp a desired quantity to [min(=MOQ or 1), stock] (stock ≤ 0 means unknown → allow). */
 const clampQty = (qty: number, stock: number, moq?: number) => {
     const lower = moq && moq > 1 ? moq : 1;
@@ -92,6 +126,7 @@ export const addToCart = (
         existing.stock = item.stock ?? existing.stock;
         existing.moq = item.moq ?? existing.moq;
         existing.basePrice = item.basePrice ?? existing.basePrice;
+        existing.taxClass = item.taxClass ?? existing.taxClass;
         existing.tiers = item.tiers ?? existing.tiers;
         repriceLine(existing);
     } else {

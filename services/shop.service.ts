@@ -17,6 +17,8 @@ export interface ShopInfo {
         logoUrl?: string | null;
         currency?: any;
         taxRate?: number;
+        /** Shelf prices already contain tax; the cart extracts rather than adds. */
+        pricesIncludeTax?: boolean;
         deliveryFee?: number;
         freeDeliveryAbove?: number | null;
         storeDescription?: string | null;
