@@ -345,6 +345,17 @@ export interface StoreSettings {
      * every store had before the setting existed.
      */
     pricesIncludeTax?: boolean;
+    /**
+     * When a cashier must fetch a manager. A missing or null entry means that
+     * action never needs one, which is how every store behaved before
+     * approvals existed.
+     */
+    overrideThresholds?: {
+        discountPercent?: number | null;
+        refundAmount?: number | null;
+        payOutAmount?: number | null;
+        noSale?: boolean | null;
+    } | null;
     currency: {
         symbol: string; // e.g., '$'
         code: string; // e.g., 'USD'

@@ -11,7 +11,11 @@ import { api } from './api';
 
 export interface CashMovement {
     id: string;
-    type: 'pay_in' | 'pay_out';
+    /**
+     * no_sale is the drawer being opened without one — not a movement of money,
+     * and carried here only because it belongs to the same shift.
+     */
+    type: 'pay_in' | 'pay_out' | 'no_sale';
     amount: number;
     reason: string;
     createdAt: string;
@@ -39,6 +43,8 @@ export interface CashSession {
     notes: string | null;
     movements?: CashMovement[];
     sales?: number;
+    /** Times the drawer was opened with no sale behind it. */
+    noSaleOpens?: number;
     returns?: number;
     grossSales?: number;
     tenders?: Array<{ method: string; amount: number; count: number }>;
@@ -64,6 +70,20 @@ export const closeSession = (
     notes?: string,
 ): Promise<CashSession> =>
     api.post<CashSession>(`/cash-sessions/${sessionId}/close`, { countedCash, notes });
+
+/**
+ * Ask before opening the drawer without a sale.
+ *
+ * The pulse is a printer command the till sends itself, so this cannot stop a
+ * drawer opening — what it does is make it leave a mark, and give the store a
+ * chance to require a manager. Call it first; only open the drawer if it
+ * succeeds.
+ */
+export const recordNoSale = (
+    sessionId: string,
+    body: { reason?: string; overrideId?: string } = {},
+): Promise<{ ok: true }> =>
+    api.post<{ ok: true }>(`/cash-sessions/${sessionId}/no-sale`, body);
 
 /** Past shifts. Own sessions only unless the caller can manage cash. */
 export const listSessions = (limit = 50): Promise<CashSession[]> =>
