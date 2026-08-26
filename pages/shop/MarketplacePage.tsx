@@ -94,7 +94,7 @@ export default function MarketplacePage() {
     // Live search while on the Shop view: results follow the input (350ms
     // debounce, URL replaced not pushed). Other tabs keep explicit submit so
     // typing never yanks the user away from a B2B view.
-    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
     useEffect(() => {
         if (activeView !== 'shop') return;
         if (searchDraft.trim() === (searchParams.get('q') || '')) return;

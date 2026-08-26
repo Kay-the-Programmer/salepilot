@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { computeTax, toTaxClass } from '../../utils/tax';
 import { User, StoreSettings, Customer, Product, Sale, BANK_ACCOUNT_FIELDS } from '../../types';
 import { api, buildAssetUrl } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
@@ -23,6 +24,23 @@ import '../crm/crm.css';
 // m3-* utility classes live there. Without this import the panels below have no
 // background at all — same reason AccountingShell imports it.
 import '../../pages/assistant/assistant.css';
+
+/**
+ * How the tax line reads on a document.
+ *
+ * The rate is only stated when every priced line carried it. Once products
+ * can be zero-rated or exempt, "Tax (16%)" on a mixed invoice is a false
+ * claim on a document the customer may hand to their own accountant.
+ */
+const docTaxLabel = (
+    taxRate: number,
+    totals: { subtotal: number; discount: number; tax: number },
+): string => {
+    const atStandardRate = Math.round((totals.subtotal - totals.discount) * taxRate) / 100;
+    return Math.abs(atStandardRate - totals.tax) < 0.02 && taxRate > 0
+        ? `Tax (${taxRate}%)`
+        : 'Tax';
+};
 
 interface SalesDocsAppProps {
     user: User;
@@ -567,7 +585,7 @@ const DocumentDetail: React.FC<{
                             <div className="flex justify-between"><dt className="m3-text-on-surface-variant">Discount</dt><dd>- {formatCurrency(doc.discount, storeSettings!)}</dd></div>
                         )}
                         {Number(doc.tax) > 0 && (
-                            <div className="flex justify-between"><dt className="m3-text-on-surface-variant">Tax ({Number(doc.taxRate)}%)</dt><dd>{formatCurrency(doc.tax, storeSettings!)}</dd></div>
+                            <div className="flex justify-between"><dt className="m3-text-on-surface-variant">{docTaxLabel(Number(doc.taxRate), { subtotal: Number(doc.subtotal) || 0, discount: Number(doc.discount) || 0, tax: Number(doc.tax) || 0 })}</dt><dd>{formatCurrency(doc.tax, storeSettings!)}</dd></div>
                         )}
                         <div className="flex justify-between pt-2 border-t m3-border-outline-variant font-bold text-base">
                             <dt>Total</dt><dd>{formatCurrency(doc.total, storeSettings!)}</dd>
@@ -720,12 +738,33 @@ const DocumentEditor: React.FC<{
 
     // Mirrors the server's arithmetic so the operator sees the same figures the
     // backend will compute — the server's numbers are still authoritative.
+    // Taxed line by line: a document mixing zero-rated staples with
+    // standard-rated goods is charged per class, not at one rate on the whole.
     const totals = useMemo(() => {
-        const subtotal = items.reduce((sum, i) => sum + (Number(i.quantity) || 0) * (Number(i.unitPrice) || 0), 0);
-        const disc = Math.min(Math.max(Number(discount) || 0, 0), subtotal);
-        const tax = (subtotal - disc) * (taxRate / 100);
-        return { subtotal, discount: disc, tax, total: subtotal - disc + tax };
-    }, [items, discount, taxRate]);
+        const result = computeTax(
+            items.map(i => {
+                // A free-text charge with no catalogue product behind it is
+                // standard rated, same as the server treats it.
+                const product = i.productId ? products.find(p => p.id === i.productId) : undefined;
+                return {
+                    price: Number(i.unitPrice) || 0,
+                    quantity: Number(i.quantity) || 0,
+                    taxClass: toTaxClass(product?.taxClass),
+                };
+            }),
+            Number(discount) || 0,
+            {
+                standardRatePct: taxRate,
+                pricesIncludeTax: storeSettings?.pricesIncludeTax === true,
+            },
+        );
+        return {
+            subtotal: result.subtotal,
+            discount: result.discount,
+            tax: result.tax,
+            total: result.total,
+        };
+    }, [items, discount, taxRate, products, storeSettings?.pricesIncludeTax]);
 
     const setItem = (index: number, patch: Partial<SalesDocumentItem>) =>
         setItems(prev => prev.map((item, i) => (i === index ? { ...item, ...patch } : item)));
@@ -995,8 +1034,8 @@ const DocumentEditor: React.FC<{
                         </div>
                         <div className="rounded-lg m3-bg-surface-container px-3 py-2 text-sm">
                             <div className="flex justify-between"><span className="m3-text-on-surface-variant">Subtotal</span><span>{formatCurrency(totals.subtotal, storeSettings!)}</span></div>
-                            {taxRate > 0 && (
-                                <div className="flex justify-between"><span className="m3-text-on-surface-variant">Tax ({taxRate}%)</span><span>{formatCurrency(totals.tax, storeSettings!)}</span></div>
+                            {totals.tax > 0 && (
+                                <div className="flex justify-between"><span className="m3-text-on-surface-variant">{docTaxLabel(taxRate, totals)}</span><span>{formatCurrency(totals.tax, storeSettings!)}</span></div>
                             )}
                             <div className="flex justify-between font-bold mt-1 pt-1 border-t m3-border-outline-variant">
                                 <span>Total</span><span>{formatCurrency(totals.total, storeSettings!)}</span>

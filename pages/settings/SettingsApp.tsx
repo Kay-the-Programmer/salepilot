@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import ManagerApprovalsCard from '../../components/settings/ManagerApprovalsCard';
 import { useNavigate } from 'react-router-dom';
 import { useTheme, THEME_PREFERENCE_ICON, THEME_PREFERENCE_LABEL } from '../../contexts/ThemeContext';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
@@ -416,6 +417,12 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                 </Card>
                 <PaymentMethods title="Customer payment methods" items={currentSettings.paymentMethods || []} onEdit={(i, v) => setPM('paymentMethods', i, v)} onRemove={(id) => removePM('paymentMethods', id)} value={pmName} setValue={setPmName} onAdd={() => addPM('paymentMethods', pmName, setPmName)} />
                 <PaymentMethods title="Supplier payment methods" items={currentSettings.supplierPaymentMethods || []} onEdit={(i, v) => setPM('supplierPaymentMethods', i, v)} onRemove={(id) => removePM('supplierPaymentMethods', id)} value={spmName} setValue={setSpmName} onAdd={() => addPM('supplierPaymentMethods', spmName, setSpmName)} />
+                <ManagerApprovalsCard
+                  settings={currentSettings}
+                  onChange={(overrideThresholds) => setCurrentSettings((prev) => ({ ...prev, overrideThresholds } as any))}
+                  showSnackbar={showSnackbar}
+                  inputCls={inputCls}
+                />
               </>
             )}
 

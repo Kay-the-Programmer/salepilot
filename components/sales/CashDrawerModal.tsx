@@ -9,7 +9,12 @@ import {
     closeSession,
     getCurrentSession,
     openSession,
+    recordNoSale,
 } from '../../services/cashSession';
+import { buildDrawerPulse } from '../../utils/receiptEscPos';
+import { printBytes } from '../../services/thermalPrinter';
+import { OverrideAction, overrideRequestFrom } from '../../services/overrides';
+import ManagerOverrideModal from './ManagerOverrideModal';
 
 interface CashDrawerModalProps {
     isOpen: boolean;
@@ -40,6 +45,11 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
     const [moveType, setMoveType] = useState<'pay_in' | 'pay_out'>('pay_out');
     const [moveAmount, setMoveAmount] = useState('');
     const [moveReason, setMoveReason] = useState('');
+    // A drawer opening the server refused for want of a manager, held so the
+    // approval can be applied without the cashier starting again.
+    const [pendingApproval, setPendingApproval] = useState<
+        { action: OverrideAction; amount: number } | null
+    >(null);
 
     const money = useCallback(
         (n: number) => formatCurrency(n, storeSettings),
@@ -112,6 +122,36 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
         setSession({ ...session, movements });
         setMoveAmount('');
         setMoveReason('');
+    });
+
+    /**
+     * Open the drawer without a sale.
+     *
+     * The server is asked first and the drawer only opens if it agrees, so the
+     * opening is recorded and can be made to need a manager. It is still only
+     * a record — the pulse goes straight from this machine to the printer, and
+     * nothing in software can hold a drawer shut.
+     */
+    const openDrawer = (overrideId?: string) => run(async () => {
+        if (!session) throw new Error('Open a till first.');
+        try {
+            await recordNoSale(session.id, { reason: moveReason.trim() || undefined, overrideId });
+        } catch (e) {
+            const needed = overrideRequestFrom(e);
+            if (needed) {
+                setPendingApproval(needed);
+                return;
+            }
+            throw e;
+        }
+        try {
+            await printBytes(buildDrawerPulse());
+        } catch {
+            // The opening is already recorded, which is the part that matters.
+            // A till with no printer attached simply has no drawer to kick.
+            setError('Recorded, but no printer is connected to open the drawer.');
+        }
+        setSession(await getCurrentSession());
     });
 
     const doClose = () => run(async () => {
@@ -190,6 +230,9 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
                         ))}
                         <Row label="Sales" value={String(session.sales ?? 0)} muted />
                         <Row label="Returns" value={String(session.returns ?? 0)} muted />
+                        {!!session.noSaleOpens && (
+                            <Row label="Drawer opened, no sale" value={String(session.noSaleOpens)} muted />
+                        )}
                     </dl>
                 </div>
             );
@@ -227,14 +270,23 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
                         Record
                     </button>
 
+                    <button type="button" disabled={busy} onClick={() => openDrawer()}
+                        className="w-full rounded-lg border border-brand-border py-2 text-xs font-bold text-brand-text hover:bg-surface-variant disabled:opacity-50 inline-flex items-center justify-center gap-1.5">
+                        <PosIcon name="lock_open" size={16} /> Open drawer (no sale)
+                    </button>
+
                     {!!session.movements?.length && (
                         <ul className="pt-1 space-y-1">
                             {session.movements.map(m => (
                                 <li key={m.id} className="flex justify-between gap-3 text-[11px] text-brand-text-muted">
                                     <span className="truncate">
-                                        {m.type === 'pay_in' ? '+' : '−'} {m.reason}
+                                        {m.type === 'no_sale' ? '◦' : m.type === 'pay_in' ? '+' : '−'} {m.reason}
                                     </span>
-                                    <span className="shrink-0 font-bold">{money(m.amount)}</span>
+                                    <span className="shrink-0 font-bold">
+                                        {/* A drawer opening moves no money, so showing it a
+                                            price would misrepresent the till. */}
+                                        {m.type === 'no_sale' ? 'opened' : money(m.amount)}
+                                    </span>
                                 </li>
                             ))}
                         </ul>
@@ -312,6 +364,18 @@ const CashDrawerModal: React.FC<CashDrawerModalProps> = ({ isOpen, onClose, stor
                     )}
                 </div>
             </div>
+
+            <ManagerOverrideModal
+                isOpen={!!pendingApproval}
+                action={pendingApproval?.action ?? null}
+                amount={pendingApproval?.amount ?? 0}
+                storeSettings={storeSettings}
+                onCancel={() => setPendingApproval(null)}
+                onApproved={(overrideId) => {
+                    setPendingApproval(null);
+                    openDrawer(overrideId);
+                }}
+            />
         </div>,
         document.body,
     );

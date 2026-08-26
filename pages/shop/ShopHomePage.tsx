@@ -35,6 +35,7 @@ const ShopHomePage: React.FC = () => {
                 tiers: isWholesale ? p.priceTiers || undefined : undefined,
                 image: p.imageUrls?.[0], stock: p.stock, unitOfMeasure: p.unitOfMeasure,
                 moq: isWholesale ? p.minOrderQuantity || undefined : undefined,
+                taxClass: p.taxClass,
             });
             showToast(`${p.name} added to cart`, 'success');
         },

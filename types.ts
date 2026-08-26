@@ -153,6 +153,12 @@ export interface Sale {
      * would be worse than none.
      */
     taxBreakdown?: TaxClassTotal[] | null;
+    /**
+     * A manager's single-use approval, when the sale needs one — a discount
+     * past the store limit, say. Sent with the sale and spent by the server;
+     * never stored on it.
+     */
+    overrideId?: string;
     discount: number;
     storeCreditUsed?: number;
     refundStatus: 'none' | 'partially_refunded' | 'fully_refunded' | 'returned' | 'partially_returned';
@@ -339,6 +345,17 @@ export interface StoreSettings {
      * every store had before the setting existed.
      */
     pricesIncludeTax?: boolean;
+    /**
+     * When a cashier must fetch a manager. A missing or null entry means that
+     * action never needs one, which is how every store behaved before
+     * approvals existed.
+     */
+    overrideThresholds?: {
+        discountPercent?: number | null;
+        refundAmount?: number | null;
+        payOutAmount?: number | null;
+        noSale?: boolean | null;
+    } | null;
     currency: {
         symbol: string; // e.g., '$'
         code: string; // e.g., 'USD'

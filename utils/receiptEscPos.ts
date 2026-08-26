@@ -173,6 +173,17 @@ const wideRow = (builder: EscPosBuilder, left: string, right: string): string =>
 };
 
 /**
+ * Kick the cash drawer open, printing nothing.
+ *
+ * The drawer is wired to the printer, not the computer, so opening one means
+ * sending the printer a pulse — there is no other way to reach it. This is
+ * that pulse with no receipt attached, for the times a cashier needs the
+ * drawer without a sale.
+ */
+export const buildDrawerPulse = (): Uint8Array =>
+    new EscPosBuilder().init().openDrawer().build();
+
+/**
  * A short alignment sheet, so a printer can be proved from settings instead of
  * discovered to be wrong mid-sale. The ruler is the point: on the correct roll
  * it reaches the paper's edge without wrapping.

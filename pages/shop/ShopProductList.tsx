@@ -45,7 +45,7 @@ const ShopProductList: React.FC = () => {
     const [searchDraft, setSearchDraft] = useState(query);
     const { qtyOf } = useShopCart(storeId);
     const { showToast } = useToast();
-    const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
     useEffect(() => { setSearchDraft(query); }, [query]);
 
@@ -129,6 +129,7 @@ const ShopProductList: React.FC = () => {
                 tiers: isWholesale ? p.priceTiers || undefined : undefined,
                 image: p.imageUrls?.[0], stock: p.stock, unitOfMeasure: p.unitOfMeasure,
                 moq: isWholesale ? p.minOrderQuantity || undefined : undefined,
+                taxClass: p.taxClass,
             });
             showToast(`${p.name} added to cart`, 'success');
         },

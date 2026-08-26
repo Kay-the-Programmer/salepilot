@@ -3,7 +3,7 @@ import { useParams, Link, useOutletContext, useNavigate } from 'react-router-dom
 import { HiOutlineTrash, HiOutlinePlus, HiOutlineMinus, HiOutlineShoppingBag, HiOutlineArrowLeft, HiOutlinePhoto } from 'react-icons/hi2';
 import { buildAssetUrl } from '../../services/api';
 import { useConfirm } from '../../components/ui/useConfirm';
-import { CartItem, cartSubtotal, clearCart, getCart, removeFromCart, subscribeToCart, updateQuantity } from './cartStore';
+import { CartItem, cartTotals, clearCart, getCart, removeFromCart, subscribeToCart, updateQuantity } from './cartStore';
 import type { ShopOutletContext } from './ShopLayout';
 
 /**
@@ -26,10 +26,10 @@ const CartPage: React.FC = () => {
 
     if (!storeId) return null;
 
-    const subtotal = cartSubtotal(items);
+    // Taxed through the shared engine, so the figure quoted here is the
+    // one the server charges at checkout.
     const taxRate = Number(shopInfo.settings?.taxRate) || 0;
-    const tax = subtotal * (taxRate / 100);
-    const total = subtotal + tax;
+    const { subtotal, tax, total } = cartTotals(items, shopInfo.settings);
 
     if (items.length === 0) {
         return (

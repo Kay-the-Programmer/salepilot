@@ -17,6 +17,8 @@ export interface ShopInfo {
         logoUrl?: string | null;
         currency?: any;
         taxRate?: number;
+        /** Shelf prices already contain tax; the cart extracts rather than adds. */
+        pricesIncludeTax?: boolean;
         deliveryFee?: number;
         freeDeliveryAbove?: number | null;
         storeDescription?: string | null;
@@ -84,6 +86,12 @@ export interface MyOrder {
 }
 
 export interface GlobalProduct extends Product {
+    /**
+     * The store selling it. Always present: /shop/global-products selects
+     * p.* across stores, and a product from the marketplace is meaningless
+     * without knowing whose it is.
+     */
+    storeId: string;
     storeName?: string;
     currency?: any;
 }

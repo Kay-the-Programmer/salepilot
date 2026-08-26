@@ -318,7 +318,7 @@ const ShopDiscoveryView: React.FC = () => {
                                 <ShopProductCard
                                     key={`${p.storeId}-${p.id}`}
                                     product={p}
-                                    storeId={(p as any).storeId}
+                                    storeId={p.storeId}
                                     formatPrice={priceFor(p)}
                                     showStore
                                     wholesale

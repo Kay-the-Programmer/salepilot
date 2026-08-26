@@ -27,3 +27,6 @@ android
 
 # Local env (contains API keys) — never commit
 .env
+
+# Vite writes these while bundling the config; they are not source.
+vite.config.ts.timestamp-*

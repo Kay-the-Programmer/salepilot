@@ -7,6 +7,8 @@ import TourGuide from '../components/TourGuide';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import PrinterSettingsModal from '../components/sales/PrinterSettingsModal';
 import CashDrawerModal from '../components/sales/CashDrawerModal';
+import ManagerOverrideModal from '../components/sales/ManagerOverrideModal';
+import { OverrideAction, overrideRequestFrom } from '../services/overrides';
 import { computeTax, toTaxClass } from '../utils/tax';
 import HeldSalesModal from '../components/sales/HeldSalesModal';
 import OutOfStockModal from '../components/sales/OutOfStockModal';
@@ -82,6 +84,29 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // ringing something up first, just to get at the cog on the receipt.
     const [showPrinterSettings, setShowPrinterSettings] = useState(false);
     const [showCashDrawer, setShowCashDrawer] = useState(false);
+    // A sale the server refused for want of a manager, held so it can be sent
+    // again with the approval rather than rung up a second time.
+    /** Send a sale and, if it lands, show the receipt and clear the till. */
+    const submitSale = async (saleData: Sale, type?: string) => {
+        const newSale = await onProcessSale(saleData);
+        if (!newSale) return;
+        if (type === 'invoice') {
+            showSnackbar(`Invoice created for ${selectedCustomer?.name}`, 'success');
+        } else {
+            // Fill receipt-only fields the server/offline queue may omit.
+            setLastSale({
+                ...newSale,
+                customerName: newSale.customerName || selectedCustomer?.name,
+                attendedBy: newSale.attendedBy || user?.name,
+            });
+            setShowReceiptModal(true);
+        }
+        clearCart();
+    };
+
+    const [pendingApproval, setPendingApproval] = useState<
+        { action: OverrideAction; amount: number; sale: Sale } | null
+    >(null);
     const [lastSale, setLastSale] = useState<Sale | null>(null);
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     // Phone number collected at the POS — backend auto-saves it to the customer
@@ -446,6 +471,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
 
         if (isProcessing) return;
+        // Declared out here so the catch can hold it while a manager is asked.
+        let saleData: Partial<Sale> | undefined;
         setIsProcessing(true);
 
         try {
@@ -475,7 +502,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 changeDue: isCashMethod ? changeDue : undefined,
             };
 
-            let saleData: Partial<Sale>;
+            saleData = {} as Partial<Sale>;
 
             if (type === 'invoice') {
                 // Terms run from the sale date, so a backdated invoice is
@@ -524,23 +551,16 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 };
             }
 
-            const newSale = await onProcessSale(saleData as Sale);
-
-            if (newSale) {
-                if (type === 'invoice') {
-                    showSnackbar(`Invoice created for ${selectedCustomer?.name}`, 'success');
-                } else {
-                    // Fill receipt-only fields the server/offline queue may omit.
-                    setLastSale({
-                        ...newSale,
-                        customerName: newSale.customerName || selectedCustomer?.name,
-                        attendedBy: newSale.attendedBy || user?.name,
-                    });
-                    setShowReceiptModal(true);
-                }
-                clearCart();
-            }
+            await submitSale(saleData as Sale, type);
         } catch (error) {
+            // Refused for want of a manager rather than broken: hold the sale
+            // and ask, instead of telling the cashier to try again at something
+            // that will refuse them identically.
+            const needed = overrideRequestFrom(error);
+            if (needed && saleData) {
+                setPendingApproval({ ...needed, sale: saleData as Sale });
+                return;
+            }
             console.error('Transaction failed:', error);
             showSnackbar('Transaction failed. Please try again.', 'error');
         } finally {
@@ -1083,6 +1103,29 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 isOpen={showCashDrawer}
                 onClose={() => setShowCashDrawer(false)}
                 storeSettings={storeSettings}
+            />
+
+            <ManagerOverrideModal
+                isOpen={!!pendingApproval}
+                action={pendingApproval?.action ?? null}
+                amount={pendingApproval?.amount ?? 0}
+                storeSettings={storeSettings}
+                onCancel={() => setPendingApproval(null)}
+                onApproved={async (overrideId, authorizedBy) => {
+                    const held = pendingApproval;
+                    setPendingApproval(null);
+                    if (!held) return;
+                    setIsProcessing(true);
+                    try {
+                        await submitSale({ ...held.sale, overrideId });
+                        showSnackbar(`Approved by ${authorizedBy}`, 'success');
+                    } catch (e) {
+                        console.error('Approved sale still failed:', e);
+                        showSnackbar('That approval was not accepted. Ask a manager again.', 'error');
+                    } finally {
+                        setIsProcessing(false);
+                    }
+                }}
             />
 
             {showReceiptModal && lastSale && (
