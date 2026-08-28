@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { api } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import DeleteStoreModal from '../../components/superadmin/DeleteStoreModal';
 import { formatDate } from '../../utils/date';
 import { formatMoney } from '../../utils/currency';
 import { INPUT_CLASS } from '../../utils/ui';
@@ -100,6 +101,7 @@ const paymentRowMeta = (s?: string): { tone: PillTone; label: string } => {
 const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId }) => {
     const navigate = useNavigate();
     const [store, setStore] = useState<StoreDetails | null>(null);
+    const [confirmingDelete, setConfirmingDelete] = useState(false);
     const [payments, setPayments] = useState<PaymentRow[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -589,6 +591,38 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                         </div>
                     </form>
                 </Modal>
+            )}
+
+            {store && (
+                <div className="mt-8 rounded-xl border border-danger/30 bg-danger/5 p-5">
+                    <h3 className="text-sm font-bold text-danger">Delete this store</h3>
+                    <p className="text-[11px] text-brand-text-muted mt-1 max-w-prose">
+                        Removes the store and everything belonging to it &mdash; products, sales,
+                        customers, the books. People keep their logins. This cannot be undone,
+                        so you will be shown exactly what goes first.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => setConfirmingDelete(true)}
+                        className="mt-3 rounded-lg border border-danger px-4 py-2 text-sm font-bold text-danger hover:bg-danger hover:text-white transition-colors"
+                    >
+                        Delete store&hellip;
+                    </button>
+                </div>
+            )}
+
+            {confirmingDelete && store && (
+                <DeleteStoreModal
+                    storeId={storeId!}
+                    storeName={store.name}
+                    onCancel={() => setConfirmingDelete(false)}
+                    onDeleted={(summary) => {
+                        setConfirmingDelete(false);
+                        // Back to the list: this page is now about a store that
+                        // does not exist, and reloading it would only 404.
+                        navigate('/superadmin/stores', { replace: true, state: { flash: summary } });
+                    }}
+                />
             )}
         </div>
     );

@@ -461,21 +461,38 @@ export const api = {
     }
   },
 
-  async delete<T>(endpoint: string): Promise<T | (T & { offline: true })> {
-    const options: RequestInit = { method: 'DELETE' };
+  /**
+   * `body` is optional because most deletes need none; it exists for the few
+   * that carry a confirmation.
+   *
+   * `skipQueue` refuses to defer the call when offline instead of queueing it.
+   * Use it for anything irreversible: a queued delete is replayed later, from
+   * a device whose owner has long since moved on, against a target that may no
+   * longer be the one they were looking at.
+   */
+  async delete<T>(
+    endpoint: string,
+    body?: any,
+    options: { skipQueue?: boolean } = {},
+  ): Promise<T | (T & { offline: true })> {
+    const reqOptions: RequestInit = body === undefined
+      ? { method: 'DELETE' }
+      : { method: 'DELETE', body: JSON.stringify(body) };
     const clientRequestId = genClientRequestId();
 
     if (!getOnlineStatus()) {
+      if (options.skipQueue) throw new Error('You are offline. This cannot be done until you reconnect.');
       const optimistic = await applyOptimisticUpdate(endpoint, 'DELETE', {});
-      return queueAndReturn<T>(endpoint, options, {}, { clientRequestId, optimistic });
+      return queueAndReturn<T>(endpoint, reqOptions, {}, { clientRequestId, optimistic });
     }
 
     try {
-      return await request<T>(endpoint, options);
+      return await request<T>(endpoint, reqOptions);
     } catch (err: any) {
       if (err?.message?.toLowerCase?.().includes('failed to fetch')) {
+        if (options.skipQueue) throw err;
         const optimistic = await applyOptimisticUpdate(endpoint, 'DELETE', {});
-        return queueAndReturn<T>(endpoint, options, {}, { clientRequestId, optimistic });
+        return queueAndReturn<T>(endpoint, reqOptions, {}, { clientRequestId, optimistic });
       }
       throw err;
     }
