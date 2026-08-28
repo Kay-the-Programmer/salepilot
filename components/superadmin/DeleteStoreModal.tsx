@@ -32,6 +32,7 @@ const DeleteStoreModal: React.FC<DeleteStoreModalProps> = ({
 }) => {
     const [preview, setPreview] = useState<DeletionPreview | null>(null);
     const [typed, setTyped] = useState('');
+    const [archive, setArchive] = useState(true);
     const [busy, setBusy] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -51,7 +52,7 @@ const DeleteStoreModal: React.FC<DeleteStoreModalProps> = ({
         try {
             const r = await api.delete<{ totalRows: number }>(
                 `/superadmin/stores/${storeId}`,
-                { confirmName: typed.trim() },
+                { confirmName: typed.trim(), archive },
                 // Never queued: a deferred delete is replayed later, from a
                 // device whose owner has moved on, against a store nobody is
                 // looking at any more.
@@ -131,6 +132,19 @@ const DeleteStoreModal: React.FC<DeleteStoreModalProps> = ({
                                     )}
                                 </div>
                             )}
+
+                            <label className="flex items-start gap-2.5 cursor-pointer">
+                                <input type="checkbox" className="mt-0.5" checked={archive}
+                                    onChange={e => setArchive(e.target.checked)} />
+                                <span className="text-xs text-brand-text">
+                                    Save a copy of everything first
+                                    <span className="block text-[11px] text-brand-text-muted">
+                                        Written to the server, never published. Leave this on unless the
+                                        store is being erased because someone asked to be forgotten —
+                                        then a copy is the one thing you must not keep.
+                                    </span>
+                                </span>
+                            </label>
 
                             <div>
                                 <label className="block text-[11px] font-black uppercase tracking-wider text-brand-text-muted mb-1.5" htmlFor="confirm-store-name">
