@@ -5,6 +5,7 @@ import XMarkIcon from '../icons/XMarkIcon';
 import CreditCardIcon from '../icons/CreditCardIcon';
 import ChevronDownIcon from '../icons/ChevronDownIcon';
 import { formatCurrency } from '../../utils/currency';
+import { toDateInputValue } from '../../utils/date';
 
 interface UnifiedRecordPaymentModalProps {
     isOpen: boolean;
@@ -36,7 +37,7 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
     storeSettings,
 }) => {
     const [amount, setAmount] = useState(balanceDue.toFixed(2));
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(toDateInputValue());
     const [method, setMethod] = useState('');
     const [reference, setReference] = useState('');
 
@@ -45,7 +46,7 @@ const UnifiedRecordPaymentModal: React.FC<UnifiedRecordPaymentModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             setAmount(balanceDue.toFixed(2));
-            setDate(new Date().toISOString().split('T')[0]);
+            setDate(toDateInputValue());
             setMethod(paymentMethods[0]?.id || paymentMethods[0]?.name || '');
             setReference('');
         }

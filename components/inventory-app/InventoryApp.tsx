@@ -5,6 +5,7 @@ import { Icon } from '../crm/CrmBits';
 import { InventoryShell, InvSection } from './InventoryShell';
 import InventoryDashboard from './InventoryDashboard';
 import InventoryAlerts from './InventoryAlerts';
+import ClosingStockReport from './ClosingStockReport';
 import { buildInventoryOverview } from './inventoryModel';
 import { hasModule, MODULES, FREE_PRODUCT_LIMIT } from '../../utils/entitlements';
 import { can } from '../../utils/rbac';
@@ -129,6 +130,17 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
                 onViewItems={() => onNavigate('items')}
             />
         );
+    } else if (section === 'closing-report') {
+        content = (
+            <ClosingStockReport
+                products={products}
+                categories={categories}
+                storeSettings={storeSettings}
+                user={user}
+                onViewItems={() => onNavigate('items')}
+                onNotify={notify}
+            />
+        );
     } else {
         content = (
             <InventoryDashboard
@@ -137,6 +149,7 @@ export const InventoryApp: React.FC<InventoryAppProps> = ({
                 onAddItem={canManageStock ? () => onNavigate('items') : undefined}
                 onViewItems={() => onNavigate('items')}
                 onViewAlerts={() => onNavigate('alerts')}
+                onViewClosingReport={() => onNavigate('closing-report')}
                 onGeneratePO={canRaisePo ? onGeneratePO : undefined}
                 onNotify={notify}
             />

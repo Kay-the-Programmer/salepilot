@@ -5,10 +5,12 @@ import { PaperWidth, buildTestBytes } from '../../utils/receiptEscPos';
 import {
     PrinterError,
     PrinterStatus,
+    ReceiptBehaviour,
     forgetPrinter,
     getOpenDrawer,
     getPaperWidth,
     getPrinterStatus,
+    getReceiptBehaviour,
     isBluetoothSupported,
     isSerialSupported,
     PrinterSupportReason,
@@ -21,6 +23,7 @@ import {
     requestUsbPrinter,
     setOpenDrawer,
     setPaperWidth,
+    setReceiptBehaviour,
 } from '../../services/thermalPrinter';
 
 interface PrinterSettingsModalProps {
@@ -104,6 +107,7 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
     const [status, setStatus] = useState<PrinterStatus>(NO_PRINTER);
     const [paper, setPaper] = useState<PaperWidth>(80);
     const [drawer, setDrawer] = useState(false);
+    const [behaviour, setBehaviour] = useState<ReceiptBehaviour>('ask');
     const [busy, setBusy] = useState(false);
     const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
 
@@ -115,6 +119,7 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
         if (!isOpen) return;
         setPaper(getPaperWidth());
         setDrawer(getOpenDrawer());
+        setBehaviour(getReceiptBehaviour());
         setMessage(null);
         refresh();
     }, [isOpen, refresh]);
@@ -166,6 +171,7 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
     const save = () => {
         setPaperWidth(paper);
         setOpenDrawer(drawer);
+        setReceiptBehaviour(behaviour);
         onClose();
     };
 
@@ -291,6 +297,34 @@ const PrinterSettingsModal: React.FC<PrinterSettingsModalProps> = ({ isOpen, onC
                             </label>
                         </>
                     )}
+
+                    {/* Outside the branch above on purpose: a till with no printer —
+                        or a browser that cannot drive one — is exactly the till that
+                        wants to stop being shown the receipt after every sale. */}
+                    <div className="rounded-lg border border-brand-border p-3">
+                        <p className="text-[11px] font-black uppercase tracking-wider text-brand-text-muted mb-1.5">After each sale</p>
+                        <div className="space-y-1.5">
+                            {([
+                                { v: 'ask' as const, label: 'Show the receipt', hint: 'Opens the receipt to print, share or dismiss.' },
+                                { v: 'print' as const, label: 'Print it and carry on', hint: 'Sends it straight to the printer above. Needs a connected printer.' },
+                                { v: 'skip' as const, label: 'Do nothing', hint: 'Fastest at a busy till. Get it later from POS menu → Last Receipt.' },
+                            ]).map(opt => (
+                                <label key={opt.v} className="flex items-start gap-2.5 cursor-pointer">
+                                    <input
+                                        type="radio"
+                                        name="receipt-behaviour"
+                                        className="mt-0.5"
+                                        checked={behaviour === opt.v}
+                                        onChange={() => setBehaviour(opt.v)}
+                                    />
+                                    <span className="text-sm text-brand-text">
+                                        {opt.label}
+                                        <span className="block text-[11px] text-brand-text-muted">{opt.hint}</span>
+                                    </span>
+                                </label>
+                            ))}
+                        </div>
+                    </div>
 
                     {message && (
                         <p className={`text-xs ${message.error ? 'text-danger' : 'text-success'}`}>{message.text}</p>

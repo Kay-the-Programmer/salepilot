@@ -104,3 +104,159 @@
 .inv-stock-pill { font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: var(--c-radius-pill); white-space: nowrap; }
 .inv-stock-pill--out { background: var(--c-error-container); color: var(--c-on-error-container); }
 .inv-stock-pill--low { background: var(--c-secondary-fixed); color: var(--c-on-secondary-fixed-variant); }
+.closing-pill--in { background: rgba(46, 125, 50, 0.14); color: #1b5e20; }
+.closing-pill--negative { background: #5c0000; color: #ffffff; }
+.closing-missing-chip { display: inline-block; padding: 2px 8px; border-radius: var(--c-radius-pill); font-size: 11px; font-weight: 700; background: #fff3cd; color: #856404; text-transform: uppercase; letter-spacing: 0.03em; }
+
+/* Closing Stock Report UI */
+.closing-print-header { display: none; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #002b6b; }
+
+.closing-input {
+  height: 38px;
+  border-radius: var(--c-radius-lg);
+  border: 1px solid var(--c-outline-variant);
+  background: var(--c-surface-lowest);
+  color: var(--c-on-bg);
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s var(--c-ease);
+}
+.closing-input:focus { border-color: var(--c-primary); }
+
+.closing-select {
+  height: 38px;
+  width: 100%;
+  border-radius: var(--c-radius-lg);
+  border: 1px solid var(--c-outline-variant);
+  background: var(--c-surface-lowest);
+  color: var(--c-on-bg);
+  padding: 0 12px;
+  font-family: inherit;
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s var(--c-ease);
+}
+.closing-select:focus { border-color: var(--c-primary); }
+
+.closing-table-wrap { width: 100%; overflow-x: auto; }
+.closing-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.closing-table th {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-outline);
+  background: var(--c-surface-low);
+  border-bottom: 1px solid var(--c-outline-variant);
+  white-space: nowrap;
+}
+.closing-table th.is-sortable { cursor: pointer; user-select: none; }
+.closing-table th.is-sortable:hover { color: var(--c-primary); }
+.closing-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(189, 201, 194, 0.16);
+  color: var(--c-on-bg);
+  vertical-align: middle;
+}
+.closing-table tbody tr:hover { background: var(--c-surface-container); }
+.closing-table tbody tr.is-empty-row { opacity: 0.72; }
+.closing-table--compact th,
+.closing-table--compact td { padding: 8px 12px; font-size: 12px; }
+
+/* Signature & Audit sign-off block */
+.closing-signatures-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+@media (min-width: 768px) {
+  .closing-signatures-grid { grid-template-columns: 1fr 1fr; }
+}
+.closing-signature-block {
+  padding: 18px;
+  border-radius: var(--c-radius-lg);
+  border: 1px dashed var(--c-outline-variant);
+  background: var(--c-surface-lowest);
+}
+.closing-signature-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--c-outline);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 40px;
+}
+.closing-signature-line {
+  height: 1px;
+  background: var(--c-outline-variant);
+  margin-bottom: 8px;
+}
+.closing-signature-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--c-on-surface-variant);
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+  body, .crm {
+    background: #ffffff !important;
+    color: #111827 !important;
+    font-size: 11pt !important;
+  }
+  .crm-rail,
+  .crm-bar,
+  .closing-actions,
+  .closing-filter-panel,
+  .inv-pending button,
+  .crm-fab,
+  .crm-toast {
+    display: none !important;
+  }
+  .closing-print-header {
+    display: block !important;
+  }
+  .closing-report-head .closing-actions {
+    display: none !important;
+  }
+  .closing-metrics {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 16px !important;
+  }
+  .inv-metric {
+    min-height: auto !important;
+    box-shadow: none !important;
+    border: 1px solid #d1d5db !important;
+    padding: 12px !important;
+    break-inside: avoid;
+  }
+  .closing-table th {
+    background: #002b6b !important;
+    color: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .closing-table td {
+    padding: 8px 10px !important;
+    border-bottom: 1px solid #e5e7eb !important;
+  }
+  .closing-signatures-grid {
+    grid-template-columns: 1fr 1fr !important;
+    break-inside: avoid;
+  }
+}
+

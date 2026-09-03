@@ -8,6 +8,7 @@ import BanknotesIcon from '../icons/BanknotesIcon';
 import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import { formatCurrency } from '../../utils/currency';
 import { InputField } from '../ui/InputField';
+import { toDateInputValue } from '../../utils/date';
 
 interface RecordOrderPaymentModalProps {
     isOpen: boolean;
@@ -21,7 +22,7 @@ interface RecordOrderPaymentModalProps {
 const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpen, onClose, order, onSave, storeSettings, showSnackbar }) => {
     const balanceDue = Number(order.total) - Number(order.amountPaid || 0);
     const [amount, setAmount] = useState(balanceDue.toFixed(2));
-    const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+    const [date, setDate] = useState(toDateInputValue());
     const [method, setMethod] = useState('');
     const [reference, setReference] = useState('');
 
@@ -29,7 +30,7 @@ const RecordOrderPaymentModal: React.FC<RecordOrderPaymentModalProps> = ({ isOpe
         if (isOpen) {
             const remaining = Number(order.total) - Number(order.amountPaid || 0);
             setAmount(remaining.toFixed(2));
-            setDate(new Date().toISOString().split('T')[0]);
+            setDate(toDateInputValue());
             setMethod(storeSettings.paymentMethods?.[0]?.name || '');
             setReference('');
         }

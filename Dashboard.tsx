@@ -1506,7 +1506,7 @@ export default function Dashboard() {
             <OnboardingProvider user={currentUser}>
                 <NotificationProvider user={currentUser}>
                     <Suspense fallback={<div className="h-full w-full flex items-center justify-center"><LoadingSpinner /></div>}>
-                        <SettingsApp settings={storeSettings!} user={currentUser} showSnackbar={showSnackbar} onSave={handleSaveSettings} />
+                        <SettingsApp settings={storeSettings!} user={currentUser} showSnackbar={showSnackbar} onSave={handleSaveSettings} onSettingsSaved={setStoreSettings} />
                     </Suspense>
                 </NotificationProvider>
             </OnboardingProvider>
@@ -1840,7 +1840,8 @@ export default function Dashboard() {
         const invSection = (invParts[2] === 'items' ? 'items'
             : invParts[2] === 'alerts' ? 'alerts'
                 : invParts[2] === 'stock-takes' ? 'stock-takes'
-                    : 'dashboard') as 'dashboard' | 'items' | 'alerts' | 'stock-takes';
+                    : invParts[2] === 'closing-report' ? 'closing-report'
+                        : 'dashboard') as 'dashboard' | 'items' | 'alerts' | 'stock-takes' | 'closing-report';
         return (
             <OnboardingProvider user={currentUser}>
                 <NotificationProvider user={currentUser}>
@@ -1911,7 +1912,7 @@ export default function Dashboard() {
                 />
             );
         } else {
-            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} onSaleChanged={fetchData} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} posMode={posMode} onChangePosMode={changePosMode} />;
+            posContent = <SalesPage user={currentUser} products={products} customers={customers} categories={categories} onProcessSale={handleProcessSale} onProcessReturn={handleProcessReturn} onSaleChanged={fetchData} isLoading={isLoading} showSnackbar={showSnackbar} storeSettings={storeSettings!} onOpenSidebar={openPosDrawer} onLogout={handleLogout} initialView={posParts[2] === 'history' ? 'history' : 'sell'} posMode={posMode} onChangePosMode={changePosMode} onSettingsSaved={setStoreSettings} />;
         }
 
         return (

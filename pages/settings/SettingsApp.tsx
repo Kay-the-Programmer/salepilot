@@ -13,23 +13,31 @@ import { announceLogoUpdate } from '../../utils/pdfDocument';
 import '../assistant/assistant.css';
 
 // Reused feature sections (logic unchanged)
+import ReceiptSetupWizard, { SAMPLE_SALE } from '../../components/receipts/ReceiptSetupWizard';
+import ReceiptPaper from '../../components/receipts/ReceiptPaper';
+import { buildReceiptBytes } from '../../utils/receiptEscPos';
+import { getPaperWidth } from '../../services/thermalPrinter';
 import BusinessVerificationSection from '../../components/settings/BusinessVerificationSection';
 import AccountVerificationSection from '../../components/settings/AccountVerificationSection';
 import NotificationSettingsSection from '../../components/settings/sections/NotificationSettingsSection';
 import BarcodeScannerSection from '../../components/settings/sections/BarcodeScannerSection';
 import ReferralSection from '../../components/settings/sections/ReferralSection';
 
-type Category = 'store' | 'financial' | 'pos' | 'inventory' | 'notifications' | 'verification' | 'referrals' | 'scanner' | 'billing';
+type Category = 'store' | 'receipts' | 'financial' | 'pos' | 'inventory' | 'notifications' | 'verification' | 'referrals' | 'scanner' | 'billing';
 
 interface SettingsAppProps {
   settings: StoreSettings;
   user: User;
   showSnackbar: (message: string, type?: SnackbarType) => void;
   onSave: (settings: StoreSettings) => void;
+  /** The receipt wizard persists on its own, so the app's copy is refreshed
+   *  directly rather than through another save. */
+  onSettingsSaved?: (settings: StoreSettings) => void;
 }
 
 const CATEGORIES: { id: Category; label: string; icon: string; group: 'Store' | 'System'; editable?: boolean }[] = [
   { id: 'store', label: 'Store details', icon: 'storefront', group: 'Store', editable: true },
+  { id: 'receipts', label: 'Receipts', icon: 'receipt', group: 'Store' },
   { id: 'financial', label: 'Financials', icon: 'payments', group: 'Store', editable: true },
   { id: 'pos', label: 'POS & checkout', icon: 'point_of_sale', group: 'Store', editable: true },
   { id: 'inventory', label: 'Inventory', icon: 'inventory_2', group: 'Store', editable: true },
@@ -55,6 +63,7 @@ const inputCls = 'w-full h-11 px-3.5 rounded-xl m3-bg-surface-lowest border m3-b
 // Apple-style coloured icon tiles per category.
 const tileTone: Record<Category, string> = {
   store: 'm3-bg-primary m3-text-on-primary',
+  receipts: 'm3-bg-tertiary m3-text-on-tertiary',
   financial: 'm3-bg-secondary m3-text-on-secondary',
   pos: 'm3-bg-tertiary m3-text-on-tertiary',
   inventory: 'm3-bg-primary-container m3-text-on-primary-container',
@@ -65,7 +74,7 @@ const tileTone: Record<Category, string> = {
   scanner: 'm3-bg-surface-highest m3-text-on-surface-variant',
 };
 
-const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar, onSave }) => {
+const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar, onSave, onSettingsSaved }) => {
   const navigate = useNavigate();
   const { preference, cycleTheme } = useTheme();
   const { openAppSwitcher } = useAppSwitcher();
@@ -90,6 +99,7 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
   const [verificationStatus, setVerificationStatus] = useState<any>(null);
   const [pmName, setPmName] = useState('');
   const [spmName, setSpmName] = useState('');
+  const [showReceiptSetup, setShowReceiptSetup] = useState(false);
 
   // The logo is stored by its own endpoint (multipart) and is deliberately kept
   // out of `currentSettings`: it saves the moment it's picked, so folding it in
@@ -403,6 +413,37 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
               </>
             )}
 
+            {active === 'receipts' && (
+              <Card>
+                {/* Built from the same bytes the printer is sent, so this is
+                    the receipt rather than a picture of one. */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <div className="flex-1">
+                    <p className="text-sm font-bold m3-text-on-surface">Your receipt</p>
+                    <p className="mt-1 text-xs m3-text-on-surface-variant">
+                      This is exactly what prints, using your current details and a sample sale.
+                      To change what appears on it, walk through the four short steps.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowReceiptSetup(true)}
+                      className="mt-4 w-full rounded-xl m3-bg-primary m3-text-on-primary px-4 py-3 text-sm font-bold sm:w-auto"
+                    >
+                      Set up my receipt
+                    </button>
+                    <p className="mt-3 text-[11px] m3-text-on-surface-variant">
+                      Your logo is not shown: a thermal printer prints text only, so the logo
+                      appears on PDF invoices but never on a till receipt.
+                    </p>
+                  </div>
+                  <ReceiptPaper
+                    bytes={buildReceiptBytes(SAMPLE_SALE, currentSettings, { paperWidth: getPaperWidth() })}
+                    paperWidth={getPaperWidth()}
+                  />
+                </div>
+              </Card>
+            )}
+
             {active === 'pos' && (
               <>
                 <Card>
@@ -477,12 +518,21 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
           </div>
         )}
       </div>
+
+      <ReceiptSetupWizard
+        isOpen={showReceiptSetup}
+        onClose={() => setShowReceiptSetup(false)}
+        settings={currentSettings}
+        onSaved={(s) => { setCurrentSettings(s); onSettingsSaved?.(s); }}
+        showSnackbar={showSnackbar}
+      />
     </div>
   );
 };
 
 const descriptions: Record<Category, string> = {
   store: 'Your business name and contact information.',
+  receipts: 'See your receipt and set up what prints on it.',
   financial: 'Tax rate, currency, bank accounts and mobile-money keys.',
   pos: 'Receipt message, store credit and payment methods.',
   inventory: 'Stock alerts and SKU formatting.',

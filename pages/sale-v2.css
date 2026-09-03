@@ -2071,3 +2071,61 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+/* ── Connection / offline-queue status (SyncStatusPill) ──
+   Renders nothing when online with an empty queue, so it only takes space in
+   the top bar when there is genuinely something the cashier must know. */
+.sale__sync {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--v2-space-2);
+  padding: var(--v2-space-2) var(--v2-space-3);
+  border-radius: var(--v2-radius-pill);
+  font-size: var(--v2-text-xs);
+  font-weight: var(--v2-weight-bold);
+  white-space: nowrap;
+}
+
+.sale__sync--offline {
+  background: var(--v2-color-danger-soft);
+  color: var(--v2-color-danger);
+}
+
+.sale__sync--pending,
+.sale__sync--syncing {
+  background: var(--v2-color-warning-soft);
+  color: var(--v2-color-warning);
+}
+
+.sale__sync-spin {
+  animation: v2-spin 1.1s linear infinite;
+}
+
+@keyframes v2-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sale__sync-spin {
+    animation: none;
+  }
+}
+
+/* Tighter on phones, where the top bar is already crowded. */
+@media (max-width: 640px) {
+  .sale__sync {
+    padding: var(--v2-space-1) var(--v2-space-2);
+    font-size: 10px;
+  }
+}
+
+/* Footer under a capped product grid — says what is not being shown, so a
+   missing item reads as "narrow the search" rather than "we don't stock it". */
+.sale__gridmore {
+  padding: var(--v2-space-3);
+  text-align: center;
+  font-size: var(--v2-text-xs);
+  font-weight: var(--v2-weight-bold);
+  color: var(--v2-color-text-muted);
+}

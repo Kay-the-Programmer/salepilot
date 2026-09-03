@@ -4,6 +4,7 @@ import { SupplierInvoice, PurchaseOrder, Supplier, StoreSettings } from '../../t
 import XMarkIcon from '../icons/XMarkIcon';
 import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import ChevronDownIcon from '../icons/ChevronDownIcon';
+import { toDateInputValue } from '../../utils/date';
 
 interface SupplierInvoiceFormModalProps {
     isOpen: boolean;
@@ -32,7 +33,7 @@ const getInitialState = (po?: PurchaseOrder): Partial<SupplierInvoice> => ({
     supplierName: po?.supplierName || '',
     purchaseOrderId: po?.id || '',
     poNumber: po?.poNumber || '',
-    invoiceDate: new Date().toISOString().split('T')[0],
+    invoiceDate: toDateInputValue(new Date()),
     dueDate: '',
     amount: po?.total || 0,
 });

@@ -6,6 +6,7 @@ import ArrowTrendingDownIcon from '../../icons/ArrowTrendingDownIcon';
 import ChartBarIcon from '../../icons/ChartBarIcon';
 import CalculatorIcon from '../../icons/CalculatorIcon';
 import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
+import { toDateInputValue } from '../../../utils/date';
 
 interface FinancialStatementsViewProps {
     accounts: Account[];
@@ -18,9 +19,9 @@ const FinancialStatementsView: React.FC<FinancialStatementsViewProps> = ({ accou
     const [pnlStartDate, setPnlStartDate] = useState(() => {
         const d = new Date();
         d.setDate(1);
-        return d.toISOString().split('T')[0];
+        return toDateInputValue(d);
     });
-    const [pnlEndDate, setPnlEndDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [pnlEndDate, setPnlEndDate] = useState(() => toDateInputValue(new Date()));
 
     const pnlData = useMemo(() => {
         const start = new Date(pnlStartDate);

@@ -18,6 +18,12 @@ interface SnackbarProps {
     onClose: () => void;
     /** Auto-dismiss after this many ms (default 4000). */
     duration?: number;
+    /**
+     * Optional single button, in practice "Undo". Taking it also closes the
+     * toast — the offer has been answered, so leaving it on screen invites a
+     * second click that would undo the undo.
+     */
+    action?: { label: string; onClick: () => void };
 }
 
 const EXIT_MS = 200;
@@ -29,7 +35,7 @@ const SyncIcon = () => (
     </svg>
 );
 
-const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, duration = 4000 }) => {
+const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, duration = 4000, action }) => {
     const [isExiting, setIsExiting] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const remainingRef = useRef(duration);
@@ -83,6 +89,15 @@ const Snackbar: React.FC<SnackbarProps> = ({ message, type, onClose, duration = 
                     {Icon}
                 </div>
                 <p className="flex-1 min-w-0 text-sm font-medium leading-snug text-brand-text">{message}</p>
+                {action && (
+                    <button
+                        type="button"
+                        onClick={() => { action.onClick(); handleClose(); }}
+                        className="flex-shrink-0 rounded-lg px-2.5 py-1.5 text-sm font-bold text-primary transition-colors hover:bg-primary/10 focus:outline-none focus:ring-2 focus:ring-primary/40 active:scale-95"
+                    >
+                        {action.label}
+                    </button>
+                )}
                 <button
                     type="button"
                     onClick={handleClose}

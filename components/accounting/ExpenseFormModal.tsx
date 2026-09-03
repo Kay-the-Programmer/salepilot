@@ -17,6 +17,7 @@ import {
     ChevronRightIcon,
     RefreshIcon,
 } from '../icons';
+import { toDateInputValue } from '../../utils/date';
 
 type Mode = 'one-time' | 'recurring';
 
@@ -63,7 +64,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
     const [mode, setMode] = useState<Mode>('one-time');
     const [showOptional, setShowOptional] = useState(false);
     const [formData, setFormData] = useState({
-        date: new Date().toISOString().split('T')[0],
+        date: toDateInputValue(new Date()),
         description: '',
         amount: '',
         expenseAccountId: '',
@@ -71,7 +72,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
         category: '',
         reference: '',
         frequency: 'monthly',
-        startDate: new Date().toISOString().split('T')[0],
+        startDate: toDateInputValue(new Date()),
         status: 'active',
     });
 
@@ -85,7 +86,7 @@ const ExpenseFormModal: React.FC<ExpenseFormModalProps> = ({
 
     useEffect(() => {
         if (!isOpen) return;
-        const today = new Date().toISOString().split('T')[0];
+        const today = toDateInputValue(new Date());
         if (recurringToEdit) {
             setMode('recurring');
             setFormData({

@@ -1,7 +1,16 @@
-import React, { useState, useMemo, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef, lazy, Suspense } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Product, Category, Supplier, StoreSettings, User, Account, PurchaseOrder } from '../types';
 
 import ProductList from '../components/ProductList';
+import { useConfirm } from '../components/ui/useConfirm';
+import {
+    BulkActionBar,
+    BulkCategoryModal,
+    BulkPriceModal,
+    PriceChange,
+    applyPriceChange,
+} from '../components/inventory/BulkActions';
 import CategoryList from '../components/CategoryList';
 import CategoryFormModal from '../components/CategoryFormModal';
 import StockAdjustmentModal from '../components/StockAdjustmentModal';
@@ -122,6 +131,38 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
 
     const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+
+    // ── Bulk selection ──
+    const { confirm, confirmDialog } = useConfirm();
+    const [bulkIds, setBulkIds] = useState<Set<string>>(new Set());
+    const [bulkPriceOpen, setBulkPriceOpen] = useState(false);
+    const [bulkCategoryOpen, setBulkCategoryOpen] = useState(false);
+    const [bulkBusy, setBulkBusy] = useState(false);
+
+    const toggleBulkSelect = useCallback((productId: string) => {
+        setBulkIds(prev => {
+            const next = new Set(prev);
+            if (next.has(productId)) next.delete(productId); else next.add(productId);
+            return next;
+        });
+    }, []);
+
+    const clearBulk = useCallback(() => setBulkIds(new Set()), []);
+
+    /**
+     * `?product=<id>` opens straight onto one product.
+     *
+     * This is how the command palette hands a search result over, so a match
+     * lands on the record itself rather than dropping the user at the top of
+     * the catalog to go looking for it a second time. Watched rather than read
+     * once, because picking a second product from the palette while already on
+     * this page changes the URL without remounting.
+     */
+    const { search } = useLocation();
+    useEffect(() => {
+        const id = new URLSearchParams(search).get('product');
+        if (id) setSelectedProductId(id);
+    }, [search]);
     const [detailedProduct, setDetailedProduct] = useState<Product | null>(null);
     const [detailIsLoading, setDetailIsLoading] = useState(false);
     const [detailError, setDetailError] = useState<string | null>(null);
@@ -619,6 +660,111 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
         logEvent('Inventory', 'export_products_csv');
     };
 
+    // ── Bulk edit ──
+
+    /** The ticked products, in the order they appear on screen. */
+    const bulkProducts = useMemo(
+        () => sortedProducts.filter(p => bulkIds.has(p.id)),
+        [sortedProducts, bulkIds],
+    );
+
+    /**
+     * Write one change across every ticked product.
+     *
+     * Sequential on purpose. These go through the same per-product endpoint the
+     * single edit form uses, which keeps the offline queue, the optimistic cache
+     * and the audit trail behaving exactly as they already do — and firing forty
+     * parallel writes at a small VM to save a second is a poor trade.
+     *
+     * A failure part-way does not roll back what already succeeded: the ones
+     * that landed are correct, so the honest thing is to report the count and
+     * leave the failures ticked to try again.
+     */
+    const runBulk = async (
+        label: string,
+        patchFor: (product: Product) => Partial<Product> | null,
+    ) => {
+        setBulkBusy(true);
+        const failed: string[] = [];
+        let done = 0;
+
+        for (const product of bulkProducts) {
+            const patch = patchFor(product);
+            if (!patch) continue;
+            try {
+                await onSaveProduct({ ...product, ...patch });
+                done++;
+            } catch {
+                failed.push(product.id);
+            }
+        }
+
+        setBulkBusy(false);
+        setBulkIds(new Set(failed));
+        await onRefreshCatalog?.();
+
+        if (failed.length === 0) {
+            showToast(`${label} ${done} product${done === 1 ? '' : 's'}`, 'success');
+        } else {
+            showToast(
+                `${label} ${done}, but ${failed.length} failed — those are still selected.`,
+                failed.length === bulkProducts.length ? 'error' : 'warning',
+            );
+        }
+        logEvent('Inventory', 'bulk_edit', label);
+    };
+
+    const applyBulkPrice = async (change: PriceChange) => {
+        setBulkPriceOpen(false);
+        await runBulk('Repriced', product => applyPriceChange(product, change));
+    };
+
+    const applyBulkCategory = async (categoryId: string) => {
+        setBulkCategoryOpen(false);
+        await runBulk('Moved', () => ({ categoryId }));
+    };
+
+    /**
+     * Put archived products back on the shelf.
+     *
+     * The archive endpoint takes an explicit `targetStatus`, so this is
+     * idempotent — unlike the bare call, which toggles and would re-archive
+     * anything that had already come back.
+     */
+    const restoreProducts = async (ids: string[]) => {
+        const results = await Promise.allSettled(
+            ids.map(id => api.patch(`/products/${id}/archive`, { targetStatus: 'active' })),
+        );
+        const failed = results.filter(r => r.status === 'rejected').length;
+        await onRefreshCatalog?.();
+        if (failed === 0) {
+            showToast(`Restored ${ids.length} product${ids.length === 1 ? '' : 's'}`, 'success');
+        } else {
+            showToast(`Restored ${ids.length - failed}, but ${failed} could not be brought back.`, 'error');
+        }
+    };
+
+    const archiveBulk = async () => {
+        const ids = bulkProducts.map(p => p.id);
+        const ok = await confirm({
+            title: `Archive ${ids.length} product${ids.length === 1 ? '' : 's'}?`,
+            message: 'Archived products stop appearing at the till. Their sales history is kept.',
+            confirmLabel: 'Archive',
+            danger: true,
+        });
+        if (!ok) return;
+
+        setBulkBusy(true);
+        for (const id of ids) onArchiveProduct(id);
+        setBulkBusy(false);
+        clearBulk();
+        await onRefreshCatalog?.();
+        showToast(`Archived ${ids.length} product${ids.length === 1 ? '' : 's'}`, 'success', {
+            action: { label: 'Undo', onClick: () => { void restoreProducts(ids); } },
+        });
+        logEvent('Inventory', 'bulk_edit', 'archive');
+    };
+
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(12);
     const totalPages = Math.max(1, Math.ceil(sortedProducts.length / pageSize));
@@ -836,8 +982,18 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                         viewMode={viewMode}
                                         selectedProductId={selectedProductId}
                                         onAddProduct={products.length === 0 && canManageProducts ? handleAddFirstProduct : undefined}
+                                        bulkSelectedIds={bulkIds}
+                                        onToggleBulkSelect={canManageProducts ? toggleBulkSelect : undefined}
                                     />
                                 </div>
+                                <BulkActionBar
+                                    count={bulkIds.size}
+                                    busy={bulkBusy}
+                                    onClear={clearBulk}
+                                    onChangePrice={() => setBulkPriceOpen(true)}
+                                    onChangeCategory={() => setBulkCategoryOpen(true)}
+                                    onArchive={archiveBulk}
+                                />
                                 {/* Pagination hidden on mobile as per request */}
                                 <div className="hidden md:block">
                                     <Pagination
@@ -910,6 +1066,11 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                                             onArchive={(id) => {
                                                 logEvent('Inventory', 'archive_product', id);
                                                 onArchiveProduct(id);
+                                                showToast(
+                                                    `Archived "${detailedProduct.name}"`,
+                                                    'success',
+                                                    { action: { label: 'Undo', onClick: () => { void restoreProducts([id]); } } },
+                                                );
                                             }}
                                             onPrintLabel={handleOpenPrintModal}
                                             onAdjustStock={handleOpenStockModal}
@@ -1130,6 +1291,24 @@ const InventoryPage: React.FC<InventoryPageProps> = ({
                     onSkip={handleSkipLinkPO}
                 />
             )}
+
+            <BulkPriceModal
+                open={bulkPriceOpen}
+                onClose={() => setBulkPriceOpen(false)}
+                products={bulkProducts}
+                storeSettings={storeSettings}
+                onApply={applyBulkPrice}
+                busy={bulkBusy}
+            />
+            <BulkCategoryModal
+                open={bulkCategoryOpen}
+                onClose={() => setBulkCategoryOpen(false)}
+                count={bulkProducts.length}
+                categories={categories}
+                onApply={applyBulkCategory}
+                busy={bulkBusy}
+            />
+            {confirmDialog}
 
         </div>
     );

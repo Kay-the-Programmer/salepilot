@@ -11,11 +11,19 @@ interface InventoryDashboardProps {
     onAddItem?: () => void;
     onViewItems: () => void;
     onViewAlerts: () => void;
+    onViewClosingReport?: () => void;
     onGeneratePO?: () => void;
     onNotify: (msg: string) => void;
 }
 
-export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview, storeSettings, onAddItem, onViewItems, onViewAlerts }) => {
+export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({
+    overview,
+    storeSettings,
+    onAddItem,
+    onViewItems,
+    onViewAlerts,
+    onViewClosingReport,
+}) => {
     const { totalValue, retailValue, potentialProfit, missingCostCount, unpricedCount, notStockedCount, totalSkus, totalUnits, lowStockCount, criticalCount, activity, categories, topMover } = overview;
 
     return (
@@ -25,11 +33,23 @@ export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview
                     <h2 className="crm-pagehead__title">Inventory Overview</h2>
                     <p className="crm-pagehead__sub">Manage and monitor your shop's assets in real-time.</p>
                 </div>
-                {onAddItem && (
-                    <button className="crm-btn crm-btn--primary" type="button" onClick={onAddItem}>
-                        <Icon name="add" size={20} /> Add New Item
-                    </button>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                    {onViewClosingReport && (
+                        <button
+                            className="crm-btn crm-btn--outline"
+                            type="button"
+                            onClick={onViewClosingReport}
+                            title="Generate and export the Closing Stock Report"
+                        >
+                            <Icon name="assessment" size={18} /> Closing Report
+                        </button>
+                    )}
+                    {onAddItem && (
+                        <button className="crm-btn crm-btn--primary" type="button" onClick={onAddItem}>
+                            <Icon name="add" size={20} /> Add New Item
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Bento metrics */}
@@ -63,6 +83,18 @@ export const InventoryDashboard: React.FC<InventoryDashboardProps> = ({ overview
                                 ? `${missingCostCount} product${missingCostCount === 1 ? '' : 's'} missing a cost price`
                                 : `${totalSkus.toLocaleString()} SKUs on the books`}
                         </p>
+                        {onViewClosingReport && (
+                            <div style={{ marginTop: 10 }}>
+                                <button
+                                    type="button"
+                                    className="crm-link"
+                                    onClick={onViewClosingReport}
+                                    style={{ fontSize: 12, display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                                >
+                                    Closing stock report <Icon name="arrow_forward" size={14} />
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

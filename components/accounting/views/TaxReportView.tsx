@@ -7,6 +7,7 @@ import ReceiptPercentIcon from '../../icons/ReceiptPercentIcon';
 import CalculatorIcon from '../../icons/CalculatorIcon';
 import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
 import InformationCircleIcon from '../../icons/InformationCircleIcon';
+import { toDateInputValue } from '../../../utils/date';
 
 interface TaxReportViewProps {
     sales: Sale[];
@@ -17,9 +18,9 @@ const TaxReportView: React.FC<TaxReportViewProps> = ({ sales, storeSettings }) =
     const [startDate, setStartDate] = useState(() => {
         const d = new Date();
         d.setDate(1);
-        return d.toISOString().split('T')[0];
+        return toDateInputValue(d);
     });
-    const [endDate, setEndDate] = useState(() => new Date().toISOString().split('T')[0]);
+    const [endDate, setEndDate] = useState(() => toDateInputValue(new Date()));
 
     const filteredData = useMemo(() => {
         const start = new Date(startDate);

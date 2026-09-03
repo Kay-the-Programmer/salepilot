@@ -26,6 +26,22 @@ const SP_SUBTLE = '#9a9aa6';
 
 const TOUR_KEY = (userId: string) => `salePilot.tourSeen.sales.${userId}`;
 
+/**
+ * Whether this user has already been walked round the till.
+ *
+ * Exported so anything else that wants to introduce itself on first run can
+ * wait its turn — two overlapping first-run modals teach nothing and read as a
+ * broken screen.
+ */
+export const hasSeenPosTour = (userId: string): boolean => {
+    try {
+        return localStorage.getItem(TOUR_KEY(userId)) === 'true';
+    } catch {
+        // Storage unavailable: assume seen, so nothing else is held back.
+        return true;
+    }
+};
+
 export default function TourGuide({ user, run: forceRun, onTourEnd }: TourGuideProps) {
     const [run, setRun] = useState(false);
 

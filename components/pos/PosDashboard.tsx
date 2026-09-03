@@ -5,6 +5,7 @@ import { formatCurrency } from '../../utils/currency';
 import PosIcon from '../sales/PosIcon';
 import '../../pages/sale-v2.css';
 import './pos-shell.css';
+import { toDateInputValue } from '../../utils/date';
 
 interface PosDashboardProps {
     storeSettings: StoreSettings;
@@ -20,7 +21,7 @@ interface DailyEntry {
     items?: { name: string; quantity: number; revenue: number }[];
 }
 
-const iso = (d: Date) => d.toISOString().slice(0, 10);
+const iso = (d: Date) => toDateInputValue(d);
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 const rangeFor = (period: Period): { start: string; end: string; label: string } => {

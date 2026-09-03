@@ -3,9 +3,10 @@ import { Product, CartItem, Sale, Customer, StoreSettings, Payment, Category, Us
 import { SnackbarType } from '../App';
 import { api } from '@/services/api';
 import { formatCurrency, isCashMethod as isCashTender, paymentMethodsOf } from '../utils/currency';
-import TourGuide from '../components/TourGuide';
+import TourGuide, { hasSeenPosTour } from '../components/TourGuide';
 import ReceiptModal from '../components/sales/ReceiptModal';
 import PrinterSettingsModal from '../components/sales/PrinterSettingsModal';
+import ReceiptSetupWizard, { markReceiptSetupDone, shouldOfferReceiptSetup } from '../components/receipts/ReceiptSetupWizard';
 import CashDrawerModal from '../components/sales/CashDrawerModal';
 import ManagerOverrideModal from '../components/sales/ManagerOverrideModal';
 import { OverrideAction, overrideRequestFrom } from '../services/overrides';
@@ -24,6 +25,19 @@ import { ConfirmPaymentPanel } from '../components/sales/ConfirmPaymentPanel';
 import { SalesHistoryView } from '../components/sales/SalesHistoryView';
 import CustomerSelect from '../components/sales/CustomerSelect';
 import PosIcon from '../components/sales/PosIcon';
+import SyncStatusPill from '../components/sales/SyncStatusPill';
+import {
+    PrinterError,
+    getOpenDrawer,
+    getPaperWidth,
+    getPrinterStatus,
+    getReceiptBehaviour,
+    printBytes,
+    reconnect,
+} from '../services/thermalPrinter';
+import { buildReceiptBytes } from '../utils/receiptEscPos';
+import { useToast } from '../contexts/ToastContext';
+import { restoreAt } from '../utils/listRestore';
 import PosModeToggle from '../components/pos/PosModeToggle';
 // Lazy-loaded: the @zxing scanner bundle (~424 kB) is fetched only when the
 // scanner is actually opened, keeping it out of the POS page's initial load.
@@ -33,6 +47,12 @@ import AppSwitcher from '../components/standalone/AppSwitcher';
 import { useNavigate } from 'react-router-dom';
 import { setPendingNewProduct } from '../utils/pendingProduct';
 import './sale-v2.css';
+
+/**
+ * Ceiling on how many product cards the register grid renders at once.
+ * Comfortably more than fills a till screen, far short of a large catalog.
+ */
+const POS_GRID_LIMIT = 100;
 
 interface SalesPageProps {
     user: User;
@@ -54,6 +74,9 @@ interface SalesPageProps {
      *  Standard/Quick switch is shown in the top bar while selling. */
     posMode?: 'standard' | 'quick';
     onChangePosMode?: (mode: 'standard' | 'quick') => void;
+    /** Receipt setup writes store settings; this keeps the app's copy in step
+     *  so the next receipt prints the header that was just configured. */
+    onSettingsSaved?: (settings: StoreSettings) => void;
 }
 
 const SalesPage: React.FC<SalesPageProps> = ({
@@ -71,8 +94,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
     initialView,
     posMode,
     onChangePosMode,
+    onSettingsSaved,
 }) => {
     const navigate = useNavigate();
+    // Used directly (rather than through the `showSnackbar` prop) where a toast
+    // needs to carry an Undo button, which the prop's signature cannot express.
+    const { showToast } = useToast();
     const [cart, setCart] = useState<CartItem[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeCategory] = useState('All Items');
@@ -83,10 +110,31 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Reachable before any sale is made. Pairing a printer used to mean
     // ringing something up first, just to get at the cog on the receipt.
     const [showPrinterSettings, setShowPrinterSettings] = useState(false);
+    const [showReceiptSetup, setShowReceiptSetup] = useState(false);
     const [showCashDrawer, setShowCashDrawer] = useState(false);
+
+    /**
+     * Offer receipt setup once, to a shop that plainly has not done it.
+     *
+     * The till is where this matters and where the shopkeeper already is, so
+     * the offer belongs here rather than behind a settings menu they have no
+     * reason to open. It fires only when the receipt would currently print a
+     * bare shop name — see `shouldOfferReceiptSetup` — and dismissing or
+     * finishing it marks the machine done, so it never interrupts a second time.
+     *
+     * It also waits for the POS tour. Both want the screen on a brand-new
+     * shop's first visit, and the tour has the stronger claim: it explains the
+     * till this wizard would be sitting on top of. So the order is tour first,
+     * receipt setup once that is out of the way.
+     */
+    const [tourSeen, setTourSeen] = useState(() => hasSeenPosTour(user.id));
+
+    useEffect(() => {
+        if (tourSeen && shouldOfferReceiptSetup(storeSettings)) setShowReceiptSetup(true);
+    }, [storeSettings, tourSeen]);
     // A sale the server refused for want of a manager, held so it can be sent
     // again with the approval rather than rung up a second time.
-    /** Send a sale and, if it lands, show the receipt and clear the till. */
+    /** Send a sale and, if it lands, deal with the receipt and clear the till. */
     const submitSale = async (saleData: Sale, type?: string) => {
         const newSale = await onProcessSale(saleData);
         if (!newSale) return;
@@ -94,14 +142,58 @@ const SalesPage: React.FC<SalesPageProps> = ({
             showSnackbar(`Invoice created for ${selectedCustomer?.name}`, 'success');
         } else {
             // Fill receipt-only fields the server/offline queue may omit.
-            setLastSale({
+            const completed: Sale = {
                 ...newSale,
                 customerName: newSale.customerName || selectedCustomer?.name,
                 attendedBy: newSale.attendedBy || user?.name,
-            });
-            setShowReceiptModal(true);
+            };
+            setLastSale(completed);
+            await handleReceiptForSale(completed);
         }
         clearCart();
+        // Put the cashier back on the search box for the next customer, so the
+        // till is ready to be typed into (or scanned into) without a click.
+        focusSearch();
+    };
+
+    /**
+     * Apply this till's receipt preference to a sale that just went through.
+     *
+     * Tills that hand over a printed receipt every time keep the dialog; the
+     * ones that don't print at all should not have to dismiss it hundreds of
+     * times a day. Either way the receipt stays reachable from the POS menu,
+     * so choosing the quiet option never means losing the receipt.
+     */
+    const handleReceiptForSale = async (sale: Sale) => {
+        const behaviour = getReceiptBehaviour();
+
+        if (behaviour === 'skip') return;
+
+        if (behaviour === 'print') {
+            const printer = await getPrinterStatus().catch(() => null);
+            // Auto-printing only works over a real ESC/POS link. Without one the
+            // receipt has to be rendered and sent through the browser dialog,
+            // which needs the modal — so fall back to showing it.
+            if (printer?.transport) {
+                try {
+                    if (printer.needsReconnect) await reconnect();
+                    await printBytes(buildReceiptBytes(sale, storeSettings, {
+                        paperWidth: getPaperWidth(),
+                        openDrawer: getOpenDrawer(),
+                    }));
+                    return;
+                } catch (err) {
+                    // The sale is already banked — say so, then fall through to
+                    // the dialog so a receipt can still be handed over.
+                    showSnackbar(
+                        err instanceof PrinterError ? err.message : 'Could not reach the printer.',
+                        'error',
+                    );
+                }
+            }
+        }
+
+        setShowReceiptModal(true);
     };
 
     const [pendingApproval, setPendingApproval] = useState<
@@ -137,6 +229,29 @@ const SalesPage: React.FC<SalesPageProps> = ({
     const [saleDate, setSaleDate] = useState<string>(todayStr);
     const cashInputRef = useRef<HTMLInputElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+
+    /**
+     * Return the caret to the product search box.
+     *
+     * The search box is where a shift is spent: it is what a USB barcode
+     * scanner types into, so anything that leaves it unfocused means the next
+     * scan goes nowhere and the cashier has to reach for the mouse first.
+     * Deferred a frame so it wins against whatever just closed or re-rendered.
+     *
+     * Skipped on touch-only tills, where taking focus would raise the on-screen
+     * keyboard over the product grid the cashier is actually tapping.
+     */
+    const focusSearch = useCallback(() => {
+        try {
+            if (!window.matchMedia('(pointer: fine)').matches) return;
+        } catch { /* no matchMedia — fall through and focus */ }
+        requestAnimationFrame(() => searchInputRef.current?.focus());
+    }, []);
+
+    // Ready to scan or type the moment the till opens, without a click first.
+    useEffect(() => {
+        if (posView === 'sell') focusSearch();
+    }, [posView, focusSearch]);
 
     const [showHeldPanel, setShowHeldPanel] = useState<boolean>(false);
     const [mobileMoneyNumber, setMobileMoneyNumber] = useState('');
@@ -250,34 +365,49 @@ const SalesPage: React.FC<SalesPageProps> = ({
         }
     }, [cart, getStepFor, roundQty, showSnackbar]);
 
-    const updateQuantity = useCallback((productId: string, newQuantity: number) => {
-        setCart(currentCart => {
-            const itemToUpdate = currentCart.find(item => item.productId === productId);
-            if (!itemToUpdate) return currentCart;
-
-            const clamped = Math.max(0, Math.min(itemToUpdate.stock, roundQty(newQuantity)));
-            if (clamped <= 0) {
-                showSnackbar(`Removed "${itemToUpdate.name}" from cart`, 'info');
-                return currentCart.filter(item => item.productId !== productId);
-            }
-            if (clamped <= itemToUpdate.stock + 1e-9) {
-                return currentCart.map(item => item.productId === productId
-                    ? { ...item, quantity: clamped }
-                    : item);
-            } else {
-                showSnackbar(`Cannot exceed available stock of ${itemToUpdate.stock}`, 'error');
-                return currentCart;
-            }
-        });
-    }, [roundQty, showSnackbar]);
-
+    /**
+     * Take a line off the sale, with a way back.
+     *
+     * A wrong tap on a busy till used to mean re-finding the product and
+     * re-entering the quantity in front of the customer. The line is restored
+     * to the position it held, not appended, so a cart the cashier is reading
+     * off does not reshuffle under them.
+     */
     const removeFromCart = useCallback((productId: string) => {
-        const item = cart.find(item => item.productId === productId);
-        if (item) {
-            setCart(prev => prev.filter(p => p.productId !== productId));
-            showSnackbar(`Removed "${item.name}" from cart`, 'info');
+        const index = cart.findIndex(item => item.productId === productId);
+        if (index === -1) return;
+        const item = cart[index];
+
+        setCart(prev => prev.filter(p => p.productId !== productId));
+        showToast(`Removed "${item.name}"`, 'info', {
+            action: {
+                label: 'Undo',
+                onClick: () => setCart(prev =>
+                    restoreAt(prev, item, index, p => p.productId === productId)),
+            },
+        });
+    }, [cart, showToast]);
+
+    const updateQuantity = useCallback((productId: string, newQuantity: number) => {
+        const itemToUpdate = cart.find(item => item.productId === productId);
+        if (!itemToUpdate) return;
+
+        const clamped = Math.max(0, Math.min(itemToUpdate.stock, roundQty(newQuantity)));
+
+        // Counting a line down to zero is a removal, so it goes through the same
+        // path — and gets the same Undo.
+        if (clamped <= 0) {
+            removeFromCart(productId);
+            return;
         }
-    }, [cart, showSnackbar]);
+        if (clamped > itemToUpdate.stock + 1e-9) {
+            showSnackbar(`Cannot exceed available stock of ${itemToUpdate.stock}`, 'error');
+            return;
+        }
+        setCart(prev => prev.map(item => item.productId === productId
+            ? { ...item, quantity: clamped }
+            : item));
+    }, [cart, roundQty, removeFromCart, showSnackbar]);
 
     const clearCart = useCallback(() => {
         if (cart.length === 0) return;
@@ -329,6 +459,21 @@ const SalesPage: React.FC<SalesPageProps> = ({
             );
         });
     }, [products, searchTerm, activeCategory, categories]);
+
+    /**
+     * How many product cards the grid will actually build.
+     *
+     * The catalog is fetched whole and every match becomes a real card, so a
+     * store on the Unlimited Products add-on can ask the register to lay out
+     * thousands of them on each keystroke. Nobody shops a grid that long — past
+     * a screenful or two the answer is a narrower search — so the render stops
+     * at a sane number and says how many were left out.
+     */
+    const visibleProducts = useMemo(
+        () => filteredProducts.slice(0, POS_GRID_LIMIT),
+        [filteredProducts],
+    );
+    const hiddenProductCount = filteredProducts.length - visibleProducts.length;
 
     const handleContinuousScan = useCallback(async (decodedText: string) => {
         const trimmed = decodedText.trim();
@@ -432,10 +577,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
     // Keyboard shortcuts
     useEffect(() => {
         const onKeyDown = (e: KeyboardEvent) => {
-            const target = e.target as HTMLElement;
-            const isTyping = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA';
-
-            if (isTyping || !e.ctrlKey) return;
+            // Every shortcut here is Ctrl-modified, so they are safe to honour
+            // while the cashier is typing — and they have to be. The caret
+            // lives in the search box or the cash field for most of a sale, so
+            // bailing out on any focused input meant Ctrl+Enter almost never
+            // reached this handler at the moment it was wanted.
+            if (!e.ctrlKey) return;
 
             if (e.key === 'Enter' && cart.length > 0 && total >= 0 && (!isCashMethod || cashReceivedNumber >= total)) {
                 e.preventDefault();
@@ -654,6 +801,8 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 </div>
 
                 <div className="sale__topactions">
+                    <SyncStatusPill />
+
                     {isExternalScannerActive && (
                         <span className="sale__scanbadge" title="External barcode scanner is active">
                             <span className="sale__scanbadge-dot" />
@@ -726,11 +875,34 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                         type="button"
                                         role="menuitem"
                                         className="sale__menu-item"
+                                        onClick={() => { setShowReceiptSetup(true); setPosMenuOpen(false); }}
+                                    >
+                                        <PosIcon name="receipt" size={20} />
+                                        Set Up Receipt
+                                    </button>
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        className="sale__menu-item"
                                         onClick={() => { setShowPrinterSettings(true); setPosMenuOpen(false); }}
                                     >
                                         <PosIcon name="print" size={20} />
                                         Receipt Printer
                                     </button>
+                                    {/* The way back to a receipt when this till is set to print
+                                        silently or skip the dialog — so the quiet modes never
+                                        mean a customer cannot be given their receipt. */}
+                                    {lastSale && (
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            className="sale__menu-item"
+                                            onClick={() => { setShowReceiptModal(true); setPosMenuOpen(false); }}
+                                        >
+                                            <PosIcon name="receipt_long" size={20} />
+                                            Last Receipt
+                                        </button>
+                                    )}
                                     <button
                                         type="button"
                                         role="menuitem"
@@ -860,7 +1032,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                     </div>
                                 )
                             ) : (
-                                filteredProducts.map(product => {
+                                visibleProducts.map(product => {
                                     const cartItem = cart.find(item => item.productId === product.id);
                                     return (
                                         <ProductCard
@@ -880,6 +1052,12 @@ const SalesPage: React.FC<SalesPageProps> = ({
                                 })
                             )}
                         </div>
+                        {hiddenProductCount > 0 && (
+                            <p className="sale__gridmore" role="status">
+                                Showing the first {visibleProducts.length} of {filteredProducts.length} products.
+                                {' '}Keep typing, or scan a barcode, to find the rest.
+                            </p>
+                        )}
                     </main>
 
                     {/* ── Cart / Payment (progressive disclosure) ── */}
@@ -1099,6 +1277,17 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 onClose={() => setShowPrinterSettings(false)}
             />
 
+            <ReceiptSetupWizard
+                isOpen={showReceiptSetup}
+                // Closing counts as an answer. A shopkeeper who waves this away
+                // has decided; re-offering it on the next render would be the
+                // wizard nagging rather than helping.
+                onClose={() => { markReceiptSetupDone(storeSettings?.storeId); setShowReceiptSetup(false); }}
+                settings={storeSettings}
+                onSaved={onSettingsSaved}
+                showSnackbar={showSnackbar}
+            />
+
             <CashDrawerModal
                 isOpen={showCashDrawer}
                 onClose={() => setShowCashDrawer(false)}
@@ -1131,7 +1320,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
             {showReceiptModal && lastSale && (
                 <ReceiptModal
                     isOpen={showReceiptModal}
-                    onClose={() => setShowReceiptModal(false)}
+                    onClose={() => { setShowReceiptModal(false); focusSearch(); }}
                     saleData={lastSale}
                     showSnackbar={showSnackbar}
                     storeSettings={storeSettings}
@@ -1192,7 +1381,7 @@ const SalesPage: React.FC<SalesPageProps> = ({
                 <TourGuide
                     user={user}
                     run={runTour}
-                    onTourEnd={() => setRunTour(false)}
+                    onTourEnd={() => { setRunTour(false); setTourSeen(true); }}
                 />
             )}
         </div>

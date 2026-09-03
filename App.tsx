@@ -7,6 +7,8 @@ import LoadingSpinner from './components/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import PaywallHost from './components/PaywallHost';
 import FeedbackWidget from './components/feedback/FeedbackWidget';
+import CommandPalette from './components/CommandPalette';
+import SessionExpiredHost from './components/SessionExpiredHost';
 import { LogoutModalProvider } from './contexts/LogoutModalContext';
 import { AppSwitcherProvider } from './contexts/AppSwitcherContext';
 
@@ -37,12 +39,16 @@ import usePageTracking from "./src/hooks/usePageTracking";
 import { initGA } from "./src/utils/analytics";
 import { api } from './services/api';
 import { setPageModules } from './utils/entitlements';
+import { installNumberInputWheelGuard } from './utils/numberInputWheelGuard';
 
 
 export default function App() {
     useEffect(() => {
         // Initialize GA
         initGA();
+        // Stop the mouse wheel from silently rewriting number inputs (prices,
+        // cost prices, stock counts) while the user scrolls a long form.
+        installNumberInputWheelGuard();
         // Load the Super-Admin-configured page→add-on map so page gating reflects
         // the live catalog (falls back to the static map on failure).
         api.get<Record<string, string>>('/subscriptions/page-modules')
@@ -120,11 +126,12 @@ export default function App() {
                                 {/* Owner-facing Online Store hub (storefront link, QR & sharing) */}
                                 <Route path="/store" element={<Dashboard />} />
 
-                                {/* Standalone Inventory Manager app (own shell: Dashboard / Inventory / Stock Takes / Alerts) */}
+                                {/* Standalone Inventory Manager app (own shell: Dashboard / Inventory / Stock Takes / Alerts / Closing Report) */}
                                 <Route path="/inv" element={<Dashboard />} />
                                 <Route path="/inv/items" element={<Dashboard />} />
                                 <Route path="/inv/stock-takes" element={<Dashboard />} />
                                 <Route path="/inv/alerts" element={<Dashboard />} />
+                                <Route path="/inv/closing-report" element={<Dashboard />} />
 
                                 {/* Standalone User Manager app (own shell: Team / Roles) */}
                                 <Route path="/team" element={<Dashboard />} />
@@ -233,6 +240,12 @@ export default function App() {
 
                     {/* Global feedback capture — floating trigger + modal for any signed-in user */}
                     <FeedbackWidget />
+
+                    {/* Ctrl/Cmd+K search across every app, product and customer */}
+                    <CommandPalette />
+
+                    {/* Signs the user out and explains why when a token stops being accepted */}
+                    <SessionExpiredHost />
                 </div>
 
             </ToastProvider>

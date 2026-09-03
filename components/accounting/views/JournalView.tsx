@@ -4,6 +4,7 @@ import { formatCurrency } from '../../../utils/currency';
 import BookOpenIcon from '../../icons/BookOpenIcon';
 import CalendarDaysIcon from '../../icons/CalendarDaysIcon';
 import MagnifyingGlassIcon from '../../icons/MagnifyingGlassIcon';
+import { toDateInputValue } from '../../../utils/date';
 
 interface JournalViewProps {
     entries: JournalEntry[];
@@ -66,7 +67,7 @@ const JournalView: React.FC<JournalViewProps> = ({ entries, sales, customers, st
 
         if (selectedDate) {
             filtered = filtered.filter(entry =>
-                new Date(entry.date).toISOString().split('T')[0] === selectedDate
+                toDateInputValue(new Date(entry.date)) === selectedDate
             );
         }
 

@@ -3,15 +3,34 @@ import Snackbar from '../components/Snackbar';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'sync';
 
+export interface ToastAction {
+    label: string;
+    onClick: () => void;
+}
+
+export interface ToastOptions {
+    /**
+     * A single button on the toast — in practice "Undo".
+     *
+     * The toast's lifetime is the window in which the action can be taken, so
+     * anything offering one gets a longer default. Hover-pause means a reader
+     * who is still deciding keeps the option open.
+     */
+    action?: ToastAction;
+    /** Override the per-type default, in ms. */
+    duration?: number;
+}
+
 interface Toast {
     id: string;
     message: string;
     type: ToastType;
     duration: number;
+    action?: ToastAction;
 }
 
 interface ToastContextType {
-    showToast: (message: string, type?: ToastType) => void;
+    showToast: (message: string, type?: ToastType, options?: ToastOptions) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -27,6 +46,13 @@ const DURATION_BY_TYPE: Record<ToastType, number> = {
     error: 6000,
 };
 
+/**
+ * Toasts carrying an action live longer: the toast *is* the undo window, and
+ * 3.5s is not long enough to notice a mistake, read the message and reach the
+ * button.
+ */
+const ACTION_DURATION = 8000;
+
 let toastSeq = 0;
 
 /**
@@ -38,14 +64,25 @@ let toastSeq = 0;
 export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [toasts, setToasts] = useState<Toast[]>([]);
 
-    const showToast = useCallback((message: string, type: ToastType = 'info') => {
+    const showToast = useCallback((message: string, type: ToastType = 'info', options?: ToastOptions) => {
         setToasts(prev => {
             // Dedupe: an identical message already on screen isn't shown twice
             // (rapid-fire errors from list operations would otherwise stack up).
-            if (prev.some(t => t.message === message && t.type === type)) {
+            // An actionable toast is exempt — two undoable operations that read
+            // the same must each keep their own Undo, or the second silently
+            // takes over the first one's button and undoes the wrong thing.
+            if (!options?.action && prev.some(t => t.message === message && t.type === type)) {
                 return prev;
             }
-            const next = [...prev, { id: `toast-${++toastSeq}`, message, type, duration: DURATION_BY_TYPE[type] }];
+            const duration = options?.duration
+                ?? (options?.action ? ACTION_DURATION : DURATION_BY_TYPE[type]);
+            const next = [...prev, {
+                id: `toast-${++toastSeq}`,
+                message,
+                type,
+                duration,
+                action: options?.action,
+            }];
             return next.length > MAX_VISIBLE_TOASTS ? next.slice(-MAX_VISIBLE_TOASTS) : next;
         });
     }, []);
@@ -71,6 +108,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
                                 message={toast.message}
                                 type={toast.type}
                                 duration={toast.duration}
+                                action={toast.action}
                                 onClose={() => closeToast(toast.id)}
                             />
                         </div>

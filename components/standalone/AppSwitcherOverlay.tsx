@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { User } from '../../types';
@@ -21,9 +21,11 @@ interface AppSwitcherOverlayProps {
  */
 export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, onClose, user, currentRoute }) => {
     const navigate = useNavigate();
+    const [filter, setFilter] = useState('');
 
     useEffect(() => {
         if (!open) return;
+        setFilter('');
         // Opening the switcher from an app counts as using that app.
         recordAppUse(currentRoute);
         const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -42,6 +44,15 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
     }, [apps]);
     const allSorted = useMemo(() => [...apps].sort((a, b) => a.name.localeCompare(b.name)), [apps]);
 
+    // Twenty tiles is more than anyone scans comfortably. Typing narrows the
+    // list on both the name and what the app is for, so "expense" finds it
+    // without having to know it is called Expenses.
+    const q = filter.trim().toLowerCase();
+    const visible = useMemo(
+        () => (q ? allSorted.filter(a => a.name.toLowerCase().includes(q) || a.desc.toLowerCase().includes(q)) : allSorted),
+        [allSorted, q],
+    );
+
     if (!open) return null;
 
     const go = (route: string) => { recordAppUse(route); onClose(); navigate(`/${route}`); };
@@ -51,7 +62,7 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
             <header className="flex-shrink-0 flex items-center justify-between px-5 h-16 bg-surface border-b border-brand-border">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <span className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                        <span className="material-symbols-rounded" style={{ fontSize: 22 }}>apps</span>
+                        <span className="material-symbols-rounded" style={{ fontSize: 22 }} aria-hidden="true">apps</span>
                     </span>
                     <div className="min-w-0">
                         <h2 className="text-base font-extrabold text-brand-text leading-tight truncate">SalePilot Apps</h2>
@@ -59,7 +70,7 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                     </div>
                 </div>
                 <button type="button" onClick={onClose} aria-label="Close menu" className="inline-flex items-center justify-center w-10 h-10 rounded-full text-brand-text-muted hover:bg-surface-variant active:scale-90 transition">
-                    <span className="material-symbols-rounded">close</span>
+                    <span className="material-symbols-rounded" aria-hidden="true">close</span>
                 </button>
             </header>
 
@@ -67,8 +78,33 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                 <div className="max-w-2xl mx-auto space-y-6">
                     {/* Contextual cross-sell slot (revives the discover_card surface). */}
                     <UpsellInline surface="discover_card" ids={['discover_advanced_reports']} placement="app-switcher" />
-                    {/* Suggested — recency-weighted most-used apps */}
-                    {suggested.length > 0 && (
+
+                    <div className="flex items-center gap-2.5 rounded-xl border border-brand-border bg-surface px-3.5 py-2.5">
+                        <span className="material-symbols-rounded text-brand-text-muted" style={{ fontSize: 20 }} aria-hidden="true">search</span>
+                        <input
+                            autoFocus
+                            value={filter}
+                            onChange={e => setFilter(e.target.value)}
+                            onKeyDown={e => {
+                                // Enter on a single remaining match opens it, so a
+                                // filter that has already narrowed to one app does
+                                // not still need a deliberate click.
+                                if (e.key === 'Enter' && visible.length === 1) go(visible[0].route);
+                            }}
+                            placeholder="Filter apps…"
+                            aria-label="Filter apps"
+                            className="flex-1 bg-transparent text-sm text-brand-text placeholder:text-brand-text-muted outline-none"
+                        />
+                        {filter && (
+                            <button type="button" onClick={() => setFilter('')} aria-label="Clear filter" className="text-brand-text-muted hover:text-brand-text">
+                                <span className="material-symbols-rounded" style={{ fontSize: 18 }} aria-hidden="true">close</span>
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Suggested — recency-weighted most-used apps. Hidden while
+                        filtering, where the filtered list is the answer. */}
+                    {!q && suggested.length > 0 && (
                         <section>
                             <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">Suggested</h3>
                             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
@@ -81,7 +117,7 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                                         className={`flex flex-col items-center gap-2 p-4 rounded-2xl border text-center transition active:scale-95 ${currentRoute === a.route ? 'border-primary bg-primary/5' : 'border-brand-border bg-surface hover:border-primary/40 hover:bg-surface-variant'}`}
                                     >
                                         <span className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
-                                            <span className="material-symbols-rounded" style={{ fontSize: 26 }}>{a.iconName}</span>
+                                            <span className="material-symbols-rounded" style={{ fontSize: 26 }} aria-hidden="true">{a.iconName}</span>
                                         </span>
                                         <span className="text-xs font-bold text-brand-text truncate w-full">{a.name}</span>
                                     </button>
@@ -92,9 +128,16 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
 
                     {/* All apps — grouped A–Z list (the Apple way) */}
                     <section>
-                        <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">All Apps</h3>
+                        <h3 className="px-1 mb-2 text-xs font-bold uppercase tracking-wider text-brand-text-muted">
+                            {q ? `${visible.length} match${visible.length === 1 ? '' : 'es'}` : 'All Apps'}
+                        </h3>
+                        {visible.length === 0 ? (
+                            <p className="rounded-2xl border border-brand-border bg-surface px-4 py-8 text-center text-sm text-brand-text-muted">
+                                No app matches “{filter}”.
+                            </p>
+                        ) : (
                         <div className="rounded-2xl border border-brand-border bg-surface overflow-hidden divide-y divide-brand-border">
-                            {allSorted.map(a => {
+                            {visible.map(a => {
                                 const active = currentRoute === a.route;
                                 return (
                                     <button
@@ -105,17 +148,18 @@ export const AppSwitcherOverlay: React.FC<AppSwitcherOverlayProps> = ({ open, on
                                         className={`w-full flex items-center gap-3 px-3.5 py-3 text-left transition ${active ? 'bg-primary/5' : 'hover:bg-surface-variant'}`}
                                     >
                                         <span className="w-10 h-10 flex-shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                                            <span className="material-symbols-rounded" style={{ fontSize: 22 }}>{a.iconName}</span>
+                                            <span className="material-symbols-rounded" style={{ fontSize: 22 }} aria-hidden="true">{a.iconName}</span>
                                         </span>
                                         <span className="flex-1 min-w-0">
                                             <span className="block text-sm font-bold text-brand-text truncate">{a.name}</span>
                                             <span className="block text-xs text-brand-text-muted truncate">{a.desc}</span>
                                         </span>
-                                        <span className={`material-symbols-rounded flex-shrink-0 ${active ? 'text-primary' : 'text-brand-text-muted'}`} style={{ fontSize: 20 }}>chevron_right</span>
+                                        <span className={`material-symbols-rounded flex-shrink-0 ${active ? 'text-primary' : 'text-brand-text-muted'}`} style={{ fontSize: 20 }} aria-hidden="true">chevron_right</span>
                                     </button>
                                 );
                             })}
                         </div>
+                        )}
                     </section>
                 </div>
             </div>

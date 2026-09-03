@@ -13,6 +13,7 @@ import '../crm/crm.css';
 // Defines the `.sp-assistant` scope carrying the --m3-* variables and m3-*
 // utilities used below (same import AccountingShell makes).
 import '../../pages/assistant/assistant.css';
+import { toDateInputValue } from '../../utils/date';
 
 interface ExpenseAccountOption {
     id: string;
@@ -41,7 +42,7 @@ const FIELD =
     'w-full px-3 py-2.5 rounded-lg text-sm font-medium m3-bg-surface-container m3-text-on-surface border m3-border-outline-variant focus:outline-none focus:ring-2 focus:ring-[color:var(--m3-primary)] focus:border-transparent transition-all';
 const LABEL = 'block text-xs font-semibold m3-text-on-surface-variant mb-1.5';
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => toDateInputValue(new Date());
 const accountLabel = (a: ExpenseAccountOption) => (a.number ? `${a.number} · ${a.name}` : a.name);
 
 /**

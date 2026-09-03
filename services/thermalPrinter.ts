@@ -55,14 +55,31 @@ export interface PrinterStatus {
     batteryPercent: number | null;
 }
 
-export class PrinterError extends Error {}
+/**
+ * Why a print failed, when the reason changes what the till should offer next.
+ *
+ * `usb-blocked-windows` is the one that matters: it is not a fault to retry but
+ * a wall — Windows owns the device and no browser can take it — so the only
+ * useful response is to point at the desktop till, which reaches these printers
+ * with nothing installed. Carried as a code rather than sniffed out of the
+ * message so the wording stays free to change.
+ */
+export type PrinterErrorKind = 'usb-blocked-windows';
+
+export class PrinterError extends Error {
+    constructor(message: string, readonly kind?: PrinterErrorKind) {
+        super(message);
+    }
+}
 
 const PAPER_KEY = 'salepilot.printer.paperWidth';
 const DRAWER_KEY = 'salepilot.printer.openDrawer';
 const TRANSPORT_KEY = 'salepilot.printer.transport';
+const RECEIPT_BEHAVIOUR_KEY = 'salepilot.printer.receiptBehaviour';
 const BT_ID_KEY = 'salepilot.printer.bluetooth.id';
 const BT_NAME_KEY = 'salepilot.printer.bluetooth.name';
 const BT_CHUNK_KEY = 'salepilot.printer.bluetooth.chunk';
+const USB_ID_KEY = 'salepilot.printer.usb.id';
 
 /** USB device class for printers. The filter that finds a receipt printer. */
 const USB_PRINTER_CLASS = 0x07;
@@ -160,6 +177,26 @@ export const getOpenDrawer = (): boolean => readPref(DRAWER_KEY) === '1';
 
 export const setOpenDrawer = (on: boolean): void => writePref(DRAWER_KEY, on ? '1' : '0');
 
+/**
+ * What the till does with the receipt once a sale is paid.
+ *
+ * - `ask`    show the receipt dialog and wait to be dismissed (how the till has
+ *            always behaved, so it stays the default)
+ * - `print`  send it straight to the saved printer and carry on
+ * - `skip`   neither — the receipt stays available from the POS menu
+ *
+ * Per machine rather than per store, like the other printer preferences: one
+ * branch has a printer on the counter and the next one does not.
+ */
+export type ReceiptBehaviour = 'ask' | 'print' | 'skip';
+
+export const getReceiptBehaviour = (): ReceiptBehaviour => {
+    const v = readPref(RECEIPT_BEHAVIOUR_KEY);
+    return v === 'print' || v === 'skip' ? v : 'ask';
+};
+
+export const setReceiptBehaviour = (b: ReceiptBehaviour): void => writePref(RECEIPT_BEHAVIOUR_KEY, b);
+
 const getPreferredTransport = (): PrinterTransport | null => {
     const v = readPref(TRANSPORT_KEY);
     return v === 'usb' || v === 'serial' || v === 'bluetooth' ? v : null;
@@ -173,7 +210,9 @@ export const forgetPrinter = (): void => {
     writePref(BT_ID_KEY, null);
     writePref(BT_NAME_KEY, null);
     writePref(BT_CHUNK_KEY, null);
+    writePref(USB_ID_KEY, null);
     disconnectBluetooth();
+    revokeUsbGrant();
     serialPort = null;
 };
 
@@ -533,18 +572,36 @@ const usbLabel = (device: USBDeviceLike): string =>
     device.productName ||
     `USB printer ${String(device.vendorId ?? 0).padStart(4, '0')}:${String(device.productId ?? 0).padStart(4, '0')}`;
 
+/** How a granted device is recognised again later: vendor and product id. */
+const usbKey = (device: USBDeviceLike): string => `${device.vendorId}:${device.productId}`;
+
 /**
  * A device already granted to this origin, if any.
  *
  * This is what makes the choice stick: the browser remembers the grant, so a
  * reload or a new shift finds the printer without prompting anyone.
+ *
+ * The saved id is consulted first, because `getDevices()` returns every device
+ * this origin was ever granted — not just the printer. Guessing among them
+ * (the printer-class one, else the first) picks wrong for the clones that
+ * declare class 0xFF, and then every receipt goes to whatever else was granted
+ * once and never came back. Remembering which device the cashier actually
+ * chose is the only thing that makes the choice mean anything.
  */
 const grantedUsbDevice = async (): Promise<USBDeviceLike | null> => {
     if (!isUsbSupported()) return null;
     try {
         const devices = await usb().getDevices();
         if (!devices?.length) return null;
-        // Prefer one that actually declares itself a printer.
+        const saved = readPref(USB_ID_KEY);
+        if (saved) {
+            const chosen = devices.find((d: USBDeviceLike) => usbKey(d) === saved);
+            // Only fall through when the saved printer is genuinely absent —
+            // unplugged, or its grant revoked from the browser's own settings.
+            if (chosen) return chosen;
+        }
+        // No saved choice: a till set up before the id was recorded. Prefer one
+        // that actually declares itself a printer.
         return devices.find(isPrinterClass) ?? devices[0];
     } catch {
         return null;
@@ -582,7 +639,51 @@ export const requestUsbPrinter = async (): Promise<ConnectedPrinter> => {
     }
     if (!device) throw new PrinterError('No printer was selected.');
     setPreferredTransport('usb');
+    // Record which device this is, so later sales write to the one that was
+    // picked rather than to whatever else this origin happens to hold a grant
+    // for. Without this the choice is decoration.
+    writePref(USB_ID_KEY, usbKey(device));
     return { transport: 'usb', label: usbLabel(device) };
+};
+
+const isWindows = (): boolean => {
+    try {
+        return /Windows/.test(navigator.userAgent || '');
+    } catch {
+        return false;
+    }
+};
+
+/**
+ * What to say when the browser is refused the device.
+ *
+ * This is the failure that actually stops tills, and it deserves the truth
+ * rather than an encouraging guess. Windows binds `usbprint.sys` to anything
+ * that identifies as a printer, and Chrome can only reach a USB device bound to
+ * WinUSB — so a working counter printer is, by virtue of working, unreachable
+ * from a web page. No amount of retrying, replugging or checking the paper
+ * changes that, and the previous advice here — remove it from Printers &
+ * scanners — does not unbind the driver either, so it sent people to do
+ * something that could not have helped.
+ *
+ * The two routes below are the ones that genuinely print, so they are the ones
+ * named. Elsewhere the cause is usually another program holding the device, so
+ * the message says that instead.
+ */
+const usbBlockedMessage = (device: USBDeviceLike, err?: unknown): string => {
+    const name = usbLabel(device);
+    if (isWindows()) {
+        return (
+            `Windows will not let the browser use ${name}. A receipt printer installed in Windows ` +
+            'is held by the system driver, and a web page can never take it from there. ' +
+            'Use the SalePilot desktop app, which prints through Windows itself — and make sure the ' +
+            'printer is listed in Printers & scanners, as the desktop app prints to it by name.'
+        );
+    }
+    const detail = err instanceof Error && err.name === 'SecurityError'
+        ? ' The browser blocked access to it.'
+        : ' Another program may be using it.';
+    return `Could not open ${name}.${detail} Close any other till software and try again.`;
 };
 
 /**
@@ -593,8 +694,21 @@ export const requestUsbPrinter = async (): Promise<ConnectedPrinter> => {
  * (vendor-specific) but are otherwise ordinary ESC/POS printers.
  */
 const claimUsb = async (device: USBDeviceLike): Promise<number> => {
-    if (!device.opened) await device.open();
-    if (!device.configuration) await device.selectConfiguration(1);
+    // Opening is where the commonest failure of all lands, and it must not be
+    // left to escape as a raw DOMException: `printBytes` would report it as
+    // "check it is on, has paper, and is in range", sending the shopkeeper to
+    // inspect a paper roll on a printer whose roll is fine. On Windows the
+    // system binds its own driver to anything that identifies as a printer, and
+    // a bound device is one the browser is refused outright.
+    try {
+        if (!device.opened) await device.open();
+        if (!device.configuration) await device.selectConfiguration(1);
+    } catch (err) {
+        throw new PrinterError(
+            usbBlockedMessage(device, err),
+            isWindows() ? 'usb-blocked-windows' : undefined,
+        );
+    }
 
     const interfaces = device.configuration?.interfaces ?? [];
     const findEndpoint = (iface: any): number | null => {
@@ -628,9 +742,8 @@ const claimUsb = async (device: USBDeviceLike): Promise<number> => {
         }
     }
     throw new PrinterError(
-        `Could not take control of ${usbLabel(device)}. On Windows a printer installed with a ` +
-            'vendor driver is held by the system — remove it from Printers & scanners, or connect ' +
-            'it as a serial printer instead.',
+        usbBlockedMessage(device),
+        isWindows() ? 'usb-blocked-windows' : undefined,
     );
 };
 
@@ -642,6 +755,27 @@ const writeUsb = async (bytes: Uint8Array): Promise<void> => {
     if (result?.status && result.status !== 'ok') {
         throw new PrinterError(`${usbLabel(device)} rejected the receipt (${result.status}).`);
     }
+};
+
+/**
+ * Hand the grant back to the browser, so "Forget printer" really forgets.
+ *
+ * Clearing the saved id alone would leave the grant standing, and the next
+ * setup would resolve straight back to the same device without asking — which
+ * is exactly the trap for someone who picked the wrong one from the unfiltered
+ * picker and is trying to correct it. Best-effort: `forget()` is recent, and an
+ * older Chrome simply keeps the grant.
+ */
+const revokeUsbGrant = (): void => {
+    void (async () => {
+        try {
+            const device = await grantedUsbDevice();
+            if (device?.opened) await device.close();
+            await device?.forget?.();
+        } catch {
+            // Nothing here is worth failing a settings click over.
+        }
+    })();
 };
 
 /** Release the device so the next attempt starts from a clean handle. */

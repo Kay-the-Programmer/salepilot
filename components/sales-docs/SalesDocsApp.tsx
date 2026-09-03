@@ -24,6 +24,7 @@ import '../crm/crm.css';
 // m3-* utility classes live there. Without this import the panels below have no
 // background at all — same reason AccountingShell imports it.
 import '../../pages/assistant/assistant.css';
+import { toDateInputValue } from '../../utils/date';
 
 /**
  * How the tax line reads on a document.
@@ -71,7 +72,7 @@ const STAMP_TONE = (status: DocStatus) =>
         : status === 'declined' || status === 'cancelled' || status === 'expired' ? 'border-red-600 text-red-600'
             : 'border-[color:var(--m3-primary)] text-[color:var(--m3-primary)]';
 
-const today = () => new Date().toISOString().slice(0, 10);
+const today = () => toDateInputValue(new Date());
 const emptyItem = (): SalesDocumentItem => ({ name: '', quantity: 1, unitPrice: 0 });
 
 /**

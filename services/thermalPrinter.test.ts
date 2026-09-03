@@ -444,3 +444,236 @@ describe('getUnsupportedReason', () => {
         expect(getUnsupportedReason()).toBe('ios');
     });
 });
+
+/**
+ * What the till does with the receipt once a sale is paid.
+ *
+ * The stake is a sale that cannot be undone: whichever way this reads, the
+ * cashier has already taken the money. So an unset preference must land on the
+ * behaviour every till had before the setting existed — showing the receipt —
+ * and anything unrecognised in storage (an older build, a half-written value,
+ * a hand-edited key) has to land there too rather than silently deciding, on a
+ * till that does print, that receipts are no longer worth printing.
+ */
+describe('the receipt preference', () => {
+    const load = async (stored?: string) => {
+        vi.resetModules();
+        const storage = memoryStorage();
+        if (stored !== undefined) storage.setItem('salepilot.printer.receiptBehaviour', stored);
+        vi.stubGlobal('localStorage', storage);
+        vi.stubGlobal('window', { isSecureContext: true });
+        vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)', maxTouchPoints: 0 });
+        return { mod: await import('./thermalPrinter'), storage };
+    };
+
+    it('shows the receipt when nothing has been chosen', async () => {
+        const { mod } = await load();
+        expect(mod.getReceiptBehaviour()).toBe('ask');
+    });
+
+    it('keeps the choice a till made', async () => {
+        const { mod, storage } = await load();
+        mod.setReceiptBehaviour('skip');
+        expect(storage.getItem('salepilot.printer.receiptBehaviour')).toBe('skip');
+        expect(mod.getReceiptBehaviour()).toBe('skip');
+    });
+
+    it('reads back every supported mode', async () => {
+        for (const mode of ['ask', 'print', 'skip'] as const) {
+            const { mod } = await load(mode);
+            expect(mod.getReceiptBehaviour()).toBe(mode);
+        }
+    });
+
+    it('falls back to showing the receipt when the stored value is not one it knows', async () => {
+        for (const junk of ['', 'always', 'PRINT', '{"b":"skip"}']) {
+            const { mod } = await load(junk);
+            expect(mod.getReceiptBehaviour()).toBe('ask');
+        }
+    });
+
+    it('does not throw when storage is unavailable', async () => {
+        vi.resetModules();
+        vi.stubGlobal('localStorage', {
+            getItem: () => { throw new Error('storage disabled'); },
+            setItem: () => { throw new Error('storage disabled'); },
+            removeItem: () => { throw new Error('storage disabled'); },
+        });
+        vi.stubGlobal('window', { isSecureContext: true });
+        vi.stubGlobal('navigator', { userAgent: 'Mozilla/5.0', maxTouchPoints: 0 });
+        const mod = await import('./thermalPrinter');
+        expect(() => mod.setReceiptBehaviour('print')).not.toThrow();
+        // Private mode loses the preference, which must degrade to the safe
+        // default rather than taking the till down mid-shift.
+        expect(mod.getReceiptBehaviour()).toBe('ask');
+    });
+});
+
+/**
+ * The USB path, which is the counter printer plugged into a laptop.
+ *
+ * Two things go wrong here and neither announces itself. A grant is per origin,
+ * not per device, so `getDevices()` hands back everything ever granted and
+ * picking among them by guesswork sends receipts to the wrong device — with no
+ * error, because the write genuinely succeeds. And on Windows the system owns
+ * any device that identifies as a printer, so the browser is refused outright;
+ * reported as a stale handle, that becomes a cashier checking a paper roll that
+ * was never the problem.
+ */
+type FakeUsbDevice = ReturnType<typeof makeUsbDevice>;
+
+const makeUsbDevice = (
+    options: {
+        vendorId: number;
+        productId: number;
+        productName?: string;
+        /** 0x07 marks it a printer; clones commonly declare 0xFF instead. */
+        interfaceClass?: number;
+        /** Windows holding the device: the browser never gets it open. */
+        openFails?: boolean;
+    },
+) => {
+    const config = {
+        interfaces: [
+            {
+                interfaceNumber: 0,
+                alternates: [
+                    {
+                        interfaceClass: options.interfaceClass ?? 0x07,
+                        endpoints: [{ direction: 'out', type: 'bulk', endpointNumber: 1 }],
+                    },
+                ],
+            },
+        ],
+    };
+    const device = {
+        vendorId: options.vendorId,
+        productId: options.productId,
+        productName: options.productName,
+        deviceClass: 0,
+        configurations: [config],
+        configuration: null as typeof config | null,
+        opened: false,
+        forgotten: false,
+        written: [] as number[][],
+        open: async () => {
+            if (options.openFails) {
+                const err = new Error('Access denied.');
+                err.name = 'SecurityError';
+                throw err;
+            }
+            device.opened = true;
+        },
+        selectConfiguration: async () => {
+            device.configuration = config;
+        },
+        claimInterface: async () => {},
+        transferOut: async (_endpoint: number, bytes: Uint8Array) => {
+            device.written.push(Array.from(bytes));
+            return { status: 'ok', bytesWritten: bytes.byteLength };
+        },
+        close: async () => {
+            device.opened = false;
+        },
+        forget: async () => {
+            device.forgotten = true;
+        },
+    };
+    return device;
+};
+
+const loadUsbService = async (granted: FakeUsbDevice[], picked?: FakeUsbDevice) => {
+    vi.resetModules();
+    vi.stubGlobal('localStorage', memoryStorage());
+    vi.stubGlobal('window', { isSecureContext: true });
+    vi.stubGlobal('navigator', {
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        maxTouchPoints: 0,
+        usb: {
+            getDevices: async () => granted,
+            requestDevice: async () => picked ?? granted[0],
+        },
+    });
+    return import('./thermalPrinter');
+};
+
+describe('choosing a USB printer', () => {
+    it('writes to the device that was picked, not the one that looks likeliest', async () => {
+        // A grant the origin already held, which declares the printer class...
+        const other = makeUsbDevice({ vendorId: 0x1111, productId: 0x1, productName: 'Old printer' });
+        // ...and the printer actually on the counter, a clone declaring 0xFF.
+        const chosen = makeUsbDevice({
+            vendorId: 0x2222,
+            productId: 0x2,
+            productName: 'XP-58',
+            interfaceClass: 0xff,
+        });
+        const mod = await loadUsbService([other, chosen], chosen);
+
+        await mod.requestUsbPrinter();
+        await mod.printBytes(new Uint8Array([1, 2, 3]));
+
+        expect(chosen.written).toEqual([[1, 2, 3]]);
+        // The whole point: the receipt must not go to the other device, which
+        // would print nothing and report success.
+        expect(other.written).toEqual([]);
+    });
+
+    it('names the printer the cashier picked', async () => {
+        const chosen = makeUsbDevice({ vendorId: 0x2222, productId: 0x2, productName: 'XP-58' });
+        const mod = await loadUsbService([chosen], chosen);
+
+        expect((await mod.requestUsbPrinter()).label).toBe('XP-58');
+        expect((await mod.getPrinterStatus()).label).toBe('XP-58');
+    });
+
+    it('still finds the printer on a till set up before the choice was recorded', async () => {
+        const only = makeUsbDevice({ vendorId: 0x3333, productId: 0x3, productName: 'Counter' });
+        const mod = await loadUsbService([only]);
+
+        // No saved id — the grant is all there is to go on, and it must work.
+        await mod.printBytes(new Uint8Array([9]));
+        expect(only.written).toEqual([[9]]);
+    });
+
+    it('hands the grant back when the printer is forgotten', async () => {
+        const chosen = makeUsbDevice({ vendorId: 0x2222, productId: 0x2 });
+        const mod = await loadUsbService([chosen], chosen);
+        await mod.requestUsbPrinter();
+
+        mod.forgetPrinter();
+        await Promise.resolve();
+        await Promise.resolve();
+
+        // Clearing only the saved id would leave the grant standing, and setup
+        // would resolve back to the same device without ever asking again.
+        expect(chosen.forgotten).toBe(true);
+    });
+});
+
+describe('a USB printer Windows will not release', () => {
+    it('says what is actually wrong, rather than blaming the paper', async () => {
+        const held = makeUsbDevice({
+            vendorId: 0x4444,
+            productId: 0x4,
+            productName: 'POS-80',
+            openFails: true,
+        });
+        const mod = await loadUsbService([held], held);
+        await mod.requestUsbPrinter();
+
+        const err = await mod.printBytes(new Uint8Array([1])).catch(e => e);
+
+        expect(err).toBeInstanceOf(mod.PrinterError);
+        expect(err.message).toContain('POS-80');
+        expect(err.message).toContain('Windows');
+        // The code, not the wording, is what the setup wizard branches on to
+        // stop offering retries and point at the desktop till instead.
+        expect(err.kind).toBe('usb-blocked-windows');
+        // The two routes that genuinely print, named where the cashier reads it.
+        expect(err.message).toMatch(/desktop app/i);
+        // The failure has nothing to do with the roll, and sending someone to
+        // check it is how an afternoon disappears.
+        expect(err.message).not.toMatch(/paper/i);
+    });
+});

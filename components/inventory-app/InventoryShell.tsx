@@ -8,7 +8,7 @@ import RailThemeButton from '../standalone/RailThemeButton';
 import { useAppSwitcher } from '../../contexts/AppSwitcherContext';
 import { can, canAccessPage } from '../../utils/rbac';
 
-export type InvSection = 'dashboard' | 'items' | 'alerts' | 'stock-takes';
+export type InvSection = 'dashboard' | 'items' | 'alerts' | 'stock-takes' | 'closing-report';
 
 interface InventoryShellProps {
     active: InvSection;
@@ -23,6 +23,7 @@ interface InventoryShellProps {
 const NAV: { id: InvSection; label: string; icon: string }[] = [
     { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
     { id: 'items', label: 'Inventory', icon: 'list_alt' },
+    { id: 'closing-report', label: 'Closing Report', icon: 'assessment' },
     { id: 'stock-takes', label: 'Stock Takes', icon: 'fact_check' },
     { id: 'alerts', label: 'Alerts', icon: 'notification_important' },
 ];

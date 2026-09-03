@@ -66,6 +66,23 @@ if (typeof window !== 'undefined') {
   window.addEventListener('offline', dispatchStatus);
 }
 
+/** Fired whenever the offline queue grows or drains, and while a replay runs. */
+export const SYNC_CHANGE_EVENT = 'salepilot:syncchange';
+
+/** Fired when a request with a token comes back 401 — the session is over. */
+export const SESSION_EXPIRED_EVENT = 'salepilot:sessionexpired';
+
+/**
+ * Tell the UI the queue moved. Surfaces showing sync state (the POS status
+ * pill) listen for this instead of polling IndexedDB on a timer.
+ */
+const emitSyncChange = (syncing?: boolean): void => {
+  if (typeof window === 'undefined') return;
+  try {
+    window.dispatchEvent(new CustomEvent(SYNC_CHANGE_EVENT, { detail: { syncing: !!syncing } }));
+  } catch { /* never let a status ping break a mutation */ }
+};
+
 // Internal helper to get auth header
 const getAuthHeaders = (): Record<string, string> => {
   if (typeof localStorage === 'undefined') return {};
@@ -126,6 +143,23 @@ async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyK
     if (resp.status === 402 && body && typeof body === 'object' && body.module && typeof window !== 'undefined') {
       try {
         window.dispatchEvent(new CustomEvent('salepilot:paywall', { detail: { module: body.module, message } }));
+      } catch (_) { }
+    }
+    // Dead session: the stored token is missing, expired or has been revoked.
+    // Without this the user is left on a screen where every action fails with
+    // a toast and nothing explains why or offers a way back.
+    //
+    // Only for a request that actually carried a token — an unauthenticated
+    // call is not an expiry — and never for /auth itself, where a 401 is a
+    // wrong password being reported to someone already on the login screen.
+    if (
+      resp.status === 401
+      && !endpoint.startsWith('/auth')
+      && headers.Authorization
+      && typeof window !== 'undefined'
+    ) {
+      try {
+        window.dispatchEvent(new CustomEvent(SESSION_EXPIRED_EVENT, { detail: { message } }));
       } catch (_) { }
     }
     throw new HttpError(resp.status, message, body);
@@ -208,6 +242,7 @@ async function queueAndReturn<T>(
     entity: entityFromEndpoint(endpoint),
   });
   requestBackgroundSync();
+  emitSyncChange();
   const isForm = typeof FormData !== 'undefined' && bodyEcho instanceof FormData;
   const echo: any = bodyEcho && typeof bodyEcho === 'object' && !isForm ? { ...bodyEcho } : {};
   echo.offline = true;
@@ -630,6 +665,7 @@ export async function syncOfflineMutations(): Promise<SyncResult> {
     return { succeeded: 0, failed: 0, deadLettered: 0, remaining: await safeActiveCount() };
   }
   _syncInFlight = true;
+  emitSyncChange(true);
   try {
     // Recover anything left 'syncing' by a previous crash/reload.
     await dbService.requeueStaleSyncing();
@@ -694,6 +730,7 @@ export async function syncOfflineMutations(): Promise<SyncResult> {
     return { succeeded, failed, deadLettered, remaining: await safeActiveCount() };
   } finally {
     _syncInFlight = false;
+    emitSyncChange(false);
   }
 }
 

@@ -20,7 +20,30 @@ interface Props {
   selectedProductId?: string | null;
   /** First-run CTA: opens the add-product form from the empty state. */
   onAddProduct?: () => void;
+  /** Products ticked for a bulk action. Absent means selection is off. */
+  bulkSelectedIds?: Set<string>;
+  /** Providing this turns the tick boxes on. */
+  onToggleBulkSelect?: (productId: string) => void;
 }
+
+/**
+ * Tick box for bulk selection.
+ *
+ * Stops the click short of the card, which would otherwise open the product —
+ * ticking six things to reprice should not open six product forms.
+ */
+const BulkTick: React.FC<{ checked: boolean; onToggle: () => void; label: string; className?: string }> = ({
+  checked, onToggle, label, className = '',
+}) => (
+  <input
+    type="checkbox"
+    checked={checked}
+    aria-label={`Select ${label}`}
+    onClick={(e) => e.stopPropagation()}
+    onChange={(e) => { e.stopPropagation(); onToggle(); }}
+    className={`h-4 w-4 shrink-0 cursor-pointer accent-primary ${className}`}
+  />
+);
 
 const ProductCard: React.FC<{
   product: Product;
@@ -28,7 +51,9 @@ const ProductCard: React.FC<{
   storeSettings: StoreSettings;
   onSelect: () => void;
   isSelected?: boolean;
-}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected }) => {
+  bulkChecked?: boolean;
+  onToggleBulk?: () => void;
+}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected, bulkChecked, onToggleBulk }) => {
   const [imgError, setImgError] = React.useState(false);
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
 
@@ -62,6 +87,12 @@ const ProductCard: React.FC<{
         : 'border border-brand-border hover:border-primary/50'
         }`}
     >
+      {onToggleBulk && (
+        <span className="absolute right-2 top-2 z-10 rounded bg-surface/90 p-1">
+          <BulkTick checked={!!bulkChecked} onToggle={onToggleBulk} label={product.name} />
+        </span>
+      )}
+
       {/* Image — subtle tonal tint, no gradient */}
       <div className="relative aspect-[4/3] bg-surface-variant flex items-center justify-center overflow-hidden">
         {showImage ? (
@@ -106,7 +137,9 @@ const ProductListRow: React.FC<{
   storeSettings: StoreSettings;
   onSelect: () => void;
   isSelected?: boolean;
-}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected }) => {
+  bulkChecked?: boolean;
+  onToggleBulk?: () => void;
+}> = React.memo(({ product, categoryName, storeSettings, onSelect, isSelected, bulkChecked, onToggleBulk }) => {
   const formatPrice = (val: any): string => formatCurrency(val, storeSettings);
   const stock = asNumber(product.stock);
   const tone = stockStatus(product, storeSettings);
@@ -123,6 +156,10 @@ const ProductListRow: React.FC<{
         : 'border border-brand-border hover:border-primary/50'
         }`}
     >
+      {onToggleBulk && (
+        <BulkTick checked={!!bulkChecked} onToggle={onToggleBulk} label={product.name} />
+      )}
+
       {/* Status dot */}
       <span className={`shrink-0 w-2 h-2 rounded-full ${dotCls}`} title={tone.label} />
 
@@ -156,7 +193,9 @@ const ProductList: React.FC<Props> = React.memo(({
   storeSettings,
   viewMode = 'grid',
   selectedProductId,
-  onAddProduct
+  onAddProduct,
+  bulkSelectedIds,
+  onToggleBulkSelect,
 }) => {
   // Category is optional, so an unset one reads as "Uncategorized" rather than
   // a bare dash — matching the mobile shell and the reports.
@@ -186,6 +225,8 @@ const ProductList: React.FC<Props> = React.memo(({
           storeSettings={storeSettings}
           onSelect={() => onSelectProduct(product)}
           isSelected={isSelected}
+          bulkChecked={bulkSelectedIds?.has(product.id)}
+          onToggleBulk={onToggleBulkSelect ? () => onToggleBulkSelect(product.id) : undefined}
         />
       )}
       renderListItem={(product, _index, isSelected) => (
@@ -195,6 +236,8 @@ const ProductList: React.FC<Props> = React.memo(({
           storeSettings={storeSettings}
           onSelect={() => onSelectProduct(product)}
           isSelected={isSelected}
+          bulkChecked={bulkSelectedIds?.has(product.id)}
+          onToggleBulk={onToggleBulkSelect ? () => onToggleBulkSelect(product.id) : undefined}
         />
       )}
     />
