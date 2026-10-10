@@ -83,8 +83,10 @@ const emitSyncChange = (syncing?: boolean): void => {
   } catch { /* never let a status ping break a mutation */ }
 };
 
-// Internal helper to get auth header
-const getAuthHeaders = (): Record<string, string> => {
+// Auth header helper. Exported so flows that must bypass `request()` — large
+// file uploads/downloads that need XHR progress events — reuse one definition
+// of where the token lives rather than re-reading localStorage themselves.
+export const getAuthHeaders = (): Record<string, string> => {
   if (typeof localStorage === 'undefined') return {};
   try {
     const raw = localStorage.getItem(CURRENT_USER_KEY);

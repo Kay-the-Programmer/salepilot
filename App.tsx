@@ -16,6 +16,7 @@ import { AppSwitcherProvider } from './contexts/AppSwitcherContext';
 const Dashboard = lazy(() => import('@/Dashboard'));
 const OfferLiveTracking = lazy(() => import('@/components/offers/OfferLiveTracking'));
 const SubscriptionPage = lazy(() => import('@/pages/subscription/SubscriptionApp'));
+const DownloadsPage = lazy(() => import('@/pages/downloads/DownloadsApp'));
 const TrackShipmentPage = lazy(() => import('@/pages/logistics/TrackShipmentPage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/ResetPasswordPage'));
@@ -147,6 +148,8 @@ export default function App() {
                                 <Route path="/reports" element={<Dashboard />} />
                                 <Route path="/orders" element={<Dashboard />} />
                                 <Route path="/subscription" element={<SubscriptionPage />} />
+                                {/* Desktop app installer downloads (own shell) */}
+                                <Route path="/downloads" element={<DownloadsPage />} />
                                 <Route path="/user-guide" element={<Dashboard />} />
                                 <Route path="/support" element={<Dashboard />} />
 
@@ -186,6 +189,7 @@ export default function App() {
                                 <Route path="/superadmin/feedback" element={<Dashboard />} />
                                 <Route path="/superadmin/whatsapp" element={<Dashboard />} />
                                 <Route path="/superadmin/whatsapp-settings" element={<Dashboard />} />
+                                <Route path="/superadmin/downloads" element={<Dashboard />} />
 
 
                                 {/* <Route path="/directory" element={<MarketplacePage />} />

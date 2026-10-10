@@ -1,0 +1,268 @@
+/* Desktop App download page.
+   Scoped under .downloads-app so these rules cannot leak into other standalone
+   apps sharing the .sp-assistant chrome. Colors come from the Velocity tokens
+   (navy #002B6B / orange #FF7F27) so light and dark themes both work. */
+
+.downloads-app .downloads-wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 32px 16px 64px;
+}
+
+/* ---- hero ---- */
+
+.downloads-app .downloads-hero {
+    margin-bottom: 28px;
+}
+
+.downloads-app .downloads-hero__eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sp-on-surface-variant, #434651);
+    margin-bottom: 8px;
+}
+
+.downloads-app .downloads-hero__title {
+    margin: 0 0 10px;
+    font-size: clamp(26px, 5vw, 34px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    color: var(--sp-primary, #002B6B);
+}
+
+.downloads-app .downloads-hero__sub {
+    margin: 0;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--sp-on-surface-variant, #434651);
+    max-width: 58ch;
+}
+
+/* ---- platform tabs ---- */
+
+.downloads-app .downloads-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.downloads-app .downloads-tab {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--sp-border, #E0E3E5);
+    background: transparent;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--sp-on-surface-variant, #434651);
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.downloads-app .downloads-tab:hover {
+    border-color: var(--sp-primary, #002B6B);
+}
+
+.downloads-app .downloads-tab.is-active {
+    background: var(--sp-primary, #002B6B);
+    border-color: var(--sp-primary, #002B6B);
+    color: #fff;
+}
+
+/* ---- the current release ---- */
+
+.downloads-app .downloads-card {
+    border: 1px solid var(--sp-border, #E0E3E5);
+    border-radius: 16px;
+    background: var(--sp-surface, #fff);
+    padding: 24px;
+}
+
+.downloads-app .downloads-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.downloads-app .downloads-card__title {
+    margin: 0 0 4px;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--sp-on-surface, #181C1E);
+}
+
+.downloads-app .downloads-card__meta {
+    margin: 0;
+    font-size: 14px;
+    color: var(--sp-on-surface-variant, #434651);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.downloads-app .downloads-chip {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--sp-accent, #FF7F27);
+    color: #002B6B;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+/* 44px min height keeps this a comfortable touch target on a tablet till. */
+.downloads-app .downloads-btn {
+    min-height: 44px;
+    padding: 0 24px;
+    border: none;
+    border-radius: 12px;
+    background: var(--sp-accent, #FF7F27);
+    color: #002B6B;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+}
+
+.downloads-app .downloads-btn:hover:not(:disabled) { opacity: 0.9; }
+.downloads-app .downloads-btn:active:not(:disabled) { transform: scale(0.98); }
+.downloads-app .downloads-btn:disabled { opacity: 0.6; cursor: default; }
+
+.downloads-app .downloads-btn--ghost {
+    background: transparent;
+    border: 1px solid var(--sp-border, #E0E3E5);
+    color: var(--sp-on-surface, #181C1E);
+    font-weight: 600;
+    padding: 0 16px;
+    min-height: 40px;
+}
+
+.downloads-app .downloads-progress {
+    margin-top: 16px;
+    height: 6px;
+    border-radius: 999px;
+    background: var(--sp-surface-variant, #F1F4F6);
+    overflow: hidden;
+}
+
+.downloads-app .downloads-progress__bar {
+    height: 100%;
+    background: var(--sp-accent, #FF7F27);
+    transition: width 0.2s ease-out;
+}
+
+/* ---- release notes & steps ---- */
+
+.downloads-app .downloads-notes {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--sp-border, #E0E3E5);
+}
+
+.downloads-app .downloads-notes h3,
+.downloads-app .downloads-older h3 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--sp-on-surface-variant, #434651);
+}
+
+.downloads-app .downloads-notes p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--sp-on-surface, #181C1E);
+    white-space: pre-line;
+}
+
+.downloads-app .downloads-steps {
+    margin: 24px 0 0;
+    padding-left: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--sp-on-surface, #181C1E);
+}
+
+.downloads-app .downloads-checksum {
+    margin: 20px 0 0;
+    font-size: 12px;
+    color: var(--sp-on-surface-variant, #434651);
+    word-break: break-all;
+}
+
+.downloads-app .downloads-checksum code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px;
+}
+
+/* ---- older versions ---- */
+
+.downloads-app .downloads-older {
+    margin-top: 28px;
+}
+
+.downloads-app .downloads-older ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.downloads-app .downloads-older li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    border: 1px solid var(--sp-border, #E0E3E5);
+    border-radius: 12px;
+    font-size: 15px;
+    color: var(--sp-on-surface, #181C1E);
+}
+
+.downloads-app .downloads-older__meta {
+    display: block;
+    font-size: 13px;
+    color: var(--sp-on-surface-variant, #434651);
+    margin-top: 2px;
+}
+
+/* ---- empty / loading ---- */
+
+.downloads-app .downloads-empty {
+    border: 1px dashed var(--sp-border, #E0E3E5);
+    border-radius: 16px;
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--sp-on-surface-variant, #434651);
+}
+
+.downloads-app .downloads-empty h2 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sp-on-surface, #181C1E);
+}
+
+.downloads-app .downloads-empty p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.55;
+}

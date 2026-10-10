@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { Customer, Sale, StoreSettings } from '../../../types';
 import { formatCurrency } from '../../../utils/currency';
+import { formatDocumentDate } from '../../../utils/date';
 import DocumentChartBarIcon from '../../icons/DocumentChartBarIcon';
 import XMarkIcon from '../../icons/XMarkIcon';
 import PrinterIcon from '../../icons/PrinterIcon';
@@ -82,7 +83,7 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
                         </div>
                         <div className="min-w-0">
                             <h3 className="text-lg font-bold text-brand-text tracking-tight leading-tight">Customer Statement</h3>
-                            <p className="text-xs text-brand-text-muted">As of {new Date().toLocaleDateString()}</p>
+                            <p className="text-xs text-brand-text-muted">As of {formatDocumentDate(new Date())}</p>
                         </div>
                     </div>
                     <button type="button" onClick={onClose} className="w-9 h-9 flex items-center justify-center rounded-lg text-brand-text-muted hover:bg-surface-variant transition-colors flex-shrink-0">
@@ -125,7 +126,7 @@ const CustomerStatementModal: React.FC<CustomerStatementModalProps> = ({ isOpen,
                                 {finalLines.map((line, index) => (
                                     <tr key={index} className="hover:bg-surface-variant transition-colors">
                                         <td className="px-4 py-3 whitespace-nowrap text-sm text-brand-text-muted font-medium">
-                                            {new Date(line.date).toLocaleDateString()}
+                                            {formatDocumentDate(line.date)}
                                         </td>
                                         <td className="px-4 py-3 text-sm text-brand-text">
                                             <div className="flex items-center gap-2">

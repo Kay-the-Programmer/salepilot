@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useLocation, Link } from 'react-router-dom';
 import { HiOutlineCheckCircle, HiOutlineMagnifyingGlass, HiOutlineClipboardDocument } from 'react-icons/hi2';
 import { shopService, ShopOrderStatus } from '../../services/shop.service';
+import { formatDocumentDate } from '../../utils/date';
 import type { ShopOutletContext } from './ShopLayout';
 import { useOutletContext } from 'react-router-dom';
 
@@ -96,7 +97,7 @@ const OrderStatusPage: React.FC = () => {
             .head{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #002B6B;padding-bottom:16px}
         </style></head><body>
             <div class="head"><div><h1>${storeName}</h1><div class="muted">${esc(shopInfo.settings.address || '')}<br>${esc(shopInfo.settings.phone || '')}</div></div>
-            <div style="text-align:right"><h1>INVOICE</h1><div class="muted">${esc(s.orderId)}<br>${esc(new Date(s.timestamp || Date.now()).toLocaleDateString())}</div></div></div>
+            <div style="text-align:right"><h1>INVOICE</h1><div class="muted">${esc(s.orderId)}<br>${esc(formatDocumentDate(s.timestamp || Date.now()))}</div></div></div>
             <p class="muted" style="margin-top:16px">Billed to: <strong>${esc(s.customerName || 'Customer')}</strong> · Payment: on delivery/pickup</p>
             <table><thead><tr><th>Item</th><th class="n">Qty</th><th class="n">Unit</th><th class="n">Amount</th></tr></thead>
             <tbody>${rows}</tbody>

@@ -6,6 +6,7 @@ import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import CalendarIcon from '../icons/CalendarIcon';
 import BanknotesIcon from '../icons/BanknotesIcon';
 import { formatCurrency } from '../../utils/currency';
+import { formatDocumentDate } from '../../utils/date';
 
 interface SupplierInvoiceDetailModalProps {
     isOpen: boolean;
@@ -91,8 +92,8 @@ const SupplierInvoiceDetailModal: React.FC<SupplierInvoiceDetailModalProps> = ({
                     <div className="grid grid-cols-2 gap-3">
                         <InfoCard label="Supplier" value={invoice.supplierName} icon={BuildingOfficeIcon} />
                         <InfoCard label="PO Number" value={invoice.poNumber} icon={ClipboardDocumentListIcon} />
-                        <InfoCard label="Issue Date" value={new Date(invoice.invoiceDate).toLocaleDateString()} icon={CalendarIcon} />
-                        <InfoCard label="Due Date" value={new Date(invoice.dueDate).toLocaleDateString()} icon={CalendarIcon} danger={isOverdue} />
+                        <InfoCard label="Issue Date" value={formatDocumentDate(invoice.invoiceDate)} icon={CalendarIcon} />
+                        <InfoCard label="Due Date" value={formatDocumentDate(invoice.dueDate)} icon={CalendarIcon} danger={isOverdue} />
                     </div>
 
                     {/* Payment history */}
@@ -108,7 +109,7 @@ const SupplierInvoiceDetailModal: React.FC<SupplierInvoiceDetailModalProps> = ({
                                             </div>
                                             <div className="min-w-0">
                                                 <p className="text-sm font-bold text-brand-text capitalize truncate">{p.method.replace('_', ' ')}</p>
-                                                <p className="text-xs text-brand-text-muted truncate">{new Date(p.date).toLocaleDateString()} · {p.reference || 'No ref'}</p>
+                                                <p className="text-xs text-brand-text-muted truncate">{formatDocumentDate(p.date)} · {p.reference || 'No ref'}</p>
                                             </div>
                                         </div>
                                         <p className="text-sm font-bold text-brand-text flex-shrink-0">{formatCurrency(p.amount, storeSettings)}</p>

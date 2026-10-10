@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 import { StoreSettings } from '../types';
 import { api, buildAssetUrl } from '../services/api';
+import { formatDocumentDate } from './date';
 import SalePilotMarkUrl from '../assets/salepilot.png';
 
 /**
@@ -68,8 +69,7 @@ export const pdfNumber = (n: number | string | null | undefined): string => {
     }).format(Number.isFinite(num) ? num : 0);
 };
 
-export const pdfDate = (d?: string | number | Date | null): string =>
-    d ? new Date(d).toLocaleDateString() : '—';
+export const pdfDate = (d?: string | number | Date | null): string => formatDocumentDate(d);
 
 let cachedSettings: PdfSettings | undefined;
 

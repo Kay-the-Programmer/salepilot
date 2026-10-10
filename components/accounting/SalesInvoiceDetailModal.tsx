@@ -4,6 +4,7 @@ import XMarkIcon from '../icons/XMarkIcon';
 import PrinterIcon from '../icons/PrinterIcon';
 import ClipboardDocumentListIcon from '../icons/ClipboardDocumentListIcon';
 import { formatCurrency } from '../../utils/currency';
+import { formatDocumentDate } from '../../utils/date';
 
 interface SalesInvoiceDetailModalProps {
     isOpen: boolean;
@@ -78,8 +79,8 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                             </div>
                             <div class="text-right">
                                 <strong>Invoice #:</strong> ${invoice.transactionId}<br>
-                                <strong>Date:</strong> ${new Date(invoice.timestamp).toLocaleDateString()}<br>
-                                <strong>Due Date:</strong> ${invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}
+                                <strong>Date:</strong> ${formatDocumentDate(invoice.timestamp)}<br>
+                                <strong>Due Date:</strong> ${invoice.dueDate ? formatDocumentDate(invoice.dueDate) : 'N/A'}
                             </div>
                         </div>
                         <table>
@@ -179,8 +180,8 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                             <p className="text-sm font-bold text-brand-text mt-1">{customerName || invoice.customerName || 'Unknown Customer'}</p>
                         </div>
                         <div className="sm:text-right space-y-1">
-                            <p className="text-sm text-brand-text-muted"><span className="font-semibold text-brand-text">Invoice Date:</span> {new Date(invoice.timestamp).toLocaleDateString()}</p>
-                            <p className="text-sm text-brand-text-muted"><span className="font-semibold text-brand-text">Due Date:</span> {invoice.dueDate ? new Date(invoice.dueDate).toLocaleDateString() : 'N/A'}</p>
+                            <p className="text-sm text-brand-text-muted"><span className="font-semibold text-brand-text">Invoice Date:</span> {formatDocumentDate(invoice.timestamp)}</p>
+                            <p className="text-sm text-brand-text-muted"><span className="font-semibold text-brand-text">Due Date:</span> {invoice.dueDate ? formatDocumentDate(invoice.dueDate) : 'N/A'}</p>
                         </div>
                     </div>
 
@@ -218,7 +219,7 @@ const SalesInvoiceDetailModal: React.FC<SalesInvoiceDetailModalProps> = ({ isOpe
                                         <ul className="divide-y divide-brand-border text-sm">
                                             {invoice.payments?.map(p => (
                                                 <li key={p.id} className="px-4 py-2.5 flex justify-between hover:bg-surface-variant transition-colors">
-                                                    <span className="text-brand-text-muted font-medium">{new Date(p.date).toLocaleDateString()} · {p.method}</span>
+                                                    <span className="text-brand-text-muted font-medium">{formatDocumentDate(p.date)} · {p.method}</span>
                                                     <span className="font-bold text-success">{formatCurrency(p.amount, storeSettings)}</span>
                                                 </li>
                                             ))}

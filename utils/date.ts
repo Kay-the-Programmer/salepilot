@@ -78,3 +78,17 @@ export const formatRelativeDate = (input?: string | number | Date | null, fallba
         year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined,
     });
 };
+
+/**
+ * Document date — day, month name, year, e.g. "23 June 2026".
+ *
+ * Used on quotations, invoices, proformas, delivery notes, statements and the
+ * PDFs built from them. Deliberately not locale-dependent: a document can be
+ * printed in one place and read in another, and "06/23/2026" vs "23/06/2026"
+ * is the kind of ambiguity that gets an invoice paid on the wrong day. Spelling
+ * the month out removes it.
+ */
+export const formatDocumentDate = (input?: string | number | Date | null, fallback = '—'): string => {
+    const d = toDate(input);
+    return d ? d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : fallback;
+};

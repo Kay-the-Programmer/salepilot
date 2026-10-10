@@ -3,6 +3,7 @@ import { computeTax, toTaxClass } from '../../utils/tax';
 import { User, StoreSettings, Customer, Product, Sale, BANK_ACCOUNT_FIELDS } from '../../types';
 import { api, buildAssetUrl } from '../../services/api';
 import { formatCurrency } from '../../utils/currency';
+import { formatDocumentDate } from '../../utils/date';
 import { Icon, Avatar } from '../crm/CrmBits';
 import AppSwitcher from '../standalone/AppSwitcher';
 import AppNavMenu from '../standalone/AppNavMenu';
@@ -436,7 +437,7 @@ export const SalesDocsApp: React.FC<SalesDocsAppProps> = ({
                                                         {doc.number} · {doc.customerName}
                                                     </p>
                                                     <p className="text-xs m3-text-on-surface-variant">
-                                                        {new Date(doc.issueDate).toLocaleDateString()}
+                                                        {formatDocumentDate(doc.issueDate)}
                                                         {doc.createdByName ? ` · ${doc.createdByName}` : ''}
                                                     </p>
                                                 </div>
@@ -623,7 +624,7 @@ const DocumentDetail: React.FC<{
                             <div className="rounded border border-current/50 py-2 px-2">
                                 <p className="text-[10px] font-bold uppercase tracking-wide truncate">{storeSettings?.name || 'SalePilot'}</p>
                                 <p className="text-sm font-extrabold tracking-wider">{isQuote ? 'QUOTATION' : 'INVOICE'}</p>
-                                <p className="text-[9px] font-semibold uppercase">Issued {new Date(doc.issueDate).toLocaleDateString()}</p>
+                                <p className="text-[9px] font-semibold uppercase">Issued {formatDocumentDate(doc.issueDate)}</p>
                             </div>
                         </div>
                     </div>

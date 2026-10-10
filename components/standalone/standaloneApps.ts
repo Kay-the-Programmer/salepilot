@@ -44,6 +44,8 @@ export const STANDALONE_APPS: AppDef[] = [
     { name: 'Audit Trail', page: 'audit', route: 'audit', desc: 'Activity log & alerts', iconName: 'manage_search', requires: 'audit-trail' },
     { name: 'Notifications', page: 'notify', route: 'notify', desc: 'Alerts & messages', iconName: 'notifications', requires: 'notifications' },
     { name: 'Account', page: 'account', route: 'account', desc: 'Profile & preferences', iconName: 'account_circle', requires: 'profile' },
+    // Gated on 'profile' so every role can fetch the till installer, not just owners.
+    { name: 'Desktop App', page: 'downloads', route: 'downloads', desc: 'Download the till for Windows', iconName: 'download', requires: 'profile' },
 ];
 
 /** Pages the role is entitled to — mirrors Dashboard's `posAllowedPages`. */
