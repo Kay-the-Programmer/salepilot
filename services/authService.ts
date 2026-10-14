@@ -173,11 +173,31 @@ export const verifySession = async (): Promise<User> => {
     return normalizeUser(u);
 };
 
-export const changePassword = (passwordData: {
+export const changePassword = async (passwordData: {
     currentPassword: string;
     newPassword: string;
 }): Promise<void> => {
-    return api.post('/auth/change-password', passwordData);
+    // Changing the password now ends every other session for the account, so
+    // the server hands back a reissued token for THIS device. Persist it or the
+    // next request goes out with a token the server has just invalidated and
+    // the user is bounced to the login screen for changing their own password.
+    const res = await api.post<{ token?: string }>('/auth/change-password', passwordData);
+    if (res?.token) {
+        updateStoredUser({ token: res.token });
+    }
+};
+
+/**
+ * Ends every session for this account, this device included — the control to
+ * use after losing a phone or a till. The caller must then sign in again, so
+ * clear the local session rather than leaving a token the server has dropped.
+ */
+export const signOutEverywhere = async (): Promise<void> => {
+    try {
+        await api.post('/auth/sign-out-everywhere');
+    } finally {
+        logout();
+    }
 };
 
 export const verifyEmail = async (token: string): Promise<void> => {
