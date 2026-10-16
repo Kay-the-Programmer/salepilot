@@ -6,8 +6,8 @@ import { CrmOverview, formatMoney } from './crmModel';
 interface CrmInsightsProps {
     overview: CrmOverview;
     storeSettings?: StoreSettings | null;
+    /** Opens the WhatsApp Broadcast tool with the at-risk cohort selected. */
     onReengage: () => void;
-    onNotify: (msg: string) => void;
 }
 
 export const CrmInsights: React.FC<CrmInsightsProps> = ({ overview, storeSettings, onReengage }) => {

@@ -1672,6 +1672,7 @@ export default function Dashboard() {
                             onUpgrade={() => navigate('/subscription')}
                             onSaveCustomer={handleSaveCustomer}
                             onDeleteCustomer={handleDeleteCustomer}
+                            onRefreshData={fetchData}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                         />

@@ -1,11 +1,16 @@
+import { api } from '../../services/api';
+
 /**
- * Reusable WhatsApp message templates for the CRM messaging hub.
+ * Reusable message templates for the CRM messaging hub.
  *
- * Stored per store in localStorage (zero backend migrations, like
- * {@link loyaltyService}). Bodies use two placeholders that are substituted at
- * send time: `[Name]` → the recipient's first name, `[Store]` → the store name.
- * Promoting these to Meta-approved message templates (required to start
- * conversations outside the 24h window) is the natural backend next step.
+ * Store-scoped on the backend (`/api/crm/templates`) — they used to live in
+ * localStorage, so a template written on the counter PC never reached anyone
+ * else. The server seeds a new store with sensible defaults on first read.
+ *
+ * Bodies use two placeholders substituted at send time: `[Name]` → the
+ * recipient's first name, `[Store]` → the store name. Promoting these to
+ * Meta-approved message templates (required to open a conversation outside the
+ * 24h window) is a separate Meta onboarding step.
  */
 
 export interface WaTemplate {
@@ -14,51 +19,34 @@ export interface WaTemplate {
     body: string;
 }
 
-const KEY = (storeId: string) => `crm.wa.templates.${storeId}`;
-const storeKey = (storeId?: string | null) => storeId || 'default';
-
-const DEFAULTS: WaTemplate[] = [
-    { id: 'tpl_loyalty', label: 'Loyalty Reward', body: `Hi [Name], as a valued member we've just added 500 bonus loyalty points to your account! Visit us soon to redeem. — [Store]` },
-    { id: 'tpl_discount', label: 'Special Discount', body: `Special offer for you, [Name]! Use code PILOT20 for 20% off your next purchase this weekend. Hope to see you! — [Store]` },
-    { id: 'tpl_checkin', label: 'Checking In', body: `Hi [Name], we haven't seen you in a while! Just checking in to see if there's anything we can help you find. — [Store]` },
-    { id: 'tpl_birthday', label: 'Birthday Gift', body: `Happy Birthday [Name]! 🎂 Stop by today for a free gift with any purchase. Wishing you the best! — [Store]` },
-    { id: 'tpl_order_ready', label: 'Order Ready', body: `Hi [Name], your order is ready for pickup. See you soon! — [Store]` },
-    { id: 'tpl_thanks', label: 'Thank You', body: `Thank you for your purchase, [Name]! We really appreciate your business. — [Store]` },
-];
-
-const safeParse = <T,>(raw: string | null, fallback: T): T => {
-    if (!raw) return fallback;
-    try { return JSON.parse(raw) as T; } catch { return fallback; }
-};
-
-const persist = (storeId: string | null | undefined, list: WaTemplate[]): WaTemplate[] => {
-    if (typeof localStorage !== 'undefined') localStorage.setItem(KEY(storeKey(storeId)), JSON.stringify(list));
-    return list;
-};
+const clean = (t: any): WaTemplate => ({ id: String(t.id), label: String(t.label || ''), body: String(t.body || '') });
 
 export const whatsappTemplates = {
-    /** All templates for a store (seeded with sensible defaults on first use). */
-    list(storeId?: string | null): WaTemplate[] {
-        if (typeof localStorage === 'undefined') return [...DEFAULTS];
-        const raw = localStorage.getItem(KEY(storeKey(storeId)));
-        if (raw === null) return persist(storeId, [...DEFAULTS]);
-        const list = safeParse<WaTemplate[]>(raw, []);
-        return Array.isArray(list) ? list : [...DEFAULTS];
+    /** All templates for the current store (server seeds defaults on first use). */
+    async list(): Promise<WaTemplate[]> {
+        try {
+            const rows = await api.get<any[]>('/crm/templates');
+            return Array.isArray(rows) ? rows.map(clean) : [];
+        } catch {
+            return [];
+        }
     },
 
-    /** Add or update a template; returns the new full list. */
-    save(storeId: string | null | undefined, tpl: WaTemplate): WaTemplate[] {
-        const list = this.list(storeId);
-        const idx = list.findIndex(t => t.id === tpl.id);
-        if (idx >= 0) list[idx] = tpl; else list.push(tpl);
-        return persist(storeId, [...list]);
+    /** Create a template; returns the stored row. */
+    async create(label: string, body: string): Promise<WaTemplate> {
+        const row = await api.post<any>('/crm/templates', { label, body }, { skipQueue: true });
+        return clean(row);
     },
 
-    remove(storeId: string | null | undefined, id: string): WaTemplate[] {
-        return persist(storeId, this.list(storeId).filter(t => t.id !== id));
+    /** Update an existing template. */
+    async update(id: string, label: string, body: string): Promise<WaTemplate> {
+        const row = await api.put<any>(`/crm/templates/${id}`, { label, body });
+        return clean(row);
     },
 
-    newId: () => `tpl_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    async remove(id: string): Promise<void> {
+        await api.delete(`/crm/templates/${id}`, undefined, { skipQueue: true });
+    },
 };
 
 /** Replace `[Name]` / `[Store]` placeholders for a given recipient. */

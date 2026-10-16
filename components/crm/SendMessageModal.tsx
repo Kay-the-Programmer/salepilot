@@ -96,7 +96,8 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
             if (smsSandbox) return { tone: 'info', text: 'Sandbox mode — messages reach the Africa\'s Talking simulator, not real phones.' };
             return { tone: 'info', text: 'Sent over SMS via your business line.' };
         }
-        return { tone: 'info', text: 'Email delivery isn\'t enabled yet — this composes the message only.' };
+        if (!customer.email) return { tone: 'warn', text: 'No email address on file for this customer.' };
+        return { tone: 'info', text: 'Sent from your store\'s email address. Included in this customer\'s outreach history.' };
     })();
 
     return (

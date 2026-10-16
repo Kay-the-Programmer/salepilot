@@ -26,6 +26,7 @@ const getInitialState = (): Omit<Customer, 'id' | 'createdAt'> => ({
     notes: '',
     storeCredit: 0,
     accountBalance: 0,
+    creditLimit: null,
 });
 
 export const CrmCustomerForm: React.FC<CrmCustomerFormProps> = ({ isOpen, onClose, onSave, customerToEdit, storeSettings }) => {
@@ -52,6 +53,9 @@ export const CrmCustomerForm: React.FC<CrmCustomerFormProps> = ({ isOpen, onClos
         const { name, value } = e.target;
         if (name === 'storeCredit') {
             setCustomer(prev => ({ ...prev, storeCredit: parseFloat(value) || 0 }));
+        } else if (name === 'creditLimit') {
+            // Blank clears the credit line; the backend treats null as "no limit".
+            setCustomer(prev => ({ ...prev, creditLimit: value.trim() === '' ? null : Math.max(0, parseFloat(value) || 0) }));
         } else {
             setCustomer(prev => ({ ...prev, [name]: value }));
         }
@@ -182,7 +186,7 @@ export const CrmCustomerForm: React.FC<CrmCustomerFormProps> = ({ isOpen, onClos
                                         <input
                                             id="cf-credit-limit" className="crm-input" name="creditLimit" type="number"
                                             min="0" step="0.01" placeholder="No limit set"
-                                            value={(customer as any).creditLimit ?? ''} onChange={handleChange}
+                                            value={customer.creditLimit ?? ''} onChange={handleChange}
                                         />
                                     </div>
                                     <p className="crm-input-group__hint">Caps this customer's outstanding balance for online orders. Leave blank for no credit line.</p>

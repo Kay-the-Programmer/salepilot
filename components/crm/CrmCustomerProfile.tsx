@@ -1,7 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Sale, StoreSettings } from '../../types';
 import { Icon, Avatar } from './CrmBits';
 import { CustomerMetrics, LoyaltyConfig, formatMoney, formatDate, formatMonthYear, timeAgo, parseApiDate } from './crmModel';
+import { crmService, OutreachEntry } from '../../services/crmService';
+import loyaltyService, { RedemptionRow } from './loyaltyService';
 
 interface CrmCustomerProfileProps {
     metrics: CustomerMetrics;
@@ -49,6 +51,26 @@ export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics,
     }, [ownSales]);
 
     const isVip = metrics.tier.id === 'gold' || metrics.tier.id === 'platinum';
+
+    // Outreach (email / SMS / WhatsApp) and redemptions for this customer. The
+    // backend has had this history all along; the profile never showed it.
+    const [outreach, setOutreach] = useState<OutreachEntry[]>([]);
+    const [redemptions, setRedemptions] = useState<RedemptionRow[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
+
+    useEffect(() => {
+        let active = true;
+        setHistoryLoading(true);
+        Promise.all([
+            crmService.getOutreach(c.id).catch(() => [] as OutreachEntry[]),
+            loyaltyService.getLedger(c.id).catch(() => [] as RedemptionRow[]),
+        ]).then(([o, r]) => {
+            if (!active) return;
+            setOutreach(Array.isArray(o) ? o : []);
+            setRedemptions(Array.isArray(r) ? r : []);
+        }).finally(() => { if (active) setHistoryLoading(false); });
+        return () => { active = false; };
+    }, [c.id]);
 
     return (
         <main className="crm-main crm-section-fade">
@@ -230,6 +252,76 @@ export const CrmCustomerProfile: React.FC<CrmCustomerProfileProps> = ({ metrics,
                         )}
                     </div>
                 </div>
+
+                {/* Messages sent to (and WhatsApp replies from) this customer */}
+                <div className="crm-prof-full">
+                    <div className="crm-panel">
+                        <div className="crm-panel__head" style={{ background: 'var(--c-surface-container)' }}>
+                            <h2 className="crm-panel__title">Messages &amp; Outreach</h2>
+                            <span className="crm-panel__sub">
+                                {historyLoading ? 'Loading…' : `${outreach.length} message${outreach.length === 1 ? '' : 's'}`}
+                            </span>
+                        </div>
+                        {historyLoading ? (
+                            <div className="crm-empty" style={{ padding: '32px 16px' }}>
+                                <p className="crm-empty__text">Loading message history…</p>
+                            </div>
+                        ) : outreach.length === 0 ? (
+                            <div className="crm-empty" style={{ padding: '40px 16px' }}>
+                                <Icon name="forum" size={36} />
+                                <p className="crm-empty__text">No messages yet. Use "Send Message" to reach this customer.</p>
+                            </div>
+                        ) : (
+                            <div className="crm-activity">
+                                {outreach.slice(0, 15).map(m => (
+                                    <div key={`${m.channel}-${m.id}`} className="crm-activity__row">
+                                        <span className="crm-activity__icon" style={{ display: 'inline-flex', width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center', background: 'var(--c-surface-container)' }}>
+                                            <Icon name={m.channel === 'email' ? 'mail' : m.channel === 'sms' ? 'sms' : 'chat'} size={20} fill={1} />
+                                        </span>
+                                        <div className="crm-activity__body">
+                                            <p className="crm-activity__name">
+                                                {m.subject || (m.channel === 'whatsapp' && m.direction === 'inbound' ? 'Customer reply' : m.channel.toUpperCase())}
+                                            </p>
+                                            <p className="crm-activity__meta" style={{ whiteSpace: 'pre-wrap' }}>
+                                                {(m.body || '').slice(0, 160)}{(m.body || '').length > 160 ? '…' : ''}
+                                            </p>
+                                        </div>
+                                        <div className="crm-activity__right">
+                                            <p className="crm-activity__time">{timeAgo(m.createdAt)}</p>
+                                            {m.status && <p className="crm-activity__time">{m.status}</p>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* This customer's own redemptions */}
+                {redemptions.length > 0 && (
+                    <div className="crm-prof-full">
+                        <div className="crm-panel">
+                            <div className="crm-panel__head" style={{ background: 'var(--c-surface-container)' }}>
+                                <h2 className="crm-panel__title">Redemption History</h2>
+                                <span className="crm-panel__sub">{redemptions.length} redemption{redemptions.length === 1 ? '' : 's'}</span>
+                            </div>
+                            <div className="crm-tablewrap">
+                                <table className="crm-table">
+                                    <thead><tr><th>Date</th><th>Points</th><th>Store credit</th></tr></thead>
+                                    <tbody>
+                                        {redemptions.slice(0, 10).map(r => (
+                                            <tr key={r.id}>
+                                                <td><span className="crm-table__primary">{formatDate(r.ts)}</span></td>
+                                                <td><span className="crm-table__muted">{r.points.toLocaleString()} pts</span></td>
+                                                <td className="crm-table__total">{formatMoney(r.value, storeSettings)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {canManage && onDelete && (
                     <div className="crm-prof-full" style={{ display: 'flex', justifyContent: 'flex-end' }}>

@@ -10,13 +10,14 @@ import CrmInsights from './CrmInsights';
 import CrmWhatsApp from './CrmWhatsApp';
 import CrmRewardsSettings from './CrmRewardsSettings';
 import SendMessageModal, { Channel } from './SendMessageModal';
-import { Icon } from './CrmBits';
 import { useConfirm } from '../ui/useConfirm';
-import { buildOverview, LoyaltyConfig, RedemptionEntry, formatMoney, num } from './crmModel';
-import loyaltyService from './loyaltyService';
+import { buildOverview, LoyaltyConfig, DEFAULT_LOYALTY_CONFIG, formatMoney } from './crmModel';
+import loyaltyService, { RedemptionRow } from './loyaltyService';
 import { smsService, SmsConfig } from '../../services/smsService';
 import { whatsappService, WhatsAppStatus } from '../../services/whatsappService';
+import { crmService } from '../../services/crmService';
 import { hasModule, MODULES, WHATSAPP_FREE } from '../../utils/entitlements';
+import { useToast } from '../../contexts/ToastContext';
 import './crm.css';
 
 interface CrmAppProps {
@@ -28,8 +29,10 @@ interface CrmAppProps {
     canManage: boolean;
     onNavigate: (section: CrmSection) => void;
     onUpgrade: () => void;
-    onSaveCustomer: (customer: Customer) => void;
-    onDeleteCustomer: (id: string) => void;
+    onSaveCustomer: (customer: Customer) => void | Promise<void>;
+    onDeleteCustomer: (id: string) => void | Promise<void>;
+    /** Re-pull customers + sales from the backend (after a server-side change). */
+    onRefreshData?: () => void | Promise<void>;
     onExit: () => void;
     onLogout: () => void;
 }
@@ -37,33 +40,42 @@ interface CrmAppProps {
 /**
  * Container for the standalone CRM app. Derives all metrics from the live
  * `customers` + `sales` props the host Dashboard loads from the backend, layered
- * with the per-store loyalty config + redemption ledger.
+ * with the store's loyalty program + redemption ledger (both backend-held).
  */
 export const CrmApp: React.FC<CrmAppProps> = ({
     section, user, customers, sales, storeSettings, canManage,
-    onNavigate, onUpgrade, onSaveCustomer, onDeleteCustomer, onExit, onLogout,
+    onNavigate, onUpgrade, onSaveCustomer, onDeleteCustomer, onRefreshData, onExit, onLogout,
 }) => {
     const storeId = user?.currentStoreId;
     const smsEntitled = hasModule(storeSettings, MODULES.SMS_MESSAGING);
     // WHATSAPP_FREE: dev override so the add-on is unlocked while we build/test.
     const whatsappEntitled = WHATSAPP_FREE || hasModule(storeSettings, MODULES.WHATSAPP_MESSAGING);
-    // Either channel unlocked means the customer "Send Message" action is usable.
-    const messagingEntitled = smsEntitled || whatsappEntitled;
+    // Email is free core; either phone channel unlocked adds SMS/WhatsApp.
+    const messagingEntitled = true;
 
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [search, setSearch] = useState('');
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState<Customer | null>(null);
     const [messageTarget, setMessageTarget] = useState<Customer | null>(null);
-    const [toast, setToast] = useState<string | null>(null);
     const [rewardsOpen, setRewardsOpen] = useState(false);
+    /** Set by "Re-engage" so the WhatsApp hub opens on Broadcast with a selection. */
+    const [waIntent, setWaIntent] = useState<{ tool: 'broadcast'; customerIds: string[]; n: number } | null>(null);
 
-    const [config, setConfig] = useState<LoyaltyConfig>(() => loyaltyService.getConfig(storeId));
-    const [ledger, setLedger] = useState<RedemptionEntry[]>(() => loyaltyService.getLedger(storeId));
+    const [config, setConfig] = useState<LoyaltyConfig>(DEFAULT_LOYALTY_CONFIG);
+    const [ledger, setLedger] = useState<RedemptionRow[]>([]);
     const [smsInfo, setSmsInfo] = useState<SmsConfig | null>(null);
     const [waInfo, setWaInfo] = useState<WhatsAppStatus | null>(null);
     const [waLoading, setWaLoading] = useState(true);
     const { confirm, confirmDialog } = useConfirm();
+    const { showToast } = useToast();
+
+    // The CRM used to own a private `crm-toast`; it now shares the one global
+    // toast engine, so CRM notices queue and dedupe with everything else.
+    const notify = useCallback(
+        (msg: string, type: 'success' | 'error' | 'info' | 'warning' = 'info') => showToast(msg, type),
+        [showToast],
+    );
 
     // Discover whether the server can send SMS (best-effort; non-blocking).
     useEffect(() => {
@@ -86,45 +98,45 @@ export const CrmApp: React.FC<CrmAppProps> = ({
 
     useEffect(() => { loadWaStatus(); }, [loadWaStatus]);
 
-    // Reload loyalty state when the active store changes.
+    // Loyalty program + redemption ledger come from the backend, so they follow
+    // the store rather than the browser. Reload when the active store changes.
+    const loadLedger = useCallback(() => {
+        loyaltyService.getLedger().then(setLedger).catch(() => setLedger([]));
+    }, []);
+
     useEffect(() => {
-        setConfig(loyaltyService.getConfig(storeId));
-        setLedger(loyaltyService.getLedger(storeId));
+        let active = true;
+        loyaltyService.getConfig().then(c => { if (active) setConfig(c); }).catch(() => { /* defaults stand */ });
+        loyaltyService.getLedger().then(l => { if (active) setLedger(l); }).catch(() => { /* empty stands */ });
+        return () => { active = false; };
     }, [storeId]);
 
     const overview = useMemo(() => buildOverview(customers, sales, config, ledger), [customers, sales, config, ledger]);
 
     useEffect(() => { setSelectedId(null); }, [section]);
 
-    useEffect(() => {
-        if (!toast) return;
-        const t = setTimeout(() => setToast(null), 2800);
-        return () => clearTimeout(t);
-    }, [toast]);
-
-    const notify = (msg: string) => setToast(msg);
-
     const openCustomer = (id: string) => { onNavigate('customers'); setSelectedId(id); };
     const goSection = (s: CrmSection) => { setSelectedId(null); setRewardsOpen(false); onNavigate(s); };
     const openRewardsSettings = () => { setRewardsOpen(true); onNavigate('loyalty'); };
 
     const openAdd = () => {
-        if (!canManage) { notify('You do not have permission to add customers.'); return; }
+        if (!canManage) { notify('You do not have permission to add customers.', 'warning'); return; }
         setEditing(null); setFormOpen(true);
     };
     const openEdit = (c: Customer) => {
-        if (!canManage) { notify('You do not have permission to edit customers.'); return; }
+        if (!canManage) { notify('You do not have permission to edit customers.', 'warning'); return; }
         setEditing(c); setFormOpen(true);
     };
 
-    const handleSave = (c: Customer) => {
-        onSaveCustomer(c);
+    // The host Dashboard reports the save outcome (it owns the API call and
+    // knows whether it was queued offline), so this doesn't toast on top of it.
+    const handleSave = async (c: Customer) => {
         setFormOpen(false); setEditing(null);
-        notify(editing ? 'Customer updated.' : 'Customer added.');
+        await onSaveCustomer(c);
     };
 
     const handleDelete = async (c: Customer) => {
-        if (!canManage) { notify('You do not have permission to delete customers.'); return; }
+        if (!canManage) { notify('You do not have permission to delete customers.', 'warning'); return; }
         const ok = await confirm({
             title: `Delete ${c.name}?`,
             message: 'This permanently removes the customer and their profile. This cannot be undone.',
@@ -132,41 +144,42 @@ export const CrmApp: React.FC<CrmAppProps> = ({
             danger: true,
         });
         if (!ok) return;
-        onDeleteCustomer(c.id);
+        await onDeleteCustomer(c.id);
         setSelectedId(null);
-        notify('Customer deleted.');
     };
 
-    const handleSaveConfig = (cfg: LoyaltyConfig) => {
-        loyaltyService.saveConfig(storeId, cfg);
-        setConfig(cfg);
-        setRewardsOpen(false);
-        notify('Rewards settings saved.');
-    };
-
-    const handleRedeem = (customerId: string) => {
-        const m = overview.byId.get(customerId);
-        if (!m) return;
-        if (!config.enabled) { notify('The loyalty program is currently paused.'); return; }
-        if (!canManage) { notify('You do not have permission to redeem points.'); return; }
-        if (!m.canRedeem) {
-            notify(config.minRedeemPoints > 0
-                ? `Needs at least ${config.minRedeemPoints.toLocaleString()} points to redeem.`
-                : 'Not enough points to redeem yet.');
-            return;
+    const handleSaveConfig = async (cfg: LoyaltyConfig) => {
+        try {
+            const saved = await loyaltyService.saveConfig(cfg);
+            setConfig(saved);
+            setRewardsOpen(false);
+            notify('Rewards settings saved.', 'success');
+        } catch (err: any) {
+            notify(err?.message || 'Could not save the rewards settings.', 'error');
         }
-        const points = m.redeemableBlocks * config.redeemPointsPerUnit;
-        const value = m.redeemableValue;
+    };
 
-        // Grant the reward as store credit (persisted to the backend) ...
-        onSaveCustomer({
-            ...m.customer,
-            storeCredit: num(m.customer.storeCredit) + value,
-            accountBalance: num(m.customer.accountBalance),
-        });
-        // ... and record the redemption so the balance and monthly totals reflect it.
-        setLedger(loyaltyService.addRedemption(storeId, { customerId, points, value }));
-        notify(`Redeemed ${points.toLocaleString()} pts → ${formatMoney(value, storeSettings)} store credit.`);
+    /**
+     * Redeem points. The server recomputes the balance from the customer's own
+     * sales, writes the ledger row and grants the store credit in ONE
+     * transaction — so a failed grant can no longer leave a phantom redemption
+     * behind, as the old client-side two-step could.
+     */
+    const handleRedeem = async (customerId: string) => {
+        if (!canManage) { notify('You do not have permission to redeem points.', 'warning'); return; }
+        try {
+            const res = await loyaltyService.redeem(customerId);
+            setLedger(prev => [res.redemption, ...prev]);
+            await onRefreshData?.();
+            notify(
+                `Redeemed ${res.redemption.points.toLocaleString()} pts → ${formatMoney(res.redemption.value, storeSettings)} store credit.`,
+                'success',
+            );
+        } catch (err: any) {
+            notify(err?.message || 'Could not redeem these points.', 'error');
+            // The server may have rejected because our view was stale.
+            loadLedger();
+        }
     };
 
     const handleSent = async (channel: Channel, body: string) => {
@@ -175,22 +188,30 @@ export const CrmApp: React.FC<CrmAppProps> = ({
         if (!target) return;
 
         if (channel === 'email') {
-            notify(`Email to ${target.name} composed — email delivery isn't enabled yet.`);
+            notify(`Emailing ${target.name}…`);
+            try {
+                const res = await crmService.sendEmail({ customerId: target.id, message: body }) as any;
+                notify(res?.success
+                    ? `Email sent to ${target.name}.`
+                    : `Email not delivered: ${res?.message || 'failed'}.`, res?.success ? 'success' : 'error');
+            } catch (err: any) {
+                notify(err?.message || 'Failed to send the email.', 'error');
+            }
             return;
         }
 
-        if (!target.phone) { notify(`No phone number on file for ${target.name}.`); return; }
+        if (!target.phone) { notify(`No phone number on file for ${target.name}.`, 'warning'); return; }
 
         if (channel === 'whatsapp') {
             // WhatsApp Business via the Meta Cloud API (backend).
             notify(`Sending WhatsApp to ${target.name}…`);
             try {
-                const res = await whatsappService.send({ to: target.phone, message: body, customerId: target.id });
+                const res = await whatsappService.send({ to: target.phone, message: body, customerId: target.id }) as any;
                 notify(res.success
                     ? `WhatsApp message sent to ${target.name}.`
-                    : `WhatsApp not delivered: ${res.status || res.message || 'failed'}.`);
+                    : `WhatsApp not delivered: ${res.status || res.message || 'failed'}.`, res.success ? 'success' : 'error');
             } catch (err: any) {
-                notify(err?.message || 'Failed to send WhatsApp message.');
+                notify(err?.message || 'Failed to send WhatsApp message.', 'error');
             }
             return;
         }
@@ -198,13 +219,33 @@ export const CrmApp: React.FC<CrmAppProps> = ({
         // SMS via Africa's Talking (backend).
         notify(`Sending SMS to ${target.name}…`);
         try {
-            const res = await smsService.send({ to: target.phone, message: body, customerId: target.id });
+            const res = await smsService.send({ to: target.phone, message: body, customerId: target.id }) as any;
             notify(res.success
                 ? `SMS sent to ${target.name}${res.cost ? ` · ${res.cost}` : ''}.`
-                : `SMS not delivered: ${res.status || res.message || 'failed'}.`);
+                : `SMS not delivered: ${res.status || res.message || 'failed'}.`, res.success ? 'success' : 'error');
         } catch (err: any) {
-            notify(err?.message || 'Failed to send SMS.');
+            notify(err?.message || 'Failed to send SMS.', 'error');
         }
+    };
+
+    /**
+     * "Re-engage" used to raise a toast and stop. It now opens the WhatsApp
+     * Broadcast tool with the at-risk customers already selected — or, when
+     * WhatsApp isn't owned, sends the owner to the upgrade screen.
+     */
+    const handleReengage = () => {
+        const atRisk = overview.metrics.filter(m => m.isChurnRisk && m.customer.phone?.trim()).map(m => m.customer.id);
+        if (atRisk.length === 0) {
+            notify(overview.churnCount > 0
+                ? 'Your at-risk customers have no phone numbers on file — add one to reach them.'
+                : 'No customers are at churn risk right now.', 'info');
+            return;
+        }
+        if (!whatsappEntitled) { onUpgrade(); return; }
+        setWaIntent(p => ({ tool: 'broadcast', customerIds: atRisk, n: (p?.n || 0) + 1 }));
+        setSelectedId(null);
+        setRewardsOpen(false);
+        onNavigate('whatsapp');
     };
 
     const selected = selectedId ? overview.byId.get(selectedId) : undefined;
@@ -255,8 +296,8 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                 customers={customers}
                 storeSettings={storeSettings}
                 storeName={storeSettings?.name}
-                storeId={storeId}
                 canManage={canManage}
+                intent={waIntent}
                 onUpgrade={onUpgrade}
                 onNotify={notify}
                 onRefreshStatus={loadWaStatus}
@@ -266,10 +307,10 @@ export const CrmApp: React.FC<CrmAppProps> = ({
         content = (
             <CrmLoyalty
                 overview={overview}
+                ledger={ledger}
                 storeSettings={storeSettings}
                 onConfigure={openRewardsSettings}
                 onOpenCustomer={openCustomer}
-                onNotify={notify}
             />
         );
     } else if (section === 'insights') {
@@ -277,8 +318,7 @@ export const CrmApp: React.FC<CrmAppProps> = ({
             <CrmInsights
                 overview={overview}
                 storeSettings={storeSettings}
-                onReengage={() => notify(`${overview.churnCount} at-risk customer${overview.churnCount === 1 ? '' : 's'} ready for outreach.`)}
-                onNotify={notify}
+                onReengage={handleReengage}
             />
         );
     } else {
@@ -331,13 +371,6 @@ export const CrmApp: React.FC<CrmAppProps> = ({
                     onClose={() => setMessageTarget(null)}
                     onSent={handleSent}
                 />
-            )}
-
-            {toast && (
-                <div className="crm-toast" role="status">
-                    <Icon name="check_circle" size={20} fill={1} />
-                    {toast}
-                </div>
             )}
 
             {confirmDialog}

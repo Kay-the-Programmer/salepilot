@@ -1,17 +1,19 @@
 import React from 'react';
 import { StoreSettings } from '../../types';
 import { Icon, Avatar } from './CrmBits';
-import { CrmOverview, TIERS, formatMoney, formatCompact, describeEarn, describeRedeem } from './crmModel';
+import { CrmOverview, TIERS, formatMoney, formatCompact, describeEarn, describeRedeem, formatDate } from './crmModel';
+import { RedemptionRow } from './loyaltyService';
 
 interface CrmLoyaltyProps {
     overview: CrmOverview;
+    /** The store's redemption ledger (backend-held), newest first. */
+    ledger: RedemptionRow[];
     storeSettings?: StoreSettings | null;
     onConfigure: () => void;
     onOpenCustomer: (id: string) => void;
-    onNotify: (msg: string) => void;
 }
 
-export const CrmLoyalty: React.FC<CrmLoyaltyProps> = ({ overview, storeSettings, onConfigure, onOpenCustomer }) => {
+export const CrmLoyalty: React.FC<CrmLoyaltyProps> = ({ overview, ledger, storeSettings, onConfigure, onOpenCustomer }) => {
     const { config, pointsOutstanding, redemptionsThisMonth, loyaltyMembers, topByPoints } = overview;
 
     return (
@@ -131,6 +133,45 @@ export const CrmLoyalty: React.FC<CrmLoyaltyProps> = ({ overview, storeSettings,
                     </div>
                 </aside>
             </div>
+
+            {/* Redemption ledger — the record of what was actually given away.
+                Previously write-only (localStorage), so nobody could audit it. */}
+            <section style={{ marginTop: 24 }}>
+                <h2 className="crm-panel__title" style={{ marginBottom: 4 }}>Redemption history</h2>
+                <p className="crm-panel__sub" style={{ marginBottom: 16 }}>Every points-to-store-credit redemption for this store.</p>
+                <div className="crm-panel">
+                    {ledger.length === 0 ? (
+                        <div className="crm-empty" style={{ padding: '40px 16px' }}>
+                            <Icon name="local_activity" size={36} />
+                            <p className="crm-empty__text">No redemptions yet. They appear here as customers cash in points.</p>
+                        </div>
+                    ) : (
+                        <div className="crm-tablewrap">
+                            <table className="crm-table">
+                                <thead>
+                                    <tr><th>Date</th><th>Customer</th><th>Points</th><th>Store credit</th></tr>
+                                </thead>
+                                <tbody>
+                                    {ledger.slice(0, 25).map(r => (
+                                        <tr key={r.id}>
+                                            <td><span className="crm-table__primary">{formatDate(r.ts)}</span></td>
+                                            <td>
+                                                {r.customerId ? (
+                                                    <button type="button" className="crm-link" onClick={() => onOpenCustomer(r.customerId)}>
+                                                        {r.customerName || 'View customer'}
+                                                    </button>
+                                                ) : <span className="crm-table__muted">{r.customerName || '—'}</span>}
+                                            </td>
+                                            <td><span className="crm-table__muted">{r.points.toLocaleString()} pts</span></td>
+                                            <td className="crm-table__total">{formatMoney(r.value, storeSettings)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+            </section>
         </main>
     );
 };

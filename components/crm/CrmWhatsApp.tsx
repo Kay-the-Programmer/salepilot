@@ -14,8 +14,11 @@ interface CrmWhatsAppProps {
     customers: Customer[];
     storeSettings?: StoreSettings | null;
     storeName?: string;
-    storeId?: string | null;
     canManage?: boolean;
+    /** Set by the CRM when another screen wants a specific tool opened with a
+     *  pre-made selection (e.g. Insights → "Re-engage" → Broadcast to at-risk).
+     *  `n` bumps on each request so repeating the same intent re-applies it. */
+    intent?: { tool: 'broadcast'; customerIds: string[]; n: number } | null;
     onUpgrade: () => void;
     onNotify: (msg: string) => void;
     /** Re-fetch the connection status (called after saving credentials). */
@@ -36,18 +39,36 @@ const TOOLS: { id: WaTool; label: string; icon: string }[] = [
 const firstName = (n: string) => n.trim().split(/\s+/)[0] || n;
 
 /**
+ * The store's reusable message templates, loaded once for the whole hub.
+ * Backend-held (`/api/crm/templates`) so they follow the store, not the browser.
+ */
+const useStoreTemplates = () => {
+    const [templates, setTemplates] = useState<WaTemplate[]>([]);
+    useEffect(() => {
+        let active = true;
+        whatsappTemplates.list().then(list => { if (active) setTemplates(list); }).catch(() => { /* empty stands */ });
+        return () => { active = false; };
+    }, []);
+    return { templates, setTemplates };
+};
+
+/**
  * The CRM WhatsApp workspace: one nav tab bundling every messaging tool —
  * live two-way Chats (the inbox), 1:1 New Message, multi-recipient Broadcast,
  * and reusable Templates. All sends go through {@link whatsappService} (premium
  * gating + the 24h-window rules are enforced by the backend).
  */
 export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
-    status, statusLoading, customers, storeName, storeId, canManage = false, onUpgrade, onNotify, onRefreshStatus,
+    status, statusLoading, customers, storeName, canManage = false, intent, onUpgrade, onNotify, onRefreshStatus,
 }) => {
     const [tool, setTool] = useState<WaTool>('chats');
     // Carries a template body from the Templates tool into the Compose tool.
     const [prefill, setPrefill] = useState<{ body: string; n: number } | null>(null);
     const { confirm, confirmDialog } = useConfirm();
+    const { templates, setTemplates } = useStoreTemplates();
+
+    // Honour an incoming intent (e.g. "Re-engage" asking for a broadcast).
+    useEffect(() => { if (intent) setTool(intent.tool); }, [intent?.n]);
 
     const ready = !!status?.entitled && !!status?.configured && !!status?.enabled;
     const phoneCustomers = useMemo(
@@ -124,7 +145,7 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
             {tool === 'compose' && (
                 <ComposeTool
                     customers={phoneCustomers}
-                    storeId={storeId}
+                    templates={templates}
                     storeName={storeName}
                     canSend={ready}
                     prefill={prefill}
@@ -135,9 +156,10 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
             {tool === 'broadcast' && (
                 <BroadcastTool
                     customers={phoneCustomers}
-                    storeId={storeId}
+                    templates={templates}
                     storeName={storeName}
                     canSend={ready}
+                    preselect={intent?.tool === 'broadcast' ? intent : null}
                     confirm={confirm}
                     onNotify={onNotify}
                 />
@@ -154,7 +176,8 @@ export const CrmWhatsApp: React.FC<CrmWhatsAppProps> = ({
 
             {tool === 'templates' && (
                 <TemplatesTool
-                    storeId={storeId}
+                    templates={templates}
+                    setTemplates={setTemplates}
                     confirm={confirm}
                     onUse={(t) => { setPrefill(p => ({ body: t.body, n: (p?.n || 0) + 1 })); setTool('compose'); }}
                     onNotify={onNotify}
@@ -223,17 +246,16 @@ const Composer: React.FC<{
 
 const ComposeTool: React.FC<{
     customers: Customer[];
-    storeId?: string | null;
+    templates: WaTemplate[];
     storeName?: string;
     canSend: boolean;
     prefill?: { body: string; n: number } | null;
     onNotify: (m: string) => void;
-}> = ({ customers, storeId, storeName, canSend, prefill, onNotify }) => {
+}> = ({ customers, templates, storeName, canSend, prefill, onNotify }) => {
     const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [body, setBody] = useState('');
     const [sending, setSending] = useState(false);
-    const templates = useMemo(() => whatsappTemplates.list(storeId), [storeId]);
 
     // Seed the body when a template is sent over from the Templates tool.
     useEffect(() => { if (prefill?.body) setBody(prefill.body); }, [prefill?.n]);
@@ -314,17 +336,25 @@ const ComposeTool: React.FC<{
 
 const BroadcastTool: React.FC<{
     customers: Customer[];
-    storeId?: string | null;
+    templates: WaTemplate[];
     storeName?: string;
     canSend: boolean;
+    /** A selection handed over from another screen (e.g. the at-risk cohort). */
+    preselect?: { customerIds: string[]; n: number } | null;
     confirm: (o: { title: string; message: string; confirmLabel?: string; danger?: boolean }) => Promise<boolean>;
     onNotify: (m: string) => void;
-}> = ({ customers, storeId, storeName, canSend, confirm, onNotify }) => {
+}> = ({ customers, templates, storeName, canSend, preselect, confirm, onNotify }) => {
     const [search, setSearch] = useState('');
     const [selected, setSelected] = useState<Set<string>>(new Set());
     const [body, setBody] = useState('');
     const [progress, setProgress] = useState<{ done: number; sent: number; total: number } | null>(null);
-    const templates = useMemo(() => whatsappTemplates.list(storeId), [storeId]);
+
+    // Apply a handed-over selection, keeping only customers we can reach.
+    useEffect(() => {
+        if (!preselect) return;
+        const reachable = new Set(customers.map(c => c.id));
+        setSelected(new Set(preselect.customerIds.filter(id => reachable.has(id))));
+    }, [preselect?.n]);
 
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
@@ -434,30 +464,54 @@ const BroadcastTool: React.FC<{
 // ── Templates manager ─────────────────────────────────────────────────────────
 
 const TemplatesTool: React.FC<{
-    storeId?: string | null;
+    templates: WaTemplate[];
+    setTemplates: React.Dispatch<React.SetStateAction<WaTemplate[]>>;
     confirm: (o: { title: string; message: string; confirmLabel?: string; danger?: boolean }) => Promise<boolean>;
     onUse: (t: WaTemplate) => void;
     onNotify: (m: string) => void;
-}> = ({ storeId, confirm, onUse, onNotify }) => {
-    const [templates, setTemplates] = useState<WaTemplate[]>(() => whatsappTemplates.list(storeId));
+}> = ({ templates, setTemplates, confirm, onUse, onNotify }) => {
+    // `id: ''` marks a template that doesn't exist on the server yet.
     const [editing, setEditing] = useState<WaTemplate | null>(null);
+    const [busy, setBusy] = useState(false);
 
-    const startAdd = () => setEditing({ id: whatsappTemplates.newId(), label: '', body: '' });
+    const startAdd = () => setEditing({ id: '', label: '', body: '' });
     const startEdit = (t: WaTemplate) => setEditing({ ...t });
 
-    const saveEditing = () => {
-        if (!editing) return;
-        if (!editing.label.trim() || !editing.body.trim()) { onNotify('Give the template a name and a message.'); return; }
-        setTemplates(whatsappTemplates.save(storeId, { ...editing, label: editing.label.trim(), body: editing.body.trim() }));
-        setEditing(null);
-        onNotify('Template saved.');
+    const byLabel = (a: WaTemplate, b: WaTemplate) => a.label.localeCompare(b.label);
+
+    const saveEditing = async () => {
+        if (!editing || busy) return;
+        const label = editing.label.trim();
+        const body = editing.body.trim();
+        if (!label || !body) { onNotify('Give the template a name and a message.'); return; }
+        setBusy(true);
+        try {
+            if (editing.id) {
+                const saved = await whatsappTemplates.update(editing.id, label, body);
+                setTemplates(prev => prev.map(t => (t.id === saved.id ? saved : t)).sort(byLabel));
+            } else {
+                const created = await whatsappTemplates.create(label, body);
+                setTemplates(prev => [...prev, created].sort(byLabel));
+            }
+            setEditing(null);
+            onNotify('Template saved.');
+        } catch (e: any) {
+            onNotify(e?.message || 'Could not save the template.');
+        } finally {
+            setBusy(false);
+        }
     };
 
     const remove = async (t: WaTemplate) => {
         const ok = await confirm({ title: `Delete "${t.label}"?`, message: 'This removes the template for this store.', confirmLabel: 'Delete', danger: true });
         if (!ok) return;
-        setTemplates(whatsappTemplates.remove(storeId, t.id));
-        onNotify('Template deleted.');
+        try {
+            await whatsappTemplates.remove(t.id);
+            setTemplates(prev => prev.filter(x => x.id !== t.id));
+            onNotify('Template deleted.');
+        } catch (e: any) {
+            onNotify(e?.message || 'Could not delete the template.');
+        }
     };
 
     return (
@@ -479,7 +533,7 @@ const TemplatesTool: React.FC<{
                     </div>
                     <div className="crm-wa-tpledit__foot">
                         <button type="button" className="crm-btn crm-btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
-                        <button type="button" className="crm-btn crm-btn--filled" onClick={saveEditing}><Icon name="check" size={18} /> Save</button>
+                        <button type="button" className="crm-btn crm-btn--filled" disabled={busy} onClick={saveEditing}><Icon name="check" size={18} /> {busy ? 'Saving…' : 'Save'}</button>
                     </div>
                 </div>
             )}

@@ -104,6 +104,7 @@ export default function App() {
                                 {/* Standalone CRM app (own shell: Dashboard / Customers / Loyalty / Insights) */}
                                 <Route path="/crm" element={<Dashboard />} />
                                 <Route path="/crm/customers" element={<Dashboard />} />
+                                <Route path="/crm/whatsapp" element={<Dashboard />} />
                                 <Route path="/crm/loyalty" element={<Dashboard />} />
                                 <Route path="/crm/insights" element={<Dashboard />} />
 

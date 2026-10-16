@@ -115,6 +115,8 @@ export interface Customer {
     createdAt: string;
     storeCredit: number;
     accountBalance: number; // A/R Balance
+    /** Trade-credit cap on the outstanding balance; null/undefined = no credit line. */
+    creditLimit?: number | null;
 }
 
 export interface Payment {
