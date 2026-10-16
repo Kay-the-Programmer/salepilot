@@ -11,10 +11,17 @@ import { api, API_BASE_URL, getAuthHeaders } from './api';
  *
  *  - Upload uses XHR, the only way to get upload progress events in a browser
  *    (fetch still cannot report request-body progress).
- *  - Download streams the response and reports progress, then saves via an
- *    object URL. The bearer token stays in the Authorization HEADER — it is
- *    deliberately never put in the URL, where it would leak into proxy and
- *    server access logs.
+ *  - Download does not pass through the page at all. It mints a single-use
+ *    ticket over an authenticated request and then hands the plain ticket URL
+ *    to the browser, which streams the file straight to disk with its own
+ *    progress UI and resume support. The previous version read the response
+ *    into a Blob, which meant a whole 300MB installer — or an APK on a phone,
+ *    where the ceiling is far lower — sat in memory before a byte reached disk,
+ *    and a failed allocation looked like a download that just didn't happen.
+ *
+ * The bearer token is still never put in a URL, where it would leak into proxy
+ * and server access logs. The ticket is a different thing: opaque, valid for
+ * two minutes, bound to one release and one user, and burned on first use.
  */
 
 export type ReleasePlatform = 'windows' | 'mac' | 'linux' | 'android';
@@ -64,28 +71,36 @@ export const getLatestRelease = async (
 
 /* --------------------------- download --------------------------- */
 
-const saveBlob = (blob: Blob, fileName: string) => {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    // Revoke on the next tick: revoking synchronously can cancel the save in
-    // some browsers before the download has actually started.
-    setTimeout(() => URL.revokeObjectURL(url), 10_000);
-};
+interface DownloadTicket {
+    downloadPath: string;
+    fileName: string;
+    fileSize: number;
+    expiresAt: string;
+}
 
 /**
- * Download an installer with progress. `onProgress` receives 0-100, or -1 when
- * the server did not send a Content-Length and progress is unknowable.
+ * Download an installer.
+ *
+ * Two steps: mint a single-use ticket with the session token in the
+ * Authorization header, then let the browser fetch the ticket URL natively.
+ * Nothing is buffered in the page, so the size of the file no longer matters —
+ * which is what makes the Android APK safe to serve from here.
+ *
+ * `onProgress` is kept for the callers' sake but now only reports -1
+ * (indeterminate) then 100: once the browser owns the transfer, the page
+ * cannot see its progress. The browser shows its own.
  */
 export const downloadRelease = async (
     release: Pick<DesktopRelease, 'id' | 'fileName' | 'fileSize'>,
     onProgress?: (pct: number) => void
 ): Promise<void> => {
-    const resp = await fetch(`${API_BASE_URL}/releases/${release.id}/download`, {
+    onProgress?.(-1);
+
+    // Deliberately a bare fetch rather than api.post(): minting must never be
+    // queued by the offline mutation queue — a ticket that is redeemed minutes
+    // later is already expired, and there is nothing to download offline.
+    const resp = await fetch(`${API_BASE_URL}/releases/${release.id}/download-token`, {
+        method: 'POST',
         headers: getAuthHeaders(),
     });
 
@@ -98,33 +113,22 @@ export const downloadRelease = async (
         throw new Error(message);
     }
 
-    const total = Number(resp.headers.get('Content-Length')) || release.fileSize || 0;
+    const ticket: DownloadTicket = await resp.json();
+    if (!ticket?.downloadPath) throw new Error('The server did not return a download link.');
 
-    // No streaming support (or no length): fall back to a plain blob read.
-    if (!resp.body || !total) {
-        onProgress?.(-1);
-        saveBlob(await resp.blob(), release.fileName);
-        onProgress?.(100);
-        return;
-    }
+    const a = document.createElement('a');
+    a.href = `${API_BASE_URL}${ticket.downloadPath}`;
+    // Honoured same-origin; cross-origin the browser uses the server's
+    // Content-Disposition filename instead, which names the same file.
+    a.download = ticket.fileName || release.fileName;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
 
-    const reader = resp.body.getReader();
-    const chunks: Uint8Array[] = [];
-    let received = 0;
-
-    for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (value) {
-            chunks.push(value);
-            received += value.length;
-            onProgress?.(Math.min(99, Math.round((received / total) * 100)));
-        }
-    }
-
-    saveBlob(new Blob(chunks as BlobPart[]), release.fileName);
     onProgress?.(100);
 };
+
 
 /* ------------------------ super admin ------------------------ */
 
