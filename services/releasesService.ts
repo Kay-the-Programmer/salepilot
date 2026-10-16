@@ -1,7 +1,10 @@
 import { api, API_BASE_URL, getAuthHeaders } from './api';
 
 /**
- * Desktop app downloads.
+ * App downloads — desktop installers and the Android APK.
+ *
+ * The `/releases/desktop` endpoints are named for the builds that came first;
+ * they take a `platform` and serve Android too.
  *
  * Installers are tens to hundreds of megabytes, so the two heavy operations do
  * NOT go through `api.request()`:
@@ -14,7 +17,7 @@ import { api, API_BASE_URL, getAuthHeaders } from './api';
  *    server access logs.
  */
 
-export type ReleasePlatform = 'windows' | 'mac' | 'linux';
+export type ReleasePlatform = 'windows' | 'mac' | 'linux' | 'android';
 export type ReleaseChannel = 'stable' | 'beta';
 
 export interface DesktopRelease {

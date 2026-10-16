@@ -11,19 +11,28 @@ import '../assistant/assistant.css';
 import './downloads.css';
 
 /**
- * Desktop App — where a customer downloads the Windows till.
+ * Downloads — where a customer gets the till: the desktop installers and the
+ * Android APK. Tabs are built from whatever platforms actually have a
+ * published build, so Android appears here as soon as one is published.
  *
  * The installer is uploaded and published by the Super Admin; this page only
  * lists what is live. The download is fetched with the session's bearer token
  * rather than linked directly, so the binary is not hotlinkable.
  */
 
-/** Best-effort OS guess, only to pre-select a tab. Users can still switch. */
+/**
+ * Best-effort OS guess, only to pre-select a tab. Users can still switch.
+ *
+ * Android is tested before mac and linux on purpose: an Android UA contains
+ * "linux", and an iPad's contains "mac", so order is what keeps a phone off
+ * the desktop tab.
+ */
 const guessPlatform = (): ReleasePlatform => {
     if (typeof navigator === 'undefined') return 'windows';
     const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes('android')) return 'android';
     if (ua.includes('mac')) return 'mac';
-    if (ua.includes('linux') && !ua.includes('android')) return 'linux';
+    if (ua.includes('linux')) return 'linux';
     return 'windows';
 };
 
@@ -31,6 +40,7 @@ const PLATFORM_LABEL: Record<ReleasePlatform, string> = {
     windows: 'Windows',
     mac: 'macOS',
     linux: 'Linux',
+    android: 'Android',
 };
 
 const formatDate = (iso: string) => {
@@ -134,7 +144,7 @@ const DownloadsApp: React.FC = () => {
                             <p>
                                 There is no published {PLATFORM_LABEL[platform]} build right now.
                                 {user?.role === 'superadmin'
-                                    ? ' Upload one from Super Admin → Desktop App.'
+                                    ? ' Upload one from Super Admin → Downloads.'
                                     : ' Check back shortly, or ask support when it will be ready.'}
                             </p>
                         </div>
@@ -177,11 +187,26 @@ const DownloadsApp: React.FC = () => {
                                     </div>
                                 )}
 
-                                <ol className="downloads-steps">
-                                    <li>Download the file, then open it from your downloads folder.</li>
-                                    <li>If Windows warns about an unknown publisher, choose <strong>More info → Run anyway</strong>.</li>
-                                    <li>Sign in with the same email and password you use here.</li>
-                                </ol>
+                                {/* An APK is sideloaded, so Android blocks the install until the
+                                    user allows this source. Showing the desktop steps there would
+                                    leave them stuck on a permission prompt nothing explains. */}
+                                {current.platform === 'android' ? (
+                                    <ol className="downloads-steps">
+                                        <li>Tap <strong>Download</strong>, then open the file when it finishes.</li>
+                                        <li>
+                                            Android will ask whether to allow installing apps from your browser.
+                                            Tap <strong>Settings → Allow from this source</strong>, then go back
+                                            and tap <strong>Install</strong>.
+                                        </li>
+                                        <li>Sign in with the same email and password you use here.</li>
+                                    </ol>
+                                ) : (
+                                    <ol className="downloads-steps">
+                                        <li>Download the file, then open it from your downloads folder.</li>
+                                        <li>If Windows warns about an unknown publisher, choose <strong>More info → Run anyway</strong>.</li>
+                                        <li>Sign in with the same email and password you use here.</li>
+                                    </ol>
+                                )}
 
                                 {current.checksumSha256 && (
                                     <p className="downloads-checksum">

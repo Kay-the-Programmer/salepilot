@@ -11,6 +11,7 @@ const PLATFORMS: { id: ReleasePlatform; label: string }[] = [
     { id: 'windows', label: 'Windows' },
     { id: 'mac', label: 'macOS' },
     { id: 'linux', label: 'Linux' },
+    { id: 'android', label: 'Android (APK)' },
 ];
 
 const CHANNELS: { id: ReleaseChannel; label: string }[] = [
@@ -156,7 +157,7 @@ const SuperAdminDownloads: React.FC = () => {
                             id="rel-file"
                             ref={fileInputRef}
                             type="file"
-                            accept=".zip,.msix,.exe,.dmg,.AppImage,.deb"
+                            accept=".zip,.msix,.exe,.dmg,.AppImage,.deb,.apk"
                             onChange={e => setFile(e.target.files?.[0] || null)}
                             className={INPUT}
                             disabled={uploadPct !== null}
