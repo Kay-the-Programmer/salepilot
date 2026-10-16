@@ -64,6 +64,8 @@ export const CrmApp: React.FC<CrmAppProps> = ({
 
     const [config, setConfig] = useState<LoyaltyConfig>(DEFAULT_LOYALTY_CONFIG);
     const [ledger, setLedger] = useState<RedemptionRow[]>([]);
+    /** Points earned per customer, from the backend ledger (never derived here). */
+    const [earned, setEarned] = useState<Map<string, number>>(new Map());
     const [smsInfo, setSmsInfo] = useState<SmsConfig | null>(null);
     const [waInfo, setWaInfo] = useState<WhatsAppStatus | null>(null);
     const [waLoading, setWaLoading] = useState(true);
@@ -102,16 +104,23 @@ export const CrmApp: React.FC<CrmAppProps> = ({
     // the store rather than the browser. Reload when the active store changes.
     const loadLedger = useCallback(() => {
         loyaltyService.getLedger().then(setLedger).catch(() => setLedger([]));
+        loyaltyService.getEarnedPoints().then(setEarned).catch(() => { /* keep last good map */ });
     }, []);
 
     useEffect(() => {
         let active = true;
         loyaltyService.getConfig().then(c => { if (active) setConfig(c); }).catch(() => { /* defaults stand */ });
         loyaltyService.getLedger().then(l => { if (active) setLedger(l); }).catch(() => { /* empty stands */ });
+        loyaltyService.getEarnedPoints().then(e => { if (active) setEarned(e); }).catch(() => { /* empty stands */ });
         return () => { active = false; };
     }, [storeId]);
 
-    const overview = useMemo(() => buildOverview(customers, sales, config, ledger), [customers, sales, config, ledger]);
+    // `sales` is still a dependency: a new sale changes spend, tiers and
+    // recency even though it no longer determines the points balance.
+    const overview = useMemo(
+        () => buildOverview(customers, sales, config, ledger, earned),
+        [customers, sales, config, ledger, earned],
+    );
 
     useEffect(() => { setSelectedId(null); }, [section]);
 
@@ -169,8 +178,9 @@ export const CrmApp: React.FC<CrmAppProps> = ({
         if (!canManage) { notify('You do not have permission to redeem points.', 'warning'); return; }
         try {
             const res = await loyaltyService.redeem(customerId);
-            setLedger(prev => [res.redemption, ...prev]);
+            setLedger(prev => [res.redemption, ...prev]); // optimistic; loadLedger confirms
             await onRefreshData?.();
+            loadLedger();
             notify(
                 `Redeemed ${res.redemption.points.toLocaleString()} pts → ${formatMoney(res.redemption.value, storeSettings)} store credit.`,
                 'success',

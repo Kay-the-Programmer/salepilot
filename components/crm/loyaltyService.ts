@@ -46,6 +46,21 @@ export const loyaltyService = {
         return { ...DEFAULT_LOYALTY_CONFIG, ...saved };
     },
 
+    /**
+     * Points EARNED per customer, from the backend's append-only ledger, as a
+     * map keyed by customer id. The CRM used to compute this in the browser
+     * from lifetime spend, which re-priced every balance whenever the earn
+     * rate changed.
+     */
+    async getEarnedPoints(): Promise<Map<string, number>> {
+        try {
+            const rows = await api.get<{ customerId: string; points: number }[]>('/crm/loyalty/points');
+            return new Map((Array.isArray(rows) ? rows : []).map(r => [r.customerId, Number(r.points) || 0]));
+        } catch {
+            return new Map();
+        }
+    },
+
     /** The redemption ledger, newest first. Optionally one customer's. */
     async getLedger(customerId?: string): Promise<RedemptionRow[]> {
         try {

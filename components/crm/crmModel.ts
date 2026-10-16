@@ -152,6 +152,14 @@ export const customerMetrics = (
     sales: Sale[],
     config: LoyaltyConfig,
     redeemedPoints: number,
+    /**
+     * Points this customer has EARNED, from the backend's append-only ledger
+     * (`GET /crm/loyalty/points`). Each row was written at the rate in force
+     * when that sale happened, so this is NOT re-derived from lifetime spend —
+     * changing the earn rate must not re-price a balance the customer has
+     * already been shown.
+     */
+    earnedPoints: number,
     now = Date.now(),
 ): CustomerMetrics => {
     const own = sales.filter(s => s.customerId === customer.id);
@@ -179,13 +187,12 @@ export const customerMetrics = (
     const spendToNextTier = nextTier ? Math.max(0, nextTier.min - totalSpend) : 0;
     const tierProgress = nextTier ? Math.min(1, (totalSpend - tier.min) / (nextTier.min - tier.min)) : 1;
 
-    // Loyalty points.
+    // Loyalty points. Expiry is an ACCOUNT-level inactivity rule — "points
+    // lapse if a customer hasn't purchased in N months" — which is what the
+    // setting promises; the ledger rows themselves are never rewritten.
     const expired = config.enabled && config.expiryEnabled && daysSinceLastPurchase !== null
         && daysSinceLastPurchase > config.expiryMonths * 30;
-    const earnedRaw = config.enabled && config.earnSpendPerPoint > 0
-        ? Math.floor(totalSpend / config.earnSpendPerPoint)
-        : 0;
-    const pointsEarned = expired ? 0 : earnedRaw;
+    const pointsEarned = !config.enabled || expired ? 0 : Math.max(0, Math.round(earnedPoints));
     const pointsRedeemed = Math.max(0, Math.round(redeemedPoints));
     const pointsBalance = Math.max(0, pointsEarned - pointsRedeemed);
     const redeemableBlocks = config.redeemPointsPerUnit > 0 ? Math.floor(pointsBalance / config.redeemPointsPerUnit) : 0;
@@ -239,13 +246,17 @@ export const buildOverview = (
     sales: Sale[],
     config: LoyaltyConfig,
     ledger: RedemptionEntry[],
+    /** Points earned per customer id, from `GET /crm/loyalty/points`. */
+    earned: Map<string, number> = new Map(),
     now = Date.now(),
 ): CrmOverview => {
     // Points redeemed per customer (from the redemption ledger).
     const redeemedByCustomer = new Map<string, number>();
     for (const r of ledger) redeemedByCustomer.set(r.customerId, (redeemedByCustomer.get(r.customerId) || 0) + num(r.points));
 
-    const metrics = customers.map(c => customerMetrics(c, sales, config, redeemedByCustomer.get(c.id) || 0, now));
+    const metrics = customers.map(c => customerMetrics(
+        c, sales, config, redeemedByCustomer.get(c.id) || 0, earned.get(c.id) || 0, now,
+    ));
     const byId = new Map(metrics.map(m => [m.customer.id, m]));
 
     const withOrders = metrics.filter(m => m.orderCount > 0);
