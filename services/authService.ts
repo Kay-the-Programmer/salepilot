@@ -13,7 +13,7 @@
  * Firebase Auth is used for Google sign-in and password-reset emails only.
  */
 import { User } from '../types';
-import { api } from './api';
+import { api, API_BASE_URL, cookieSessionWorks, getCsrfHeader } from './api';
 import { firebaseSignOut } from './firebase/auth';
 
 const CURRENT_USER_KEY = 'salePilotUser';
@@ -64,13 +64,35 @@ export const setStoredCurrentStore = (storeId: string): User | null => updateSto
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
+/**
+ * Store the session — without the JWT when the cookie can carry it.
+ *
+ * Signing in also sets an httpOnly session cookie. Where that cookie reaches
+ * the API, keeping the token in localStorage is pure downside: it is the copy
+ * an XSS can read, and nothing needs it. So we check whether the cookie alone
+ * authenticates and, if it does, store the user with the token stripped.
+ *
+ * It is a probe rather than an assumption because the answer depends on the
+ * deployment: the cookie is same-site on salepilot.space but cross-site from a
+ * *.vercel.app origin, where it is not sent at all. Falling back to the stored
+ * token there keeps those origins working instead of locking them out.
+ */
+const persistSession = async (normalized: User): Promise<User> => {
+    let session = normalized;
+    if (await cookieSessionWorks()) {
+        const { token, ...withoutToken } = normalized as User & { token?: string };
+        session = withoutToken as User;
+    }
+    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(session));
+    return session;
+};
+
 /** Email / password login → backend JWT */
 export const login = async (email: string, password?: string): Promise<User> => {
     const user = await api.post<User>('/auth/login', { email, password });
     const normalized = normalizeUser(user);
     if (normalized?.token) {
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
-        return normalized;
+        return persistSession(normalized);
     }
     throw new Error('Login failed: No user data or token returned.');
 };
@@ -86,7 +108,7 @@ export const registerCustomer = async (name: string, email: string, password?: s
     const u = await api.post<User>('/auth/register-customer', { name, email, password, referralCode });
     const normalized = normalizeUser(u);
     if (normalized?.token) {
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
+        return persistSession(normalized);
     }
     return normalized;
 };
@@ -105,8 +127,7 @@ export const loginWithGoogle = async (
     const user = await api.post<User>('/auth/google', { idToken, role });
     const normalized = normalizeUser(user);
     if (normalized?.token) {
-        localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(normalized));
-        return normalized;
+        return persistSession(normalized);
     }
     throw new Error('Google Login failed: No user data returned.');
 };
@@ -117,8 +138,33 @@ export const loginWithGoogle = async (
  */
 export const logout = (): void => {
     localStorage.removeItem(CURRENT_USER_KEY);
+    // The session cookie is httpOnly, so the client cannot delete it — only the
+    // server can, and it has to be asked. Without this, "log out" would clear
+    // the local copy while leaving a usable 30-day cookie in the browser.
+    //
+    // `keepalive` so the request still completes if this is the last thing
+    // before a navigation, which logging out usually is. Kept synchronous and
+    // fire-and-forget because every caller treats logout as instant, and the
+    // local session is already gone either way.
+    clearServerSession();
     // Fire-and-forget: sign out of Firebase too so the Google session is cleared
     firebaseSignOut().catch(() => { });
+};
+
+/**
+ * Ask the server to clear the session cookies. `/auth/logout` is deliberately
+ * unauthenticated — clearing a cookie you already hold proves nothing — and
+ * CSRF-exempt, so an expired session can still tidy up after itself.
+ */
+const clearServerSession = (): void => {
+    try {
+        void fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: getCsrfHeader(),
+            keepalive: true,
+        }).catch(() => { });
+    } catch (_) { /* never let signing out fail on this */ }
 };
 
 /** Returns the currently stored user from localStorage (synchronous). */

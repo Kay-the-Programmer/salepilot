@@ -86,6 +86,52 @@ const emitSyncChange = (syncing?: boolean): void => {
 // Auth header helper. Exported so flows that must bypass `request()` — large
 // file uploads/downloads that need XHR progress events — reuse one definition
 // of where the token lives rather than re-reading localStorage themselves.
+/**
+ * Echo the CSRF cookie back in a header.
+ *
+ * The server sets `sp_csrf` as a READABLE cookie next to the httpOnly session
+ * one and requires the two to match on any cookie-authenticated write. That
+ * works as a defence precisely because another site can make the browser send
+ * our cookies but cannot read their values, so it can send the cookie and
+ * still never produce this header.
+ *
+ * Absent when the session is a Bearer token — the server does not ask for it
+ * there, since a header cannot be forged cross-site in the first place.
+ */
+export const getCsrfHeader = (): Record<string, string> => {
+  if (typeof document === 'undefined') return {};
+  try {
+    for (const part of document.cookie.split(';')) {
+      const eq = part.indexOf('=');
+      if (eq === -1) continue;
+      if (part.slice(0, eq).trim() !== 'sp_csrf') continue;
+      const value = decodeURIComponent(part.slice(eq + 1).trim());
+      return value ? { 'X-CSRF-Token': value } : {};
+    }
+  } catch (_) { /* document.cookie can throw in sandboxed frames */ }
+  return {};
+};
+
+/**
+ * Does a cookie alone authenticate us? Asked with no Authorization header, so
+ * a 200 means the httpOnly cookie reached the API and the JWT no longer needs
+ * to be kept in localStorage where a script could read it.
+ *
+ * It can legitimately fail: the API is on a different SITE for some
+ * deployments (a *.vercel.app origin against api.salepilot.space), and a
+ * SameSite=Lax cookie is not sent cross-site at all, while Safari blocks the
+ * SameSite=None alternative outright. Those origins keep using the Bearer
+ * token, which is why this is probed rather than assumed.
+ */
+export const cookieSessionWorks = async (): Promise<boolean> => {
+  try {
+    const resp = await fetch(`${BASE_URL}/auth/me`, { credentials: 'include' });
+    return resp.ok;
+  } catch (_) {
+    return false;
+  }
+};
+
 export const getAuthHeaders = (): Record<string, string> => {
   if (typeof localStorage === 'undefined') return {};
   try {
@@ -117,6 +163,7 @@ async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyK
   const isFormData = typeof FormData !== 'undefined' && (init.body as any) instanceof FormData;
   const headers: Record<string, string> = {
     ...getAuthHeaders(),
+    ...getCsrfHeader(),
     ...(init.headers as Record<string, string> | undefined),
   };
   // Idempotency key lets the server dedupe a mutation that is retried after an
@@ -128,7 +175,10 @@ async function request<T>(endpoint: string, init: RequestInit = {}, idempotencyK
     headers['Content-Type'] = 'application/json';
   }
 
-  const resp = await fetch(url, { ...init, headers });
+  // `credentials: 'include'` is what lets the httpOnly session cookie travel
+  // to the API on a different subdomain. Harmless when the session is still a
+  // Bearer token: there is simply no cookie to send.
+  const resp = await fetch(url, { ...init, headers, credentials: 'include' });
   if (!resp.ok) {
     const text = await resp.text().catch(() => '');
     let message = text || `Request failed with status ${resp.status}`;

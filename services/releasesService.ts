@@ -1,4 +1,4 @@
-import { api, API_BASE_URL, getAuthHeaders } from './api';
+import { api, API_BASE_URL, getAuthHeaders, getCsrfHeader } from './api';
 
 /**
  * App downloads — desktop installers and the Android APK.
@@ -101,7 +101,10 @@ export const downloadRelease = async (
     // later is already expired, and there is nothing to download offline.
     const resp = await fetch(`${API_BASE_URL}/releases/${release.id}/download-token`, {
         method: 'POST',
-        headers: getAuthHeaders(),
+        // A cookie session needs both of these on a POST: the cookie itself,
+        // and the CSRF token the server checks against it.
+        headers: { ...getAuthHeaders(), ...getCsrfHeader() },
+        credentials: 'include',
     });
 
     if (!resp.ok) {
@@ -160,9 +163,13 @@ export const uploadRelease = (
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${API_BASE_URL}/superadmin/releases`);
+        // XHR's equivalent of fetch's credentials: 'include' — without it the
+        // session cookie is not sent and a cookie-based admin cannot upload.
+        xhr.withCredentials = true;
         // Content-Type is left unset on purpose: the browser must add the
         // multipart boundary itself.
-        Object.entries(getAuthHeaders()).forEach(([k, v]) => xhr.setRequestHeader(k, v));
+        Object.entries({ ...getAuthHeaders(), ...getCsrfHeader() })
+            .forEach(([k, v]) => xhr.setRequestHeader(k, v));
 
         xhr.upload.onprogress = e => {
             if (e.lengthComputable) onProgress?.(Math.round((e.loaded / e.total) * 100));
