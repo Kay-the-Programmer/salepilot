@@ -76,6 +76,17 @@ interface CatalogPlanLite {
     active: boolean;
 }
 
+/** How this store identifies itself in an SMS (see /superadmin/stores/:id/sms-sender). */
+interface SmsSenderState {
+    name?: string;
+    smsDisplayName?: string | null;
+    /** The approved alphanumeric sender id, if any. Only a superadmin writes this. */
+    smsSenderId?: string | null;
+    /** What the store has asked for and is waiting on. */
+    smsSenderIdRequested?: string | null;
+    smsSenderIdStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+}
+
 const modMoney = (n: number, c = 'ZMW') => `${c === 'ZMW' ? 'K' : c === 'USD' ? '$' : ''}${(Number.isFinite(n) ? n : 0).toLocaleString()}`;
 
 /** Whole days from now until a date (negative = past). null when no date. */
@@ -119,6 +130,10 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
 
     // Edit-subscription state
     const [plans, setPlans] = useState<CatalogPlanLite[]>([]);
+    // The name prepended to this store's texts, plus any sender id it has asked
+    // the networks for and is waiting on.
+    const [smsSender, setSmsSender] = useState<SmsSenderState | null>(null);
+    const [savingSender, setSavingSender] = useState(false);
     const [editingSub, setEditingSub] = useState(false);
     const [subForm, setSubForm] = useState({ subscriptionStatus: 'trial', subscriptionPlan: '', subscriptionEndsAt: '' });
     const [savingSub, setSavingSub] = useState(false);
@@ -127,6 +142,7 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
         loadStoreDetails();
         loadModules();
         loadPlans();
+        loadSmsSender();
     }, [storeId]);
 
     const loadModules = async () => {
@@ -167,6 +183,36 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
             alert(e.message || 'Failed to update add-ons for this store');
         } finally {
             setSavingMod(null);
+        }
+    };
+
+    /**
+     * A store's SMS identity. The sender id is deliberately not self-serve: the
+     * networks only carry one that has been registered with MTN/Airtel/Zamtel,
+     * and nothing in the string stops a shop typing another business's brand —
+     * so a human checks the paperwork, the same way add-ons are granted above.
+     */
+    const loadSmsSender = async () => {
+        try {
+            const resp = await api.get<SmsSenderState>(`/superadmin/stores/${storeId}/sms-sender`);
+            setSmsSender(resp);
+        } catch (e) {
+            console.warn('Could not load the store SMS sender', e);
+        }
+    };
+
+    const decideSender = async (action: 'approve' | 'reject' | 'revoke') => {
+        if (action !== 'approve' && !window.confirm(action === 'revoke'
+            ? 'Revoke this sender ID? The store falls back to its name in front of the message.'
+            : 'Reject this request?')) return;
+        setSavingSender(true);
+        try {
+            const resp = await api.put<SmsSenderState>(`/superadmin/stores/${storeId}/sms-sender`, { action });
+            setSmsSender(prev => ({ ...(prev || {}), ...resp }));
+        } catch (e: any) {
+            alert(e.message || 'Failed to update the sender ID');
+        } finally {
+            setSavingSender(false);
         }
     };
 
@@ -392,6 +438,60 @@ const SuperAdminStoreDetails: React.FC<SuperAdminStoreDetailsProps> = ({ storeId
                                     </button>
                                 </div>
                             </form>
+                        </div>
+
+                        {/* SMS sender identity — approval, not self-serve */}
+                        <div className="bg-surface border border-brand-border rounded-2xl shadow-sm p-6">
+                            <h2 className="text-lg font-extrabold tracking-tight text-brand-text mb-1 flex items-center gap-2">
+                                <span className="material-symbols-rounded text-sp-green text-[20px]">sms</span>
+                                SMS Sender
+                            </h2>
+                            <p className="text-sm text-brand-text-muted mb-4">
+                                Every store shares one Africa&apos;s Talking account, so by default this store&apos;s name is
+                                prepended to each text. A store may instead ask for its own alphanumeric sender ID — approve it
+                                only once the store has registered it with MTN, Airtel and Zamtel, and only if the brand is
+                                genuinely theirs.
+                            </p>
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-brand-border">
+                                    <span className="text-brand-text-muted">Name on messages</span>
+                                    <span className="font-bold text-brand-text truncate">
+                                        {smsSender?.smsDisplayName || smsSender?.name || '—'}
+                                    </span>
+                                </div>
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl border border-brand-border">
+                                    <span className="text-brand-text-muted">Approved sender ID</span>
+                                    <span className="font-bold text-brand-text">{smsSender?.smsSenderId || 'none'}</span>
+                                </div>
+                                {smsSender?.smsSenderIdRequested ? (
+                                    <div className="p-3 rounded-xl border border-brand-border">
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <div className="text-xs font-bold uppercase tracking-wide text-sp-amber">Awaiting approval</div>
+                                                <div className="font-bold text-brand-text truncate">{smsSender.smsSenderIdRequested}</div>
+                                            </div>
+                                            <div className="flex gap-2 shrink-0">
+                                                <button type="button" disabled={savingSender} onClick={() => decideSender('approve')}
+                                                    className="h-9 px-3 rounded-xl bg-sp-green text-white text-xs font-bold disabled:opacity-50">
+                                                    Approve
+                                                </button>
+                                                <button type="button" disabled={savingSender} onClick={() => decideSender('reject')}
+                                                    className="h-9 px-3 rounded-xl border border-brand-border text-brand-text text-xs font-bold disabled:opacity-50">
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <p className="text-xs text-brand-text-muted px-1">No sender ID request pending.</p>
+                                )}
+                                {smsSender?.smsSenderId && (
+                                    <button type="button" disabled={savingSender} onClick={() => decideSender('revoke')}
+                                        className="h-9 px-3 rounded-xl border border-brand-border text-xs font-bold text-brand-text disabled:opacity-50">
+                                        Revoke sender ID
+                                    </button>
+                                )}
+                            </div>
                         </div>
 
                         {/* Premium add-on grants */}

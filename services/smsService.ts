@@ -6,6 +6,16 @@ export interface SmsConfig {
     senderId: string | null;
     /** Whether the current store has the premium SMS module unlocked. */
     entitled?: boolean;
+    /**
+     * The store name the server prepends to every outgoing message, so the
+     * composer can price what is actually sent rather than what is typed.
+     */
+    displayName?: string | null;
+    /** The store's own approved alphanumeric sender id, if the networks granted one. */
+    storeSenderId?: string | null;
+    senderIdStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+    /** False when an approved sender id already identifies the store on the handset. */
+    prefixesBody?: boolean;
 }
 
 export interface SmsSendResponse {
@@ -32,6 +42,10 @@ export interface SmsLogEntry {
     cost?: string | null;
     error?: string | null;
     sentBy?: string | null;
+    /** The sender id the provider was asked to use; null = platform default. */
+    sender?: string | null;
+    /** The store-name prefix prepended on the way out, if any. */
+    prefix?: string | null;
     createdAt: string;
 }
 

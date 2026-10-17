@@ -2,6 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import { Customer } from '../../types';
 import { Icon, Avatar } from './CrmBits';
 import { CustomerMetrics } from './crmModel';
+import { previewSmsText, smsSegments } from '../../utils/smsSegments';
 
 interface SendMessageModalProps {
     customer: Customer;
@@ -10,6 +11,10 @@ interface SendMessageModalProps {
     smsConfigured?: boolean;
     smsSandbox?: boolean;
     smsEntitled?: boolean;
+    /** Store name the server prepends to every SMS (store_settings.sms_display_name). */
+    smsDisplayName?: string | null;
+    /** An approved sender id puts the name on the handset, so no prefix is added. */
+    smsSenderId?: string | null;
     /** Server has Meta Cloud API credentials. */
     whatsappConfigured?: boolean;
     /** Store owner switched the WhatsApp integration on. */
@@ -37,11 +42,9 @@ const CHANNELS: { id: Channel; label: string; icon: string }[] = [
     { id: 'email', label: 'Email', icon: 'mail' },
 ];
 
-const SMS_LIMIT = 160;
-
 export const SendMessageModal: React.FC<SendMessageModalProps> = ({
     customer, metrics, storeName = 'SalePilot Shop',
-    smsConfigured = true, smsSandbox = false, smsEntitled = true,
+    smsConfigured = true, smsSandbox = false, smsEntitled = true, smsDisplayName, smsSenderId,
     whatsappConfigured = false, whatsappEnabled = false, whatsappEntitled = false, whatsappNumber,
     onClose, onSent,
 }) => {
@@ -71,7 +74,19 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
     };
 
     const personalized = body.replace(/\[Name\]/g, firstName);
-    const over = channel === 'sms' && personalized.length > SMS_LIMIT;
+
+    // What the recipient will actually get. The server prepends the store name
+    // so a customer can tell who texted them — which costs characters, and they
+    // are charged whether or not whoever is typing can see them. An approved
+    // sender id puts the name on the handset instead, so no prefix is added.
+    const smsText = channel === 'sms' && !smsSenderId ? previewSmsText(smsDisplayName, personalized) : personalized.trim();
+    const smsCost = useMemo(() => smsSegments(smsText), [smsText]);
+    const smsPrefix = smsText.length > personalized.trim().length
+        ? smsText.slice(0, smsText.length - personalized.trim().length)
+        : '';
+    // "Over" means "about to cost another whole message", not "over 160": one
+    // curly quote pasted from Word drops the allowance to 70.
+    const over = channel === 'sms' && smsCost.segments > 1;
 
     const isReady = channel === 'whatsapp' ? waReady
         : channel === 'sms' ? smsReadyChannel
@@ -94,7 +109,9 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
             if (!smsEntitled) return { tone: 'warn', text: 'SMS messaging is a premium add-on. Unlock it from Subscription.' };
             if (!smsConfigured) return { tone: 'warn', text: 'SMS isn\'t configured on the server yet. Ask your admin to add Africa\'s Talking credentials.' };
             if (smsSandbox) return { tone: 'info', text: 'Sandbox mode — messages reach the Africa\'s Talking simulator, not real phones.' };
-            return { tone: 'info', text: 'Sent over SMS via your business line.' };
+            if (smsSenderId) return { tone: 'info', text: `Customers see this arrive from "${smsSenderId}", so your name isn't added to the message.` };
+            if (smsPrefix) return { tone: 'info', text: `Sent with "${smsPrefix.trim()}" in front of the message, so the customer knows it's from you. Those characters count towards the message.` };
+            return { tone: 'warn', text: 'No store name is added to this message, so the customer may not know who sent it. Set one under Settings → Store details.' };
         }
         if (!customer.email) return { tone: 'warn', text: 'No email address on file for this customer.' };
         return { tone: 'info', text: 'Sent from your store\'s email address. Included in this customer\'s outreach history.' };
@@ -177,11 +194,15 @@ export const SendMessageModal: React.FC<SendMessageModalProps> = ({
                             <div className="crm-composer__foot">
                                 <span className="crm-composer__cap">
                                     {channel === 'whatsapp' ? 'Sent from your WhatsApp Business line'
-                                        : channel === 'sms' ? 'Sent from your business line'
+                                        : channel === 'sms' ? (smsSenderId ? `Sent as "${smsSenderId}"` : smsPrefix ? `Sent as "${smsPrefix.trim()}"` : 'Sent from your business line')
                                             : 'Sent from your store email'}
                                 </span>
                                 {channel === 'sms' && (
-                                    <span className={`crm-composer__count${over ? ' is-over' : ''}`}>{personalized.length} / {SMS_LIMIT}</span>
+                                    <span className={`crm-composer__count${over ? ' is-over' : ''}`} title={smsText || undefined}>
+                                        {smsCost.remaining} left
+                                        {smsCost.segments > 1 ? ` · ${smsCost.segments} messages` : ''}
+                                        {smsCost.encoding === 'UCS-2' ? ' · unicode' : ''}
+                                    </span>
                                 )}
                             </div>
                         </div>

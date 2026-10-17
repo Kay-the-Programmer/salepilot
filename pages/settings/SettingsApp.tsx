@@ -10,6 +10,7 @@ import type { SnackbarType } from '../../App';
 import { api, buildAssetUrl } from '../../services/api';
 import { hasModule, MODULES } from '../../utils/entitlements';
 import { announceLogoUpdate } from '../../utils/pdfDocument';
+import { sanitizeSmsDisplayName, smsSegments, SMS_DISPLAY_NAME_MAX, SMS_SENDER_ID_MAX } from '../../utils/smsSegments';
 import '../assistant/assistant.css';
 
 // Reused feature sections (logic unchanged)
@@ -85,6 +86,15 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
   // stores connect their OWN Lenco account (money settles to them) but must unlock
   // the add-on first — that's how the platform monetizes POS payment volume.
   const hasGateway = hasModule(settings, MODULES.PAYMENT_GATEWAY);
+
+  // The store name is prepended to every text the store sends, so the owner
+  // should see what it leaves them to say. An approved sender ID identifies the
+  // store on the handset instead, and then nothing is added to the body.
+  const smsSenderApproved = currentSettings.smsSenderIdStatus === 'approved' && !!currentSettings.smsSenderId;
+  const smsPrefixCost = useMemo(
+    () => smsSegments(`${sanitizeSmsDisplayName(currentSettings.smsDisplayName || currentSettings.name || '').trim()}: `),
+    [currentSettings.smsDisplayName, currentSettings.name],
+  );
   const unlockGateway = () => {
     window.dispatchEvent(new CustomEvent('salepilot:paywall', {
       detail: {
@@ -150,6 +160,16 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
       // A select carrying a choice, not a value: 'inclusive' means the shelf
       // price already contains tax and the till extracts it.
       setCurrentSettings((prev) => ({ ...prev, pricesIncludeTax: value === 'inclusive' }));
+    } else if (name === 'smsDisplayName') {
+      // Cleaned as it is typed, the same way the server will clean it, so the
+      // character count beside it is the one that gets charged.
+      setCurrentSettings((prev) => ({ ...prev, smsDisplayName: sanitizeSmsDisplayName(value) }));
+    } else if (name === 'smsSenderIdRequested') {
+      // The networks only carry letters, digits and spaces, up to 11.
+      setCurrentSettings((prev) => ({
+        ...prev,
+        smsSenderIdRequested: value.replace(/[^A-Za-z0-9 ]+/g, '').slice(0, SMS_SENDER_ID_MAX),
+      }));
     } else {
       setCurrentSettings((prev) => ({ ...prev, [name]: type === 'number' ? parseFloat(value) || 0 : value }));
     }
@@ -303,6 +323,53 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                 </Field>
                 <Field label="Trading line">
                   <input className={inputCls} name="businessTagline" value={currentSettings.businessTagline || ''} onChange={handleChange} placeholder="e.g. Office Furniture, Stationery & General Dealing" />
+                </Field>
+                {/*
+                  Who a customer sees an SMS from. Every store on SalePilot shares
+                  one SMS account, so without this a recipient has no way to tell
+                  which shop texted them.
+                */}
+                <Field label="Name on text messages">
+                  <input
+                    className={inputCls}
+                    name="smsDisplayName"
+                    value={currentSettings.smsDisplayName ?? ''}
+                    onChange={handleChange}
+                    maxLength={SMS_DISPLAY_NAME_MAX}
+                    placeholder={currentSettings.name || 'My Store'}
+                  />
+                  {smsSenderApproved ? (
+                    <p className="text-[11px] text-brand-text-muted mt-1.5">
+                      Your messages already arrive from “{currentSettings.smsSenderId}”, so this name isn’t added to them.
+                    </p>
+                  ) : (
+                    <p className="text-[11px] text-brand-text-muted mt-1.5">
+                      Added in front of every text you send, so customers know it’s you:
+                      “<strong>{(currentSettings.smsDisplayName || currentSettings.name || 'My Store').trim()}: </strong>
+                      Your order is ready.” It counts towards the {smsPrefixCost.limit}-character message,
+                      leaving {Math.max(0, smsPrefixCost.limit - smsPrefixCost.characters)} characters for what you type.
+                    </p>
+                  )}
+                </Field>
+                <Field label="Sender ID (optional)">
+                  <input
+                    className={inputCls}
+                    name="smsSenderIdRequested"
+                    value={currentSettings.smsSenderIdRequested ?? currentSettings.smsSenderId ?? ''}
+                    onChange={handleChange}
+                    maxLength={SMS_SENDER_ID_MAX}
+                    disabled={smsSenderApproved}
+                    placeholder="e.g. KAYHW"
+                  />
+                  <p className="text-[11px] text-brand-text-muted mt-1.5">
+                    {smsSenderApproved
+                      ? `Approved — texts arrive from “${currentSettings.smsSenderId}” instead of a shortcode.`
+                      : currentSettings.smsSenderIdStatus === 'pending'
+                        ? `“${currentSettings.smsSenderIdRequested}” is awaiting approval. Until then your store name is added to the message instead.`
+                        : currentSettings.smsSenderIdStatus === 'rejected'
+                          ? 'That sender ID wasn’t approved. Register it with MTN, Airtel and Zamtel through Africa’s Talking first, then ask again.'
+                          : 'Up to 11 letters and numbers, shown instead of a shortcode. You must register it with MTN, Airtel and Zamtel yourself (via Africa’s Talking) — we then verify and approve it, since an unregistered name is blocked by the networks.'}
+                  </p>
                 </Field>
               </Card>
             )}

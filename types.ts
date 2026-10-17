@@ -338,6 +338,23 @@ export interface StoreSettings {
     /** Trading line under the business name, e.g. "Office Furniture & Stationery". */
     businessTagline?: string | null;
     isOnlineStoreEnabled: boolean;
+    /**
+     * How the store identifies itself in an SMS. Every store shares one
+     * Africa's Talking account, so the display name is prepended to every
+     * outgoing message server-side — a customer has no other way to tell who
+     * texted them.
+     */
+    smsDisplayName?: string | null;
+    /**
+     * An approved alphanumeric sender id. Read-only to the store: it has to be
+     * registered with MTN/Airtel/Zamtel and is approved by a superadmin, so a
+     * shop cannot claim another business's brand. When set, the display-name
+     * prefix is dropped — the handset already shows the name.
+     */
+    smsSenderId?: string | null;
+    /** The sender id the store has asked for, waiting on approval. */
+    smsSenderIdRequested?: string | null;
+    smsSenderIdStatus?: 'none' | 'pending' | 'approved' | 'rejected';
 
     // Financial
     taxRate: number; // as a percentage, e.g., 10 for 10%
