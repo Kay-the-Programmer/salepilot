@@ -363,8 +363,12 @@ const SettingsApp: React.FC<SettingsAppProps> = ({ settings, user, showSnackbar,
                   />
                   <p className="text-[11px] text-brand-text-muted mt-1.5">
                     {smsSenderApproved
-                      ? `Approved — texts arrive from “${currentSettings.smsSenderId}” instead of a shortcode.`
-                      : currentSettings.smsSenderIdStatus === 'pending'
+                      ? currentSettings.smsSenderIdRequested
+                        // Still approved and still sending as the old ID: a request
+                        // in review never takes the working one out of service.
+                        ? `Approved — texts arrive from “${currentSettings.smsSenderId}”. Your request to change it to “${currentSettings.smsSenderIdRequested}” is awaiting approval.`
+                        : `Approved — texts arrive from “${currentSettings.smsSenderId}” instead of a shortcode.`
+                      : currentSettings.smsSenderIdRequested
                         ? `“${currentSettings.smsSenderIdRequested}” is awaiting approval. Until then your store name is added to the message instead.`
                         : currentSettings.smsSenderIdStatus === 'rejected'
                           ? 'That sender ID wasn’t approved. Register it with MTN, Airtel and Zamtel through Africa’s Talking first, then ask again.'
