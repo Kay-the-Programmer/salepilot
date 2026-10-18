@@ -48,7 +48,7 @@ export const CrmApp: React.FC<CrmAppProps> = ({
 }) => {
     const storeId = user?.currentStoreId;
     const smsEntitled = hasModule(storeSettings, MODULES.SMS_MESSAGING);
-    // WHATSAPP_FREE: dev override so the add-on is unlocked while we build/test.
+    // WHATSAPP_FREE: WhatsApp ships included rather than sold — see entitlements.
     const whatsappEntitled = WHATSAPP_FREE || hasModule(storeSettings, MODULES.WHATSAPP_MESSAGING);
     // Email is free core; either phone channel unlocked adds SMS/WhatsApp.
     const messagingEntitled = true;

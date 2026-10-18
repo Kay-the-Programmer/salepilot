@@ -22,10 +22,12 @@ export const MODULES = {
 export type ModuleId = typeof MODULES[keyof typeof MODULES];
 
 /**
- * DEV OVERRIDE: WhatsApp messaging is free while the team builds/tests the CRM
- * integration, so it never shows as a locked premium add-on. Defaults to FREE;
- * set `VITE_WHATSAPP_FREE=false` (and `WHATSAPP_FREE=false` on the backend) to
- * re-enable the paid add-on before charging for it.
+ * WhatsApp messaging ships INCLUDED, not sold — a launch decision, not the dev
+ * override it began as. Connecting the inbox requires Meta dashboard work (an
+ * app, a phone_number_id, a permanent token, our callback URL registered) that
+ * a one-till shop cannot do unaided, so it is not billed; its catalogue row is
+ * off sale to match. Set `VITE_WHATSAPP_FREE=false` (and `WHATSAPP_FREE=false`
+ * on the backend) to charge for it once onboarding is self-serve.
  */
 export const WHATSAPP_FREE = (import.meta.env?.VITE_WHATSAPP_FREE ?? 'true') !== 'false';
 
