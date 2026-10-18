@@ -43,6 +43,19 @@ export const SOCIAL_FREE = (import.meta.env?.VITE_SOCIAL_FREE ?? 'true') !== 'fa
  */
 export const MARKETING_COMING_SOON = (import.meta.env?.VITE_MARKETING_COMING_SOON ?? 'false') !== 'false';
 
+/**
+ * Apps withheld from the launch. Their tiles are already commented out of
+ * `standaloneApps.ts`, but the router's catch-all sends any unmatched path to
+ * `Dashboard`, which dispatches on the path — so without these flags `/marketing`
+ * and `/fleet` still opened the full apps for anyone who typed the URL. That is
+ * a half-launch: unadvertised, unsupported and untested surface area.
+ *
+ * Set `VITE_MARKETING_ENABLED=true` / `VITE_LOGISTICS_ENABLED=true` to bring
+ * either back (tile line in `standaloneApps.ts` must be uncommented too).
+ */
+export const MARKETING_ENABLED = (import.meta.env?.VITE_MARKETING_ENABLED ?? 'false') !== 'false';
+export const LOGISTICS_ENABLED = (import.meta.env?.VITE_LOGISTICS_ENABLED ?? 'false') !== 'false';
+
 /** User seats included for free (the owner). Extra seats need TEAM_MEMBERS. */
 export const FREE_SEATS = 1;
 

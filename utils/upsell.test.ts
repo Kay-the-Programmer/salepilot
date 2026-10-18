@@ -122,11 +122,10 @@ describe('data triggers', () => {
         // a merchant who already accepts mobile money (owns the module) is excluded
         expect(isEligible(moment, ctx({ cashSaleCount: 20, hasModule: (m) => m === 'payment_gateway' }), state())).toBe(false);
     });
-    it('bulk_manual_adds needs ≥5 manual adds', () => {
-        const moment = UPSELL_MOMENTS.find(m => m.id === 'bulk_manual_adds')!;
-        expect(isEligible(moment, ctx({ manualAddsThisSession: 4, daysActive: 1 }), state())).toBe(false);
-        expect(isEligible(moment, ctx({ manualAddsThisSession: 5, daysActive: 1 }), state())).toBe(true);
-    });
+    // `bulk_manual_adds` (Quick Import) and `tracking_requested` (Public
+    // Shipment Tracking) were withdrawn at launch: Quick Import is free core
+    // now, and Tracking is off sale while the Logistics app is out of the
+    // launcher. Both are off the catalogue, so there is nothing to trigger.
 });
 
 describe('priority selection', () => {
@@ -219,11 +218,13 @@ describe('offline — eligibility makes no network calls', () => {
 });
 
 describe('catalogue shape (Definition of Done)', () => {
-    it('defines the nine brief moments (+1 discover_card, +1 payments)', () => {
+    // Two of the original eleven were withdrawn for launch — see the note in
+    // the trigger block above. An upsell for a module nobody can buy leads the
+    // merchant to a dead end, so the catalogue has to shrink with the price list.
+    it('defines the launch moments (+1 discover_card, +1 payments)', () => {
         const ids = UPSELL_MOMENTS.map(m => m.id).sort();
         expect(ids).toEqual([
             'accept_mobile_money',
-            'bulk_manual_adds',
             'daily_summary_ai',
             'discover_advanced_reports',
             'dormant_customers',
@@ -232,8 +233,13 @@ describe('catalogue shape (Definition of Done)', () => {
             'report_locked',
             'second_staff',
             'stockout_repeat',
-            'tracking_requested',
         ]);
+    });
+    it('offers nothing for a module that is no longer on sale', () => {
+        const ids = UPSELL_MOMENTS.map(m => m.module);
+        expect(ids).not.toContain('quick_import');
+        expect(ids).not.toContain('public_tracking');
+        expect(ids).not.toContain('social_marketing');
     });
     it('covers all five surfaces', () => {
         const surfaces = new Set(UPSELL_MOMENTS.map(m => m.surface));

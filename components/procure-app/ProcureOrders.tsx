@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Supplier, Product, PurchaseOrder, POItem, StoreSettings } from '../../types';
 import { Icon, Avatar } from '../crm/CrmBits';
 import { num, formatMoney, formatDate, parseApiDate } from '../crm/crmModel';
-import { OPEN_STATUSES, generateReorderDrafts, ReorderDraft } from './procureModel';
+import { OPEN_STATUSES, ReorderDraft } from './procureModel';
+import { api } from '../../services/api';
 import PoStatusChip from '../purchase-orders/PoStatusChip';
 import ProcureOrderForm from './ProcureOrderForm';
 import ProcureOrderReceive from './ProcureOrderReceive';
@@ -62,18 +63,29 @@ export const ProcureOrders: React.FC<ProcureOrdersProps> = ({
         setDetailPo(prev => (prev ? (purchaseOrders.find(p => p.id === prev.id) ?? null) : prev));
     }, [purchaseOrders]);
 
-    const autoGenerateOrders = () => {
-        const generated = generateReorderDrafts(products, suppliers, storeSettings);
-        if (generated.length === 0) {
-            showSnackbar('All stock is above its reorder point — nothing to reorder.', 'info');
-            return;
+    // Reorder drafts come from the server (GET /purchase-orders/reorder-suggestions),
+    // which is where the AUTO_REORDER entitlement is enforced. Generating them in
+    // the browser would make the add-on unenforceable — the check below is only
+    // there to show the upsell without a pointless round trip; a 402 from the
+    // API is the real gate, and the global paywall host picks it up.
+    const autoGenerateOrders = async () => {
+        if (!autoReorderEntitled) { onRequireUpgrade?.(); return; }
+        try {
+            const { drafts: generated } = await api.get<{ drafts: ReorderDraft[] }>('/purchase-orders/reorder-suggestions');
+            if (!generated || generated.length === 0) {
+                showSnackbar('All stock is above its reorder point — nothing to reorder.', 'info');
+                return;
+            }
+            if (generated.length === 1) {
+                openDraft(generated[0]);
+                return;
+            }
+            setDrafts(generated);
+            setView('suggest');
+        } catch (err: any) {
+            if (err?.status === 402) { onRequireUpgrade?.(); return; }
+            showSnackbar(err?.body?.message || err?.message || 'Could not build reorder suggestions.', 'error');
         }
-        if (generated.length === 1) {
-            openDraft(generated[0]);
-            return;
-        }
-        setDrafts(generated);
-        setView('suggest');
     };
 
     const openDraft = (d: ReorderDraft) => {

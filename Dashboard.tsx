@@ -8,7 +8,7 @@ import { lazy, Suspense } from 'react';
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
 import PosModeToggle from './components/pos/PosModeToggle';
-import { hasModule, MODULES } from './utils/entitlements';
+import { hasModule, MODULES, MARKETING_ENABLED, LOGISTICS_ENABLED } from './utils/entitlements';
 import { STORE_LOGO_UPDATED_EVENT } from './utils/pdfDocument';
 import type { CampaignDTO } from './utils/upsell';
 import { ROLE_PAGES } from './utils/rbac';
@@ -1542,6 +1542,10 @@ export default function Dashboard() {
     // ── Standalone Logistics app (/fleet) ──
     const fleetParts = location.pathname.split('/');
     if (fleetParts[1] === 'fleet' && currentUser) {
+        // Withheld from launch — see LOGISTICS_ENABLED. The app is complete
+        // enough to open but has no launcher tile, so reaching it by URL would
+        // be a half-launch.
+        if (!LOGISTICS_ENABLED) return <Navigate to="/" replace />;
         const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
         if (!allowed.includes('logistics')) return <Navigate to="/" replace />;
         return (
@@ -1685,6 +1689,8 @@ export default function Dashboard() {
     // ── Standalone Marketing Suite (/marketing) — Facebook Pages management ──
     const marketingParts = location.pathname.split('/');
     if (marketingParts[1] === 'marketing' && currentUser) {
+        // Withheld from launch — see MARKETING_ENABLED (same reasoning as /fleet).
+        if (!MARKETING_ENABLED) return <Navigate to="/" replace />;
         const mktAllowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
         if (!mktAllowedPages.includes('marketing')) {
             return <Navigate to="/" replace />;

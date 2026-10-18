@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef, Suspense } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import type { PurchaseOrder, POItem, Product, Category, StoreSettings } from '../../types';
 import { formatCurrency } from '../../utils/currency';
-import { hasModule, MODULES } from '../../utils/entitlements';
 import StandaloneShell from '../../components/standalone/StandaloneShell';
 import { computePoTotals, newPoIdentifiers } from '../../components/purchase-orders/poModel';
 import { num } from '../../components/crm/crmModel';
@@ -9,8 +8,6 @@ import { useConfirm } from '../../components/ui/useConfirm';
 import { getOrderLists, saveOrderList, deleteOrderList, type QuickItem, type QuickList } from '../../services/orderListsService';
 import { api } from '../../services/api';
 import '../accounting/accounting.css';
-
-const PremiumUpgradeModal = React.lazy(() => import('../../components/ui/PremiumUpgradeModal'));
 
 interface PurchaseOrdersAppProps {
   purchaseOrders: PurchaseOrder[];
@@ -39,12 +36,10 @@ const saveLists = (storeId: string | undefined, lists: QuickList[]) => {
 const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categories, storeSettings, onSaveProduct, showSnackbar, embedded = false, onCreatePurchaseOrder }) => {
   const storeId = storeSettings?.storeId;
   const fmt = (n: number) => formatCurrency(n, storeSettings);
-  const importUnlocked = hasModule(storeSettings, MODULES.QUICK_IMPORT);
   const { confirm, confirmDialog } = useConfirm();
 
   const [lists, setLists] = useState<QuickList[]>(() => loadLists(storeId));
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [importing, setImporting] = useState(false);
 
   // new-item inline form
@@ -168,7 +163,6 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
 
   const importToInventory = async () => {
     if (!selected || selected.items.length === 0) return;
-    if (!importUnlocked) { setUpgradeOpen(true); return; }
     setImporting(true);
     try {
       const categoryId = await resolveImportCategoryId();
@@ -392,14 +386,13 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
             <button
               onClick={importToInventory}
               disabled={importing || selected.items.length === 0}
-              className={`w-full py-3.5 rounded-xl font-semibold active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-50 ${importUnlocked ? 'm3-bg-primary m3-text-on-primary' : 'm3-bg-secondary-fixed m3-text-secondary'}`}
+              className="w-full py-3.5 rounded-xl font-semibold active:scale-95 transition flex items-center justify-center gap-2 disabled:opacity-50 m3-bg-primary m3-text-on-primary"
             >
-              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>{importUnlocked ? 'inventory' : 'lock'}</span>
+              <span className="material-symbols-outlined" style={{ fontSize: 20 }}>inventory</span>
               {importing ? 'Importing…' : 'Import to inventory'}
-              {!importUnlocked && <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full m3-bg-secondary m3-text-on-secondary">Premium</span>}
             </button>
             <p className="text-[11px] m3-text-on-surface-variant text-center mt-2">
-              {importUnlocked ? 'Adds every item as a product in your inventory.' : 'Unlock to turn any list into inventory products automatically.'}
+              Adds every item as a product in your inventory.
             </p>
 
             {/* Export the list into the hub's Purchase Orders (single manager) */}
@@ -427,21 +420,7 @@ const PurchaseOrdersApp: React.FC<PurchaseOrdersAppProps> = ({ products, categor
 
       {confirmDialog}
 
-      {upgradeOpen && (
-        <Suspense fallback={null}>
-          <PremiumUpgradeModal
-            isOpen={upgradeOpen}
-            onClose={() => setUpgradeOpen(false)}
-            title="Unlock Auto-Import to Inventory"
-            description="Turn any quick order list into real inventory products in one tap. This is a premium add-on you can unlock for a small monthly fee."
-            bullets={[
-              'Convert checklist items into products instantly',
-              'Carries over quantity and price as cost',
-              'Skip manual product entry for bulk restocks',
-            ]}
-          />
-        </Suspense>
-      )}
+
     </>
   );
 

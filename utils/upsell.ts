@@ -276,30 +276,10 @@ export const UPSELL_MOMENTS: UpsellMoment[] = [
         body: 'Give staff their own logins so they can sell while you keep oversight — no shared password.',
         ctaLabel: 'Add team members',
     },
-    {
-        id: 'bulk_manual_adds',
-        module: MODULES.QUICK_IMPORT,
-        surface: 'inline_card',
-        stage: 'activation',
-        priority: 45,
-        cooldownDays: 7,
-        trigger: c => c.manualAddsThisSession >= 5,
-        headline: 'Adding a lot by hand?',
-        body: 'Import your whole product list from a spreadsheet in one go.',
-        ctaLabel: 'Try quick import',
-    },
-    {
-        id: 'tracking_requested',
-        module: MODULES.PUBLIC_TRACKING,
-        surface: 'inline_card',
-        stage: 'engagement',
-        priority: 35,
-        cooldownDays: 21,
-        trigger: c => c.customerCount >= 3,
-        headline: 'Let customers track their own orders',
-        body: 'Share a live tracking link so buyers can follow deliveries without messaging you.',
-        ctaLabel: 'Turn on tracking',
-    },
+    // Withdrawn at launch: `bulk_manual_adds` sold Quick Import, which is now
+    // free core, and `tracking_requested` sold Public Shipment Tracking, whose
+    // app is not in the launcher. Both are off sale in the catalogue, so an
+    // upsell for them would lead nowhere. Restore alongside those modules.
     {
         // Documented extra: proactive cross-sell on the launcher, layered over the
         // same module's hard 402 (report_locked). Exercises the discover_card surface.
