@@ -36,7 +36,6 @@ const HustleApp = lazy(() => import('@/pages/hustle/HustleApp'));
 const SettingsApp = lazy(() => import('@/pages/settings/SettingsApp'));
 const SalesPage = lazy(() => import('@/pages/SalesPage'));
 const StockTakePage = lazy(() => import('@/pages/StockTakePage'));
-const ReportsPage = lazy(() => import('@/pages/ReportsPage'));
 const LoginPage = lazy(() => import('@/pages/LoginPage'));
 const StoreRegistrationPage = lazy(() => import('@/pages/StoreRegistrationPage'));
 const OrdersPage = lazy(() => import('@/pages/OrdersPage'));
@@ -1634,7 +1633,7 @@ export default function Dashboard() {
                             customers={customers}
                             storeSettings={storeSettings}
                             onNavigate={(s) => navigate(s === 'overview' ? '/dash' : `/dash/${s}`)}
-                            onReports={() => navigate('/reports')}
+                            onSalesHistory={() => navigate('/pos/history')}
                             onExit={() => navigate('/')}
                             onLogout={handleLogout}
                             onNewSale={() => navigate('/pos')}
@@ -1978,21 +1977,6 @@ export default function Dashboard() {
     const pathParts = location.pathname.split('/');
     const seg = pathParts[1] || '';
     const allowedPages = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
-
-    // ── Standalone Reports app (/reports) — ships its own full-page chrome ──
-    if (seg === 'reports') {
-        if (!allowedPages.includes('reports')) return <Navigate to="/" replace />;
-        return (
-            <OnboardingProvider user={currentUser}>
-                <NotificationProvider user={currentUser}>
-                    <Suspense fallback={suspenseFallback}>
-                        <ReportsPage storeSettings={storeSettings!} user={currentUser} />
-                    </Suspense>
-                    {accountOverlays}
-                </NotificationProvider>
-            </OnboardingProvider>
-        );
-    }
 
     // ── Sales History & Refunds live inside the POS app (/pos/history) ──
     if (seg === 'sales' || seg === 'sales-history' || seg === 'returns') {

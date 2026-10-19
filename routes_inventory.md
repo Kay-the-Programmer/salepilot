@@ -30,7 +30,7 @@ keep working.
 | `/pos`, `/pos/history`, `/pos/dashboard` | POS Terminal | `/pos/history` = Sales History & Refunds (returns live here). `/pos/inventory` redirects to `/inv/items`. |
 | `/hustle` | Hustle POS | Fast amount-entry sales. |
 | `/dash`, `/dash/sales`, `/dash/products` | Business Dashboard | |
-| `/reports` | Reports | Full analytics; ships its own chrome. |
+| `/reports` | — | **Retired.** Was a second analytics surface over the same `/reports/dashboard` data as the Business Dashboard, with no launcher tile. Permanent redirect to `/dash`. |
 | `/orders` | Orders | Online order management (Velocity-styled). |
 | `/crm`, `/crm/customers`, `/crm/loyalty`, `/crm/insights` | CRM | |
 | `/inv`, `/inv/items`, `/inv/stock-takes`, `/inv/alerts` | Inventory Manager | Stock takes are a section of this app. |

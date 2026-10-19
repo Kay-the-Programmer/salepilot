@@ -148,7 +148,11 @@ export default function App() {
                                 <Route path="/procure/lists" element={<Dashboard />} />
 
                                 {/* Standalone pages that replaced the legacy admin shell */}
-                                <Route path="/reports" element={<Dashboard />} />
+                                {/* The Reports app is retired: it was a second analytics
+                                    surface over the same /reports/dashboard data as the
+                                    Business Dashboard, with no launcher tile, so nobody
+                                    could find it. Old links land on the one that ships. */}
+                                <Route path="/reports" element={<Navigate to="/dash" replace />} />
                                 <Route path="/orders" element={<Dashboard />} />
                                 <Route path="/subscription" element={<SubscriptionPage />} />
                                 {/* Desktop app installer downloads (own shell) */}

@@ -14,7 +14,6 @@ interface DashboardShellProps {
     active: DashSection;
     user: User;
     onNavigate: (section: DashSection) => void;
-    onReports: () => void;
     onExit: () => void;
     onLogout: () => void;
     children: React.ReactNode;
@@ -32,7 +31,7 @@ const NAV: { id: DashSection; label: string; icon: string }[] = [
  * Inventory and POS standalone apps exactly.
  */
 export const DashboardShell: React.FC<DashboardShellProps> = ({
-    active, user, onNavigate, onReports, onExit, onLogout, children,
+    active, user, onNavigate, onExit, onLogout, children,
 }) => {
     const { openAppSwitcher } = useAppSwitcher();
     return (
@@ -63,9 +62,6 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                 </nav>
 
                 <div className="crm-rail__foot">
-                    <button type="button" className="crm-rail__item" onClick={onReports}>
-                        <Icon name="analytics" size={22} /> Full Reports
-                    </button>
                     <button type="button" className="crm-rail__item" onClick={openAppSwitcher}>
                         <Icon name="apps" size={22} /> SalePilot Apps
                     </button>
@@ -92,7 +88,6 @@ export const DashboardShell: React.FC<DashboardShellProps> = ({
                         <AppNavMenu
                             items={[
                                 ...NAV.map(n => ({ icon: n.icon, label: n.label, active: active === n.id, onClick: () => onNavigate(n.id) })),
-                                { icon: 'analytics', label: 'Full Reports', onClick: onReports },
                             ]}
                             onExit={onExit}
                             onLogout={onLogout}

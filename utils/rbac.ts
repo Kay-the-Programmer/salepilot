@@ -92,6 +92,10 @@ export const permissionsForRole = (role: Role | undefined): Permission[] =>
 export const PAGE_ACCESS: Record<string, Role[]> = {
     // Dashboards & insight
     'dash':                     ['admin', 'inventory_manager'],
+    // Kept as the permission key for the Business Dashboard (/dash), which
+    // declares `requires: 'reports'`. The standalone Reports app it was named
+    // for is retired; the key stays so the backend RBAC mirror and existing
+    // roles do not have to change.
     'reports':                  ['admin', 'inventory_manager'],
     'quick-view':               ['admin', 'staff', 'inventory_manager', 'customer', 'supplier'],
 

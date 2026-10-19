@@ -18,7 +18,7 @@ interface DashboardAppProps {
     customers: Customer[];
     storeSettings: StoreSettings | null;
     onNavigate: (section: DashSection) => void;
-    onReports: () => void;
+    onSalesHistory: () => void;
     onExit: () => void;
     onLogout: () => void;
     onNewSale: () => void;
@@ -33,7 +33,7 @@ interface DashboardAppProps {
  */
 export const DashboardApp: React.FC<DashboardAppProps> = ({
     section, user, sales, products, customers, storeSettings,
-    onNavigate, onReports, onExit, onLogout,
+    onNavigate, onSalesHistory, onExit, onLogout,
     onNewSale, onInventory, onOrders,
 }) => {
     const [range, setRange] = useState<DashRange>({ kind: 'preset', preset: 'week' });
@@ -98,7 +98,7 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
                 range={range}
                 onRange={setRange}
                 now={now}
-                onReports={onReports}
+                onSalesHistory={onSalesHistory}
                 preparedBy={user?.name}
             />
         );
@@ -138,7 +138,6 @@ export const DashboardApp: React.FC<DashboardAppProps> = ({
             active={section}
             user={user}
             onNavigate={onNavigate}
-            onReports={onReports}
             onExit={onExit}
             onLogout={onLogout}
         >

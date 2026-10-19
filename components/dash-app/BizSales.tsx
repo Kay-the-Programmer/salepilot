@@ -14,14 +14,15 @@ interface BizSalesProps {
     onRange: (r: DashRange) => void;
     /** The pinned instant the period resolves against — see DashboardApp. */
     now: number;
-    onReports: () => void;
+    /** Open the canonical sales history (POS app) for the full transaction list. */
+    onSalesHistory: () => void;
     /** Signed-in user, printed on exports as who ran the report. */
     preparedBy?: string;
 }
 
 const STATUS_LABEL: Record<string, string> = { paid: 'Paid', unpaid: 'Unpaid', partially_paid: 'Part-paid' };
 
-export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, now, onReports, preparedBy }) => {
+export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, range, onRange, now, onSalesHistory, preparedBy }) => {
     // The table below is filtered by the SAME window the cards above are — one
     // conversion, from the one window definition, so the two can't drift apart.
     const { startDate, endDate } = rangeDates(range, now);
@@ -50,7 +51,6 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
                     <h3 className="dash-card__title">Revenue Trend</h3>
                     <p className="dash-card__sub">Revenue across {overview.rangeLabel.toLowerCase()}</p>
                 </div>
-                <button className="crm-link" type="button" onClick={onReports}>Open full reports</button>
             </div>
             <TrendChart points={overview.trend} max={overview.trendMax} storeSettings={storeSettings} height={260} />
         </section>
@@ -69,7 +69,7 @@ export const BizSales: React.FC<BizSalesProps> = ({ overview, storeSettings, ran
                     <h3 className="crm-panel__title">Recent Transactions</h3>
                     <p className="crm-panel__sub">Newest sales in {overview.rangeLabel.toLowerCase()}, POS and online</p>
                 </div>
-                <button className="crm-link" type="button" onClick={onReports}>View all</button>
+                <button className="crm-link" type="button" onClick={onSalesHistory}>View all</button>
             </div>
             {overview.activity.length === 0 ? (
                 <div className="crm-empty" style={{ padding: '48px 16px' }}>

@@ -106,7 +106,10 @@ export const hasModule = (settings: StoreSettings | null | undefined, moduleId: 
  * runtime via {@link setPageModules}.
  */
 export const PAGE_MODULES: Record<string, string> = {
-    reports: MODULES.ADVANCED_REPORTS,
+    // Empty by design. The only entry was `reports: ADVANCED_REPORTS`, and the
+    // Reports app has been retired — the page key `reports` now grants the
+    // Business Dashboard, which every tier includes, so gating it would have
+    // locked the dashboard behind an add-on that no longer exists.
 };
 
 /** Catalog-driven page→module map loaded from the backend; null until loaded. */
