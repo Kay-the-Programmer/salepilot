@@ -10,6 +10,7 @@ import type { BackendPlan, SubscriptionHistoryItem } from '../../types/subscript
 import { logEvent } from '../../src/utils/analytics';
 import '../assistant/assistant.css';
 import './subscription.css';
+import { formatMoneyByCode } from '../../utils/currency';
 
 const CustomPaymentModal = React.lazy(() => import('../../components/subscription/CustomPaymentModal'));
 
@@ -26,14 +27,7 @@ declare global {
  */
 type View = 'manage' | 'plans';
 
-const currencySymbol = (code = 'ZMW') =>
-  code === 'USD' ? '$' : code === 'ZMW' ? 'K' : code === 'GBP' ? '£' : code === 'EUR' ? '€' : '';
-
-const money = (amount: number, code = 'ZMW') => {
-  const sym = currencySymbol(code);
-  const n = (isFinite(amount) ? amount : 0).toLocaleString();
-  return sym ? `${sym}${n}` : `${code} ${n}`;
-};
+const money = formatMoneyByCode;
 
 
 const tierLabel = (index: number, total: number) =>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../services/api';
 import { upsellService } from '../services/upsellService';
 import { useCountdown, discounted } from './upsell/offer';
+import { formatMoneyByCode as money } from '../utils/currency';
 
 /**
  * Global soft-paywall host. Listens for the `salepilot:paywall` event the API
@@ -19,11 +20,6 @@ interface AddonInfo {
   owned: boolean;
 }
 
-const money = (n: number, c = 'ZMW') => {
-  const sym = c === 'USD' ? '$' : c === 'ZMW' ? 'K' : c === 'GBP' ? '£' : c === 'EUR' ? '€' : '';
-  const v = (Number.isFinite(n) ? n : 0).toLocaleString();
-  return sym ? `${sym}${v}` : `${c} ${v}`;
-};
 
 // Friendly names for the brief moment before the catalog lookup resolves.
 const FALLBACK_NAMES: Record<string, string> = {

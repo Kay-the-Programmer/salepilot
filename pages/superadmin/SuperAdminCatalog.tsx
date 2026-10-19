@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { api } from '../../services/api';
 import { INPUT_CLASS } from '../../utils/ui';
 import Modal from '../../components/ui/Modal';
+import { formatMoneyByCode as money } from '../../utils/currency';
 
 // --- Types (mirror backend catalog.service) ----------------------------------
 interface CatalogModule {
@@ -49,11 +50,6 @@ const PAGE_OPTIONS: { key: string; label: string }[] = [
     { key: 'whatsapp/conversations', label: 'WhatsApp Chats' },
 ];
 
-const money = (n: number, c = 'ZMW') => {
-    const sym = c === 'USD' ? '$' : c === 'ZMW' ? 'K' : c === 'GBP' ? '£' : c === 'EUR' ? '€' : '';
-    const v = (Number.isFinite(n) ? n : 0).toLocaleString();
-    return sym ? `${sym}${v}` : `${c} ${v}`;
-};
 
 type Tab = 'modules' | 'plans';
 

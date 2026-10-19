@@ -26,11 +26,6 @@ export function useCountdown(endsAt?: number): string | null {
     return d > 0 ? `${d}d ${h}h left` : `${pad(h)}:${pad(m)}:${pad(s)} left`;
 }
 
-export const money = (n: number, currency: string): string => {
-    const sym = currency === 'USD' ? '$' : currency === 'ZMW' ? 'K' : currency === 'GBP' ? '£' : currency === 'EUR' ? '€' : '';
-    const v = (Number.isFinite(n) ? n : 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
-    return sym ? `${sym}${v}` : `${currency} ${v}`;
-};
 
 /** Catalogue price after a percentage discount (server applies the same maths). */
 export const discounted = (price: number, pct?: number): number =>

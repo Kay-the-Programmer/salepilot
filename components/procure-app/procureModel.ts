@@ -1,7 +1,7 @@
 import { Supplier, PurchaseOrder, SupplierInvoice } from '../../types';
 import { num, parseApiDate } from '../crm/crmModel';
 import {
-    OPEN_STATUSES, AWAITING_STATUSES, outstandingItems, generateReorderDrafts, ReorderDraft,
+    OPEN_STATUSES, AWAITING_STATUSES, outstandingItems, countReorderItems, ReorderDraft,
 } from '../purchase-orders/poModel';
 
 /**
@@ -14,7 +14,7 @@ import {
  * procure-app imports.
  */
 
-export { OPEN_STATUSES, generateReorderDrafts };
+export { OPEN_STATUSES, countReorderItems };
 export type { ReorderDraft };
 
 export interface SupplierStat {

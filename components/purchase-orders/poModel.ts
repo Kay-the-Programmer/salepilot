@@ -1,4 +1,4 @@
-import { Product, PurchaseOrder, POItem, Supplier, StoreSettings } from '../../types';
+import { Product, PurchaseOrder, POItem } from '../../types';
 import { num } from '../crm/crmModel';
 import { purchaseOrderMeta } from '../ui/StatusPill';
 
@@ -32,10 +32,21 @@ export const computePoTotals = (items: POItem[], shippingCost = 0, taxRate = 0):
 export const reorderQty = (p: Product): number =>
     Math.max(1, (num(p.reorderPoint) + num(p.safetyStock)) - num(p.stock));
 
-/** At/below reorder point and eligible for a draft (used for cross-supplier drafts). */
-const isLow = (p: Product): boolean =>
+/** At/below reorder point and eligible for a draft. */
+export const isLow = (p: Product): boolean =>
     p.status !== 'archived' && typeof p.reorderPoint !== 'undefined'
     && num(p.reorderPoint) > 0 && num(p.stock) <= num(p.reorderPoint);
+
+/**
+ * How many items a reorder would cover — the badge on the Procurement Hub.
+ *
+ * Only the count, deliberately. The drafts themselves (quantities and money)
+ * are built by the server at GET /purchase-orders/reorder-suggestions, which
+ * is where the Auto Reorder entitlement is enforced; duplicating that
+ * arithmetic here just gave it a second place to drift from.
+ */
+export const countReorderItems = (products: Product[]): number =>
+    products.filter(p => p.supplierId && isLow(p)).length;
 
 /** Products below reorder point for a supplier, each with a suggested quantity.
  *  `exclude` skips products already on the order. */
@@ -84,31 +95,3 @@ export interface ReorderDraft {
     total: number;
 }
 
-/**
- * Build draft purchase orders (one per supplier) for every product at/below its
- * reorder point. Suggested quantity tops stock back up to reorderPoint+safetyStock.
- */
-export const generateReorderDrafts = (
-    products: Product[],
-    suppliers: Supplier[],
-    storeSettings?: StoreSettings | null,
-): ReorderDraft[] => {
-    const supById = new Map(suppliers.map(s => [s.id, s]));
-    const bySupplier = new Map<string, POItem[]>();
-    for (const p of products) {
-        if (!p.supplierId || !isLow(p)) continue;
-        const arr = bySupplier.get(p.supplierId) || [];
-        arr.push(productToPoItem(p, reorderQty(p)));
-        bySupplier.set(p.supplierId, arr);
-    }
-    const taxRate = num(storeSettings?.taxRate);
-    const drafts: ReorderDraft[] = [];
-    for (const [supplierId, items] of bySupplier) {
-        const t = computePoTotals(items, 0, taxRate);
-        drafts.push({
-            supplierId, supplierName: supById.get(supplierId)?.name || 'Supplier',
-            items, units: t.units, subtotal: t.subtotal, tax: t.tax, total: t.total,
-        });
-    }
-    return drafts.sort((a, b) => b.total - a.total);
-};

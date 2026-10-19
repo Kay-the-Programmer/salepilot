@@ -20,6 +20,29 @@ export const formatMoney = (
     }).format(safe);
 };
 
+/** Symbols the pricing surfaces have always shown. Anything else falls back to
+ *  the bare code, so an unknown currency reads "XAF 120" rather than "120". */
+const CURRENCY_SYMBOLS: Record<string, string> = { USD: '$', ZMW: 'K', GBP: '£', EUR: '€' };
+
+/** The symbol for a currency code, or '' when there is no known symbol. */
+export const currencySymbol = (code = 'ZMW'): string => CURRENCY_SYMBOLS[code] ?? '';
+
+/**
+ * Money for the platform/admin surfaces that know a currency CODE but have no
+ * `StoreSettings` — plan prices, the add-on catalogue, paywalls.
+ *
+ * Deliberately NOT `formatMoney` above: Intl with `style: 'currency'` renders
+ * ZMW as "ZMW 99.00", while every pricing screen in this app shows "K99". This
+ * was copied into four files (PaywallHost, upsell/offer, SubscriptionApp,
+ * SuperAdminCatalog), three of which let `toLocaleString` default to three
+ * fraction digits; two is the right cap for money, so that is what they all get.
+ */
+export const formatMoneyByCode = (amount: number, code = 'ZMW'): string => {
+    const sym = currencySymbol(code);
+    const v = (Number.isFinite(amount) ? amount : 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return sym ? `${sym}${v}` : `${code} ${v}`;
+};
+
 /**
  * Fallback tender list, used only before settings load or for a store with none
  * configured. Identical to what the server seeds a new store with

@@ -7,7 +7,7 @@ import ProcureOrders from './ProcureOrders';
 import PurchaseOrdersApp from '../../pages/purchase-orders/PurchaseOrdersApp';
 import PremiumUpgradeModal from '../ui/PremiumUpgradeModal';
 import { hasModule, MODULES } from '../../utils/entitlements';
-import { buildProcureOverview, generateReorderDrafts } from './procureModel';
+import { buildProcureOverview, countReorderItems } from './procureModel';
 import '../crm/crm.css';
 import './procure.css';
 
@@ -58,8 +58,8 @@ export const ProcureApp: React.FC<ProcureAppProps> = ({
     );
 
     const reorderCount = useMemo(
-        () => generateReorderDrafts(products, suppliers, storeSettings).reduce((n, d) => n + d.items.length, 0),
-        [products, suppliers, storeSettings],
+        () => countReorderItems(products),
+        [products],
     );
 
     const placeOrder = (supplierId?: string) => { setDraftSupplierId(supplierId ?? null); onNavigate('orders'); };

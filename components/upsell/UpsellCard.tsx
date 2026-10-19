@@ -2,7 +2,8 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { UpsellMoment, UpsellSurface } from '../../utils/upsell';
 import { useUpsell } from '../../contexts/UpsellContext';
-import { useCountdown, discounted, money } from './offer';
+import { useCountdown, discounted } from './offer';
+import { formatMoneyByCode as money } from '../../utils/currency';
 
 /**
  * Dismissible contextual upsell card, shown at the top of a feature screen.
