@@ -28,7 +28,7 @@ keep working.
 | Route | App | Notes |
 |-------|-----|-------|
 | `/pos`, `/pos/history`, `/pos/dashboard` | POS Terminal | `/pos/history` = Sales History & Refunds (returns live here). `/pos/inventory` redirects to `/inv/items`. |
-| `/hustle` | Hustle POS | Fast amount-entry sales. |
+| `/hustle` | — | **Withheld from launch** as a separate app (`HUSTLE_APP_ENABLED`). The same keypad is the POS's "Quick" mode, reachable from the mode toggle while selling, so this redirects to `/pos`. |
 | `/dash`, `/dash/sales`, `/dash/products` | Business Dashboard | |
 | `/reports` | — | **Retired.** Was a second analytics surface over the same `/reports/dashboard` data as the Business Dashboard, with no launcher tile. Permanent redirect to `/dash`. |
 | `/orders` | Orders | Online order management (Velocity-styled). |

@@ -8,7 +8,7 @@ import { lazy, Suspense } from 'react';
 import SupplierDashboard from './pages/supplier/SupplierDashboard';
 import SupplierOrdersPage from './pages/supplier/SupplierOrdersPage';
 import PosModeToggle from './components/pos/PosModeToggle';
-import { hasModule, MODULES, MARKETING_ENABLED, LOGISTICS_ENABLED } from './utils/entitlements';
+import { hasModule, MODULES, MARKETING_ENABLED, LOGISTICS_ENABLED, HUSTLE_APP_ENABLED } from './utils/entitlements';
 import { STORE_LOGO_UPDATED_EVENT } from './utils/pdfDocument';
 import type { CampaignDTO } from './utils/upsell';
 import { ROLE_PAGES } from './utils/rbac';
@@ -1515,6 +1515,10 @@ export default function Dashboard() {
     // ── Standalone Hustle POS app (/hustle) ──
     const hustleParts = location.pathname.split('/');
     if (hustleParts[1] === 'hustle' && currentUser) {
+        // Withheld from launch — see HUSTLE_APP_ENABLED. The keypad lives on as
+        // the POS's "Quick" mode, so this redirects to the till rather than
+        // home: someone who typed /hustle wants to sell.
+        if (!HUSTLE_APP_ENABLED) return <Navigate to="/pos" replace />;
         const allowed = currentUser.role === 'superadmin' ? PERMISSIONS['admin'] : PERMISSIONS[currentUser.role];
         if (!allowed.includes('sales')) return <Navigate to="/" replace />;
         return (

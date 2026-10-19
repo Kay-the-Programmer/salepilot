@@ -24,7 +24,8 @@ export const STANDALONE_APPS: AppDef[] = [
     { name: 'Super Admin', page: 'superadmin', route: 'superadmin', desc: 'Platform control center', iconName: 'admin_panel_settings', requires: 'superadmin' },
     { name: 'POS Terminal', page: 'pos', route: 'pos', desc: 'Ring up sales & checkout', iconName: 'point_of_sale', requires: 'sales' },
     { name: 'Business Dashboard', page: 'dash', route: 'dash', desc: 'Sales, trends & insights', iconName: 'monitoring', requires: 'reports' },
-    { name: 'Hustle POS', page: 'hustle', route: 'hustle', desc: 'Fast amount-entry sales', iconName: 'bolt', requires: 'sales' },
+    // Hustle POS is withheld from launch as a separate app — its keypad is the
+    // POS's "Quick" mode. See HUSTLE_APP_ENABLED in utils/entitlements.
     { name: 'Orders', page: 'orders', route: 'orders', desc: 'Online order management', iconName: 'shopping_bag', requires: 'orders' },
     { name: 'Business Assistant', page: 'assistant', route: 'assistant', desc: 'AI insights & data chat', iconName: 'auto_awesome', requires: 'quick-view', module: MODULES.AI_ASSISTANT },
     { name: 'CRM', page: 'crm', route: 'crm', desc: 'Customers, loyalty & insights', iconName: 'diversity_3', requires: 'customers' },
